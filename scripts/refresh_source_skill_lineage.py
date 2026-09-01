@@ -245,6 +245,13 @@ def _load_validator():
 
 
 lineage, TRUSTED_VALIDATOR_BYTES = _load_validator()
+CUTOVER_DISABLED_DIAGNOSTIC = (
+    "destination source-lineage mutation is disabled pending issue 45 rescout"
+)
+
+
+def _require_destination_rescout() -> None:
+    raise lineage.LineageError(CUTOVER_DISABLED_DIAGNOSTIC)
 
 
 def _wait_bounded_process(process: subprocess.Popen[bytes], deadline: float) -> int:
@@ -703,7 +710,7 @@ def _candidate_projection_seed(source: dict) -> tuple[str, list[dict]]:
         }
         <= set(candidate)
         <= candidate_fields
-        and candidate["repository_id"] == "nisavid/agents"
+        and candidate["repository_id"] == "nisavid/provingkit"
         and candidate["package_projection_contract"] == "agent-plugin-tree-v1",
         diagnostic,
     )
@@ -3599,6 +3606,7 @@ def _write_locked(repository: Path, view) -> None:
 
 
 def write(repository: Path) -> None:
+    _require_destination_rescout()
     with lineage._lineage_lock(repository, exclusive=True, nonblocking=True) as view:
         lineage._require_lineage_view_binding(view)
         _recover_interrupted_write(view.root, view)
@@ -3951,7 +3959,7 @@ def _publish_receipt_locked(
         "candidate": {
             "commit_sha1": commit,
             "packages_sha256": summary["candidate_packages_sha256"],
-            "repository_id": "nisavid/agents",
+            "repository_id": "nisavid/provingkit",
             "tree_sha1": tree,
         },
         "captured_at_utc": captured_at_utc,
@@ -4219,6 +4227,7 @@ def _external_receipt_parent(repository: Path, output: Path) -> tuple[int, str]:
 
 
 def receipt(repository: Path, output: Path, captured_at_utc: str) -> None:
+    _require_destination_rescout()
     try:
         repository = repository.resolve(strict=True)
         lineage._utc(captured_at_utc, "receipt capture")
@@ -4422,6 +4431,7 @@ def _git_tree_identity(
 
 
 def capture_git(repository: Path, revision: str, root: str) -> None:
+    _require_destination_rescout()
     deadline = time.monotonic() + MATERIALIZE_TIMEOUT_SECONDS
     lineage._relative_path(root, "source Git root", allow_dot=True)
     output = json.dumps(
@@ -4434,6 +4444,7 @@ def capture_git(repository: Path, revision: str, root: str) -> None:
 
 
 def capture_tree(root: Path) -> None:
+    _require_destination_rescout()
     print(json.dumps(lineage.tree_identity(root), indent=2, sort_keys=True))
 
 
@@ -4981,6 +4992,7 @@ def _capture_host_locked(repository: Path, private_input: Path, view) -> None:
 
 
 def capture_host(repository: Path, private_input: Path) -> None:
+    _require_destination_rescout()
     try:
         repository = repository.resolve()
         if not private_input.is_absolute():

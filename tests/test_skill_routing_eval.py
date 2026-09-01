@@ -138,20 +138,20 @@ def test_candidate_identity_canonicalizes_the_release_repository_origin(
     runner = load_runner()
     repository, revision = frozen_copy(tmp_path)
     subprocess.run(
-        ["git", "remote", "add", "origin", "git@github.com:nisavid/agents.git"],
+        ["git", "remote", "add", "origin", "git@github.com:nisavid/provingkit.git"],
         cwd=repository,
         check=True,
     )
 
     candidate, _archive = runner.candidate_git_identity(repository, revision)
 
-    assert candidate["repository"] == "https://github.com/nisavid/agents"
+    assert candidate["repository"] == "https://github.com/nisavid/provingkit"
 
 
 @pytest.mark.parametrize(
     "origin",
     (
-        "https://secret-token@github.com/nisavid/agents.git",
+        "https://secret-token@github.com/nisavid/provingkit.git",
         "https://github.com/fork/agents.git",
     ),
 )

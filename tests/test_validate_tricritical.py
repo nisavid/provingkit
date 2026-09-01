@@ -66,11 +66,7 @@ class ValidateTricriticalTests(unittest.TestCase):
     def run_validator(self):
         return subprocess.run(
             [
-                "uv",
-                "run",
-                "--with",
-                "PyYAML",
-                "python",
+                sys.executable,
                 str(VALIDATOR),
                 str(self.repo),
             ],
@@ -1189,8 +1185,8 @@ class ValidateTricriticalTests(unittest.TestCase):
             ),
             (
                 self.repo / ".claude-plugin" / "marketplace.json",
-                '  "name": "nisavid-agents",',
-                '  "name": "nisavid-agents",\n  "name": "duplicate",',
+                '  "name": "provingkit",',
+                '  "name": "provingkit",\n  "name": "duplicate",',
             ),
             (
                 self.plugin_root / "topology.json",

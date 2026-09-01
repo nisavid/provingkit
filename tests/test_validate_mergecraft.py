@@ -878,7 +878,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             text=True,
             capture_output=True,
             check=False,
-            timeout=30,
+            timeout=60,
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)

@@ -131,6 +131,120 @@ def load_refresher():
     return module
 
 
+class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
+    def test_retained_manifest_is_historical_and_agents_bound(self) -> None:
+        manifest = json.loads(
+            (REPOSITORY / SOURCE_MANIFEST).read_text(encoding="utf-8")
+        )
+        self.assertEqual(manifest["candidate"]["repository_id"], "nisavid/agents")
+
+        provenance = json.loads(
+            (REPOSITORY / "release/provingkit/cutover-provenance-v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(
+            provenance["historical_artifacts"],
+            [
+                {
+                    "path": "release/source-skill-lineage/source-manifest.json",
+                    "disposition": "historical-stale-pending-provingkit-rescout",
+                    "owner_issue": "https://github.com/nisavid/agents/issues/45",
+                }
+            ],
+        )
+
+    def test_validator_and_refresh_check_reject_stale_lineage_without_mutation(
+        self,
+    ) -> None:
+        before = {
+            path.relative_to(REPOSITORY): path.read_bytes()
+            for path in sorted((REPOSITORY / LINEAGE_ROOT).rglob("*"))
+            if path.is_file()
+        }
+        for command in (
+            [sys.executable, str(VALIDATOR), str(REPOSITORY)],
+            [sys.executable, str(REFRESHER), "check", str(REPOSITORY)],
+        ):
+            with self.subTest(command=Path(command[1]).name):
+                completed = subprocess.run(
+                    command,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                    timeout=30,
+                )
+                self.assertNotEqual(completed.returncode, 0)
+                self.assertIn(
+                    "candidate plugin manifest identity drift", completed.stderr
+                )
+                self.assertEqual(completed.stdout, "")
+                self.assertEqual(
+                    before,
+                    {
+                        path.relative_to(REPOSITORY): path.read_bytes()
+                        for path in sorted((REPOSITORY / LINEAGE_ROOT).rglob("*"))
+                        if path.is_file()
+                    },
+                )
+
+    def test_mutating_and_capture_entrypoints_are_disabled_pending_rescout(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            commands = (
+                [sys.executable, str(REFRESHER), "write", str(REPOSITORY)],
+                [
+                    sys.executable,
+                    str(REFRESHER),
+                    "receipt",
+                    str(REPOSITORY),
+                    "--output",
+                    str(temporary / "receipt.json"),
+                    "--captured-at-utc",
+                    "2026-09-01T00:00:00Z",
+                ],
+                [
+                    sys.executable,
+                    str(REFRESHER),
+                    "capture-git",
+                    str(REPOSITORY),
+                    "--revision",
+                    "HEAD",
+                    "--root",
+                    ".",
+                ],
+                [sys.executable, str(REFRESHER), "capture-tree", str(REPOSITORY)],
+                [
+                    sys.executable,
+                    str(REFRESHER),
+                    "capture-host",
+                    str(REPOSITORY),
+                    "--private-input",
+                    str(temporary / "private-input.json"),
+                ],
+            )
+            for command in commands:
+                with self.subTest(command=command[2]):
+                    completed = subprocess.run(
+                        command,
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                        timeout=30,
+                    )
+                    self.assertEqual(completed.returncode, 1)
+                    self.assertEqual(completed.stdout, "")
+                    self.assertEqual(
+                        completed.stderr,
+                        "source-skill-lineage-refresh: destination source-lineage "
+                        "mutation is disabled pending issue 45 rescout\n",
+                    )
+            self.assertEqual(list(temporary.iterdir()), [])
+
+
+@unittest.skip("historical agents lineage behavior; issue 45 owns the rescout")
 class CheckedInSourceSkillLineageTests(unittest.TestCase):
     def test_candidate_refresh_is_temporally_bound(self) -> None:
         manifest = json.loads(
@@ -290,6 +404,7 @@ class CheckedInSourceSkillLineageTests(unittest.TestCase):
         )
 
 
+@unittest.skip("historical agents lineage behavior; issue 45 owns the rescout")
 class ValidateSourceSkillLineageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -2475,9 +2590,9 @@ class ValidateSourceSkillLineageTests(unittest.TestCase):
                 r"https://github.com/C:\private-canary\skill",
                 "https://github.com/C:%5Cprivate-canary%5Cskill",
                 r"https://github.com/\\private-canary-host\share",
-                "https://github.com/nisavid/agents//private/var/folders/private-canary",
+                "https://github.com/nisavid/provingkit//private/var/folders/private-canary",
                 (
-                    "https://github.com/nisavid/agents/"
+                    "https://github.com/nisavid/provingkit/"
                     "%2Fprivate%2Fvar%2Ffolders%2Fprivate-canary"
                 ),
                 "https://alice@private-host.example/path/private-canary",
@@ -2523,6 +2638,7 @@ class ValidateSourceSkillLineageTests(unittest.TestCase):
                 self.module._privacy_scan(text, "public prose")
 
 
+@unittest.skip("historical agents lineage behavior; issue 45 owns the rescout")
 class RefreshSourceSkillLineageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -4123,9 +4239,9 @@ class RefreshSourceSkillLineageTests(unittest.TestCase):
             r"https://github.com/C:\private-canary\skill",
             "https://github.com/C:%5Cprivate-canary%5Cskill",
             r"https://github.com/\\private-canary-host\share",
-            "https://github.com/nisavid/agents//private/var/folders/private-canary",
+            "https://github.com/nisavid/provingkit//private/var/folders/private-canary",
             (
-                "https://github.com/nisavid/agents/"
+                "https://github.com/nisavid/provingkit/"
                 "%2Fprivate%2Fvar%2Ffolders%2Fprivate-canary"
             ),
             "https://alice@private-host.example/path/private-canary",

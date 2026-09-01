@@ -619,7 +619,7 @@ def _install_external_provider_policy(
         "details": {
             "channel": "stable",
             "trust_class": "operator-installed",
-            "lineage_id": "agents-stable",
+            "lineage_id": "provingkit-stable",
         },
     }
     lifecycle = {"state": "active", "usable_for_new_publication": True}

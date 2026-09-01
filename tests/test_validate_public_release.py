@@ -1916,8 +1916,8 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
         for alias in (
             self.module.CANONICAL_REPOSITORY_URL,
-            "git@github.com:nisavid/agents.git",
-            "ssh://git@github.com/nisavid/agents.git",
+            "git@github.com:nisavid/provingkit.git",
+            "ssh://git@github.com/nisavid/provingkit.git",
         ):
             with self.subTest(alias=alias):
                 git("remote", "set-url", "origin", alias)
@@ -1927,7 +1927,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 )
 
         git("remote", "set-url", "origin", "https://github.com/fork/agents.git")
-        with self.assertRaisesRegex(self.module.ReleaseError, "not nisavid/agents"):
+        with self.assertRaisesRegex(self.module.ReleaseError, "not nisavid/provingkit"):
             self.module.git_candidate_identity(repository)
         git("remote", "set-url", "origin", self.module.CANONICAL_REPOSITORY_URL)
 
@@ -2417,6 +2417,28 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
         self.assertEqual((snapshot / relative).read_bytes(), original)
 
+    def test_source_stage_excludes_the_stale_source_lineage_snapshot(self) -> None:
+        stale_roots = (
+            "release/source-skill-lineage",
+            "scripts/refresh_source_skill_lineage.py",
+            "scripts/validate_source_skill_lineage.py",
+            "tests/test_validate_source_skill_lineage.py",
+        )
+        scope_paths = self.module.all_scope_paths(
+            self.module.SOURCE_STAGE_VALIDATED_PLUGINS
+        )
+
+        self.assertEqual(self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS, ())
+        for stale_root in stale_roots:
+            with self.subTest(stale_root=stale_root):
+                self.assertFalse(
+                    any(
+                        relative == stale_root or relative.startswith(stale_root + "/")
+                        for relative in scope_paths
+                    )
+                )
+
+    @unittest.skip("pre-cutover source-lineage fixture; issue 45 owns the rescout")
     def test_source_stage_scope_and_common_validator_bind_mapped_evidence(
         self,
     ) -> None:
@@ -2521,6 +2543,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         self.assertEqual(target.read_bytes(), original)
         self.assertEqual(stat.S_IMODE(target.stat().st_mode), original_mode)
 
+    @unittest.skip("pre-cutover source-lineage fixture; issue 45 owns the rescout")
     def test_common_source_stage_validator_binds_local_license_evidence(
         self,
     ) -> None:
@@ -3741,18 +3764,19 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
         normalized_readme = " ".join(readme.split())
 
-        self.assertEqual(readme.count("run_prepared_release_validation.sh"), 1)
-        self.assertIn(
-            "/usr/bin/env -i LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin TZ=UTC /bin/sh",
-            readme,
-        )
-        self.assertIn("external trusted deployment TCB", normalized_readme)
-        self.assertIn("source-stage validation only", readme)
-        self.assertIn(
-            "An exact wrapper exit status of `0` confirms only the source-stage checks",
-            normalized_readme,
-        )
-        self.assertIn("network-denied OS sandbox", readme)
+        self.assertNotIn("run_prepared_release_validation.sh", readme)
+        self.assertIn("python scripts/validate_provingkit.py .", readme)
+        for member in (
+            "rolecasting",
+            "tricritical",
+            "versionkeeping",
+            "mergecraft",
+            "artifact_customs",
+            "task_witness",
+        ):
+            self.assertIn(f"validate_{member}.py", readme)
+        self.assertIn("currently an unreleased source stage", normalized_readme)
+        self.assertIn("validate public source contracts", normalized_readme)
         self.assertNotIn("phase7-production", readme)
         self.assertNotIn("--private-producer-witness", readme)
         self.assertNotIn("uv --no-config run", readme)
@@ -4777,8 +4801,8 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(parser_options))
         self.assertTrue(required.isdisjoint(documented))
-        self.assertIn("source-stage validation only", readme)
-        self.assertIn("private evidence pathnames", readme)
+        self.assertIn("currently an unreleased source stage", readme)
+        self.assertIn("does not establish", readme)
         self.assertFalse(
             {
                 "--private-receipt",

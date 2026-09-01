@@ -1,0 +1,191 @@
+name: Provingkit source contracts
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: provingkit-source-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  provingkit-source:
+    name: Provingkit source boundary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.3
+
+      - name: Validate the Kit definition and repository boundary
+        run: |
+          python -m unittest tests.test_validate_provingkit
+          python scripts/validate_provingkit.py .
+
+      - name: Verify excluded source remains outside the repository
+        run: |
+          test ! -e tooling
+          test ! -e .scratch
+          test ! -e base-loadout
+          test ! -e plugins/base-loadout
+          test ! -e .github/workflows/task-witness-linux-qualification.yml
+          test ! -e .github/workflows/task-witness-macos-host-probe.yml
+
+  rolecasting:
+    name: Rolecasting source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate Rolecasting
+        run: |
+          python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus
+          python scripts/validate_rolecasting.py .
+
+  tricritical:
+    name: Tricritical source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.3
+
+      - name: Validate Tricritical
+        run: |
+          python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus
+          python scripts/validate_tricritical.py .
+
+  versionkeeping:
+    name: Versionkeeping source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate Versionkeeping
+        run: |
+          python -m unittest tests.test_validate_versionkeeping
+          python scripts/validate_versionkeeping.py .
+
+  mergecraft:
+    name: Mergecraft source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.3
+
+      - name: Validate Mergecraft at source stage
+        run: |
+          python -m unittest tests.test_validate_mergecraft
+          python scripts/validate_mergecraft.py . --source-stage
+
+  artifact-customs:
+    name: Artifact Customs source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate Artifact Customs at source stage
+        run: |
+          python -m unittest tests.test_validate_artifact_customs tests.test_artifact_customs_eval_corpus
+          python scripts/validate_artifact_customs.py . --source-stage
+
+  task-witness:
+    name: Task Witness source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate Task Witness at source stage
+        run: |
+          python -m unittest tests.test_task_witness_package
+          python scripts/validate_task_witness.py "$GITHUB_WORKSPACE" --source-stage
+
+  derived-locks:
+    name: Derived locks remain reproducible
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.3
+
+      - name: Regenerate supported member locks
+        run: |
+          python scripts/validate_rolecasting.py --write-content-lock .
+          python scripts/validate_tricritical.py --write-content-lock .
+          python scripts/validate_versionkeeping.py . --write-content-lock
+          python scripts/validate_mergecraft.py . --source-stage --write-content-lock
+          python scripts/validate_artifact_customs.py . --source-stage --write-content-lock
+
+      - name: Require checked-in derived state
+        run: git diff --exit-code

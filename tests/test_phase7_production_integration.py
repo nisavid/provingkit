@@ -43,7 +43,7 @@ def install_clean_public_candidate(source: Path, destination: Path) -> None:
             "remote",
             "add",
             "origin",
-            "https://github.com/nisavid/agents",
+            "https://github.com/nisavid/provingkit",
         ],
         ["git", "-C", str(destination), "add", "--force", "--all"],
         [
@@ -115,7 +115,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                     revision="b" * 40,
                     tree_oid="c" * 40,
                     archive_sha256="sha256:" + "d" * 64,
-                    repository="https://github.com/nisavid/agents",
+                    repository="https://github.com/nisavid/provingkit",
                 ),
                 supervisor_source_sha256="sha256:" + "e" * 64,
             )
@@ -230,7 +230,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                     "remote",
                     "add",
                     "origin",
-                    "https://github.com/nisavid/agents",
+                    "https://github.com/nisavid/provingkit",
                 ],
                 check=True,
                 capture_output=True,
@@ -406,7 +406,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                     "b" * 40,
                     "c" * 40,
                     "sha256:" + "d" * 64,
-                    "https://github.com/nisavid/agents",
+                    "https://github.com/nisavid/provingkit",
                 ),
                 "sha256:" + "e" * 64,
             )
@@ -628,7 +628,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                 revision="a" * 40,
                 tree_oid="b" * 40,
                 archive_sha256="sha256:" + "c" * 64,
-                repository="https://github.com/nisavid/agents",
+                repository="https://github.com/nisavid/provingkit",
             )
             prepared_candidate = coordinator.PreparedPublicCandidate(
                 snapshot=REPO_ROOT,
@@ -740,7 +740,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                 revision="a" * 40,
                 tree_oid="b" * 40,
                 archive_sha256="sha256:" + "c" * 64,
-                repository="https://github.com/nisavid/agents",
+                repository="https://github.com/nisavid/provingkit",
             )
             prepared_candidate = coordinator.PreparedPublicCandidate(
                 snapshot=root / "frozen",

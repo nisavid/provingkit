@@ -549,7 +549,7 @@ def validate_manifests(root: Path) -> None:
     require(codex["version"] == RELEASE_VERSION, "canonical manifest version drift")
     require(codex["license"] == "MIT", "canonical manifest license drift")
     require(
-        codex["repository"] == "https://github.com/nisavid/agents",
+        codex["repository"] == "https://github.com/nisavid/provingkit",
         "canonical manifest repository drift",
     )
     require(claude["displayName"] == "Versionkeeping", "Claude displayName drift")

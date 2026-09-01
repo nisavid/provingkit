@@ -1,0 +1,123 @@
+{
+  "canonical_repository": "https://github.com/nisavid/provingkit",
+  "contract": "provingkit-definition-v1",
+  "membership": {
+    "all_members_required": true,
+    "members": [
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "plugins/rolecasting/content-lock.json",
+          "sha256": "sha256:80a3e93ada8d845813c27aec976fb99e28d377955adcfdd328811780f4394283"
+        },
+        "display_name": "Rolecasting",
+        "distribution_kind": "agent-plugin",
+        "id": "rolecasting",
+        "identity_manifests": {
+          "canonical": "plugins/rolecasting/plugin.json",
+          "claude": "plugins/rolecasting/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "plugins/tricritical/content-lock.json",
+          "sha256": "sha256:d500a7d2d4b7cbbd4d773c0ce00e21a947b87dd27442514f09aa81a1dcbe3b7c"
+        },
+        "display_name": "Tricritical",
+        "distribution_kind": "agent-plugin",
+        "id": "tricritical",
+        "identity_manifests": {
+          "canonical": "plugins/tricritical/plugin.json",
+          "claude": "plugins/tricritical/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "release/plugin-content-locks/versionkeeping.json",
+          "sha256": "sha256:6c6cee12edcd610e6e0edce3a5c5bfe1dcf794b23fe667c125c6239e6550d50d"
+        },
+        "display_name": "Versionkeeping",
+        "distribution_kind": "agent-plugin",
+        "id": "versionkeeping",
+        "identity_manifests": {
+          "canonical": "plugins/versionkeeping/plugin.json",
+          "claude": "plugins/versionkeeping/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "release/plugin-content-locks/mergecraft.json",
+          "sha256": "sha256:1e740a17c35b9d2fecfc82f54270a4b64eb3a456f01258208a496e21b8610369"
+        },
+        "display_name": "Mergecraft",
+        "distribution_kind": "agent-plugin",
+        "id": "mergecraft",
+        "identity_manifests": {
+          "canonical": "plugins/mergecraft/plugin.json",
+          "claude": "plugins/mergecraft/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "release/plugin-content-locks/artifact-customs.json",
+          "sha256": "sha256:f94040b54669db9e45ece84a8b285e9db2e3bd2eb188142522c805c43b851b4a"
+        },
+        "display_name": "Artifact Customs",
+        "distribution_kind": "agent-plugin",
+        "id": "artifact-customs",
+        "identity_manifests": {
+          "canonical": "plugins/artifact-customs/plugin.json",
+          "claude": "plugins/artifact-customs/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "source-shape-review",
+          "path": "release/task-witness/source-shape-review.json",
+          "sha256": "sha256:f3ff4c29a7e19f507428682a33c371fc34ed0bf91ef27c5e56b76e67b5fe897c"
+        },
+        "display_name": "Task Witness",
+        "distribution_kind": "code-only",
+        "id": "task-witness",
+        "identity_manifests": {
+          "canonical": "plugins/task-witness/plugin.json",
+          "claude": "plugins/task-witness/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      }
+    ],
+    "mode": "exact",
+    "partial_selection_is_provingkit": false
+  },
+  "cutover_provenance": "release/provingkit/cutover-provenance-v1.json",
+  "excluded_source": {
+    "paths": [
+      ".scratch",
+      "tooling"
+    ],
+    "products": [
+      "Base Loadout",
+      "Hindsight",
+      "personal tools",
+      "unrelated experiments"
+    ]
+  },
+  "historical_identity_allowlist": "release/provingkit/historical-identity-allowlist-v1.json",
+  "name": "Provingkit",
+  "release_manifest": {
+    "instances": [],
+    "release_authority": "not-granted",
+    "schema": "release/provingkit/release-manifest-v1.schema.json"
+  },
+  "schema_version": 1,
+  "state": "source-stage-unreleased"
+}

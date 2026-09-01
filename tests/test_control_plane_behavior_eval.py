@@ -238,7 +238,7 @@ def build_local_production_evidence(tmp_path: Path, monkeypatch):
             "remote",
             "add",
             "origin",
-            "https://github.com/nisavid/agents.git",
+            "https://github.com/nisavid/provingkit.git",
         ],
         cwd=repository,
         check=True,
@@ -285,7 +285,7 @@ def build_local_production_evidence(tmp_path: Path, monkeypatch):
     )
     args = SimpleNamespace(
         adapter="claude",
-        candidate_repository="https://github.com/nisavid/agents",
+        candidate_repository="https://github.com/nisavid/provingkit",
         candidate_revision=head,
         claude_executable="/opt/claude/bin/claude",
         claude_timeout_seconds=300,
@@ -2198,7 +2198,7 @@ def test_candidate_git_observer_blocks_path_fsmonitor_and_filter_executables(
             "remote",
             "add",
             "origin",
-            "https://github.com/nisavid/agents",
+            "https://github.com/nisavid/provingkit",
         ],
         cwd=repository,
         check=True,
@@ -2254,7 +2254,7 @@ def test_candidate_git_observer_blocks_path_fsmonitor_and_filter_executables(
         repository,
         output,
         revision,
-        "https://github.com/nisavid/agents",
+        "https://github.com/nisavid/provingkit",
     )
     temporary.cleanup()
 
@@ -2307,7 +2307,7 @@ def test_candidate_snapshot_uses_safe_python39_extraction_and_retains_git_eviden
             "remote",
             "add",
             "origin",
-            "git@github.com:nisavid/agents.git",
+            "git@github.com:nisavid/provingkit.git",
         ],
         cwd=repository,
         check=True,
@@ -2326,13 +2326,13 @@ def test_candidate_snapshot_uses_safe_python39_extraction_and_retains_git_eviden
         text=True,
     ).stdout.strip()
     temporary, snapshot, source = runner.materialize_candidate_snapshot(
-        repository, output, revision, "https://github.com/nisavid/agents"
+        repository, output, revision, "https://github.com/nisavid/provingkit"
     )
     try:
         assert (snapshot / "nested/file.txt").read_text() == "frozen\n"
         assert (output / source["git_objects_artifact_relpath"]).is_file()
         assert source["git_objects_sha256"].startswith("sha256:")
-        assert source["repository"] == "https://github.com/nisavid/agents"
+        assert source["repository"] == "https://github.com/nisavid/provingkit"
     finally:
         temporary.cleanup()
 
@@ -2341,33 +2341,33 @@ def test_production_candidate_origin_accepts_only_canonical_credential_free_alia
     runner = load_runner()
 
     for alias in (
-        "https://github.com/nisavid/agents",
-        "https://github.com/nisavid/agents.git",
-        "git@github.com:nisavid/agents.git",
-        "ssh://git@github.com/nisavid/agents.git",
+        "https://github.com/nisavid/provingkit",
+        "https://github.com/nisavid/provingkit.git",
+        "git@github.com:nisavid/provingkit.git",
+        "ssh://git@github.com/nisavid/provingkit.git",
     ):
         assert (
             runner.canonical_repository_origin(alias)
-            == "https://github.com/nisavid/agents"
+            == "https://github.com/nisavid/provingkit"
         )
 
     for invalid in (
         "https://github.com/fork/agents.git",
-        "https://user@github.com/nisavid/agents.git",
-        "https://token@github.com/nisavid/agents.git",
-        "ssh://ivan@github.com/nisavid/agents.git",
-        "file:///tmp/nisavid/agents",
-        "/tmp/nisavid/agents",
-        "github.com/nisavid/agents",
-        "git@github.com:nisavid/agents",
-        "https://github.com/nisavid/agents/",
-        "https://github.com/nisavid/agents.git/extra",
+        "https://user@github.com/nisavid/provingkit.git",
+        "https://token@github.com/nisavid/provingkit.git",
+        "ssh://ivan@github.com/nisavid/provingkit.git",
+        "file:///tmp/nisavid/provingkit",
+        "/tmp/nisavid/provingkit",
+        "github.com/nisavid/provingkit",
+        "git@github.com:nisavid/provingkit",
+        "https://github.com/nisavid/provingkit/",
+        "https://github.com/nisavid/provingkit.git/extra",
         "",
     ):
         try:
             runner.canonical_repository_origin(invalid)
         except runner.EvaluationError as error:
-            assert "origin is not nisavid/agents" in str(error)
+            assert "origin is not nisavid/provingkit" in str(error)
         else:
             raise AssertionError(
                 f"unsafe production candidate origin was accepted: {invalid}"
@@ -2783,7 +2783,7 @@ def test_retained_bundle_contains_immutable_incumbent_bytes(tmp_path: Path):
         [retained],
         declarations,
         incumbents,
-        "https://github.com/nisavid/agents",
+        "https://github.com/nisavid/provingkit",
         "candidate-revision",
         definition["runtime_dependencies"],
     )
@@ -3135,7 +3135,7 @@ def test_retirement_gate_binds_bundles_to_the_candidate_commit(
             repository,
             alternate_root,
             alternate_revision,
-            "https://github.com/nisavid/agents",
+            "https://github.com/nisavid/provingkit",
         )
     )
     snapshot.cleanup()

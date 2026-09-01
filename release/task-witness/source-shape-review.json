@@ -42,7 +42,7 @@
       "release/task-witness/tw4-suite-inventory.json": 1,
       "scripts/run_task_witness_qualification.py": 5419,
       "scripts/run_task_witness_qualification_suite.py": 3952,
-      "scripts/validate_task_witness.py": 4517,
+      "scripts/validate_task_witness.py": 4536,
       "tests/plugins/task_witness_client/__init__.py": 0,
       "tests/plugins/task_witness_client/_activation_smoke_driver.py": 127,
       "tests/plugins/task_witness_client/_client_driver.py": 269,
@@ -113,7 +113,7 @@
       "tests/plugins/task_witness_deployment/test_source_evidence_transitions.py": 257,
       "tests/plugins/task_witness_deployment/test_staged_client_integration.py": 265,
       "tests/plugins/task_witness_deployment/test_transaction_result_reconciliation.py": 1452,
-      "tests/test_task_witness_package.py": 4238,
+      "tests/test_task_witness_package.py": 4260,
       "tests/test_task_witness_qualification.py": 6600
     },
     "sets": {
@@ -133,7 +133,7 @@
         ]
       },
       "direct_release_owned_tests": {
-        "aggregate_nonblank_noncomment_lines": 60282,
+        "aggregate_nonblank_noncomment_lines": 60304,
         "paths": [
           "tests/plugins/task_witness_client/__init__.py",
           "tests/plugins/task_witness_client/_activation_smoke_driver.py",
@@ -224,7 +224,7 @@
         ]
       },
       "release_integration": {
-        "aggregate_nonblank_noncomment_lines": 10861,
+        "aggregate_nonblank_noncomment_lines": 10883,
         "paths": [
           "release/task-witness/public-release-registration.json",
           "tests/test_task_witness_package.py",
@@ -232,14 +232,14 @@
         ]
       },
       "release_integration_tests": {
-        "aggregate_nonblank_noncomment_lines": 10838,
+        "aggregate_nonblank_noncomment_lines": 10860,
         "paths": [
           "tests/test_task_witness_package.py",
           "tests/test_task_witness_qualification.py"
         ]
       },
       "release_validator": {
-        "aggregate_nonblank_noncomment_lines": 4517,
+        "aggregate_nonblank_noncomment_lines": 4536,
         "paths": [
           "scripts/validate_task_witness.py"
         ]
@@ -299,18 +299,18 @@
   "schema_version": 4,
   "source_byte_identity": {
     "aggregate_sha256_by_set": {
-      "current_control_set": "d0489389b7215d2f17342e430450d551989e9d445ad843475af0b0caa2feeba7",
-      "direct_release_owned_tests": "950ff7152f64b4f3d86fc4daa6bfa988de0556f8df15c9fe571fdd6bb67a8ca4",
-      "public_release_registration": "e3e97ca609e4806d3d6445f0f9e4b07a6cac739fa828f6d5f432824511e8390e",
-      "release_documentation": "7ea203d49d02481f1ab666dbf9a9d1e152d86d0ce7120ab98c057b1a563048c0",
-      "release_integration": "8956fc7030e7ca847d63fd5852c996d6e484de5865312b1d054fac3597b0ebce",
-      "release_integration_tests": "f833d070511fd7714236e0afff5018616551e7154c77c99f7b0fea22111e53d8",
-      "release_validator": "4cce02a06b055e10fa1a05ea123279ac3c16ba3e94c562bf1a94523f940667cc",
       "tw0": "3559210111eaab4a310bd4db2b3ce7133aeff4bde35dbb4821db5bb2fc5fc0b3",
-      "tw1_client": "5cfaa63fa55edaaf891e6e52cbbc9eaaaa72baf4e15beee0eb6509396c3fb37d",
-      "tw2_control_plane": "dc841c2ab600dec76cca0e3c0690b1b08f8d230d2006297ccc450960a2e6c0fe",
+      "tw1_client": "a40838d2799829772cfe75be45acbaec148db35f3b2e9ba3fb8ab8a3e03f6e37",
+      "tw2_control_plane": "7c06f72e8c0b8c8ac094f5ac343cb13fe27a85fe5cd53f697b3ba17cc0e28d52",
+      "current_control_set": "14b1349d67d638b52d3268c01967fe28244ea637cdd3721478c019b980338d15",
+      "direct_release_owned_tests": "8b9f87bbaa463221fe5fe63a0cbde528af0dc3f7842995f908667d755e0e9582",
+      "public_release_registration": "e3e97ca609e4806d3d6445f0f9e4b07a6cac739fa828f6d5f432824511e8390e",
+      "release_documentation": "b0a5feb9ceae5f823b41360ef9cc4f70f73040cb767570a6b189c3144622790a",
+      "release_integration": "8188e3fa8e73fe4a3a8a0639ed2050928c12f3c0468570a5f83fbf17184381f6",
+      "release_integration_tests": "5dd577a9de0e597e842cd590faf64ea267c9f3cd20b4bbc3458fceb1a1324875",
+      "release_validator": "6c180d867c3f55b31a76da83e3c423964bb2bed663fbf08636aec4d68378a5d8",
       "tw4_migration_evidence": "1c2c85bd317af0c0fcdeb2f642c435af50e620948d3dd99a6af974cedf34059c",
-      "tw4_qualification_contract": "211bcf5f4e0064b7df75b35e5ccc68086edb15f63696e926af71fbdba69bcd76"
+      "tw4_qualification_contract": "9f5811c855eb8ee78c508e0cca7bf650371dea6c01e8606e7349de0a9f5e200a"
     },
     "algorithm": "sha256",
     "entries": [
@@ -320,7 +320,7 @@
       },
       {
         "path": "docs/superpowers/specs/2026-08-12-task-witness-tw4-migration-and-qualification-design.md",
-        "sha256": "1c25761f626e70fc8e58145fa9e56d0f2ce0f204d565546814095f1bf99fe3e4"
+        "sha256": "b1f7a041df6b0b973b12e91ba45841ab6f33f54b673b74a49fab282d5ad73acd"
       },
       {
         "path": "plugins/task-witness/README.md",
@@ -328,7 +328,7 @@
       },
       {
         "path": "plugins/task-witness/client/task_witness_client.py",
-        "sha256": "2fabfdba708ea84c366b480c8a5d7aacf61706ba8e62e9cd97f2afe8dda87e9c"
+        "sha256": "dbd3377a67f7fceea3f4b0ac3c008669ba63962ffe0615f21ee9cd6f5625e61c"
       },
       {
         "path": "plugins/task-witness/client/task_witness_shim.sh.in",
@@ -336,11 +336,11 @@
       },
       {
         "path": "plugins/task-witness/controller/policy.json",
-        "sha256": "e27a85d60b50909c6aa70594b18f1a92f08a3d0facf2f24dbddcdd2c3e63032f"
+        "sha256": "af3494e913f16dca46417257bce8fe98f50d5647b5ff3fcd6769301602b0b87c"
       },
       {
         "path": "plugins/task-witness/controller/task_witness_deploy.py",
-        "sha256": "671693603673e8e895301620817c7fa15a96a37365cff59298d8261ee923a6b3"
+        "sha256": "704c0209fecbcf746c3c26a1e76be402d287310d27a94162f149a12ce3b9fa0b"
       },
       {
         "path": "plugins/task-witness/launcher/task_witness_launch.py",
@@ -420,7 +420,7 @@
       },
       {
         "path": "scripts/run_task_witness_qualification.py",
-        "sha256": "e58c51c87b27db4f3d3564f7fe52ba60023605d16eefd2eb2101b60b4e1561d3"
+        "sha256": "4c4a3ea7055646d544c79d045272037e83bcbfb600d11895de2e68c793715fea"
       },
       {
         "path": "scripts/run_task_witness_qualification_suite.py",
@@ -428,7 +428,7 @@
       },
       {
         "path": "scripts/validate_task_witness.py",
-        "sha256": "6ef8a4092ecb14e2d9a9f493c69d57e5302bcc06b9374d19e5e1933f3d310a6b"
+        "sha256": "46649d0ed825c5c147e069033f59de4e8f9b58afbde1b64cbd2bd6bb85372725"
       },
       {
         "path": "tests/plugins/task_witness_client/__init__.py",
@@ -472,7 +472,7 @@
       },
       {
         "path": "tests/plugins/task_witness_client/_support.py",
-        "sha256": "40026013865cfff5cfab27626f2bd8bc9ca7a085d94378a58ce01483ce586365"
+        "sha256": "c81adb83e674ccbbf002f2921fa172c0840756687c43cf39a30b03ece3602f12"
       },
       {
         "path": "tests/plugins/task_witness_client/_terminal_output_driver.py",
@@ -500,7 +500,7 @@
       },
       {
         "path": "tests/plugins/task_witness_client/test_launcher.py",
-        "sha256": "4ff623e5697e497485cd4dc31fcfab56e6c16f37b02293974265ec3414af52b5"
+        "sha256": "d8ce111e239fd5b4ac0c1f36acbfc997d28f4efc8fbfa0b3849ab0153b685f54"
       },
       {
         "path": "tests/plugins/task_witness_client/test_process_supervision.py",
@@ -516,7 +516,7 @@
       },
       {
         "path": "tests/plugins/task_witness_client/test_runtime_acceptance.py",
-        "sha256": "a4ea0a3444db169c5e7cf672e316d895305e2ffb00caa512e6c0dc63ae0dfef6"
+        "sha256": "dd007c1f6e420075d878cc27434bb986058e4ded1cb60a7dccbcdf4728120ba5"
       },
       {
         "path": "tests/plugins/task_witness_client/test_shim.py",
@@ -576,7 +576,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/_provider_cache_deletion_and_movement_support.py",
-        "sha256": "f25ad58df30a9ae5fb63f4c64da203aadc6c5641b654eddab4d2d91c0a603805"
+        "sha256": "6cd1049636046ed0addc6b294071ec9c21622cf37210f077b4106ba85972b5f6"
       },
       {
         "path": "tests/plugins/task_witness_deployment/_routine_activation_support.py",
@@ -588,11 +588,11 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/_routine_support.py",
-        "sha256": "0361625df3e731c85b3ad073e5bcdaf75fc5e6b4642a48995d187f49ec351991"
+        "sha256": "8726f70c7f8f16c60e08df45bb3b81acad8bc1d71e963cccc9721a74bcb06298"
       },
       {
         "path": "tests/plugins/task_witness_deployment/_source_evidence_support.py",
-        "sha256": "6f589048c0b7f11b14b9ce20d7e9b38ed3eefc37be49eb9cb5c2ed7d8c2c161e"
+        "sha256": "759b14e564c747ad8c25a7d8a9f90d01663538906a168adb1f6297668bbd8edc"
       },
       {
         "path": "tests/plugins/task_witness_deployment/_source_recovery_support.py",
@@ -600,7 +600,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/_source_transition_support.py",
-        "sha256": "fa66fb724b0eefe5e77ca5e1166905845bf04893a34d11a05ac2e6fd3f4719a2"
+        "sha256": "f1f1fb797573356a8981f1c5d6d707289672fcb72bb456fc7a084baa0343f5f0"
       },
       {
         "path": "tests/plugins/task_witness_deployment/_support.py",
@@ -620,7 +620,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_agent_plugins_source_receipts.py",
-        "sha256": "19880043b7c29d9927775fbc74c0c9de8aea4f433ba4fbae3bde3afad5d09246"
+        "sha256": "ffe114bce69a02ab95f318e340756484829511c15982cda773a16039b3b8ede1"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_bridge_transition_activation.py",
@@ -676,7 +676,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_receipt_staging.py",
-        "sha256": "7192c36181016bf2249832e8e2b35dafdef6bb5a1acbd984b672185b76435407"
+        "sha256": "d348c91e0cd595bed877333125bba680429957830ca3fa22b5c1d3755ef723e5"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_routine_activation_recovery.py",
@@ -712,11 +712,11 @@
       },
       {
         "path": "tests/test_task_witness_package.py",
-        "sha256": "9b8e99e8c1d8374d762a0cf0d4b907a223e4098cbd25991cd311980918771e0b"
+        "sha256": "0857e5db19a11d1c5a385842d37a3483f6524c3165a0515034eb62c374a6f633"
       },
       {
         "path": "tests/test_task_witness_qualification.py",
-        "sha256": "2e8ad8338ad20e1c7adb348b1c8effbe6673cf06e451f9c4e138a0e9de1298b0"
+        "sha256": "c91821973fce53d4748cd4d8df13fd9683ed6f83d846b60752567785ce191d32"
       }
     ],
     "framing": "path-utf8-nul-sha256-hex-nul-v1"

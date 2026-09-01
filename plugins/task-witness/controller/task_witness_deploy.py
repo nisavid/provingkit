@@ -6472,7 +6472,7 @@ def _validate_provider_source_and_modules(
                 if (
                     provider["plugin_id"] != "task-witness"
                     or provider["publisher"] != "nisavid"
-                    or provider["repository"] != "https://github.com/nisavid/agents"
+                    or provider["repository"] != "https://github.com/nisavid/provingkit"
                     or provider["authority_profile"] != "task-witness-smoke"
                 ):
                     raise DeploymentError(
@@ -25111,7 +25111,7 @@ def _intrinsic_smoke_definition(
     provider = _ParsedProvider(
         "task-witness",
         "nisavid",
-        "https://github.com/nisavid/agents",
+        "https://github.com/nisavid/provingkit",
         "task-witness-smoke",
         _digest(
             {

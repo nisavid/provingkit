@@ -7,8 +7,8 @@
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
   },
-  "homepage": "https://github.com/nisavid/agents/tree/main/plugins/mergecraft",
-  "repository": "https://github.com/nisavid/agents",
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/mergecraft",
+  "repository": "https://github.com/nisavid/provingkit",
   "license": "MIT",
   "keywords": [
     "pull-request",
@@ -27,7 +27,7 @@
         "developerName": "Ivan D Vasin",
         "category": "Developer Tools",
         "capabilities": ["Pull Requests"],
-        "websiteURL": "https://github.com/nisavid/agents/tree/main/plugins/mergecraft",
+        "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/mergecraft",
         "defaultPrompt": [
           "Use $mergecraft:writing-reviewable-pr-descriptions to prepare and validate the exact PR title and body without forge mutation.",
           "Use $mergecraft:publishing-reviewable-prs to publish a validated PR text or readiness transition through the guarded helper.",

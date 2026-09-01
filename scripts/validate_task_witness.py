@@ -456,8 +456,8 @@ EXPECTED_AGENT_PLUGIN_MANIFEST = {
         "retained operator trust."
     ),
     "author": {"name": "Ivan D Vasin", "url": "https://github.com/nisavid"},
-    "homepage": "https://github.com/nisavid/agents/tree/main/plugins/task-witness",
-    "repository": "https://github.com/nisavid/agents",
+    "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/task-witness",
+    "repository": "https://github.com/nisavid/provingkit",
     "license": "MIT",
     "keywords": ["evidence", "provenance", "validation", "trust"],
     "extensions": {
@@ -474,7 +474,7 @@ EXPECTED_AGENT_PLUGIN_MANIFEST = {
                 "developerName": "Ivan D Vasin",
                 "category": "Developer Tools",
                 "capabilities": ["Validation"],
-                "websiteURL": "https://github.com/nisavid/agents/tree/main/plugins/task-witness",
+                "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/task-witness",
             }
         }
     },
@@ -1129,7 +1129,7 @@ def _parse_qualification_candidate(value: object, label: str) -> dict:
         },
         label,
     )
-    if candidate["repository_id"] != "nisavid/agents":
+    if candidate["repository_id"] != "nisavid/provingkit":
         raise ValueError(f"{label} repository identity drift")
     for field in ("commit_sha1", "tree_sha1"):
         _require_sha1(candidate[field], f"{label} {field}")
@@ -4185,6 +4185,27 @@ def _bridge_source_bytes(root: Path, generation: str, relative: str) -> bytes:
     ).read_bytes()
 
 
+def _project_bridge_controller_to_current(bridge: bytes) -> bytes:
+    rewrites = (
+        (
+            b'or provider["repository"] != "https://github.com/nisavid/agents"\n',
+            b'or provider["repository"] != "https://github.com/nisavid/provingkit"\n',
+        ),
+        (
+            b'        "https://github.com/nisavid/agents",\n'
+            b'        "task-witness-smoke",\n',
+            b'        "https://github.com/nisavid/provingkit",\n'
+            b'        "task-witness-smoke",\n',
+        ),
+    )
+    projected = bridge
+    for legacy, current in rewrites:
+        if projected.count(legacy) != 1 or current in projected:
+            raise ValueError("Task Witness bridge controller snapshot drift")
+        projected = projected.replace(legacy, current, 1)
+    return projected
+
+
 def _validate_current_client_boundary(current: bytes) -> None:
     profile = re.compile(rb'(?m)^CLIENT_RELEASE_PROFILE = "([a-z0-9-]+)"$')
     generation = re.compile(
@@ -4390,7 +4411,7 @@ def validate_bridge_history(root: Path) -> dict[str, object]:
     bridge_controller = _bridge_snapshot(
         root, "bridge", "controller/task_witness_deploy.py"
     )[0]
-    if current_controller != bridge_controller:
+    if current_controller != _project_bridge_controller_to_current(bridge_controller):
         raise ValueError("Task Witness bridge controller snapshot drift")
     current_client = verified_reviewed_path(
         root, (PLUGIN_RELATIVE / "client/task_witness_client.py").as_posix()

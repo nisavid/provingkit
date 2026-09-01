@@ -1,96 +1,124 @@
-# Agents
+# Provingkit
 
-Personal agent tooling and plugin source.
+Provingkit is the public source repository for six validation and agent-workflow
+members. Each member keeps its own identity and version. The Kit definition
+requires the complete six-member set; a partial selection is not Provingkit.
 
-This repository is the source of truth for reusable agent assets shared across
-local harnesses. Its public plugins cover agent role selection (Rolecasting),
-Git and worktree provenance (Versionkeeping), pull-request lifecycles
-(Mergecraft), independent review through revision (Tricritical), and explicit
-third-party component assessment, adoption, and maintenance (Artifact Customs).
-For Task Witness's package role, release eligibility, and authority limits, see
-the [package reference](plugins/task-witness/README.md).
-For the principles that govern the suite as one system, see
-[Plugin system design principles](docs/plugin-system/design-principles.md).
+## Members
 
-## Layout
+Five members are independently releasable Agent Plugins:
 
-- `.claude-plugin/marketplace.json` exposes this repository as a Claude Code
-  marketplace.
-- `plugins/tricritical/` contains the canonical Agent Plugins package, its
-  Claude Code adapter manifest, and six Claude-native agent aliases.
-- `plugins/rolecasting/` contains delegation-topology and model-selection
-  policy.
-- `plugins/versionkeeping/` contains Git publication, persistent-worktree, and
-  fork-synchronization runtime policy. Its canonical evals, tests, and content
-  lock are `evals/versionkeeping/`, `tests/plugins/versionkeeping/`, and
-  `release/plugin-content-locks/versionkeeping.json`.
-- `plugins/mergecraft/` contains PR writing, publication, Graphite, feedback,
-  readiness, and merge runtime workflows. Its canonical evals, tests, and
-  content lock are `evals/mergecraft/`, `tests/plugins/mergecraft/`, and
-  `release/plugin-content-locks/mergecraft.json`.
-- `plugins/task-witness/` contains the code-only validation package and its
-  manifest identity. Its [package reference](plugins/task-witness/README.md)
-  links the normative design and qualification specifications.
-- `plugins/artifact-customs/` contains the public component assessment,
-  adoption, and maintenance workflows. Its external runtime content lock is
-  `release/plugin-content-locks/artifact-customs.json`.
-- `release/source-skill-disposition/` records the settled source-contribution
-  decisions and last-responsible-moment refresh contract. It grants no host
-  mutation or release authority.
-- `tooling/hindsight/` contains the reusable Hindsight control plane, local
-  stack tooling, templates, schemas, skills, and validation.
+- [`plugins/rolecasting/`](plugins/rolecasting/) contains **Rolecasting**, which
+  plans model selection and delegation topology.
+- [`plugins/tricritical/`](plugins/tricritical/) contains **Tricritical**, which
+  coordinates independent review, adjudication, authorized
+  revision, and fixed-point verification.
+- [`plugins/versionkeeping/`](plugins/versionkeeping/) contains
+  **Versionkeeping**, which owns safe Git checkpoints, publication planning,
+  conflict resolution, worktree lifecycle, and fork synchronization.
+- [`plugins/mergecraft/`](plugins/mergecraft/) contains **Mergecraft**, which
+  owns pull-request authoring, publication, feedback, readiness, merge, and
+  stack repair.
+- [`plugins/artifact-customs/`](plugins/artifact-customs/) contains
+  **Artifact Customs**, which assesses and maintains exact third-party software
+  components under explicit policy.
 
-## Installation State
+**Task Witness** is the sixth member. It is a code-only validation package with
+a manifest identity, not a portable Agent Plugin surface. Its current source
+state is production-ineligible and supports source-stage validation only. See
+the [Task Witness package reference](plugins/task-witness/README.md).
 
-No plugin in the first release slate is installed yet. Installation and live
-verification begin only after the complete slate is frozen, reviewed,
-published, and released.
+## Source and release boundary
 
-## Development
+[`release/provingkit/definition-v1.json`](release/provingkit/definition-v1.json)
+is the versioned definition of the Kit. It names the exact member set and binds
+each member to its own manifest. The repository contains a schema for a future
+immutable release manifest, but it contains no release-manifest instance.
 
-Commits use the Conventional Commits format enforced by Cocogitto. Install
-`cog` and ensure it is on `PATH`, then run `cog install-hook --all` once after
-cloning to install the repository's `commit-msg` and `pre-push` hooks into
-`.git/hooks`.
+This repository is currently an unreleased source stage. It does not establish
+a Provingkit version, tag, release, marketplace publication, installation, or
+runtime qualification. The root
+[`marketplace.json`](.claude-plugin/marketplace.json) is a source projection of
+the five Agent Plugins; its presence is not marketplace publication.
 
-### Validate the source-stage candidate
+The retained Linux and macOS Task Witness material under
+[`qualification/historical/`](qualification/historical/) is historical input.
+It is not current qualification evidence and does not make Task Witness
+production-eligible.
 
-PR 39 exposes source-stage validation only. Use an absolute, operator-qualified
-CPython 3.13+ executable and a public candidate checkout:
+The retained source-skill lineage manifest is also historical. It cannot
+qualify this source stage; issue 45 owns a fresh Provingkit rescout. Its
+mutation, receipt, and capture entrypoints remain disabled until that rescout.
+
+## Repository layout
+
+- `plugins/` contains the six canonical member source trees and identity
+  manifests.
+- `plugins/task-witness/` contains the code-only Task Witness package and its
+  local manifest identity.
+- `evals/` and `tests/` contain member behavior corpora and contract tests.
+- `scripts/` contains source validators and controlled derived-artifact writers.
+- `release/provingkit/` defines Kit membership and the future immutable
+  release-manifest boundary.
+- `release/plugin-content-locks/` contains generated content locks owned by
+  member validators.
+- `qualification/historical/` retains explicitly stale host-qualification
+  inputs outside active CI discovery.
+
+Hindsight, Base Loadout, personal tools, and unrelated experiments are outside
+this repository's source boundary.
+
+## Validate a source checkout
+
+Use CPython 3.13 or newer. Install the validation-only dependencies, then run
+the Kit contract and each member's focused source-stage checks:
 
 ```sh
-/usr/bin/env -i LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin TZ=UTC /bin/sh \
-  /absolute/path/to/public-candidate/scripts/run_prepared_release_validation.sh \
-  source-stage \
-  /absolute/path/to/qualified/cpython \
-  /absolute/path/to/public-candidate
+python -m pip install jsonschema==4.26.0 PyYAML==6.0.3
+
+python -m unittest tests.test_validate_provingkit
+python scripts/validate_provingkit.py .
+
+python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus
+python scripts/validate_rolecasting.py .
+
+python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus
+python scripts/validate_tricritical.py .
+
+python -m unittest tests.test_validate_versionkeeping
+python scripts/validate_versionkeeping.py .
+
+python -m unittest tests.test_validate_mergecraft
+python scripts/validate_mergecraft.py . --source-stage
+
+python -m unittest tests.test_validate_artifact_customs tests.test_artifact_customs_eval_corpus
+python scripts/validate_artifact_customs.py . --source-stage
+
+repository="$(pwd -P)"
+python -m unittest tests.test_task_witness_package
+python scripts/validate_task_witness.py "$repository" --source-stage
 ```
 
-Run the wrapper only through the clean outer environment shown above. The
-qualified CPython runtime and site-package closure remain external trusted
-deployment TCB. Review and content-pin the public checkout before invoking it:
-source-stage validation executes candidate-owned validation modules and grants
-no runtime or release authority. An exact wrapper exit status of `0` confirms
-only the source-stage checks. The
-[Task Witness canonical client design](docs/superpowers/specs/2026-07-27-task-witness-canonical-client-design.md#prepared-release-supervision)
-defines the supervision, cancellation, cleanup, and descendant-boundary
-contract.
+These commands validate public source contracts. They do not grant release,
+installation, runtime, or host-mutation authority.
 
-Native `public-release`, Phase 7, and Task Witness qualification/final-release
-entrypoints are unavailable in this source-stage release. No supported
-invocation accepts private evidence pathnames; retired routes fail before
-candidate execution or any supervisor, launcher, or child launch. Task Witness
-therefore remains `production_eligible: false`.
+## Generated locks and review evidence
 
-A later release must supply external authority that this repository does not
-own: an installed, host-owned, content-pinned, network-denied OS sandbox;
-review authorization bound to the candidate bytes; opaque inherited handles
-for private evidence; authenticated host and evaluation evidence with managed
-signing-key custody and anti-replay state; and independent provider
-authorization bound to the exact candidate, policy, runtime, and endpoint. The
-source-stage checks do not claim those controls.
+Do not hand-edit member content locks or generated projections. Change the
+canonical source, run the owning validator's `--write-content-lock` mode where
+one exists, inspect every generated change, and rerun the ordinary validator.
+CI regenerates supported derived locks and requires a clean diff.
+
+Task Witness is stricter: source-shape drift requires the independent review
+named by its checked-in review contract. Its source-shape evidence has no
+general-purpose writer and must not be rehashed as a mechanical lock update.
+
+Preserve provenance when moving or deriving source. A reviewable change should
+identify the source revision, explain retained historical or compatibility
+references, and keep generated artifacts tied to the reviewed source bytes.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution contract.
 
 ## License
 
-The repository license is MIT. Individual plugins may carry their own upstream
-license and attribution files.
+The repository license is MIT. Individual members may include their own
+attribution or license files.

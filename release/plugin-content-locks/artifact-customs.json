@@ -2,11 +2,11 @@
   "schema_version": 1,
   "algorithm": "sha256",
   "files": {
-    ".claude-plugin/plugin.json": "d65205a829149b3d877ce22019fc5cb9a4b5dd52d241b63b8cbc1c99d7ec86d7",
+    ".claude-plugin/plugin.json": "1fa10a9cf65fd3a6296a428cf9fbbda709c81e6120d21c0d24f4983d364d0048",
     "CHANGELOG.md": "bed2fd7d950cb5e81986ee801fa6b851a382f6266bb83ea72fb3a9474e7169e6",
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
     "README.md": "bc0d961e6e916a7a3e3a56d7a7a239aad166a6369c233c011a61b5d3cc8f9755",
-    "plugin.json": "edbc33028f72571b4dd913e5d1eb53388f2071b9216bc69021b1ba4888d5be81",
+    "plugin.json": "c5feaef110fb55abe90aedb01ce15e0cee306283d755b77cd74f0c2dd6491d79",
     "references/component-clearance-contract.md": "6c682550316e639929120294381bfa27fe4bb067fc8eec2615b3bc6c414b818f",
     "references/component-policy-contract.md": "7230d83ece8aa53ed9733c153b58213bfca3daf483134aa695b434c86045a05d",
     "references/invocation-envelope.json": "23feba736e0ab586d316f621fa9f31498d4d3805331739860832970c787290bf",

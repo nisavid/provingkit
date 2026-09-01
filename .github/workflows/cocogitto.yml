@@ -1,6 +1,9 @@
 name: Conventional commit compliance
 
-on: [push]
+on:
+  pull_request:
+  push:
+    branches: [main]
 
 concurrency:
   group: conventional-commits-${{ github.ref }}
@@ -12,7 +15,7 @@ permissions:
 jobs:
   cog_check_job:
     runs-on: ubuntu-latest
-    name: check conventional commit compliance
+    name: Conventional commit compliance
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
