@@ -603,7 +603,7 @@ class RoutineDeploymentFixture:
             "details": {
                 "channel": "stable",
                 "trust_class": "operator-installed",
-                "lineage_id": "agents-stable",
+                "lineage_id": "provingkit-stable",
             },
         }
         lifecycle = {"state": "active", "usable_for_new_publication": True}
@@ -719,14 +719,14 @@ class RoutineDeploymentFixture:
         plugin_id: str = "task-witness",
         publisher_id: str = "nisavid",
         manifest_author: dict[str, str] | None = None,
-        repository_id: str = "nisavid/agents",
-        repository_url: str = "https://github.com/nisavid/agents",
-        source_authority: str = "github-nisavid-agents",
+        repository_id: str = "nisavid/provingkit",
+        repository_url: str = "https://github.com/nisavid/provingkit",
+        source_authority: str = "github-nisavid-provingkit",
     ):
         deployment = self.deployment()
         snapshot = deployment._snapshot_candidate_tree(candidate_root)
         receipt = b"opaque routine Task Witness manager receipt\n"
-        lineage = {"lineage_id": "agents-stable", "sequence": sequence}
+        lineage = {"lineage_id": "provingkit-stable", "sequence": sequence}
         shared = {
             "plugin_id": plugin_id,
             "release_version": release_version,

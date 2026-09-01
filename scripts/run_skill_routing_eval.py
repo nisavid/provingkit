@@ -56,7 +56,7 @@ from evidence_transport import (  # noqa: E402
 
 MANIFEST_NAME = "routing-evidence-v3.json"
 DEFINITION_DEFAULT = "evals/skill-routing-matrix.json"
-CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/agents"
+CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/provingkit"
 PHASE = "phase-2-observable-claude-skill-routing"
 CLAIM = (
     "This records observable Claude CLI Skill tool use under a cooperative-agent "
@@ -190,8 +190,8 @@ def canonical_repository_origin(origin: str) -> str:
     aliases = {
         CANONICAL_REPOSITORY_URL,
         f"{CANONICAL_REPOSITORY_URL}.git",
-        "git@github.com:nisavid/agents.git",
-        "ssh://git@github.com/nisavid/agents.git",
+        "git@github.com:nisavid/provingkit.git",
+        "ssh://git@github.com/nisavid/provingkit.git",
     }
     return normalize_repository_origin(
         origin,
@@ -199,7 +199,7 @@ def canonical_repository_origin(origin: str) -> str:
         aliases=aliases,
         error_factory=RoutingError,
         error_message=(
-            "candidate repository origin is not the canonical nisavid/agents repository"
+            "candidate repository origin is not the canonical nisavid/provingkit repository"
         ),
     )
 
@@ -2030,7 +2030,7 @@ def run(arguments: argparse.Namespace) -> int:
     else:
         require(
             candidate["repository"] == CANONICAL_REPOSITORY_URL,
-            "production candidate must use the canonical nisavid/agents repository",
+            "production candidate must use the canonical nisavid/provingkit repository",
         )
         requested_model = require_string(arguments.model, "production --model")
         require(

@@ -45,9 +45,9 @@ class AgentPluginsSourceReceiptTests(unittest.TestCase):
                 "url": "https://github.com/nisavid",
             },
             "homepage": (
-                "https://github.com/nisavid/agents/tree/main/plugins/task-witness"
+                "https://github.com/nisavid/provingkit/tree/main/plugins/task-witness"
             ),
-            "repository": "https://github.com/nisavid/agents",
+            "repository": "https://github.com/nisavid/provingkit",
             "license": "MIT",
             "keywords": ["evidence", "provenance", "validation", "trust"],
             "extensions": {
@@ -68,7 +68,7 @@ class AgentPluginsSourceReceiptTests(unittest.TestCase):
                         "category": "Developer Tools",
                         "capabilities": ["Validation"],
                         "websiteURL": (
-                            "https://github.com/nisavid/agents/tree/main/"
+                            "https://github.com/nisavid/provingkit/tree/main/"
                             "plugins/task-witness"
                         ),
                     }

@@ -7,8 +7,8 @@
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
   },
-  "homepage": "https://github.com/nisavid/agents/tree/main/plugins/rolecasting",
-  "repository": "https://github.com/nisavid/agents",
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/rolecasting",
+  "repository": "https://github.com/nisavid/provingkit",
   "license": "MIT",
   "keywords": ["agents", "delegation", "model-selection", "orchestration"],
   "extensions": {
@@ -20,7 +20,7 @@
         "developerName": "Ivan D Vasin",
         "category": "Developer Tools",
         "capabilities": ["Orchestration"],
-        "websiteURL": "https://github.com/nisavid/agents/tree/main/plugins/rolecasting",
+        "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/rolecasting",
         "defaultPrompt": [
           "Use $rolecasting:delegating-cross-agent-work to choose a worker topology and hand off this bounded task.",
           "Use $rolecasting:choosing-agent-models to select the model and reasoning effort for this delegated task."

@@ -35,10 +35,10 @@ from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "642f4b3e0f4d418719ed998fafc19e320c829222427274e8a184081897fbcc30"
+SOURCE_SHA256 = "41af6ee3609294bb54709c63f4b8f83e4c3bfa4456f3062a878c5a79c7c7a59e"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
-CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/agents"
+CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/provingkit"
 PHASE7_SUPPORT_SOURCES = (
     ("evidence_transport", "scripts/evidence_transport.py"),
     ("phase7_compatibility_projection", "scripts/phase7_compatibility_projection.py"),
@@ -320,12 +320,12 @@ def _canonical_repository_origin(origin: str) -> str:
     aliases = {
         CANONICAL_REPOSITORY_URL,
         f"{CANONICAL_REPOSITORY_URL}.git",
-        "git@github.com:nisavid/agents.git",
-        "ssh://git@github.com/nisavid/agents.git",
+        "git@github.com:nisavid/provingkit.git",
+        "ssh://git@github.com/nisavid/provingkit.git",
     }
     require(
         origin.strip() in aliases,
-        "production release candidate origin is not nisavid/agents",
+        "production release candidate origin is not nisavid/provingkit",
     )
     return CANONICAL_REPOSITORY_URL
 

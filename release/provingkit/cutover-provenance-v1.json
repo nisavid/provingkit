@@ -1,0 +1,192 @@
+{
+  "adopted_qualification_history": [
+    {
+      "destination_range": {
+        "first_commit": "193304c9239238c8948890c5f83c9a33f878f077",
+        "last_commit": "06747c12b7fb76e03ae687007456f2db631af61f"
+      },
+      "evidence_disposition": "historical-stale-not-current-qualification",
+      "filtered_source_range": {
+        "first_commit": "e881043b57fe2242249561b9352e0335c537e30a",
+        "last_commit": "f9cefb0b3bdb2798791a5fd02907a79e43f38e67"
+      },
+      "historical_paths": [
+        "qualification/historical/workflows/task-witness-linux-qualification.yml",
+        "qualification/historical/scripts/harden_task_witness_linux_host.bash",
+        "qualification/historical/scripts/prepare_task_witness_linux_qualification.py",
+        "qualification/historical/tests/test_harden_task_witness_linux_host.bash",
+        "qualification/historical/tests/test_task_witness_linux_qualification_harness.py"
+      ],
+      "platform": "linux",
+      "source_branch": "refs/heads/ivan/task-witness-linux-qualification-harness",
+      "source_range": {
+        "commit_count": 21,
+        "first_commit": "7064b02f3e7466eb3863040908186fc91df4a24e",
+        "last_commit": "a8410babc9e1b0c2a57b9f69db98a495133f6843"
+      }
+    },
+    {
+      "destination_range": {
+        "first_commit": "1507ff3ff620c8b1a78ffb8761284dc4100d2f4c",
+        "last_commit": "5d99d42d4f1f0e18f17fa4fb2cccf8bfb388e840"
+      },
+      "evidence_disposition": "historical-stale-not-current-qualification",
+      "filtered_source_range": {
+        "first_commit": "37add2e258fcf6e11eb057feadcf8ee51b4a2470",
+        "last_commit": "5d831beeb147072b815f80643400f0a60c8654ce"
+      },
+      "historical_paths": [
+        "qualification/historical/workflows/task-witness-macos-host-probe.yml",
+        "qualification/historical/scripts/probe_task_witness_macos_host.py",
+        "qualification/historical/tests/test_task_witness_macos_host_probe.py"
+      ],
+      "platform": "macos",
+      "source_branch": "refs/heads/ivan/task-witness-macos-qualification-harness",
+      "source_range": {
+        "commit_count": 36,
+        "first_commit": "7fb6797033a619d79180bf256c661926218de26f",
+        "last_commit": "0703e8df26c975a187cb6f36b8dfb21df8bcc6db"
+      }
+    }
+  ],
+  "compatibility_aliases": [
+    {
+      "canonical": "https://github.com/nisavid/provingkit",
+      "kind": "repository",
+      "legacy": "https://github.com/nisavid/agents",
+      "scope": "historical-links-only"
+    },
+    {
+      "canonical": "provingkit",
+      "kind": "marketplace-source-name",
+      "legacy": "nisavid-agents",
+      "scope": "historical-source-metadata"
+    },
+    {
+      "canonical": "github-nisavid-provingkit",
+      "kind": "qualification-issuer",
+      "legacy": "github-nisavid-agents",
+      "scope": "frozen-receipts"
+    },
+    {
+      "canonical": "provingkit-stable",
+      "kind": "source-selector",
+      "legacy": "agents-stable",
+      "scope": "frozen-receipts"
+    }
+  ],
+  "contract": "provingkit-cutover-provenance-v1",
+  "excluded_source": {
+    "paths": [
+      ".scratch",
+      "tooling"
+    ],
+    "products": [
+      "Base Loadout",
+      "Hindsight",
+      "personal tools",
+      "unrelated experiments"
+    ],
+    "repository_disposition": "retained-in-nisavid-agents"
+  },
+  "history_filter": {
+    "commit_map": {
+      "path": "release/provingkit/agents-commit-map.tsv",
+      "sha256": "sha256:4919089f4101b8873700d85f653ff30649a9a0e9dca0203cd8132c90f947ae10"
+    },
+    "full_repository_mirror": false,
+    "method": "git-filter-repo-path-projection"
+  },
+  "historical_artifacts": [
+    {
+      "disposition": "historical-stale-pending-provingkit-rescout",
+      "owner_issue": "https://github.com/nisavid/agents/issues/45",
+      "path": "release/source-skill-lineage/source-manifest.json"
+    }
+  ],
+  "issue_migration": {
+    "destination_repository": "nisavid/provingkit",
+    "entries": [
+      {
+        "destination_issue": null,
+        "source_issue": 43,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 44,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 45,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 52,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 53,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 56,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 59,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 65,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 67,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 79,
+        "state": "pending-native-transfer"
+      },
+      {
+        "destination_issue": null,
+        "source_issue": 80,
+        "state": "pending-native-transfer"
+      }
+    ],
+    "method": "github-native-transfer",
+    "source_repository": "nisavid/agents",
+    "state": "pending-native-transfer"
+  },
+  "release_resources": {
+    "authority": "not-granted",
+    "created": []
+  },
+  "schema_version": 1,
+  "source_repository": {
+    "cutover_baseline": {
+      "filtered_commit": "8854f877f15101636ab59cf374977ba46da6f2b1",
+      "original_commit": "44ee979cdae1d47f2ef3fdc713eaa6f04adf9892"
+    },
+    "identity": "https://github.com/nisavid/agents",
+    "retained_extraction_input": {
+      "destination_ref": "refs/heads/retained/agents-pr-69",
+      "filtered_head": "e22cc70b92b223ac35fec5b2bfc6109c16065d24",
+      "kind": "pull-request",
+      "number": 69,
+      "original_head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+      "production_disposition": "retained-input-not-accepted-behavior",
+      "state": "open-unmerged",
+      "url": "https://github.com/nisavid/agents/pull/69"
+    }
+  }
+}

@@ -56,7 +56,7 @@ STAGED_DEPLOYMENT_CONTRACT = "task-witness-staged-deployment-v1"
 TRUST_CONTEXT_CONTRACT = "task-witness-trust-context-v2"
 VALIDATOR_ARTIFACT_MANIFEST_CONTRACT = "task-witness-validator-artifact-manifest-v1"
 # fmt: off
-CLIENT_SOURCE_GENERATION_SHA256 = "ebef8fa79ba9491fbe24f8691f6e542699b3dd43ddc93236f208bd4f239ab936"
+CLIENT_SOURCE_GENERATION_SHA256 = "92813b86756b34fd052bbf3927522e0f6819379074a3d009b5a3e6ce44531f86"
 # fmt: on
 CLIENT_RELEASE_PROFILE = "tw4-current"
 FREEZE5_COMMIT_SHA1 = "96608a9b91d4dcf3f468a4fab1f0e008c9c32b36"
@@ -3214,7 +3214,7 @@ def _validate_receipt_providers(
         if provider["intrinsic"] and (
             provider["plugin_id"] != "task-witness"
             or provider["publisher"] != "nisavid"
-            or provider["repository"] != "https://github.com/nisavid/agents"
+            or provider["repository"] != "https://github.com/nisavid/provingkit"
         ):
             raise ValueError(f"{label} intrinsic identity is invalid")
         for category in ("producers", "issuers", "validators"):

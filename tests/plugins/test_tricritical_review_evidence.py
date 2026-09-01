@@ -994,7 +994,7 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
                 "contract": "task-witness-provider-declaration-v1",
                 "plugin_id": "tricritical",
                 "publisher": "nisavid",
-                "repository": "https://github.com/nisavid/agents",
+                "repository": "https://github.com/nisavid/provingkit",
                 "authority_profile": "tricritical-cooperative-review-v1",
                 "producers": [],
                 "issuers": [],

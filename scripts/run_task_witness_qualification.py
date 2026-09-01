@@ -176,7 +176,7 @@ HOST_OBSERVATION_INPUT_CAPS = {
     "platform": 9_500_000,
     "runtime": 41_300_000,
 }
-CANDIDATE_REPOSITORY_ID = "nisavid/agents"
+CANDIDATE_REPOSITORY_ID = "nisavid/provingkit"
 CANDIDATE_PLUGIN_ROOT = "plugins/task-witness"
 CANDIDATE_CATALOG = "release/public-release-runtime-packages.json"
 CANDIDATE_REGISTRATION = "release/task-witness/public-release-registration.json"

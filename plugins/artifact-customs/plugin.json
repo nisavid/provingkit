@@ -7,8 +7,8 @@
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
   },
-  "homepage": "https://github.com/nisavid/agents/tree/main/plugins/artifact-customs",
-  "repository": "https://github.com/nisavid/agents",
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/artifact-customs",
+  "repository": "https://github.com/nisavid/provingkit",
   "license": "MIT",
   "keywords": [
     "dependencies",
@@ -26,7 +26,7 @@
         "developerName": "Ivan D Vasin",
         "category": "Developer Tools",
         "capabilities": ["Dependency Management", "Supply Chain Review"],
-        "websiteURL": "https://github.com/nisavid/agents/tree/main/plugins/artifact-customs",
+        "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/artifact-customs",
         "defaultPrompt": [
           "Use $artifact-customs:assessing-third-party-components to assess this exact third-party software component without mutation.",
           "Use $artifact-customs:adopting-third-party-components to establish or revise the explicit policy for this new trust boundary.",

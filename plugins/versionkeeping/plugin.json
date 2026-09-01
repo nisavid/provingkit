@@ -7,8 +7,8 @@
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
   },
-  "homepage": "https://github.com/nisavid/agents/tree/main/plugins/versionkeeping",
-  "repository": "https://github.com/nisavid/agents",
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/versionkeeping",
+  "repository": "https://github.com/nisavid/provingkit",
   "license": "MIT",
   "keywords": [
     "git",
@@ -27,7 +27,7 @@
         "developerName": "Ivan D Vasin",
         "category": "Developer Tools",
         "capabilities": ["Version Control"],
-        "websiteURL": "https://github.com/nisavid/agents/tree/main/plugins/versionkeeping",
+        "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/versionkeeping",
         "brandColor": "#2563EB",
         "defaultPrompt": [
           "Use $versionkeeping:checkpointing-and-publishing-git-work to checkpoint and publish the current Git task safely.",

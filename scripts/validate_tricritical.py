@@ -1352,7 +1352,7 @@ def validate_task_witness_provider(root: Path) -> None:
         "contract": PROVIDER_CONTRACT,
         "plugin_id": "tricritical",
         "publisher": "nisavid",
-        "repository": "https://github.com/nisavid/agents",
+        "repository": "https://github.com/nisavid/provingkit",
         "authority_profile": TRICRITICAL_AUTHORITY_PROFILE,
         "producers": [],
         "issuers": [],

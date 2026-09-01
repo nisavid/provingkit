@@ -1,18 +1,18 @@
 {
-  "name": "nisavid-agents",
+  "name": "provingkit",
   "owner": {
     "name": "Ivan D Vasin"
   },
-  "description": "Personal agent tools: plugins shared across Claude Code and Codex-like harnesses.",
+  "description": "Source projection for Provingkit's five Agent Plugins v1 members. This manifest is not a marketplace publication.",
   "plugins": [
-    {
-      "name": "tricritical",
-      "source": "./plugins/tricritical",
-      "category": "developer-tools"
-    },
     {
       "name": "rolecasting",
       "source": "./plugins/rolecasting",
+      "category": "developer-tools"
+    },
+    {
+      "name": "tricritical",
+      "source": "./plugins/tricritical",
       "category": "developer-tools"
     },
     {

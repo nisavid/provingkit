@@ -1,0 +1,162 @@
+{
+  "contract": "provingkit-historical-identity-allowlist-v1",
+  "entries": [
+    {
+      "disposition": "historical-design-or-research-record",
+      "path": "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md",
+      "sha256": "sha256:6c071cb3d9455d3c3911e1d7792f0467bf6e9d8296a48690e5c6a1b6b6a9b27a"
+    },
+    {
+      "disposition": "historical-design-or-research-record",
+      "path": "docs/superpowers/research/2026-08-23-source-skill-disposition-and-release-refresh.md",
+      "sha256": "sha256:68516b8f52bebbcb9c7bfe580ba00a4b708ad82b45cce3211995126802ce658d"
+    },
+    {
+      "disposition": "historical-design-or-research-record",
+      "path": "docs/superpowers/research/2026-08-24-cross-repository-implementation-handoff.md",
+      "sha256": "sha256:9c513a8189632947b17f19cd904470f37d3bbd894ffaedb27dd7d64421e1b118"
+    },
+    {
+      "disposition": "historical-design-or-research-record",
+      "path": "docs/superpowers/research/2026-08-26-mergecraft-statline-source-resync.md",
+      "sha256": "sha256:a1a50c87427259ace76caa773b9eb642b04052886e8b91aa7e7a8f8b8b92a420"
+    },
+    {
+      "disposition": "historical-design-or-research-record",
+      "path": "docs/superpowers/specs/2026-08-12-task-witness-tw4-migration-and-qualification-design.md",
+      "sha256": "sha256:b1f7a041df6b0b973b12e91ba45841ab6f33f54b673b74a49fab282d5ad73acd"
+    },
+    {
+      "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
+      "path": "plugins/task-witness/controller/task_witness_deploy.py",
+      "sha256": "sha256:704c0209fecbcf746c3c26a1e76be402d287310d27a94162f149a12ce3b9fa0b"
+    },
+    {
+      "disposition": "historical-stale-host-qualification",
+      "path": "qualification/historical/README.md",
+      "sha256": "sha256:23b849d30a80ad5cfa91dbd799ee5b2c9d90d27da95b6a0080b92281feb9e24b"
+    },
+    {
+      "disposition": "historical-stale-host-qualification",
+      "path": "qualification/historical/scripts/prepare_task_witness_linux_qualification.py",
+      "sha256": "sha256:735da6c3f9ab0f698d514cdf3355f549ab1459cecb87c059da12d955b2e55d22"
+    },
+    {
+      "disposition": "historical-stale-host-qualification",
+      "path": "qualification/historical/scripts/probe_task_witness_macos_host.py",
+      "sha256": "sha256:0d6b571d05b580aeb5570b5173457402d4748cc604f85e1bce6eb9d67c696b3e"
+    },
+    {
+      "disposition": "historical-stale-host-qualification",
+      "path": "qualification/historical/tests/test_task_witness_linux_qualification_harness.py",
+      "sha256": "sha256:4359d41edf4a1428c15feec695f656dc19b7a1b6276cfde3d571b974f27e0a9d"
+    },
+    {
+      "disposition": "historical-stale-host-qualification",
+      "path": "qualification/historical/tests/test_task_witness_macos_host_probe.py",
+      "sha256": "sha256:3e4f724c85e71248cb2b9b73d7cf8b352c1ef54f0bc3c3a9d59be1fd40520a3c"
+    },
+    {
+      "disposition": "historical-stale-host-qualification",
+      "path": "qualification/historical/workflows/task-witness-linux-qualification.yml",
+      "sha256": "sha256:c5b226f02fd954986273410104963b716be35bff034f2b84c564f0479da09ddf"
+    },
+    {
+      "disposition": "historical-stale-host-qualification",
+      "path": "qualification/historical/workflows/task-witness-macos-host-probe.yml",
+      "sha256": "sha256:6a3ce3f5e01f5ea9156912d0a51541a266f461c8e4870e8dfb62936f08122b20"
+    },
+    {
+      "disposition": "cutover-provenance",
+      "path": "release/provingkit/cutover-provenance-v1.json",
+      "sha256": "sha256:8106a22a391a9b62d6d275261137b1c31bf376970f36bf16c19148566867f7d7"
+    },
+    {
+      "disposition": "historical-stale-source-lineage-manifest-owned-by-issue-45",
+      "path": "release/source-skill-lineage/source-manifest.json",
+      "sha256": "sha256:d11961ed2d46231f74087e8ce50f96b5087bb3f84d39010f154d4ab475b83670"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/bridge/.claude-plugin/plugin.json",
+      "sha256": "sha256:e71fd3b4b5f2c63275b87a8718adfa5c0c1c9484f444aef3a4d65bd2f782e2d4"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/bridge/.codex-plugin/plugin.json",
+      "sha256": "sha256:4f8afe464f6c4773f003563303bcc487aa43e770e95ec42d0455cf13a683bbe4"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/bridge/client/task_witness_client.py",
+      "sha256": "sha256:912cba0f5b93900d4caaf651c81a3ef3b10f65b837f2c038db5c232d8b71d875"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/bridge/controller/task_witness_deploy.py",
+      "sha256": "sha256:671693603673e8e895301620817c7fa15a96a37365cff59298d8261ee923a6b3"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/freeze5/.claude-plugin/plugin.json",
+      "sha256": "sha256:14924e412e534b1b0f4ededa55e033b8ed326d0a2eebb9a2653e06b87f7fc12d"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/freeze5/.codex-plugin/plugin.json",
+      "sha256": "sha256:76520f1e5d4b95772c9cfc7d2e483e11fdf669d1088686427804cd79fc4a5a4e"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/freeze5/client/task_witness_client.py",
+      "sha256": "sha256:778186f6a460655a8b390c831e05c233171236898663ad4155bd45695597c6cf"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/freeze5/controller/policy.json",
+      "sha256": "sha256:23e84f210ba69ef79e02bfc3039b2c8be3b91153d7649009b3a22850f5086245"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/migration/freeze5/controller/task_witness_deploy.py",
+      "sha256": "sha256:8dc51b2a644e30d1f7c4f3b71711698b4130b43f1517e9f5361c6d1a0f7d6cfe"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/tw4-bridge-identity.json",
+      "sha256": "sha256:59646a9ab24bcebb200900029834f807907c8e0bb1c9a15168dbc462cfe84c7c"
+    },
+    {
+      "disposition": "frozen-task-witness-migration-evidence",
+      "path": "release/task-witness/tw4-bridge-provenance.json",
+      "sha256": "sha256:b79ccf269b5aba0026ab52825e818f1fa66a760c8deb7320256a50272033b431"
+    },
+    {
+      "disposition": "historical-source-lineage-validator",
+      "path": "scripts/validate_source_skill_lineage.py",
+      "sha256": "sha256:a3065db50f834460856883c4f7cf77a0aceea91ead1c9a69838eeeeb4168745d"
+    },
+    {
+      "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
+      "path": "scripts/validate_task_witness.py",
+      "sha256": "sha256:46649d0ed825c5c147e069033f59de4e8f9b58afbde1b64cbd2bd6bb85372725"
+    },
+    {
+      "disposition": "historical-review-input-fixture",
+      "path": "tests/plugins/mergecraft/writing-reviewable-pr-descriptions/test_review_input.py",
+      "sha256": "sha256:26417518f9d6f5f693d6b0c27bbdd05d4c40cb5e78c13354c6239a992d7dd131"
+    },
+    {
+      "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
+      "path": "tests/test_task_witness_package.py",
+      "sha256": "sha256:0857e5db19a11d1c5a385842d37a3483f6524c3165a0515034eb62c374a6f633"
+    },
+    {
+      "disposition": "historical-source-lineage-fixture",
+      "path": "tests/test_validate_source_skill_lineage.py",
+      "sha256": "sha256:8a26e05421356a7fe9768dd925dd267cdfbc20699667adfb8194320edd56d554"
+    }
+  ],
+  "matching": "exact-relative-path-and-whole-file-sha256",
+  "schema_version": 1
+}

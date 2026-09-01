@@ -133,7 +133,7 @@ class SourceEvidenceFixture:
             {
                 "channel": "stable",
                 "trust_class": "publisher-controlled",
-                "lineage_id": "agents-stable",
+                "lineage_id": "provingkit-stable",
             }
             if mode == "publisher_channel"
             else {"trust_class": "operator-pinned"}
@@ -156,7 +156,7 @@ class SourceEvidenceFixture:
             selection["details"] = {
                 "channel": "stable",
                 "source_trust_class": "publisher-controlled",
-                "lineage": {"lineage_id": "agents-stable", "sequence": 7},
+                "lineage": {"lineage_id": "provingkit-stable", "sequence": 7},
             }
         elif mode == "exact_release":
             selection["mode"] = mode

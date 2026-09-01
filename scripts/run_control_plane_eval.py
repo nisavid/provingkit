@@ -64,7 +64,7 @@ COMPARISON_STRATEGIES = (
     "retain",
     "discard-with-reason",
 )
-CANONICAL_CANDIDATE_REPOSITORY = "https://github.com/nisavid/agents"
+CANONICAL_CANDIDATE_REPOSITORY = "https://github.com/nisavid/provingkit"
 LINK = re.compile(r"(?<!!)\[[^]]*\]\(([^)]+)\)")
 EXECUTOR_SYSTEM_PROMPT = "Respond to the supplied user message."
 GRADER_SYSTEM_PROMPT = (
@@ -3041,15 +3041,15 @@ def canonical_repository_origin(origin: str) -> str:
     aliases = {
         CANONICAL_CANDIDATE_REPOSITORY,
         f"{CANONICAL_CANDIDATE_REPOSITORY}.git",
-        "git@github.com:nisavid/agents.git",
-        "ssh://git@github.com/nisavid/agents.git",
+        "git@github.com:nisavid/provingkit.git",
+        "ssh://git@github.com/nisavid/provingkit.git",
     }
     return normalize_repository_origin(
         origin,
         canonical=CANONICAL_CANDIDATE_REPOSITORY,
         aliases=aliases,
         error_factory=EvaluationError,
-        error_message="production candidate origin is not nisavid/agents",
+        error_message="production candidate origin is not nisavid/provingkit",
     )
 
 

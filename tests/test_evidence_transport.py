@@ -114,12 +114,12 @@ class EvidenceTransportTests(unittest.TestCase):
             SUPPORT.safe_relative_path(
                 "../escape", label="artifact", error_factory=SupportError
             )
-        canonical = "https://github.com/nisavid/agents"
+        canonical = "https://github.com/nisavid/provingkit"
         self.assertEqual(
             SUPPORT.normalize_repository_origin(
-                "git@github.com:nisavid/agents.git",
+                "git@github.com:nisavid/provingkit.git",
                 canonical=canonical,
-                aliases={canonical, "git@github.com:nisavid/agents.git"},
+                aliases={canonical, "git@github.com:nisavid/provingkit.git"},
                 error_factory=SupportError,
                 error_message="wrong origin",
             ),

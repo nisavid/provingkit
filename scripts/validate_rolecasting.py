@@ -585,7 +585,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
     require(canonical["version"] == RELEASE_VERSION, "canonical manifest version drift")
     require(canonical["license"] == "MIT", "canonical manifest license drift")
     require(
-        canonical["repository"] == "https://github.com/nisavid/agents",
+        canonical["repository"] == "https://github.com/nisavid/provingkit",
         "canonical manifest repository drift",
     )
     keywords = canonical["keywords"]
@@ -655,7 +655,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
     require(
         interface["displayName"] == "Rolecasting"
         and interface["websiteURL"]
-        == "https://github.com/nisavid/agents/tree/main/plugins/rolecasting",
+        == "https://github.com/nisavid/provingkit/tree/main/plugins/rolecasting",
         "Codex interface metadata drift",
     )
     require(
@@ -721,7 +721,7 @@ def validate_task_witness_provider(root: Path) -> set[str]:
         "contract": PROVIDER_CONTRACT,
         "plugin_id": "rolecasting",
         "publisher": "nisavid",
-        "repository": "https://github.com/nisavid/agents",
+        "repository": "https://github.com/nisavid/provingkit",
         "authority_profile": "rolecasting-cooperative-dispatch-v2",
         "producers": [],
         "issuers": [],

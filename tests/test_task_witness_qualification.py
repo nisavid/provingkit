@@ -6284,7 +6284,7 @@ else:
         inventory_raw = b"inventory"
         inventory_sha256 = hashlib.sha256(inventory_raw).hexdigest()
         qualification_candidate = {
-            "repository_id": "nisavid/agents",
+            "repository_id": "nisavid/provingkit",
             "commit_sha1": "1" * 40,
             "tree_sha1": "2" * 40,
             "plugin_subtree_sha256": "3" * 64,

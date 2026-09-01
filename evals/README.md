@@ -47,7 +47,7 @@ python3 scripts/run_control_plane_eval.py run \
   --endpoint-policy anthropic-public-api \
   --incumbents /absolute/path/to/incumbents.json \
   --output /absolute/path/to/evidence \
-  --candidate-repository https://github.com/nisavid/agents \
+  --candidate-repository https://github.com/nisavid/provingkit \
   --candidate-revision '<frozen-revision>' \
   --claude-executable /absolute/path/to/claude \
   --executor-model claude-sonnet-5 \

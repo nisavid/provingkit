@@ -476,7 +476,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 "schema_version": 1,
                 "contract": "task-witness-tw4-release-manifest-v1",
                 "qualification_candidate": {
-                    "repository_id": "nisavid/agents",
+                    "repository_id": "nisavid/provingkit",
                     "commit_sha1": "1" * 40,
                     "tree_sha1": "2" * 40,
                     "plugin_subtree_sha256": "3" * 64,
@@ -706,7 +706,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 },
             }
         qualification_candidate = {
-            "repository_id": "nisavid/agents",
+            "repository_id": "nisavid/provingkit",
             "commit_sha1": "1" * 40,
             "tree_sha1": "2" * 40,
             "plugin_subtree_sha256": "3" * 64,
@@ -1045,7 +1045,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
             {
                 "source_selection_raw": json.dumps(
                     {
-                        "repository_id": "nisavid/agents",
+                        "repository_id": "nisavid/provingkit",
                         "subtree_sha256": "3" * 64,
                         "revision": "8" * 40,
                     }
@@ -2120,7 +2120,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
                         "version": {"major": 3, "minor": 13, "micro": 7},
                     },
                     "public_release": {
-                        "repository": "nisavid/agents",
+                        "repository": "nisavid/provingkit",
                         "revision": "7" * 40,
                     },
                     "runtime_implementation_sha256": "8" * 64,
@@ -2258,7 +2258,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 (("manifest_sha256",), "9" * 64, "terminal projection drift"),
                 (
                     ("subject", "candidate", "value"),
-                    "nisavid/agents@" + "9" * 40,
+                    "nisavid/provingkit@" + "9" * 40,
                     "subject drift",
                 ),
                 (
@@ -2273,7 +2273,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 ),
                 (
                     ("subject", "review_input", "value"),
-                    "nisavid/agents@" + "9" * 40 + ":" + "9" * 40,
+                    "nisavid/provingkit@" + "9" * 40 + ":" + "9" * 40,
                     "subject drift",
                 ),
                 (
@@ -3043,6 +3043,30 @@ class TaskWitnessPackageTests(unittest.TestCase):
         bridge_controller.write_bytes(bridge_controller.read_bytes() + b"\n")
         with self.assertRaisesRegex(ValueError, "bridge controller snapshot drift"):
             self.validate_bridge_history()
+
+    def test_bridge_history_allows_only_the_current_repository_projection(self) -> None:
+        self.validate_bridge_history()
+        controller = self.plugin / "controller/task_witness_deploy.py"
+        current = controller.read_bytes()
+        active_repository = b"https://github.com/nisavid/provingkit"
+        legacy_repository = b"https://github.com/nisavid/agents"
+        compatibility_repository = b'"nisavid/agents"'
+        rewritten_compatibility_repository = b'"nisavid/provingkit"'
+        self.assertEqual(current.count(active_repository), 2)
+        self.assertEqual(current.count(legacy_repository), 0)
+        self.assertEqual(current.count(compatibility_repository), 1)
+
+        for source, replacement in (
+            (active_repository, legacy_repository),
+            (compatibility_repository, rewritten_compatibility_repository),
+        ):
+            with self.subTest(source=source):
+                controller.write_bytes(current.replace(source, replacement, 1))
+                with self.assertRaisesRegex(
+                    ValueError, "bridge controller snapshot drift"
+                ):
+                    self.validate_bridge_history()
+                controller.write_bytes(current)
 
     def test_rejects_boolean_bridge_history_schema_versions(self) -> None:
         for relative in (BRIDGE_IDENTITY, BRIDGE_PROVENANCE):

@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "024f2b7c57a029860c31c98b986ddb74bcad329e3d699c6dfd7fb1b73de666d1"
+SOURCE_SHA256 = "02da1ca9e24edee893dcbe7b130a686e46e3448ecc26d6e3104cbebd08ffafc3"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -51,7 +51,7 @@ RELEASE_SUPPORT_SOURCES = (
 )
 
 CONTROL_PLUGINS = ("rolecasting", "versionkeeping", "mergecraft", "tricritical")
-CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/agents"
+CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/provingkit"
 SKILL_PLUGINS = (
     "rolecasting",
     "versionkeeping",
@@ -105,14 +105,9 @@ COMMON_SUPPORT_PATHS = {
 }
 SOURCE_STAGE_COMMON_SUPPORT_PATHS = {
     "LICENSE",
-    "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md",
     "release/public-release-runtime-packages.json",
-    "release/source-skill-lineage",
-    "scripts/refresh_source_skill_lineage.py",
-    "scripts/validate_source_skill_lineage.py",
-    "tests/test_validate_source_skill_lineage.py",
 }
-SOURCE_STAGE_COMMON_VALIDATOR_PATHS = ("scripts/validate_source_skill_lineage.py",)
+SOURCE_STAGE_COMMON_VALIDATOR_PATHS = ()
 RELEASE_CONTRACT_SUPPORT_MODULES = ("scripts/agent_plugins_standard.py",)
 BASE_PLUGIN_SUPPORT_PATHS = {
     "rolecasting": {
@@ -1770,12 +1765,12 @@ def canonical_repository_origin(origin: str) -> str:
     aliases = {
         CANONICAL_REPOSITORY_URL,
         f"{CANONICAL_REPOSITORY_URL}.git",
-        "git@github.com:nisavid/agents.git",
-        "ssh://git@github.com/nisavid/agents.git",
+        "git@github.com:nisavid/provingkit.git",
+        "ssh://git@github.com/nisavid/provingkit.git",
     }
     require(
         origin.strip() in aliases,
-        "production release candidate origin is not nisavid/agents",
+        "production release candidate origin is not nisavid/provingkit",
     )
     return CANONICAL_REPOSITORY_URL
 

@@ -2,10 +2,10 @@
   "schema_version": 1,
   "algorithm": "sha256",
   "files": {
-    ".claude-plugin/plugin.json": "1ca18268b8c7ab9b66fc87747e55070cb3fcc5f83ddcb0e594013e9824d06cf9",
+    ".claude-plugin/plugin.json": "78b7e3b2d2bfbed403ca0db1c6edea8139ac3fcaff1dadc784da7d8975cfea3d",
     "README.md": "15bf4073562b9b4dc2c83e27ec9633095fd15d0f16985c43a2c0c28f7f0d79a5",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
-    "plugin.json": "ab2726e06bada2c28d3bc98ae0e885e8a7dfd6fe72df242e351a7ce529b902d0",
+    "plugin.json": "d1833e0a8d23bac7c7c32bcf67880faf28af99e459d7fe57b9eaf33b7a95de29",
     "skills/choosing-agent-models/SKILL.md": "56d5863fd715f5fbec7bab96a4b36d6f32ff47c8553ccfd92e381d1812b8a90e",
     "skills/choosing-agent-models/agents/openai.yaml": "e1a582079fe7cb2026f9fcbe1963f65c8c04622e8d9d2354b2e2242ba9f2d7c8",
     "skills/choosing-agent-models/evals/evals.json": "1e0c7b591889c2725e0542395b3f96cdfcabaf4b368c554bc7109a3515a19849",
@@ -45,7 +45,7 @@
     "skills/delegating-cross-agent-work/scripts/dispatch_adapter.py": "dbf7199ce070cd0c8bd3df84c934a5b4eb58c0d3bbe0346389794808f21ae736",
     "skills/delegating-cross-agent-work/scripts/dispatch_evidence.py": "72de96e122b73a645e5e41d793724733db1766cebf23e12578a95364d8f5e4a4",
     "skills/delegating-cross-agent-work/scripts/native_codex.py": "ee1b54ae187f3c5ef8f086668802079d72519e0ffeac31b82619e82e8d062e65",
-    "task-witness-provider.json": "ca0769fe1c258796500b2aa1ac2d399efabfa9f4229f507f9db1f3a4647068d2",
+    "task-witness-provider.json": "d2d7a2a64fa7c7b097e6646607fa2055a9569b2f2b1b007477a22fa986348d50",
     "topology.json": "c7180de08b0526b10f33d7f0e559fab2957b7d0ea32ddbfb4d278ce0ae4de101"
   }
 }

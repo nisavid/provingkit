@@ -413,7 +413,7 @@ class RuntimeAcceptanceTests(_TaskWitnessClientTestCase):
                 },
             },
             "public_release": {
-                "repository": "nisavid/agents",
+                "repository": "nisavid/provingkit",
                 "revision": "f" * 40,
             },
             "runtime_implementation_sha256": "f" * 64,

@@ -177,7 +177,7 @@
       "type": "string"
     }
   },
-  "$id": "https://raw.githubusercontent.com/nisavid/agents/main/release/source-skill-disposition/final-installed-library-rescout.schema.json",
+  "$id": "https://raw.githubusercontent.com/nisavid/provingkit/main/release/source-skill-disposition/final-installed-library-rescout.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
