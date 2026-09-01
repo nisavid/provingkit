@@ -47,8 +47,9 @@ It is not current qualification evidence and does not make Task Witness
 production-eligible.
 
 The retained source-skill lineage manifest is also historical. It cannot
-qualify this source stage; issue 45 owns a fresh Provingkit rescout. Its
-mutation, receipt, and capture entrypoints remain disabled until that rescout.
+qualify this source stage; [issue #3](https://github.com/nisavid/provingkit/issues/3)
+owns a fresh Provingkit rescout. Its mutation, receipt, and capture entrypoints
+remain disabled until that rescout.
 
 ## Repository layout
 
