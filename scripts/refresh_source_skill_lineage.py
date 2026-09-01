@@ -246,7 +246,8 @@ def _load_validator():
 
 lineage, TRUSTED_VALIDATOR_BYTES = _load_validator()
 CUTOVER_DISABLED_DIAGNOSTIC = (
-    "destination source-lineage mutation is disabled pending issue 45 rescout"
+    "destination source-lineage mutation is disabled pending "
+    "https://github.com/nisavid/provingkit/issues/3 rescout"
 )
 
 
