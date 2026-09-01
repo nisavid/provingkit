@@ -3129,14 +3129,14 @@ class PublicationReceiptTests(ReviewablePrFixture):
 
     def test_secret_gate_covers_structured_provider_credentials(self) -> None:
         candidates = (
-            "TEST_AWS_ACCESS_KEY_ID",
-            "TEST_OPENAI_KEY",
-            "TEST_SLACK_TOKEN",
-            "TEST_GITLAB_TOKEN",
-            "TEST_NPM_TOKEN",
-            "TEST_GOOGLE_KEY",
-            "TEST_STRIPE_KEY",
-            "TEST_JWT",
+            ('AKIAABCDEF' + 'GHIJKLMNOP'),
+            ('sk-proj-abcdefghijkl' + 'mnopqrstuvwxyz012345'),
+            (('xox' + 'b-1234567890-abcde') + 'fghijklmnopqrstuvwxyz'),
+            ('glpat-abcdefghijklm' + 'nopqrstuvwxyz012345'),
+            ('npm_abcdefghijklmn' + 'opqrstuvwxyz012345'),
+            ('AIzaabcdefghijklmnop' + 'qrstuvwxyz0123456789'),
+            ('sk_live_abcdefghi' + 'jklmnopqrstuvwxyz'),
+            ('eyJabcdefghijk.abcde' + 'fghijkl.abcdefghijkl'),
         )
         for candidate in candidates:
             with self.subTest(prefix=candidate.split("-", 1)[0]):
