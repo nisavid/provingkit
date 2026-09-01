@@ -100,7 +100,7 @@
   "historical_artifacts": [
     {
       "disposition": "historical-stale-pending-provingkit-rescout",
-      "owner_issue": "https://github.com/nisavid/agents/issues/45",
+      "owner_issue": "https://github.com/nisavid/provingkit/issues/3",
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   ],
@@ -108,64 +108,59 @@
     "destination_repository": "nisavid/provingkit",
     "entries": [
       {
-        "destination_issue": null,
+        "destination_issue": 1,
         "source_issue": 43,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 2,
         "source_issue": 44,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 3,
         "source_issue": 45,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 4,
         "source_issue": 52,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 5,
         "source_issue": 53,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 6,
         "source_issue": 56,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 7,
         "source_issue": 59,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 8,
         "source_issue": 65,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
-        "source_issue": 67,
-        "state": "pending-native-transfer"
-      },
-      {
-        "destination_issue": null,
+        "destination_issue": 9,
         "source_issue": 79,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       },
       {
-        "destination_issue": null,
+        "destination_issue": 10,
         "source_issue": 80,
-        "state": "pending-native-transfer"
+        "state": "transferred"
       }
     ],
     "method": "github-native-transfer",
     "source_repository": "nisavid/agents",
-    "state": "pending-native-transfer"
+    "state": "transferred"
   },
   "release_resources": {
     "authority": "not-granted",
