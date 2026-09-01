@@ -448,21 +448,27 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [
-                entry["source_issue"]
-                for entry in provenance["issue_migration"]["entries"]
-            ],
-            [43, 44, 45, 52, 53, 56, 59, 65, 67, 79, 80],
-        )
-        self.assertTrue(
-            all(
-                entry["state"] in {"pending-native-transfer", "transferred"}
-                and (
-                    (entry["destination_issue"] is None)
-                    == (entry["state"] == "pending-native-transfer")
+                (
+                    entry["source_issue"],
+                    entry["destination_issue"],
+                    entry["state"],
                 )
                 for entry in provenance["issue_migration"]["entries"]
-            )
+            ],
+            [
+                (43, 1, "transferred"),
+                (44, 2, "transferred"),
+                (45, 3, "transferred"),
+                (52, 4, "transferred"),
+                (53, 5, "transferred"),
+                (56, 6, "transferred"),
+                (59, 7, "transferred"),
+                (65, 8, "transferred"),
+                (79, 9, "transferred"),
+                (80, 10, "transferred"),
+            ],
         )
+        self.assertEqual(provenance["issue_migration"]["state"], "transferred")
 
     def test_validator_rejects_a_different_cutover_baseline(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
