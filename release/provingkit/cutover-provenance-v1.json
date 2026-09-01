@@ -1,7 +1,88 @@
 {
+  "adopted_history_import": {
+    "final_main_mapping": {
+      "completion_gate": "required-before-closing-source-issue-81",
+      "state": "pending-rebase-merge"
+    },
+    "patch_correspondence": {
+      "digest": "sha256",
+      "full_delta_contract": "canonical-git-raw-recursive-tree-delta-parent-to-commit-v1",
+      "original_to_filtered": "scripts-tests-tree-delta-equals-filtered-full-tree-delta",
+      "original_to_retained_import": "full-tree-delta-bytes-equal",
+      "tree_delta_command": [
+        "git",
+        "diff-tree",
+        "-r",
+        "--raw",
+        "-z",
+        "--no-commit-id",
+        "--no-renames",
+        "--abbrev=40",
+        "<commit>^",
+        "<commit>",
+        "--"
+      ],
+      "projected_pathspecs": [
+        "scripts",
+        "tests"
+      ]
+    },
+    "relocations": [
+      {
+        "blob": "a431199bc2a542786d13a06904715dfbb4459250",
+        "from": ".github/workflows/task-witness-linux-qualification.yml",
+        "to": "qualification/historical/workflows/task-witness-linux-qualification.yml"
+      },
+      {
+        "blob": "5e5283830a8bfbd8c6e5d397099a8da708631846",
+        "from": "scripts/harden_task_witness_linux_host.bash",
+        "to": "qualification/historical/scripts/harden_task_witness_linux_host.bash"
+      },
+      {
+        "blob": "140e27a5babc9b69d2011511f6fa7d88d12af6a0",
+        "from": "scripts/prepare_task_witness_linux_qualification.py",
+        "to": "qualification/historical/scripts/prepare_task_witness_linux_qualification.py"
+      },
+      {
+        "blob": "b8c3adbea9c5889130fac2ade4affda0b97f816b",
+        "from": "tests/test_harden_task_witness_linux_host.bash",
+        "to": "qualification/historical/tests/test_harden_task_witness_linux_host.bash"
+      },
+      {
+        "blob": "8fe8cdde6e27f96f25931e18ce16b39f66c36a47",
+        "from": "tests/test_task_witness_linux_qualification_harness.py",
+        "to": "qualification/historical/tests/test_task_witness_linux_qualification_harness.py"
+      },
+      {
+        "blob": "07e5e25aabdcd6d31d1931a6e4faba1e3040d40c",
+        "from": ".github/workflows/task-witness-macos-host-probe.yml",
+        "to": "qualification/historical/workflows/task-witness-macos-host-probe.yml"
+      },
+      {
+        "blob": "8f3692bfcdb08558a3e9fcfb68054b7458613c7d",
+        "from": "scripts/probe_task_witness_macos_host.py",
+        "to": "qualification/historical/scripts/probe_task_witness_macos_host.py"
+      },
+      {
+        "blob": "06f2ba91a0e14453084d60d2781df765eb28b2ca",
+        "from": "tests/test_task_witness_macos_host_probe.py",
+        "to": "qualification/historical/tests/test_task_witness_macos_host_probe.py"
+      }
+    ],
+    "retained_ref": {
+      "disposition": "immutable-non-release-history-evidence",
+      "ref": "refs/heads/retained/issue-81-history-import"
+    },
+    "review_map": {
+      "contract": "provingkit-adopted-history-import-map-v1",
+      "path": "release/provingkit/adopted-history-import-map-v1.tsv",
+      "row_count": 57,
+      "sha256": "sha256:6cf416a0be58f050745d2eaad02208e7a0a030dc200a0e55bb4fadb708d37a6f"
+    }
+  },
   "adopted_qualification_history": [
     {
-      "destination_range": {
+      "retained_import_range": {
         "first_commit": "56af80454bd356097f264bd81f0920234ae17bfc",
         "last_commit": "510662ed1df6a3eb24a2457648b4b9c5f6a8d066"
       },
@@ -26,7 +107,7 @@
       }
     },
     {
-      "destination_range": {
+      "retained_import_range": {
         "first_commit": "20f27835fec4e30d3ed171925e78f56945fd4487",
         "last_commit": "604c6e8702c4e3914e862bee58ab35f529866737"
       },
