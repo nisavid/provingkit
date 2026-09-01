@@ -9,6 +9,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from scripts import validate_provingkit
+
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY / "scripts" / "validate_provingkit.py"
@@ -486,6 +488,50 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             },
         )
         self.assertEqual(
+            import_history["delta_bundle"],
+            {
+                "contract": "provingkit-adopted-history-delta-bundle-v1",
+                "path": "release/provingkit/adopted-history-delta-bundle-v1.json",
+                "row_count": 57,
+                "sha256": (
+                    "sha256:"
+                    "c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae"
+                ),
+                "content_sha256": (
+                    "sha256:"
+                    "d14da319649492e7ecb64d20a578983cb2cd88e00a5e4d3a1ed7e49a1a526cc5"
+                ),
+                "source_roots": [
+                    {
+                        "disposition": (
+                            "protected-non-release-source-history-evidence"
+                        ),
+                        "platform": "linux",
+                        "ref": (
+                            "refs/heads/ivan/"
+                            "task-witness-linux-qualification-harness"
+                        ),
+                        "repository": "nisavid" + "/agents",
+                        "ruleset_id": 22049569,
+                        "tip": "a8410babc9e1b0c2a57b9f69db98a495133f6843",
+                    },
+                    {
+                        "disposition": (
+                            "protected-non-release-source-history-evidence"
+                        ),
+                        "platform": "macos",
+                        "ref": (
+                            "refs/heads/ivan/"
+                            "task-witness-macos-qualification-harness"
+                        ),
+                        "repository": "nisavid" + "/agents",
+                        "ruleset_id": 22049569,
+                        "tip": "0703e8df26c975a187cb6f36b8dfb21df8bcc6db",
+                    },
+                ],
+            },
+        )
+        self.assertEqual(
             import_history["final_main_mapping"],
             {
                 "state": "pending-rebase-merge",
@@ -514,6 +560,59 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             [("linux", ordinal) for ordinal in range(1, 22)]
             + [("macos", ordinal) for ordinal in range(1, 37)],
         )
+
+    def test_adopted_history_bundle_base64_must_be_canonical(self) -> None:
+        self.assertEqual(validate_provingkit._decode_canonical_base64("YQ=="), b"a")
+        for encoded in ("YQ", "YR==", "YQ==\n"):
+            with self.subTest(encoded=encoded), self.assertRaises(
+                validate_provingkit.ValidationError
+            ):
+                validate_provingkit._decode_canonical_base64(encoded)
+
+    def test_historical_identity_allowlist_binds_the_delta_bundle(self) -> None:
+        allowlist = json.loads(
+            (
+                REPOSITORY
+                / "release/provingkit/historical-identity-allowlist-v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(allowlist["entries"]), 32)
+        self.assertIn(
+            {
+                "disposition": (
+                    "protected-non-release-source-history-delta-evidence"
+                ),
+                "path": (
+                    "release/provingkit/adopted-history-delta-bundle-v1.json"
+                ),
+                "sha256": (
+                    "sha256:"
+                    "c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae"
+                ),
+            },
+            allowlist["entries"],
+        )
+
+    def test_validator_rejects_adopted_history_bundle_file_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            bundle_path = (
+                repository
+                / "release/provingkit/adopted-history-delta-bundle-v1.json"
+            )
+            bundle_path.write_text(
+                bundle_path.read_text(encoding="utf-8") + "\n", encoding="utf-8"
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("adopted history delta bundle drift", result.stderr)
 
     def test_validator_rejects_semantic_import_map_drift_with_a_refreshed_hash(
         self,

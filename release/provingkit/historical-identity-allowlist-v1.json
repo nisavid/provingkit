@@ -67,9 +67,14 @@
       "sha256": "sha256:6a3ce3f5e01f5ea9156912d0a51541a266f461c8e4870e8dfb62936f08122b20"
     },
     {
+      "disposition": "protected-non-release-source-history-delta-evidence",
+      "path": "release/provingkit/adopted-history-delta-bundle-v1.json",
+      "sha256": "sha256:c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae"
+    },
+    {
       "disposition": "cutover-provenance",
       "path": "release/provingkit/cutover-provenance-v1.json",
-      "sha256": "sha256:4e48fdfdf468e29b9dbd3b4e932943db4c6a20bba4adc6f39e087c99ed532a79"
+      "sha256": "sha256:76b9b64fd63cc87da249d42a932605cc80a57ac777d5017e3cffffebfe80e358"
     },
     {
       "disposition": "historical-stale-source-lineage-manifest-owned-by-issue-45",

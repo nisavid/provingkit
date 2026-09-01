@@ -1,5 +1,30 @@
 {
   "adopted_history_import": {
+    "delta_bundle": {
+      "content_sha256": "sha256:d14da319649492e7ecb64d20a578983cb2cd88e00a5e4d3a1ed7e49a1a526cc5",
+      "contract": "provingkit-adopted-history-delta-bundle-v1",
+      "path": "release/provingkit/adopted-history-delta-bundle-v1.json",
+      "row_count": 57,
+      "sha256": "sha256:c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae",
+      "source_roots": [
+        {
+          "disposition": "protected-non-release-source-history-evidence",
+          "platform": "linux",
+          "ref": "refs/heads/ivan/task-witness-linux-qualification-harness",
+          "repository": "nisavid/agents",
+          "ruleset_id": 22049569,
+          "tip": "a8410babc9e1b0c2a57b9f69db98a495133f6843"
+        },
+        {
+          "disposition": "protected-non-release-source-history-evidence",
+          "platform": "macos",
+          "ref": "refs/heads/ivan/task-witness-macos-qualification-harness",
+          "repository": "nisavid/agents",
+          "ruleset_id": 22049569,
+          "tip": "0703e8df26c975a187cb6f36b8dfb21df8bcc6db"
+        }
+      ]
+    },
     "final_main_mapping": {
       "completion_gate": "required-before-closing-source-issue-81",
       "state": "pending-rebase-merge"
