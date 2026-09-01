@@ -143,12 +143,12 @@ class ReceiptStagingTests(unittest.TestCase):
                 "channel": "stable",
                 "manager_trust_class": "operator-installed",
                 "manager_receipt_sha256": sha256(b"untouched manager receipt"),
-                "lineage": {"lineage_id": "agents-stable", "sequence": 7},
+                "lineage": {"lineage_id": "provingkit-stable", "sequence": 7},
             },
             "publisher_channel": {
                 "channel": "stable",
                 "source_trust_class": "publisher-controlled",
-                "lineage": {"lineage_id": "agents-stable", "sequence": 7},
+                "lineage": {"lineage_id": "provingkit-stable", "sequence": 7},
             },
             "exact_release": {
                 "source_trust_class": "operator-pinned",
@@ -164,12 +164,12 @@ class ReceiptStagingTests(unittest.TestCase):
                     "name": "Ivan D Vasin",
                     "url": "https://github.com/nisavid",
                 },
-                "repository_id": "nisavid/agents",
-                "repository_url": "https://github.com/nisavid/agents",
+                "repository_id": "nisavid/provingkit",
+                "repository_url": "https://github.com/nisavid/provingkit",
                 "release_version": "0.1.0",
                 "revision": "a" * 40,
                 "subtree_sha256": "b" * 64,
-                "source_authority": "github-nisavid-agents",
+                "source_authority": "github-nisavid-provingkit",
                 "details": details,
             }
         )
@@ -225,7 +225,7 @@ class ReceiptStagingTests(unittest.TestCase):
         *,
         version: str = "0.1.0",
     ) -> tuple[bytes, bytes]:
-        lineage = {"lineage_id": "agents-stable", "sequence": 7}
+        lineage = {"lineage_id": "provingkit-stable", "sequence": 7}
         shared = {
             "plugin_id": provider.value["plugin_id"],
             "release_version": version,
@@ -296,7 +296,7 @@ class ReceiptStagingTests(unittest.TestCase):
         deployment = self.deployment()
         snapshot = deployment._snapshot_candidate_tree(candidate_root)
         receipt = b"opaque Task Witness manager receipt\n"
-        lineage = {"lineage_id": "agents-stable", "sequence": 7}
+        lineage = {"lineage_id": "provingkit-stable", "sequence": 7}
         selection_raw = canonical_document(
             content_document(
                 {
@@ -308,12 +308,12 @@ class ReceiptStagingTests(unittest.TestCase):
                         "name": "Ivan D Vasin",
                         "url": "https://github.com/nisavid",
                     },
-                    "repository_id": "nisavid/agents",
-                    "repository_url": "https://github.com/nisavid/agents",
+                    "repository_id": "nisavid/provingkit",
+                    "repository_url": "https://github.com/nisavid/provingkit",
                     "release_version": release_version,
                     "revision": revision,
                     "subtree_sha256": snapshot.subtree_sha256,
-                    "source_authority": "github-nisavid-agents",
+                    "source_authority": "github-nisavid-provingkit",
                     "details": {
                         "harness": "codex",
                         "manager": "codex-plugin-manager",
@@ -341,7 +341,7 @@ class ReceiptStagingTests(unittest.TestCase):
                         "subtree_sha256": snapshot.subtree_sha256,
                         "channel": "stable",
                         "manager_trust_class": "operator-installed",
-                        "source_authority": "github-nisavid-agents",
+                        "source_authority": "github-nisavid-provingkit",
                         "lineage": lineage,
                     },
                 }
@@ -515,7 +515,7 @@ class ReceiptStagingTests(unittest.TestCase):
                 self.assertEqual(selection.publisher_id, "nisavid")
                 self.assertEqual(
                     selection.repository_url,
-                    "https://github.com/nisavid/agents",
+                    "https://github.com/nisavid/provingkit",
                 )
                 self.assertEqual(selection.revision, "a" * 40)
 
@@ -890,7 +890,7 @@ class ReceiptStagingTests(unittest.TestCase):
             release_version="1.0.1",
             revision="b" * 40,
             subtree_sha256="c" * 64,
-            lineage={"lineage_id": "agents-stable", "sequence": 8},
+            lineage={"lineage_id": "provingkit-stable", "sequence": 8},
             agent_plugin_manifest_sha256="c" * 64,
             claude_manifest_sha256="d" * 64,
         )
@@ -1012,7 +1012,7 @@ class ReceiptStagingTests(unittest.TestCase):
         active = deployment._build_active_runtime(source, qualification)
 
         self.assertEqual(active.value["contract"], "task-witness-launch-active-v1")
-        self.assertEqual(active.value["public_release"]["repository"], "nisavid/agents")
+        self.assertEqual(active.value["public_release"]["repository"], "nisavid/provingkit")
         self.assertEqual(active.value["public_release"]["revision"], "a" * 40)
         self.assertEqual(active.value["generation"], active.generation)
         self.assertEqual(

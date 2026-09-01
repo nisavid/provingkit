@@ -25,7 +25,7 @@ TIMESTAMP = re.compile(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
 GIT_OBJECT = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 CANONICAL_EVALUATION_ID = "control-plane-integrated-v1"
 MERGECRAFT_RETIREMENT_EVALUATION_ID = "mergecraft-retirement-comparative-v1"
-CANONICAL_CANDIDATE_REPOSITORY = "https://github.com/nisavid/agents"
+CANONICAL_CANDIDATE_REPOSITORY = "https://github.com/nisavid/provingkit"
 CANONICAL_SKILL_IDS = (
     "rolecasting:choosing-agent-models",
     "rolecasting:delegating-cross-agent-work",

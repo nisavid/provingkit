@@ -213,7 +213,7 @@ class TaskWitnessLauncherTests(unittest.TestCase):
                 "runtime_contract": "task-witness-runtime-v1",
                 "interpreter": interpreter_identity(),
                 "public_release": {
-                    "repository": "nisavid/agents",
+                    "repository": "nisavid/provingkit",
                     "revision": "0" * 40,
                 },
                 "payloads": payloads,
@@ -879,7 +879,7 @@ class TaskWitnessLauncherTests(unittest.TestCase):
             },
             {
                 **active,
-                "public_release": {"repository": "nisavid/agents"},
+                "public_release": {"repository": "nisavid/provingkit"},
             },
             {
                 **active,
@@ -939,7 +939,7 @@ class TaskWitnessLauncherTests(unittest.TestCase):
         self.assertEqual(envelope["anchor"]["interpreter"], interpreter_identity())
         self.assertEqual(
             envelope["anchor"]["public_release"],
-            {"repository": "nisavid/agents", "revision": "0" * 40},
+            {"repository": "nisavid/provingkit", "revision": "0" * 40},
         )
         self.assertEqual(
             envelope["anchor"]["trust_context_sha256"],
@@ -980,7 +980,7 @@ class TaskWitnessLauncherTests(unittest.TestCase):
         )
         self.assertEqual(
             second_anchor["public_release"],
-            {"repository": "nisavid/agents", "revision": "1" * 40},
+            {"repository": "nisavid/provingkit", "revision": "1" * 40},
         )
 
     def test_interpreter_identity_is_exactly_record_bound_and_result_bound(

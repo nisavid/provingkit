@@ -7,8 +7,8 @@
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
   },
-  "homepage": "https://github.com/nisavid/agents/tree/main/plugins/tricritical",
-  "repository": "https://github.com/nisavid/agents",
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/tricritical",
+  "repository": "https://github.com/nisavid/provingkit",
   "license": "MIT",
   "keywords": [
     "review",

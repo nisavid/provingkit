@@ -242,7 +242,7 @@ class RequiredReviewTests(unittest.TestCase):
                     "version": {"major": 3, "minor": 13, "micro": 7},
                 },
                 "public_release": {
-                    "repository": "nisavid/agents",
+                    "repository": "nisavid/provingkit",
                     "revision": "3" * 40,
                 },
                 "runtime_implementation_sha256": "4" * 64,

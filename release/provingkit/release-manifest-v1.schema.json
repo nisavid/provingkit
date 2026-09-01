@@ -1,0 +1,448 @@
+{
+  "$id": "https://raw.githubusercontent.com/nisavid/provingkit/main/release/provingkit/release-manifest-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Boundary for a future immutable whole-Kit compatibility claim. This schema does not grant release authority.",
+  "properties": {
+    "content_identity": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "sha256"
+        },
+        "scope": {
+          "const": "canonical-json-without-content-identity"
+        },
+        "sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "scope",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "contract": {
+      "const": "provingkit-release-manifest-v1"
+    },
+    "definition": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "const": "release/provingkit/definition-v1.json"
+        },
+        "sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "immutable": {
+      "const": true
+    },
+    "members": {
+      "items": false,
+      "maxItems": 6,
+      "minItems": 6,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/rolecasting"
+        },
+        {
+          "$ref": "#/$defs/tricritical"
+        },
+        {
+          "$ref": "#/$defs/versionkeeping"
+        },
+        {
+          "$ref": "#/$defs/mergecraft"
+        },
+        {
+          "$ref": "#/$defs/artifact-customs"
+        },
+        {
+          "$ref": "#/$defs/task-witness"
+        }
+      ],
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "commit_sha1": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        "repository": {
+          "const": "https://github.com/nisavid/provingkit"
+        }
+      },
+      "required": [
+        "repository",
+        "commit_sha1"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "contract",
+    "schema_version",
+    "immutable",
+    "definition",
+    "source",
+    "members",
+    "content_identity"
+  ],
+  "title": "Provingkit immutable release manifest v1",
+  "type": "object",
+  "$defs": {
+    "artifact-customs": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "plugin-content-lock"
+            },
+            "path": {
+              "const": "release/plugin-content-locks/artifact-customs.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "agent-plugin"
+        },
+        "id": {
+          "const": "artifact-customs"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/artifact-customs/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/artifact-customs/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "identity-manifest": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "member": {
+      "additionalProperties": false,
+      "properties": {
+        "content_identity": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "plugin-content-lock",
+                "source-shape-review"
+              ]
+            },
+            "path": {
+              "type": "string"
+            },
+            "sha256": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "kind",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        "distribution_kind": {
+          "enum": [
+            "agent-plugin",
+            "code-only"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "identity_manifests": {
+          "additionalProperties": false,
+          "properties": {
+            "canonical": {
+              "$ref": "#/$defs/identity-manifest"
+            },
+            "claude": {
+              "$ref": "#/$defs/identity-manifest"
+            }
+          },
+          "required": [
+            "canonical",
+            "claude"
+          ],
+          "type": "object"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "distribution_kind",
+        "version",
+        "identity_manifests",
+        "content_identity"
+      ],
+      "type": "object"
+    },
+    "mergecraft": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "plugin-content-lock"
+            },
+            "path": {
+              "const": "release/plugin-content-locks/mergecraft.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "agent-plugin"
+        },
+        "id": {
+          "const": "mergecraft"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/mergecraft/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/mergecraft/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rolecasting": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "plugin-content-lock"
+            },
+            "path": {
+              "const": "plugins/rolecasting/content-lock.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "agent-plugin"
+        },
+        "id": {
+          "const": "rolecasting"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/rolecasting/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/rolecasting/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "task-witness": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "source-shape-review"
+            },
+            "path": {
+              "const": "release/task-witness/source-shape-review.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "code-only"
+        },
+        "id": {
+          "const": "task-witness"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/task-witness/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/task-witness/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tricritical": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "plugin-content-lock"
+            },
+            "path": {
+              "const": "plugins/tricritical/content-lock.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "agent-plugin"
+        },
+        "id": {
+          "const": "tricritical"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/tricritical/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/tricritical/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "versionkeeping": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "plugin-content-lock"
+            },
+            "path": {
+              "const": "release/plugin-content-locks/versionkeeping.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "agent-plugin"
+        },
+        "id": {
+          "const": "versionkeeping"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/versionkeeping/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/versionkeeping/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

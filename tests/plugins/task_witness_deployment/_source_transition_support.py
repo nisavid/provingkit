@@ -53,7 +53,7 @@ class SourceTransitionFixture:
         *,
         revision: str,
         sequence: int | None = None,
-        source_authority: str = "github-nisavid-agents",
+        source_authority: str = "github-nisavid-provingkit",
     ) -> bytes:
         subtree_sha256 = self.deployment._snapshot_candidate_tree(
             candidate_root
@@ -66,7 +66,7 @@ class SourceTransitionFixture:
                 "channel": "stable",
                 "source_trust_class": "publisher-controlled",
                 "lineage": {
-                    "lineage_id": "agents-stable",
+                    "lineage_id": "provingkit-stable",
                     "sequence": sequence,
                 },
             }
@@ -85,8 +85,8 @@ class SourceTransitionFixture:
                         "name": "Ivan D Vasin",
                         "url": "https://github.com/nisavid",
                     },
-                    "repository_id": "nisavid/agents",
-                    "repository_url": "https://github.com/nisavid/agents",
+                    "repository_id": "nisavid/provingkit",
+                    "repository_url": "https://github.com/nisavid/provingkit",
                     "release_version": json.loads(
                         (candidate_root / ".claude-plugin" / "plugin.json").read_bytes()
                     )["version"],
@@ -200,7 +200,7 @@ class SourceTransitionFixture:
         mode: str,
         revision: str,
         sequence: int | None = None,
-        source_authority: str = "github-nisavid-agents",
+        source_authority: str = "github-nisavid-provingkit",
     ) -> object:
         selection_raw = self.selection_raw(
             mode,

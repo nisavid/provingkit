@@ -231,7 +231,7 @@ class EvalGateV2Tests(unittest.TestCase):
             "target_skill": target_skill,
             "root_entrypoints": [] if not files else ["SKILL.md"],
             "source_provenance": {
-                "repository": "nisavid/agents",
+                "repository": "nisavid/provingkit",
                 "revision_sha256": byte_digest(f"revision:{label}"),
             },
             "declared_calls": [],

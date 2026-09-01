@@ -113,7 +113,7 @@ class ValidateRolecastingTests(unittest.TestCase):
         )
         self.assertEqual(provider["plugin_id"], "rolecasting")
         self.assertEqual(provider["publisher"], "nisavid")
-        self.assertEqual(provider["repository"], "https://github.com/nisavid/agents")
+        self.assertEqual(provider["repository"], "https://github.com/nisavid/provingkit")
         self.assertEqual(
             provider["authority_profile"], "rolecasting-cooperative-dispatch-v2"
         )

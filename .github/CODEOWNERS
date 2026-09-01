@@ -1,0 +1,9 @@
+# Repository-wide ownership and review routing.
+* @nisavid
+
+# High-authority repository and release-boundary surfaces.
+/.github/ @nisavid
+/release/provingkit/ @nisavid
+/plugins/ @nisavid
+/scripts/ @nisavid
+/tests/ @nisavid

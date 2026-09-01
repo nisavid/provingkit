@@ -1086,7 +1086,7 @@ content_sha256
 `qualification_candidate` contains exactly `repository_id`, `commit_sha1`,
 `tree_sha1`, `plugin_subtree_sha256`, and `suite_inventory_sha256`. It is the
 same projection later copied into the detached release manifest.
-`repository_id` is `nisavid/agents`; commit and tree are the exact lowercase
+`repository_id` is `nisavid/provingkit`; commit and tree are the exact lowercase
 40-character Git object IDs; `plugin_subtree_sha256` uses the existing
 `task-witness-plugin-subtree-v1` framing; and `suite_inventory_sha256` is the
 raw digest of the exact candidate-owned inventory.

@@ -2,9 +2,9 @@
   "schema_version": 1,
   "algorithm": "sha256",
   "files": {
-    ".claude-plugin/plugin.json": "4bd50139556a0ce7615eacb0ccdac431c7eaa94a3f12c67d3708e66e216b77f5",
+    ".claude-plugin/plugin.json": "e713145cb3088ce26ecb342757bb543b7c20fb7616a31fbbe60f3ec6237d05a6",
     "README.md": "d675a364f47beff022d931b121a766770de06f629eb4a9033f6885ffdac3e8ef",
-    "plugin.json": "c17ffbb997f57616a50b6b0306f1b01ac2e572337b11c1fc74a47b6e9a70bacf",
+    "plugin.json": "74ce2e2dcaa4002879f691c31f36067abfc5c98f6d7cfac784c387ae98de79b9",
     "skills/addressing-pr-review-feedback/SKILL.md": "ff329cec02576944f7985b23d8cac15dd342085cc49e3a0fdc3ff8743dcc7d3c",
     "skills/addressing-pr-review-feedback/agents/openai.yaml": "2496f90c970648152cda7b94f40047baab0426c19b47954b87aa6baac563c39c",
     "skills/addressing-pr-review-feedback/references/feedback-flow.md": "bbbfba1c3081132415cc39ffe06516d30712c4220223dcc34e73255057731a14",

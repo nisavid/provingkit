@@ -1381,7 +1381,7 @@ def validate_manifests(root: Path) -> None:
     require(codex["version"] == RELEASE_VERSION, "canonical version drift")
     require(codex["license"] == "MIT", "canonical license drift")
     require(
-        codex["repository"] == "https://github.com/nisavid/agents",
+        codex["repository"] == "https://github.com/nisavid/provingkit",
         "canonical repository drift",
     )
     require(claude["displayName"] == "Mergecraft", "Claude displayName drift")
@@ -3054,7 +3054,7 @@ def required_review_envelope(candidate, *, producer_id="tricritical-review-loop-
                 "version": {"major": 3, "minor": 13, "micro": 7},
             },
             "public_release": {
-                "repository": "nisavid/agents",
+                "repository": "nisavid/provingkit",
                 "revision": "3" * 40,
             },
             "runtime_implementation_sha256": "4" * 64,

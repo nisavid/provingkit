@@ -552,7 +552,7 @@ class ValidInvocationFixture:
                 "runtime_contract": "task-witness-runtime-v1",
                 "interpreter": interpreter_identity(self.interpreter_executable),
                 "public_release": {
-                    "repository": "nisavid/agents",
+                    "repository": "nisavid/provingkit",
                     "revision": "0" * 40,
                 },
                 "payloads": self.payloads,
@@ -570,7 +570,7 @@ class ValidInvocationFixture:
             "runtime_contract": "task-witness-runtime-v1",
             "interpreter": interpreter_identity(self.interpreter_executable),
             "public_release": {
-                "repository": "nisavid/agents",
+                "repository": "nisavid/provingkit",
                 "revision": "0" * 40,
             },
             "runtime_implementation_sha256": self.runtime_sha256,
@@ -740,7 +740,7 @@ class ValidInvocationFixture:
                 }
             )
         )
-        lineage = {"lineage_id": "agents-stable", "sequence": 1}
+        lineage = {"lineage_id": "provingkit-stable", "sequence": 1}
         manager_receipt_raw = b"fixture manager receipt\n"
         manager_receipt_sha256 = sha256(manager_receipt_raw)
         self.source_selection = document(
@@ -753,12 +753,12 @@ class ValidInvocationFixture:
                     "name": "Ivan D Vasin",
                     "url": "https://github.com/nisavid",
                 },
-                "repository_id": "nisavid/agents",
-                "repository_url": "https://github.com/nisavid/agents",
+                "repository_id": "nisavid/provingkit",
+                "repository_url": "https://github.com/nisavid/provingkit",
                 "release_version": "1.0.0",
                 "revision": release_revision,
                 "subtree_sha256": source_subtree_sha256,
-                "source_authority": "github-nisavid-agents",
+                "source_authority": "github-nisavid-provingkit",
                 "details": {
                     "harness": "codex",
                     "manager": "fixture-plugin-manager",
@@ -777,7 +777,7 @@ class ValidInvocationFixture:
             "subtree_sha256": source_subtree_sha256,
             "channel": "stable",
             "manager_trust_class": "operator-installed",
-            "source_authority": "github-nisavid-agents",
+            "source_authority": "github-nisavid-provingkit",
             "lineage": lineage,
         }
         self.manager_binding = document(
@@ -810,12 +810,12 @@ class ValidInvocationFixture:
                 "name": "Ivan D Vasin",
                 "url": "https://github.com/nisavid",
             },
-            "repository_id": "nisavid/agents",
-            "repository_url": "https://github.com/nisavid/agents",
+            "repository_id": "nisavid/provingkit",
+            "repository_url": "https://github.com/nisavid/provingkit",
             "release_version": "1.0.0",
             "revision": release_revision,
             "subtree_sha256": source_subtree_sha256,
-            "source_authority": "github-nisavid-agents",
+            "source_authority": "github-nisavid-provingkit",
             "details": {
                 "channel": "stable",
                 "trust_class": "operator-installed",
@@ -906,7 +906,7 @@ class ValidInvocationFixture:
             {
                 "plugin_id": "task-witness",
                 "publisher": "nisavid",
-                "repository": "https://github.com/nisavid/agents",
+                "repository": "https://github.com/nisavid/provingkit",
                 "authority_profile": "task-witness-smoke",
                 "intrinsic": True,
                 "declaration_sha256": sha256(intrinsic_provider_declaration_raw),
