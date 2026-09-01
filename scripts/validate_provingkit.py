@@ -15,6 +15,9 @@ from pathlib import Path
 DEFINITION_RELATIVE = Path("release/provingkit/definition-v1.json")
 PROVENANCE_RELATIVE = Path("release/provingkit/cutover-provenance-v1.json")
 COMMIT_MAP_RELATIVE = Path("release/provingkit/agents-commit-map.tsv")
+ADOPTED_HISTORY_IMPORT_MAP_RELATIVE = Path(
+    "release/provingkit/adopted-history-import-map-v1.tsv"
+)
 HISTORICAL_IDENTITY_ALLOWLIST_RELATIVE = Path(
     "release/provingkit/historical-identity-allowlist-v1.json"
 )
@@ -97,6 +100,50 @@ EXPECTED_EXCLUDED_SOURCE = {
     ],
 }
 EXPECTED_SOURCE_ISSUES = (43, 44, 45, 52, 53, 56, 59, 65, 79, 80)
+EXPECTED_HISTORY_RELOCATIONS = (
+    (
+        ".github/workflows/task-witness-linux-qualification.yml",
+        "qualification/historical/workflows/task-witness-linux-qualification.yml",
+        "a431199bc2a542786d13a06904715dfbb4459250",
+    ),
+    (
+        "scripts/harden_task_witness_linux_host.bash",
+        "qualification/historical/scripts/harden_task_witness_linux_host.bash",
+        "5e5283830a8bfbd8c6e5d397099a8da708631846",
+    ),
+    (
+        "scripts/prepare_task_witness_linux_qualification.py",
+        "qualification/historical/scripts/prepare_task_witness_linux_qualification.py",
+        "140e27a5babc9b69d2011511f6fa7d88d12af6a0",
+    ),
+    (
+        "tests/test_harden_task_witness_linux_host.bash",
+        "qualification/historical/tests/test_harden_task_witness_linux_host.bash",
+        "b8c3adbea9c5889130fac2ade4affda0b97f816b",
+    ),
+    (
+        "tests/test_task_witness_linux_qualification_harness.py",
+        "qualification/historical/tests/test_task_witness_linux_qualification_harness.py",
+        "8fe8cdde6e27f96f25931e18ce16b39f66c36a47",
+    ),
+    (
+        ".github/workflows/task-witness-macos-host-probe.yml",
+        "qualification/historical/workflows/task-witness-macos-host-probe.yml",
+        "07e5e25aabdcd6d31d1931a6e4faba1e3040d40c",
+    ),
+    (
+        "scripts/probe_task_witness_macos_host.py",
+        "qualification/historical/scripts/probe_task_witness_macos_host.py",
+        "8f3692bfcdb08558a3e9fcfb68054b7458613c7d",
+    ),
+    (
+        "tests/test_task_witness_macos_host_probe.py",
+        "qualification/historical/tests/test_task_witness_macos_host_probe.py",
+        "06f2ba91a0e14453084d60d2781df765eb28b2ca",
+    ),
+)
+OID_SHA1_PATTERN = re.compile(r"[0-9a-f]{40}\Z")
+SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 RELEASE_CONTRACT_IDENTIFIER = "provingkit-release-manifest-v1"
 RELEASE_CONTRACT_IDENTIFIER_ALLOWLIST = {
     RELEASE_SCHEMA_RELATIVE,
@@ -328,6 +375,7 @@ def _validate_cutover_provenance(repository: Path) -> None:
     if (
         set(provenance)
         != {
+            "adopted_history_import",
             "adopted_qualification_history",
             "compatibility_aliases",
             "contract",
@@ -422,6 +470,111 @@ def _validate_cutover_provenance(repository: Path) -> None:
     if any(observed_map.get(old) != new for old, new in expected_mappings.items()):
         raise ValidationError("filtered commit map drift")
 
+    expected_import_map_sha256 = (
+        "sha256:6cf416a0be58f050745d2eaad02208e7a0a030dc200a0e55bb4fadb708d37a6f"
+    )
+    expected_import = {
+        "final_main_mapping": {
+            "state": "pending-rebase-merge",
+            "completion_gate": "required-before-closing-source-issue-81",
+        },
+        "patch_correspondence": {
+            "digest": "sha256",
+            "full_delta_contract": (
+                "canonical-git-raw-recursive-tree-delta-parent-to-commit-v1"
+            ),
+            "original_to_filtered": (
+                "scripts-tests-tree-delta-equals-filtered-full-tree-delta"
+            ),
+            "original_to_retained_import": "full-tree-delta-bytes-equal",
+            "tree_delta_command": [
+                "git",
+                "diff-tree",
+                "-r",
+                "--raw",
+                "-z",
+                "--no-commit-id",
+                "--no-renames",
+                "--abbrev=40",
+                "<commit>^",
+                "<commit>",
+                "--",
+            ],
+            "projected_pathspecs": ["scripts", "tests"],
+        },
+        "relocations": [
+            {"from": source, "to": destination, "blob": blob}
+            for source, destination, blob in EXPECTED_HISTORY_RELOCATIONS
+        ],
+        "retained_ref": {
+            "ref": "refs/heads/retained/issue-81-history-import",
+            "disposition": "immutable-non-release-history-evidence",
+        },
+        "review_map": {
+            "contract": "provingkit-adopted-history-import-map-v1",
+            "path": ADOPTED_HISTORY_IMPORT_MAP_RELATIVE.as_posix(),
+            "row_count": 57,
+            "sha256": expected_import_map_sha256,
+        },
+    }
+    if (
+        provenance.get("adopted_history_import") != expected_import
+        or _sha256_uri(
+            repository / ADOPTED_HISTORY_IMPORT_MAP_RELATIVE,
+            "adopted history import map",
+        )
+        != expected_import_map_sha256
+    ):
+        raise ValidationError("adopted history import map drift")
+    try:
+        import_lines = (
+            (repository / ADOPTED_HISTORY_IMPORT_MAP_RELATIVE)
+            .read_text(encoding="ascii")
+            .splitlines()
+        )
+        import_header = import_lines[0].split("\t")
+        import_rows = [line.split("\t") for line in import_lines[1:]]
+    except (OSError, UnicodeError, IndexError) as error:
+        raise ValidationError("adopted history import map drift") from error
+    if import_header != [
+        "platform",
+        "ordinal",
+        "original_commit",
+        "filtered_commit",
+        "retained_import_commit",
+        "full_tree_delta_sha256",
+        "projected_tree_delta_sha256",
+    ] or len(import_rows) != 57:
+        raise ValidationError("adopted history import map drift")
+    expected_ordinals = [("linux", str(value)) for value in range(1, 22)] + [
+        ("macos", str(value)) for value in range(1, 37)
+    ]
+    if any(len(row) != len(import_header) for row in import_rows):
+        raise ValidationError("adopted history import map drift")
+    if [(row[0], row[1]) for row in import_rows] != expected_ordinals:
+        raise ValidationError("adopted history import map drift")
+    originals = [row[2] for row in import_rows]
+    filtereds = [row[3] for row in import_rows]
+    retained_imports = [row[4] for row in import_rows]
+    if (
+        any(not OID_SHA1_PATTERN.fullmatch(value) for value in originals)
+        or any(not OID_SHA1_PATTERN.fullmatch(value) for value in filtereds)
+        or any(not OID_SHA1_PATTERN.fullmatch(value) for value in retained_imports)
+        or any(
+            not SHA256_PATTERN.fullmatch(value)
+            for row in import_rows
+            for value in row[5:]
+        )
+        or len(set(originals)) != 57
+        or len(set(filtereds)) != 57
+        or len(set(retained_imports)) != 57
+        or any(
+            observed_map.get(original) != filtered
+            for original, filtered in zip(originals, filtereds, strict=True)
+        )
+    ):
+        raise ValidationError("adopted history import map drift")
+
     adopted = provenance.get("adopted_qualification_history")
     expected_adopted = [
         {
@@ -436,7 +589,7 @@ def _validate_cutover_provenance(repository: Path) -> None:
                 "first_commit": "e881043b57fe2242249561b9352e0335c537e30a",
                 "last_commit": "f9cefb0b3bdb2798791a5fd02907a79e43f38e67",
             },
-            "destination_range": {
+            "retained_import_range": {
                 "first_commit": "56af80454bd356097f264bd81f0920234ae17bfc",
                 "last_commit": "510662ed1df6a3eb24a2457648b4b9c5f6a8d066",
             },
@@ -461,7 +614,7 @@ def _validate_cutover_provenance(repository: Path) -> None:
                 "first_commit": "37add2e258fcf6e11eb057feadcf8ee51b4a2470",
                 "last_commit": "5d831beeb147072b815f80643400f0a60c8654ce",
             },
-            "destination_range": {
+            "retained_import_range": {
                 "first_commit": "20f27835fec4e30d3ed171925e78f56945fd4487",
                 "last_commit": "604c6e8702c4e3914e862bee58ab35f529866737",
             },
@@ -475,6 +628,17 @@ def _validate_cutover_provenance(repository: Path) -> None:
     ]
     if adopted != expected_adopted:
         raise ValidationError("cutover provenance drift")
+    if (
+        retained_imports[:1]
+        != [expected_adopted[0]["retained_import_range"]["first_commit"]]
+        or retained_imports[20:21]
+        != [expected_adopted[0]["retained_import_range"]["last_commit"]]
+        or retained_imports[21:22]
+        != [expected_adopted[1]["retained_import_range"]["first_commit"]]
+        or retained_imports[-1:]
+        != [expected_adopted[1]["retained_import_range"]["last_commit"]]
+    ):
+        raise ValidationError("adopted history import map drift")
 
     expected_compatibility_aliases = [
         {
@@ -787,6 +951,32 @@ def _require_git_output(repository: Path, *arguments: str) -> str:
     return result.stdout.strip()
 
 
+def _require_git_bytes(repository: Path, *arguments: str) -> bytes:
+    environment = os.environ.copy()
+    environment["GIT_NO_REPLACE_OBJECTS"] = "1"
+    for name in (
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_INDEX_FILE",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    ):
+        environment.pop(name, None)
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repository), *arguments],
+            capture_output=True,
+            check=False,
+            timeout=15,
+            env=environment,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ValidationError("Git history attestation unavailable") from error
+    if result.returncode != 0:
+        raise ValidationError("Git history attestation unavailable")
+    return result.stdout
+
+
 def _validate_history(repository: Path) -> None:
     top_level = _require_git_output(repository, "rev-parse", "--show-toplevel")
     try:
@@ -809,10 +999,19 @@ def _validate_history(repository: Path) -> None:
 
     baseline = "7dd8273ecab621be662d27c38706e33f2b48ae34"
     retained = "8edaf590736621352262457752d087bad835555d"
-    linux_first = "56af80454bd356097f264bd81f0920234ae17bfc"
-    linux_last = "510662ed1df6a3eb24a2457648b4b9c5f6a8d066"
-    macos_first = "20f27835fec4e30d3ed171925e78f56945fd4487"
-    macos_last = "604c6e8702c4e3914e862bee58ab35f529866737"
+    try:
+        import_rows = [
+            line.split("\t")
+            for line in (
+                repository / ADOPTED_HISTORY_IMPORT_MAP_RELATIVE
+            ).read_text(encoding="ascii").splitlines()[1:]
+        ]
+    except (OSError, UnicodeError) as error:
+        raise ValidationError("adopted history import map drift") from error
+    linux_first = import_rows[0][4]
+    linux_last = import_rows[20][4]
+    macos_first = import_rows[21][4]
+    macos_last = import_rows[-1][4]
     for commit in (
         baseline,
         retained,
@@ -840,7 +1039,7 @@ def _validate_history(repository: Path) -> None:
         != "36"
     ):
         raise ValidationError("Git history attestation drift")
-    for ancestor, descendant in ((baseline, "HEAD"), (macos_last, "HEAD")):
+    for ancestor, descendant in ((baseline, "HEAD"),):
         ancestry = _run_git(
             repository,
             "merge-base",
@@ -850,6 +1049,82 @@ def _validate_history(repository: Path) -> None:
         )
         if ancestry.returncode != 0:
             raise ValidationError("Git history attestation drift")
+
+    previous = baseline
+    for row in import_rows:
+        original, retained_import = row[2], row[4]
+        if _require_git_output(repository, "rev-parse", f"{retained_import}^") != previous:
+            raise ValidationError("adopted history import ancestry drift")
+        message = _require_git_output(
+            repository, "show", "-s", "--format=%B", retained_import
+        )
+        trailers = re.findall(
+            r"^\(cherry picked from commit ([0-9a-f]{40})\)$",
+            message,
+            flags=re.MULTILINE,
+        )
+        if trailers != [original]:
+            raise ValidationError("adopted history import trailer drift")
+        tree_delta = _require_git_bytes(
+            repository,
+            "diff-tree",
+            "-r",
+            "--raw",
+            "-z",
+            "--no-commit-id",
+            "--no-renames",
+            "--abbrev=40",
+            f"{retained_import}^",
+            retained_import,
+            "--",
+        )
+        if hashlib.sha256(tree_delta).hexdigest() != row[5]:
+            raise ValidationError("adopted history import tree-delta drift")
+        previous = retained_import
+
+    import_ref_names = (
+        "refs/heads/retained/issue-81-history-import",
+        "refs/remotes/origin/retained/issue-81-history-import",
+    )
+    observed_import_refs = {
+        result.stdout.strip()
+        for ref in import_ref_names
+        if (
+            result := _run_git(repository, "show-ref", "--verify", "--hash", ref)
+        ).returncode
+        == 0
+    }
+    import_in_head = _run_git(
+        repository,
+        "merge-base",
+        "--is-ancestor",
+        macos_last,
+        "HEAD",
+    )
+    if import_in_head.returncode not in (0, 1):
+        raise ValidationError("Git history attestation unavailable")
+    if not observed_import_refs and import_in_head.returncode != 0:
+        raise ValidationError("retained history-import ref attestation drift")
+    for object_id in observed_import_refs:
+        ancestry = _run_git(
+            repository,
+            "merge-base",
+            "--is-ancestor",
+            macos_last,
+            object_id,
+        )
+        if ancestry.returncode != 0:
+            raise ValidationError("retained history-import ref attestation drift")
+
+    for source, destination, expected_blob in EXPECTED_HISTORY_RELOCATIONS:
+        observed_blob = _require_git_output(repository, "rev-parse", f"HEAD:{destination}")
+        if observed_blob != expected_blob:
+            raise ValidationError("historical qualification relocation drift")
+        source_probe = _run_git(repository, "cat-file", "-e", f"HEAD:{source}")
+        if source_probe.returncode == 0:
+            raise ValidationError("historical qualification relocation drift")
+        if source_probe.returncode not in (1, 128):
+            raise ValidationError("Git history attestation unavailable")
 
     retained_ancestry = _run_git(
         repository,

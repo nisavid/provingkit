@@ -470,6 +470,86 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         )
         self.assertEqual(provenance["issue_migration"]["state"], "transferred")
 
+    def test_adopted_history_import_map_binds_the_reviewed_replay(self) -> None:
+        provenance = json.loads(
+            (REPOSITORY / "release/provingkit/cutover-provenance-v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        import_history = provenance["adopted_history_import"]
+
+        self.assertEqual(
+            import_history["retained_ref"],
+            {
+                "ref": "refs/heads/retained/issue-81-history-import",
+                "disposition": "immutable-non-release-history-evidence",
+            },
+        )
+        self.assertEqual(
+            import_history["final_main_mapping"],
+            {
+                "state": "pending-rebase-merge",
+                "completion_gate": "required-before-closing-source-issue-81",
+            },
+        )
+        rows = (
+            REPOSITORY
+            / "release/provingkit/adopted-history-import-map-v1.tsv"
+        ).read_text(encoding="ascii").splitlines()
+        self.assertEqual(len(rows), 58)
+        self.assertEqual(
+            rows[0].split("\t"),
+            [
+                "platform",
+                "ordinal",
+                "original_commit",
+                "filtered_commit",
+                "retained_import_commit",
+                "full_tree_delta_sha256",
+                "projected_tree_delta_sha256",
+            ],
+        )
+        self.assertEqual(
+            [(row.split("\t")[0], int(row.split("\t")[1])) for row in rows[1:]],
+            [("linux", ordinal) for ordinal in range(1, 22)]
+            + [("macos", ordinal) for ordinal in range(1, 37)],
+        )
+
+    def test_validator_rejects_semantic_import_map_drift_with_a_refreshed_hash(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            map_path = (
+                repository
+                / "release/provingkit/adopted-history-import-map-v1.tsv"
+            )
+            rows = map_path.read_text(encoding="ascii").splitlines()
+            fields = rows[1].split("\t")
+            fields[1] = "2"
+            rows[1] = "\t".join(fields)
+            map_path.write_text("\n".join(rows) + "\n", encoding="ascii")
+            provenance_path = (
+                repository / "release/provingkit/cutover-provenance-v1.json"
+            )
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+            provenance["adopted_history_import"]["review_map"]["sha256"] = (
+                "sha256:" + hashlib.sha256(map_path.read_bytes()).hexdigest()
+            )
+            provenance_path.write_text(
+                json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("adopted history import map drift", result.stderr)
+
     def test_validator_rejects_a_different_cutover_baseline(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
