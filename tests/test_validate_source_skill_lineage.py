@@ -239,7 +239,8 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
                     self.assertEqual(
                         completed.stderr,
                         "source-skill-lineage-refresh: destination source-lineage "
-                        "mutation is disabled pending issue 45 rescout\n",
+                        "mutation is disabled pending "
+                        "https://github.com/nisavid/provingkit/issues/3 rescout\n",
                     )
             self.assertEqual(list(temporary.iterdir()), [])
 
