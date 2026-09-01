@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 import hashlib
 import os
@@ -17,6 +19,9 @@ PROVENANCE_RELATIVE = Path("release/provingkit/cutover-provenance-v1.json")
 COMMIT_MAP_RELATIVE = Path("release/provingkit/agents-commit-map.tsv")
 ADOPTED_HISTORY_IMPORT_MAP_RELATIVE = Path(
     "release/provingkit/adopted-history-import-map-v1.tsv"
+)
+ADOPTED_HISTORY_DELTA_BUNDLE_RELATIVE = Path(
+    "release/provingkit/adopted-history-delta-bundle-v1.json"
 )
 HISTORICAL_IDENTITY_ALLOWLIST_RELATIVE = Path(
     "release/provingkit/historical-identity-allowlist-v1.json"
@@ -142,6 +147,24 @@ EXPECTED_HISTORY_RELOCATIONS = (
         "06f2ba91a0e14453084d60d2781df765eb28b2ca",
     ),
 )
+EXPECTED_HISTORY_SOURCE_ROOTS = (
+    (
+        "linux",
+        "refs/heads/ivan/task-witness-linux-qualification-harness",
+        "a8410babc9e1b0c2a57b9f69db98a495133f6843",
+    ),
+    (
+        "macos",
+        "refs/heads/ivan/task-witness-macos-qualification-harness",
+        "0703e8df26c975a187cb6f36b8dfb21df8bcc6db",
+    ),
+)
+ADOPTED_HISTORY_DELTA_BUNDLE_SHA256 = (
+    "sha256:c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae"
+)
+ADOPTED_HISTORY_DELTA_CONTENT_SHA256 = (
+    "sha256:d14da319649492e7ecb64d20a578983cb2cd88e00a5e4d3a1ed7e49a1a526cc5"
+)
 OID_SHA1_PATTERN = re.compile(r"[0-9a-f]{40}\Z")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 RELEASE_CONTRACT_IDENTIFIER = "provingkit-release-manifest-v1"
@@ -216,6 +239,153 @@ def _sha256_uri(path: Path, label: str) -> str:
         return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
     except OSError as error:
         raise ValidationError(f"{label} is unreadable") from error
+
+
+def _decode_canonical_base64(value: object) -> bytes:
+    if not isinstance(value, str):
+        raise ValidationError("adopted history delta bundle drift")
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except (binascii.Error, ValueError) as error:
+        raise ValidationError("adopted history delta bundle drift") from error
+    if base64.b64encode(decoded).decode("ascii") != value:
+        raise ValidationError("adopted history delta bundle drift")
+    return decoded
+
+
+def _expected_history_source_roots() -> list[dict[str, object]]:
+    return [
+        {
+            "disposition": "protected-non-release-source-history-evidence",
+            "platform": platform,
+            "ref": ref,
+            "repository": LEGACY_REPOSITORY_SLUG,
+            "ruleset_id": 22049569,
+            "tip": tip,
+        }
+        for platform, ref, tip in EXPECTED_HISTORY_SOURCE_ROOTS
+    ]
+
+
+def _validate_adopted_history_delta_bundle(
+    repository: Path,
+    import_rows: list[list[str]],
+) -> dict[str, bytes]:
+    bundle_path = repository / ADOPTED_HISTORY_DELTA_BUNDLE_RELATIVE
+    if (
+        _sha256_uri(bundle_path, "adopted history delta bundle")
+        != ADOPTED_HISTORY_DELTA_BUNDLE_SHA256
+    ):
+        raise ValidationError("adopted history delta bundle drift")
+    bundle = _load_json(bundle_path, "adopted history delta bundle")
+    if not isinstance(bundle, dict) or set(bundle) != {
+        "content_sha256",
+        "contract",
+        "delta_contract",
+        "map",
+        "rows",
+        "schema_version",
+        "source_roots",
+    }:
+        raise ValidationError("adopted history delta bundle drift")
+    if (
+        bundle.get("contract")
+        != "provingkit-adopted-history-delta-bundle-v1"
+        or type(bundle.get("schema_version")) is not int
+        or bundle["schema_version"] != 1
+        or bundle.get("content_sha256")
+        != ADOPTED_HISTORY_DELTA_CONTENT_SHA256
+        or bundle.get("delta_contract")
+        != {
+            "encoding": "base64-rfc4648-canonical",
+            "filtered_intermediate_disposition": (
+                "raw-delta-evidence-bundled-commit-objects-not-retained"
+            ),
+            "full_command": [
+                "git",
+                "diff-tree",
+                "-r",
+                "--raw",
+                "-z",
+                "--no-commit-id",
+                "--no-renames",
+                "--abbrev=40",
+                "<commit>^",
+                "<commit>",
+                "--",
+            ],
+            "projected_pathspecs": ["scripts", "tests"],
+        }
+        or bundle.get("map")
+        != {
+            "path": ADOPTED_HISTORY_IMPORT_MAP_RELATIVE.as_posix(),
+            "row_count": 57,
+            "sha256": (
+                "sha256:"
+                "6cf416a0be58f050745d2eaad02208e7a0a030dc200a0e55bb4fadb708d37a6f"
+            ),
+        }
+        or bundle.get("source_roots") != _expected_history_source_roots()
+    ):
+        raise ValidationError("adopted history delta bundle drift")
+    canonical_content = dict(bundle)
+    canonical_content.pop("content_sha256")
+    canonical_bytes = json.dumps(
+        canonical_content,
+        ensure_ascii=False,
+        allow_nan=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    if (
+        "sha256:" + hashlib.sha256(canonical_bytes).hexdigest()
+        != ADOPTED_HISTORY_DELTA_CONTENT_SHA256
+    ):
+        raise ValidationError("adopted history delta bundle drift")
+
+    rows = bundle.get("rows")
+    if not isinstance(rows, list) or len(rows) != 57 or len(import_rows) != 57:
+        raise ValidationError("adopted history delta bundle drift")
+    retained_deltas: dict[str, bytes] = {}
+    expected_row_keys = {
+        "filtered_commit",
+        "filtered_full_delta_base64",
+        "ordinal",
+        "original_commit",
+        "original_full_delta_base64",
+        "original_projected_delta_base64",
+        "platform",
+        "retained_import_commit",
+    }
+    for row, map_row in zip(rows, import_rows, strict=True):
+        if (
+            not isinstance(row, dict)
+            or set(row) != expected_row_keys
+            or type(row.get("ordinal")) is not int
+            or row["platform"] != map_row[0]
+            or row["ordinal"] != int(map_row[1])
+            or row["original_commit"] != map_row[2]
+            or row["filtered_commit"] != map_row[3]
+            or row["retained_import_commit"] != map_row[4]
+        ):
+            raise ValidationError("adopted history delta bundle drift")
+        original_full = _decode_canonical_base64(
+            row["original_full_delta_base64"]
+        )
+        original_projected = _decode_canonical_base64(
+            row["original_projected_delta_base64"]
+        )
+        filtered_full = _decode_canonical_base64(
+            row["filtered_full_delta_base64"]
+        )
+        if (
+            hashlib.sha256(original_full).hexdigest() != map_row[5]
+            or original_projected != filtered_full
+            or hashlib.sha256(original_projected).hexdigest() != map_row[6]
+        ):
+            raise ValidationError("adopted history delta bundle drift")
+        retained_deltas[map_row[4]] = original_full
+    return retained_deltas
 
 
 def _validate_definition(repository: Path) -> None:
@@ -474,6 +644,14 @@ def _validate_cutover_provenance(repository: Path) -> None:
         "sha256:6cf416a0be58f050745d2eaad02208e7a0a030dc200a0e55bb4fadb708d37a6f"
     )
     expected_import = {
+        "delta_bundle": {
+            "contract": "provingkit-adopted-history-delta-bundle-v1",
+            "path": ADOPTED_HISTORY_DELTA_BUNDLE_RELATIVE.as_posix(),
+            "row_count": 57,
+            "sha256": ADOPTED_HISTORY_DELTA_BUNDLE_SHA256,
+            "content_sha256": ADOPTED_HISTORY_DELTA_CONTENT_SHA256,
+            "source_roots": _expected_history_source_roots(),
+        },
         "final_main_mapping": {
             "state": "pending-rebase-merge",
             "completion_gate": "required-before-closing-source-issue-81",
@@ -574,6 +752,8 @@ def _validate_cutover_provenance(repository: Path) -> None:
         )
     ):
         raise ValidationError("adopted history import map drift")
+
+    _validate_adopted_history_delta_bundle(repository, import_rows)
 
     adopted = provenance.get("adopted_qualification_history")
     expected_adopted = [
@@ -772,6 +952,7 @@ def _validate_historical_identities(repository: Path) -> None:
         or allowlist["schema_version"] != 1
         or allowlist.get("matching") != "exact-relative-path-and-whole-file-sha256"
         or not isinstance(allowlist.get("entries"), list)
+        or len(allowlist["entries"]) != 32
     ):
         raise ValidationError("historical identity allowlist drift")
 
@@ -1008,6 +1189,9 @@ def _validate_history(repository: Path) -> None:
         ]
     except (OSError, UnicodeError) as error:
         raise ValidationError("adopted history import map drift") from error
+    bundled_original_deltas = _validate_adopted_history_delta_bundle(
+        repository, import_rows
+    )
     linux_first = import_rows[0][4]
     linux_last = import_rows[20][4]
     macos_first = import_rows[21][4]
@@ -1078,7 +1262,10 @@ def _validate_history(repository: Path) -> None:
             retained_import,
             "--",
         )
-        if hashlib.sha256(tree_delta).hexdigest() != row[5]:
+        if (
+            tree_delta != bundled_original_deltas[retained_import]
+            or hashlib.sha256(tree_delta).hexdigest() != row[5]
+        ):
             raise ValidationError("adopted history import tree-delta drift")
         previous = retained_import
 
