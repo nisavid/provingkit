@@ -411,7 +411,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             provenance["source_repository"]["cutover_baseline"],
             {
                 "original_commit": "44ee979cdae1d47f2ef3fdc713eaa6f04adf9892",
-                "filtered_commit": "8854f877f15101636ab59cf374977ba46da6f2b1",
+                "filtered_commit": "7dd8273ecab621be662d27c38706e33f2b48ae34",
             },
         )
         self.assertEqual(
@@ -423,7 +423,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "state": "open-unmerged",
                 "production_disposition": "retained-input-not-accepted-behavior",
                 "original_head": "02e3c721bdbd922883948bb3af84c5bafd702984",
-                "filtered_head": "e22cc70b92b223ac35fec5b2bfc6109c16065d24",
+                "filtered_head": "8edaf590736621352262457752d087bad835555d",
                 "destination_ref": "refs/heads/retained/agents-pr-69",
             },
         )
@@ -727,7 +727,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertIn("Git history attestation unavailable", result.stderr)
 
     def test_attested_history_preserves_the_unreleased_cutover_boundary(self) -> None:
-        retained = "e22cc70b92b223ac35fec5b2bfc6109c16065d24"
+        retained = "8edaf590736621352262457752d087bad835555d"
         retained_ancestry = subprocess.run(
             ["git", "merge-base", "--is-ancestor", retained, "HEAD"],
             cwd=REPOSITORY,

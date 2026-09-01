@@ -346,7 +346,7 @@ def _validate_cutover_provenance(repository: Path) -> None:
         or source.get("cutover_baseline")
         != {
             "original_commit": "44ee979cdae1d47f2ef3fdc713eaa6f04adf9892",
-            "filtered_commit": "8854f877f15101636ab59cf374977ba46da6f2b1",
+            "filtered_commit": "7dd8273ecab621be662d27c38706e33f2b48ae34",
         }
         or source.get("retained_extraction_input")
         != {
@@ -356,7 +356,7 @@ def _validate_cutover_provenance(repository: Path) -> None:
             "state": "open-unmerged",
             "production_disposition": "retained-input-not-accepted-behavior",
             "original_head": "02e3c721bdbd922883948bb3af84c5bafd702984",
-            "filtered_head": "e22cc70b92b223ac35fec5b2bfc6109c16065d24",
+            "filtered_head": "8edaf590736621352262457752d087bad835555d",
             "destination_ref": "refs/heads/retained/agents-pr-69",
         }
         or provenance.get("excluded_source")
@@ -378,10 +378,10 @@ def _validate_cutover_provenance(repository: Path) -> None:
         raise ValidationError("cutover provenance drift")
     commit_map = history_filter.get("commit_map")
     expected_map_sha256 = (
-        "sha256:4919089f4101b8873700d85f653ff30649a9a0e9dca0203cd8132c90f947ae10"
+        "sha256:eae83701b88ce2489b2bc4c373a90dc94f22040ec8af396fc040a01c6d9ec65f"
     )
     if (
-        history_filter.get("method") != "git-filter-repo-path-projection"
+        history_filter.get("method") != "git-filter-repo-path-projection-with-credential-fixture-sanitization"
         or history_filter.get("full_repository_mirror") is not False
         or commit_map
         != {
@@ -401,10 +401,10 @@ def _validate_cutover_provenance(repository: Path) -> None:
         raise ValidationError("filtered commit map drift") from error
     expected_mappings = {
         "44ee979cdae1d47f2ef3fdc713eaa6f04adf9892": (
-            "8854f877f15101636ab59cf374977ba46da6f2b1"
+            "7dd8273ecab621be662d27c38706e33f2b48ae34"
         ),
         "02e3c721bdbd922883948bb3af84c5bafd702984": (
-            "e22cc70b92b223ac35fec5b2bfc6109c16065d24"
+            "8edaf590736621352262457752d087bad835555d"
         ),
         "7064b02f3e7466eb3863040908186fc91df4a24e": (
             "e881043b57fe2242249561b9352e0335c537e30a"
@@ -437,8 +437,8 @@ def _validate_cutover_provenance(repository: Path) -> None:
                 "last_commit": "f9cefb0b3bdb2798791a5fd02907a79e43f38e67",
             },
             "destination_range": {
-                "first_commit": "193304c9239238c8948890c5f83c9a33f878f077",
-                "last_commit": "06747c12b7fb76e03ae687007456f2db631af61f",
+                "first_commit": "56af80454bd356097f264bd81f0920234ae17bfc",
+                "last_commit": "510662ed1df6a3eb24a2457648b4b9c5f6a8d066",
             },
             "historical_paths": [
                 "qualification/historical/workflows/task-witness-linux-qualification.yml",
@@ -462,8 +462,8 @@ def _validate_cutover_provenance(repository: Path) -> None:
                 "last_commit": "5d831beeb147072b815f80643400f0a60c8654ce",
             },
             "destination_range": {
-                "first_commit": "1507ff3ff620c8b1a78ffb8761284dc4100d2f4c",
-                "last_commit": "5d99d42d4f1f0e18f17fa4fb2cccf8bfb388e840",
+                "first_commit": "20f27835fec4e30d3ed171925e78f56945fd4487",
+                "last_commit": "604c6e8702c4e3914e862bee58ab35f529866737",
             },
             "historical_paths": [
                 "qualification/historical/workflows/task-witness-macos-host-probe.yml",
@@ -807,12 +807,12 @@ def _validate_history(repository: Path) -> None:
     ):
         raise ValidationError("Git history attestation rejects replacement objects")
 
-    baseline = "8854f877f15101636ab59cf374977ba46da6f2b1"
-    retained = "e22cc70b92b223ac35fec5b2bfc6109c16065d24"
-    linux_first = "193304c9239238c8948890c5f83c9a33f878f077"
-    linux_last = "06747c12b7fb76e03ae687007456f2db631af61f"
-    macos_first = "1507ff3ff620c8b1a78ffb8761284dc4100d2f4c"
-    macos_last = "5d99d42d4f1f0e18f17fa4fb2cccf8bfb388e840"
+    baseline = "7dd8273ecab621be662d27c38706e33f2b48ae34"
+    retained = "8edaf590736621352262457752d087bad835555d"
+    linux_first = "56af80454bd356097f264bd81f0920234ae17bfc"
+    linux_last = "510662ed1df6a3eb24a2457648b4b9c5f6a8d066"
+    macos_first = "20f27835fec4e30d3ed171925e78f56945fd4487"
+    macos_last = "604c6e8702c4e3914e862bee58ab35f529866737"
     for commit in (
         baseline,
         retained,
