@@ -591,7 +591,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 / "release/provingkit/historical-identity-allowlist-v1.json"
             ).read_text(encoding="utf-8")
         )
-        self.assertEqual(len(allowlist["entries"]), 33)
+        self.assertEqual(len(allowlist["entries"]), 38)
         self.assertIn(
             {
                 "disposition": (
@@ -981,7 +981,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         configuration = (REPOSITORY / "pytest.ini").read_text(encoding="utf-8")
         self.assertEqual(
             configuration,
-            "[pytest]\ntestpaths = tests\nnorecursedirs = qualification/historical\n",
+            "[pytest]\ntestpaths = tests\nnorecursedirs = qualification/historical\n"
+            "pythonpath = .\n",
         )
         if importlib.util.find_spec("pytest") is None:
             self.skipTest("pytest is unavailable")

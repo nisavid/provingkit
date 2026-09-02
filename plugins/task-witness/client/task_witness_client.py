@@ -56,10 +56,13 @@ STAGED_DEPLOYMENT_CONTRACT = "task-witness-staged-deployment-v1"
 TRUST_CONTEXT_CONTRACT = "task-witness-trust-context-v2"
 VALIDATOR_ARTIFACT_MANIFEST_CONTRACT = "task-witness-validator-artifact-manifest-v1"
 # fmt: off
-CLIENT_SOURCE_GENERATION_SHA256 = "92813b86756b34fd052bbf3927522e0f6819379074a3d009b5a3e6ce44531f86"
+CLIENT_SOURCE_GENERATION_SHA256 = "b473b167121ae4a6c0a4a58981e335ae2bcaaf40a96daae10dc917150d2666b2"
 # fmt: on
 CLIENT_RELEASE_PROFILE = "tw4-current"
 FREEZE5_COMMIT_SHA1 = "96608a9b91d4dcf3f468a4fab1f0e008c9c32b36"
+FREEZE5_SUBTREE_SHA256 = (
+    "1fa2e1ea237bc4be175ff42478fd209ff6f57c59d8cbdc0cef592492c7eea749"
+)
 FREEZE5_CONTROLLER_SHA256 = (
     "8dc51b2a644e30d1f7c4f3b71711698b4130b43f1517e9f5361c6d1a0f7d6cfe"
 )
@@ -68,6 +71,19 @@ FREEZE5_POLICY_SHA256 = (
 )
 FREEZE5_CLIENT_SHA256 = (
     "778186f6a460655a8b390c831e05c233171236898663ad4155bd45695597c6cf"
+)
+BRIDGE_IDENTITY_SHA256 = (
+    "748f8a4780ffdd8d38cccb314704906f8098fab4e098060aa8d92603753214ab"
+)
+BRIDGE_COMMIT_SHA1 = "391112a2f222d966a3dc54da953594667227d6d3"
+BRIDGE_SUBTREE_SHA256 = (
+    "1056ff94dc73575932cc37f94f96ccb54324cd60dc83af4cce5951a17fd959f4"
+)
+BRIDGE_CONTROLLER_SHA256 = (
+    "671693603673e8e895301620817c7fa15a96a37365cff59298d8261ee923a6b3"
+)
+BRIDGE_CLIENT_SHA256 = (
+    "912cba0f5b93900d4caaf651c81a3ef3b10f65b837f2c038db5c232d8b71d875"
 )
 HEX = re.compile(r"[0-9a-f]{64}\Z")
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
@@ -2932,6 +2948,7 @@ def _validate_bridge_migration_receipt(
         or migration["purpose"] != "bridge-transition"
         or execution_class not in {"isolated-rehearsal", "live-migration"}
         or any(not _digest(migration[key]) for key in digest_fields)
+        or migration["bridge_identity_sha256"] != BRIDGE_IDENTITY_SHA256
     ):
         raise ValueError("bridge migration receipt is invalid")
     core = {
@@ -3172,9 +3189,20 @@ def _validate_receipt_providers(
     source: dict[str, Any],
     root: Path,
     active_trust: dict[str, Any],
+    receipt_contract: str,
+    bridge_migration: bool,
 ) -> list[dict[str, Any]]:
     if not isinstance(value, list) or not value or len(value) > MAX_VALIDATORS + 1:
         raise ValueError("deployment provider inventory is invalid")
+    if receipt_contract == DEPLOYMENT_RECEIPT_CONTRACT and not bridge_migration:
+        intrinsic_repository = "https://github.com/nisavid/provingkit"
+    elif receipt_contract in {
+        DEPLOYMENT_RECEIPT_CONTRACT,
+        LEGACY_DEPLOYMENT_RECEIPT_CONTRACT,
+    }:
+        intrinsic_repository = "https://github.com/nisavid/agents"
+    else:
+        raise ValueError("deployment receipt contract is unsupported")
     providers: list[dict[str, Any]] = []
     keys: list[tuple[str, bool]] = []
     plugin_ids: list[str] = []
@@ -3214,7 +3242,7 @@ def _validate_receipt_providers(
         if provider["intrinsic"] and (
             provider["plugin_id"] != "task-witness"
             or provider["publisher"] != "nisavid"
-            or provider["repository"] != "https://github.com/nisavid/provingkit"
+            or provider["repository"] != intrinsic_repository
         ):
             raise ValueError(f"{label} intrinsic identity is invalid")
         for category in ("producers", "issuers", "validators"):
@@ -3543,9 +3571,97 @@ def _validate_receipt_provider_semantics(
         source,
         root,
         active_trust,
+        receipt["contract"],
+        (
+            isinstance(receipt.get("migration"), dict)
+            and receipt["migration"].get("bridge_identity_sha256")
+            == BRIDGE_IDENTITY_SHA256
+        ),
     )
     _validate_policy_provider_binding(policy, providers, active_trust)
     return providers
+
+
+def _validate_exact_bridge_receipt_epoch(
+    receipts: list[tuple[dict[str, Any], bytes]],
+    *,
+    initial_receipt: dict[str, Any],
+    initial_receipt_raw: bytes,
+    initial_receipt_profile: str,
+    bridge_transition_seen: bool,
+) -> None:
+    if (
+        initial_receipt_profile != BRIDGE_LEGACY_RECEIPT_PROFILE
+        and not bridge_transition_seen
+    ):
+        return
+    chain = sorted(receipts, key=lambda item: item[0]["sequence"])
+    sequences = [item[0]["sequence"] for item in chain]
+    expected_sequences = list(range(1, len(chain) + 1))
+    by_sequence = {value["sequence"]: (value, raw) for value, raw in chain}
+    if sequences != expected_sequences or len(by_sequence) != len(chain):
+        raise ValueError("B1 retained deployment chain is not exact")
+    if initial_receipt_profile == BRIDGE_LEGACY_RECEIPT_PROFILE:
+        if (
+            bridge_transition_seen
+            or sequences != [1, 2]
+            or by_sequence[2] != (initial_receipt, initial_receipt_raw)
+        ):
+            raise ValueError("B1 retained deployment chain is not exact")
+    else:
+        migrations = [value for value, _ in chain if "migration" in value]
+        if (
+            initial_receipt_profile != CURRENT_RECEIPT_PROFILE
+            or not bridge_transition_seen
+            or len(chain) < 3
+            or len(migrations) != 1
+            or migrations[0]["sequence"] != 3
+            or migrations[0]["migration"]["bridge_identity_sha256"]
+            != BRIDGE_IDENTITY_SHA256
+            or any("migration" in by_sequence[sequence][0] for sequence in sequences[3:])
+        ):
+            raise ValueError("B1 retained deployment chain is not exact")
+    freeze5, freeze5_raw = by_sequence[1]
+    bridge, bridge_raw = by_sequence[2]
+    freeze5_source = freeze5["source"]
+    bridge_source = bridge["source"]
+    freeze5_controls = freeze5["control_set"]
+    bridge_controls = bridge["control_set"]
+    if (
+        bridge["prior_receipt_sha256"] != _sha(freeze5_raw)
+        or freeze5_source["plugin_id"] != "task-witness"
+        or freeze5_source["publisher_id"] != "nisavid"
+        or freeze5_source["repository_id"] != "nisavid/agents"
+        or freeze5_source["repository_url"] != "https://github.com/nisavid/agents"
+        or freeze5_source["release_version"] != "0.1.0"
+        or freeze5_source["revision"] != FREEZE5_COMMIT_SHA1
+        or freeze5_source["subtree_sha256"] != FREEZE5_SUBTREE_SHA256
+        or freeze5_source["mode"] != "harness_snapshot"
+        or freeze5_source["source_authority"] != "github-nisavid-agents"
+        or freeze5_source["lineage"]["lineage_id"] != "agents-stable"
+        or freeze5_controls["controller"]["sha256"]
+        != FREEZE5_CONTROLLER_SHA256
+        or freeze5_controls["policy"]["sha256"] != FREEZE5_POLICY_SHA256
+        or freeze5_controls["client"]["sha256"] != FREEZE5_CLIENT_SHA256
+        or bridge_source["plugin_id"] != "task-witness"
+        or bridge_source["publisher_id"] != "nisavid"
+        or bridge_source["repository_id"] != "nisavid/agents"
+        or bridge_source["repository_url"] != "https://github.com/nisavid/agents"
+        or bridge_source["release_version"] != "0.1.1"
+        or bridge_source["revision"] != BRIDGE_COMMIT_SHA1
+        or bridge_source["subtree_sha256"] != BRIDGE_SUBTREE_SHA256
+        or bridge_source["mode"] != "harness_snapshot"
+        or bridge_source["source_authority"] != "github-nisavid-agents"
+        or bridge_source["lineage"]["lineage_id"] != "agents-stable"
+        or bridge_controls["controller"]["sha256"] != BRIDGE_CONTROLLER_SHA256
+        or bridge_controls["policy"]["sha256"] != FREEZE5_POLICY_SHA256
+        or bridge_controls["client"]["sha256"] != BRIDGE_CLIENT_SHA256
+        or (
+            bridge_transition_seen
+            and by_sequence[3][0]["prior_receipt_sha256"] != _sha(bridge_raw)
+        )
+    ):
+        raise ValueError("B1 retained deployment chain is not exact")
 
 
 def _validate_retained_receipts(
@@ -4372,36 +4488,13 @@ def _validate_retained_receipts(
         expected_names,
         "retained receipt directory",
     )
-    if initial_receipt_profile == BRIDGE_LEGACY_RECEIPT_PROFILE:
-        chain = sorted(
-            validated_receipts.values(),
-            key=lambda item: item[0]["sequence"],
-        )
-        if len(chain) != 2 or [item[0]["sequence"] for item in chain] != [1, 2]:
-            raise ValueError("B1 retained deployment chain is not exact")
-        freeze5, freeze5_raw = chain[0]
-        bridge, bridge_raw = chain[1]
-        freeze5_controls = freeze5["control_set"]
-        bridge_controls = bridge["control_set"]
-        freeze5_source = freeze5["source"]
-        bridge_source = bridge["source"]
-        if (
-            bridge_raw != receipt_raw
-            or bridge != receipt
-            or bridge["prior_receipt_sha256"] != _sha(freeze5_raw)
-            or bridge_source["release_version"] != "0.1.1"
-            or bridge_source["mode"] != "harness_snapshot"
-            or bridge_controls["policy"]["sha256"] != FREEZE5_POLICY_SHA256
-            or bridge_controls["controller"]["sha256"] == FREEZE5_CONTROLLER_SHA256
-            or bridge_controls["client"]["sha256"] == FREEZE5_CLIENT_SHA256
-            or freeze5_source["release_version"] != "0.1.0"
-            or freeze5_source["revision"] != FREEZE5_COMMIT_SHA1
-            or freeze5_source["mode"] != "harness_snapshot"
-            or freeze5_controls["controller"]["sha256"] != FREEZE5_CONTROLLER_SHA256
-            or freeze5_controls["policy"]["sha256"] != FREEZE5_POLICY_SHA256
-            or freeze5_controls["client"]["sha256"] != FREEZE5_CLIENT_SHA256
-        ):
-            raise ValueError("B1 retained deployment chain is not exact")
+    _validate_exact_bridge_receipt_epoch(
+        list(validated_receipts.values()),
+        initial_receipt=receipt,
+        initial_receipt_raw=receipt_raw,
+        initial_receipt_profile=initial_receipt_profile,
+        bridge_transition_seen=bridge_transition_seen,
+    )
     if authority_rollback is None:
         raise ValueError("deployment receipt rollback authority is unavailable")
     return {

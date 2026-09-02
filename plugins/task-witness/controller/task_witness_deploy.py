@@ -130,6 +130,9 @@ AGENT_PLUGIN_NAME = re.compile(r"(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9]
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 FREEZE5_COMMIT_SHA1 = "96608a9b91d4dcf3f468a4fab1f0e008c9c32b36"
+FREEZE5_SUBTREE_SHA256 = (
+    "1fa2e1ea237bc4be175ff42478fd209ff6f57c59d8cbdc0cef592492c7eea749"
+)
 FREEZE5_CONTROLLER_SHA256 = (
     "8dc51b2a644e30d1f7c4f3b71711698b4130b43f1517e9f5361c6d1a0f7d6cfe"
 )
@@ -138,6 +141,19 @@ FREEZE5_POLICY_SHA256 = (
 )
 FREEZE5_CLIENT_SHA256 = (
     "778186f6a460655a8b390c831e05c233171236898663ad4155bd45695597c6cf"
+)
+BRIDGE_IDENTITY_SHA256 = (
+    "748f8a4780ffdd8d38cccb314704906f8098fab4e098060aa8d92603753214ab"
+)
+BRIDGE_COMMIT_SHA1 = "391112a2f222d966a3dc54da953594667227d6d3"
+BRIDGE_SUBTREE_SHA256 = (
+    "1056ff94dc73575932cc37f94f96ccb54324cd60dc83af4cce5951a17fd959f4"
+)
+BRIDGE_CONTROLLER_SHA256 = (
+    "671693603673e8e895301620817c7fa15a96a37365cff59298d8261ee923a6b3"
+)
+BRIDGE_CLIENT_SHA256 = (
+    "912cba0f5b93900d4caaf651c81a3ef3b10f65b837f2c038db5c232d8b71d875"
 )
 GIT_REVISION = re.compile(r"[0-9a-f]{40}\Z")
 REPOSITORY_ID = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
@@ -6209,6 +6225,22 @@ def _validate_provider_source_and_modules(
     *,
     source_parser: Callable[[Mapping[str, Any], Path], CandidateSource] | None = None,
 ) -> tuple[CandidateSource, tuple[Path, ...]]:
+    receipt_contract = deployment_value.get("contract")
+    bridge_migration = (
+        receipt_contract == DEPLOYMENT_RECEIPT_CONTRACT
+        and isinstance(deployment_value.get("migration"), Mapping)
+        and deployment_value["migration"].get("bridge_identity_sha256")
+        == BRIDGE_IDENTITY_SHA256
+    )
+    if (
+        receipt_contract == DEPLOYMENT_RECEIPT_CONTRACT
+        and "migration" not in deployment_value
+    ):
+        intrinsic_repository = "https://github.com/nisavid/provingkit"
+    elif bridge_migration or receipt_contract == LEGACY_DEPLOYMENT_RECEIPT_CONTRACT:
+        intrinsic_repository = "https://github.com/nisavid/agents"
+    else:
+        raise DeploymentError(f"{label} receipt contract is unsupported")
     roles = _exact(
         _thaw(deployment_value["role_inventory"]),
         {"producers", "issuers", "validators"},
@@ -6472,14 +6504,17 @@ def _validate_provider_source_and_modules(
                 if (
                     provider["plugin_id"] != "task-witness"
                     or provider["publisher"] != "nisavid"
-                    or provider["repository"] != "https://github.com/nisavid/provingkit"
+                    or provider["repository"] != intrinsic_repository
                     or provider["authority_profile"] != "task-witness-smoke"
                 ):
                     raise DeploymentError(
                         f"{provider_label} intrinsic identity disagrees"
                     )
             else:
-                intrinsic, declaration_raw = _intrinsic_smoke_definition(raw)
+                intrinsic, declaration_raw = _intrinsic_smoke_definition(
+                    raw,
+                    repository=intrinsic_repository,
+                )
                 intrinsic_modules = tuple(
                     module
                     for validator in intrinsic.validators
@@ -8946,6 +8981,7 @@ def _retained_bridge_migration_shape(
         or edge != {"from": "freeze5", "to": "tw4", "via": "bridge"}
         or migration["purpose"] != "bridge-transition"
         or execution_class not in {"isolated-rehearsal", "live-migration"}
+        or migration["bridge_identity_sha256"] != BRIDGE_IDENTITY_SHA256
     ):
         raise DeploymentError(f"{label} binding disagrees")
     core = {
@@ -9104,6 +9140,8 @@ def _validate_retained_receipt_header(
     if _thaw(receipt["contracts"]) != contracts:
         raise DeploymentError(f"{label} contract inventory disagrees")
     if bridge_migration:
+        if sequence != 3:
+            raise DeploymentError(f"{label} migration epoch disagrees")
         _retained_bridge_migration_shape(
             receipt["migration"],
             receipt,
@@ -9449,6 +9487,90 @@ def _validate_retained_control_preimage(
     return prior_policy, _freeze(control_raws)
 
 
+def _validate_exact_bridge_receipt_epoch(
+    receipts: list[tuple[Mapping[str, Any], bytes]],
+    *,
+    initial_receipt: Mapping[str, Any],
+    initial_receipt_raw: bytes,
+    initial_receipt_profile: str,
+    bridge_transition_seen: bool,
+) -> None:
+    if (
+        initial_receipt_profile != BRIDGE_LEGACY_RECEIPT_PROFILE
+        and not bridge_transition_seen
+    ):
+        return
+    chain = sorted(receipts, key=lambda item: item[0]["sequence"])
+    sequences = [item[0]["sequence"] for item in chain]
+    expected_sequences = list(range(1, len(chain) + 1))
+    by_sequence = {value["sequence"]: (value, raw) for value, raw in chain}
+    if sequences != expected_sequences or len(by_sequence) != len(chain):
+        raise DeploymentError("B1 retained deployment chain is not exact")
+    if initial_receipt_profile == BRIDGE_LEGACY_RECEIPT_PROFILE:
+        if (
+            bridge_transition_seen
+            or sequences != [1, 2]
+            or by_sequence[2] != (initial_receipt, initial_receipt_raw)
+        ):
+            raise DeploymentError("B1 retained deployment chain is not exact")
+    else:
+        migrations = [value for value, _ in chain if "migration" in value]
+        if (
+            initial_receipt_profile != CURRENT_RECEIPT_PROFILE
+            or not bridge_transition_seen
+            or len(chain) < 3
+            or len(migrations) != 1
+            or migrations[0]["sequence"] != 3
+            or migrations[0]["migration"]["bridge_identity_sha256"]
+            != BRIDGE_IDENTITY_SHA256
+            or any("migration" in by_sequence[sequence][0] for sequence in sequences[3:])
+        ):
+            raise DeploymentError("B1 retained deployment chain is not exact")
+    freeze5, freeze5_raw = by_sequence[1]
+    bridge, bridge_raw = by_sequence[2]
+    freeze5_source = freeze5["source"]
+    bridge_source = bridge["source"]
+    freeze5_controls = freeze5["control_set"]
+    bridge_controls = bridge["control_set"]
+    if (
+        bridge["prior_receipt_sha256"]
+        != hashlib.sha256(freeze5_raw).hexdigest()
+        or freeze5_source["plugin_id"] != "task-witness"
+        or freeze5_source["publisher_id"] != "nisavid"
+        or freeze5_source["repository_id"] != "nisavid/agents"
+        or freeze5_source["repository_url"] != "https://github.com/nisavid/agents"
+        or freeze5_source["release_version"] != "0.1.0"
+        or freeze5_source["revision"] != FREEZE5_COMMIT_SHA1
+        or freeze5_source["subtree_sha256"] != FREEZE5_SUBTREE_SHA256
+        or freeze5_source["mode"] != "harness_snapshot"
+        or freeze5_source["source_authority"] != "github-nisavid-agents"
+        or freeze5_source["lineage"]["lineage_id"] != "agents-stable"
+        or freeze5_controls["controller"]["sha256"]
+        != FREEZE5_CONTROLLER_SHA256
+        or freeze5_controls["policy"]["sha256"] != FREEZE5_POLICY_SHA256
+        or freeze5_controls["client"]["sha256"] != FREEZE5_CLIENT_SHA256
+        or bridge_source["plugin_id"] != "task-witness"
+        or bridge_source["publisher_id"] != "nisavid"
+        or bridge_source["repository_id"] != "nisavid/agents"
+        or bridge_source["repository_url"] != "https://github.com/nisavid/agents"
+        or bridge_source["release_version"] != "0.1.1"
+        or bridge_source["revision"] != BRIDGE_COMMIT_SHA1
+        or bridge_source["subtree_sha256"] != BRIDGE_SUBTREE_SHA256
+        or bridge_source["mode"] != "harness_snapshot"
+        or bridge_source["source_authority"] != "github-nisavid-agents"
+        or bridge_source["lineage"]["lineage_id"] != "agents-stable"
+        or bridge_controls["controller"]["sha256"] != BRIDGE_CONTROLLER_SHA256
+        or bridge_controls["policy"]["sha256"] != FREEZE5_POLICY_SHA256
+        or bridge_controls["client"]["sha256"] != BRIDGE_CLIENT_SHA256
+        or (
+            bridge_transition_seen
+            and by_sequence[3][0]["prior_receipt_sha256"]
+            != hashlib.sha256(bridge_raw).hexdigest()
+        )
+    ):
+        raise DeploymentError("B1 retained deployment chain is not exact")
+
+
 def _validate_retained_receipt_chain_in_directory(
     receipt: Mapping[str, Any],
     receipt_raw: bytes,
@@ -9475,6 +9597,7 @@ def _validate_retained_receipt_chain_in_directory(
     current_rollback_raw: bytes | None = None
     policy = initial_policy
     current_profile = receipt_profile
+    bridge_transition_seen = False
 
     while True:
         _, _, _, current_source_parser = _receipt_profile(current_profile)
@@ -9557,11 +9680,14 @@ def _validate_retained_receipt_chain_in_directory(
                 raise DeploymentError("first active rollback receipt chain disagrees")
             break
 
-        next_profile = (
-            BRIDGE_LEGACY_RECEIPT_PROFILE
-            if current_profile == CURRENT_RECEIPT_PROFILE and "migration" in current
-            else current_profile
-        )
+        next_profile = current_profile
+        if current_profile == CURRENT_RECEIPT_PROFILE and "migration" in current:
+            if bridge_transition_seen:
+                raise DeploymentError(
+                    "retained deployment bridge transition is duplicated"
+                )
+            bridge_transition_seen = True
+            next_profile = BRIDGE_LEGACY_RECEIPT_PROFILE
         _, _, _, next_source_parser = _receipt_profile(next_profile)
 
         rollback_keys = {
@@ -9852,6 +9978,13 @@ def _validate_retained_receipt_chain_in_directory(
             target not in receipt_digests or target == edge.successor_receipt_sha256
         ):
             raise DeploymentError("retained manual rollback target ancestry disagrees")
+    _validate_exact_bridge_receipt_epoch(
+        [(value, raw) for _, value, raw in deployment_receipts],
+        initial_receipt=receipt,
+        initial_receipt_raw=receipt_raw,
+        initial_receipt_profile=receipt_profile,
+        bridge_transition_seen=bridge_transition_seen,
+    )
     retained_directory.verify(expected_names | set(allowed_extra_names))
     if current_rollback is None or current_rollback_raw is None:
         raise DeploymentError("retained rollback authority is unavailable")
@@ -25100,6 +25233,8 @@ def materialize_provider(
 
 def _intrinsic_smoke_definition(
     raw: bytes,
+    *,
+    repository: str = "https://github.com/nisavid/provingkit",
 ) -> tuple[_ParsedProvider, bytes]:
     module_sha256 = hashlib.sha256(raw).hexdigest()
     implementation = _validator_implementation_identity(
@@ -25111,7 +25246,7 @@ def _intrinsic_smoke_definition(
     provider = _ParsedProvider(
         "task-witness",
         "nisavid",
-        "https://github.com/nisavid/provingkit",
+        repository,
         "task-witness-smoke",
         _digest(
             {

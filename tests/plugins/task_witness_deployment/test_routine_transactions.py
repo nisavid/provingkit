@@ -22,6 +22,45 @@ class RoutineTransactionTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def test_bridge_migration_identity_is_pinned_before_legacy_alias(self) -> None:
+        deployment = self.fixture.deployment()
+        core = {"sequence": 3}
+        migration = {
+            "schema_version": 1,
+            "contract": "task-witness-bridge-migration-projection-v1",
+            "edge": {"from": "freeze5", "to": "tw4", "via": "bridge"},
+            "purpose": "bridge-transition",
+            "execution_class": "isolated-rehearsal",
+            "maintenance_transaction_sha256": "1" * 64,
+            "deployment_authorization_sha256": "2" * 64,
+            "transition_authorization_sha256": "3" * 64,
+            "expected_active_receipt_core_sha256": sha256(
+                canonical_bytes(core)
+            ),
+            "bridge_identity_sha256": (
+                "748f8a4780ffdd8d38cccb314704906f8098fab4e098060aa8d92603753214ab"
+            ),
+            "release_manifest_sha256": "4" * 64,
+            "endpoint_projection_sha256": "5" * 64,
+        }
+        deployment._retained_bridge_migration_shape(
+            migration,
+            {**core, "migration": migration},
+            "test bridge migration",
+        )
+        migration["bridge_identity_sha256"] = "6" * 64
+
+        with self.assertRaisesRegex(
+            deployment.DeploymentError,
+            "bridge migration",
+        ):
+            deployment._retained_bridge_migration_shape(
+                migration,
+                {**core, "migration": migration},
+                "test bridge migration",
+            )
+
+
     @staticmethod
     def _provider_role_identity(category, role):
         identifiers = {
@@ -2090,11 +2129,7 @@ class RoutineTransactionTests(unittest.TestCase):
         )
 
     def test_verify_routine_stage_requires_intrinsic_only_source_identity(self) -> None:
-        deployment, fixture, staged_c = self._stage_intrinsic_prior(
-            "prior-intrinsic-source"
-        )
-
-        def mutate_prior(prior, active):
+        def alternate_source_plugin(prior, active):
             del active
             self.assertIsNone(prior["source"]["provider_declaration_sha256"])
             self.assertFalse(
@@ -2102,14 +2137,32 @@ class RoutineTransactionTests(unittest.TestCase):
             )
             prior["source"]["plugin_id"] = "other-plugin"
 
-        stage_path = fixture.rewrite_routine_stage_prior(staged_c, mutate_prior)
-        before = fixture.stage_snapshot(stage_path)
-        with self.assertRaisesRegex(
-            deployment.DeploymentError,
-            "source|provider|task-witness|intrinsic",
-        ):
-            deployment.verify_deployment_stage(stage_path)
-        self.assertEqual(fixture.stage_snapshot(stage_path), before)
+        def legacy_intrinsic_repository(prior, active):
+            del active
+            intrinsic = [
+                item for item in prior["providers"] if item["intrinsic"] is True
+            ]
+            self.assertEqual(len(intrinsic), 1)
+            intrinsic[0]["repository"] = "https://github.com/nisavid/agents"
+
+        cases = {
+            "alternate-source-plugin": alternate_source_plugin,
+            "legacy-intrinsic-repository": legacy_intrinsic_repository,
+        }
+        for name, mutate_prior in cases.items():
+            with self.subTest(name=name):
+                deployment, fixture, staged_c = self._stage_intrinsic_prior(name)
+                stage_path = fixture.rewrite_routine_stage_prior(
+                    staged_c,
+                    mutate_prior,
+                )
+                before = fixture.stage_snapshot(stage_path)
+                with self.assertRaisesRegex(
+                    deployment.DeploymentError,
+                    "source|provider|task-witness|intrinsic",
+                ):
+                    deployment.verify_deployment_stage(stage_path)
+                self.assertEqual(fixture.stage_snapshot(stage_path), before)
 
     def test_verify_routine_stage_enforces_provider_and_module_bounds(self) -> None:
         cases = {

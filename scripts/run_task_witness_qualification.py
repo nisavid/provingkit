@@ -100,20 +100,20 @@ SUITE_PROJECTIONS = (
     ("linux-process-supervision", "platform-vertical", ("linux-x86_64",)),
 )
 SUITE_EXPECTED_COUNTS = {
-    "client-common": 321,
+    "client-common": 322,
     "deployment-common": 203,
-    "package-contract": 71,
-    "qualification-runner-contract": 7,
+    "package-contract": 72,
+    "qualification-runner-contract": 8,
     "task-witness-source-stage": 1,
     "public-release-source-stage": 1,
-    "forward-update": 53,
+    "forward-update": 54,
     "authorized-downgrade-and-manual-rollback": 18,
     "candidate-rejection-rollback": 11,
     "candidate-source-disappearance": 1,
     "provider-cache-deletion-and-movement": 1,
     "literal-rendered-shim": 1,
     "migration-freeze5-to-bridge": 11,
-    "migration-bridge-to-tw4": 15,
+    "migration-bridge-to-tw4": 17,
     "macos-acl": 12,
     "linux-process-supervision": 3,
 }
@@ -3296,11 +3296,82 @@ def _candidate_bridge_source_bytes(
         ) from error
 
 
-def _project_bridge_controller_to_current(bridge: bytes) -> bytes:
+def _project_bridge_controller_to_current(bridge: bytes, current_source: bytes) -> bytes:
+    def current_fragment(start: bytes, end: bytes, expected_sha256: str) -> bytes:
+        if current_source.count(start) != 1 or current_source.count(end) != 1:
+            raise QualificationError("candidate current controller fragment drift")
+        offset = current_source.index(start)
+        fragment = current_source[offset : current_source.index(end, offset)]
+        if hashlib.sha256(fragment).hexdigest() != expected_sha256:
+            raise QualificationError("candidate current controller fragment drift")
+        return fragment
+
+    constants_start = b"FREEZE5_COMMIT_SHA1 ="
+    constants_end = b"GIT_REVISION ="
+    if bridge.count(constants_start) != 1 or bridge.count(constants_end) != 1:
+        raise QualificationError("candidate bridge controller snapshot disagrees")
+    constants_offset = bridge.index(constants_start)
+    bridge_constants = bridge[
+        constants_offset : bridge.index(constants_end, constants_offset)
+    ]
+    current_constants = current_fragment(
+        constants_start,
+        constants_end,
+        "aa4257b777b931484c2d1595d76ebb40b38841a4087554aa5e224e21a52eea5b",
+    )
+    retained_chain_start = b"def _validate_retained_receipt_chain_in_directory("
+    exact_epoch = current_fragment(
+        b"def _validate_exact_bridge_receipt_epoch(",
+        retained_chain_start,
+        "9c3791a0055054b578466d276ab24fcfb7a98bf1689990789d8e387509c54f11",
+    )
     rewrites = (
+        (bridge_constants, current_constants),
+        (
+            b'    roles = _exact(\n'
+            b'        _thaw(deployment_value["role_inventory"]),\n',
+            b'    receipt_contract = deployment_value.get("contract")\n'
+            b'    bridge_migration = (\n'
+            b'        receipt_contract == DEPLOYMENT_RECEIPT_CONTRACT\n'
+            b'        and isinstance(deployment_value.get("migration"), Mapping)\n'
+            b'        and deployment_value["migration"].get("bridge_identity_sha256")\n'
+            b'        == BRIDGE_IDENTITY_SHA256\n'
+            b'    )\n'
+            b'    if (\n'
+            b'        receipt_contract == DEPLOYMENT_RECEIPT_CONTRACT\n'
+            b'        and "migration" not in deployment_value\n'
+            b'    ):\n'
+            b'        intrinsic_repository = "https://github.com/nisavid/provingkit"\n'
+            b'    elif bridge_migration or receipt_contract == '
+            b'LEGACY_DEPLOYMENT_RECEIPT_CONTRACT:\n'
+            b'        intrinsic_repository = "https://github.com/nisavid/agents"\n'
+            b'    else:\n'
+            b'        raise DeploymentError(f"{label} receipt contract is unsupported")\n'
+            b'    roles = _exact(\n'
+            b'        _thaw(deployment_value["role_inventory"]),\n',
+        ),
         (
             b'or provider["repository"] != "https://github.com/nisavid/agents"\n',
-            b'or provider["repository"] != "https://github.com/nisavid/provingkit"\n',
+            b'or provider["repository"] != intrinsic_repository\n',
+        ),
+        (
+            b"                intrinsic, declaration_raw = "
+            b"_intrinsic_smoke_definition(raw)\n",
+            b"                intrinsic, declaration_raw = "
+            b"_intrinsic_smoke_definition(\n"
+            b"                    raw,\n"
+            b"                    repository=intrinsic_repository,\n"
+            b"                )\n",
+        ),
+        (
+            b"def _intrinsic_smoke_definition(\n"
+            b"    raw: bytes,\n"
+            b") -> tuple[_ParsedProvider, bytes]:\n",
+            b"def _intrinsic_smoke_definition(\n"
+            b"    raw: bytes,\n"
+            b"    *,\n"
+            b'    repository: str = "https://github.com/nisavid/provingkit",\n'
+            b") -> tuple[_ParsedProvider, bytes]:\n",
         ),
         (
             (
@@ -3308,9 +3379,64 @@ def _project_bridge_controller_to_current(bridge: bytes) -> bytes:
                 b'        "task-witness-smoke",\n'
             ),
             (
-                b'        "https://github.com/nisavid/provingkit",\n'
+                b"        repository,\n"
                 b'        "task-witness-smoke",\n'
             ),
+        ),
+        (
+            b'        or execution_class not in {"isolated-rehearsal", '
+            b'"live-migration"}\n'
+            b"    ):\n",
+            b'        or execution_class not in {"isolated-rehearsal", '
+            b'"live-migration"}\n'
+            b'        or migration["bridge_identity_sha256"] '
+            b"!= BRIDGE_IDENTITY_SHA256\n"
+            b"    ):\n",
+        ),
+        (
+            b"    if bridge_migration:\n"
+            b"        _retained_bridge_migration_shape(\n",
+            b"    if bridge_migration:\n"
+            b"        if sequence != 3:\n"
+            b'            raise DeploymentError(f"{label} migration epoch disagrees")\n'
+            b"        _retained_bridge_migration_shape(\n",
+        ),
+        (
+            retained_chain_start,
+            exact_epoch + retained_chain_start,
+        ),
+        (
+            b"    current_profile = receipt_profile\n\n"
+            b"    while True:\n",
+            b"    current_profile = receipt_profile\n"
+            b"    bridge_transition_seen = False\n\n"
+            b"    while True:\n",
+        ),
+        (
+            b"        next_profile = (\n"
+            b"            BRIDGE_LEGACY_RECEIPT_PROFILE\n"
+            b'            if current_profile == CURRENT_RECEIPT_PROFILE and "migration" in current\n'
+            b"            else current_profile\n"
+            b"        )\n",
+            b"        next_profile = current_profile\n"
+            b'        if current_profile == CURRENT_RECEIPT_PROFILE and "migration" in current:\n'
+            b"            if bridge_transition_seen:\n"
+            b"                raise DeploymentError(\n"
+            b'                    "retained deployment bridge transition is duplicated"\n'
+            b"                )\n"
+            b"            bridge_transition_seen = True\n"
+            b"            next_profile = BRIDGE_LEGACY_RECEIPT_PROFILE\n",
+        ),
+        (
+            b"    retained_directory.verify(expected_names | set(allowed_extra_names))\n",
+            b"    _validate_exact_bridge_receipt_epoch(\n"
+            b"        [(value, raw) for _, value, raw in deployment_receipts],\n"
+            b"        initial_receipt=receipt,\n"
+            b"        initial_receipt_raw=receipt_raw,\n"
+            b"        initial_receipt_profile=receipt_profile,\n"
+            b"        bridge_transition_seen=bridge_transition_seen,\n"
+            b"    )\n"
+            b"    retained_directory.verify(expected_names | set(allowed_extra_names))\n",
         ),
     )
     projected = bridge
@@ -3614,7 +3740,8 @@ def validate_bridge_history_evidence(
             raw_files,
             "bridge",
             "controller/task_witness_deploy.py",
-        )
+        ),
+        current_controller,
     ):
         raise QualificationError("candidate bridge controller snapshot disagrees")
     current_client = _candidate_required_raw(
@@ -3678,6 +3805,8 @@ def validate_bridge_history_evidence(
         "controller/task_witness_deploy.py",
     }:
         raise QualificationError("candidate bridge four-path transition disagrees")
+    if identity_raw != canonical_json_bytes(identity):
+        raise QualificationError("candidate bridge identity is not canonical JSON")
     if canonical_json_bytes(projection) != canonical_json_bytes(child_projection):
         raise QualificationError("candidate validator bridge history disagrees")
     return projection

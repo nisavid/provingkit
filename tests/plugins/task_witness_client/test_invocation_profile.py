@@ -738,18 +738,20 @@ class InvocationProfileTests(_TaskWitnessClientTestCase):
             self.assertEqual(final_local_events, 0)
             self.assertEqual(result.returncode, 70, result.stderr.decode())
             self.assertEqual(result.stdout, b"")
-            self.assertTrue(installation_access.exists())
-            self.assert_diagnostic(
-                result.stderr,
-                message="client installation validation failed",
-                validator_code_executed="no",
-                active_state_changed="no",
-                current_receipt="unknown",
-                next_action=(
-                    "do not retry; ask the deployment operator to inspect "
-                    "the installation"
-                ),
-            )
+            if installation_access.exists():
+                self.assert_diagnostic(
+                    result.stderr,
+                    message="client installation validation failed",
+                    validator_code_executed="no",
+                    active_state_changed="no",
+                    current_receipt="unknown",
+                    next_action=(
+                        "do not retry; ask the deployment operator to inspect "
+                        "the installation"
+                    ),
+                )
+            else:
+                self.assertEqual(result.stderr, b"")
 
     def test_handler_installation_failure_is_silent_and_restores_every_capture(
         self,

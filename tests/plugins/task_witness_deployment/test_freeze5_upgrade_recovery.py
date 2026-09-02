@@ -400,6 +400,15 @@ class Freeze5UpgradeRecoveryTests(unittest.TestCase):
         prepared = self.fixture.prepared_first_hop()
         deployment = prepared.deployment
         staged = prepared.staged
+        bridge_source = json.loads(prepared.current_request.source_selection_raw)
+        self.assertEqual(
+            bridge_source["revision"],
+            "391112a2f222d966a3dc54da953594667227d6d3",
+        )
+        self.assertEqual(
+            bridge_source["subtree_sha256"],
+            "1056ff94dc73575932cc37f94f96ccb54324cd60dc83af4cce5951a17fd959f4",
+        )
         try:
             with installed_client_smoke_process(
                 deployment,

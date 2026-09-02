@@ -199,6 +199,7 @@ EXPECTED_MARKETPLACE = {
 PYTEST_CONFIGURATION_RELATIVE = Path("pytest.ini")
 EXPECTED_PYTEST_CONFIGURATION = (
     "[pytest]\ntestpaths = tests\nnorecursedirs = qualification/historical\n"
+    "pythonpath = .\n"
 )
 
 
@@ -825,7 +826,7 @@ def _validate_cutover_provenance(repository: Path) -> None:
             "kind": "repository",
             "legacy": LEGACY_REPOSITORY,
             "canonical": CANONICAL_REPOSITORY,
-            "scope": "historical-links-only",
+            "scope": "frozen-receipts",
         },
         {
             "kind": "marketplace-source-name",
@@ -952,7 +953,7 @@ def _validate_historical_identities(repository: Path) -> None:
         or allowlist["schema_version"] != 1
         or allowlist.get("matching") != "exact-relative-path-and-whole-file-sha256"
         or not isinstance(allowlist.get("entries"), list)
-        or len(allowlist["entries"]) != 33
+        or len(allowlist["entries"]) != 38
     ):
         raise ValidationError("historical identity allowlist drift")
 

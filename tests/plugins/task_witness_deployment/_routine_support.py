@@ -722,11 +722,12 @@ class RoutineDeploymentFixture:
         repository_id: str = "nisavid/provingkit",
         repository_url: str = "https://github.com/nisavid/provingkit",
         source_authority: str = "github-nisavid-provingkit",
+        lineage_id: str = "provingkit-stable",
     ):
         deployment = self.deployment()
         snapshot = deployment._snapshot_candidate_tree(candidate_root)
         receipt = b"opaque routine Task Witness manager receipt\n"
-        lineage = {"lineage_id": "provingkit-stable", "sequence": sequence}
+        lineage = {"lineage_id": lineage_id, "sequence": sequence}
         shared = {
             "plugin_id": plugin_id,
             "release_version": release_version,
