@@ -4,7 +4,7 @@
     "managed_source_mutation": "not-granted",
     "release_eligibility": "not-asserted"
   },
-  "content_sha256": "sha256:637d9f1020b30dbc774d00cd2ddbd633e5593c85c4410064b4f510eef99c0d04",
+  "content_sha256": "sha256:46d7e1f91bafeedcafadb7f2608dfdc2fb5729c8e5e3af17925e8dc0441655db",
   "contract": "coordinated-source-skill-disposition-ledger-v1",
   "dispositions": [
     {
@@ -43,9 +43,9 @@
         "plugins/tricritical/skills/review/SKILL.md"
       ],
       "follow_up_issues": [
-        56
+        "https://github.com/nisavid/provingkit/issues/6"
       ],
-      "rationale": "Tricritical carries family-level attribution, but the Issue #49 evidence still lacks the required rule-level source-to-destination map. Issue #56 must complete and review that mapping with Daybreak before release eligibility can be considered.",
+      "rationale": "Tricritical carries family-level attribution, but the agents issue #49 evidence still lacks the required rule-level source-to-destination map. The Provingkit issue #6 follow-up must complete and review that mapping with Daybreak before release eligibility can be considered.",
       "skill_dispositions": [],
       "source_id": "cursor-thermos"
     },
@@ -161,7 +161,7 @@
         "plugins/versionkeeping/skills/resolving-merge-conflicts/SKILL.md"
       ],
       "follow_up_issues": [
-        45
+        "https://github.com/nisavid/provingkit/issues/3"
       ],
       "rationale": "The managed Matt Pocock library remains immutable and side by side. Versionkeeping's resolving-merge-conflicts is recorded separately as a maintained derivative that requires bound upstream provenance and attribution before release.",
       "skill_dispositions": [
@@ -257,9 +257,9 @@
         "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md"
       ],
       "follow_up_issues": [
-        45
+        "https://github.com/nisavid/provingkit/issues/3"
       ],
-      "rationale": "The canonical duo now incorporates, corrects, supersedes, or explicitly excludes every material behavior observed at dotfiles source revision cd2071e4dd885d293325a3af063421db9579a7df. Issue #45 still owns release qualification, installation, migration, and retirement.",
+      "rationale": "The canonical duo now incorporates, corrects, supersedes, or explicitly excludes every material behavior observed at dotfiles source revision cd2071e4dd885d293325a3af063421db9579a7df. Provingkit issue #3 still owns release qualification, installation, migration, and retirement.",
       "skill_dispositions": [],
       "source_id": "ivan-mergecraft"
     },
@@ -456,7 +456,7 @@
         "plugins/rolecasting/skills/delegating-cross-agent-work/SKILL.md"
       ],
       "follow_up_issues": [
-        45
+        "https://github.com/nisavid/provingkit/issues/3"
       ],
       "rationale": "The coordinated package preserves the stronger topology and assurance contracts; final refresh must semantically import any later useful personal-source changes instead of overwriting either side.",
       "skill_dispositions": [],
@@ -504,9 +504,9 @@
         "plugins/rolecasting/skills/delegating-cross-agent-work/SKILL.md"
       ],
       "follow_up_issues": [
-        51
+        "https://github.com/nisavid/agents/issues/51"
       ],
-      "rationale": "All fourteen Superpowers routes are superseded by existing owners or rejected. Issue 51 alone owns install-before-remove convergence and proof that the legacy routes are absent.",
+      "rationale": "All fourteen Superpowers routes are superseded by existing owners or rejected. The agents issue #51 owner alone controls install-before-remove convergence and proof that the legacy routes are absent.",
       "skill_dispositions": [
         {
           "disposition": "supersede-and-remove",
@@ -587,7 +587,7 @@
           "durable_owners": [
             "diagnosing-bugs"
           ],
-          "rationale": "The immutable managed diagnosing-bugs skill remains the troubleshooting route; Issue 51 removes the obsolete global systematic-debugging route.",
+          "rationale": "The immutable managed diagnosing-bugs skill remains the troubleshooting route; https://github.com/nisavid/agents/issues/51 removes the obsolete global systematic-debugging route.",
           "skill_ids": [
             "systematic-debugging"
           ]
@@ -868,6 +868,6 @@
       "sha256": "sha256:d11961ed2d46231f74087e8ce50f96b5087bb3f84d39010f154d4ab475b83670"
     }
   },
-  "limitations": "This ledger settles source contribution intent only. It does not mutate managed sources, authorize host installation or removal, assert release eligibility, or replace the final refresh and qualification owned by issue 45.",
+  "limitations": "This ledger settles source contribution intent only. It does not mutate managed sources, authorize host installation or removal, assert release eligibility, or replace the final refresh and qualification owned by Provingkit issue #3.",
   "schema_version": 1
 }

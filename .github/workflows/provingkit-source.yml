@@ -163,6 +163,7 @@ jobs:
       - name: Validate Task Witness at source stage
         run: |
           python -m unittest tests.test_task_witness_package
+          python -m unittest tests.test_task_witness_qualification.TaskWitnessQualificationTests.test_deployment_common_selector_table_is_closed_and_exact
           python scripts/validate_task_witness.py "$GITHUB_WORKSPACE" --source-stage
 
   derived-locks:

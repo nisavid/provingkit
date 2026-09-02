@@ -30,6 +30,14 @@ RELEASE_SCHEMA_RELATIVE = Path("release/provingkit/release-manifest-v1.schema.js
 CANONICAL_REPOSITORY = "https://github.com/nisavid/provingkit"
 LEGACY_REPOSITORY = "https://github.com/nisavid" + "/agents"
 LEGACY_REPOSITORY_SLUG = "nisavid" + "/agents"
+AGENTS_ISSUE_50 = f"{LEGACY_REPOSITORY}/issues/50"
+AGENTS_ISSUE_51 = f"{LEGACY_REPOSITORY}/issues/51"
+SOURCE_DISPOSITION_LEDGER_RELATIVE = Path(
+    "release/source-skill-disposition/disposition-ledger.json"
+)
+SOURCE_DISPOSITION_REFRESH_RELATIVE = Path(
+    "release/source-skill-disposition/release-refresh-contract.json"
+)
 LEGACY_IDENTITY_TOKENS = tuple(
     value.encode("ascii")
     for value in (
@@ -233,6 +241,86 @@ def _load_json(path: Path, label: str) -> object:
         )
     except (OSError, UnicodeError, ValueError) as error:
         raise ValidationError(f"{label} is unreadable") from error
+
+
+def _strip_reference_once(value: object, reference: str) -> str:
+    if not isinstance(value, str):
+        raise ValidationError("active legacy tracker reference scope drift")
+    pattern = re.compile(
+        r"(?<![A-Za-z0-9._~:/?#\[\]@!$&'*+,;=%-])"
+        + re.escape(reference)
+        + r"(?![A-Za-z0-9._~:/?#\[\]@!$&'*+,;=%-])"
+    )
+    if len(pattern.findall(value)) != 1:
+        raise ValidationError("active legacy tracker reference scope drift")
+    return pattern.sub("", value)
+
+
+def _identity_scan_content(relative_path: Path, content: bytes) -> bytes:
+    if relative_path not in {
+        SOURCE_DISPOSITION_LEDGER_RELATIVE,
+        SOURCE_DISPOSITION_REFRESH_RELATIVE,
+    }:
+        return content
+    try:
+        parsed = json.loads(
+            content.decode("utf-8"),
+            object_pairs_hook=_strict_object,
+            parse_constant=_reject_nonfinite,
+        )
+        if not isinstance(parsed, dict):
+            raise TypeError
+        if relative_path == SOURCE_DISPOSITION_LEDGER_RELATIVE:
+            dispositions = parsed["dispositions"]
+            records = [
+                record
+                for record in dispositions
+                if isinstance(record, dict)
+                and record.get("contribution_id")
+                == "superpowers-contribution-unresolved"
+            ]
+            if len(records) != 1:
+                raise ValueError
+            record = records[0]
+            if record.get("follow_up_issues") != [AGENTS_ISSUE_51]:
+                raise ValueError
+            record["follow_up_issues"] = [""]
+            skill_records = [
+                item
+                for item in record["skill_dispositions"]
+                if isinstance(item, dict)
+                and item.get("skill_ids") == ["systematic-debugging"]
+            ]
+            if len(skill_records) != 1:
+                raise ValueError
+            skill_records[0]["rationale"] = _strip_reference_once(
+                skill_records[0].get("rationale"), AGENTS_ISSUE_51
+            )
+        else:
+            follow_ups = parsed["follow_up_issues"]
+            if (
+                not isinstance(follow_ups, list)
+                or not follow_ups
+                or not isinstance(follow_ups[0], dict)
+                or follow_ups[0].get("issue") != AGENTS_ISSUE_51
+            ):
+                raise ValueError
+            follow_ups[0]["issue"] = ""
+            workflow = parsed["workflow"]
+            if (
+                not isinstance(workflow, dict)
+                or workflow.get("convergence_owner_issue") != AGENTS_ISSUE_51
+                or workflow.get("source_disposition_owner_issue")
+                != AGENTS_ISSUE_50
+            ):
+                raise ValueError
+            workflow["convergence_owner_issue"] = ""
+            workflow["source_disposition_owner_issue"] = ""
+    except (KeyError, TypeError, UnicodeError, ValueError) as error:
+        if isinstance(error, ValidationError):
+            raise
+        raise ValidationError("active legacy tracker reference scope drift") from error
+    return json.dumps(parsed, ensure_ascii=False).encode("utf-8")
 
 
 def _sha256_uri(path: Path, label: str) -> str:
@@ -829,6 +917,12 @@ def _validate_cutover_provenance(repository: Path) -> None:
             "scope": "frozen-receipts",
         },
         {
+            "kind": "repository-id",
+            "legacy": LEGACY_REPOSITORY_SLUG,
+            "canonical": "nisavid/provingkit",
+            "scope": "frozen-receipts",
+        },
+        {
             "kind": "marketplace-source-name",
             "legacy": "nisavid-" + "agents",
             "canonical": "provingkit",
@@ -1006,7 +1100,8 @@ def _validate_historical_identities(repository: Path) -> None:
             content = path.read_bytes()
         except OSError as error:
             raise ValidationError("repository identity scan failed") from error
-        if any(token in content for token in LEGACY_IDENTITY_TOKENS):
+        identity_content = _identity_scan_content(relative_path, content)
+        if any(token in identity_content for token in LEGACY_IDENTITY_TOKENS):
             observed[relative_path.as_posix()] = content
 
     unexpected = sorted(set(observed) - set(allowed))
@@ -1049,6 +1144,112 @@ def _validate_release_boundary(repository: Path) -> None:
         Draft202012Validator.check_schema(schema)
     except SchemaError as error:
         raise ValidationError("release-manifest schema is invalid") from error
+
+    definition = _load_json(
+        repository / DEFINITION_RELATIVE,
+        "versioned Provingkit definition",
+    )
+    membership = definition.get("membership") if isinstance(definition, dict) else None
+    definition_members = (
+        membership.get("members") if isinstance(membership, dict) else None
+    )
+    schema_properties = schema.get("properties")
+    schema_definitions = schema.get("$defs")
+    schema_members = (
+        schema_properties.get("members")
+        if isinstance(schema_properties, dict)
+        else None
+    )
+    schema_prefix_items = (
+        schema_members.get("prefixItems") if isinstance(schema_members, dict) else None
+    )
+    if (
+        not isinstance(definition_members, list)
+        or not isinstance(schema_definitions, dict)
+        or not isinstance(schema_prefix_items, list)
+        or len(schema_prefix_items) != len(definition_members)
+        or schema_members.get("type") != "array"
+        or schema_members.get("minItems") != len(definition_members)
+        or schema_members.get("maxItems") != len(definition_members)
+        or schema_members.get("items") is not False
+    ):
+        raise ValidationError("release-manifest schema member projection drift")
+
+    definition_projection: list[tuple[object, ...]] = []
+    schema_projection: list[tuple[object, ...]] = []
+    for member in definition_members:
+        if not isinstance(member, dict):
+            raise ValidationError("release-manifest schema member projection drift")
+        identity_manifests = member.get("identity_manifests")
+        content_identity = member.get("content_identity")
+        if not isinstance(identity_manifests, dict) or not isinstance(
+            content_identity, dict
+        ):
+            raise ValidationError("release-manifest schema member projection drift")
+        definition_projection.append(
+            (
+                member.get("id"),
+                member.get("distribution_kind"),
+                member.get("version"),
+                identity_manifests.get("canonical"),
+                identity_manifests.get("claude"),
+                content_identity.get("kind"),
+                content_identity.get("path"),
+            )
+        )
+
+    for prefix_item in schema_prefix_items:
+        reference = prefix_item.get("$ref") if isinstance(prefix_item, dict) else None
+        if not isinstance(reference, str) or not reference.startswith("#/$defs/"):
+            raise ValidationError("release-manifest schema member projection drift")
+        member_schema = schema_definitions.get(reference.removeprefix("#/$defs/"))
+        member_properties = (
+            member_schema.get("properties")
+            if isinstance(member_schema, dict)
+            else None
+        )
+        if (
+            not isinstance(member_schema, dict)
+            or member_schema.get("$ref") != "#/$defs/member"
+            or not isinstance(member_properties, dict)
+        ):
+            raise ValidationError("release-manifest schema member projection drift")
+        manifest_properties = member_properties.get("identity_manifests", {}).get(
+            "properties", {}
+        )
+        content_properties = member_properties.get("content_identity", {}).get(
+            "properties", {}
+        )
+        try:
+            canonical_path = manifest_properties["canonical"]["properties"]["path"][
+                "const"
+            ]
+            claude_path = manifest_properties["claude"]["properties"]["path"][
+                "const"
+            ]
+            content_kind = content_properties["kind"]["const"]
+            content_path = content_properties["path"]["const"]
+            member_id = member_properties["id"]["const"]
+            distribution_kind = member_properties["distribution_kind"]["const"]
+            version = member_properties["version"]["const"]
+        except (KeyError, TypeError):
+            raise ValidationError(
+                "release-manifest schema member projection drift"
+            ) from None
+        schema_projection.append(
+            (
+                member_id,
+                distribution_kind,
+                version,
+                canonical_path,
+                claude_path,
+                content_kind,
+                content_path,
+            )
+        )
+    if schema_projection != definition_projection:
+        raise ValidationError("release-manifest schema member projection drift")
+
     try:
         candidate_paths = sorted(repository.rglob("*"))
     except OSError as error:

@@ -1751,7 +1751,7 @@ else:
                     separators=(",", ":"),
                 ).encode()
             ).hexdigest(),
-            "ee5a9a51f19ae2059a1b906e21856640ccb227c18d1bac46a5c8139e9d87fd06",
+            "0ae69284ec6a896a382e88201368147a71b60da5c43d42d045f12441002edcfa",
         )
         forbidden = {
             "test_candidate_failure_restores_exact_absence_without_rollback_smoke",

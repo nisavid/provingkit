@@ -17,6 +17,7 @@ from scripts import validate_provingkit
 REPOSITORY = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY / "scripts" / "validate_provingkit.py"
 SOURCE_WORKFLOW = REPOSITORY / ".github/workflows/provingkit-source.yml"
+LEGACY_REPOSITORY_ID = "nisavid" + "/agents"
 
 
 class ProvingkitRepositoryContractTests(unittest.TestCase):
@@ -145,6 +146,20 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertIn(
             "python -m pip install --disable-pip-version-check PyYAML==6.0.3",
+            commands,
+        )
+
+    def test_task_witness_source_job_runs_the_qualification_selector_guard(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        commands = {
+            line.strip()
+            for step in workflow["jobs"]["task-witness"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+
+        self.assertIn(
+            "python -m unittest tests.test_task_witness_qualification.TaskWitnessQualificationTests.test_deployment_common_selector_table_is_closed_and_exact",
             commands,
         )
 
@@ -710,6 +725,23 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("cutover provenance drift", result.stderr)
 
+    def test_cutover_provenance_inventories_the_repository_id_alias(self) -> None:
+        provenance = json.loads(
+            (REPOSITORY / "release/provingkit/cutover-provenance-v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertIn(
+            {
+                "canonical": "nisavid/provingkit",
+                "kind": "repository-id",
+                "legacy": LEGACY_REPOSITORY_ID,
+                "scope": "frozen-receipts",
+            },
+            provenance["compatibility_aliases"],
+        )
+
     def test_validator_locks_the_historical_source_lineage_owner(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
@@ -825,6 +857,53 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 readme.read_text(encoding="utf-8")
                 + f"\nUnexpected active link: {legacy_repository}\n",
                 encoding="utf-8",
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unallowlisted legacy repository identity", result.stderr)
+
+    def test_active_legacy_tracker_reference_exemption_requires_an_exact_url(
+        self,
+    ) -> None:
+        for suffix in ("", "0", "evil", "/comments", "?query=unexpected"):
+            with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as directory:
+                repository = Path(directory) / "repository"
+                shutil.copytree(
+                    REPOSITORY,
+                    repository,
+                    ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+                )
+                legacy_issue = "https://github.com/nisavid" + "/agents/issues/50"
+                readme = repository / "README.md"
+                readme.write_text(
+                    readme.read_text(encoding="utf-8")
+                    + f"\nUnexpected active link: {legacy_issue}{suffix}\n",
+                    encoding="utf-8",
+                )
+
+                result = self.validate(repository)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("unallowlisted legacy repository identity", result.stderr)
+
+    def test_active_legacy_tracker_reference_exemption_is_field_scoped(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            ledger_path = (
+                repository / "release/source-skill-disposition/disposition-ledger.json"
+            )
+            ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+            legacy_issue = "https://github.com/nisavid" + "/agents/issues/51"
+            ledger["dispositions"][0]["rationale"] += f" {legacy_issue}"
+            ledger_path.write_text(
+                json.dumps(ledger, indent=2) + "\n", encoding="utf-8"
             )
 
             result = self.validate(repository)
@@ -1060,6 +1139,61 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     list(validator.iter_errors(invalid_manifest)),
                     [],
                 )
+
+    def test_release_boundary_rejects_definition_schema_member_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            schema_path = (
+                repository / "release/provingkit/release-manifest-v1.schema.json"
+            )
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            schema["$defs"]["rolecasting"]["properties"]["version"]["const"] = (
+                "1.0.1"
+            )
+            schema_path.write_text(
+                json.dumps(schema, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("release-manifest schema member projection drift", result.stderr)
+
+    def test_release_boundary_binds_closed_member_cardinality_to_definition(
+        self,
+    ) -> None:
+        mutations = (
+            ("type", "object"),
+            ("minItems", 0),
+            ("maxItems", 7),
+            ("items", {}),
+        )
+        for key, value in mutations:
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:
+                repository = Path(directory) / "repository"
+                shutil.copytree(
+                    REPOSITORY,
+                    repository,
+                    ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+                )
+                schema_path = (
+                    repository / "release/provingkit/release-manifest-v1.schema.json"
+                )
+                schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                schema["properties"]["members"][key] = value
+                schema_path.write_text(
+                    json.dumps(schema, indent=2) + "\n", encoding="utf-8"
+                )
+
+                result = self.validate(repository)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("release-manifest schema member projection drift", result.stderr)
 
     def test_current_member_manifests_require_the_destination_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

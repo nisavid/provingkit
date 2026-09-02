@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Issue #50 source-skill disposition and refresh contracts."""
+"""Validate the agents #50 source-skill disposition and refresh contracts."""
 
 from __future__ import annotations
 
@@ -37,10 +37,25 @@ AUTHORITY = {
     "managed_source_mutation": "not-granted",
     "release_eligibility": "not-asserted",
 }
+AGENTS_REPOSITORY = "https://github.com/nisavid" + "/agents"
+PROVINGKIT_REPOSITORY = "https://github.com/nisavid/provingkit"
+AGENTS_ISSUE_50 = f"{AGENTS_REPOSITORY}/issues/50"
+AGENTS_ISSUE_51 = f"{AGENTS_REPOSITORY}/issues/51"
+PROVINGKIT_ISSUE_3 = f"{PROVINGKIT_REPOSITORY}/issues/3"
+PROVINGKIT_ISSUE_6 = f"{PROVINGKIT_REPOSITORY}/issues/6"
+SYSTEMATIC_DEBUGGING_RATIONALE = (
+    "The immutable managed diagnosing-bugs skill remains the troubleshooting "
+    f"route; {AGENTS_ISSUE_51} removes the obsolete global "
+    "systematic-debugging route."
+)
+ISSUE_URL = re.compile(
+    r"https://github\.com/nisavid/(?:agents|provingkit)/issues/[1-9][0-9]*\Z"
+)
 LEDGER_LIMITATIONS = (
     "This ledger settles source contribution intent only. It does not mutate "
     "managed sources, authorize host installation or removal, assert release "
-    "eligibility, or replace the final refresh and qualification owned by issue 45."
+    "eligibility, or replace the final refresh and qualification owned by "
+    "Provingkit issue #3."
 )
 RESCOUT_SURFACES = [
     "external-tool-managed-skills",
@@ -76,7 +91,7 @@ WORKFLOW_STEPS = [
     "capture-final-refresh-and-qualification-receipts",
 ]
 DISPOSITION_INVENTORY_SHA256 = (
-    "sha256:faa689ff66fb4de87a5bad218993647c78ae82c5da59a0c369cafc77056a047a"
+    "sha256:631a4f952ae39b70a16f66fb8dfcd9b83ff440851da3a8929dcec8fde4fb3bc6"
 )
 FRESHNESS = {
     "maximum_age_seconds": 86400,
@@ -656,10 +671,10 @@ def string_list(value: object, diagnostic: str) -> list[str]:
     return value
 
 
-def issue_list(value: object, diagnostic: str) -> list[int]:
+def issue_list(value: object, diagnostic: str) -> list[str]:
     require(
         type(value) is list
-        and all(type(item) is int and item > 0 for item in value)
+        and all(type(item) is str and ISSUE_URL.fullmatch(item) for item in value)
         and value == sorted(set(value)),
         diagnostic,
     )
@@ -756,6 +771,21 @@ def validate_skill_dispositions(
                     for disposition in observed_dispositions.values()
                 ),
                 "superpowers-skill-set skill disposition value drift",
+            )
+            systematic_debugging = next(
+                (
+                    record
+                    for record in value
+                    if record["skill_ids"] == ["systematic-debugging"]
+                ),
+                None,
+            )
+            require(
+                type(systematic_debugging) is dict
+                and systematic_debugging["durable_owners"] == ["diagnosing-bugs"]
+                and systematic_debugging["rationale"]
+                == SYSTEMATIC_DEBUGGING_RATIONALE,
+                "superpowers systematic-debugging owner issue drift",
             )
     elif source_id == "review-atlas-private":
         require(
@@ -936,11 +966,14 @@ def validate_disposition_ledger(
         if disposition.startswith("defer-"):
             require(bool(follow_ups), "deferred disposition lacks a follow-up issue")
         if disposition == "supersede-and-remove":
-            require(51 in follow_ups, "superseded source lacks convergence ownership")
+            require(
+                AGENTS_ISSUE_51 in follow_ups,
+                "superseded source lacks convergence ownership",
+            )
         if record["contribution_id"] == "cursor-thermos-rule-lineage":
             require(
                 disposition == "defer-blocking"
-                and follow_ups == [56]
+                and follow_ups == [PROVINGKIT_ISSUE_6]
                 and record["evidence_paths"]
                 == [
                     "plugins/tricritical/NOTICE",
@@ -1072,11 +1105,11 @@ def validate_refresh_contract(
         follow_ups
         == [
             {
-                "issue": 51,
+                "issue": AGENTS_ISSUE_51,
                 "owns": "install-before-remove host convergence, duplicate and shadow checks, rollback, and proof that retired routes are absent",
             },
             {
-                "issue": 56,
+                "issue": PROVINGKIT_ISSUE_6,
                 "owns": "Daybreak review, Thermos rule-level mapping, and security-sensitive integration of disposition evidence with hardened receipts and the public-release gate",
             },
         ],
@@ -1442,12 +1475,12 @@ def validate_refresh_contract(
         "release refresh workflow schema drift",
     )
     require(
-        workflow["final_refresh_owner_issue"] == 45,
+        workflow["final_refresh_owner_issue"] == PROVINGKIT_ISSUE_3,
         "final release refresh owner drift",
     )
     require(
-        workflow["source_disposition_owner_issue"] == 50
-        and workflow["convergence_owner_issue"] == 51,
+        workflow["source_disposition_owner_issue"] == AGENTS_ISSUE_50
+        and workflow["convergence_owner_issue"] == AGENTS_ISSUE_51,
         "release workflow issue ownership drift",
     )
     require(workflow["ordered_steps"] == WORKFLOW_STEPS, "release refresh step drift")

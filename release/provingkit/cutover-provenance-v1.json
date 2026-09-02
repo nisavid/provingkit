@@ -163,6 +163,12 @@
       "scope": "frozen-receipts"
     },
     {
+      "canonical": "nisavid/provingkit",
+      "kind": "repository-id",
+      "legacy": "nisavid/agents",
+      "scope": "frozen-receipts"
+    },
+    {
       "canonical": "provingkit",
       "kind": "marketplace-source-name",
       "legacy": "nisavid-agents",
