@@ -159,7 +159,7 @@
     {
       "disposition": "historical-source-lineage-fixture",
       "path": "tests/test_validate_source_skill_lineage.py",
-      "sha256": "sha256:466a50a16cb40c0ea79445682307431d2013f47da34f92f78ed2119268cb1746"
+      "sha256": "sha256:5c9c9a9cf1731511ae0f22a618b9f728d05632f80ee27f05023633c301c1cfb7"
     }
   ],
   "matching": "exact-relative-path-and-whole-file-sha256",

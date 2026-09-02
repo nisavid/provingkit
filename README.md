@@ -103,6 +103,30 @@ python scripts/validate_task_witness.py "$repository" --source-stage
 These commands validate public source contracts. They do not grant release,
 installation, runtime, or host-mutation authority.
 
+### Prepared source-stage containment
+
+The prepared wrapper exposes only `source-stage` validation. Invoke it from a
+clean outer environment with an absolute, operator-qualified CPython 3.13+
+executable and an absolute public candidate checkout:
+
+```sh
+/usr/bin/env -i LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin TZ=UTC /bin/sh \
+  /absolute/path/to/public-provingkit/scripts/run_prepared_release_validation.sh \
+  source-stage \
+  /absolute/path/to/qualified/cpython \
+  /absolute/path/to/public-provingkit
+```
+
+An exit status of `0` confirms only the prepared source checks. Native
+`public-release` and Task Witness qualification or final-release routes remain
+unavailable. A later release must supply controls that this repository does
+not own: an installed, host-owned, content-pinned, network-denied OS sandbox;
+review authorization bound to the candidate bytes; opaque inherited handles
+for private evidence; authenticated host and evaluation evidence with managed
+signing-key custody and anti-replay state; and independent provider authority
+bound to the exact candidate, policy, runtime, and endpoint. Until those gates
+close, Task Witness remains `production_eligible: false`.
+
 ## Generated locks and review evidence
 
 Do not hand-edit member content locks or generated projections. Change the
