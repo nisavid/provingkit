@@ -3764,7 +3764,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
         normalized_readme = " ".join(readme.split())
 
-        self.assertNotIn("run_prepared_release_validation.sh", readme)
+        self.assertEqual(readme.count("run_prepared_release_validation.sh"), 1)
         self.assertIn("python scripts/validate_provingkit.py .", readme)
         for member in (
             "rolecasting",
