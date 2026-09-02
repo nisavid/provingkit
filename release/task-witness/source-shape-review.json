@@ -40,7 +40,7 @@
       "release/task-witness/tw4-bridge-identity.json": 33,
       "release/task-witness/tw4-bridge-provenance.json": 111,
       "release/task-witness/tw4-suite-inventory.json": 1,
-      "scripts/run_task_witness_qualification.py": 5419,
+      "scripts/run_task_witness_qualification.py": 5445,
       "scripts/run_task_witness_qualification_suite.py": 3952,
       "scripts/validate_task_witness.py": 4536,
       "tests/plugins/task_witness_client/__init__.py": 0,
@@ -286,7 +286,7 @@
         ]
       },
       "tw4_qualification_contract": {
-        "aggregate_nonblank_noncomment_lines": 15972,
+        "aggregate_nonblank_noncomment_lines": 15998,
         "paths": [
           "release/task-witness/tw4-suite-inventory.json",
           "scripts/run_task_witness_qualification.py",
@@ -310,7 +310,7 @@
       "release_integration_tests": "5dd577a9de0e597e842cd590faf64ea267c9f3cd20b4bbc3458fceb1a1324875",
       "release_validator": "6c180d867c3f55b31a76da83e3c423964bb2bed663fbf08636aec4d68378a5d8",
       "tw4_migration_evidence": "1c2c85bd317af0c0fcdeb2f642c435af50e620948d3dd99a6af974cedf34059c",
-      "tw4_qualification_contract": "9f5811c855eb8ee78c508e0cca7bf650371dea6c01e8606e7349de0a9f5e200a"
+      "tw4_qualification_contract": "273d88043c9e4dfe6de8be537cdca524d91395110f9f08ff0fa5ec8f25ee8497"
     },
     "algorithm": "sha256",
     "entries": [
@@ -420,7 +420,7 @@
       },
       {
         "path": "scripts/run_task_witness_qualification.py",
-        "sha256": "4c4a3ea7055646d544c79d045272037e83bcbfb600d11895de2e68c793715fea"
+        "sha256": "baa546c9c483d590329c9dc4ca9539742c195b6c9eeb1bad137141905d0cf87f"
       },
       {
         "path": "scripts/run_task_witness_qualification_suite.py",

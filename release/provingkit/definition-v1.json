@@ -83,7 +83,7 @@
         "content_identity": {
           "kind": "source-shape-review",
           "path": "release/task-witness/source-shape-review.json",
-          "sha256": "sha256:f3ff4c29a7e19f507428682a33c371fc34ed0bf91ef27c5e56b76e67b5fe897c"
+          "sha256": "sha256:c080690ddce2b0a2279eafd7233f31e2d5cbf9b2163f26e03125c5c71a62ec35"
         },
         "display_name": "Task Witness",
         "distribution_kind": "code-only",
