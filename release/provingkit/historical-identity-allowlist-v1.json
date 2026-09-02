@@ -79,10 +79,10 @@
     {
       "disposition": "cutover-provenance",
       "path": "release/provingkit/cutover-provenance-v1.json",
-      "sha256": "sha256:f65ec4caa22bfa78d7807dfa6d7ed822284504a76fd33dac35c929427b2b80ae"
+      "sha256": "sha256:401d5c095919b9e73fa2de66ac37fffdf41007ae314f512d2376097e463c599d"
     },
     {
-      "disposition": "historical-stale-source-lineage-manifest-owned-by-issue-45",
+      "disposition": "historical-stale-source-lineage-manifest-owned-by-provingkit-issue-3",
       "path": "release/source-skill-lineage/source-manifest.json",
       "sha256": "sha256:d11961ed2d46231f74087e8ce50f96b5087bb3f84d39010f154d4ab475b83670"
     },
@@ -189,7 +189,7 @@
     {
       "disposition": "historical-source-lineage-fixture",
       "path": "tests/test_validate_source_skill_lineage.py",
-      "sha256": "sha256:5088f8208f894a9fd900d9af470ccd06682ecbd954959f621043c08594ec158d"
+      "sha256": "sha256:84366a0e8e0cee8ee01065ce90ad65f68c7c6e9a4cf71f77eec9ed330fee5f15"
     }
   ],
   "matching": "exact-relative-path-and-whole-file-sha256",

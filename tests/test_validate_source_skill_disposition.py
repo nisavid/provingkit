@@ -28,6 +28,11 @@ FINAL_RESCOUT_SCHEMA = (
 FINAL_RESCOUT = (
     LINEAGE_ROOT / "installed-hosts" / "final-candidate-rescout-v1.json"
 )
+AGENTS_ISSUE_50 = "https://github.com/nisavid" + "/agents/issues/50"
+AGENTS_ISSUE_51 = "https://github.com/nisavid" + "/agents/issues/51"
+AGENTS_ISSUE_6 = "https://github.com/nisavid" + "/agents/issues/6"
+PROVINGKIT_ISSUE_3 = "https://github.com/nisavid/provingkit/issues/3"
+PROVINGKIT_ISSUE_6 = "https://github.com/nisavid/provingkit/issues/6"
 
 
 def canonical_sha256(value: object) -> str:
@@ -282,7 +287,7 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
                 "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
             ],
         )
-        self.assertEqual(mergecraft["follow_up_issues"], [45])
+        self.assertEqual(mergecraft["follow_up_issues"], [PROVINGKIT_ISSUE_3])
         self.assertEqual(mergecraft["authority"]["host_removal"], "not-granted")
         self.assertEqual(
             mergecraft["authority"]["managed_source_mutation"], "not-granted"
@@ -406,7 +411,7 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
 
         self.assert_rejected("review-atlas component disposition drift")
 
-    def test_unmapped_thermos_rules_remain_blocking_for_daybreak_issue_56(self) -> None:
+    def test_unmapped_thermos_rules_remain_blocking_for_provingkit_issue_6(self) -> None:
         ledger = self.load(LEDGER)
         thermos = next(
             item
@@ -414,6 +419,30 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
             if item["contribution_id"] == "cursor-thermos-rule-lineage"
         )
         thermos["disposition"] = "absorb-or-refresh"
+        self.write(LEDGER, ledger)
+
+        self.assert_rejected("Thermos rule-level mapping disposition drift")
+
+    def test_follow_up_issues_reject_bare_numbers(self) -> None:
+        ledger = self.load(LEDGER)
+        thermos = next(
+            item
+            for item in ledger["dispositions"]
+            if item["contribution_id"] == "cursor-thermos-rule-lineage"
+        )
+        thermos["follow_up_issues"] = [6]
+        self.write(LEDGER, ledger)
+
+        self.assert_rejected("follow-up issue list drift")
+
+    def test_follow_up_issues_reject_wrong_repository_collisions(self) -> None:
+        ledger = self.load(LEDGER)
+        thermos = next(
+            item
+            for item in ledger["dispositions"]
+            if item["contribution_id"] == "cursor-thermos-rule-lineage"
+        )
+        thermos["follow_up_issues"] = [AGENTS_ISSUE_6]
         self.write(LEDGER, ledger)
 
         self.assert_rejected("Thermos rule-level mapping disposition drift")
@@ -429,6 +458,29 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
         self.write(LEDGER, ledger)
 
         self.assert_rejected("source disposition grants host removal authority")
+
+    def test_superpowers_systematic_debugging_rationale_names_agents_issue_51(
+        self,
+    ) -> None:
+        ledger = self.load(LEDGER)
+        superpowers = next(
+            item
+            for item in ledger["dispositions"]
+            if item["contribution_id"] == "superpowers-contribution-unresolved"
+        )
+        systematic_debugging = next(
+            item
+            for item in superpowers["skill_dispositions"]
+            if item["skill_ids"] == ["systematic-debugging"]
+        )
+        systematic_debugging["rationale"] = (
+            "The immutable managed diagnosing-bugs skill remains the "
+            "troubleshooting route; Issue 51 removes the obsolete global "
+            "systematic-debugging route."
+        )
+        self.write(LEDGER, ledger)
+
+        self.assert_rejected("superpowers systematic-debugging owner issue drift")
 
     def test_source_evidence_bindings_are_raw_byte_exact(self) -> None:
         ledger = self.load(LEDGER)
@@ -868,12 +920,38 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
 
         self.assert_rejected("release refresh receipt binding drift")
 
-    def test_refresh_contract_assigns_final_refresh_to_issue_45(self) -> None:
+    def test_refresh_contract_assigns_final_refresh_to_provingkit_issue_3(self) -> None:
         contract = self.load(REFRESH)
-        contract["workflow"]["final_refresh_owner_issue"] = 50
+        contract["workflow"]["final_refresh_owner_issue"] = AGENTS_ISSUE_50
         self.write(REFRESH, contract)
 
         self.assert_rejected("final release refresh owner drift")
+
+    def test_refresh_contract_qualifies_each_repository_owner(self) -> None:
+        contract = self.load(REFRESH)
+
+        self.assertEqual(
+            contract["follow_up_issues"],
+            [
+                {
+                    "issue": AGENTS_ISSUE_51,
+                    "owns": "install-before-remove host convergence, duplicate and shadow checks, rollback, and proof that retired routes are absent",
+                },
+                {
+                    "issue": PROVINGKIT_ISSUE_6,
+                    "owns": "Daybreak review, Thermos rule-level mapping, and security-sensitive integration of disposition evidence with hardened receipts and the public-release gate",
+                },
+            ],
+        )
+        self.assertEqual(
+            contract["workflow"]["convergence_owner_issue"], AGENTS_ISSUE_51
+        )
+        self.assertEqual(
+            contract["workflow"]["final_refresh_owner_issue"], PROVINGKIT_ISSUE_3
+        )
+        self.assertEqual(
+            contract["workflow"]["source_disposition_owner_issue"], AGENTS_ISSUE_50
+        )
 
     def test_artifacts_reject_private_or_machine_local_paths(self) -> None:
         ledger = self.load(LEDGER)
