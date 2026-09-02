@@ -1,0 +1,455 @@
+{
+  "carriage": {
+    "allowed_post_review_repository_delta": [
+      "release/provingkit/review-evidence/issue-81/538723c92a3103c15a3c835f2161332239a8cb13-daybreak-security-authority-v3.json"
+    ],
+    "candidate_parent_at_synthesis": "538723c92a3103c15a3c835f2161332239a8cb13",
+    "parent_identity_contract": "tree-equality-to-subject-reviewed-head-tree-v1",
+    "required_parent_tree": "40ccb67aab9a89de6b89def0bcb45b2b94a2a629"
+  },
+  "content_sha256": "sha256:b7fdb07967ed68020a9e1a28dd5afb02499b5c81d91fbc870dd2e2d8a1151076",
+  "contract": "provingkit-controller-observed-review-record-v3",
+  "controller_observations": {
+    "forge_preflight": {
+      "actions_default_workflow_permissions": "read",
+      "actions_may_approve_pull_requests": false,
+      "destination_repository_visibility": "public",
+      "issues_enabled": true,
+      "main_ruleset": {
+        "allowed_merge_methods": [
+          "rebase"
+        ],
+        "bypass_actors": [],
+        "id": 22036701,
+        "pull_request_required": true,
+        "required_status_checks": [],
+        "required_status_checks_disposition": "pending-draft-ci-observation"
+      },
+      "merge_methods": {
+        "merge_commit": false,
+        "rebase": true,
+        "squash": false
+      },
+      "open_pull_request": {
+        "base": "main",
+        "draft": true,
+        "head": "ce9bbe964286644bb5c3afdddeb83dd145a2f25f",
+        "number": 11,
+        "state": "OPEN"
+      },
+      "open_secret_alert_count_on_published_refs": 0,
+      "published_feature_ref": "ce9bbe964286644bb5c3afdddeb83dd145a2f25f",
+      "release_resources": {
+        "releases": [],
+        "tags": []
+      },
+      "retained_ref_ruleset": {
+        "blocked_operations": [
+          "update",
+          "delete",
+          "non-fast-forward"
+        ],
+        "bypass_actors": [],
+        "id": 22036702,
+        "refs": [
+          "refs/heads/retained/agents-pr-69",
+          "refs/heads/retained/issue-81-history-import"
+        ]
+      },
+      "secret_scanning": "enabled",
+      "secret_scanning_push_protection": "enabled",
+      "source_evidence_ruleset": {
+        "blocked_operations": [
+          "update",
+          "delete",
+          "non-fast-forward"
+        ],
+        "bypass_actors": [],
+        "id": 22049569,
+        "refs": [
+          "refs/heads/ivan/task-witness-linux-qualification-harness",
+          "refs/heads/ivan/task-witness-macos-qualification-harness"
+        ]
+      },
+      "source_pull_request_69": {
+        "head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+        "merged_at": null,
+        "state": "OPEN"
+      },
+      "tag_ruleset": {
+        "blocked_operations": [
+          "create",
+          "update",
+          "delete"
+        ],
+        "bypass_actors": [],
+        "id": 22034686
+      }
+    },
+    "frozen_hosted_observation": {
+      "byte_length": 2346,
+      "bytes_base64": "ewogICJkZXN0aW5hdGlvbl9yZXRhaW5lZF9ydWxlc2V0IjogewogICAgImJ5cGFzc19hY3RvcnMiOiBbXSwKICAgICJlbmZvcmNlbWVudCI6ICJhY3RpdmUiLAogICAgImlkIjogMjIwMzY3MDIsCiAgICAiaW5jbHVkZSI6IFsKICAgICAgInJlZnMvaGVhZHMvcmV0YWluZWQvYWdlbnRzLXByLTY5IiwKICAgICAgInJlZnMvaGVhZHMvcmV0YWluZWQvaXNzdWUtODEtaGlzdG9yeS1pbXBvcnQiCiAgICBdLAogICAgIm5hbWUiOiAiRnJlZXplIHJldGFpbmVkIGN1dG92ZXIgZXZpZGVuY2UiLAogICAgInJlcG9zaXRvcnkiOiAibmlzYXZpZC9wcm92aW5na2l0IiwKICAgICJydWxlcyI6IFsKICAgICAgInVwZGF0ZSIsCiAgICAgICJkZWxldGlvbiIsCiAgICAgICJub25fZmFzdF9mb3J3YXJkIgogICAgXQogIH0sCiAgImRlc3RpbmF0aW9uX3NlY3JldF9zY2FubmluZyI6IHsKICAgICJhbGxfYWxlcnRzIjogW10sCiAgICAiY2FuZGlkYXRlX2NvdmVyYWdlIjogInB1Ymxpc2hlZC1yZWZzLXN0aWxsLWVuZC1hdC1wci0xMS1oZWFkLWNlOWJiZTk2NDI4NjY0NGJiNWMzYWZkZGRlYjgzZGQxNDVhMmYyNWY7IHJldmlld2VkLXNvdXJjZS1ub3QteWV0LXB1c2hlZCIsCiAgICAib3Blbl9hbGVydHMiOiBbXSwKICAgICJzY29wZSI6ICJob3N0ZWQtcmVwb3NpdG9yeS1hbGVydC1tZXRhZGF0YS1vbmx5LW5vLXNlY3JldC12YWx1ZXMtcmVxdWVzdGVkLW9yLXJlbmRlcmVkIgogIH0sCiAgIm9ic2VydmVkX2F0IjogIjIwMjYtMDktMDJUMDI6MTc6MzIuMjI2OTQ0WiIsCiAgInJlamVjdGVkX2Rlc3RpbmF0aW9uX3NvdXJjZV9yb290X3B1c2giOiB7CiAgICAiYnlwYXNzX3VzZWQiOiBmYWxzZSwKICAgICJjcmVkZW50aWFsX3ZhbHVlc19yZXF1ZXN0ZWRfb3JfcmVuZGVyZWQiOiBmYWxzZSwKICAgICJyZWFzb24iOiAiaGlzdG9yaWNhbC10ZXN0LWZpeHR1cmVzLXRyaWdnZXJlZC1wcm92aWRlci1wYXR0ZXJucyIsCiAgICAicmVzb2x1dGlvbiI6ICJyZXRhaW4tcHJvdGVjdGVkLXNvdXJjZS1yb290cy1hbmQtYnVuZGxlLXZhbHVlLWZyZWUtcmF3LXRyZWUtZGVsdGFzIiwKICAgICJyZXN1bHQiOiAicmVqZWN0ZWQtYnktcHVzaC1wcm90ZWN0aW9uIgogIH0sCiAgInJldGFpbmVkX3NvdXJjZV9wdWxsX3JlcXVlc3QiOiB7CiAgICAiaGVhZF9vaWQiOiAiMDJlM2M3MjFiZGJkOTIyODgzOTQ4YmIzYWY4NGM1YmFmZDcwMjk4NCIsCiAgICAibWVyZ2VkX2F0IjogbnVsbCwKICAgICJudW1iZXIiOiA2OSwKICAgICJyZXBvc2l0b3J5IjogIm5pc2F2aWQvYWdlbnRzIiwKICAgICJzdGF0ZSI6ICJPUEVOIgogIH0sCiAgInNjaGVtYV92ZXJzaW9uIjogMSwKICAic291cmNlX2NhbmRpZGF0ZSI6IHsKICAgICJiYXNlIjogIjdkZDgyNzNlY2FiNjIxYmU2NjJkMjdjMzg3MDZlMzNmMmI0OGFlMzQiLAogICAgImNvbW1pdCI6ICI1Mzg3MjNjOTJhMzEwM2MxNWEzYzgzNWYyMTYxMzMyMjM5YThjYjEzIiwKICAgICJ0cmVlIjogIjQwY2NiNjdhYWI5YTg5ZGU2Yjg5ZGVmMGJjYjQ1YjJiOTRhMmE2MjkiCiAgfSwKICAic291cmNlX3Jvb3RfcnVsZXNldCI6IHsKICAgICJieXBhc3NfYWN0b3JzIjogW10sCiAgICAiZW5mb3JjZW1lbnQiOiAiYWN0aXZlIiwKICAgICJpZCI6IDIyMDQ5NTY5LAogICAgImluY2x1ZGUiOiBbCiAgICAgICJyZWZzL2hlYWRzL2l2YW4vdGFzay13aXRuZXNzLWxpbnV4LXF1YWxpZmljYXRpb24taGFybmVzcyIsCiAgICAgICJyZWZzL2hlYWRzL2l2YW4vdGFzay13aXRuZXNzLW1hY29zLXF1YWxpZmljYXRpb24taGFybmVzcyIKICAgIF0sCiAgICAibmFtZSI6ICJGcmVlemUgUHJvdmluZ2tpdCBxdWFsaWZpY2F0aW9uIHNvdXJjZSBldmlkZW5jZSIsCiAgICAicmVwb3NpdG9yeSI6ICJuaXNhdmlkL2FnZW50cyIsCiAgICAicnVsZXMiOiBbCiAgICAgICJ1cGRhdGUiLAogICAgICAiZGVsZXRpb24iLAogICAgICAibm9uX2Zhc3RfZm9yd2FyZCIKICAgIF0KICB9LAogICJzb3VyY2Vfcm9vdHMiOiBbCiAgICB7CiAgICAgICJyZWYiOiAicmVmcy9oZWFkcy9pdmFuL3Rhc2std2l0bmVzcy1saW51eC1xdWFsaWZpY2F0aW9uLWhhcm5lc3MiLAogICAgICAicmVwb3NpdG9yeSI6ICJuaXNhdmlkL2FnZW50cyIsCiAgICAgICJ0aXAiOiAiYTg0MTBiYWJjOWUxYjBjMmE1N2I5ZjY5ZGI5OGE0OTUxMzNmNjg0MyIKICAgIH0sCiAgICB7CiAgICAgICJyZWYiOiAicmVmcy9oZWFkcy9pdmFuL3Rhc2std2l0bmVzcy1tYWNvcy1xdWFsaWZpY2F0aW9uLWhhcm5lc3MiLAogICAgICAicmVwb3NpdG9yeSI6ICJuaXNhdmlkL2FnZW50cyIsCiAgICAgICJ0aXAiOiAiMDcwM2U4ZGYyNmM5NzVhMTg3Y2I2ZjM2YjhkZmIyMWRmOGJjYzZkYiIKICAgIH0KICBdCn0K",
+      "encoding": "base64-rfc4648-strict",
+      "sha256": "sha256:ee102a4cbfecb508c797b4369851834a58f97758ba43b720773f767c0a2f4a00"
+    },
+    "reachable_history_scan": {
+      "byte_identical_results": true,
+      "deterministic_successful_replays": 2,
+      "result_document": {
+        "algorithm": "offline-immutable-commit-roots-all-object-bytes-regex-v4",
+        "engine": {
+          "git_object_format": "sha1",
+          "git_version": "git version 2.55.0",
+          "python_implementation": "CPython",
+          "python_version": "3.14.6",
+          "regex_contract": "python-stdlib-re-over-bytes-leftmost-first-non-overlapping-v1"
+        },
+        "object_count": 3494,
+        "object_type_counts": {
+          "blob": 1565,
+          "commit": 220,
+          "tag": 0,
+          "tree": 1709
+        },
+        "pattern_counts": {
+          "anthropic-api-key": 0,
+          "aws-access-key-id": 0,
+          "github-fine-grained-pat": 0,
+          "github-prefixed-token": 0,
+          "gitlab-personal-access-token": 0,
+          "google-api-key": 0,
+          "hugging-face-token": 0,
+          "jwt-shaped-token": 0,
+          "npm-access-token": 0,
+          "openai-api-key": 0,
+          "private-key-header": 0,
+          "slack-token": 0,
+          "stripe-key": 0
+        },
+        "pattern_negative_test_count": 10,
+        "pattern_test_contract": "built-in-exclusive-positive-and-negative-corpus-v1",
+        "pattern_test_counts": {
+          "anthropic-api-key": 1,
+          "aws-access-key-id": 2,
+          "github-fine-grained-pat": 1,
+          "github-prefixed-token": 2,
+          "gitlab-personal-access-token": 1,
+          "google-api-key": 1,
+          "hugging-face-token": 1,
+          "jwt-shaped-token": 1,
+          "npm-access-token": 1,
+          "openai-api-key": 2,
+          "private-key-header": 1,
+          "slack-token": 2,
+          "stripe-key": 2
+        },
+        "patterns": {
+          "anthropic-api-key": "sk-ant-[A-Za-z0-9_-]{20,}",
+          "aws-access-key-id": "(?:AKIA|ASIA)[0-9A-Z]{16}",
+          "github-fine-grained-pat": "github_pat_[A-Za-z0-9_]{60,}",
+          "github-prefixed-token": "gh[pousr]_[A-Za-z0-9]{36,255}",
+          "gitlab-personal-access-token": "(?<![A-Za-z0-9_-])glpat-[A-Za-z0-9_-]{20,}",
+          "google-api-key": "AIza[0-9A-Za-z_-]{35}",
+          "hugging-face-token": "hf_[A-Za-z0-9_-]{30,}",
+          "jwt-shaped-token": "(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}",
+          "npm-access-token": "(?<![A-Za-z0-9_-])npm_[A-Za-z0-9]{36,}",
+          "openai-api-key": "(?<![A-Za-z0-9_-])sk-(?!ant-)(?:(?:proj|svcacct)-)?[A-Za-z0-9_-]{20,}",
+          "private-key-header": "-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----",
+          "slack-token": "(?:xox[baprs]|xapp)-[0-9A-Za-z-]{10,}",
+          "stripe-key": "(?:sk|rk|pk)_(?:live|test)_[0-9A-Za-z]{16,}"
+        },
+        "ref_oids": {
+          "retained-pr-69": "8edaf590736621352262457752d087bad835555d",
+          "source-candidate": "538723c92a3103c15a3c835f2161332239a8cb13"
+        },
+        "result": "zero-listed-object-regex-matches"
+      },
+      "scanner": {
+        "error_semantics": {
+          "input_or_runtime_failure": "exit-1-without-result-json",
+          "listed-pattern-match": "exit-1-with-result-json",
+          "zero-listed-pattern-match": "exit-0-with-result-json"
+        },
+        "limits": {
+          "end_to_end_deadline": null,
+          "git_command_timeout_seconds": 120,
+          "partial_clone_probe_timeout_seconds": 30,
+          "per_object_uncompressed_bytes": 67108864,
+          "total_uncompressed_bytes": 536870912
+        },
+        "object_framing": {
+          "enumeration": "git-rev-list-objects-no-object-names-v1",
+          "payload_reader": "git-cat-file-batch-command-v1",
+          "scanned_types": [
+            "blob",
+            "commit",
+            "tag",
+            "tree"
+          ]
+        },
+        "replay": {
+          "argv": [
+            "python3",
+            "-",
+            "source-candidate=538723c92a3103c15a3c835f2161332239a8cb13",
+            "retained-pr-69=8edaf590736621352262457752d087bad835555d"
+          ],
+          "cwd_contract": "repository-root-containing-scanned-object-database-v1",
+          "scanner_transport": "strict-base64-decode-source-bytes-to-stdin-with-no-byte-transformation-v1",
+          "shell": false
+        },
+        "source": {
+          "byte_length": 13368,
+          "bytes_base64": "ZnJvbSBfX2Z1dHVyZV9fIGltcG9ydCBhbm5vdGF0aW9ucwoKaW1wb3J0IGpzb24KaW1wb3J0IG9zCmltcG9ydCBwbGF0Zm9ybQppbXBvcnQgcmUKaW1wb3J0IHN1YnByb2Nlc3MKaW1wb3J0IHN5cwpmcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGgKCgpPSURfUEFUVEVSTiA9IHJlLmNvbXBpbGUociJbMC05YS1mXXs0MH1cWiIpCkxBQkVMX1BBVFRFUk4gPSByZS5jb21waWxlKHIiW0EtWmEtejAtOS5fLy1dK1xaIikKUEFUVEVSTlMgPSB7CiAgICAiYW50aHJvcGljLWFwaS1rZXkiOiByYiJzay1hbnQtW0EtWmEtejAtOV8tXXsyMCx9IiwKICAgICJhd3MtYWNjZXNzLWtleS1pZCI6IHJiIig/OkFLSUF8QVNJQSlbMC05QS1aXXsxNn0iLAogICAgImdpdGh1Yi1wcmVmaXhlZC10b2tlbiI6IHJiImdoW3BvdXNyXV9bQS1aYS16MC05XXszNiwyNTV9IiwKICAgICJnaXRsYWItcGVyc29uYWwtYWNjZXNzLXRva2VuIjogcmIiKD88IVtBLVphLXowLTlfLV0pZ2xwYXQtW0EtWmEtejAtOV8tXXsyMCx9IiwKICAgICJnaXRodWItZmluZS1ncmFpbmVkLXBhdCI6IHJiImdpdGh1Yl9wYXRfW0EtWmEtejAtOV9dezYwLH0iLAogICAgImdvb2dsZS1hcGkta2V5IjogcmIiQUl6YVswLTlBLVphLXpfLV17MzV9IiwKICAgICJodWdnaW5nLWZhY2UtdG9rZW4iOiByYiJoZl9bQS1aYS16MC05Xy1dezMwLH0iLAogICAgImp3dC1zaGFwZWQtdG9rZW4iOiByYiIoPzwhW0EtWmEtejAtOV8tXSlleUpbQS1aYS16MC05Xy1dezEwLH1cLltBLVphLXowLTlfLV17MTAsfVwuW0EtWmEtejAtOV8tXXsxMCx9IiwKICAgICJucG0tYWNjZXNzLXRva2VuIjogcmIiKD88IVtBLVphLXowLTlfLV0pbnBtX1tBLVphLXowLTldezM2LH0iLAogICAgIm9wZW5haS1hcGkta2V5IjogcmIiKD88IVtBLVphLXowLTlfLV0pc2stKD8hYW50LSkoPzooPzpwcm9qfHN2Y2FjY3QpLSk/W0EtWmEtejAtOV8tXXsyMCx9IiwKICAgICJwcml2YXRlLWtleS1oZWFkZXIiOiByYiItLS0tLUJFR0lOICg/OlJTQSB8RUMgfERTQSB8T1BFTlNTSCB8UEdQICk/UFJJVkFURSBLRVktLS0tLSIsCiAgICAic2xhY2stdG9rZW4iOiByYiIoPzp4b3hbYmFwcnNdfHhhcHApLVswLTlBLVphLXotXXsxMCx9IiwKICAgICJzdHJpcGUta2V5IjogcmIiKD86c2t8cmt8cGspXyg/OmxpdmV8dGVzdClfWzAtOUEtWmEtel17MTYsfSIsCn0KUE9TSVRJVkVfUEFUVEVSTl9URVNUUyA9IHsKICAgICJhbnRocm9waWMtYXBpLWtleSI6IChiInNrLWFudC0iICsgYiJBIiAqIDI0LCksCiAgICAiYXdzLWFjY2Vzcy1rZXktaWQiOiAoCiAgICAgICAgYiJBS0lBIiArIGIiQSIgKiAxNiwKICAgICAgICBiIkFTSUEiICsgYiJCIiAqIDE2LAogICAgKSwKICAgICJnaXRodWItcHJlZml4ZWQtdG9rZW4iOiAoCiAgICAgICAgYiJnaHBfIiArIGIiQSIgKiAzNiwKICAgICAgICBiImdoc18iICsgYiJCIiAqIDQwLAogICAgKSwKICAgICJnaXRodWItZmluZS1ncmFpbmVkLXBhdCI6IChiImdpdGh1Yl9wYXRfIiArIGIiQV8iICogMzEsKSwKICAgICJnaXRsYWItcGVyc29uYWwtYWNjZXNzLXRva2VuIjogKGIiZ2xwYXQtIiArIGIiQSIgKiAyNCwpLAogICAgImdvb2dsZS1hcGkta2V5IjogKGIiQUl6YSIgKyBiIkEiICogMzUsKSwKICAgICJodWdnaW5nLWZhY2UtdG9rZW4iOiAoYiJoZl8iICsgYiJBLSIgKiAxNSwpLAogICAgImp3dC1zaGFwZWQtdG9rZW4iOiAoCiAgICAgICAgYiJleUoiICsgYiJBIiAqIDEyICsgYiIuIiArIGIiQiIgKiAxMiArIGIiLiIgKyBiIkMiICogMTIsCiAgICApLAogICAgIm5wbS1hY2Nlc3MtdG9rZW4iOiAoYiJucG1fIiArIGIiQSIgKiAzNiwpLAogICAgIm9wZW5haS1hcGkta2V5IjogKAogICAgICAgIGIic2stIiArIGIiQSIgKiAyNCwKICAgICAgICBiInNrLXByb2otIiArIGIiQl8iICogMjAsCiAgICApLAogICAgInNsYWNrLXRva2VuIjogKAogICAgICAgIGIieG94Yi0iICsgYiJBIiAqIDIwLAogICAgICAgIGIieGFwcC0xLSIgKyBiIkIiICogMjAsCiAgICApLAogICAgInByaXZhdGUta2V5LWhlYWRlciI6IChiIi0tLS0tQkVHSU4gT1BFTlNTSCBQUklWQVRFIEtFWS0tLS0tIiwpLAogICAgInN0cmlwZS1rZXkiOiAoCiAgICAgICAgYiJza19saXZlXyIgKyBiIkEiICogMjQsCiAgICAgICAgYiJya190ZXN0XyIgKyBiIkIiICogMjQsCiAgICApLAp9Ck5FR0FUSVZFX1BBVFRFUk5fVEVTVFMgPSAoCiAgICBiInNrLWFudC1zaG9ydCIsCiAgICBiInNrLXByb2otc2hvcnQiLAogICAgYiJ4YXBwLXNob3J0IiwKICAgIGIiZ2hwX3Nob3J0IiwKICAgIGIiQUtJQTEyMzQiLAogICAgYiJwdWJsaWMtdG9rZW4tbmFtZSIsCiAgICBiImdscGF0LXNob3J0IiwKICAgIGIibnBtX3Nob3J0IiwKICAgIGIiZXlKc2hvcnQuc2hvcnQuc2hvcnQiLAogICAgYiItLS0tLUJFR0lOIFBVQkxJQyBLRVktLS0tLSIsCikKS05PV05fT0JKRUNUX1RZUEVTID0gKGIiYmxvYiIsIGIiY29tbWl0IiwgYiJ0YWciLCBiInRyZWUiKQpNQVhfT0JKRUNUX0JZVEVTID0gNjQgKiAxMDI0ICogMTAyNApNQVhfVE9UQUxfT0JKRUNUX0JZVEVTID0gNTEyICogMTAyNCAqIDEwMjQKCgpkZWYgZmFpbChtZXNzYWdlOiBzdHIpIC0+IE5vbmU6CiAgICByYWlzZSBTeXN0ZW1FeGl0KG1lc3NhZ2UpCgoKZGVmIHZhbGlkYXRlX3BhdHRlcm5fY29udHJhY3QoKSAtPiBkaWN0W3N0ciwgaW50XToKICAgIGlmIHNldChQT1NJVElWRV9QQVRURVJOX1RFU1RTKSAhPSBzZXQoUEFUVEVSTlMpOgogICAgICAgIGZhaWwoInBhdHRlcm4gcG9zaXRpdmUtdGVzdCBpbnZlbnRvcnkgZHJpZnQiKQogICAgY2FzZV9jb3VudHM6IGRpY3Rbc3RyLCBpbnRdID0ge30KICAgIGZvciBleHBlY3RlZF9uYW1lLCBzYW1wbGVzIGluIFBPU0lUSVZFX1BBVFRFUk5fVEVTVFMuaXRlbXMoKToKICAgICAgICBpZiBub3Qgc2FtcGxlczoKICAgICAgICAgICAgZmFpbCgicGF0dGVybiBwb3NpdGl2ZS10ZXN0IGludmVudG9yeSBpcyBlbXB0eSIpCiAgICAgICAgZm9yIHNhbXBsZSBpbiBzYW1wbGVzOgogICAgICAgICAgICBtYXRjaGluZyA9IHsKICAgICAgICAgICAgICAgIG5hbWUKICAgICAgICAgICAgICAgIGZvciBuYW1lLCBwYXR0ZXJuIGluIFBBVFRFUk5TLml0ZW1zKCkKICAgICAgICAgICAgICAgIGlmIHJlLmZ1bGxtYXRjaChwYXR0ZXJuLCBzYW1wbGUpIGlzIG5vdCBOb25lCiAgICAgICAgICAgIH0KICAgICAgICAgICAgaWYgbWF0Y2hpbmcgIT0ge2V4cGVjdGVkX25hbWV9OgogICAgICAgICAgICAgICAgZmFpbCgicGF0dGVybiBwb3NpdGl2ZS10ZXN0IHJlc3VsdCBkcmlmdCIpCiAgICAgICAgY2FzZV9jb3VudHNbZXhwZWN0ZWRfbmFtZV0gPSBsZW4oc2FtcGxlcykKICAgIGlmIGFueSgKICAgICAgICByZS5zZWFyY2gocGF0dGVybiwgc2FtcGxlKSBpcyBub3QgTm9uZQogICAgICAgIGZvciBzYW1wbGUgaW4gTkVHQVRJVkVfUEFUVEVSTl9URVNUUwogICAgICAgIGZvciBwYXR0ZXJuIGluIFBBVFRFUk5TLnZhbHVlcygpCiAgICApOgogICAgICAgIGZhaWwoInBhdHRlcm4gbmVnYXRpdmUtdGVzdCByZXN1bHQgZHJpZnQiKQogICAgcmV0dXJuIGNhc2VfY291bnRzCgoKZGVmIGdpdF9lbnZpcm9ubWVudCgpIC0+IGRpY3Rbc3RyLCBzdHJdOgogICAgZW52aXJvbm1lbnQgPSBvcy5lbnZpcm9uLmNvcHkoKQogICAgZW52aXJvbm1lbnRbIkdJVF9OT19SRVBMQUNFX09CSkVDVFMiXSA9ICIxIgogICAgZW52aXJvbm1lbnRbIkdJVF9OT19MQVpZX0ZFVENIIl0gPSAiMSIKICAgIGVudmlyb25tZW50WyJHSVRfVEVSTUlOQUxfUFJPTVBUIl0gPSAiMCIKICAgIGVudmlyb25tZW50WyJHQ01fSU5URVJBQ1RJVkUiXSA9ICJuZXZlciIKICAgIGZvciBuYW1lIGluICgKICAgICAgICAiR0lUX0RJUiIsCiAgICAgICAgIkdJVF9XT1JLX1RSRUUiLAogICAgICAgICJHSVRfSU5ERVhfRklMRSIsCiAgICAgICAgIkdJVF9PQkpFQ1RfRElSRUNUT1JZIiwKICAgICAgICAiR0lUX0FMVEVSTkFURV9PQkpFQ1RfRElSRUNUT1JJRVMiLAogICAgKToKICAgICAgICBlbnZpcm9ubWVudC5wb3AobmFtZSwgTm9uZSkKICAgIHJldHVybiBlbnZpcm9ubWVudAoKCmRlZiByZWplY3RfcGFydGlhbF9jbG9uZShyZXBvc2l0b3J5OiBQYXRoKSAtPiBOb25lOgogICAgcXVlcmllcyA9ICgKICAgICAgICBbImdpdCIsICJjb25maWciLCAiLS1sb2NhbCIsICItLWdldCIsICJleHRlbnNpb25zLnBhcnRpYWxDbG9uZSJdLAogICAgICAgIFsiZ2l0IiwgImNvbmZpZyIsICItLWxvY2FsIiwgIi0tZ2V0LXJlZ2V4cCIsIHIiXnJlbW90ZVwuLipcLnByb21pc29yJCJdLAogICAgICAgIFsKICAgICAgICAgICAgImdpdCIsCiAgICAgICAgICAgICJjb25maWciLAogICAgICAgICAgICAiLS1sb2NhbCIsCiAgICAgICAgICAgICItLWdldC1yZWdleHAiLAogICAgICAgICAgICByIl5yZW1vdGVcLi4qXC5wYXJ0aWFsY2xvbmVmaWx0ZXIkIiwKICAgICAgICBdLAogICAgKQogICAgZm9yIGNvbW1hbmQgaW4gcXVlcmllczoKICAgICAgICB0cnk6CiAgICAgICAgICAgIHJlc3VsdCA9IHN1YnByb2Nlc3MucnVuKAogICAgICAgICAgICAgICAgY29tbWFuZCwKICAgICAgICAgICAgICAgIGN3ZD1yZXBvc2l0b3J5LAogICAgICAgICAgICAgICAgZW52PWdpdF9lbnZpcm9ubWVudCgpLAogICAgICAgICAgICAgICAgY2FwdHVyZV9vdXRwdXQ9VHJ1ZSwKICAgICAgICAgICAgICAgIGNoZWNrPUZhbHNlLAogICAgICAgICAgICAgICAgdGltZW91dD0zMCwKICAgICAgICAgICAgKQogICAgICAgIGV4Y2VwdCAoT1NFcnJvciwgc3VicHJvY2Vzcy5UaW1lb3V0RXhwaXJlZCkgYXMgZXJyb3I6CiAgICAgICAgICAgIGZhaWwoZiJwYXJ0aWFsLWNsb25lIGNoZWNrIGZhaWxlZDoge2Vycm9yfSIpCiAgICAgICAgaWYgcmVzdWx0LnJldHVybmNvZGUgPT0gMCBhbmQgcmVzdWx0LnN0ZG91dDoKICAgICAgICAgICAgZmFpbCgicGFydGlhbCBjbG9uZXMgYXJlIG5vdCBhbGxvd2VkIikKICAgICAgICBpZiByZXN1bHQucmV0dXJuY29kZSBub3QgaW4gKDAsIDEpOgogICAgICAgICAgICBmYWlsKCJwYXJ0aWFsLWNsb25lIGNoZWNrIGZhaWxlZCIpCgoKZGVmIHJlamVjdF9hbHRlcm5hdGVfb2JqZWN0X2RhdGFiYXNlcyhyZXBvc2l0b3J5OiBQYXRoKSAtPiBOb25lOgogICAgY29tbW9uX2RpcmVjdG9yeSA9IGdpdChyZXBvc2l0b3J5LCAicmV2LXBhcnNlIiwgIi0tZ2l0LWNvbW1vbi1kaXIiKS5kZWNvZGUoCiAgICAgICAgInV0Zi04IgogICAgKS5zdHJpcCgpCiAgICBjb21tb25fcGF0aCA9IFBhdGgoY29tbW9uX2RpcmVjdG9yeSkKICAgIGlmIG5vdCBjb21tb25fcGF0aC5pc19hYnNvbHV0ZSgpOgogICAgICAgIGNvbW1vbl9wYXRoID0gcmVwb3NpdG9yeSAvIGNvbW1vbl9wYXRoCiAgICB0cnk6CiAgICAgICAgb2JqZWN0X2luZm8gPSBjb21tb25fcGF0aC5yZXNvbHZlKHN0cmljdD1UcnVlKSAvICJvYmplY3RzIiAvICJpbmZvIgogICAgZXhjZXB0IE9TRXJyb3IgYXMgZXJyb3I6CiAgICAgICAgZmFpbChmIkdpdCBjb21tb24tZGlyZWN0b3J5IGNoZWNrIGZhaWxlZDoge2Vycm9yfSIpCiAgICBmb3IgbmFtZSBpbiAoImFsdGVybmF0ZXMiLCAiaHR0cC1hbHRlcm5hdGVzIik6CiAgICAgICAgcGF0aCA9IG9iamVjdF9pbmZvIC8gbmFtZQogICAgICAgIHRyeToKICAgICAgICAgICAgaWYgcGF0aC5leGlzdHMoKSBhbmQgcGF0aC5yZWFkX2J5dGVzKCkuc3RyaXAoKToKICAgICAgICAgICAgICAgIGZhaWwoImFsdGVybmF0ZSBvYmplY3QgZGF0YWJhc2VzIGFyZSBub3QgYWxsb3dlZCIpCiAgICAgICAgZXhjZXB0IE9TRXJyb3IgYXMgZXJyb3I6CiAgICAgICAgICAgIGZhaWwoZiJhbHRlcm5hdGUtb2JqZWN0IGNoZWNrIGZhaWxlZDoge2Vycm9yfSIpCgoKZGVmIGdpdChyZXBvc2l0b3J5OiBQYXRoLCAqYXJndW1lbnRzOiBzdHIsIGlucHV0X2J5dGVzOiBieXRlcyB8IE5vbmUgPSBOb25lKSAtPiBieXRlczoKICAgIHRyeToKICAgICAgICByZXN1bHQgPSBzdWJwcm9jZXNzLnJ1bigKICAgICAgICAgICAgWyJnaXQiLCAqYXJndW1lbnRzXSwKICAgICAgICAgICAgY3dkPXJlcG9zaXRvcnksCiAgICAgICAgICAgIGVudj1naXRfZW52aXJvbm1lbnQoKSwKICAgICAgICAgICAgaW5wdXQ9aW5wdXRfYnl0ZXMsCiAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsCiAgICAgICAgICAgIGNoZWNrPUZhbHNlLAogICAgICAgICAgICB0aW1lb3V0PTEyMCwKICAgICAgICApCiAgICBleGNlcHQgKE9TRXJyb3IsIHN1YnByb2Nlc3MuVGltZW91dEV4cGlyZWQpIGFzIGVycm9yOgogICAgICAgIGZhaWwoZiJnaXQgY29tbWFuZCBmYWlsZWQ6IHtlcnJvcn0iKQogICAgaWYgcmVzdWx0LnJldHVybmNvZGUgIT0gMDoKICAgICAgICBmYWlsKCJnaXQgY29tbWFuZCBmYWlsZWQiKQogICAgcmV0dXJuIHJlc3VsdC5zdGRvdXQKCgpkZWYgcGFyc2Vfcm9vdHMoYXJndW1lbnRzOiBsaXN0W3N0cl0pIC0+IGRpY3Rbc3RyLCBzdHJdOgogICAgaWYgbm90IGFyZ3VtZW50czoKICAgICAgICBmYWlsKCJhdCBsZWFzdCBvbmUgbGFiZWw9Y29tbWl0LW9pZCBpbnB1dCBpcyByZXF1aXJlZCIpCiAgICByb290czogZGljdFtzdHIsIHN0cl0gPSB7fQogICAgc2Vlbl9vaWRzOiBzZXRbc3RyXSA9IHNldCgpCiAgICBmb3IgYXJndW1lbnQgaW4gYXJndW1lbnRzOgogICAgICAgIGlmIGFyZ3VtZW50LmNvdW50KCI9IikgIT0gMToKICAgICAgICAgICAgZmFpbCgibWFsZm9ybWVkIGxhYmVsPWNvbW1pdC1vaWQgaW5wdXQiKQogICAgICAgIGxhYmVsLCBvaWQgPSBhcmd1bWVudC5zcGxpdCgiPSIsIDEpCiAgICAgICAgaWYgbm90IExBQkVMX1BBVFRFUk4uZnVsbG1hdGNoKGxhYmVsKSBvciBub3QgT0lEX1BBVFRFUk4uZnVsbG1hdGNoKG9pZCk6CiAgICAgICAgICAgIGZhaWwoIm1hbGZvcm1lZCBsYWJlbD1jb21taXQtb2lkIGlucHV0IikKICAgICAgICBpZiBsYWJlbCBpbiByb290cyBvciBvaWQgaW4gc2Vlbl9vaWRzOgogICAgICAgICAgICBmYWlsKCJkdXBsaWNhdGUgbGFiZWwgb3IgY29tbWl0IG9pZCIpCiAgICAgICAgcm9vdHNbbGFiZWxdID0gb2lkCiAgICAgICAgc2Vlbl9vaWRzLmFkZChvaWQpCiAgICByZXR1cm4gcm9vdHMKCgpkZWYgZW51bWVyYXRlX29iamVjdHMocmVwb3NpdG9yeTogUGF0aCwgcm9vdHM6IGRpY3Rbc3RyLCBzdHJdKSAtPiBsaXN0W3N0cl06CiAgICBmb3Igb2lkIGluIHJvb3RzLnZhbHVlcygpOgogICAgICAgIGtpbmQgPSBnaXQocmVwb3NpdG9yeSwgImNhdC1maWxlIiwgIi10Iiwgb2lkKS5kZWNvZGUoImFzY2lpIikuc3RyaXAoKQogICAgICAgIGlmIGtpbmQgIT0gImNvbW1pdCI6CiAgICAgICAgICAgIGZhaWwoInNjYW4gcm9vdCBpcyBub3QgZXhhY3RseSBhIGNvbW1pdCIpCiAgICBvdXRwdXQgPSBnaXQoCiAgICAgICAgcmVwb3NpdG9yeSwKICAgICAgICAicmV2LWxpc3QiLAogICAgICAgICItLW9iamVjdHMiLAogICAgICAgICItLW5vLW9iamVjdC1uYW1lcyIsCiAgICAgICAgKnJvb3RzLnZhbHVlcygpLAogICAgICAgICItLSIsCiAgICApCiAgICBpZiBvdXRwdXQgYW5kIG5vdCBvdXRwdXQuZW5kc3dpdGgoYiJcbiIpOgogICAgICAgIGZhaWwoIm1hbGZvcm1lZCByZXYtbGlzdCByZWNvcmQgZnJhbWluZyIpCiAgICBvYmplY3RzOiBsaXN0W3N0cl0gPSBbXQogICAgc2Vlbjogc2V0W3N0cl0gPSBzZXQoKQogICAgZm9yIHJlY29yZCBpbiBvdXRwdXQuc3BsaXRsaW5lcyhrZWVwZW5kcz1UcnVlKToKICAgICAgICBpZiBub3QgcmUuZnVsbG1hdGNoKHJiIlswLTlhLWZdezQwfVxuIiwgcmVjb3JkKToKICAgICAgICAgICAgZmFpbCgibWFsZm9ybWVkIHJldi1saXN0IHJlY29yZCIpCiAgICAgICAgb2lkID0gcmVjb3JkWzotMV0uZGVjb2RlKCJhc2NpaSIpCiAgICAgICAgaWYgb2lkIG5vdCBpbiBzZWVuOgogICAgICAgICAgICBzZWVuLmFkZChvaWQpCiAgICAgICAgICAgIG9iamVjdHMuYXBwZW5kKG9pZCkKICAgIGlmIG5vdCBvYmplY3RzOgogICAgICAgIGZhaWwoImVtcHR5IG9iamVjdCBlbnVtZXJhdGlvbiIpCiAgICByZXR1cm4gb2JqZWN0cwoKCmRlZiBzY2FuX29iamVjdHMoCiAgICByZXBvc2l0b3J5OiBQYXRoLCBvYmplY3RzOiBsaXN0W3N0cl0KKSAtPiB0dXBsZVtkaWN0W3N0ciwgaW50XSwgZGljdFtzdHIsIGludF1dOgogICAgY291bnRzID0ge25hbWU6IDAgZm9yIG5hbWUgaW4gc29ydGVkKFBBVFRFUk5TKX0KICAgIHJlcXVlc3QgPSBiIiIuam9pbihvaWQuZW5jb2RlKCJhc2NpaSIpICsgYiJcbiIgZm9yIG9pZCBpbiBvYmplY3RzKQogICAgbWV0YWRhdGFfb3V0cHV0ID0gZ2l0KAogICAgICAgIHJlcG9zaXRvcnksCiAgICAgICAgImNhdC1maWxlIiwKICAgICAgICAiLS1iYXRjaC1jaGVjaz0lKG9iamVjdG5hbWUpICUob2JqZWN0dHlwZSkgJShvYmplY3RzaXplKSIsCiAgICAgICAgaW5wdXRfYnl0ZXM9cmVxdWVzdCwKICAgICkKICAgIGlmIG1ldGFkYXRhX291dHB1dCBhbmQgbm90IG1ldGFkYXRhX291dHB1dC5lbmRzd2l0aChiIlxuIik6CiAgICAgICAgZmFpbCgibWFsZm9ybWVkIGNhdC1maWxlIG1ldGFkYXRhIGZyYW1pbmciKQogICAgbWV0YWRhdGFfcmVjb3JkcyA9IG1ldGFkYXRhX291dHB1dC5zcGxpdGxpbmVzKGtlZXBlbmRzPVRydWUpCiAgICBpZiBsZW4obWV0YWRhdGFfcmVjb3JkcykgIT0gbGVuKG9iamVjdHMpOgogICAgICAgIGZhaWwoImNhdC1maWxlIG1ldGFkYXRhIGNvdW50IGRyaWZ0IikKICAgIG1ldGFkYXRhOiBsaXN0W3R1cGxlW3N0ciwgYnl0ZXMsIGludF1dID0gW10KICAgIHRvdGFsX3NpemUgPSAwCiAgICBmb3IgZXhwZWN0ZWRfb2lkLCByZWNvcmQgaW4gemlwKG9iamVjdHMsIG1ldGFkYXRhX3JlY29yZHMsIHN0cmljdD1UcnVlKToKICAgICAgICBmaWVsZHMgPSByZWNvcmRbOi0xXS5zcGxpdChiIiAiKSBpZiByZWNvcmQuZW5kc3dpdGgoYiJcbiIpIGVsc2UgW10KICAgICAgICBpZiBsZW4oZmllbGRzKSAhPSAzOgogICAgICAgICAgICBmYWlsKCJtYWxmb3JtZWQgY2F0LWZpbGUgbWV0YWRhdGEiKQogICAgICAgIG9ic2VydmVkX29pZCwga2luZCwgcmF3X3NpemUgPSBmaWVsZHMKICAgICAgICBpZiBvYnNlcnZlZF9vaWQuZGVjb2RlKCJhc2NpaSIsIGVycm9ycz0ic3RyaWN0IikgIT0gZXhwZWN0ZWRfb2lkOgogICAgICAgICAgICBmYWlsKCJjYXQtZmlsZSBtZXRhZGF0YSBvcmRlciBkcmlmdCIpCiAgICAgICAgaWYga2luZCBub3QgaW4gS05PV05fT0JKRUNUX1RZUEVTIG9yIG5vdCByYXdfc2l6ZS5pc2RpZ2l0KCk6CiAgICAgICAgICAgIGZhaWwoImludmFsaWQgY2F0LWZpbGUgb2JqZWN0IG1ldGFkYXRhIikKICAgICAgICBzaXplID0gaW50KHJhd19zaXplKQogICAgICAgIGlmIHNpemUgPiBNQVhfT0JKRUNUX0JZVEVTOgogICAgICAgICAgICBmYWlsKCJjYXQtZmlsZSBvYmplY3QgZXhjZWVkcyBzaXplIGxpbWl0IikKICAgICAgICB0b3RhbF9zaXplICs9IHNpemUKICAgICAgICBpZiB0b3RhbF9zaXplID4gTUFYX1RPVEFMX09CSkVDVF9CWVRFUzoKICAgICAgICAgICAgZmFpbCgiY2F0LWZpbGUgb2JqZWN0IHNldCBleGNlZWRzIHNpemUgbGltaXQiKQogICAgICAgIG1ldGFkYXRhLmFwcGVuZCgoZXhwZWN0ZWRfb2lkLCBraW5kLCBzaXplKSkKCiAgICBwYXlsb2FkX291dHB1dCA9IGdpdCgKICAgICAgICByZXBvc2l0b3J5LAogICAgICAgICJjYXQtZmlsZSIsCiAgICAgICAgIi0tYmF0Y2giLAogICAgICAgIGlucHV0X2J5dGVzPXJlcXVlc3QsCiAgICApCiAgICBvZmZzZXQgPSAwCiAgICB0eXBlX2NvdW50cyA9IHtraW5kLmRlY29kZSgiYXNjaWkiKTogMCBmb3Iga2luZCBpbiBLTk9XTl9PQkpFQ1RfVFlQRVN9CiAgICBmb3IgZXhwZWN0ZWRfb2lkLCBleHBlY3RlZF9raW5kLCBleHBlY3RlZF9zaXplIGluIG1ldGFkYXRhOgogICAgICAgIGhlYWRlcl9lbmQgPSBwYXlsb2FkX291dHB1dC5maW5kKGIiXG4iLCBvZmZzZXQpCiAgICAgICAgaWYgaGVhZGVyX2VuZCA8IDA6CiAgICAgICAgICAgIGZhaWwoIm1hbGZvcm1lZCBjYXQtZmlsZSBoZWFkZXIgZnJhbWluZyIpCiAgICAgICAgaGVhZGVyID0gcGF5bG9hZF9vdXRwdXRbb2Zmc2V0OmhlYWRlcl9lbmRdCiAgICAgICAgb2Zmc2V0ID0gaGVhZGVyX2VuZCArIDEKICAgICAgICBleHBlY3RlZF9oZWFkZXIgPSAoCiAgICAgICAgICAgIGV4cGVjdGVkX29pZC5lbmNvZGUoImFzY2lpIikKICAgICAgICAgICAgKyBiIiAiCiAgICAgICAgICAgICsgZXhwZWN0ZWRfa2luZAogICAgICAgICAgICArIGIiICIKICAgICAgICAgICAgKyBzdHIoZXhwZWN0ZWRfc2l6ZSkuZW5jb2RlKCJhc2NpaSIpCiAgICAgICAgKQogICAgICAgIGlmIGhlYWRlciAhPSBleHBlY3RlZF9oZWFkZXI6CiAgICAgICAgICAgIGZhaWwoImNhdC1maWxlIGhlYWRlciBkcmlmdCIpCiAgICAgICAgcGF5bG9hZF9lbmQgPSBvZmZzZXQgKyBleHBlY3RlZF9zaXplCiAgICAgICAgaWYgcGF5bG9hZF9lbmQgPj0gbGVuKHBheWxvYWRfb3V0cHV0KToKICAgICAgICAgICAgZmFpbCgidHJ1bmNhdGVkIGNhdC1maWxlIHBheWxvYWQiKQogICAgICAgIHBheWxvYWQgPSBwYXlsb2FkX291dHB1dFtvZmZzZXQ6cGF5bG9hZF9lbmRdCiAgICAgICAgaWYgcGF5bG9hZF9vdXRwdXRbcGF5bG9hZF9lbmQgOiBwYXlsb2FkX2VuZCArIDFdICE9IGIiXG4iOgogICAgICAgICAgICBmYWlsKCJtYWxmb3JtZWQgY2F0LWZpbGUgcGF5bG9hZCBkZWxpbWl0ZXIiKQogICAgICAgIG9mZnNldCA9IHBheWxvYWRfZW5kICsgMQogICAgICAgIHR5cGVfY291bnRzW2V4cGVjdGVkX2tpbmQuZGVjb2RlKCJhc2NpaSIpXSArPSAxCiAgICAgICAgZm9yIG5hbWUsIHBhdHRlcm4gaW4gUEFUVEVSTlMuaXRlbXMoKToKICAgICAgICAgICAgY291bnRzW25hbWVdICs9IGxlbihyZS5maW5kYWxsKHBhdHRlcm4sIHBheWxvYWQpKQogICAgaWYgb2Zmc2V0ICE9IGxlbihwYXlsb2FkX291dHB1dCk6CiAgICAgICAgZmFpbCgidW5leHBlY3RlZCB0cmFpbGluZyBjYXQtZmlsZSBvdXRwdXQiKQogICAgcmV0dXJuIHR5cGVfY291bnRzLCBjb3VudHMKCgpkZWYgbWFpbihhcmd1bWVudHM6IGxpc3Rbc3RyXSkgLT4gaW50OgogICAgcmVwb3NpdG9yeSA9IFBhdGguY3dkKCkKICAgIHBhdHRlcm5fdGVzdF9jb3VudHMgPSB2YWxpZGF0ZV9wYXR0ZXJuX2NvbnRyYWN0KCkKICAgIHJvb3RzID0gcGFyc2Vfcm9vdHMoYXJndW1lbnRzKQogICAgdG9wX2xldmVsID0gZ2l0KHJlcG9zaXRvcnksICJyZXYtcGFyc2UiLCAiLS1zaG93LXRvcGxldmVsIikuZGVjb2RlKCJ1dGYtOCIpLnN0cmlwKCkKICAgIGlmIFBhdGgodG9wX2xldmVsKS5yZXNvbHZlKHN0cmljdD1UcnVlKSAhPSByZXBvc2l0b3J5LnJlc29sdmUoc3RyaWN0PVRydWUpOgogICAgICAgIGZhaWwoIndvcmtpbmcgZGlyZWN0b3J5IGlzIG5vdCB0aGUgcmVwb3NpdG9yeSByb290IikKICAgIGlmIGdpdChyZXBvc2l0b3J5LCAicmV2LXBhcnNlIiwgIi0taXMtc2hhbGxvdy1yZXBvc2l0b3J5Iikuc3RyaXAoKSAhPSBiImZhbHNlIjoKICAgICAgICBmYWlsKCJjb21wbGV0ZSByZXBvc2l0b3J5IGhpc3RvcnkgaXMgcmVxdWlyZWQiKQogICAgcmVqZWN0X3BhcnRpYWxfY2xvbmUocmVwb3NpdG9yeSkKICAgIHJlamVjdF9hbHRlcm5hdGVfb2JqZWN0X2RhdGFiYXNlcyhyZXBvc2l0b3J5KQogICAgb2JqZWN0X2Zvcm1hdCA9IGdpdChyZXBvc2l0b3J5LCAicmV2LXBhcnNlIiwgIi0tc2hvdy1vYmplY3QtZm9ybWF0IikuZGVjb2RlKCJhc2NpaSIpLnN0cmlwKCkKICAgIGlmIG9iamVjdF9mb3JtYXQgIT0gInNoYTEiOgogICAgICAgIGZhaWwoInVuc3VwcG9ydGVkIGdpdCBvYmplY3QgZm9ybWF0IikKICAgIGlmIGdpdChyZXBvc2l0b3J5LCAiZm9yLWVhY2gtcmVmIiwgIi0tZm9ybWF0PSUocmVmbmFtZSkiLCAicmVmcy9yZXBsYWNlIikuc3RyaXAoKToKICAgICAgICBmYWlsKCJyZXBsYWNlbWVudCBvYmplY3RzIGFyZSBub3QgYWxsb3dlZCIpCiAgICBvYmplY3RzID0gZW51bWVyYXRlX29iamVjdHMocmVwb3NpdG9yeSwgcm9vdHMpCiAgICBvYmplY3RfdHlwZV9jb3VudHMsIGNvdW50cyA9IHNjYW5fb2JqZWN0cyhyZXBvc2l0b3J5LCBvYmplY3RzKQogICAgcmVzdWx0ID0gewogICAgICAgICJhbGdvcml0aG0iOiAib2ZmbGluZS1pbW11dGFibGUtY29tbWl0LXJvb3RzLWFsbC1vYmplY3QtYnl0ZXMtcmVnZXgtdjQiLAogICAgICAgICJlbmdpbmUiOiB7CiAgICAgICAgICAgICJnaXRfb2JqZWN0X2Zvcm1hdCI6IG9iamVjdF9mb3JtYXQsCiAgICAgICAgICAgICJnaXRfdmVyc2lvbiI6IGdpdChyZXBvc2l0b3J5LCAiLS12ZXJzaW9uIikuZGVjb2RlKCJhc2NpaSIpLnN0cmlwKCksCiAgICAgICAgICAgICJweXRob25faW1wbGVtZW50YXRpb24iOiBwbGF0Zm9ybS5weXRob25faW1wbGVtZW50YXRpb24oKSwKICAgICAgICAgICAgInB5dGhvbl92ZXJzaW9uIjogcGxhdGZvcm0ucHl0aG9uX3ZlcnNpb24oKSwKICAgICAgICAgICAgInJlZ2V4X2NvbnRyYWN0IjogKAogICAgICAgICAgICAgICAgInB5dGhvbi1zdGRsaWItcmUtb3Zlci1ieXRlcy1sZWZ0bW9zdC1maXJzdC1ub24tb3ZlcmxhcHBpbmctdjEiCiAgICAgICAgICAgICksCiAgICAgICAgfSwKICAgICAgICAib2JqZWN0X2NvdW50IjogbGVuKG9iamVjdHMpLAogICAgICAgICJvYmplY3RfdHlwZV9jb3VudHMiOiBvYmplY3RfdHlwZV9jb3VudHMsCiAgICAgICAgInBhdHRlcm5fY291bnRzIjogY291bnRzLAogICAgICAgICJwYXR0ZXJuX3Rlc3RfY29udHJhY3QiOiAiYnVpbHQtaW4tZXhjbHVzaXZlLXBvc2l0aXZlLWFuZC1uZWdhdGl2ZS1jb3JwdXMtdjEiLAogICAgICAgICJwYXR0ZXJuX3Rlc3RfY291bnRzIjogcGF0dGVybl90ZXN0X2NvdW50cywKICAgICAgICAicGF0dGVybl9uZWdhdGl2ZV90ZXN0X2NvdW50IjogbGVuKE5FR0FUSVZFX1BBVFRFUk5fVEVTVFMpLAogICAgICAgICJwYXR0ZXJucyI6IHsKICAgICAgICAgICAgbmFtZTogcGF0dGVybi5kZWNvZGUoImFzY2lpIikKICAgICAgICAgICAgZm9yIG5hbWUsIHBhdHRlcm4gaW4gc29ydGVkKFBBVFRFUk5TLml0ZW1zKCkpCiAgICAgICAgfSwKICAgICAgICAicmVmX29pZHMiOiByb290cywKICAgICAgICAicmVzdWx0IjogKAogICAgICAgICAgICAiemVyby1saXN0ZWQtb2JqZWN0LXJlZ2V4LW1hdGNoZXMiCiAgICAgICAgICAgIGlmIG5vdCBhbnkoY291bnRzLnZhbHVlcygpKQogICAgICAgICAgICBlbHNlICJsaXN0ZWQtb2JqZWN0LXJlZ2V4LW1hdGNoZXMtZm91bmQiCiAgICAgICAgKSwKICAgIH0KICAgIHByaW50KGpzb24uZHVtcHMocmVzdWx0LCBpbmRlbnQ9Miwgc29ydF9rZXlzPVRydWUpKQogICAgcmV0dXJuIDAgaWYgcmVzdWx0WyJyZXN1bHQiXSA9PSAiemVyby1saXN0ZWQtb2JqZWN0LXJlZ2V4LW1hdGNoZXMiIGVsc2UgMQoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICByYWlzZSBTeXN0ZW1FeGl0KG1haW4oc3lzLmFyZ3ZbMTpdKSkK",
+          "encoding": "base64-rfc4648-strict",
+          "sha256": "sha256:519a48c0c3d14d005580a8dede3c9b47dfab39fd00155365099b31448f1a7d9b"
+        },
+        "validation": {
+          "exclusive_positive_cases": 18,
+          "fail_closed_cases": [
+            "no-input",
+            "malformed-input",
+            "duplicate-label",
+            "duplicate-oid",
+            "non-commit-oid",
+            "wrong-working-directory",
+            "partial-clone-configuration",
+            "alternate-object-database"
+          ],
+          "negative_cases": 10
+        }
+      }
+    },
+    "source_validation": [
+      {
+        "command": "python scripts/validate_provingkit.py .",
+        "result": "passed"
+      },
+      {
+        "command": "python -m unittest tests.test_validate_provingkit",
+        "result": "34-tests-passed"
+      },
+      {
+        "command": "python -m unittest tests.test_validate_source_skill_disposition",
+        "result": "61-tests-passed"
+      },
+      {
+        "command": "python -m unittest tests.test_validate_source_skill_lineage.CutoverSourceSkillLineageBoundaryTests",
+        "result": "3-tests-and-7-subtests-passed"
+      },
+      {
+        "command": "python -m unittest tests.test_phase7_production_integration.Phase7ProductionIntegrationTests.test_readme_documents_source_stage_containment",
+        "result": "passed"
+      },
+      {
+        "command": "python -m unittest tests.test_validate_public_release.ValidatePublicReleaseTests.test_readme_documents_only_the_source_stage_entrypoint",
+        "result": "passed"
+      },
+      {
+        "command": "python -m unittest tests.test_validate_rolecasting tests.test_validate_tricritical tests.test_validate_versionkeeping tests.test_validate_mergecraft tests.test_validate_artifact_customs tests.test_task_witness_package",
+        "environment": "host-filesystem-metadata-visible",
+        "result": "376-tests-passed"
+      },
+      {
+        "command": "prepared-source-stage-validation",
+        "identities": {
+          "artifact-customs": {
+            "composite_sha256": "a836a8de3fcf93934aaedbd3853cd6222be4e405a6c0864b176430a617ee2941",
+            "plugin_sha256": "831d8705b164d811821e825fca6e30bf985630969671d1f3d6617363d185c958"
+          },
+          "mergecraft": {
+            "composite_sha256": "7acf0a890d2b431c56139eb9894deee82d4db520a6dddf9f4b02a7e9bfc2496f",
+            "plugin_sha256": "09ef0424c30abe7b0536d71cc78c87f4a0316117cd3c5917fb75db2c330fda33"
+          },
+          "rolecasting": {
+            "composite_sha256": "fc4b747d82e5b3c18da8fdc4c10c2aa8b2e6c432f02f2597dee056b775334d6d",
+            "plugin_sha256": "df8dd98de427b8cb607d9dd661b376515c1269d5be7c1927883ebab55eb412eb"
+          },
+          "task-witness": {
+            "composite_sha256": "a537fa24e9d2f48dc14f8eebc6d371097094931c780bb3db011e8e1e8698288d",
+            "plugin_sha256": "40649fa9ffc7d3887a9c97ac92ba3e3f0f46a39cad448bc945386fd3daf393f9"
+          },
+          "tricritical": {
+            "composite_sha256": "d525219b03b6adaed5d90b2c607bc8c0d5c959e18f5c28bbe1e54db913d6cc25",
+            "plugin_sha256": "325e404d2c7011443384b6e051f1aa2b1e87821466d3e6cd83369635a8d28cab"
+          },
+          "versionkeeping": {
+            "composite_sha256": "15536ce3fa126219461c2e4dca24ffb5b3bdf2230e9a2341d510411cebd02a07",
+            "plugin_sha256": "06755378a5612b7264ddca917d960bf8c3ce57a81aad1c921bc79d3cc6f725fe"
+          }
+        },
+        "member_count": 6,
+        "result": "passed"
+      },
+      {
+        "command": "five-supported-content-lock-writers-then-git-diff-exit-code",
+        "result": "passed-with-empty-diff"
+      }
+    ]
+  },
+  "dispatch": {
+    "assurance": "harness-routed-and-controller-observed",
+    "canonical_task_witness_bundle": false,
+    "canonical_tricritical_evidence": false,
+    "collaboration_or_sibling_inspection_used": false,
+    "cryptographically_attested": false,
+    "distinct_execution_context": true,
+    "external_action": false,
+    "observed_model": "gpt-daybreak-blue-latest",
+    "prior_or_sibling_output_supplied": false,
+    "product_attested": false,
+    "reasoning_effort": "high",
+    "registered_issuer": false,
+    "registered_producer": false,
+    "review_contract": {
+      "byte_length": 10102,
+      "sha256": "sha256:28e4241dbe6481e5ee12ff6e9390886c0cc6eb0dcbbf68c1d76308eb2f50aade",
+      "transport": "controller-supplied-frozen-review-contract"
+    },
+    "review_result": {
+      "byte_length": 3314,
+      "sha256": "sha256:282d54b930fa1b6a5c4b7125d04ddfa4527602d3eafb29c3e96dedfb1e8ff2da",
+      "transport": "controller-recorded-specialist-result"
+    },
+    "role": "security-authority-specialist",
+    "routing_policy": "daybreak-security-floor",
+    "subdelegation_by_reviewer": false
+  },
+  "identity_rechecks": {
+    "after_execution": "538723c92a3103c15a3c835f2161332239a8cb13",
+    "before_execution": "538723c92a3103c15a3c835f2161332239a8cb13",
+    "before_synthesis": "538723c92a3103c15a3c835f2161332239a8cb13",
+    "published_feature_ref_disposition": "not-yet-rewritten-to-reviewed-carrier",
+    "unchanged": true,
+    "worktree_clean_before_synthesis": true
+  },
+  "issue": {
+    "kind": "source-repository-cutover-issue",
+    "number": 81
+  },
+  "record_role": "public-independent-review-record-not-product-attestation",
+  "result": {
+    "falsification_attempts": [
+      "Recomputed the 68-commit, 90-path candidate identity with rename inference, external diff, and text conversion disabled; every frozen digest matched.",
+      "Recomputed all 57 original full, original projected, filtered full, and retained-import deltas and confirmed every declared byte equality.",
+      "Confirmed the 21 Linux and 36 macOS retained imports are contiguous single-parent chains with exactly one mapped original-commit trailer each.",
+      "Confirmed all eight historical relocations preserve the exact source-tip, relocation, and reviewed-head blob identities.",
+      "Confirmed the retained pull-request input is not a candidate ancestor and remains isolated to the two retained refs.",
+      "Recomputed the exact 32-entry historical-identity allowlist and whole-file hashes, including the repaired transferred-owner fixture, with no symbolic links, omissions, additions, or digest drift.",
+      "Independently scanned the reviewed source and retained pull-request input: 3,494 reachable objects, no tags, and zero matches in all 13 configured pattern families.",
+      "Found no reachable Agentworks, issue 215, #215, or issues/215 coupling in the reviewed source and retained input.",
+      "Verified all 101 Task Witness source-shape entries and all 12 aggregate identities against candidate bytes.",
+      "Independently verified the repaired schema raw-byte digest and enclosing release-refresh canonical-content digest.",
+      "Confirmed the source remains source-stage-unreleased with no granted release authority, tag, release, or release-manifest instance.",
+      "Confirmed the repaired README and both active documentation contracts expose exactly one fail-closed prepared source-stage route, while the active lineage test assigns the transferred rescout to Provingkit issue 3 and preserves historical source identity."
+    ],
+    "findings": [],
+    "limitations": [
+      "Model identity, routing, and distinct execution context are controller-observed, not product-attested or cryptographically authenticated.",
+      "The independent reviewer did not execute repository-provided code; controller-observed validation results are recorded separately.",
+      "The independent reviewer did not query GitHub live; hosted rulesets, pull-request state, hosted alerts, and topology are frozen controller observations.",
+      "The forge observation predates publication of the repaired source and records the remote feature branch at the failed carrier head.",
+      "Scanner results cover only objects reachable from the supplied commit roots and the 13 listed byte-regex families.",
+      "The scanner does not inspect unreachable object-database content, establish whether any match is a live credential, cover arbitrary secret forms, or replace hosted secret scanning.",
+      "The protected source roots separately contain listed provider-shaped historical test-fixture matches in eight blobs; none is candidate-reachable, and no liveness determination was made.",
+      "This phase does not establish current Linux or macOS runtime qualification, final rebase-assigned mainline commit mapping, release approval, or publication readiness."
+    ],
+    "normalized_status": "clean",
+    "raw_status": "CLEAN",
+    "residual_risk": "Final rebase-assigned mainline mapping, hosted enforcement, and release-grade authentication remain separate gates; this record grants no release authority."
+  },
+  "review_input": {
+    "authority": {
+      "mutation": "none",
+      "release_publication_installation": "none",
+      "review": "read-only"
+    },
+    "exclusions": [
+      "Provingkit release creation",
+      "tags and GitHub Releases",
+      "marketplace publication",
+      "credentials",
+      "live installation",
+      "Base Loadout publication",
+      "source issue 79 implementation",
+      "source issue 80 implementation",
+      "changing retained source pull request 69 disposition"
+    ],
+    "repository_standards": [
+      {
+        "byte_length": 6884,
+        "path": "README.md",
+        "sha256": "sha256:c62b937bc1ed2efcacb9eca75375728baabb8b3b3467bdadd66d3483e0d34608"
+      },
+      {
+        "byte_length": 2400,
+        "path": "CONTRIBUTING.md",
+        "sha256": "sha256:68c686a7967068580330e815d39b1b142226be10ed3059d8c45885433c502fa7"
+      },
+      {
+        "byte_length": 1216,
+        "path": ".github/pull_request_template.md",
+        "sha256": "sha256:a4d0c9ea446d5983f5a60487b4d6db51f141df8c371f499847af860bb7a75026"
+      },
+      {
+        "byte_length": 39756,
+        "path": "release/task-witness/source-shape-review.json",
+        "sha256": "sha256:f3ff4c29a7e19f507428682a33c371fc34ed0bf91ef27c5e56b76e67b5fe897c"
+      },
+      {
+        "byte_length": 8048,
+        "path": "release/provingkit/historical-identity-allowlist-v1.json",
+        "sha256": "sha256:a14d216da0f2f20cfa2260910c2a5be8366eab88110f0b14090ef6088ccec93b"
+      }
+    ]
+  },
+  "schema_version": 3,
+  "scope": {
+    "active_workflows": [
+      ".github/workflows/cocogitto.yml",
+      ".github/workflows/provingkit-source.yml",
+      ".github/workflows/source-skill-disposition.yml",
+      ".github/workflows/versionkeeping-native-credentials.yml"
+    ],
+    "adopted_history_import": {
+      "bundle_content_sha256": "sha256:d14da319649492e7ecb64d20a578983cb2cd88e00a5e4d3a1ed7e49a1a526cc5",
+      "bundle_file_sha256": "sha256:c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae",
+      "bundle_path": "release/provingkit/adopted-history-delta-bundle-v1.json",
+      "historical_relocation_count": 8,
+      "linux_commit_count": 21,
+      "macos_commit_count": 36,
+      "map_path": "release/provingkit/adopted-history-import-map-v1.tsv",
+      "map_sha256": "sha256:6cf416a0be58f050745d2eaad02208e7a0a030dc200a0e55bb4fadb708d37a6f",
+      "protected_source_roots": {
+        "linux": "a8410babc9e1b0c2a57b9f69db98a495133f6843",
+        "macos": "0703e8df26c975a187cb6f36b8dfb21df8bcc6db"
+      },
+      "retained_replay_tip": "604c6e8702c4e3914e862bee58ab35f529866737",
+      "row_count": 57,
+      "source_ruleset_id": 22049569
+    },
+    "published_source_baseline": "44ee979cdae1d47f2ef3fdc713eaa6f04adf9892",
+    "retained_pull_request_input": {
+      "filtered_commit": "8edaf590736621352262457752d087bad835555d",
+      "original_head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+      "production_disposition": "retained-extraction-input-not-accepted-behavior",
+      "state": "open-unmerged"
+    },
+    "reviewed_changed_path_count": 90
+  },
+  "subject": {
+    "base_commit": "7dd8273ecab621be662d27c38706e33f2b48ae34",
+    "base_tree": "83c7a65eaa66de87a332c9899de6d960b58318b1",
+    "binary_patch_contract": "git-diff-histogram-no-ext-diff-no-textconv-no-renames-binary-full-index-v1",
+    "binary_patch_sha256": "sha256:e23e701cf3cd1d122f1c00ac0283d586a0ab826c98e722d6ecdd36b7be9d56b9",
+    "changed_path_count": 90,
+    "changed_path_manifest_contract": "git-diff-raw-z-path-byte-strings-in-git-order-final-nul-v1",
+    "changed_path_manifest_sha256": "sha256:8ec0b4ec80c21345b8e9799c857077b6cc79d4be14eb5070d264d04a02b99d90",
+    "comparison": "base..reviewed-head",
+    "destination_repository": "https://github.com/nisavid/provingkit",
+    "raw_diff_contract": "git-diff-no-ext-diff-no-textconv-no-renames-raw-z-full-index-v1",
+    "raw_diff_sha256": "sha256:f65696e3a18a0f26f5630dc0fe5a1491e65e81f2e38d30ff6cbace80cb63a6a4",
+    "reviewed_head_commit": "538723c92a3103c15a3c835f2161332239a8cb13",
+    "reviewed_head_tree": "40ccb67aab9a89de6b89def0bcb45b2b94a2a629"
+  }
+}
