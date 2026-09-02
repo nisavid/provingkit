@@ -2444,7 +2444,9 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     )
                 )
 
-    @unittest.skip("pre-cutover source-lineage fixture; issue 45 owns the rescout")
+    @unittest.skip(
+        "pre-cutover source-lineage fixture; Provingkit issue #3 owns the rescout"
+    )
     def test_source_stage_scope_and_common_validator_bind_mapped_evidence(
         self,
     ) -> None:
@@ -2549,7 +2551,9 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         self.assertEqual(target.read_bytes(), original)
         self.assertEqual(stat.S_IMODE(target.stat().st_mode), original_mode)
 
-    @unittest.skip("pre-cutover source-lineage fixture; issue 45 owns the rescout")
+    @unittest.skip(
+        "pre-cutover source-lineage fixture; Provingkit issue #3 owns the rescout"
+    )
     def test_common_source_stage_validator_binds_local_license_evidence(
         self,
     ) -> None:

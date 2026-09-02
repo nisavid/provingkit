@@ -260,7 +260,9 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
             self.assertEqual(list(temporary.iterdir()), [])
 
 
-@unittest.skip("historical agents lineage behavior; issue 45 owns the rescout")
+@unittest.skip(
+    "historical agents lineage behavior; Provingkit issue #3 owns the rescout"
+)
 class CheckedInSourceSkillLineageTests(unittest.TestCase):
     def test_candidate_refresh_is_temporally_bound(self) -> None:
         manifest = json.loads(
@@ -420,7 +422,9 @@ class CheckedInSourceSkillLineageTests(unittest.TestCase):
         )
 
 
-@unittest.skip("historical agents lineage behavior; issue 45 owns the rescout")
+@unittest.skip(
+    "historical agents lineage behavior; Provingkit issue #3 owns the rescout"
+)
 class ValidateSourceSkillLineageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -2654,7 +2658,9 @@ class ValidateSourceSkillLineageTests(unittest.TestCase):
                 self.module._privacy_scan(text, "public prose")
 
 
-@unittest.skip("historical agents lineage behavior; issue 45 owns the rescout")
+@unittest.skip(
+    "historical agents lineage behavior; Provingkit issue #3 owns the rescout"
+)
 class RefreshSourceSkillLineageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
