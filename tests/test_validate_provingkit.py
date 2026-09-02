@@ -410,6 +410,46 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("member identity drift", result.stderr)
 
+    def test_cutover_member_version_rejects_a_coordinated_rewrite(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            definition_path = repository / "release/provingkit/definition-v1.json"
+            definition = json.loads(definition_path.read_text(encoding="utf-8"))
+            definition["membership"]["members"][0]["version"] = "9.9.9"
+            definition_path.write_text(
+                json.dumps(definition, indent=2) + "\n", encoding="utf-8"
+            )
+            for relative in (
+                "plugins/rolecasting/plugin.json",
+                "plugins/rolecasting/.claude-plugin/plugin.json",
+            ):
+                manifest_path = repository / relative
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                manifest["version"] = "9.9.9"
+                manifest_path.write_text(
+                    json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+                )
+            schema_path = (
+                repository / "release/provingkit/release-manifest-v1.schema.json"
+            )
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            schema["$defs"]["rolecasting"]["properties"]["version"]["const"] = (
+                "9.9.9"
+            )
+            schema_path.write_text(
+                json.dumps(schema, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("cutover member version drift", result.stderr)
+
     def test_member_content_identity_binds_the_exact_review_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
@@ -867,7 +907,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     def test_active_legacy_tracker_reference_exemption_requires_an_exact_url(
         self,
     ) -> None:
-        for suffix in ("", "0", "evil", "/comments", "?query=unexpected"):
+        for suffix in ("0", "evil", "/comments", "?query=unexpected"):
             with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as directory:
                 repository = Path(directory) / "repository"
                 shutil.copytree(
@@ -876,17 +916,26 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
                 )
                 legacy_issue = "https://github.com/nisavid" + "/agents/issues/50"
-                readme = repository / "README.md"
-                readme.write_text(
-                    readme.read_text(encoding="utf-8")
-                    + f"\nUnexpected active link: {legacy_issue}{suffix}\n",
-                    encoding="utf-8",
+                refresh_path = (
+                    repository
+                    / "release/source-skill-disposition/release-refresh-contract.json"
+                )
+                refresh = json.loads(refresh_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    refresh["workflow"]["source_disposition_owner_issue"],
+                    legacy_issue,
+                )
+                refresh["workflow"]["source_disposition_owner_issue"] = (
+                    legacy_issue + suffix
+                )
+                refresh_path.write_text(
+                    json.dumps(refresh, indent=2) + "\n", encoding="utf-8"
                 )
 
                 result = self.validate(repository)
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("unallowlisted legacy repository identity", result.stderr)
+            self.assertIn("active legacy tracker reference scope drift", result.stderr)
 
     def test_active_legacy_tracker_reference_exemption_is_field_scoped(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

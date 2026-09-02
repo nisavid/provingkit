@@ -103,6 +103,14 @@ EXPECTED_MEMBERS = (
         "release/task-witness/source-shape-review.json",
     ),
 )
+EXPECTED_CUTOVER_MEMBER_VERSIONS = {
+    "rolecasting": "1.0.0",
+    "tricritical": "1.0.0",
+    "versionkeeping": "1.0.0",
+    "mergecraft": "1.0.0",
+    "artifact-customs": "1.0.0",
+    "task-witness": "1.0.0",
+}
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
     "products": [
@@ -575,6 +583,8 @@ def _validate_definition(repository: Path) -> None:
             content_identity_relative,
         ) = expected
         version = member.get("version")
+        if version != EXPECTED_CUTOVER_MEMBER_VERSIONS[member_id]:
+            raise ValidationError("cutover member version drift")
         canonical_manifest = _load_json(
             repository / canonical_relative, "canonical member manifest"
         )
