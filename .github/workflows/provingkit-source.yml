@@ -60,6 +60,9 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.3
+
       - name: Validate Rolecasting
         run: |
           python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus

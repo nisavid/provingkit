@@ -9,11 +9,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import yaml
+
 from scripts import validate_provingkit
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY / "scripts" / "validate_provingkit.py"
+SOURCE_WORKFLOW = REPOSITORY / ".github/workflows/provingkit-source.yml"
 
 
 class ProvingkitRepositoryContractTests(unittest.TestCase):
@@ -132,6 +135,18 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_rolecasting_source_job_installs_its_validation_dependency(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        commands = {
+            step.get("run", "")
+            for step in workflow["jobs"]["rolecasting"]["steps"]
+        }
+
+        self.assertIn(
+            "python -m pip install --disable-pip-version-check PyYAML==6.0.3",
+            commands,
+        )
 
     def test_versioned_definition_is_required(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

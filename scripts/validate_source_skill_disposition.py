@@ -92,7 +92,7 @@ FINAL_RESCOUT_ARTIFACT = {
     },
     "schema": {
         "path": FINAL_RESCOUT_SCHEMA.as_posix(),
-        "sha256": "sha256:c1a1432331130d2c7504279cba44d841d14bc4535e6ca5fab557d3b1b066f592",
+        "sha256": "sha256:2eb9bff3f6659b7bf77144f03259280fdcfbf2247ec6e35568ecd2d23d3da4a8",
     },
     "validation_command": "uv run --with jsonschema==4.26.0 python scripts/validate_source_skill_disposition.py --require-final-rescout .",
 }
