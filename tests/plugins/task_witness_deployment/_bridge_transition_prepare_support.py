@@ -169,6 +169,17 @@ class OutboundBridgePreparationFixture:
             "_task_witness_installed_bridge_prepare",
         )
         try:
+            retained_receipts = _receipt_chain(canonical_root)
+            retained_results = _result_inventory(canonical_root)
+            receipt_values = [
+                json.loads(
+                    (
+                        canonical_root / "receipts" / f"sha256-{item['sha256']}.json"
+                    ).read_bytes()
+                )
+                for item in retained_receipts
+            ]
+            bridge_history, identity_raw = self._bridge_identity(receipt_values)
             tw4_candidate_root = self.freeze5.routine.candidate_root()
             self._set_test_manifest_version(
                 tw4_candidate_root,
@@ -200,16 +211,6 @@ class OutboundBridgePreparationFixture:
                 expected_active_receipt_sha256=(active_bridge.active_receipt_sha256),
             )
 
-            retained_receipts = _receipt_chain(canonical_root)
-            retained_results = _result_inventory(canonical_root)
-            receipt_values = [
-                json.loads(
-                    (
-                        canonical_root / "receipts" / f"sha256-{item['sha256']}.json"
-                    ).read_bytes()
-                )
-                for item in retained_receipts
-            ]
             observed_versions = tuple(
                 value["source"]["release_version"] for value in receipt_values
             ) + (
@@ -220,7 +221,6 @@ class OutboundBridgePreparationFixture:
 
             authority_root = self.root / "test-owned-bridge-authority"
             authority_root.mkdir(mode=0o700)
-            bridge_history, identity_raw = self._bridge_identity(receipt_values)
             identity_path = authority_root / "bridge-identity.json"
             _write_private(identity_path, identity_raw)
 
@@ -283,25 +283,39 @@ class OutboundBridgePreparationFixture:
     def _bridge_identity(
         receipts: list[dict[str, Any]],
     ) -> tuple[dict[str, Any], bytes]:
-        freeze5 = _identity_projection(receipts[0], tree_sha1="1" * 40)
-        freeze5["commit_sha1"] = FREEZE5_COMMIT
-        bridge = _identity_projection(receipts[1], tree_sha1="2" * 40)
-        unsigned = {
-            "schema_version": 1,
-            "contract": "task-witness-tw4-bridge-identity-v1",
-            "freeze5": freeze5,
-            "bridge": bridge,
-            "allowed_edges": [
-                {
-                    "from": "freeze5",
-                    "source_mode": "harness_snapshot",
-                    "to": "bridge",
-                }
-            ],
-            "provenance_sha256": "3" * 64,
-        }
-        raw = _canonical_raw(unsigned)
+        raw = (
+            Path(__file__).resolve().parents[3]
+            / "release/task-witness/tw4-bridge-identity.json"
+        ).read_bytes()
         value = json.loads(raw)
+        observed = {
+            "freeze5": _identity_projection(
+                receipts[0],
+                tree_sha1=value["freeze5"]["tree_sha1"],
+            ),
+            "bridge": _identity_projection(
+                receipts[1],
+                tree_sha1=value["bridge"]["tree_sha1"],
+            ),
+        }
+        observed["freeze5"]["commit_sha1"] = FREEZE5_COMMIT
+        if any(observed[generation] != value[generation] for generation in observed):
+            unsigned = {
+                "schema_version": 1,
+                "contract": "task-witness-tw4-bridge-identity-v1",
+                "freeze5": observed["freeze5"],
+                "bridge": observed["bridge"],
+                "allowed_edges": [
+                    {
+                        "from": "freeze5",
+                        "source_mode": "harness_snapshot",
+                        "to": "bridge",
+                    }
+                ],
+                "provenance_sha256": "3" * 64,
+            }
+            raw = _canonical_raw(unsigned)
+            value = json.loads(raw)
         history = {
             "bridge_identity_sha256": sha256(raw),
             "bridge_provenance_sha256": value["provenance_sha256"],

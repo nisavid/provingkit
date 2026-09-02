@@ -17,10 +17,10 @@
       "docs/superpowers/specs/2026-07-27-task-witness-canonical-client-design.md": 1712,
       "docs/superpowers/specs/2026-08-12-task-witness-tw4-migration-and-qualification-design.md": 1525,
       "plugins/task-witness/README.md": 23,
-      "plugins/task-witness/client/task_witness_client.py": 8540,
+      "plugins/task-witness/client/task_witness_client.py": 8631,
       "plugins/task-witness/client/task_witness_shim.sh.in": 1,
       "plugins/task-witness/controller/policy.json": 1,
-      "plugins/task-witness/controller/task_witness_deploy.py": 24611,
+      "plugins/task-witness/controller/task_witness_deploy.py": 24744,
       "plugins/task-witness/launcher/task_witness_launch.py": 672,
       "plugins/task-witness/runtime/bundle_io.py": 319,
       "plugins/task-witness/runtime/canonical.py": 156,
@@ -37,12 +37,12 @@
       "release/task-witness/migration/freeze5/controller/policy.json": 1,
       "release/task-witness/migration/freeze5/controller/task_witness_deploy.py": 21000,
       "release/task-witness/public-release-registration.json": 23,
-      "release/task-witness/tw4-bridge-identity.json": 33,
+      "release/task-witness/tw4-bridge-identity.json": 1,
       "release/task-witness/tw4-bridge-provenance.json": 111,
       "release/task-witness/tw4-suite-inventory.json": 1,
-      "scripts/run_task_witness_qualification.py": 5445,
-      "scripts/run_task_witness_qualification_suite.py": 3952,
-      "scripts/validate_task_witness.py": 4536,
+      "scripts/run_task_witness_qualification.py": 5573,
+      "scripts/run_task_witness_qualification_suite.py": 3958,
+      "scripts/validate_task_witness.py": 4666,
       "tests/plugins/task_witness_client/__init__.py": 0,
       "tests/plugins/task_witness_client/_activation_smoke_driver.py": 127,
       "tests/plugins/task_witness_client/_client_driver.py": 269,
@@ -59,10 +59,10 @@
       "tests/plugins/task_witness_client/test_activation_smoke.py": 3312,
       "tests/plugins/task_witness_client/test_compatibility_policy_v2.py": 148,
       "tests/plugins/task_witness_client/test_control_maintenance_smoke.py": 245,
-      "tests/plugins/task_witness_client/test_invocation_profile.py": 1644,
+      "tests/plugins/task_witness_client/test_invocation_profile.py": 1646,
       "tests/plugins/task_witness_client/test_launcher.py": 1229,
       "tests/plugins/task_witness_client/test_process_supervision.py": 2602,
-      "tests/plugins/task_witness_client/test_retained_state.py": 2033,
+      "tests/plugins/task_witness_client/test_retained_state.py": 2073,
       "tests/plugins/task_witness_client/test_runtime.py": 22,
       "tests/plugins/task_witness_client/test_runtime_acceptance.py": 625,
       "tests/plugins/task_witness_client/test_shim.py": 189,
@@ -71,18 +71,18 @@
       "tests/plugins/task_witness_deployment/_activation_recovery_support.py": 236,
       "tests/plugins/task_witness_deployment/_activation_support.py": 944,
       "tests/plugins/task_witness_deployment/_bridge_transition_activation_support.py": 368,
-      "tests/plugins/task_witness_deployment/_bridge_transition_prepare_support.py": 361,
+      "tests/plugins/task_witness_deployment/_bridge_transition_prepare_support.py": 375,
       "tests/plugins/task_witness_deployment/_bridge_transition_stage_support.py": 161,
       "tests/plugins/task_witness_deployment/_control_maintenance_activation_support.py": 2200,
       "tests/plugins/task_witness_deployment/_control_maintenance_followup_support.py": 237,
       "tests/plugins/task_witness_deployment/_control_maintenance_staged_client_support.py": 65,
       "tests/plugins/task_witness_deployment/_control_maintenance_support.py": 315,
-      "tests/plugins/task_witness_deployment/_freeze5_upgrade_recovery_support.py": 330,
+      "tests/plugins/task_witness_deployment/_freeze5_upgrade_recovery_support.py": 377,
       "tests/plugins/task_witness_deployment/_manual_rollback_support.py": 968,
       "tests/plugins/task_witness_deployment/_provider_cache_deletion_and_movement_support.py": 891,
       "tests/plugins/task_witness_deployment/_routine_activation_support.py": 1447,
       "tests/plugins/task_witness_deployment/_routine_staged_client_support.py": 153,
-      "tests/plugins/task_witness_deployment/_routine_support.py": 1148,
+      "tests/plugins/task_witness_deployment/_routine_support.py": 1149,
       "tests/plugins/task_witness_deployment/_source_evidence_support.py": 247,
       "tests/plugins/task_witness_deployment/_source_recovery_support.py": 202,
       "tests/plugins/task_witness_deployment/_source_transition_support.py": 262,
@@ -91,34 +91,34 @@
       "tests/plugins/task_witness_deployment/test_activation_recovery_validation.py": 1192,
       "tests/plugins/task_witness_deployment/test_activation_transactions.py": 970,
       "tests/plugins/task_witness_deployment/test_agent_plugins_source_receipts.py": 223,
-      "tests/plugins/task_witness_deployment/test_bridge_transition_activation.py": 665,
+      "tests/plugins/task_witness_deployment/test_bridge_transition_activation.py": 1004,
       "tests/plugins/task_witness_deployment/test_bridge_transition_preparation.py": 314,
       "tests/plugins/task_witness_deployment/test_bridge_transition_staging.py": 278,
       "tests/plugins/task_witness_deployment/test_control_maintenance_activation.py": 1808,
       "tests/plugins/task_witness_deployment/test_control_maintenance_followup.py": 113,
       "tests/plugins/task_witness_deployment/test_control_maintenance_staged_client_integration.py": 277,
       "tests/plugins/task_witness_deployment/test_control_maintenance_staging.py": 392,
-      "tests/plugins/task_witness_deployment/test_freeze5_upgrade_recovery.py": 970,
+      "tests/plugins/task_witness_deployment/test_freeze5_upgrade_recovery.py": 979,
       "tests/plugins/task_witness_deployment/test_manual_rollback_activation.py": 466,
       "tests/plugins/task_witness_deployment/test_manual_rollback_preparation.py": 103,
       "tests/plugins/task_witness_deployment/test_manual_rollback_recovery.py": 1045,
       "tests/plugins/task_witness_deployment/test_provider_cache_deletion_and_movement.py": 339,
       "tests/plugins/task_witness_deployment/test_provider_import.py": 657,
-      "tests/plugins/task_witness_deployment/test_receipt_staging.py": 2219,
+      "tests/plugins/task_witness_deployment/test_receipt_staging.py": 2223,
       "tests/plugins/task_witness_deployment/test_routine_activation_recovery.py": 2746,
       "tests/plugins/task_witness_deployment/test_routine_staged_client_integration.py": 222,
-      "tests/plugins/task_witness_deployment/test_routine_transactions.py": 2497,
+      "tests/plugins/task_witness_deployment/test_routine_transactions.py": 2547,
       "tests/plugins/task_witness_deployment/test_source_evidence_first_install.py": 553,
       "tests/plugins/task_witness_deployment/test_source_evidence_recovery.py": 237,
       "tests/plugins/task_witness_deployment/test_source_evidence_transitions.py": 257,
       "tests/plugins/task_witness_deployment/test_staged_client_integration.py": 265,
       "tests/plugins/task_witness_deployment/test_transaction_result_reconciliation.py": 1452,
-      "tests/test_task_witness_package.py": 4260,
-      "tests/test_task_witness_qualification.py": 6600
+      "tests/test_task_witness_package.py": 4275,
+      "tests/test_task_witness_qualification.py": 6628
     },
     "sets": {
       "current_control_set": {
-        "aggregate_nonblank_noncomment_lines": 34984,
+        "aggregate_nonblank_noncomment_lines": 35208,
         "paths": [
           "plugins/task-witness/client/task_witness_client.py",
           "plugins/task-witness/client/task_witness_shim.sh.in",
@@ -133,7 +133,7 @@
         ]
       },
       "direct_release_owned_tests": {
-        "aggregate_nonblank_noncomment_lines": 60304,
+        "aggregate_nonblank_noncomment_lines": 60853,
         "paths": [
           "tests/plugins/task_witness_client/__init__.py",
           "tests/plugins/task_witness_client/_activation_smoke_driver.py",
@@ -224,7 +224,7 @@
         ]
       },
       "release_integration": {
-        "aggregate_nonblank_noncomment_lines": 10883,
+        "aggregate_nonblank_noncomment_lines": 10926,
         "paths": [
           "release/task-witness/public-release-registration.json",
           "tests/test_task_witness_package.py",
@@ -232,14 +232,14 @@
         ]
       },
       "release_integration_tests": {
-        "aggregate_nonblank_noncomment_lines": 10860,
+        "aggregate_nonblank_noncomment_lines": 10903,
         "paths": [
           "tests/test_task_witness_package.py",
           "tests/test_task_witness_qualification.py"
         ]
       },
       "release_validator": {
-        "aggregate_nonblank_noncomment_lines": 4536,
+        "aggregate_nonblank_noncomment_lines": 4666,
         "paths": [
           "scripts/validate_task_witness.py"
         ]
@@ -255,14 +255,14 @@
         ]
       },
       "tw1_client": {
-        "aggregate_nonblank_noncomment_lines": 8541,
+        "aggregate_nonblank_noncomment_lines": 8632,
         "paths": [
           "plugins/task-witness/client/task_witness_client.py",
           "plugins/task-witness/client/task_witness_shim.sh.in"
         ]
       },
       "tw2_control_plane": {
-        "aggregate_nonblank_noncomment_lines": 24648,
+        "aggregate_nonblank_noncomment_lines": 24781,
         "paths": [
           "plugins/task-witness/controller/policy.json",
           "plugins/task-witness/controller/task_witness_deploy.py",
@@ -270,7 +270,7 @@
         ]
       },
       "tw4_migration_evidence": {
-        "aggregate_nonblank_noncomment_lines": 62298,
+        "aggregate_nonblank_noncomment_lines": 62266,
         "paths": [
           "release/task-witness/migration/bridge/.claude-plugin/plugin.json",
           "release/task-witness/migration/bridge/.codex-plugin/plugin.json",
@@ -286,7 +286,7 @@
         ]
       },
       "tw4_qualification_contract": {
-        "aggregate_nonblank_noncomment_lines": 15998,
+        "aggregate_nonblank_noncomment_lines": 16160,
         "paths": [
           "release/task-witness/tw4-suite-inventory.json",
           "scripts/run_task_witness_qualification.py",
@@ -299,18 +299,18 @@
   "schema_version": 4,
   "source_byte_identity": {
     "aggregate_sha256_by_set": {
-      "tw0": "3559210111eaab4a310bd4db2b3ce7133aeff4bde35dbb4821db5bb2fc5fc0b3",
-      "tw1_client": "a40838d2799829772cfe75be45acbaec148db35f3b2e9ba3fb8ab8a3e03f6e37",
-      "tw2_control_plane": "7c06f72e8c0b8c8ac094f5ac343cb13fe27a85fe5cd53f697b3ba17cc0e28d52",
-      "current_control_set": "14b1349d67d638b52d3268c01967fe28244ea637cdd3721478c019b980338d15",
-      "direct_release_owned_tests": "8b9f87bbaa463221fe5fe63a0cbde528af0dc3f7842995f908667d755e0e9582",
+      "current_control_set": "eaab2cc74fe25b22f8d496802c00a769c22a0c86c54b6291992bc7ac3d8cb2b8",
+      "direct_release_owned_tests": "c5aea58eb20af7c5d2ca7768da99e4e408151f680e40d3fb4fe4861ca53fcf6f",
       "public_release_registration": "e3e97ca609e4806d3d6445f0f9e4b07a6cac739fa828f6d5f432824511e8390e",
       "release_documentation": "b0a5feb9ceae5f823b41360ef9cc4f70f73040cb767570a6b189c3144622790a",
-      "release_integration": "8188e3fa8e73fe4a3a8a0639ed2050928c12f3c0468570a5f83fbf17184381f6",
-      "release_integration_tests": "5dd577a9de0e597e842cd590faf64ea267c9f3cd20b4bbc3458fceb1a1324875",
-      "release_validator": "6c180d867c3f55b31a76da83e3c423964bb2bed663fbf08636aec4d68378a5d8",
-      "tw4_migration_evidence": "1c2c85bd317af0c0fcdeb2f642c435af50e620948d3dd99a6af974cedf34059c",
-      "tw4_qualification_contract": "273d88043c9e4dfe6de8be537cdca524d91395110f9f08ff0fa5ec8f25ee8497"
+      "release_integration": "2f0fa1f3a23e46f51ed1061b8c2d71f5aee6279caf2cbf419caec8ddfd1d078d",
+      "release_integration_tests": "22fb0c781955f521ded6cfff57b24d7c73e398bf9dc07586d4fc4335cd5a1460",
+      "release_validator": "51734eb0de40141f64944c60f564eb4486691bcefc7e8174bdf89664aa258918",
+      "tw0": "3559210111eaab4a310bd4db2b3ce7133aeff4bde35dbb4821db5bb2fc5fc0b3",
+      "tw1_client": "9ca6833117f5f8cf68c68d4a1463572957c125e03e51d1fb462fac9b23b49b47",
+      "tw2_control_plane": "0da55850bfe4dd3a0d628803a7e3bf248aacc4665291ba6a58ae3c2684e63086",
+      "tw4_migration_evidence": "ff578b10c2ccd00636e017dfae4befe407acc2d86b084392ecfe4518614634b4",
+      "tw4_qualification_contract": "fb932d1acbc8974f836bfaada1420217ae704d425341421867b8468a01414d54"
     },
     "algorithm": "sha256",
     "entries": [
@@ -328,7 +328,7 @@
       },
       {
         "path": "plugins/task-witness/client/task_witness_client.py",
-        "sha256": "dbd3377a67f7fceea3f4b0ac3c008669ba63962ffe0615f21ee9cd6f5625e61c"
+        "sha256": "6dbb0a019188bb2f200b30c0957c517dae8ef4108475f0f5bde991a79078ca15"
       },
       {
         "path": "plugins/task-witness/client/task_witness_shim.sh.in",
@@ -340,7 +340,7 @@
       },
       {
         "path": "plugins/task-witness/controller/task_witness_deploy.py",
-        "sha256": "704c0209fecbcf746c3c26a1e76be402d287310d27a94162f149a12ce3b9fa0b"
+        "sha256": "746e56c2ed0109d5e65a770b49f4d143510917653b92aed4607606ea059ef5ef"
       },
       {
         "path": "plugins/task-witness/launcher/task_witness_launch.py",
@@ -408,7 +408,7 @@
       },
       {
         "path": "release/task-witness/tw4-bridge-identity.json",
-        "sha256": "59646a9ab24bcebb200900029834f807907c8e0bb1c9a15168dbc462cfe84c7c"
+        "sha256": "748f8a4780ffdd8d38cccb314704906f8098fab4e098060aa8d92603753214ab"
       },
       {
         "path": "release/task-witness/tw4-bridge-provenance.json",
@@ -416,19 +416,19 @@
       },
       {
         "path": "release/task-witness/tw4-suite-inventory.json",
-        "sha256": "985e316e7b3d75f07f91a7bd766414f092340ee1006d57081a887026b1da37cd"
+        "sha256": "714d2a7a9040f9d7198b19c0f70d2686bbbd48a688fca654de71e4f6907fb74d"
       },
       {
         "path": "scripts/run_task_witness_qualification.py",
-        "sha256": "baa546c9c483d590329c9dc4ca9539742c195b6c9eeb1bad137141905d0cf87f"
+        "sha256": "79b9405fbd5de18c041c2c84f58414ca75f842f8b0070fd4431eadfb356c1857"
       },
       {
         "path": "scripts/run_task_witness_qualification_suite.py",
-        "sha256": "eb307d118756689784df4a0b65c67643046da82fb9a6d7bea7074efde96d21bc"
+        "sha256": "19695a973306bba11c9d9979bc174dbd01afc9892d9b34cd8d91876a13dc0775"
       },
       {
         "path": "scripts/validate_task_witness.py",
-        "sha256": "46649d0ed825c5c147e069033f59de4e8f9b58afbde1b64cbd2bd6bb85372725"
+        "sha256": "82a85074f8cad391e32997d1d5ded5957e80519e8ba59ac1a2a194aef218e77b"
       },
       {
         "path": "tests/plugins/task_witness_client/__init__.py",
@@ -496,7 +496,7 @@
       },
       {
         "path": "tests/plugins/task_witness_client/test_invocation_profile.py",
-        "sha256": "52fd8807b4c5c6015593c0992e1acc7bc02cc30ec02f795e71b1ca511c2ac847"
+        "sha256": "909e6198960480fabcf797f6080bcaf0e17e43c4e897d88c2f00b70ac0d4a5d5"
       },
       {
         "path": "tests/plugins/task_witness_client/test_launcher.py",
@@ -508,7 +508,7 @@
       },
       {
         "path": "tests/plugins/task_witness_client/test_retained_state.py",
-        "sha256": "b30a767f3c54b776faef9641bc21abe6428e89a6d72a4f2303f7c522fd7ff0c4"
+        "sha256": "12c02ea4b860a68d9568b8742408038cc2224ae3c7688823c7a9c1ba4008b581"
       },
       {
         "path": "tests/plugins/task_witness_client/test_runtime.py",
@@ -520,7 +520,7 @@
       },
       {
         "path": "tests/plugins/task_witness_client/test_shim.py",
-        "sha256": "fc3b9107dfab5e70fc11372f312ddcff5e5006923a1bd1772e4368ecdef5ab0e"
+        "sha256": "ec550f92131d72e1e81d8f2203c5cb7fa4703f2094899a40cc000ff7d1b630af"
       },
       {
         "path": "tests/plugins/task_witness_client/test_terminal_output.py",
@@ -544,7 +544,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/_bridge_transition_prepare_support.py",
-        "sha256": "85e2e567bec6bdcb1a191c58ed1b22b666ef48cdfaae1a11bd789298df1e2dfd"
+        "sha256": "1423b24fd04f4c9fe34b2b5e5fa0998a7713f26d5eaefc2a252f78a3061c8ba7"
       },
       {
         "path": "tests/plugins/task_witness_deployment/_bridge_transition_stage_support.py",
@@ -568,7 +568,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/_freeze5_upgrade_recovery_support.py",
-        "sha256": "899473780ba76377230f669e78f0a38766586ee25eade1bfddeab36cc53d0c85"
+        "sha256": "812f43b2d3eeb0488a50410bcf6b023b4d9735299bc00628ae3e4a626d5dd5df"
       },
       {
         "path": "tests/plugins/task_witness_deployment/_manual_rollback_support.py",
@@ -588,7 +588,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/_routine_support.py",
-        "sha256": "8726f70c7f8f16c60e08df45bb3b81acad8bc1d71e963cccc9721a74bcb06298"
+        "sha256": "973ae67171935e1841f06b89bc548c96a4bc03c113af6c77ade8c4dd2fe518cc"
       },
       {
         "path": "tests/plugins/task_witness_deployment/_source_evidence_support.py",
@@ -624,7 +624,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_bridge_transition_activation.py",
-        "sha256": "985d35b706d2dbefb8f586936a83652d2d73c7784908d4905b238ebf8374d8fb"
+        "sha256": "1622a10386c4c161590b1cff39b02f1a352d4c5527988a7fc3ad1a3b6f695add"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_bridge_transition_preparation.py",
@@ -644,7 +644,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_control_maintenance_staged_client_integration.py",
-        "sha256": "edc250b41e8f260e65c1776849f6aa4c6ef68524f4488edc63a742f775e8cfbd"
+        "sha256": "4676950272e8387db843dd02860635605d95b04f502e8d013a46acf5347297c5"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_control_maintenance_staging.py",
@@ -652,7 +652,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_freeze5_upgrade_recovery.py",
-        "sha256": "e7194cde44757f200ad0a87eb768b996200f5f7497d9411bf6c9368798700770"
+        "sha256": "b010df7ccdb20d14649d6a09348d28aa891b6f0806f1cc39214145ef1611c2f6"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_manual_rollback_activation.py",
@@ -676,7 +676,7 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_receipt_staging.py",
-        "sha256": "d348c91e0cd595bed877333125bba680429957830ca3fa22b5c1d3755ef723e5"
+        "sha256": "d8afe88d8eb2d91312f37a1bcdff02d19c46219ef8600347b0455d73be32bbc0"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_routine_activation_recovery.py",
@@ -684,11 +684,11 @@
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_routine_staged_client_integration.py",
-        "sha256": "a8453922e76f09e58c43a08c17f9c6ee080022aa73c5b8b9e6957bbef92c653d"
+        "sha256": "95f5a95dc9042cca7661d29206cb5d3563d64edbdda9f27a5e0b3bb18973702f"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_routine_transactions.py",
-        "sha256": "eb2e8bfa5e1515530fbb4ce7b7c4c82a00d585a857ead8b20858c52728f855c1"
+        "sha256": "c13151324e9f99d65200addcfc6bba4a2100c3abed1be54a677f40d529cd7336"
       },
       {
         "path": "tests/plugins/task_witness_deployment/test_source_evidence_first_install.py",
@@ -712,35 +712,35 @@
       },
       {
         "path": "tests/test_task_witness_package.py",
-        "sha256": "0857e5db19a11d1c5a385842d37a3483f6524c3165a0515034eb62c374a6f633"
+        "sha256": "b8ec494db61c406f6181ce7e9b4f379c1fddcb17cc318a34c91e0a4646fb28bd"
       },
       {
         "path": "tests/test_task_witness_qualification.py",
-        "sha256": "c91821973fce53d4748cd4d8df13fd9683ed6f83d846b60752567785ce191d32"
+        "sha256": "9594f6c2ebf3a77c02a78b4e9aa9e91ed5e4f3a67252933568268f21a2fbf0f7"
       }
     ],
     "framing": "path-utf8-nul-sha256-hex-nul-v1"
   },
   "tripwires": {
     "aggregate_nonblank_noncomment_lines": {
-      "current_control_set": 35050,
-      "direct_release_owned_tests": 60382,
+      "current_control_set": 35225,
+      "direct_release_owned_tests": 60875,
       "public_release_registration": 25,
       "release_documentation": 3300,
       "release_integration": 10975,
       "release_integration_tests": 10950,
-      "release_validator": 4550,
+      "release_validator": 4675,
       "tw0": 1825,
-      "tw1_client": 8575,
-      "tw2_control_plane": 24675,
+      "tw1_client": 8650,
+      "tw2_control_plane": 24800,
       "tw4_migration_evidence": 62375,
-      "tw4_qualification_contract": 16150
+      "tw4_qualification_contract": 16175
     },
     "file_nonblank_noncomment_lines": {
-      "plugins/task-witness/client/task_witness_client.py": 8575,
+      "plugins/task-witness/client/task_witness_client.py": 8650,
       "plugins/task-witness/client/task_witness_shim.sh.in": 5,
       "plugins/task-witness/controller/policy.json": 5,
-      "plugins/task-witness/controller/task_witness_deploy.py": 24650,
+      "plugins/task-witness/controller/task_witness_deploy.py": 24775,
       "plugins/task-witness/launcher/task_witness_launch.py": 700,
       "plugins/task-witness/runtime/bundle_io.py": 340,
       "plugins/task-witness/runtime/canonical.py": 175,

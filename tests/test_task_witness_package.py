@@ -95,20 +95,20 @@ SUITE_PROJECTIONS = (
     ("linux-process-supervision", "platform-vertical", ("linux-x86_64",)),
 )
 SUITE_EXPECTED_COUNTS = {
-    "client-common": 321,
+    "client-common": 322,
     "deployment-common": 203,
-    "package-contract": 71,
-    "qualification-runner-contract": 7,
+    "package-contract": 72,
+    "qualification-runner-contract": 8,
     "task-witness-source-stage": 1,
     "public-release-source-stage": 1,
-    "forward-update": 53,
+    "forward-update": 54,
     "authorized-downgrade-and-manual-rollback": 18,
     "candidate-rejection-rollback": 11,
     "candidate-source-disappearance": 1,
     "provider-cache-deletion-and-movement": 1,
     "literal-rendered-shim": 1,
     "migration-freeze5-to-bridge": 11,
-    "migration-bridge-to-tw4": 15,
+    "migration-bridge-to-tw4": 17,
     "macos-acl": 12,
     "linux-process-supervision": 3,
 }
@@ -1031,6 +1031,20 @@ class TaskWitnessPackageTests(unittest.TestCase):
             self.bridge_history_projection(),
         )
 
+    def test_rejects_noncanonical_bridge_identity_bytes(self) -> None:
+        path = self.repository / BRIDGE_IDENTITY
+        canonical_raw = path.read_bytes()
+        identity = json.loads(path.read_bytes())
+        path.write_text(json.dumps(identity, indent=2) + "\n", encoding="utf-8")
+        self.assertEqual(json.loads(path.read_bytes()), identity)
+        self.assertNotEqual(path.read_bytes(), canonical_raw)
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "Task Witness bridge identity is not canonical JSON",
+        ):
+            self.validate_bridge_history()
+
     def test_release_manifest_parser_matches_frozen_bridge_schema(self) -> None:
         validator = runpy.run_path(str(self.repository / "scripts" / VALIDATOR.name))
         manifest = self.release_manifest_document()
@@ -1122,7 +1136,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
             lambda value: value["suite_inventory"].update({"length": "1000"}),
             lambda value: value["suite_inventory"].update({"counts_sha256": "0" * 64}),
             lambda value: value["suite_inventory"].update(
-                {"expected_count_total": 729}
+                {"expected_count_total": 735}
             ),
             lambda value: value.update({"target": "linux-x86_64"}),
             lambda value: value["platform"]["credential_state"].update(
@@ -3053,18 +3067,21 @@ class TaskWitnessPackageTests(unittest.TestCase):
         compatibility_repository = b'"nisavid/agents"'
         rewritten_compatibility_repository = b'"nisavid/provingkit"'
         self.assertEqual(current.count(active_repository), 2)
-        self.assertEqual(current.count(legacy_repository), 0)
-        self.assertEqual(current.count(compatibility_repository), 1)
+        self.assertEqual(current.count(legacy_repository), 3)
+        self.assertEqual(current.count(compatibility_repository), 3)
 
-        for source, replacement in (
-            (active_repository, legacy_repository),
-            (compatibility_repository, rewritten_compatibility_repository),
+        for source, replacement, expected in (
+            (active_repository, legacy_repository, "bridge controller snapshot drift"),
+            (legacy_repository, active_repository, "bridge controller snapshot drift"),
+            (
+                compatibility_repository,
+                rewritten_compatibility_repository,
+                "current controller fragment drift",
+            ),
         ):
             with self.subTest(source=source):
                 controller.write_bytes(current.replace(source, replacement, 1))
-                with self.assertRaisesRegex(
-                    ValueError, "bridge controller snapshot drift"
-                ):
+                with self.assertRaisesRegex(ValueError, expected):
                     self.validate_bridge_history()
                 controller.write_bytes(current)
 
@@ -3566,10 +3583,10 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 ),
             )
         expected_file_tripwires = {
-            "plugins/task-witness/client/task_witness_client.py": 8575,
+            "plugins/task-witness/client/task_witness_client.py": 8650,
             "plugins/task-witness/client/task_witness_shim.sh.in": 5,
             "plugins/task-witness/controller/policy.json": 5,
-            "plugins/task-witness/controller/task_witness_deploy.py": 24650,
+            "plugins/task-witness/controller/task_witness_deploy.py": 24775,
             "plugins/task-witness/launcher/task_witness_launch.py": 700,
             "plugins/task-witness/runtime/bundle_io.py": 340,
             "plugins/task-witness/runtime/canonical.py": 175,
@@ -3585,17 +3602,17 @@ class TaskWitnessPackageTests(unittest.TestCase):
             record["tripwires"]["aggregate_nonblank_noncomment_lines"],
             {
                 "tw0": 1825,
-                "tw1_client": 8575,
-                "tw2_control_plane": 24675,
-                "current_control_set": 35050,
-                "direct_release_owned_tests": 60382,
+                "tw1_client": 8650,
+                "tw2_control_plane": 24800,
+                "current_control_set": 35225,
+                "direct_release_owned_tests": 60875,
                 "public_release_registration": 25,
                 "release_documentation": 3300,
                 "release_integration": 10975,
                 "release_integration_tests": 10950,
-                "release_validator": 4550,
+                "release_validator": 4675,
                 "tw4_migration_evidence": 62375,
-                "tw4_qualification_contract": 16150,
+                "tw4_qualification_contract": 16175,
             },
         )
         aggregate_tripwires = record["tripwires"]["aggregate_nonblank_noncomment_lines"]

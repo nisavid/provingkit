@@ -450,20 +450,20 @@ def suite_inventory_document() -> dict[str, object]:
         "linux-process-supervision",
     ]
     expected_counts = {
-        "client-common": 321,
+        "client-common": 322,
         "deployment-common": 203,
-        "package-contract": 71,
-        "qualification-runner-contract": 7,
+        "package-contract": 72,
+        "qualification-runner-contract": 8,
         "task-witness-source-stage": 1,
         "public-release-source-stage": 1,
-        "forward-update": 53,
+        "forward-update": 54,
         "authorized-downgrade-and-manual-rollback": 18,
         "candidate-rejection-rollback": 11,
         "candidate-source-disappearance": 1,
         "provider-cache-deletion-and-movement": 1,
         "literal-rendered-shim": 1,
         "migration-freeze5-to-bridge": 11,
-        "migration-bridge-to-tw4": 15,
+        "migration-bridge-to-tw4": 17,
         "macos-acl": 12,
         "linux-process-supervision": 3,
     }
@@ -831,7 +831,7 @@ class TaskWitnessQualificationTests(unittest.TestCase):
         value = json.loads(process.stdout)
         self.assertEqual(load_runner_module().parse_suite_result(value), value)
         self.assertEqual(value["id"], "qualification-runner-contract")
-        self.assertEqual(value["observed_count"], 7)
+        self.assertEqual(value["observed_count"], 8)
         self.assertEqual(value["detail_stdout_length"], 0)
         self.assertEqual(value["detail_stderr_length"], 0)
         self.assertEqual(
@@ -855,7 +855,7 @@ class TaskWitnessQualificationTests(unittest.TestCase):
         value = json.loads(process.stdout)
         self.assertEqual(load_runner_module().parse_suite_result(value), value)
         self.assertEqual(value["id"], "client-common")
-        self.assertEqual(value["observed_count"], 321)
+        self.assertEqual(value["observed_count"], 322)
         self.assertEqual(value["detail_stdout_length"], 0)
         self.assertEqual(value["detail_stderr_length"], 0)
         self.assertEqual(
@@ -1679,9 +1679,9 @@ else:
         driver = load_suite_driver_module()
 
         self.assertEqual(len(driver.CLIENT_COMMON_TESTS), 10)
-        self.assertEqual(len(driver.CLIENT_COMMON_SELECTORS), 321)
-        self.assertEqual(len(set(driver.CLIENT_COMMON_SELECTORS)), 321)
-        self.assertEqual(driver.SUITE_EXPECTED_COUNTS["client-common"], 321)
+        self.assertEqual(len(driver.CLIENT_COMMON_SELECTORS), 322)
+        self.assertEqual(len(set(driver.CLIENT_COMMON_SELECTORS)), 322)
+        self.assertEqual(driver.SUITE_EXPECTED_COUNTS["client-common"], 322)
         self.assertIs(
             driver.SUITE_SELECTORS["client-common"],
             driver.CLIENT_COMMON_SELECTORS,
@@ -1751,7 +1751,7 @@ else:
                     separators=(",", ":"),
                 ).encode()
             ).hexdigest(),
-            "0ae69284ec6a896a382e88201368147a71b60da5c43d42d045f12441002edcfa",
+            "ee5a9a51f19ae2059a1b906e21856640ccb227c18d1bac46a5c8139e9d87fd06",
         )
         forbidden = {
             "test_candidate_failure_restores_exact_absence_without_rollback_smoke",
@@ -1771,9 +1771,9 @@ else:
         driver = load_suite_driver_module()
 
         self.assertEqual(len(driver.PACKAGE_CONTRACT_TESTS), 1)
-        self.assertEqual(len(driver.PACKAGE_CONTRACT_SELECTORS), 71)
-        self.assertEqual(len(set(driver.PACKAGE_CONTRACT_SELECTORS)), 71)
-        self.assertEqual(driver.SUITE_EXPECTED_COUNTS["package-contract"], 71)
+        self.assertEqual(len(driver.PACKAGE_CONTRACT_SELECTORS), 72)
+        self.assertEqual(len(set(driver.PACKAGE_CONTRACT_SELECTORS)), 72)
+        self.assertEqual(driver.SUITE_EXPECTED_COUNTS["package-contract"], 72)
         self.assertIs(
             driver.SUITE_SELECTORS["package-contract"],
             driver.PACKAGE_CONTRACT_SELECTORS,
@@ -1785,7 +1785,7 @@ else:
                     separators=(",", ":"),
                 ).encode()
             ).hexdigest(),
-            "fa4f889ab2b62237f2645cedb24b92007113d0bac94c0496057fe2da98bf9ce6",
+            "944863b7e95ddff38989079df3b98314a46493993d525d7728e4e9547b89c345",
         )
 
     def test_package_contract_loader_uses_only_fixed_captured_methods(self) -> None:
@@ -1794,7 +1794,7 @@ else:
         before_modules = set(sys.modules)
 
         with driver._package_contract_suite(REPOSITORY) as suite:
-            self.assertEqual(suite.countTestCases(), 71)
+            self.assertEqual(suite.countTestCases(), 72)
             self.assertEqual(
                 tuple(test.id() for test in suite),
                 driver.PACKAGE_CONTRACT_SELECTORS,
@@ -1817,7 +1817,7 @@ else:
         expected.update(
             {
                 "id": "package-contract",
-                "observed_count": 71,
+                "observed_count": 72,
                 "detail_stdout_length": 45,
                 "detail_stdout_sha256": (
                     "26a6be57e0448efb627b1641ae11880dabe9e55daf7acad0ec8f302690597681"
@@ -2234,8 +2234,8 @@ else:
         expected = {
             "forward-update": (
                 "FORWARD_UPDATE_SELECTORS",
-                53,
-                "f56d39caff0650ffa2aac8a78df604cd6eaa73a65c35205c74e2b7aad5651def",
+                54,
+                "039d02e844bfb9998bff100b67d0e16a82bf5b08c5158c2a429c18a8145a5c04",
             ),
             "authorized-downgrade-and-manual-rollback": (
                 "AUTHORIZED_DOWNGRADE_AND_MANUAL_ROLLBACK_SELECTORS",
@@ -2264,8 +2264,8 @@ else:
             ),
             "migration-bridge-to-tw4": (
                 "MIGRATION_BRIDGE_TO_TW4_SELECTORS",
-                15,
-                "e6fd71ba3a880cf08247664303184c123c34d2b71be82d0a55f27f4e53da0165",
+                17,
+                "f2923058db237cd3aa9ce1c42901ad2678edd9ca1b00be9543ec74aeebcb480f",
             ),
         }
         observed_portable: list[str] = []
@@ -2284,8 +2284,8 @@ else:
                 )
                 observed_portable.extend(selectors)
 
-        self.assertEqual(len(observed_portable), 110)
-        self.assertEqual(len(set(observed_portable)), 110)
+        self.assertEqual(len(observed_portable), 113)
+        self.assertEqual(len(set(observed_portable)), 113)
         all_selectors = [
             selector
             for selectors in driver.SUITE_SELECTORS.values()
@@ -2424,13 +2424,13 @@ else:
         self,
     ) -> None:
         expected_counts = {
-            "forward-update": 53,
+            "forward-update": 54,
             "authorized-downgrade-and-manual-rollback": 18,
             "candidate-rejection-rollback": 11,
             "candidate-source-disappearance": 1,
             "provider-cache-deletion-and-movement": 1,
             "migration-freeze5-to-bridge": 11,
-            "migration-bridge-to-tw4": 15,
+            "migration-bridge-to-tw4": 17,
         }
         for suite_id, expected_count in expected_counts.items():
             process = self.invoke_suite("--suite", suite_id)
@@ -3247,6 +3247,36 @@ else:
             self.assertRaisesRegex(runner.QualificationError, "commit tree"),
         ):
             runner.validate_bridge_history_evidence(raw_files, projection)
+
+    def test_candidate_bridge_outer_projection_rejects_noncanonical_identity(
+        self,
+    ) -> None:
+        runner = load_runner_module()
+        raw_files = bridge_raw_files()
+        identity_key = "release/task-witness/tw4-bridge-identity.json"
+        identity_raw = raw_files[identity_key]
+        provenance_raw = raw_files[
+            "release/task-witness/tw4-bridge-provenance.json"
+        ]
+        identity = json.loads(identity_raw)
+        projection = {
+            "bridge_identity_sha256": hashlib.sha256(identity_raw).hexdigest(),
+            "bridge_provenance_sha256": hashlib.sha256(provenance_raw).hexdigest(),
+            "freeze5": identity["freeze5"],
+            "bridge": identity["bridge"],
+        }
+        noncanonical_raw = json.dumps(identity, indent=2).encode() + b"\n"
+        self.assertEqual(json.loads(noncanonical_raw), identity)
+        self.assertNotEqual(noncanonical_raw, identity_raw)
+
+        with self.assertRaisesRegex(
+            runner.QualificationError,
+            "candidate bridge identity is not canonical JSON",
+        ):
+            runner.validate_bridge_history_evidence(
+                {**raw_files, identity_key: noncanonical_raw},
+                projection,
+            )
 
     def test_candidate_validator_runs_in_a_bounded_isolated_runtime_child(
         self,
@@ -6304,7 +6334,7 @@ else:
             "counts_sha256": "7" * 64,
             "entries_sha256": "8" * 64,
             "entry_count": 16,
-            "expected_count_total": 730,
+            "expected_count_total": 736,
         }
         inventory = {"entries": [{"id": "suite"}]}
         inventory_binding = {
