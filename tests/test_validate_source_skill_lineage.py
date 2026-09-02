@@ -132,7 +132,9 @@ def load_refresher():
 
 
 class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
-    def test_retained_manifest_is_historical_and_agents_bound(self) -> None:
+    def test_retained_manifest_is_historical_and_rescout_is_provingkit_bound(
+        self,
+    ) -> None:
         manifest = json.loads(
             (REPOSITORY / SOURCE_MANIFEST).read_text(encoding="utf-8")
         )
@@ -149,7 +151,7 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
                 {
                     "path": "release/source-skill-lineage/source-manifest.json",
                     "disposition": "historical-stale-pending-provingkit-rescout",
-                    "owner_issue": "https://github.com/nisavid/agents/issues/45",
+                    "owner_issue": "https://github.com/nisavid/provingkit/issues/3",
                 }
             ],
         )
