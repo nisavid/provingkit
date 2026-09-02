@@ -195,6 +195,11 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
     ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temporary = Path(directory)
+            before = {
+                path.relative_to(REPOSITORY): path.read_bytes()
+                for path in sorted((REPOSITORY / LINEAGE_ROOT).rglob("*"))
+                if path.is_file()
+            }
             commands = (
                 [sys.executable, str(REFRESHER), "write", str(REPOSITORY)],
                 [
@@ -244,6 +249,14 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
                         "mutation is disabled pending "
                         "https://github.com/nisavid/provingkit/issues/3 rescout\n",
                     )
+            self.assertEqual(
+                before,
+                {
+                    path.relative_to(REPOSITORY): path.read_bytes()
+                    for path in sorted((REPOSITORY / LINEAGE_ROOT).rglob("*"))
+                    if path.is_file()
+                },
+            )
             self.assertEqual(list(temporary.iterdir()), [])
 
 

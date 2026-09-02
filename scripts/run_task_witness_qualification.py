@@ -177,6 +177,7 @@ HOST_OBSERVATION_INPUT_CAPS = {
     "runtime": 41_300_000,
 }
 CANDIDATE_REPOSITORY_ID = "nisavid/provingkit"
+BRIDGE_HISTORY_REPOSITORY_ID = "nisavid/agents"
 CANDIDATE_PLUGIN_ROOT = "plugins/task-witness"
 CANDIDATE_CATALOG = "release/public-release-runtime-packages.json"
 CANDIDATE_REGISTRATION = "release/task-witness/public-release-registration.json"
@@ -3118,7 +3119,7 @@ def _bridge_generation_projection(value: object, label: str) -> dict[str, Any]:
         label,
     )
     if (
-        generation["repository_id"] != CANDIDATE_REPOSITORY_ID
+        generation["repository_id"] != BRIDGE_HISTORY_REPOSITORY_ID
         or generation["source_mode"] != "harness_snapshot"
     ):
         raise QualificationError(f"{label} identity disagrees")
@@ -3295,6 +3296,31 @@ def _candidate_bridge_source_bytes(
         ) from error
 
 
+def _project_bridge_controller_to_current(bridge: bytes) -> bytes:
+    rewrites = (
+        (
+            b'or provider["repository"] != "https://github.com/nisavid/agents"\n',
+            b'or provider["repository"] != "https://github.com/nisavid/provingkit"\n',
+        ),
+        (
+            (
+                b'        "https://github.com/nisavid/agents",\n'
+                b'        "task-witness-smoke",\n'
+            ),
+            (
+                b'        "https://github.com/nisavid/provingkit",\n'
+                b'        "task-witness-smoke",\n'
+            ),
+        ),
+    )
+    projected = bridge
+    for legacy, current in rewrites:
+        if projected.count(legacy) != 1 or current in projected:
+            raise QualificationError("candidate bridge controller snapshot disagrees")
+        projected = projected.replace(legacy, current, 1)
+    return projected
+
+
 def _candidate_required_raw(
     raw_files: dict[str, bytes],
     relative: str,
@@ -3441,7 +3467,7 @@ def validate_bridge_history_evidence(
         or type(provenance["schema_version"]) is not int
         or provenance["schema_version"] != 1
         or provenance["contract"] != "task-witness-tw4-bridge-provenance-v1"
-        or provenance["repository_id"] != CANDIDATE_REPOSITORY_ID
+        or provenance["repository_id"] != BRIDGE_HISTORY_REPOSITORY_ID
         or identity["allowed_edges"]
         != [{"from": "freeze5", "source_mode": "harness_snapshot", "to": "bridge"}]
     ):
@@ -3583,10 +3609,12 @@ def validate_bridge_history_evidence(
         f"{CANDIDATE_PLUGIN_ROOT}/controller/task_witness_deploy.py",
         "candidate current controller",
     )
-    if current_controller != _candidate_bridge_source_bytes(
-        raw_files,
-        "bridge",
-        "controller/task_witness_deploy.py",
+    if current_controller != _project_bridge_controller_to_current(
+        _candidate_bridge_source_bytes(
+            raw_files,
+            "bridge",
+            "controller/task_witness_deploy.py",
+        )
     ):
         raise QualificationError("candidate bridge controller snapshot disagrees")
     current_client = _candidate_required_raw(

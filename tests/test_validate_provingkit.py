@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 import hashlib
+import importlib.util
+import json
 import shutil
 import subprocess
 import sys
@@ -12,7 +13,6 @@ from pathlib import Path
 import yaml
 
 from scripts import validate_provingkit
-
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY / "scripts" / "validate_provingkit.py"
@@ -591,7 +591,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 / "release/provingkit/historical-identity-allowlist-v1.json"
             ).read_text(encoding="utf-8")
         )
-        self.assertEqual(len(allowlist["entries"]), 32)
+        self.assertEqual(len(allowlist["entries"]), 33)
         self.assertIn(
             {
                 "disposition": (
@@ -983,7 +983,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             configuration,
             "[pytest]\ntestpaths = tests\nnorecursedirs = qualification/historical\n",
         )
-        if shutil.which("pytest") is None:
+        if importlib.util.find_spec("pytest") is None:
             self.skipTest("pytest is unavailable")
         result = subprocess.run(
             [sys.executable, "-m", "pytest", "--collect-only", "-q"],
@@ -992,6 +992,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             capture_output=True,
             check=False,
         )
+        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("tests/test_validate_provingkit.py", result.stdout)
         self.assertNotIn("qualification/historical", result.stdout)
 

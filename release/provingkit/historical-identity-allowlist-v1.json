@@ -137,6 +137,11 @@
       "sha256": "sha256:b79ccf269b5aba0026ab52825e818f1fa66a760c8deb7320256a50272033b431"
     },
     {
+      "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
+      "path": "scripts/run_task_witness_qualification.py",
+      "sha256": "sha256:baa546c9c483d590329c9dc4ca9539742c195b6c9eeb1bad137141905d0cf87f"
+    },
+    {
       "disposition": "historical-source-lineage-validator",
       "path": "scripts/validate_source_skill_lineage.py",
       "sha256": "sha256:a3065db50f834460856883c4f7cf77a0aceea91ead1c9a69838eeeeb4168745d"
@@ -159,7 +164,7 @@
     {
       "disposition": "historical-source-lineage-fixture",
       "path": "tests/test_validate_source_skill_lineage.py",
-      "sha256": "sha256:5c9c9a9cf1731511ae0f22a618b9f728d05632f80ee27f05023633c301c1cfb7"
+      "sha256": "sha256:5088f8208f894a9fd900d9af470ccd06682ecbd954959f621043c08594ec158d"
     }
   ],
   "matching": "exact-relative-path-and-whole-file-sha256",
