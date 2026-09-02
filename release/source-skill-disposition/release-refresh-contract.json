@@ -72,7 +72,7 @@
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   },
-  "content_sha256": "sha256:a90ee3e714b81fa60e598db1d18f0221ba50963e2f9a850ddaa75c611517a8c6",
+  "content_sha256": "sha256:4b296c276fb84e044bf8b23038392e0b129d0837b7998e82b58ed50a5a661743",
   "contract": "coordinated-source-skill-release-refresh-v1",
   "disposition_ledger": {
     "path": "release/source-skill-disposition/disposition-ledger.json",
@@ -87,7 +87,7 @@
     },
     "schema": {
       "path": "release/source-skill-disposition/final-installed-library-rescout.schema.json",
-      "sha256": "sha256:c1a1432331130d2c7504279cba44d841d14bc4535e6ca5fab557d3b1b066f592"
+      "sha256": "sha256:2eb9bff3f6659b7bf77144f03259280fdcfbf2247ec6e35568ecd2d23d3da4a8"
     },
     "validation_command": "uv run --with jsonschema==4.26.0 python scripts/validate_source_skill_disposition.py --require-final-rescout ."
   },
