@@ -2437,6 +2437,12 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                         for relative in scope_paths
                     )
                 )
+                self.assertFalse(
+                    any(
+                        stale_root == relative or stale_root.startswith(relative + "/")
+                        for relative in scope_paths
+                    )
+                )
 
     @unittest.skip("pre-cutover source-lineage fixture; issue 45 owns the rescout")
     def test_source_stage_scope_and_common_validator_bind_mapped_evidence(
@@ -4775,6 +4781,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
     def test_root_readme_withholds_retired_release_arguments(self) -> None:
         readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
+        normalized_readme = " ".join(readme.split())
         required = {
             "--routing-evidence",
             "--composed-receipt",
@@ -4801,8 +4808,8 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(parser_options))
         self.assertTrue(required.isdisjoint(documented))
-        self.assertIn("currently an unreleased source stage", readme)
-        self.assertIn("does not establish", readme)
+        self.assertIn("currently an unreleased source stage", normalized_readme)
+        self.assertIn("does not establish", normalized_readme)
         self.assertFalse(
             {
                 "--private-receipt",
