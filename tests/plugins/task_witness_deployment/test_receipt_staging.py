@@ -280,6 +280,10 @@ class ReceiptStagingTests(unittest.TestCase):
         candidate_root: Path | None = None,
         *,
         revision: str = "a" * 40,
+        repository_id: str = "nisavid/provingkit",
+        repository_url: str = "https://github.com/nisavid/provingkit",
+        source_authority: str = "github-nisavid-provingkit",
+        lineage_id: str = "provingkit-stable",
     ) -> tuple[bytes, bytes, bytes]:
         if candidate_root is None or candidate_root == PLUGIN:
             candidate_root = self.root / "task-witness-agent-plugins-candidate"
@@ -296,7 +300,7 @@ class ReceiptStagingTests(unittest.TestCase):
         deployment = self.deployment()
         snapshot = deployment._snapshot_candidate_tree(candidate_root)
         receipt = b"opaque Task Witness manager receipt\n"
-        lineage = {"lineage_id": "provingkit-stable", "sequence": 7}
+        lineage = {"lineage_id": lineage_id, "sequence": 7}
         selection_raw = canonical_document(
             content_document(
                 {
@@ -308,12 +312,12 @@ class ReceiptStagingTests(unittest.TestCase):
                         "name": "Ivan D Vasin",
                         "url": "https://github.com/nisavid",
                     },
-                    "repository_id": "nisavid/provingkit",
-                    "repository_url": "https://github.com/nisavid/provingkit",
+                    "repository_id": repository_id,
+                    "repository_url": repository_url,
                     "release_version": release_version,
                     "revision": revision,
                     "subtree_sha256": snapshot.subtree_sha256,
-                    "source_authority": "github-nisavid-provingkit",
+                    "source_authority": source_authority,
                     "details": {
                         "harness": "codex",
                         "manager": "codex-plugin-manager",
@@ -341,7 +345,7 @@ class ReceiptStagingTests(unittest.TestCase):
                         "subtree_sha256": snapshot.subtree_sha256,
                         "channel": "stable",
                         "manager_trust_class": "operator-installed",
-                        "source_authority": "github-nisavid-provingkit",
+                        "source_authority": source_authority,
                         "lineage": lineage,
                     },
                 }

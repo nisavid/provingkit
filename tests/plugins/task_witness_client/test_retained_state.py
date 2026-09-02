@@ -27,6 +27,7 @@ from ._support import (
     canonical_value,
     document,
     install_launcher_behavior,
+    load_client_module,
     sha256,
     validator_identity,
     write_configured_driver,
@@ -35,6 +36,39 @@ from ._support import (
 
 
 class RetainedStateTests(_TaskWitnessClientTestCase):
+    def test_bridge_migration_identity_is_pinned_before_legacy_alias(self) -> None:
+        client = load_client_module("_task_witness_bridge_identity_client")
+        core = {"sequence": 3}
+        migration = {
+            "schema_version": 1,
+            "contract": "task-witness-bridge-migration-projection-v1",
+            "edge": {"from": "freeze5", "to": "tw4", "via": "bridge"},
+            "purpose": "bridge-transition",
+            "execution_class": "isolated-rehearsal",
+            "maintenance_transaction_sha256": "1" * 64,
+            "deployment_authorization_sha256": "2" * 64,
+            "transition_authorization_sha256": "3" * 64,
+            "expected_active_receipt_core_sha256": sha256(
+                canonical_value(core)
+            ),
+            "bridge_identity_sha256": (
+                "748f8a4780ffdd8d38cccb314704906f8098fab4e098060aa8d92603753214ab"
+            ),
+            "release_manifest_sha256": "4" * 64,
+            "endpoint_projection_sha256": "5" * 64,
+        }
+        client._validate_bridge_migration_receipt(
+            migration,
+            {**core, "migration": migration},
+        )
+        migration["bridge_identity_sha256"] = "6" * 64
+
+        with self.assertRaisesRegex(ValueError, "bridge migration receipt"):
+            client._validate_bridge_migration_receipt(
+                migration,
+                {**core, "migration": migration},
+            )
+
     def test_first_install_rollback_precondition_is_accepted(self) -> None:
         fixture = ValidInvocationFixture(self.root / "rollback-precondition")
 
@@ -1958,6 +1992,11 @@ class RetainedStateTests(_TaskWitnessClientTestCase):
                 provider["declaration_sha256"]
             )
 
+        def legacy_repository_alias(receipt: dict[str, Any]) -> None:
+            receipt["providers"][0]["repository"] = (
+                "https://github.com/nisavid/agents"
+            )
+
         cases = {
             "producer-implementation": (
                 arbitrary_producer_implementation,
@@ -1972,6 +2011,10 @@ class RetainedStateTests(_TaskWitnessClientTestCase):
                 alternate_declaration_content,
             ),
             "declaration-raw": (unchanged_context, alternate_declaration_raw),
+            "legacy-repository-alias": (
+                unchanged_context,
+                legacy_repository_alias,
+            ),
             "validator-entrypoint-module": (
                 alternate_validator_module,
                 unchanged_receipt,

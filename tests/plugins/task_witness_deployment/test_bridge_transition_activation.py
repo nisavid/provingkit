@@ -2,16 +2,31 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
+import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 from unittest import mock
+
+from tests.plugins.task_witness_client._support import (
+    CLIENT_ENVIRONMENT,
+    INVOCATION_PROFILE_DRIVER_SOURCE,
+    LAUNCHER_MODULE_DRIVER_SOURCE,
+    SMOKE_BUNDLE_CONTRACT,
+    SMOKE_CHALLENGE,
+    write_configured_driver,
+)
 
 from ._bridge_transition_activation_support import (
     BRIDGE_JOURNAL_KEYS,
     BridgeTransitionActivationFixture,
     BridgeTransitionSmokeBoundary,
+    PreparedBridgeTransitionActivation,
     assert_bridge_journal,
     assert_bridge_migration_receipt,
     deployment_receipt_chain,
@@ -43,8 +58,296 @@ from ._routine_activation_support import (
 )
 from ._routine_staged_client_support import installed_client_smoke_process
 from ._source_recovery_support import InstalledRecoveryClientProcess
-from ._support import set_agent_plugins_candidate_version, sha256
+from ._support import (
+    canonical_bytes,
+    canonical_document,
+    content_document,
+    set_agent_plugins_candidate_version,
+    sha256,
+)
 from .test_transaction_result_reconciliation import _run_post_unlink_process_loss
+
+
+def _recontent(value: dict[str, Any]) -> dict[str, Any]:
+    return content_document(
+        {key: item for key, item in value.items() if key != "content_sha256"}
+    )
+
+
+def _binding(path: Path, raw: bytes, mode: int = 0o600) -> dict[str, object]:
+    return {
+        "path": str(path),
+        "length": len(raw),
+        "sha256": sha256(raw),
+        "owner": os.geteuid(),
+        "mode": mode,
+    }
+
+
+def _replace_retained_document(
+    canonical_root: Path,
+    old_raw: bytes,
+    value: dict[str, Any],
+) -> tuple[bytes, str]:
+    raw = canonical_document(_recontent(value))
+    digest = sha256(raw)
+    old_path = canonical_root / "receipts" / f"sha256-{sha256(old_raw)}.json"
+    path = canonical_root / "receipts" / f"sha256-{digest}.json"
+    if old_path != path:
+        old_path.replace(path)
+    path.write_bytes(raw)
+    path.chmod(0o600)
+    return raw, digest
+
+
+def _authorization_raw(
+    receipt: dict[str, Any],
+    expected_active_receipt_sha256: str,
+) -> bytes:
+    authorization = receipt["authorization"]
+    source = receipt["source"]
+    if receipt["contract"] == "task-witness-deployment-receipt-v1":
+        evidence = {"manager_receipt_sha256": source["manager_receipt_sha256"]}
+    else:
+        evidence = {
+            "source_evidence_sha256": source["source_evidence"][
+                "source_evidence_sha256"
+            ]
+        }
+    return canonical_document(
+        content_document(
+            {
+                "schema_version": 1,
+                "contract": "task-witness-deployer-authorization-v1",
+                "purpose": authorization["purpose"],
+                "canonical_root": receipt["canonical_root"],
+                "effective_uid": receipt["effective_uid"],
+                "plan_sha256": authorization["plan_sha256"],
+                "maintenance_transaction_sha256": authorization[
+                    "maintenance_transaction_sha256"
+                ],
+                "candidate_controller_sha256": receipt["control_set"]["controller"][
+                    "sha256"
+                ],
+                "candidate_policy_sha256": receipt["control_set"]["policy"]["sha256"],
+                "source_selection_sha256": source["source_selection_sha256"],
+                **evidence,
+                "expected_active_receipt_sha256": (expected_active_receipt_sha256),
+            }
+        )
+    )
+
+
+def _rebind_authorization(
+    receipt: dict[str, Any],
+    expected_active_receipt_sha256: str,
+) -> bytes:
+    raw = _authorization_raw(receipt, expected_active_receipt_sha256)
+    authorization = json.loads(raw)
+    receipt["authorization"] = {
+        "contract": authorization["contract"],
+        "purpose": authorization["purpose"],
+        "sha256": sha256(raw),
+        "content_sha256": authorization["content_sha256"],
+        "plan_sha256": authorization["plan_sha256"],
+        "maintenance_transaction_sha256": authorization[
+            "maintenance_transaction_sha256"
+        ],
+        "expected_active_receipt_sha256": expected_active_receipt_sha256,
+    }
+    return raw
+
+
+def _rebind_active_rollback(
+    canonical_root: Path,
+    successor: dict[str, Any],
+    prior_raw: bytes,
+) -> None:
+    old_rollback_path = (
+        canonical_root / "receipts" / f"sha256-{successor['rollback']['sha256']}.json"
+    )
+    old_rollback_raw = old_rollback_path.read_bytes()
+    rollback = json.loads(old_rollback_raw)
+    prior_sha256 = sha256(prior_raw)
+    prior_path = canonical_root / "receipts" / f"sha256-{prior_sha256}.json"
+    deployment_alias = canonical_root / "deployment.json"
+    rollback["precondition"]["active_receipt_sha256"] = prior_sha256
+    rollback["prior_receipt"] = _binding(prior_path, prior_raw)
+    rollback["prior_activation_unit"]["deployment_receipt"] = _binding(
+        deployment_alias,
+        prior_raw,
+    )
+    selector = next(
+        item
+        for item in rollback["selector_preimage"]
+        if item["role"] == "deployment-alias"
+    )
+    staged_alias = Path(selector["staged"]["path"])
+    staged_alias.write_bytes(prior_raw)
+    staged_alias.chmod(0o600)
+    selector["staged"] = _binding(staged_alias, prior_raw)
+    selector["installed"] = _binding(deployment_alias, prior_raw)
+    _, rollback_sha256 = _replace_retained_document(
+        canonical_root,
+        old_rollback_raw,
+        rollback,
+    )
+    successor["prior_receipt_sha256"] = prior_sha256
+    successor["rollback"] = {
+        "state": "active",
+        "path": str(canonical_root / "receipts" / f"sha256-{rollback_sha256}.json"),
+        "sha256": rollback_sha256,
+    }
+
+
+def _reseal_noncanonical_freeze5_chain(
+    prepared: PreparedBridgeTransitionActivation,
+) -> tuple[str, bytes]:
+    """Alter one F5 identity and coherently readdress both successor edges."""
+
+    canonical_root = prepared.initial.canonical_root
+    by_sequence: dict[int, tuple[bytes, dict[str, Any]]] = {}
+    for path in (canonical_root / "receipts").iterdir():
+        raw = path.read_bytes()
+        value = json.loads(raw)
+        if "sequence" in value:
+            by_sequence[value["sequence"]] = (raw, value)
+    if set(by_sequence) != {1, 2, 3}:
+        raise AssertionError("bridge test receipt chain is not exact")
+    if any(
+        next(
+            provider
+            for provider in receipt[1]["providers"]
+            if provider["intrinsic"] is True
+        )["repository"]
+        != "https://github.com/nisavid/agents"
+        for receipt in by_sequence.values()
+    ):
+        raise AssertionError("bridge test chain does not carry the legacy alias")
+
+    freeze5_old_raw, freeze5 = by_sequence[1]
+    bridge_old_raw, bridge = by_sequence[2]
+    current_old_raw, current = by_sequence[3]
+    canonical_subtree = freeze5["source"]["subtree_sha256"]
+    freeze5["source"]["subtree_sha256"] = (
+        "0" * 64 if canonical_subtree != "0" * 64 else "1" * 64
+    )
+    freeze5_raw, freeze5_sha256 = _replace_retained_document(
+        canonical_root,
+        freeze5_old_raw,
+        freeze5,
+    )
+
+    _rebind_active_rollback(canonical_root, bridge, freeze5_raw)
+    _rebind_authorization(bridge, freeze5_sha256)
+    bridge_raw, bridge_sha256 = _replace_retained_document(
+        canonical_root,
+        bridge_old_raw,
+        bridge,
+    )
+
+    _rebind_active_rollback(canonical_root, current, bridge_raw)
+    deployment_authorization_raw = _rebind_authorization(current, bridge_sha256)
+    migration = current["migration"]
+    migration["deployment_authorization_sha256"] = sha256(deployment_authorization_raw)
+    core = {
+        key: item
+        for key, item in current.items()
+        if key not in {"migration", "content_sha256"}
+    }
+    core_sha256 = sha256(canonical_bytes(core))
+    migration["expected_active_receipt_core_sha256"] = core_sha256
+    transition_authorization = json.loads(
+        prepared.authorized.transition_authorization_raw
+    )
+    transition_authorization.pop("content_sha256")
+    transition_authorization["deployment_authorization_sha256"] = sha256(
+        deployment_authorization_raw
+    )
+    transition_authorization["expected_active_receipt_core_sha256"] = core_sha256
+    transition_authorization_raw = canonical_document(
+        content_document(transition_authorization)
+    )
+    migration["transition_authorization_sha256"] = sha256(transition_authorization_raw)
+    current_raw, current_sha256 = _replace_retained_document(
+        canonical_root,
+        current_old_raw,
+        current,
+    )
+    canonical_root.joinpath("deployment.json").write_bytes(current_raw)
+    canonical_root.joinpath("deployment.json").chmod(0o600)
+
+    observed = json.loads(current_raw)
+    observed_core = {
+        key: item
+        for key, item in observed.items()
+        if key not in {"migration", "content_sha256"}
+    }
+    if (
+        sha256(canonical_bytes(observed_core))
+        != observed["migration"]["expected_active_receipt_core_sha256"]
+    ):
+        raise AssertionError("resealed bridge receipt core disagrees")
+    return current_sha256, current_raw
+
+
+def _run_installed_public_client(
+    canonical_root: Path,
+    support_root: Path,
+) -> subprocess.CompletedProcess[bytes]:
+    support_root.mkdir(mode=0o700)
+    launcher_driver = support_root / "launcher_module_driver.py"
+    shutil.copyfile(LAUNCHER_MODULE_DRIVER_SOURCE, launcher_driver)
+    client_driver = support_root / "configured_client_driver.py"
+    write_configured_driver(
+        client_driver,
+        INVOCATION_PROFILE_DRIVER_SOURCE,
+        {
+            "scenario": "composed-client",
+            "launcher_driver": str(launcher_driver),
+        },
+    )
+    bundle = support_root / "bundle"
+    bundle.mkdir(mode=0o700)
+    receipt = json.loads((canonical_root / "deployment.json").read_bytes())
+    producer = receipt["smoke"]["producer"]
+    manifest = {
+        "schema_version": 1,
+        "contract": SMOKE_BUNDLE_CONTRACT,
+        "producer": {
+            key: producer[key]
+            for key in ("producer_id", "contract", "implementation_sha256")
+        },
+        "challenge": SMOKE_CHALLENGE,
+    }
+    bundle.joinpath("manifest.json").write_bytes(canonical_document(manifest))
+    bundle.joinpath("manifest.json").chmod(0o600)
+    return subprocess.run(
+        (
+            str(Path(sys.executable).resolve(strict=True)),
+            "-B",
+            "-I",
+            "-S",
+            "-X",
+            "disable-remote-debug",
+            str(client_driver),
+            str(canonical_root / "client" / "task_witness_client.py"),
+            str(canonical_root),
+            "validate",
+            "--bundle",
+            str(bundle),
+        ),
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        cwd="/",
+        env=CLIENT_ENVIRONMENT,
+        close_fds=True,
+        start_new_session=True,
+        restore_signals=True,
+        umask=0o077,
+        check=False,
+        timeout=20,
+    )
 
 
 class BridgeTransitionActivationTests(unittest.TestCase):
@@ -174,6 +477,34 @@ class BridgeTransitionActivationTests(unittest.TestCase):
         self.assertEqual(smoke.calls[0].completed.returncode, 0)
         self.assertEqual(smoke.calls[0].completed.stderr, b"")
         self.assertEqual(smoke.calls[0].filesystem_mutations, ())
+
+    def test_installed_current_client_rejects_resealed_noncanonical_freeze5_chain(
+        self,
+    ) -> None:
+        prepared = self.fixture.staged_activation()
+        self.addCleanup(self.fixture.close, prepared)
+        deployment = prepared.authorized.outbound.deployment
+        root = prepared.initial.canonical_root
+        smoke = BridgeTransitionSmokeBoundary(prepared, candidate_accepted=True)
+        with mock.patch.object(deployment, "_spawn_activation_smoke_child", smoke):
+            deployment.activate_staged(prepared.activation)
+
+        baseline = _run_installed_public_client(
+            root,
+            self.root / "canonical-bridge-public-client",
+        )
+        self.assertEqual(baseline.returncode, 0, baseline.stderr)
+        self.assertEqual(baseline.stderr, b"")
+        _reseal_noncanonical_freeze5_chain(prepared)
+
+        rejected = _run_installed_public_client(
+            root,
+            self.root / "noncanonical-bridge-public-client",
+        )
+
+        self.assertEqual(rejected.returncode, 70, rejected.stderr)
+        self.assertEqual(rejected.stdout, b"")
+        self.assertIn(b"client installation validation failed", rejected.stderr)
 
     def test_public_bridge_process_loss_recovers_through_exact_staged_b1(
         self,
@@ -573,6 +904,42 @@ class BridgeTransitionActivationTests(unittest.TestCase):
                 (1, 1, "task-witness-deployment-receipt-v1"),
             ),
         )
+
+    def test_current_controller_rejects_resealed_noncanonical_freeze5_chain(
+        self,
+    ) -> None:
+        prepared = self.fixture.staged_activation()
+        self.addCleanup(self.fixture.close, prepared)
+        deployment = prepared.authorized.outbound.deployment
+        root = prepared.initial.canonical_root
+        smoke = BridgeTransitionSmokeBoundary(prepared, candidate_accepted=True)
+        with mock.patch.object(deployment, "_spawn_activation_smoke_child", smoke):
+            deployment.activate_staged(prepared.activation)
+        installed = load_controller(
+            root / "controller" / "task_witness_deploy.py",
+            "_task_witness_installed_tw4_noncanonical_bridge_chain",
+        )
+        try:
+            canonical_receipt_sha256 = sha256((root / "deployment.json").read_bytes())
+            canonical = installed._capture_active_deployment_precondition(
+                root,
+                canonical_receipt_sha256,
+            )
+            self.assertEqual(canonical.receipt_sha256, canonical_receipt_sha256)
+            receipt_sha256, _ = _reseal_noncanonical_freeze5_chain(prepared)
+            before = ControlMaintenanceFixture.tree_state(root)
+            with self.assertRaisesRegex(
+                installed.DeploymentError,
+                "B1 retained deployment chain is not exact",
+            ):
+                installed._capture_active_deployment_precondition(
+                    root,
+                    receipt_sha256,
+                )
+        finally:
+            remove_loaded_controller(installed)
+
+        self.assertEqual(ControlMaintenanceFixture.tree_state(root), before)
 
     def test_public_bridge_rejects_cross_contract_manual_rollback_before_writes(
         self,

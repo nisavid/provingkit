@@ -32,6 +32,7 @@ DIRECT_CHILD_TIMEOUT_SECONDS = 180
 DIRECT_CHILD_GROUP_OBSERVATION_MAX_BYTES = 64 * 1024 * 1024
 QUALIFICATION_TEST = Path("tests/test_task_witness_qualification.py")
 QUALIFICATION_RUNNER_SELECTORS = (
+    "test_candidate_bridge_outer_projection_rejects_noncanonical_identity",
     "test_platform_profile_parser_requires_exact_closed_v1_document",
     "test_suite_inventory_parser_accepts_exact_closed_v1_document",
     "test_suite_inventory_parser_rejects_schema_and_projection_drift",
@@ -47,6 +48,7 @@ PACKAGE_CONTRACT_TESTS = (
         "TaskWitnessPackageTests",
         (
             "test_validates_carried_bridge_history_without_git_repository",
+            "test_rejects_noncanonical_bridge_identity_bytes",
             "test_release_manifest_parser_matches_frozen_bridge_schema",
             "test_release_manifest_parser_rejects_schema_and_binding_drift",
             "test_host_receipt_parser_accepts_both_complete_v1_target_shapes",
@@ -396,6 +398,7 @@ CLIENT_COMMON_TESTS = (
         "tests.plugins.task_witness_client.test_retained_state",
         "RetainedStateTests",
         (
+            "test_bridge_migration_identity_is_pinned_before_legacy_alias",
             "test_first_install_rollback_precondition_is_accepted",
             "test_first_install_rollback_precondition_schema_is_strict",
             "test_first_install_rollback_precondition_binds_pinned_identities",
@@ -917,6 +920,7 @@ FORWARD_UPDATE_TESTS = (
         "test_routine_transactions",
         "RoutineTransactionTests",
         (
+            "test_bridge_migration_identity_is_pinned_before_legacy_alias",
             "test_prepare_captures_the_exact_active_receipt_and_classifies_forward",
             "test_stage_binds_b_r_and_disjoint_prior_selector_preimages",
             "test_prepare_requires_a_bounded_shared_lock_before_capture",
@@ -1122,10 +1126,12 @@ MIGRATION_BRIDGE_TO_TW4_TESTS = (
         (
             "test_public_bridge_activation_commits_exact_tw4_transition",
             "test_public_bridge_candidate_runs_installed_client_over_mixed_receipts",
+            "test_installed_current_client_rejects_resealed_noncanonical_freeze5_chain",
             "test_public_bridge_process_loss_recovers_through_exact_staged_b1",
             "test_public_bridge_reconciles_retained_result_through_exact_staged_b1",
             "test_public_bridge_rejection_restores_through_installed_clients",
             "test_public_bridge_success_supports_next_ordinary_precondition_capture",
+            "test_current_controller_rejects_resealed_noncanonical_freeze5_chain",
             "test_public_bridge_rejects_cross_contract_manual_rollback_before_writes",
             "test_public_bridge_target_rejection_restores_exact_current_b1",
         ),
@@ -1274,20 +1280,20 @@ SUITE_SELECTORS = {
     },
 }
 SUITE_EXPECTED_COUNTS = {
-    "client-common": 321,
+    "client-common": 322,
     "deployment-common": 203,
-    "package-contract": 71,
-    "qualification-runner-contract": 7,
+    "package-contract": 72,
+    "qualification-runner-contract": 8,
     "task-witness-source-stage": 1,
     "public-release-source-stage": 1,
     "literal-rendered-shim": 1,
-    "forward-update": 53,
+    "forward-update": 54,
     "authorized-downgrade-and-manual-rollback": 18,
     "candidate-rejection-rollback": 11,
     "candidate-source-disappearance": 1,
     "provider-cache-deletion-and-movement": 1,
     "migration-freeze5-to-bridge": 11,
-    "migration-bridge-to-tw4": 15,
+    "migration-bridge-to-tw4": 17,
     "macos-acl": 12,
     "linux-process-supervision": 3,
 }
@@ -2910,7 +2916,7 @@ def _literal_rendered_shim_scenario(repository: Path) -> None:
             "SSH_AUTH_SOCK": "/attacker/agent",
             "XDG_CONFIG_HOME": "/attacker/xdg",
             "HTTPS_PROXY": "http://attacker.invalid",
-            "LC_ALL": "attacker",
+            "LC_ALL": "C",
         }
         arguments = [
             "validate",

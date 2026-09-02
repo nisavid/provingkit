@@ -28,8 +28,13 @@
     },
     {
       "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
+      "path": "plugins/task-witness/client/task_witness_client.py",
+      "sha256": "sha256:6dbb0a019188bb2f200b30c0957c517dae8ef4108475f0f5bde991a79078ca15"
+    },
+    {
+      "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
       "path": "plugins/task-witness/controller/task_witness_deploy.py",
-      "sha256": "sha256:704c0209fecbcf746c3c26a1e76be402d287310d27a94162f149a12ce3b9fa0b"
+      "sha256": "sha256:746e56c2ed0109d5e65a770b49f4d143510917653b92aed4607606ea059ef5ef"
     },
     {
       "disposition": "historical-stale-host-qualification",
@@ -74,7 +79,7 @@
     {
       "disposition": "cutover-provenance",
       "path": "release/provingkit/cutover-provenance-v1.json",
-      "sha256": "sha256:76b9b64fd63cc87da249d42a932605cc80a57ac777d5017e3cffffebfe80e358"
+      "sha256": "sha256:f65ec4caa22bfa78d7807dfa6d7ed822284504a76fd33dac35c929427b2b80ae"
     },
     {
       "disposition": "historical-stale-source-lineage-manifest-owned-by-issue-45",
@@ -129,7 +134,7 @@
     {
       "disposition": "frozen-task-witness-migration-evidence",
       "path": "release/task-witness/tw4-bridge-identity.json",
-      "sha256": "sha256:59646a9ab24bcebb200900029834f807907c8e0bb1c9a15168dbc462cfe84c7c"
+      "sha256": "sha256:748f8a4780ffdd8d38cccb314704906f8098fab4e098060aa8d92603753214ab"
     },
     {
       "disposition": "frozen-task-witness-migration-evidence",
@@ -139,7 +144,7 @@
     {
       "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
       "path": "scripts/run_task_witness_qualification.py",
-      "sha256": "sha256:baa546c9c483d590329c9dc4ca9539742c195b6c9eeb1bad137141905d0cf87f"
+      "sha256": "sha256:79b9405fbd5de18c041c2c84f58414ca75f842f8b0070fd4431eadfb356c1857"
     },
     {
       "disposition": "historical-source-lineage-validator",
@@ -149,7 +154,7 @@
     {
       "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
       "path": "scripts/validate_task_witness.py",
-      "sha256": "sha256:46649d0ed825c5c147e069033f59de4e8f9b58afbde1b64cbd2bd6bb85372725"
+      "sha256": "sha256:82a85074f8cad391e32997d1d5ded5957e80519e8ba59ac1a2a194aef218e77b"
     },
     {
       "disposition": "historical-review-input-fixture",
@@ -158,8 +163,28 @@
     },
     {
       "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
+      "path": "tests/plugins/task_witness_client/test_retained_state.py",
+      "sha256": "sha256:12c02ea4b860a68d9568b8742408038cc2224ae3c7688823c7a9c1ba4008b581"
+    },
+    {
+      "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
+      "path": "tests/plugins/task_witness_deployment/_freeze5_upgrade_recovery_support.py",
+      "sha256": "sha256:812f43b2d3eeb0488a50410bcf6b023b4d9735299bc00628ae3e4a626d5dd5df"
+    },
+    {
+      "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
+      "path": "tests/plugins/task_witness_deployment/test_bridge_transition_activation.py",
+      "sha256": "sha256:1622a10386c4c161590b1cff39b02f1a352d4c5527988a7fc3ad1a3b6f695add"
+    },
+    {
+      "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
+      "path": "tests/plugins/task_witness_deployment/test_routine_transactions.py",
+      "sha256": "sha256:c13151324e9f99d65200addcfc6bba4a2100c3abed1be54a677f40d529cd7336"
+    },
+    {
+      "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
       "path": "tests/test_task_witness_package.py",
-      "sha256": "sha256:0857e5db19a11d1c5a385842d37a3483f6524c3165a0515034eb62c374a6f633"
+      "sha256": "sha256:b8ec494db61c406f6181ce7e9b4f379c1fddcb17cc318a34c91e0a4646fb28bd"
     },
     {
       "disposition": "historical-source-lineage-fixture",

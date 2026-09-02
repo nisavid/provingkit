@@ -22,12 +22,17 @@ from ._routine_support import (
 )
 from ._support import (
     PLUGIN,
+    REPOSITORY,
     canonical_document,
     content_document,
     sha256,
 )
 
 FREEZE5_COMMIT = "96608a9b91d4dcf3f468a4fab1f0e008c9c32b36"
+BRIDGE_COMMIT = "391112a2f222d966a3dc54da953594667227d6d3"
+BRIDGE_SUBTREE_SHA256 = (
+    "1056ff94dc73575932cc37f94f96ccb54324cd60dc83af4cce5951a17fd959f4"
+)
 FREEZE5_CONTROLLER_SHA256 = (
     "8dc51b2a644e30d1f7c4f3b71711698b4130b43f1517e9f5361c6d1a0f7d6cfe"
 )
@@ -37,6 +42,25 @@ FREEZE5_POLICY_SHA256 = (
 FREEZE5_CLIENT_SHA256 = (
     "778186f6a460655a8b390c831e05c233171236898663ad4155bd45695597c6cf"
 )
+BRIDGE_SNAPSHOT_ROOT = REPOSITORY / "release/task-witness/migration/bridge"
+BRIDGE_PLUGIN_INVENTORY = {
+    ".claude-plugin/plugin.json": (
+        0o644,
+        "e71fd3b4b5f2c63275b87a8718adfa5c0c1c9484f444aef3a4d65bd2f782e2d4",
+    ),
+    ".codex-plugin/plugin.json": (
+        0o644,
+        "4f8afe464f6c4773f003563303bcc487aa43e770e95ec42d0455cf13a683bbe4",
+    ),
+    "client/task_witness_client.py": (
+        0o755,
+        "912cba0f5b93900d4caaf651c81a3ef3b10f65b837f2c038db5c232d8b71d875",
+    ),
+    "controller/task_witness_deploy.py": (
+        0o755,
+        "671693603673e8e895301620817c7fa15a96a37365cff59298d8261ee923a6b3",
+    ),
+}
 CLIENT_GENERATION_ASSIGNMENT = re.compile(
     rb'(?m)^CLIENT_SOURCE_GENERATION_SHA256 = "([0-9a-f]{64})"$',
 )
@@ -90,25 +114,40 @@ def set_resealed_client_profile(path: Path, profile: str) -> None:
 
 
 def materialize_bridge_shape_candidate(destination: Path) -> None:
-    """Build the unfrozen B1 shape without asserting a future bridge digest."""
+    """Build the exact preserved B1 shape from captured historical sources."""
 
     if not destination.exists():
         shutil.copytree(PLUGIN, destination)
-    bindings = (("controller/policy.json", FREEZE5_POLICY_SHA256, 0o644),)
-    for relative, expected_sha256, mode in bindings:
+    readme = destination / "README.md"
+    if readme.exists():
+        readme.unlink()
+    for relative in (
+        "client/task_witness_shim.sh.in",
+        "launcher/task_witness_launch.py",
+        "runtime/bundle_io.py",
+        "runtime/canonical.py",
+        "runtime/task_witness.py",
+        "runtime/trust.py",
+        "smoke/task_witness_smoke_validator.py",
+    ):
         target = destination / relative
-        target.write_bytes(_freeze5_file_raw(relative))
+        target.write_bytes((PLUGIN / relative).read_bytes())
+        target.chmod(0o644)
+    bindings = {
+        **BRIDGE_PLUGIN_INVENTORY,
+        "controller/policy.json": (0o644, FREEZE5_POLICY_SHA256),
+    }
+    for relative, (mode, expected_sha256) in bindings.items():
+        target = destination / relative
+        raw = (
+            _freeze5_file_raw(relative)
+            if relative == "controller/policy.json"
+            else (BRIDGE_SNAPSHOT_ROOT / relative).read_bytes()
+        )
+        target.write_bytes(raw)
         target.chmod(mode)
         if sha256(target.read_bytes()) != expected_sha256:
-            raise AssertionError(f"Freeze 5 {relative} digest disagrees")
-    client = destination / "client" / "task_witness_client.py"
-    set_resealed_client_profile(client, "b1-transition")
-    raw = client.read_bytes()
-    if sha256(raw) in {
-        FREEZE5_CLIENT_SHA256,
-        sha256((PLUGIN / "client" / "task_witness_client.py").read_bytes()),
-    }:
-        raise AssertionError("bridge transition client is not distinct")
+            raise AssertionError(f"bridge snapshot {relative} digest disagrees")
 
 
 def load_controller(path: Path, name: str) -> ModuleType:
@@ -179,8 +218,12 @@ class Freeze5UpgradeRecoveryFixture:
             active.active_receipt_sha256,
             candidate,
             release_version="0.1.1",
-            revision="b" * 40,
+            revision=BRIDGE_COMMIT,
             sequence=8,
+            repository_id="nisavid/agents",
+            repository_url="https://github.com/nisavid/agents",
+            source_authority="github-nisavid-agents",
+            lineage_id="agents-stable",
         )
         deployment = load_controller(
             prior_candidate / "controller" / "task_witness_deploy.py",
@@ -281,6 +324,10 @@ class Freeze5UpgradeRecoveryFixture:
                 self.routine.first_install.task_witness_candidate_inputs(
                     candidate,
                     revision=FREEZE5_COMMIT,
+                    repository_id="nisavid/agents",
+                    repository_url="https://github.com/nisavid/agents",
+                    source_authority="github-nisavid-agents",
+                    lineage_id="agents-stable",
                 )
             )
             request = prior.FirstInstallRequest(

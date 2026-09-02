@@ -108,7 +108,7 @@ class TaskWitnessShimTests(unittest.TestCase):
                     "SSH_AUTH_SOCK": "/attacker/agent",
                     "XDG_CONFIG_HOME": "/attacker/xdg",
                     "HTTPS_PROXY": "http://attacker.invalid",
-                    "LC_ALL": "attacker",
+                    "LC_ALL": "C",
                 },
                 pass_fds=(3, 4),
                 timeout=5,

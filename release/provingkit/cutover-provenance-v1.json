@@ -160,7 +160,7 @@
       "canonical": "https://github.com/nisavid/provingkit",
       "kind": "repository",
       "legacy": "https://github.com/nisavid/agents",
-      "scope": "historical-links-only"
+      "scope": "frozen-receipts"
     },
     {
       "canonical": "provingkit",
