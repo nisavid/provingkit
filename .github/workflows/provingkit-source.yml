@@ -38,6 +38,13 @@ jobs:
           python -m unittest tests.test_validate_provingkit
           python scripts/validate_provingkit.py .
 
+      - name: Validate cutover lineage and prepared source-stage guards
+        run: |
+          python -m unittest \
+            tests.test_validate_source_skill_lineage.CutoverSourceSkillLineageBoundaryTests \
+            tests.test_validate_public_release.ValidatePublicReleaseTests.test_readme_documents_only_the_source_stage_entrypoint \
+            tests.test_validate_public_release.ValidatePublicReleaseTests.test_prepared_release_entrypoint_rejects_invalid_inputs
+
       - name: Verify excluded source remains outside the repository
         run: |
           test ! -e tooling
