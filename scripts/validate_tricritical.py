@@ -87,12 +87,12 @@ EVAL_FIXTURES = (
     "runner-network-browser-denied.md",
     "runner-filesystem-tools-denied.md",
     "runner-unrecorded-enforcement.md",
-    "adaptive-budget-tiers.md",
-    "adaptive-budget-invalid-override.md",
-    "adaptive-budget-exhaustion.md",
-    "adaptive-budget-no-progress.md",
-    "adaptive-budget-repeat-extension.md",
-    "adaptive-budget-tool-unavailable.md",
+    "frozen-current-increment.md",
+    "review-budget-exhaustion.md",
+    "loop-no-progress.md",
+    "recurring-seam-finding.md",
+    "selective-rereview.md",
+    "done-contract-mismatch.md",
     "critic-timeout-incomplete.md",
     "specialist-unusable-incomplete.md",
     "corroboration-attention-not-truth.md",
@@ -107,8 +107,6 @@ EVAL_FIXTURES = (
     "loop-incomplete-successful-verification.md",
     "loop-degraded-completion.md",
     "loop-no-original-mutation-authority.md",
-    "adaptive-budget-no-progress-irrelevant-clarification.md",
-    "adaptive-budget-contract-changing-clarification.md",
 )
 EVAL_DELIVERY_CONTRACT = {
     "with_skill_executor_inputs": ["fixture", "candidate_skill_bundle"],
@@ -158,8 +156,8 @@ SKILL_LOCAL_TOPOLOGY_LINK = "[topology.json](references/topology.json)"
 REVIEW_COMPLETENESS_LINK = (
     "[the completeness and synthesis rules](references/completeness-and-synthesis.md)"
 )
-LOOP_OPERATOR_CHOICE_LINK = (
-    "[the portable operator-choice contract](references/operator-choice.md)"
+LOOP_RECURRING_SEAM_LINK = (
+    "[the recurring-seam choice](references/operator-choice.md)"
 )
 TERMINAL_EVIDENCE_REFERENCE = "skills/loop/references/review-evidence.md"
 TERMINAL_EVIDENCE_RUNTIME = "skills/loop/scripts/review_evidence.py"
@@ -177,16 +175,12 @@ CONTENT_LOCK_PATH = "content-lock.json"
 CODEX_LOOP_DISCOVERY_PROMPT = (
     "Use $tricritical:loop to review and revise to a terminal state."
 )
-CODEX_OPERATOR_CHOICE_MAPPING = (
-    "Map its portable synchronous operator-choice capability to "
-    "`request_user_input` with no timeout or automatic resolution."
-)
-CLAUDE_OPERATOR_CHOICE_MAPPING = (
-    "Map the skill's portable synchronous operator-choice capability to "
-    "`AskUserQuestion` or the current synchronous equivalent, with no timeout or "
-    "automatic resolution."
-)
 HARNESS_API_TOKENS = ("request_user_input", "AskUserQuestion")
+REMOVED_LOOP_CONTROL_TERMS = (
+    "Default revised-successor tranches",
+    "same-sized extension",
+    "operator-choice capability",
+)
 MODEL_SELECTION_REQUIREMENT = "adapter:model-selection-receipt"
 INVOCATION_TOPOLOGY_REQUIREMENT = "adapter:rolecasting-invocation-topology-receipt"
 SEMVER = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
@@ -1152,14 +1146,18 @@ def validate_input_boundaries(root: Path) -> None:
     if review.count(REVIEW_COMPLETENESS_LINK) != 1:
         fail("review must load completeness and synthesis rules exactly once")
     loop = read_regular_file(root, "skills/loop/SKILL.md")
-    if loop.count(LOOP_OPERATOR_CHOICE_LINK) != 1:
-        fail("loop must load the portable operator-choice contract exactly once")
+    if loop.count(LOOP_RECURRING_SEAM_LINK) != 1:
+        fail("loop must load the recurring-seam choice exactly once")
+    for relative_path in semantic_release_paths():
+        if not relative_path.endswith((".md", ".json")):
+            continue
+        content = read_regular_file(root, relative_path)
+        if any(term in content for term in REMOVED_LOOP_CONTROL_TERMS):
+            fail(f"removed loop-control semantics remain in {relative_path}")
 
 
 def expected_agent_content(persona: str, skill: str) -> str:
     instruction = f"Use `$tricritical:{skill}` for the supplied task."
-    if skill == LOOP_SKILL:
-        instruction = f"{instruction} {CLAUDE_OPERATOR_CHOICE_MAPPING}"
     return (
         "---\n"
         f"name: {persona}\n"
@@ -1289,20 +1287,6 @@ def validate_adapters(root: Path) -> None:
     ):
         fail("review adapter must supply separate model and topology receipts")
 
-    codex_adapter_path = f"skills/{LOOP_SKILL}/agents/openai.yaml"
-    codex_adapter = read_regular_file(root, codex_adapter_path)
-    claude_adapter_path = "agents/fathomkeeper.md"
-    claude_adapter = read_regular_file(root, claude_adapter_path)
-    if (
-        codex_adapter.count(CODEX_OPERATOR_CHOICE_MAPPING) != 1
-        or claude_adapter.count(CLAUDE_OPERATOR_CHOICE_MAPPING) != 1
-    ):
-        fail("operator-choice API mappings must remain exact adapter policy")
-
-    allowed_api_paths = {
-        "request_user_input": {codex_adapter_path},
-        "AskUserQuestion": {claude_adapter_path},
-    }
     expected_files, _ = expected_plugin_tree()
     generated_projections = {
         f"skills/{skill}/{local_path}"
@@ -1311,8 +1295,8 @@ def validate_adapters(root: Path) -> None:
     }
     for relative_path in expected_files - generated_projections:
         content = read_regular_file(root, relative_path)
-        for token, allowed_paths in allowed_api_paths.items():
-            if token in content and relative_path not in allowed_paths:
+        for token in HARNESS_API_TOKENS:
+            if token in content:
                 fail("harness-specific API token escaped its adapter surface")
 
 

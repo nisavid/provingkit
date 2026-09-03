@@ -209,52 +209,51 @@
         "structural_validation_not_runner_enforcement"
       ]
     },
-    "adaptive-budget-tiers.md": {
+    "frozen-current-increment.md": {
       "candidate_skill": "loop",
       "grader_expectations": [
-        "risk_basis_recorded",
-        "low_default_two",
-        "ordinary_default_three",
-        "high_default_five"
+        "increment_contract_complete",
+        "unsupported_inputs_remain_outside_claim",
+        "blocking_finding_tied_to_increment"
       ]
     },
-    "adaptive-budget-invalid-override.md": {
+    "review-budget-exhaustion.md": {
       "candidate_skill": "loop",
       "grader_expectations": [
-        "finite_positive_integer_required",
-        "invalid_override_blocked_before_review"
+        "budget_exhaustion_preserved",
+        "in_scope_finding_not_discarded",
+        "no_clean_terminal_from_exhaustion"
       ]
     },
-    "adaptive-budget-exhaustion.md": {
-      "candidate_skill": "loop",
-      "grader_expectations": [
-        "exhaustion_summary_complete",
-        "material_progress_gate",
-        "same_sized_extension_prompt",
-        "no_timeout_or_auto_resolution"
-      ]
-    },
-    "adaptive-budget-no-progress.md": {
+    "loop-no-progress.md": {
       "candidate_skill": "loop",
       "grader_expectations": [
         "repeated_identity_blocks_immediately",
-        "no_progress_no_extension_prompt"
+        "no_progress_preserves_findings"
       ]
     },
-    "adaptive-budget-repeat-extension.md": {
-      "candidate_skill": "loop",
+    "recurring-seam-finding.md": {
+      "candidate_skill": "adjudicate",
       "grader_expectations": [
-        "fresh_operator_choice_each_extension",
-        "same_sized_extension",
-        "progress_gate_reapplied"
+        "recurrence_forces_explicit_choice",
+        "current_claim_controls_scope",
+        "no_silent_discard"
       ]
     },
-    "adaptive-budget-tool-unavailable.md": {
-      "candidate_skill": "loop",
+    "selective-rereview.md": {
+      "candidate_skill": "review",
       "grader_expectations": [
-        "operator_choice_capability_unavailable",
-        "needs_operator_decision",
-        "exhaustion_summary_preserved"
+        "changed_scope_rereviewed",
+        "unchanged_scope_requires_dependency_proof",
+        "no_unrelated_axis_expansion"
+      ]
+    },
+    "done-contract-mismatch.md": {
+      "candidate_skill": "revise",
+      "grader_expectations": [
+        "done_contract_adapted",
+        "new_increment_refrozen",
+        "affected_evidence_invalidated"
       ]
     },
     "critic-timeout-incomplete.md": {
@@ -378,23 +377,6 @@
         "blocked_before_revise_with_zero_edits",
         "verification_cannot_make_clean",
         "remaining_authority_owner_reported"
-      ]
-    },
-    "adaptive-budget-no-progress-irrelevant-clarification.md": {
-      "candidate_skill": "loop",
-      "grader_expectations": [
-        "no_material_progress",
-        "unchanged_clarification_not_qualifying",
-        "blocked_without_extension"
-      ]
-    },
-    "adaptive-budget-contract-changing-clarification.md": {
-      "candidate_skill": "loop",
-      "grader_expectations": [
-        "contract_changing_delta_recorded",
-        "clarified_contract_refrozen",
-        "same_sized_extension_eligible",
-        "synchronous_operator_choice"
       ]
     }
   }
