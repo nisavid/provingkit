@@ -33,6 +33,8 @@ Record the leader, repository, branch, immutable base, dirty state, submodules, 
 
 Every prompt is a bounded task contract: goal, success criteria, worktree, immutable base, relevant facts, target behavior, scope, read/write and subdelegation authority, external-action authority, verification, output, and stop conditions. Unstated authority is absent. Workers preserve existing edits.
 
+Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before assigning a scarce specialist.
+
 For native ChatGPT Codex or Codex CLI/TUI children, follow
 [native-codex-subagents.md](references/native-codex-subagents.md).
 

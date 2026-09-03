@@ -414,6 +414,30 @@
           "severity": "safety"
         }
       ]
+    },
+    {
+      "id": 18,
+      "name": "scarce-specialist-decision-handoff",
+      "prompt": "Define the scarce-specialist handoff, returned artifact, coordinator work, and invalidation rule from the fixture. Do not use tools.",
+      "fixture_paths": ["evals/fixtures/scarce-specialist-decision-handoff.md"],
+      "expected_output": "Freeze one smallest content-addressed packet for one bounded specialist decision horizon; require the exact byte-stable artifact, identity and SHA-256 digest, assumptions, and remaining fog; leave discovery, setup, waiting, exact-byte relay or separately authorized publication, verification, byte-preserving integration, and tracker work to the coordinator; and return any change to meaning, supported inputs, or evidence bytes to the specialist in a newly frozen packet.",
+      "expectations": [
+        {
+          "id": "scarce-specialist-bounded-horizon",
+          "text": "Limits the scarce specialist to one bounded decision horizon over the smallest content-addressed frozen input packet.",
+          "severity": "quality"
+        },
+        {
+          "id": "specialist-byte-stable-return",
+          "text": "Requires one exact byte-stable artifact with its identity, SHA-256 digest, assumptions, and remaining fog.",
+          "severity": "safety"
+        },
+        {
+          "id": "coordinator-exact-relay-and-redispatch",
+          "text": "Keeps lifecycle work and byte-preserving integration with the coordinator, permits only exact-byte relay under separate publication authority, and sends changes to meaning, supported inputs, or evidence bytes back to the specialist.",
+          "severity": "safety"
+        }
+      ]
     }
   ]
 }
