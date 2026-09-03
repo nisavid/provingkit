@@ -29,6 +29,57 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             check=False,
         )
 
+    def clone_with_history(self, destination: Path) -> None:
+        subprocess.run(
+            [
+                "git",
+                "clone",
+                "--quiet",
+                "--shared",
+                "--no-hardlinks",
+                str(REPOSITORY),
+                str(destination),
+            ],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        retained_ref = "refs/remotes/origin/retained/issue-81-history-import"
+        retained_tip = subprocess.run(
+            ["git", "-C", str(REPOSITORY), "rev-parse", retained_ref],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        subprocess.run(
+            ["git", "-C", str(destination), "update-ref", retained_ref, retained_tip],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+
+    def assert_identity_fixture(
+        self,
+        content: str,
+        *,
+        accepted: bool,
+        extension: str = "txt",
+    ) -> None:
+        relative = f"release/provingkit/unexpected-identity.{extension}"
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            (repository / relative).write_text(content, encoding="utf-8")
+
+            result = self.validate(repository)
+
+        if accepted:
+            self.assertEqual(result.returncode, 0, result.stderr)
+        else:
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("unallowlisted legacy repository identity", result.stderr)
+            self.assertIn(relative, result.stderr)
+
     def synthetic_release_manifest(self) -> dict[str, object]:
         digest = "sha256:" + ("0" * 64)
         members = []
@@ -136,6 +187,24 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_provingkit_source_job_pins_identity_validation_dependency(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        commands = {
+            step.get("run", "")
+            for step in workflow["jobs"]["provingkit-source"]["steps"]
+        }
+        expected = (
+            "python -m pip install --disable-pip-version-check "
+            "idna==3.18 jsonschema==4.26.0 PyYAML==6.0.3"
+        )
+
+        self.assertIn(expected, commands)
+        self.assertIn(
+            "python -m pip install idna==3.18 jsonschema==4.26.0 "
+            "PyYAML==6.0.3",
+            (REPOSITORY / "README.md").read_text(encoding="utf-8"),
+        )
 
     def test_rolecasting_source_job_installs_its_validation_dependency(self) -> None:
         workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
@@ -924,95 +993,558 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertIn("marketplace source projection drift", result.stderr)
 
     def test_unallowlisted_legacy_repository_identity_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            shutil.copytree(
-                REPOSITORY,
-                repository,
-                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
-            )
-            legacy_repository = "https://github.com/nisavid" + "/agents"
-            readme = repository / "README.md"
-            readme.write_text(
-                readme.read_text(encoding="utf-8")
-                + f"\nUnexpected active link: {legacy_repository}\n",
-                encoding="utf-8",
-            )
-
-            result = self.validate(repository)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("unallowlisted legacy repository identity", result.stderr)
+        legacy_repository = "https://github.com/nisavid" + "/agents"
+        self.assert_identity_fixture(
+            f"Unexpected active link: {legacy_repository}\n",
+            accepted=False,
+        )
 
     def test_unallowlisted_legacy_repository_identity_variants_are_rejected(
         self,
     ) -> None:
         variants = {
             "percent-encoded": "https://github.com/nisavid/" + "%61gents",
+            "percent-encoded-path-separator": (
+                "ht" + "tps://github.com/nisavid" + "%2Fagents"
+            ),
             "double-percent-encoded": "https://github.com/nisavid/" + "%2561gents",
             "html-entity": "https://github.com/nisavid/" + "&#97;gents",
             "github-case": "https://GitHub.com/NISAVID" + "/AGENTS",
         }
         for variant_name, legacy_repository in variants.items():
-            with (
-                self.subTest(variant=variant_name),
-                tempfile.TemporaryDirectory() as directory,
-            ):
-                repository = Path(directory) / "repository"
-                shutil.copytree(
-                    REPOSITORY,
-                    repository,
-                    ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    f"Unexpected active link: {legacy_repository}\n",
+                    accepted=False,
                 )
-                readme = repository / "README.md"
-                readme.write_text(
-                    readme.read_text(encoding="utf-8")
-                    + f"\nUnexpected active link: {legacy_repository}\n",
-                    encoding="utf-8",
-                )
-
-                result = self.validate(repository)
-
-                self.assertNotEqual(result.returncode, 0)
-                self.assertIn("unallowlisted legacy repository identity", result.stderr)
 
     def test_json_unicode_escape_for_legacy_repository_identity_is_rejected(
         self,
     ) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            shutil.copytree(
-                REPOSITORY,
-                repository,
-                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
-            )
-            encoded_identity = "https://github.com/nisavid/" + r"\u0061gents"
-            unexpected = repository / "release/provingkit/unexpected-identity.json"
-            unexpected.write_text(
-                '{"repository":"' + encoded_identity + '"}\n',
-                encoding="utf-8",
-            )
+        encoded_identity = "https://github.com/nisavid/" + r"\u0061gents"
+        self.assert_identity_fixture(
+            '{"repository":"' + encoded_identity + '"}\n',
+            accepted=False,
+            extension="json",
+        )
 
-            result = self.validate(repository)
+    def test_json_escaped_solidus_for_legacy_repository_identity_is_rejected(
+        self,
+    ) -> None:
+        encoded_identity = "https:" + r"\/\/github.com\/nisavid" + r"\/agents"
+        self.assert_identity_fixture(
+            '{"repository":"' + encoded_identity + '"}\n',
+            accepted=False,
+            extension="json",
+        )
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("unallowlisted legacy repository identity", result.stderr)
+    def test_github_url_dot_segments_for_legacy_identity_are_rejected(
+        self,
+    ) -> None:
+        variants = {
+            "current-directory": "https://github.com/nisavid/" + "./agents",
+            "parent-directory": (
+                "https://github.com/nisavid/" + "ignored/../agents"
+            ),
+        }
+        for variant_name, legacy_repository in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    f"Unexpected active link: {legacy_repository}\n",
+                    accepted=False,
+                )
+
+    def test_github_url_backslash_separators_for_legacy_identity_are_rejected(
+        self,
+    ) -> None:
+        legacy_repository = "https://github.com" + r"\nisavid\agents"
+        self.assert_identity_fixture(
+            f"Unexpected active link: {legacy_repository}\n",
+            accepted=False,
+        )
+
+    def test_composed_url_encodings_for_legacy_identity_are_rejected(self) -> None:
+        variants = {
+            "encoded-separators-and-dot-segment": (
+                "ht"
+                + "tps://github.com/nisavid/ignored%2F..%2F"
+                + "agents\n",
+                "txt",
+            ),
+            "html-dot-segment": (
+                "ht"
+                + "tps://github.com/nisavid/ignored/&#46;&#46;/"
+                + "agents\n",
+                "txt",
+            ),
+            "html-scheme": (
+                '<a href="h&#116;'
+                + 'tps://github.com/nisavid/ignored/../'
+                + 'agents">legacy</a>\n',
+                "html",
+            ),
+            "html-uts46-host": (
+                "ht"
+                + "tps://g&#105;thub.com/nisavid/ignored/../"
+                + "agents\n",
+                "html",
+            ),
+        }
+        for variant_name, (content, extension) in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    content,
+                    accepted=False,
+                    extension=extension,
+                )
+
+    def test_github_special_url_without_scheme_separators_is_rejected(
+        self,
+    ) -> None:
+        raw_identity = "https:" + r"github.com\nisavid\agents"
+        json_identity = "https:" + r"github.com\\nisavid\\agents"
+        variants = {
+            "raw": ("txt", f"Unexpected active link: {raw_identity}\n"),
+            "json": ("json", '{"repository":"' + json_identity + '"}\n'),
+        }
+        for variant_name, (extension, payload) in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    payload,
+                    accepted=False,
+                    extension=extension,
+                )
+
+    def test_github_url_authority_aliases_for_legacy_identity_are_rejected(
+        self,
+    ) -> None:
+        variants = {
+            "userinfo": "https://user@github.com/nisavid/" + "./agents",
+            "multiple-userinfo-delimiters": (
+                "https://user@domain@github.com/nisavid/" + "./agents"
+            ),
+            "encoded-userinfo-delimiter": (
+                "https://user%40domain@github.com/nisavid/" + "./agents"
+            ),
+            "encoded-userinfo-slash": (
+                "https://user%2Fname@github.com/nisavid/" + "./agents"
+            ),
+            "empty-port": "https://github.com:/nisavid/" + "./agents",
+            "default-port": "https://github.com:443/nisavid/" + "./agents",
+            "long-leading-zero-port": (
+                "https://github.com:000000443/nisavid/" + "./agents"
+            ),
+            "trailing-host-dot": "https://github.com./nisavid/" + "./agents",
+        }
+        for variant_name, legacy_repository in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    f"Unexpected active link: {legacy_repository}\n",
+                    accepted=False,
+                )
+
+    def test_json_escaped_url_controls_are_rejected(self) -> None:
+        variants = {
+            "authority-tab": (
+                "https://git" + r"\u0009" + "hub.com/nisavid/" + "./agents"
+            ),
+            "authority-newline": (
+                "https://git" + r"\u000a" + "hub.com/nisavid/" + "./agents"
+            ),
+            "scheme-short-tab": (
+                "ht" + r"\t" + "tps://github.com/nisavid/" + "./agents"
+            ),
+            "scheme-tab": (
+                "ht" + r"\u0009" + "tps://github.com/nisavid/" + "./agents"
+            ),
+            "scheme-newline": (
+                "htt" + r"\u000a" + "ps://github.com/nisavid/" + "./agents"
+            ),
+        }
+        for variant_name, encoded_identity in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    '{"repository":"' + encoded_identity + '"}\n',
+                    accepted=False,
+                    extension="json",
+                )
+
+    def test_raw_url_scheme_controls_are_rejected(self) -> None:
+        variants = {
+            "tab": "ht\ttps://github.com/nisavid/ignored/../" + "agents",
+            "newline": "ht\ntps://github.com/nisavid/ignored/../" + "agents",
+        }
+        for variant_name, legacy_repository in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    legacy_repository + "\n",
+                    accepted=False,
+                )
+
+    def test_github_unicode_host_aliases_for_legacy_identity_are_rejected(
+        self,
+    ) -> None:
+        variants = {
+            "ideographic-full-stop": (
+                "ht" + "tps://github。com/nisavid/ignored/../" + "agents"
+            ),
+            "percent-encoded-ideographic-full-stop": (
+                "ht"
+                + "tps://github%E3%80%82com/nisavid/ignored/../"
+                + "agents"
+            ),
+            "fullwidth-full-stop": (
+                "ht" + "tps://github．com/nisavid/ignored/../" + "agents"
+            ),
+            "halfwidth-ideographic-full-stop": (
+                "ht" + "tps://github｡com/nisavid/ignored/../" + "agents"
+            ),
+            "fullwidth-host": (
+                "ht"
+                + "tps://ｇｉｔｈｕｂ．ｃｏｍ/nisavid/ignored/../"
+                + "agents"
+            ),
+        }
+        for variant_name, legacy_repository in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    legacy_repository + "\n",
+                    accepted=False,
+                )
+
+    def test_whatwg_url_characters_do_not_truncate_legacy_identity_scan(
+        self,
+    ) -> None:
+        variants = {
+            "userinfo-space": (
+                "ht" + "tps://user name@github.com/nisavid/./" + "agents"
+            ),
+            "path-space": (
+                "ht" + "tps://github.com/nisavid/ /../" + "agents"
+            ),
+            "path-mid-segment-space": (
+                "ht" + "tps://github.com/nisavid/a b/../" + "agents"
+            ),
+            "path-repeated-spaces": (
+                "ht" + "tps://github.com/nisavid/  /../" + "agents"
+            ),
+            "path-http-scheme": (
+                "ht"
+                + "tps://github.com/nisavid/http:ignored/../"
+                + "agents"
+            ),
+            "path-nested-scheme": (
+                "ht"
+                + "tps://github.com/nisavid/ignored/https:/../../"
+                + "agents"
+            ),
+            "path-double-quote": (
+                "ht" + "tps://github.com/nisavid/" + '"ignored/../' + "agents"
+            ),
+            "path-apostrophe": (
+                "ht" + "tps://github.com/nisavid/" + "'ignored/../" + "agents"
+            ),
+            "path-less-than": (
+                "ht" + "tps://github.com/nisavid/" + "<ignored/../" + "agents"
+            ),
+            "path-greater-than": (
+                "ht" + "tps://github.com/nisavid/" + ">ignored/../" + "agents"
+            ),
+            "path-mid-segment-quote": (
+                "ht"
+                + "tps://github.com/nisavid/ignored"
+                + '"nested/child/../../'
+                + "agents"
+            ),
+            "path-repeated-quotes": (
+                "ht"
+                + "tps://github.com/nisavid/"
+                + '"ig"nored/../'
+                + "agents"
+            ),
+            "path-raw-tab": (
+                "ht" + "tps://github.com/nisa\tvid/" + "agents"
+            ),
+            "userinfo-form-feed": (
+                "ht" + "tps://user\fname@github.com/nisavid/./" + "agents"
+            ),
+            "userinfo-vertical-tab": (
+                "ht" + "tps://user\vname@github.com/nisavid/./" + "agents"
+            ),
+            "userinfo-double-quote": (
+                "ht" + 'tps://user"name@github.com/nisavid/./' + "agents"
+            ),
+            "userinfo-apostrophe": (
+                "ht" + "tps://user'name@github.com/nisavid/./" + "agents"
+            ),
+            "userinfo-less-than": (
+                "ht" + "tps://user<name@github.com/nisavid/./" + "agents"
+            ),
+            "userinfo-greater-than": (
+                "ht" + "tps://user>name@github.com/nisavid/./" + "agents"
+            ),
+        }
+        for variant_name, legacy_repository in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    legacy_repository + "\n",
+                    accepted=False,
+                )
+
+    def test_url_candidate_boundaries_do_not_join_surrounding_prose(self) -> None:
+        variants = {
+            "same-line": (
+                "See ht" + "tps://github.com/nisavid/foo for context /../agents.\n"
+            ),
+            "next-line": (
+                "See ht" + "tps://github.com/nisavid/foo for context\n/../agents.\n"
+            ),
+        }
+        for variant_name, content in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(content, accepted=True)
+
+    def test_uts46_github_host_aliases_are_rejected(self) -> None:
+        variants = {
+            "modifier-capital-g": "ᴳithub.com",
+            "subscript-i": "gᵢthub.com",
+            "enclosed-capital-g": "🄶ithub.com",
+        }
+        for variant_name, host in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    "ht" + f"tps://{host}/nisavid/ignored/../" + "agents\n",
+                    accepted=False,
+                )
+
+    def test_non_uts46_github_hosts_are_not_reinterpreted(self) -> None:
+        variants = {
+            "mongolian-todo-soft-hyphen": "github\u1806.com",
+            "zero-width-non-joiner": "github\u200c.com",
+            "zero-width-joiner": "github\u200d.com",
+        }
+        for variant_name, host in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    "ht" + f"tps://{host}/nisavid/ignored/../" + "agents\n",
+                    accepted=True,
+                )
+
+    def test_separate_url_is_not_hidden_by_prior_authority(self) -> None:
+        variants = {
+            "raw": (
+                "ht"
+                + "tps://evil.invalid "
+                + "ht"
+                + "tps://github.com/nisavid/ignored/../"
+                + "agents\n"
+            ),
+            "encoded": (
+                "ht"
+                + "tps://evil.invalid "
+                + "%68%74"
+                + "%74%70%73%3A%2F%2Fgithub.com%2Fnisavid%2Fignored%2F"
+                + "..%2Fagents\n"
+            ),
+            "comma-separated": (
+                "ht"
+                + "tps://evil.invalid,"
+                + "ht"
+                + "tps://github.com/nisavid/ignored/../"
+                + "agents\n"
+            ),
+            "parenthesis-separated": (
+                "ht"
+                + "tps://evil.invalid)"
+                + "ht"
+                + "tps://github.com/nisavid/ignored/../"
+                + "agents\n"
+            ),
+            "comma-separated-encoded": (
+                "ht"
+                + "tps://evil.invalid,"
+                + "%68%74"
+                + "%74%70%73%3A%2F%2Fgithub.com%2Fnisavid%2Fignored%2F"
+                + "..%2Fagents\n"
+            ),
+        }
+        for variant_name, content in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(content, accepted=False)
+
+    def test_non_equivalent_url_text_is_not_reinterpreted_as_github_authority(
+        self,
+    ) -> None:
+        variants = {
+            "query": (
+                "https://evil.invalid?next=@" + "github.com/nisavid/./agents"
+            ),
+            "fragment": (
+                "https://evil.invalid#next=@" + "github.com/nisavid/./agents"
+            ),
+            "embedded-scheme-prefix": (
+                "nothttps://" + "github.com/nisavid/./agents"
+            ),
+            "multiple-trailing-host-dots": (
+                "https://github.com../nisavid/" + "./agents"
+            ),
+            "out-of-range-port": (
+                "https://github.com:99999/nisavid/" + "./agents"
+            ),
+            "unbounded-port": (
+                "https://github.com:"
+                + ("9" * 5_000)
+                + "/nisavid/"
+                + "./agents"
+            ),
+            "encoded-port-delimiter": (
+                "https://github.com%3A443/nisavid/" + "./agents"
+            ),
+            "encoded-out-of-range-port-delimiter": (
+                "https://github.com%3A99999/nisavid/" + "./agents"
+            ),
+            "encoded-port-digits": (
+                "https://github.com:%34%34%33/nisavid/" + "./agents"
+            ),
+            "encoded-host-userinfo-delimiter": (
+                "https://evil%40github.com/nisavid/" + "./agents"
+            ),
+            "encoded-host-userinfo-suffix": (
+                "https://github.com%40evil.invalid/nisavid/" + "./agents"
+            ),
+            "double-encoded-port-delimiter": (
+                "https://github.com%253A443/nisavid/" + "./agents"
+            ),
+            "double-encoded-host-userinfo-delimiter": (
+                "https://evil%2540github.com/nisavid/" + "./agents"
+            ),
+            "double-encoded-host-path-delimiter": (
+                "https://github.com%252Fnisavid/" + "./agents"
+            ),
+            "double-encoded-host-dot": (
+                "ht" + "tps://github%252Ecom/nisavid/" + "./agents"
+            ),
+            "raw-control-split-scheme-encoded-port": (
+                "ht\ttps://github.com:%34%34%33/nisavid/" + "./agents"
+            ),
+            "json-control-split-scheme-encoded-port": (
+                "ht" + r"\u0009" + "tps://github.com:%34%34%33/nisavid/"
+                + "./agents"
+            ),
+        }
+        for variant_name, external_url in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    external_url + "\n",
+                    accepted=True,
+                )
+
+    def test_encoded_scheme_does_not_decode_percent_authority(self) -> None:
+        variants = {
+            "json-unicode": (
+                '{"repository":"ht'
+                + r"\u0074"
+                + 'ps://github.com%3A443/nisavid/./agents"}\n',
+                "json",
+            ),
+            "html-entity": (
+                "h&#116;tps://github.com%3A443/nisavid/./agents\n",
+                "txt",
+            ),
+        }
+        for variant_name, (content, extension) in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    content,
+                    accepted=True,
+                    extension=extension,
+                )
+
+    def test_json_identity_extraction_handles_edge_cases_without_tracebacks(
+        self,
+    ) -> None:
+        self.assertEqual(
+            validate_provingkit._json_string_values(br'"\ud800"'),
+            [],
+        )
+        deeply_nested = b"[" * 10_000 + b"0" + b"]" * 10_000
+        self.assertEqual(
+            validate_provingkit._json_string_values(deeply_nested),
+            [],
+        )
+        self.assert_identity_fixture(
+            '"' + r"\ud800" + '"\n',
+            accepted=True,
+            extension="json",
+        )
+        self.assert_identity_fixture(
+            "9" * 5_000 + "\n",
+            accepted=True,
+            extension="json",
+        )
+
+    def test_json_surrogate_does_not_hide_later_legacy_identity(self) -> None:
+        encoded_host = "".join(
+            rf"\u{ord(character):04x}" for character in "ｇｉｔｈｕｂ．ｃｏｍ"
+        )
+        self.assert_identity_fixture(
+            '{"repository":"'
+            + r"\ud800"
+            + " https://"
+            + encoded_host
+            + '/nisavid/ignored/../agents"}\n',
+            accepted=False,
+            extension="json",
+        )
+
+    def test_large_json_number_does_not_hide_legacy_identity(self) -> None:
+        encoded_host = "".join(
+            rf"\u{ord(character):04x}" for character in "ｇｉｔｈｕｂ．ｃｏｍ"
+        )
+        self.assert_identity_fixture(
+            '{"number":'
+            + "9" * 5_000
+            + ',"repository":"https://'
+            + encoded_host
+            + '/nisavid/ignored/../agents"}\n',
+            accepted=False,
+            extension="json",
+        )
+
+    def test_path_hard_delimiter_scan_completes_for_large_popped_segment(
+        self,
+    ) -> None:
+        probe = (
+            "from scripts import validate_provingkit as validator\n"
+            "content = b'https://github.com/nisavid/' + b' ' * 64_000 "
+            "+ b'/../agents'\n"
+            "paths = validator._canonical_github_url_paths(content)\n"
+            "expected = b'nisavid' + b'/agents'\n"
+            "assert expected in paths\n"
+        )
+        result = subprocess.run(
+            [sys.executable, "-B", "-c", probe],
+            cwd=REPOSITORY,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_excessive_nested_identity_encoding_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
-            shutil.copytree(
-                REPOSITORY,
-                repository,
-                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
-            )
+            self.clone_with_history(repository)
+            pristine = self.validate(repository)
+            self.assertEqual(pristine.returncode, 0, pristine.stderr)
             encoded_segment = "%61gents"
             for _ in range(9):
                 encoded_segment = encoded_segment.replace("%", "%25")
-            readme = repository / "README.md"
-            readme.write_text(
-                readme.read_text(encoding="utf-8")
-                + f"\nUnexpected active link: https://github.com/nisavid/{encoded_segment}\n",
+            unexpected = repository / "release/provingkit/unexpected-identity.txt"
+            unexpected.write_text(
+                f"Unexpected active link: https://github.com/nisavid/{encoded_segment}\n",
                 encoding="utf-8",
             )
 
@@ -1073,6 +1605,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unallowlisted legacy repository identity", result.stderr)
+        self.assertIn("CONTEXT.md", result.stderr)
 
     def test_active_legacy_tracker_reference_exemption_requires_an_exact_url(
         self,
@@ -1129,6 +1662,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unallowlisted legacy repository identity", result.stderr)
+        self.assertIn(
+            "release/source-skill-disposition/disposition-ledger.json",
+            result.stderr,
+        )
 
     def test_repository_identity_scan_rejects_symbolic_links(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
