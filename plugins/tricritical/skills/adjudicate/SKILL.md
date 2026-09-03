@@ -15,4 +15,14 @@ Read [references/dispositions.md](references/dispositions.md). Compare every fin
 
 ## Output
 
-Give each finding exactly one disposition and evidence. Accepting a finding does not expand the caller's original authority or scope. Surface `needs operator decision` and `blocked` dispositions as terminal gates; do not mutate, revise, or start a loop.
+Give each finding exactly one disposition and evidence. Classify it against the
+frozen claims, supported inputs, acceptance criteria, and reviewer scope.
+Accepting a finding does not expand the caller's original authority or scope.
+Surface `needs operator decision` and `blocked` dispositions as terminal gates;
+do not mutate, revise, or start a loop.
+
+When the same evidenced cause recurs at the same seam across distinct
+successors, require an explicit recorded choice: narrow the claim, narrow the
+supported input, redesign the seam, accept operator-owned residual risk outside
+the claim, or confirm that the stronger guarantee has current value. Never use
+recurrence, elapsed time, or budget exhaustion to discard the finding.

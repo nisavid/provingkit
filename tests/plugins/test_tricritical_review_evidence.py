@@ -250,10 +250,53 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             ],
         }
         self.candidate = identity("git-commit", "a" * 40)
+        self.increment = self.current_increment()
         self.subject = {
             "candidate": self.candidate,
-            "review_input": identity("review-input-sha256", "b" * 64),
+            "review_input": self.increment_identity(self.increment),
             "requirements": identity("review-requirements-v1", "requirements"),
+        }
+
+    def reviewer_scope(self, role: str) -> dict[str, Any]:
+        return {
+            "role": role,
+            "scope": identity("review-scope-v1", role),
+            "dependencies": [identity("review-dependencies-v1", role)],
+        }
+
+    def current_increment(
+        self, roles: list[str] | None = None, *, label: str = "current"
+    ) -> dict[str, Any]:
+        roles = (
+            ["critic-intent", "critic-runtime", "critic-structure"]
+            if roles is None
+            else roles
+        )
+        return signed(
+            {
+                "schema_version": 1,
+                "contract": "tricritical-current-increment-v1",
+                "authorized_outcome": identity(
+                    "authorized-outcome-v1", f"{label}-outcome"
+                ),
+                "claims": [identity("increment-claim-v1", f"{label}-claim")],
+                "supported_inputs": [identity("supported-input-v1", f"{label}-input")],
+                "acceptance_criteria": [
+                    identity("acceptance-criterion-v1", f"{label}-acceptance")
+                ],
+                "reviewer_scopes": [
+                    self.reviewer_scope(role) for role in sorted(roles)
+                ],
+            }
+        )
+
+    @staticmethod
+    def increment_identity(increment: dict[str, Any]) -> dict[str, str]:
+        digest = sha(canonical(increment))
+        return {
+            "kind": "tricritical-current-increment-v1",
+            "value": digest,
+            "content_sha256": digest,
         }
 
     def role_subject(self, kind: str, payload: object) -> dict[str, str]:
@@ -290,10 +333,24 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             "verification": verification,
         }
 
-    def finding(self, finding_id: str) -> dict[str, Any]:
+    def finding(
+        self,
+        finding_id: str,
+        *,
+        cause: str | None = None,
+        reviewer_scope: str = "critic-intent",
+        contract_relation: str = "current-contract-contradiction",
+        material_current_risk: bool = True,
+        current_dependency: bool = True,
+    ) -> dict[str, Any]:
         return {
             "finding_id": finding_id,
             "kind": "contract-defect",
+            "cause": identity("finding-cause-v1", cause or finding_id),
+            "reviewer_scope": reviewer_scope,
+            "contract_relation": contract_relation,
+            "material_current_risk": material_current_risk,
+            "current_dependency": current_dependency,
             "evidence": [identity("finding-evidence-v1", finding_id)],
             "affected_contract": "review contract",
             "causal_path": "candidate to observable behavior",
@@ -310,6 +367,8 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         bundle: Bundle,
         dispositions: list[str],
         *,
+        cycle_index: int = 0,
+        findings: list[dict[str, Any]] | None = None,
         report_limitations: list[str] | None = None,
         adjudication_limitations: list[str] | None = None,
         execution_mode: str | None = None,
@@ -319,12 +378,27 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             [] if adjudication_limitations is None else adjudication_limitations
         )
         manifest = json.loads(bundle.files["manifest.json"])
-        cycle = manifest["cycles"][0]
+        cycle = manifest["cycles"][cycle_index]
         report_id = min(cycle["reports"])
         report = cycle["reports"][report_id]
-        findings = [
-            self.finding(f"finding-{index}") for index in range(len(dispositions))
-        ]
+        findings = (
+            [
+                self.finding(
+                    f"finding-{index}",
+                    contract_relation=(
+                        "stronger-future-guarantee"
+                        if disposition == "follow-up outside scope"
+                        else "current-contract-contradiction"
+                    ),
+                    material_current_risk=disposition != "follow-up outside scope",
+                    current_dependency=disposition != "follow-up outside scope",
+                )
+                for index, disposition in enumerate(dispositions)
+            ]
+            if findings is None
+            else findings
+        )
+        self.assertEqual(len(findings), len(dispositions))
         report["findings"] = findings
         report["limitations"] = report_limitations
         report = signed(
@@ -428,14 +502,46 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         self.store_manifest(bundle, manifest)
         return manifest, finding_refs
 
+    def resign_adjudication(
+        self,
+        bundle: Bundle,
+        manifest: dict[str, Any],
+        cycle_index: int = 0,
+    ) -> None:
+        cycle = manifest["cycles"][cycle_index]
+        adjudication = cycle["adjudication"]
+        cycle["adjudication"] = signed(
+            {
+                key: value
+                for key, value in adjudication.items()
+                if key != "content_sha256"
+            }
+        )
+        envelope = Witness.dispatches[cycle["adjudication_dispatch"]["path"]]
+        projection = envelope["projection"]
+        adjudicator = next(iter(projection["executions"].values()))
+        adjudicator["returned"]["content_sha256"] = sha(
+            raw_document(cycle["adjudication"])
+        )
+        envelope["projection"] = signed(
+            {key: value for key, value in projection.items() if key != "content_sha256"}
+        )
+        self.store_manifest(bundle, manifest)
+
     def revision_bundle(
-        self, dispositions: list[str] | None = None
+        self,
+        dispositions: list[str] | None = None,
+        *,
+        adapted_increment: dict[str, Any] | None = None,
     ) -> tuple[Bundle, dict[str, Any]]:
         dispositions = ["accept"] if dispositions is None else dispositions
         self.trust["issuers"][0]["capabilities"].append("mutation-authority")
+        successor_increment = (
+            self.increment if adapted_increment is None else adapted_increment
+        )
         successor = {
             "candidate": identity("git-commit", "c" * 40),
-            "review_input": self.subject["review_input"],
+            "review_input": self.increment_identity(successor_increment),
             "requirements": self.subject["requirements"],
         }
         first_bundle, _ = self.clean_bundle(path_tag="-cycle-0")
@@ -447,7 +553,11 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             for finding_ref, disposition in zip(finding_refs, dispositions, strict=True)
             if disposition == "accept"
         ]
-        second_bundle, _ = self.clean_bundle(subject=successor, path_tag="-cycle-1")
+        second_bundle, _ = self.clean_bundle(
+            subject=successor,
+            increment=successor_increment,
+            path_tag="-cycle-1",
+        )
         second_manifest = json.loads(second_bundle.files["manifest.json"])
         authority = signed(
             {
@@ -485,10 +595,10 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
                 },
                 "fresh_review_required": True,
                 "clarified_requirements": None,
+                "adapted_increment": adapted_increment,
             }
         )
         first["verification"] = None
-        first["budget"]["used"] = 1
         first["progress"] = {
             "status": "progressed",
             "evidence": [identity("material-progress-v1", "successor-c")],
@@ -499,7 +609,6 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         }
         first["owner"] = "reviser"
         second = second_manifest["cycles"][0]
-        second["budget"]["used"] = 1
         second["mutation_authority"] = {
             "available": True,
             "receipt_sha256": sha(raw_document(authority)),
@@ -517,46 +626,6 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             }
         )
         return Bundle(manifest), successor
-
-    def budget_fact(
-        self,
-        candidate: str,
-        *,
-        used: int,
-        tranche_index: int = 0,
-        origin: str = "default",
-        extension: dict[str, Any] | None = None,
-        revised: bool = True,
-    ) -> tuple[dict[str, Any], dict[str, Any]]:
-        subject = {
-            "candidate": identity("git-commit", candidate * 40),
-            "review_input": self.subject["review_input"],
-            "requirements": self.subject["requirements"],
-        }
-        successor = {
-            **subject,
-            "candidate": identity("git-commit", chr(ord(candidate) + 1) * 40),
-        }
-        fact = {
-            "controls": {
-                "budget": {
-                    "tranche_size": 3,
-                    "used": used,
-                    "unit": "revised-successor",
-                    "status": "exhausted" if used == 3 else "open",
-                    "origin": origin,
-                    "tranche_index": tranche_index,
-                },
-                "extension": (
-                    {"operator_choice": None, "eligibility": None}
-                    if extension is None
-                    else extension
-                ),
-            },
-            "revision": {"successor": successor} if revised else None,
-            "ensemble": {"risk": {"tier": "ordinary"}},
-        }
-        return {"subject": subject}, fact
 
     def rolecasting(
         self,
@@ -670,9 +739,12 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         self,
         *,
         subject: dict[str, Any] | None = None,
+        increment: dict[str, Any] | None = None,
         path_tag: str = "",
     ) -> tuple[Bundle, dict[str, Any]]:
         subject = self.subject if subject is None else subject
+        increment = self.increment if increment is None else increment
+        self.assertEqual(subject["review_input"], self.increment_identity(increment))
         candidate = subject["candidate"]
         review_path = f"/evidence/review{path_tag}"
         review_name = review_path.rsplit("/", 1)[-1]
@@ -680,7 +752,7 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         adjudication_name = adjudication_path.rsplit("/", 1)[-1]
         reports: dict[str, dict[str, Any]] = {}
         returned: dict[str, dict[str, str]] = {}
-        roles = ["critic-intent", "critic-runtime", "critic-structure"]
+        roles = [item["role"] for item in increment["reviewer_scopes"]]
         for index, role in enumerate(roles):
             execution_id = f"{review_name}-{index}"
             report = signed(
@@ -718,11 +790,17 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
                 "dispatch_projection_sha256": sha(canonical(review["projection"])),
                 "reports": report_hashes,
                 "risk": {
-                    "tier": "ordinary",
-                    "tranche": 3,
                     "rationale": "bounded review",
-                    "selected_axes": ["intent", "runtime", "structure"],
-                    "selected_specialists": [],
+                    "selected_axes": sorted(
+                        role.removeprefix("critic-")
+                        for role in roles
+                        if role.startswith("critic-")
+                    ),
+                    "selected_specialists": sorted(
+                        role.removeprefix("specialist-")
+                        for role in roles
+                        if role.startswith("specialist-")
+                    ),
                     "waived_specialists": [],
                 },
                 "completeness": {
@@ -730,6 +808,7 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
                     "missing": [],
                     "failed": [],
                     "unusable": [],
+                    "budget_exhausted": [],
                 },
                 "causal_synthesis": [],
                 "limitations": [],
@@ -816,6 +895,7 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
                 "cycles": [
                     {
                         "subject": subject,
+                        "increment": increment,
                         "review_dispatch": {
                             "path": review_path,
                             "bundle_sha256": review["bundle_sha256"],
@@ -830,15 +910,8 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
                         "adjudication": adjudication,
                         "revision": None,
                         "verification": verification,
-                        "budget": {
-                            "tranche_size": 3,
-                            "used": 0,
-                            "unit": "revised-successor",
-                            "status": "open",
-                            "origin": "default",
-                            "tranche_index": 0,
-                        },
-                        "extension": {"operator_choice": None, "eligibility": None},
+                        "retained_scopes": [],
+                        "seam_choices": [],
                         "progress": {"status": "fixed-point", "evidence": []},
                         "mutation_authority": {
                             "available": False,
@@ -939,6 +1012,115 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         self.store_manifest(bundle, manifest)
         return review_projection
 
+    def refresh_empty_complete_cycle(
+        self, bundle: Bundle, manifest: dict[str, Any], cycle_index: int
+    ) -> None:
+        cycle = manifest["cycles"][cycle_index]
+        review = Witness.dispatches[cycle["review_dispatch"]["path"]]
+        review["projection"] = signed(
+            {
+                key: value
+                for key, value in review["projection"].items()
+                if key != "content_sha256"
+            }
+        )
+        report_hashes = {
+            execution_id: sha(raw_document(report))
+            for execution_id, report in cycle["reports"].items()
+        }
+        ensemble = cycle["ensemble"]
+        ensemble["dispatch_projection_sha256"] = sha(canonical(review["projection"]))
+        ensemble["reports"] = report_hashes
+        cycle["ensemble"] = signed(
+            {key: value for key, value in ensemble.items() if key != "content_sha256"}
+        )
+        feedback = cycle["feedback"]
+        feedback["freeze"]["reports_sha256"] = sha(canonical(report_hashes))
+        feedback["freeze"]["ensemble_sha256"] = sha(raw_document(cycle["ensemble"]))
+        cycle["feedback"] = signed(
+            {key: value for key, value in feedback.items() if key != "content_sha256"}
+        )
+        adjudication = Witness.dispatches[cycle["adjudication_dispatch"]["path"]]
+        projection = adjudication["projection"]
+        projection["subject"] = self.role_subject(
+            "tricritical-adjudication-subject-v1",
+            {
+                "subject": cycle["subject"],
+                "findings_sha256": sha(canonical([])),
+                "ensemble_sha256": sha(raw_document(cycle["ensemble"])),
+                "feedback_sha256": sha(raw_document(cycle["feedback"])),
+            },
+        )
+        adjudication["projection"] = signed(
+            {key: value for key, value in projection.items() if key != "content_sha256"}
+        )
+        self.store_manifest(bundle, manifest)
+
+    def retained_scope(
+        self,
+        manifest: dict[str, Any],
+        source_cycle_index: int,
+        role: str,
+    ) -> dict[str, Any]:
+        source_cycle = manifest["cycles"][source_cycle_index]
+        scope = next(
+            item
+            for item in source_cycle["increment"]["reviewer_scopes"]
+            if item["role"] == role
+        )
+        projection = Witness.dispatches[source_cycle["review_dispatch"]["path"]][
+            "projection"
+        ]
+        execution = next(
+            item for item in projection["executions"].values() if item["role"] == role
+        )
+        report = source_cycle["reports"][execution["execution_id"]]
+        target_subject = manifest["cycles"][source_cycle_index + 1]["subject"]
+        unchanged_proof = signed(
+            {
+                "schema_version": 1,
+                "contract": "tricritical-unchanged-scope-proof-v1",
+                "source_subject": source_cycle["subject"],
+                "target_subject": target_subject,
+                "role": role,
+                "scope": scope["scope"],
+                "dependencies": scope["dependencies"],
+                "evidence": [identity("unchanged-scope-evidence-v1", role)],
+            }
+        )
+        return signed(
+            {
+                "schema_version": 1,
+                "contract": "tricritical-retained-scope-v1",
+                "role": role,
+                "scope": scope["scope"],
+                "dependencies": scope["dependencies"],
+                "source_subject": source_cycle["subject"],
+                "prior_report": {
+                    "kind": "tricritical-raw-report-v1",
+                    "value": execution["execution_id"],
+                    "content_sha256": sha(raw_document(report)),
+                },
+                "unchanged_proof": unchanged_proof,
+            }
+        )
+
+    def retain_successor_scope(self, bundle: Bundle, role: str) -> dict[str, Any]:
+        manifest = json.loads(bundle.files["manifest.json"])
+        second = manifest["cycles"][1]
+        retained = self.retained_scope(manifest, 0, role)
+        review = Witness.dispatches[second["review_dispatch"]["path"]]
+        execution_id = next(
+            execution_id
+            for execution_id, execution in review["projection"]["executions"].items()
+            if execution["role"] == role
+        )
+        del review["projection"]["executions"][execution_id]
+        del second["reports"][execution_id]
+        second["retained_scopes"] = [retained]
+        self.refresh_empty_complete_cycle(bundle, manifest, 1)
+        return manifest
+
     def test_bare_clean_requires_fresh_complete_independent_review_and_adjudication(
         self,
     ) -> None:
@@ -947,6 +1129,44 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         projection = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
         self.assertEqual(projection, expected)
+
+    def test_current_increment_is_signed_cycle_bound_and_role_unique(self) -> None:
+        attacks: dict[str, Any] = {
+            "stale-signature": lambda manifest: manifest["cycles"][0][
+                "increment"
+            ].update({"claims": [identity("increment-claim-v1", "changed")]}),
+            "wrong-review-input": lambda manifest: manifest["cycles"][0][
+                "subject"
+            ].update({"review_input": identity("review-input-v1", "wrong")}),
+            "duplicate-role": lambda manifest: manifest["cycles"][0]["increment"][
+                "reviewer_scopes"
+            ].append(
+                copy.deepcopy(manifest["cycles"][0]["increment"]["reviewer_scopes"][0])
+            ),
+        }
+        for name, mutate in attacks.items():
+            with self.subTest(attack=name):
+                bundle, _ = self.clean_bundle(path_tag=f"-increment-{name}")
+                manifest = json.loads(bundle.files["manifest.json"])
+                mutate(manifest)
+                self.store_manifest(bundle, manifest)
+
+                with self.assertRaises(EvidenceError):
+                    self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_legacy_tranche_and_extension_contracts_are_absent(self) -> None:
+        self.assertFalse(hasattr(self.validator, "DEFAULT_TRANCHES"))
+        self.assertFalse(hasattr(self.validator, "OPERATOR_CHOICE_CONTRACT"))
+        self.assertFalse(hasattr(self.validator, "EXTENSION_ELIGIBILITY_CONTRACT"))
+        self.assertFalse(hasattr(self.validator, "_validate_budget_chain"))
+        bundle, _ = self.clean_bundle(path_tag="-legacy-controls")
+        manifest = json.loads(bundle.files["manifest.json"])
+        manifest["cycles"][0]["budget"] = {"used": 0}
+        manifest["cycles"][0]["extension"] = None
+        self.store_manifest(bundle, manifest)
+
+        with self.assertRaisesRegex(EvidenceError, "schema drift"):
+            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
     def test_controller_observed_dispatch_is_preserved_without_assurance_laundering(
         self,
@@ -1189,6 +1409,7 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             "missing": ["critic-runtime"],
             "failed": [],
             "unusable": [],
+            "budget_exhausted": [],
         }
         cycle["ensemble"] = signed(
             {key: value for key, value in ensemble.items() if key != "content_sha256"}
@@ -1325,7 +1546,18 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         for index, (disposition, expected_values) in enumerate(cases.items()):
             with self.subTest(disposition=disposition):
                 bundle, _ = self.clean_bundle(path_tag=f"-disposition-{index}")
-                manifest, _ = self.rebind_complete_cycle(bundle, [disposition])
+                if disposition == "duplicate":
+                    findings = [
+                        self.finding("finding-0", cause="shared-duplicate"),
+                        self.finding("finding-1", cause="shared-duplicate"),
+                    ]
+                    manifest, _ = self.rebind_complete_cycle(
+                        bundle,
+                        ["duplicate", "already addressed"],
+                        findings=findings,
+                    )
+                else:
+                    manifest, _ = self.rebind_complete_cycle(bundle, [disposition])
                 cycle = manifest["cycles"][0]
                 state, owner, unresolved, verification_status = expected_values
                 if verification_status is None:
@@ -1352,6 +1584,131 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
                 )
 
                 self.assertEqual(projection["terminal"], expected)
+
+    def test_every_adjudication_disposition_requires_nonempty_evidence(self) -> None:
+        bundle, _ = self.clean_bundle(path_tag="-empty-adjudication-evidence")
+        manifest, _ = self.rebind_complete_cycle(bundle, ["reject"])
+        manifest["cycles"][0]["adjudication"]["items"][0]["evidence"] = []
+        self.resign_adjudication(bundle, manifest)
+
+        with self.assertRaisesRegex(EvidenceError, "evidence must not be empty"):
+            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_singleton_duplicate_disposition_is_rejected(self) -> None:
+        bundle, _ = self.clean_bundle(path_tag="-singleton-duplicate")
+        self.rebind_complete_cycle(bundle, ["duplicate"])
+
+        with self.assertRaisesRegex(
+            EvidenceError, "distinct finding with the same cause"
+        ):
+            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_raw_report_finding_scope_must_equal_its_producing_role(self) -> None:
+        bundle, _ = self.clean_bundle(path_tag="-cross-role-finding")
+        finding = self.finding("cross-role", reviewer_scope="critic-runtime")
+        self.rebind_complete_cycle(bundle, ["reject"], findings=[finding])
+
+        with self.assertRaisesRegex(EvidenceError, "producing execution role"):
+            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_external_feedback_can_name_any_frozen_reviewer_scope(self) -> None:
+        bundle, _ = self.clean_bundle(path_tag="-external-scope")
+        manifest = json.loads(bundle.files["manifest.json"])
+        cycle = manifest["cycles"][0]
+        finding = self.finding(
+            "external-runtime",
+            reviewer_scope="critic-runtime",
+            contract_relation="stronger-future-guarantee",
+            material_current_risk=False,
+            current_dependency=False,
+        )
+        feedback = cycle["feedback"]
+        feedback["acquisition"]["forge_state"] = "forged"
+        feedback["state"] = "observed"
+        feedback["source"] = identity("forge-feedback-v1", "external-runtime")
+        feedback["findings"] = [finding]
+        feedback["reason"] = None
+        cycle["feedback"] = signed(
+            {key: value for key, value in feedback.items() if key != "content_sha256"}
+        )
+        finding_ref = (
+            f"external-feedback:{finding['finding_id']}:{sha(canonical(finding))}"
+        )
+        adjudication = cycle["adjudication"]
+        adjudication["findings_sha256"] = sha(canonical([finding_ref]))
+        adjudication["items"] = [
+            {
+                "finding_ref": finding_ref,
+                "disposition": "reject",
+                "evidence": [identity("adjudication-evidence-v1", "external")],
+                "next_owner": "none",
+            }
+        ]
+        cycle["adjudication"] = signed(
+            {
+                key: value
+                for key, value in adjudication.items()
+                if key != "content_sha256"
+            }
+        )
+        envelope = Witness.dispatches[cycle["adjudication_dispatch"]["path"]]
+        projection = envelope["projection"]
+        adjudicator = next(iter(projection["executions"].values()))
+        adjudicator["returned"]["content_sha256"] = sha(
+            raw_document(cycle["adjudication"])
+        )
+        projection["subject"] = self.role_subject(
+            "tricritical-adjudication-subject-v1",
+            {
+                "subject": cycle["subject"],
+                "findings_sha256": adjudication["findings_sha256"],
+                "ensemble_sha256": sha(raw_document(cycle["ensemble"])),
+                "feedback_sha256": sha(raw_document(cycle["feedback"])),
+            },
+        )
+        envelope["projection"] = signed(
+            {key: value for key, value in projection.items() if key != "content_sha256"}
+        )
+        self.store_manifest(bundle, manifest)
+
+        result = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+        self.assertEqual(result["terminal"]["state"], "clean")
+
+    def test_current_contract_risk_or_dependency_cannot_be_deferred_as_follow_up(
+        self,
+    ) -> None:
+        findings = {
+            "contradiction": self.finding(
+                "finding-0",
+                contract_relation="current-contract-contradiction",
+                material_current_risk=False,
+                current_dependency=False,
+            ),
+            "material-risk": self.finding(
+                "finding-0",
+                contract_relation="stronger-future-guarantee",
+                material_current_risk=True,
+                current_dependency=False,
+            ),
+            "current-dependency": self.finding(
+                "finding-0",
+                contract_relation="stronger-future-guarantee",
+                material_current_risk=False,
+                current_dependency=True,
+            ),
+        }
+        for name, finding in findings.items():
+            with self.subTest(blocker=name):
+                bundle, _ = self.clean_bundle(path_tag=f"-follow-up-{name}")
+                self.rebind_complete_cycle(
+                    bundle,
+                    ["follow-up outside scope"],
+                    findings=[finding],
+                )
+
+                with self.assertRaisesRegex(EvidenceError, "cannot be follow-up"):
+                    self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
     def test_needs_operator_decision_precedes_blocked_and_accepted_findings(
         self,
@@ -1382,70 +1739,22 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(EvidenceError, "not derived from evidence"):
             self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
-    def test_explicit_single_axis_subset_is_degraded_not_missing(self) -> None:
-        bundle, _ = self.clean_bundle(path_tag="-subset")
-        manifest = json.loads(bundle.files["manifest.json"])
-        cycle = manifest["cycles"][0]
-        keep = "critic-intent"
-        review = Witness.dispatches[cycle["review_dispatch"]["path"]]
-        projection = review["projection"]
-        keep_id = next(
-            execution_id
-            for execution_id, execution in projection["executions"].items()
-            if execution["role"] == keep
-        )
-        projection["executions"] = {keep_id: projection["executions"][keep_id]}
-        review["projection"] = signed(
-            {key: value for key, value in projection.items() if key != "content_sha256"}
-        )
-        cycle["reports"] = {keep_id: cycle["reports"][keep_id]}
-        ensemble = cycle["ensemble"]
-        ensemble["risk"]["selected_axes"] = ["intent"]
-        ensemble["reports"] = {keep_id: sha(raw_document(cycle["reports"][keep_id]))}
-        ensemble["dispatch_projection_sha256"] = sha(canonical(review["projection"]))
-        ensemble["completeness"]["execution_mode"] = "independent"
-        cycle["ensemble"] = signed(
-            {key: value for key, value in ensemble.items() if key != "content_sha256"}
-        )
-        feedback = cycle["feedback"]
-        feedback["freeze"]["reports_sha256"] = sha(canonical(ensemble["reports"]))
-        feedback["freeze"]["ensemble_sha256"] = sha(raw_document(cycle["ensemble"]))
-        cycle["feedback"] = signed(
-            {key: value for key, value in feedback.items() if key != "content_sha256"}
-        )
-        adjudication_projection = Witness.dispatches[
-            cycle["adjudication_dispatch"]["path"]
-        ]["projection"]
-        adjudication_projection["subject"] = self.role_subject(
-            "tricritical-adjudication-subject-v1",
-            {
-                "subject": cycle["subject"],
-                "findings_sha256": sha(canonical([])),
-                "ensemble_sha256": sha(raw_document(cycle["ensemble"])),
-                "feedback_sha256": sha(raw_document(cycle["feedback"])),
-            },
-        )
-        Witness.dispatches[cycle["adjudication_dispatch"]["path"]]["projection"] = (
-            signed(
-                {
-                    key: value
-                    for key, value in adjudication_projection.items()
-                    if key != "content_sha256"
-                }
-            )
-        )
-        verification = {
-            key: cycle["verification"][key]
-            for key in ("status", "candidate", "evidence", "unchanged")
+    def test_frozen_single_axis_scope_can_finish_bare_clean(self) -> None:
+        increment = self.current_increment(["critic-intent"], label="intent-only")
+        subject = {
+            **self.subject,
+            "review_input": self.increment_identity(increment),
         }
-        expected = self.terminal("clean / degraded", "none", verification=verification)
-        manifest["terminal"] = expected
-        self.store_manifest(bundle, manifest)
+        bundle, _ = self.clean_bundle(
+            subject=subject,
+            increment=increment,
+            path_tag="-subset",
+        )
 
         projection = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
         self.assertEqual(projection["review_profile"]["required_axes"], ["intent"])
-        self.assertEqual(projection["terminal"], expected)
+        self.assertEqual(projection["terminal"]["state"], "clean")
 
     def test_retained_unused_mutation_authority_is_reported_and_clean_can_finish(
         self,
@@ -1546,6 +1855,508 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             self.role_subject("tricritical-review-subject-v1", successor),
         )
 
+    def test_revision_can_adapt_and_refreeze_the_current_increment(self) -> None:
+        adapted = self.current_increment(["critic-runtime"], label="adapted")
+        bundle, successor = self.revision_bundle(adapted_increment=adapted)
+
+        projection = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+        self.assertEqual(successor["review_input"], self.increment_identity(adapted))
+        self.assertEqual(projection["review_profile"]["required_axes"], ["runtime"])
+        self.assertEqual(projection["terminal"]["state"], "clean")
+
+    def test_unchanged_scope_can_retain_prior_usable_report_and_proof(self) -> None:
+        bundle, _ = self.revision_bundle()
+        self.retain_successor_scope(bundle, "critic-runtime")
+
+        projection = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+        self.assertEqual(projection["terminal"]["state"], "clean")
+        self.assertEqual(
+            {
+                execution["role"]
+                for execution in projection["final_dispatch"]["executions"].values()
+            },
+            {"critic-intent", "critic-structure"},
+        )
+
+    def test_retained_scope_rejects_overlap_changed_dependencies_and_stale_report(
+        self,
+    ) -> None:
+        for name in (
+            "fresh-overlap",
+            "changed-dependencies",
+            "stale-report",
+            "opaque-proof",
+            "wrong-proof-target",
+        ):
+            with self.subTest(attack=name):
+                bundle, _ = self.revision_bundle()
+                before = json.loads(bundle.files["manifest.json"])
+                second = before["cycles"][1]
+                review = Witness.dispatches[second["review_dispatch"]["path"]]
+                execution_id, execution = next(
+                    (execution_id, execution)
+                    for execution_id, execution in review["projection"][
+                        "executions"
+                    ].items()
+                    if execution["role"] == "critic-runtime"
+                )
+                fresh_execution = copy.deepcopy(execution)
+                fresh_report = copy.deepcopy(second["reports"][execution_id])
+                manifest = self.retain_successor_scope(bundle, "critic-runtime")
+                retained = manifest["cycles"][1]["retained_scopes"][0]
+                if name == "fresh-overlap":
+                    review["projection"]["executions"][execution_id] = fresh_execution
+                    manifest["cycles"][1]["reports"][execution_id] = fresh_report
+                elif name == "changed-dependencies":
+                    retained["dependencies"] = [
+                        identity("review-dependencies-v1", "changed")
+                    ]
+                elif name == "stale-report":
+                    retained["prior_report"]["content_sha256"] = "f" * 64
+                elif name == "opaque-proof":
+                    retained["unchanged_proof"] = identity(
+                        "tricritical-unchanged-scope-proof-v1", "opaque"
+                    )
+                else:
+                    proof = retained["unchanged_proof"]
+                    proof["target_subject"] = self.subject
+                    retained["unchanged_proof"] = signed(
+                        {
+                            key: value
+                            for key, value in proof.items()
+                            if key != "content_sha256"
+                        }
+                    )
+                retained = manifest["cycles"][1]["retained_scopes"][0]
+                manifest["cycles"][1]["retained_scopes"][0] = signed(
+                    {
+                        key: value
+                        for key, value in retained.items()
+                        if key != "content_sha256"
+                    }
+                )
+                if name == "fresh-overlap":
+                    self.refresh_empty_complete_cycle(bundle, manifest, 1)
+                else:
+                    self.store_manifest(bundle, manifest)
+
+                with self.assertRaises(EvidenceError):
+                    self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def recurring_finding_bundle(self) -> tuple[Bundle, dict[str, Any]]:
+        bundle, _ = self.revision_bundle()
+        finding = self.finding(
+            "successor-finding",
+            cause="finding-0",
+            contract_relation="stronger-future-guarantee",
+            material_current_risk=False,
+            current_dependency=False,
+        )
+        manifest, _ = self.rebind_complete_cycle(
+            bundle,
+            ["reject"],
+            cycle_index=1,
+            findings=[finding],
+        )
+        return bundle, manifest
+
+    def seam_choice(self, subject: dict[str, Any], choice: str) -> dict[str, Any]:
+        return signed(
+            {
+                "schema_version": 1,
+                "contract": "tricritical-seam-choice-v1",
+                "issuer": self.issuer,
+                "subject": subject,
+                "cause": identity("finding-cause-v1", "finding-0"),
+                "choice": choice,
+                "evidence": identity("seam-choice-evidence-v1", choice),
+            }
+        )
+
+    def adapted_increment_field(self, field: str, label: str) -> dict[str, Any]:
+        increment = copy.deepcopy(self.increment)
+        kinds = {
+            "claims": "increment-claim-v1",
+            "supported_inputs": "supported-input-v1",
+            "acceptance_criteria": "acceptance-criterion-v1",
+        }
+        increment[field] = [identity(kinds[field], label)]
+        return signed(
+            {key: value for key, value in increment.items() if key != "content_sha256"}
+        )
+
+    def adapted_authorized_outcome(self, label: str) -> dict[str, Any]:
+        increment = copy.deepcopy(self.increment)
+        increment["authorized_outcome"] = identity("authorized-outcome-v1", label)
+        return signed(
+            {key: value for key, value in increment.items() if key != "content_sha256"}
+        )
+
+    def recurring_outcome_bundle(
+        self,
+        choice: str,
+        disposition: str,
+        *,
+        adapted_increment: dict[str, Any] | None,
+        contract_relation: str,
+        material_current_risk: bool,
+        current_dependency: bool,
+    ) -> Bundle:
+        bundle, _ = self.revision_bundle()
+        finding = self.finding(
+            "successor-finding",
+            cause="finding-0",
+            contract_relation=contract_relation,
+            material_current_risk=material_current_risk,
+            current_dependency=current_dependency,
+        )
+        manifest, finding_refs = self.rebind_complete_cycle(
+            bundle,
+            [disposition],
+            cycle_index=1,
+            findings=[finding],
+        )
+        cycle = manifest["cycles"][1]
+        cycle["seam_choices"] = [self.seam_choice(cycle["subject"], choice)]
+        if disposition != "accept":
+            self.store_manifest(bundle, manifest)
+            return bundle
+
+        authority = manifest["mutation_authority"]
+        successor_increment = (
+            self.increment if adapted_increment is None else adapted_increment
+        )
+        successor = {
+            "candidate": identity("git-commit", "d" * 40),
+            "review_input": self.increment_identity(successor_increment),
+            "requirements": cycle["subject"]["requirements"],
+        }
+        cycle["revision"] = signed(
+            {
+                "schema_version": 1,
+                "contract": "tricritical-revision-v1",
+                "subject": cycle["subject"],
+                "accepted_findings": finding_refs,
+                "mutation_authority_sha256": sha(raw_document(authority)),
+                "pre_edit_candidate": cycle["subject"]["candidate"],
+                "successor_subject": successor,
+                "deletion_alternatives": ["retain only the required behavior"],
+                "resolution_evidence": {
+                    finding_ref: [
+                        identity("revision-evidence-v1", "successor-resolution")
+                    ]
+                    for finding_ref in finding_refs
+                },
+                "verification": {
+                    "status": "passed",
+                    "before_candidate": cycle["subject"]["candidate"],
+                    "after_candidate": successor["candidate"],
+                    "evidence": identity(
+                        "revision-verification-v1", "successor-passed"
+                    ),
+                },
+                "fresh_review_required": True,
+                "clarified_requirements": None,
+                "adapted_increment": adapted_increment,
+            }
+        )
+        cycle["verification"] = None
+        cycle["progress"] = {
+            "status": "progressed",
+            "evidence": [identity("material-progress-v1", "successor-d")],
+        }
+        cycle["owner"] = "reviser"
+        third_bundle, _ = self.clean_bundle(
+            subject=successor,
+            increment=successor_increment,
+            path_tag=f"-cycle-2-{choice}-{contract_relation}",
+        )
+        third_manifest = json.loads(third_bundle.files["manifest.json"])
+        third = third_manifest["cycles"][0]
+        third["mutation_authority"] = {
+            "available": True,
+            "receipt_sha256": sha(raw_document(authority)),
+        }
+        manifest["cycles"].append(third)
+        manifest["terminal_subject"] = successor
+        manifest["terminal"] = third_manifest["terminal"]
+        self.store_manifest(bundle, manifest)
+        return bundle
+
+    def test_recurring_cause_requires_one_explicit_evidenced_seam_choice(self) -> None:
+        bundle, _ = self.recurring_finding_bundle()
+
+        with self.assertRaisesRegex(EvidenceError, "recurring cause"):
+            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_incomplete_cycle_authenticates_choice_without_claiming_its_effect(
+        self,
+    ) -> None:
+        self.trust["issuers"][0]["capabilities"].append("seam-choice")
+        bundle, manifest = self.recurring_finding_bundle()
+        cycle = manifest["cycles"][1]
+        execution_id = min(cycle["reports"])
+        report = cycle["reports"][execution_id]
+        report["outcome"] = {
+            "status": "budget-exhausted",
+            "usable": False,
+            "failure": identity("review-budget-exhaustion-v1", execution_id),
+        }
+        report["limitations"] = ["review budget exhausted before adaptation"]
+        report = signed(
+            {key: value for key, value in report.items() if key != "content_sha256"}
+        )
+        cycle["reports"][execution_id] = report
+        review = Witness.dispatches[cycle["review_dispatch"]["path"]]
+        execution = review["projection"]["executions"][execution_id]
+        execution["usable"] = False
+        execution["returned"]["content_sha256"] = sha(raw_document(report))
+        review["projection"] = signed(
+            {
+                key: value
+                for key, value in review["projection"].items()
+                if key != "content_sha256"
+            }
+        )
+        ensemble = cycle["ensemble"]
+        ensemble["reports"][execution_id] = sha(raw_document(report))
+        ensemble["dispatch_projection_sha256"] = sha(canonical(review["projection"]))
+        ensemble["limitations"] = ["review budget exhausted before adaptation"]
+        ensemble["completeness"]["execution_mode"] = "incomplete / non-clean"
+        ensemble["completeness"]["budget_exhausted"] = [execution_id]
+        cycle["ensemble"] = signed(
+            {key: value for key, value in ensemble.items() if key != "content_sha256"}
+        )
+        for field in (
+            "feedback",
+            "adjudication_dispatch",
+            "adjudication",
+            "revision",
+            "verification",
+        ):
+            cycle[field] = None
+        cycle["seam_choices"] = [self.seam_choice(cycle["subject"], "narrow-claim")]
+        cycle["progress"] = {"status": "stopped", "evidence": []}
+        cycle["owner"] = "reviewer"
+        expected = self.terminal(
+            "incomplete / non-clean",
+            "reviewer",
+            limitations=["review budget exhausted before adaptation"],
+            missing=[execution_id],
+            unresolved=1,
+        )
+        manifest["terminal"] = expected
+        self.store_manifest(bundle, manifest)
+
+        result = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+        self.assertEqual(result["terminal"], expected)
+
+    def test_each_recurring_seam_choice_requires_its_declared_effect(self) -> None:
+        self.trust["issuers"][0]["capabilities"].append("seam-choice")
+        cases = {
+            "narrow-claim": (
+                "accept",
+                self.adapted_increment_field("claims", "narrowed-claim"),
+                "current-contract-contradiction",
+                True,
+                True,
+            ),
+            "narrow-supported-input": (
+                "accept",
+                self.adapted_increment_field(
+                    "supported_inputs", "narrowed-supported-input"
+                ),
+                "current-contract-contradiction",
+                True,
+                True,
+            ),
+            "redesign": (
+                "accept",
+                None,
+                "current-contract-contradiction",
+                True,
+                True,
+            ),
+            "accept-residual-risk-outside-claim": (
+                "follow-up outside scope",
+                None,
+                "stronger-future-guarantee",
+                False,
+                False,
+            ),
+            "confirm-stronger-guarantee": (
+                "accept",
+                self.adapted_increment_field(
+                    "acceptance_criteria", "confirmed-guarantee"
+                ),
+                "stronger-future-guarantee",
+                False,
+                False,
+            ),
+        }
+        for choice, case in cases.items():
+            with self.subTest(choice=choice):
+                disposition, adapted, relation, material, dependency = case
+                bundle = self.recurring_outcome_bundle(
+                    choice,
+                    disposition,
+                    adapted_increment=adapted,
+                    contract_relation=relation,
+                    material_current_risk=material,
+                    current_dependency=dependency,
+                )
+
+                projection = self.validator._validate_bundle(
+                    bundle, trust_snapshot=self.trust
+                )
+
+                self.assertEqual(projection["terminal"]["state"], "clean")
+
+    def test_each_recurring_seam_choice_rejects_a_mismatched_effect(self) -> None:
+        self.trust["issuers"][0]["capabilities"].append("seam-choice")
+        cases = {
+            "narrow-claim": (
+                "accept",
+                self.adapted_increment_field("supported_inputs", "wrong-field"),
+                "current-contract-contradiction",
+                True,
+                True,
+            ),
+            "narrow-supported-input": (
+                "accept",
+                self.adapted_increment_field("claims", "wrong-field"),
+                "current-contract-contradiction",
+                True,
+                True,
+            ),
+            "redesign": (
+                "reject",
+                None,
+                "stronger-future-guarantee",
+                False,
+                False,
+            ),
+            "accept-residual-risk-outside-claim": (
+                "reject",
+                None,
+                "stronger-future-guarantee",
+                False,
+                False,
+            ),
+            "confirm-stronger-guarantee": (
+                "accept",
+                self.adapted_authorized_outcome("wrong-confirmation-change"),
+                "stronger-future-guarantee",
+                False,
+                False,
+            ),
+        }
+        for choice, case in cases.items():
+            with self.subTest(choice=choice):
+                disposition, adapted, relation, material, dependency = case
+                bundle = self.recurring_outcome_bundle(
+                    choice,
+                    disposition,
+                    adapted_increment=adapted,
+                    contract_relation=relation,
+                    material_current_risk=material,
+                    current_dependency=dependency,
+                )
+
+                with self.assertRaisesRegex(EvidenceError, "seam choice outcome"):
+                    self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_future_only_finding_cannot_be_accepted_without_confirmed_adaptation(
+        self,
+    ) -> None:
+        for relation in (
+            "stronger-future-guarantee",
+            "unsupported-input-defense",
+            "hypothetical-extension",
+        ):
+            with self.subTest(relation=relation):
+                bundle, _ = self.clean_bundle(path_tag=f"-future-accept-{relation}")
+                finding = self.finding(
+                    "future-only",
+                    contract_relation=relation,
+                    material_current_risk=False,
+                    current_dependency=False,
+                )
+                self.rebind_complete_cycle(
+                    bundle,
+                    ["accept"],
+                    findings=[finding],
+                )
+
+                with self.assertRaisesRegex(
+                    EvidenceError, "future-only finding cannot be accepted"
+                ):
+                    self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_confirmed_adaptation_can_accept_each_future_only_relation(self) -> None:
+        self.trust["issuers"][0]["capabilities"].append("seam-choice")
+        for relation in (
+            "stronger-future-guarantee",
+            "unsupported-input-defense",
+            "hypothetical-extension",
+        ):
+            with self.subTest(relation=relation):
+                adapted = self.adapted_increment_field(
+                    "acceptance_criteria", f"confirmed-{relation}"
+                )
+                bundle = self.recurring_outcome_bundle(
+                    "confirm-stronger-guarantee",
+                    "accept",
+                    adapted_increment=adapted,
+                    contract_relation=relation,
+                    material_current_risk=False,
+                    current_dependency=False,
+                )
+
+                projection = self.validator._validate_bundle(
+                    bundle, trust_snapshot=self.trust
+                )
+
+                self.assertEqual(projection["terminal"]["state"], "clean")
+
+    def test_recurring_seam_choice_rejects_duplicate_wrong_cause_or_subject(
+        self,
+    ) -> None:
+        self.trust["issuers"][0]["capabilities"].append("seam-choice")
+        for name in ("duplicate", "wrong-cause", "wrong-subject"):
+            with self.subTest(attack=name):
+                bundle, manifest = self.recurring_finding_bundle()
+                cycle = manifest["cycles"][1]
+                choice = self.seam_choice(cycle["subject"], "redesign")
+                cycle["seam_choices"] = [choice]
+                if name == "duplicate":
+                    cycle["seam_choices"].append(copy.deepcopy(choice))
+                elif name == "wrong-cause":
+                    choice["cause"] = identity("finding-cause-v1", "other")
+                    cycle["seam_choices"][0] = signed(
+                        {
+                            key: value
+                            for key, value in choice.items()
+                            if key != "content_sha256"
+                        }
+                    )
+                else:
+                    choice["subject"] = self.subject
+                    cycle["seam_choices"][0] = signed(
+                        {
+                            key: value
+                            for key, value in choice.items()
+                            if key != "content_sha256"
+                        }
+                    )
+                self.store_manifest(bundle, manifest)
+
+                with self.assertRaises(EvidenceError):
+                    self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
     def test_every_revision_cycle_must_preserve_its_derived_reviser_owner(self) -> None:
         bundle, _ = self.revision_bundle()
         manifest = json.loads(bundle.files["manifest.json"])
@@ -1575,17 +2386,68 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         ):
             self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
-    def test_budget_used_must_increment_for_each_distinct_revised_successor(
+    def test_budget_exhaustion_is_preserved_as_incomplete_raw_report_evidence(
         self,
     ) -> None:
-        bundle, _ = self.revision_bundle()
+        bundle, _ = self.clean_bundle(path_tag="-budget-exhausted")
         manifest = json.loads(bundle.files["manifest.json"])
-        manifest["cycles"][0]["budget"]["used"] = 0
-        manifest["cycles"][1]["budget"]["used"] = 0
+        cycle = manifest["cycles"][0]
+        execution_id = min(cycle["reports"])
+        report = cycle["reports"][execution_id]
+        report["findings"] = [self.finding("preserved-at-exhaustion")]
+        report["outcome"] = {
+            "status": "budget-exhausted",
+            "usable": False,
+            "failure": identity("review-budget-exhaustion-v1", execution_id),
+        }
+        report["limitations"] = ["review budget exhausted"]
+        report = signed(
+            {key: value for key, value in report.items() if key != "content_sha256"}
+        )
+        cycle["reports"][execution_id] = report
+        review = Witness.dispatches[cycle["review_dispatch"]["path"]]
+        execution = review["projection"]["executions"][execution_id]
+        execution["usable"] = False
+        execution["returned"]["content_sha256"] = sha(raw_document(report))
+        review["projection"] = signed(
+            {
+                key: value
+                for key, value in review["projection"].items()
+                if key != "content_sha256"
+            }
+        )
+        ensemble = cycle["ensemble"]
+        ensemble["reports"][execution_id] = sha(raw_document(report))
+        ensemble["dispatch_projection_sha256"] = sha(canonical(review["projection"]))
+        ensemble["limitations"] = ["review budget exhausted"]
+        ensemble["completeness"]["execution_mode"] = "incomplete / non-clean"
+        ensemble["completeness"]["budget_exhausted"] = [execution_id]
+        cycle["ensemble"] = signed(
+            {key: value for key, value in ensemble.items() if key != "content_sha256"}
+        )
+        for field in (
+            "feedback",
+            "adjudication_dispatch",
+            "adjudication",
+            "revision",
+            "verification",
+        ):
+            cycle[field] = None
+        cycle["progress"] = {"status": "stopped", "evidence": []}
+        cycle["owner"] = "reviewer"
+        expected = self.terminal(
+            "incomplete / non-clean",
+            "reviewer",
+            limitations=["review budget exhausted"],
+            missing=[execution_id],
+            unresolved=1,
+        )
+        manifest["terminal"] = expected
         self.store_manifest(bundle, manifest)
 
-        with self.assertRaisesRegex(EvidenceError, "budget accounting"):
-            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+        projection = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+        self.assertEqual(projection["terminal"], expected)
 
     def test_revision_must_cover_every_accepted_finding_exactly(self) -> None:
         bundle, _ = self.revision_bundle()
@@ -1623,158 +2485,6 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
 
         with self.assertRaisesRegex(EvidenceError, "reuses execution isolation"):
             self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
-
-    def test_fourth_ordinary_revision_cannot_reset_default_budget(self) -> None:
-        cycles: list[dict[str, Any]] = []
-        facts: list[dict[str, Any]] = []
-        for candidate in ("a", "b", "c", "d"):
-            cycle, fact = self.budget_fact(candidate, used=0)
-            cycles.append(cycle)
-            facts.append(fact)
-
-        with self.assertRaisesRegex(EvidenceError, "budget accounting"):
-            self.validator._validate_budget_chain(
-                cycles, facts, self.subject, self.trust
-            )
-
-    def test_exhausted_budget_requires_exact_fresh_same_size_extension_authority(
-        self,
-    ) -> None:
-        self.trust["issuers"][0]["capabilities"].extend(
-            ["operator-choice", "extension-eligibility"]
-        )
-        cycles: list[dict[str, Any]] = []
-        facts: list[dict[str, Any]] = []
-        revised_candidates: list[dict[str, Any]] = []
-        for used, candidate in enumerate(("a", "b", "c"), start=1):
-            cycle, fact = self.budget_fact(candidate, used=used)
-            cycles.append(cycle)
-            facts.append(fact)
-            revised_candidates.append(fact["revision"]["successor"]["candidate"])
-        extension_subject = {
-            "candidate": identity("git-commit", "d" * 40),
-            "review_input": self.subject["review_input"],
-            "requirements": self.subject["requirements"],
-        }
-        choice = signed(
-            {
-                "schema_version": 1,
-                "contract": "tricritical-operator-choice-v1",
-                "issuer": self.issuer,
-                "subject": extension_subject,
-                "choice": "extend",
-                "tranche_index": 1,
-                "tranche_size": 3,
-                "synchronous": True,
-                "timeout": None,
-                "evidence": identity("operator-choice-evidence-v1", "fresh-choice"),
-            }
-        )
-        eligibility = signed(
-            {
-                "schema_version": 1,
-                "contract": "tricritical-extension-eligibility-v1",
-                "issuer": self.issuer,
-                "subject": extension_subject,
-                "eligible": True,
-                "basis": "material-progress",
-                "prior_candidates": revised_candidates,
-                "clarified_requirements": None,
-                "evidence": identity("extension-evidence-v1", "material-progress"),
-            }
-        )
-        extension = {"operator_choice": choice, "eligibility": eligibility}
-        fourth_cycle, fourth_fact = self.budget_fact(
-            "d",
-            used=1,
-            tranche_index=1,
-            origin="operator-extension",
-            extension=extension,
-        )
-        cycles.append(fourth_cycle)
-        cycles[-1]["subject"] = extension_subject
-        facts.append(fourth_fact)
-
-        self.validator._validate_budget_chain(cycles, facts, self.subject, self.trust)
-
-        attacks = {
-            "wrong-size": lambda value: value["controls"]["budget"].update(
-                {"tranche_size": 2}
-            ),
-            "reused-index": lambda value: value["controls"]["budget"].update(
-                {
-                    "tranche_index": 0,
-                    "origin": "default",
-                    "used": 3,
-                    "status": "exhausted",
-                }
-            ),
-            "stale-choice": lambda value: value["controls"]["extension"][
-                "operator_choice"
-            ].update({"tranche_index": 0}),
-            "stale-eligibility": lambda value: value["controls"]["extension"][
-                "eligibility"
-            ].update({"prior_candidates": revised_candidates[:-1]}),
-        }
-        for name, mutate in attacks.items():
-            with self.subTest(attack=name):
-                attacked = copy.deepcopy(facts)
-                mutate(attacked[-1])
-                with self.assertRaises(EvidenceError):
-                    self.validator._validate_budget_chain(
-                        cycles, attacked, self.subject, self.trust
-                    )
-
-    def test_default_tranche_mapping_is_exact_for_every_risk_tier(self) -> None:
-        for tier, expected in {"low": 2, "ordinary": 3, "high": 5}.items():
-            with self.subTest(tier=tier):
-                cycle, fact = self.budget_fact("a", used=1)
-                fact["ensemble"]["risk"]["tier"] = tier
-                fact["controls"]["budget"]["tranche_size"] = expected
-                fact["controls"]["budget"]["status"] = (
-                    "exhausted" if expected == 1 else "open"
-                )
-                self.validator._validate_budget_chain(
-                    [cycle], [fact], self.subject, self.trust
-                )
-                fact["controls"]["budget"]["tranche_size"] = expected + 1
-                with self.assertRaisesRegex(EvidenceError, "default tranche size"):
-                    self.validator._validate_budget_chain(
-                        [cycle], [fact], self.subject, self.trust
-                    )
-
-    def test_initial_budget_override_requires_exact_synchronous_authority(self) -> None:
-        self.trust["issuers"][0]["capabilities"].append("operator-choice")
-        cycle, fact = self.budget_fact("a", used=1, origin="operator-initial-override")
-        choice = signed(
-            {
-                "schema_version": 1,
-                "contract": "tricritical-operator-choice-v1",
-                "issuer": self.issuer,
-                "subject": self.subject,
-                "choice": "set-initial-tranche",
-                "tranche_index": 0,
-                "tranche_size": 3,
-                "synchronous": True,
-                "timeout": None,
-                "evidence": identity("operator-choice-evidence-v1", "initial-override"),
-            }
-        )
-        fact["controls"]["extension"] = {
-            "operator_choice": choice,
-            "eligibility": None,
-        }
-
-        self.validator._validate_budget_chain([cycle], [fact], self.subject, self.trust)
-
-        for invalid in (0, -1, True):
-            with self.subTest(invalid=invalid):
-                attacked = copy.deepcopy(fact)
-                attacked["controls"]["budget"]["tranche_size"] = invalid
-                with self.assertRaises(EvidenceError):
-                    self.validator._validate_budget_chain(
-                        [cycle], [attacked], self.subject, self.trust
-                    )
 
 
 if __name__ == "__main__":

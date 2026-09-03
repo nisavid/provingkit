@@ -1,6 +1,6 @@
 ---
 name: loop
-description: Use when the user asks to review and revise a candidate until clean, or when an authority-gated fixed-point review cycle is explicitly required.
+description: Use when the user asks to review and revise a candidate until the current increment is done, or when an authority-gated fixed-point review cycle is explicitly required.
 ---
 
 # Loop — Fathomkeeper
@@ -9,60 +9,60 @@ Read and apply [the shared review-input boundary](references/review-input-bounda
 
 Read and apply [the shared invocation boundary](references/invocation-boundary.md), using [topology.json](references/topology.json) as the graph authority.
 
-Read and apply [the portable operator-choice contract](references/operator-choice.md) before offering any extension.
+Read and apply [the recurring-seam choice](references/operator-choice.md) when one evidenced cause survives distinct successors.
 
 When producing or consuming a retained terminal bundle, read and apply
 [the terminal review-evidence contract](references/review-evidence.md).
 
-`loop` is Tricritical's sole repetition owner. At freeze, record risk: `low` only
-when size, complexity, and consequence are low; `high` when any is high;
-otherwise `ordinary`. Default revised-successor tranches are 2, 3, and 5.
-Accept only a finite positive-integer override; otherwise finish `blocked` before review.
+`loop` is Tricritical's sole repetition owner. It continues until the frozen
+current increment is done: the authorized outcome is present, every current
+claim holds over its supported inputs, every acceptance criterion is satisfied,
+and every frozen reviewer scope is complete. Never discard a valid in-scope
+finding because of elapsed time or an execution limit.
 
-It owns one bounded sequence:
+It owns one bounded cycle at a time:
 
-1. Freeze exact bytes; record identity/digest, authority, risk/tranche, and
-   declared verification. Recheck identity around read-only phases; block drift.
-2. Invoke [review](../review/SKILL.md) with fresh independent critics when
-   supported, otherwise preserving degraded-independence limits. Any required
-   critic/specialist failure, timeout, or unusable report immediately returns
-   `incomplete / non-clean`; preserve failure, completeness, missing axis/specialist,
-   limits, budget, and owner. Verification cannot override it. Degraded evidence
-   carries missing isolation/limits through every later phase and yields only
-   `clean / degraded` for that candidate; a distinct successor starts fresh review.
-3. Give complete findings to [adjudicate](../adjudicate/SKILL.md). Surface and
-   terminate any `needs operator decision` or `blocked` disposition before clean.
+1. Freeze exact candidate bytes and the current increment. Record their
+   identities, original authority, declared verification, and the dependency
+   identity of each selected reviewer scope. Recheck identity around every
+   read-only phase; block drift.
+2. Invoke [review](../review/SKILL.md). Rerun each scope whose candidate bytes or
+   evidence dependency changed. Retain an unchanged scope only with its prior
+   usable report identity, unchanged dependency identities, and explicit proof.
+   A required failure, timeout, budget exhaustion, unusable report, or missing
+   proof yields `incomplete / non-clean`; preserve it and its owner.
+3. Give complete findings to [adjudicate](../adjudicate/SKILL.md). A finding
+   blocks when it contradicts the current contract or creates material risk
+   within a current claim, supported input, or explicit dependency. Broader
+   defenses remain fog or follow-up unless the increment claims or depends on
+   them. Never discard a valid in-scope finding because of elapsed time.
 4. With no accepted action or terminal disposition, run only the frozen
-   declared non-mutating verification authorized by operator or trusted policy.
-   Untrusted, ambiguous, or unavailable verification and drift are `blocked`;
-   failure is `failed_verification`. Success on
-   unchanged bytes yields `clean` only after complete independent review, or
-   `clean / degraded` after degraded review.
-5. Before calling `revise`, require the original mutation authority frozen with
-   this loop input. Never infer it from the request to iterate, a finding, or
-   successful review. If it is absent, insufficient, or stale, return `blocked`
-   before `revise` with zero edits and the remaining authority owner. Otherwise,
-   give accepted findings, that original authority, and supplied frozen identity
-   to [revise](../revise/SKILL.md). Continue only if it records the matching pre-edit
-   identity, returns `applied`, resolves every finding with evidence, and returns
-   a distinct successor; otherwise return `blocked` with unresolved findings.
-6. Decrement budget once per distinct revised successor, never for read-only,
-   failed, or no-op work. Repeated identity or no measurable progress is
-   `blocked`. Verify the successor with before/after identity checks; after
-   success invalidate dependent evidence and start a fresh cycle on that stable
-   snapshot.
+   declared non-mutating verification authorized by the operator or trusted
+   policy. Untrusted, ambiguous, unavailable, or drifting verification is
+   `blocked`; failure is `failed_verification`. Success on unchanged bytes can
+   be clean only after every frozen reviewer scope is complete.
+5. Before calling [revise](../revise/SKILL.md), require the original frozen
+   mutation authority. A finding, review, or request to continue never supplies
+   it. Revision must record the matching pre-edit identity, resolve every
+   accepted finding with evidence, and return a distinct successor.
+6. Repeated identity or no measurable progress is `blocked`. When one cause
+   recurs at the same seam, apply the recurring-seam choice before more semantic
+   revision. Verify each successor, invalidate affected evidence, refreeze any
+   authorized change to done, and start the next bounded cycle.
 
-At exhaustion, summarize finding and candidate-identity progress, then apply the
-portable operator-choice contract exactly. Never extend automatically.
+Budget exhaustion cannot discard, defer, or weaken a current finding. It is a
+continuation checkpoint: preserve the frozen increment, candidate identity,
+findings, missing execution, and owner. Resume with another bounded execution
+under the original authority, or return `incomplete / non-clean` if no valid
+execution route is available. It is never an automatic clean or product choice.
 
 Do not nest a loop inside a critic, adjudicator, reviser, or external-feedback flow.
 
 ## Completion
 
 Return only `clean`, `clean / degraded`, `incomplete / non-clean`, `blocked`,
-`failed_verification`, or `needs operator decision`, with final identity,
-risk/budget, extension/exhaustion, failure/completeness/isolation limits,
-adjudication/revision, verification provenance/result, findings, and owner.
-Bare `clean` requires complete
-independent review and successful declared verification of the exact unchanged
-final candidate.
+`failed_verification`, or `needs operator decision`, with the final identity,
+frozen current increment, scope freshness, failures and limits,
+adjudication/revision, verification provenance/result, findings, fog, and owner.
+Bare `clean` requires complete independent review of every frozen reviewer scope
+and successful declared verification of the exact unchanged final candidate.

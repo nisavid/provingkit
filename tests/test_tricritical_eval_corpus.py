@@ -174,35 +174,34 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
                 "no_clean_without_enforcement_record",
                 "structural_validation_not_runner_enforcement",
             },
-            "adaptive-budget-tiers.md": {
-                "risk_basis_recorded",
-                "low_default_two",
-                "ordinary_default_three",
-                "high_default_five",
+            "frozen-current-increment.md": {
+                "increment_contract_complete",
+                "unsupported_inputs_remain_outside_claim",
+                "blocking_finding_tied_to_increment",
             },
-            "adaptive-budget-invalid-override.md": {
-                "finite_positive_integer_required",
-                "invalid_override_blocked_before_review",
+            "review-budget-exhaustion.md": {
+                "budget_exhaustion_preserved",
+                "in_scope_finding_not_discarded",
+                "no_clean_terminal_from_exhaustion",
             },
-            "adaptive-budget-exhaustion.md": {
-                "exhaustion_summary_complete",
-                "material_progress_gate",
-                "same_sized_extension_prompt",
-                "no_timeout_or_auto_resolution",
-            },
-            "adaptive-budget-no-progress.md": {
+            "loop-no-progress.md": {
                 "repeated_identity_blocks_immediately",
-                "no_progress_no_extension_prompt",
+                "no_progress_preserves_findings",
             },
-            "adaptive-budget-repeat-extension.md": {
-                "fresh_operator_choice_each_extension",
-                "same_sized_extension",
-                "progress_gate_reapplied",
+            "recurring-seam-finding.md": {
+                "recurrence_forces_explicit_choice",
+                "current_claim_controls_scope",
+                "no_silent_discard",
             },
-            "adaptive-budget-tool-unavailable.md": {
-                "operator_choice_capability_unavailable",
-                "needs_operator_decision",
-                "exhaustion_summary_preserved",
+            "selective-rereview.md": {
+                "changed_scope_rereviewed",
+                "unchanged_scope_requires_dependency_proof",
+                "no_unrelated_axis_expansion",
+            },
+            "done-contract-mismatch.md": {
+                "done_contract_adapted",
+                "new_increment_refrozen",
+                "affected_evidence_invalidated",
             },
             "critic-timeout-incomplete.md": {
                 "critic_raw_failure_preserved",
@@ -278,17 +277,6 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
                 "missing_isolation_and_limits_preserved",
                 "no_bare_clean",
             },
-            "adaptive-budget-no-progress-irrelevant-clarification.md": {
-                "no_material_progress",
-                "unchanged_clarification_not_qualifying",
-                "blocked_without_extension",
-            },
-            "adaptive-budget-contract-changing-clarification.md": {
-                "contract_changing_delta_recorded",
-                "clarified_contract_refrozen",
-                "same_sized_extension_eligible",
-                "synchronous_operator_choice",
-            },
         }
         for fixture, expectations in expected.items():
             with self.subTest(fixture=fixture):
@@ -319,7 +307,7 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
             "adjudicate-external-feedback.md": ("finding a", "finding b", "evidence"),
             "revise-authority.md": ("accepted finding", "rejected", "owned path"),
             "loop-fixed-point.md": (
-                "target contract",
+                "frozen current increment",
                 "verification",
                 "fresh immutable candidate",
             ),
@@ -390,36 +378,42 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
                 "no proof",
                 "do not treat structural validation as runner enforcement",
             ),
-            "adaptive-budget-tiers.md": (
-                "three frozen candidates",
-                "size, complexity, and consequence",
-                "default revised-successor tranche",
+            "frozen-current-increment.md": (
+                "authorized outcome",
+                "claims",
+                "supported inputs",
+                "acceptance criteria",
+                "reviewer scopes",
             ),
-            "adaptive-budget-invalid-override.md": (
-                "`0`, `-2`, and `infinity`",
-                "finite positive integer",
-                "block each invalid run before review",
+            "review-budget-exhaustion.md": (
+                "bounded execution budget is exhausted",
+                "current supported input",
+                "do not discard",
+                "incomplete / non-clean",
             ),
-            "adaptive-budget-exhaustion.md": (
-                "three distinct revised successors",
-                "findings",
-                "no timeout or automatic resolution",
-            ),
-            "adaptive-budget-no-progress.md": (
+            "loop-no-progress.md": (
                 "same candidate identity",
                 "stop immediately as blocked",
-                "do not decrement for the no-op",
+                "preserve the unresolved finding",
             ),
-            "adaptive-budget-repeat-extension.md": (
-                "separately approved",
-                "synchronous no-timeout operator-choice capability",
-                "fresh choice",
-                "do not reuse prior consent",
+            "recurring-seam-finding.md": (
+                "one parser seam",
+                "narrow the claim",
+                "redesign",
+                "residual risk",
+                "stronger guarantee",
             ),
-            "adaptive-budget-tool-unavailable.md": (
-                "does not provide a synchronous no-timeout operator-choice capability",
-                "needs operator decision",
-                "do not auto-extend",
+            "selective-rereview.md": (
+                "changes runtime bytes",
+                "unchanged intent scope",
+                "dependency proof",
+                "must not add",
+            ),
+            "done-contract-mismatch.md": (
+                "frozen acceptance criteria",
+                "desired behavior",
+                "refreeze",
+                "invalidate",
             ),
             "critic-timeout-incomplete.md": (
                 "selected axes are intent, runtime, and structure",
@@ -502,20 +496,6 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
                 "verification succeeds on unchanged bytes",
                 "missing isolation and limits",
             ),
-            "adaptive-budget-no-progress-irrelevant-clarification.md": (
-                "without material progress",
-                "keep going",
-                "unchanged contract",
-                "no concrete requirement",
-                "extension eligibility",
-            ),
-            "adaptive-budget-contract-changing-clarification.md": (
-                "without material progress",
-                "changes the contract",
-                "freezing that clarified contract",
-                "synchronous no-timeout operator-choice capability",
-                "one same-sized extension",
-            ),
         }
         answer_markers = (
             "pass if",
@@ -525,47 +505,110 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
         )
         for fixture_name, terms in required_terms.items():
             with self.subTest(fixture=fixture_name):
-                prompt = (EVAL_ROOT / "fixtures" / fixture_name).read_text().lower()
+                prompt = " ".join(
+                    (EVAL_ROOT / "fixtures" / fixture_name).read_text().split()
+                ).lower()
                 self.assertGreaterEqual(len(prompt.strip()), 100)
                 for term in terms:
                     self.assertIn(term, prompt)
                 for marker in answer_markers:
                     self.assertNotIn(marker, prompt)
 
-    def test_adaptive_budget_and_pre_edit_identity_contracts_are_explicit(self):
-        loop_skill = (
-            REPO_ROOT / "plugins" / "tricritical" / "skills" / "loop" / "SKILL.md"
-        ).read_text()
-        operator_choice = (
+    def test_increment_done_and_pre_edit_identity_contracts_are_explicit(self):
+        loop_skill = " ".join(
+            (
+                REPO_ROOT
+                / "plugins"
+                / "tricritical"
+                / "skills"
+                / "loop"
+                / "SKILL.md"
+            )
+            .read_text()
+            .split()
+        )
+        review = " ".join(
+            (
+                REPO_ROOT
+                / "plugins"
+                / "tricritical"
+                / "skills"
+                / "review"
+                / "SKILL.md"
+            )
+            .read_text()
+            .split()
+        )
+        adjudicate = " ".join(
+            (
             REPO_ROOT
             / "plugins"
             / "tricritical"
             / "skills"
-            / "loop"
+            / "adjudicate"
+            / "SKILL.md"
+            )
+            .read_text()
+            .split()
+        )
+        revise = " ".join(
+            (
+                REPO_ROOT
+                / "plugins"
+                / "tricritical"
+                / "skills"
+                / "revise"
+                / "SKILL.md"
+            )
+            .read_text()
+            .split()
+        )
+        review_input = " ".join(
+            (
+            REPO_ROOT
+            / "plugins"
+            / "tricritical"
             / "references"
-            / "operator-choice.md"
-        ).read_text()
-        loop = loop_skill + "\n" + operator_choice
-        revise = (
-            REPO_ROOT / "plugins" / "tricritical" / "skills" / "revise" / "SKILL.md"
-        ).read_text()
+            / "review-input-boundary.md"
+            )
+            .read_text()
+            .split()
+        )
+        review_output = " ".join(
+            (
+            REPO_ROOT
+            / "plugins"
+            / "tricritical"
+            / "references"
+            / "review-output-contract.md"
+            )
+            .read_text()
+            .split()
+        )
         for phrase in (
-            "Default revised-successor tranches are 2, 3, and 5",
-            "finite positive-integer",
-            "Decrement budget once per distinct revised successor",
-            "finding and candidate-identity progress",
-            "eligible for one same-sized extension only when",
-            (
-                "records a concrete contract-changing delta and freezes a new "
-                "clarified contract"
-            ),
-            (
-                "A plain keep-going request, unchanged clarification, "
-                "rationale-only restatement"
-            ),
-            "If the capability is unavailable when an eligible extension needs a decision",
+            "continues until the frozen current increment is done",
+            "Budget exhaustion cannot discard",
+            "Never discard a valid in-scope finding because of elapsed time",
         ):
-            self.assertIn(phrase, loop)
+            self.assertIn(phrase, loop_skill)
+        for phrase in (
+            "authorized outcome",
+            "claims",
+            "supported inputs",
+            "acceptance criteria",
+            "reviewer scopes",
+        ):
+            self.assertIn(phrase, review_input)
+        self.assertIn("material current-increment concern", review)
+        self.assertIn("dependency-proven unchanged scope", review)
+        self.assertIn("stronger future guarantee", review_output)
+        self.assertIn("unsupported-input defense", review_output)
+        self.assertIn("hypothetical extension", review_output)
+        self.assertIn("recurs at the same seam", adjudicate)
+        self.assertIn("adapt and refreeze the current increment", revise)
+        for source in (loop_skill, review, adjudicate, revise):
+            self.assertNotIn("tranche", source.lower())
+            self.assertNotIn("extension gate", source.lower())
         for phrase in (
             "Immediately before any mutation",
             "complete scoped candidate identity",

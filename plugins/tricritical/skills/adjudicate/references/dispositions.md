@@ -9,9 +9,16 @@ Use exactly one disposition per finding:
 - `duplicate`: same evidenced cause as another finding.
 - `needs operator decision`: requires a product, authority, or trade-off decision.
 - `blocked`: required evidence, access, or verification is unavailable.
-- `follow-up outside scope`: valid observation retained without holding the current candidate open.
+- `follow-up outside scope`: valid fog about a stronger future guarantee,
+  unsupported input, or hypothetical extension that the current increment
+  neither claims nor depends on, retained without holding the candidate open.
 
 State the evidence and next owner for every non-accepted disposition.
+
+A finding that contradicts the frozen contract or creates material risk within
+a current claim, supported input, or explicit dependency cannot be classified
+as `follow-up outside scope`. Elapsed time and execution-budget exhaustion never
+change a finding's disposition.
 
 Preserve causal distinctions: use `duplicate` only for the same evidenced cause. Independent corroboration raises attention but does not establish truth or severity. Resolve conflicting claims against direct frozen-source evidence rather than averaging reviewer judgments; retain unresolved disagreement as uncertainty.
 

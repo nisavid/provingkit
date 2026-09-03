@@ -28,8 +28,6 @@ CANONICAL_IDENTITY_FIELDS = (
 sys.path.insert(0, str(REPO_ROOT))
 import scripts.validate_tricritical as validator_module  # noqa: E402
 from scripts.validate_tricritical import (  # noqa: E402
-    CLAUDE_OPERATOR_CHOICE_MAPPING,
-    CODEX_OPERATOR_CHOICE_MAPPING,
     CORE_SKILLS,
     MUTATOR_SKILL,
     PERSONA_SKILLS,
@@ -372,16 +370,43 @@ class ValidateTricriticalTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("exact minimal one-skill forwarder", result.stderr)
 
-    def test_operator_choice_api_mappings_live_only_in_adapter_surfaces(self):
-        codex_adapter = (
-            self.plugin_root / "skills" / "loop" / "agents" / "openai.yaml"
-        ).read_text()
-        codex_manifest = (self.plugin_root / "plugin.json").read_text()
-        claude_adapter = (self.plugin_root / "agents" / "fathomkeeper.md").read_text()
+    def test_loop_adapters_do_not_embed_retired_choice_api(self):
+        paths = (
+            self.plugin_root / "skills" / "loop" / "agents" / "openai.yaml",
+            self.plugin_root / "agents" / "fathomkeeper.md",
+            self.plugin_root / "plugin.json",
+        )
+        for path in paths:
+            content = path.read_text()
+            with self.subTest(path=path):
+                for term in (
+                    "request_user_input",
+                    "AskUserQuestion",
+                    "operator-choice capability",
+                ):
+                    self.assertNotIn(term, content)
 
-        self.assertEqual(codex_adapter.count(CODEX_OPERATOR_CHOICE_MAPPING), 1)
-        self.assertEqual(codex_manifest.count(CODEX_OPERATOR_CHOICE_MAPPING), 0)
-        self.assertEqual(claude_adapter.count(CLAUDE_OPERATOR_CHOICE_MAPPING), 1)
+    def test_current_increment_contract_replaces_fixed_tranche_controls(self):
+        sources = "\n".join(
+            (self.plugin_root / relative_path).read_text()
+            for relative_path in validator_module.semantic_release_paths()
+            if relative_path.endswith((".md", ".json"))
+        )
+        for phrase in (
+            "authorized outcome",
+            "supported inputs",
+            "acceptance criteria",
+            "reviewer scopes",
+            "Budget exhaustion cannot discard",
+            "dependency-proven unchanged scope",
+        ):
+            self.assertIn(phrase, sources)
+        for retired in (
+            "Default revised-successor tranches",
+            "same-sized extension",
+            "operator-choice capability",
+        ):
+            self.assertNotIn(retired, sources)
 
     def test_rejects_harness_api_tokens_in_semantic_skills(self):
         skill_path = self.plugin_root / "skills" / "intent" / "SKILL.md"

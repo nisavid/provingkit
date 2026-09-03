@@ -1,10 +1,17 @@
-# Operator choice
+# Recurring-seam choice
 
-Use a portable synchronous operator-choice capability that pauses until the operator responds. Set no timeout, automatic resolution, or inferred default. If the capability is unavailable when an eligible extension needs a decision, finish `needs operator decision` with the exhaustion summary and remaining owner.
+When the same evidenced cause recurs at one seam across distinct successors,
+pause semantic revision and record exactly one authorized choice:
 
-An exhausted tranche is eligible for one same-sized extension only when either:
+- narrow the current claim
+- narrow the supported input
+- redesign the seam
+- accept operator-owned residual risk outside the claim
+- confirm that the stronger guarantee has current value
 
-- distinct revised successors demonstrated material progress; or
-- an operator clarification records a concrete contract-changing delta and freezes a new clarified contract before continuation.
-
-A plain keep-going request, unchanged clarification, rationale-only restatement, or prior consent cannot substitute for material progress. If neither qualifying basis exists, finish `blocked`. Every later extension requires a fresh synchronous operator choice and a fresh application of this eligibility gate.
+A claim or input change creates a new current increment and invalidates affected
+evidence. A redesign remains inside the original mutation authority or needs
+new authority. Accepted residual risk must stay outside the current claim and
+supported inputs. Confirming a stronger guarantee adds it to the current
+increment before work continues. Do not infer any choice from elapsed time,
+budget exhaustion, prior consent, or a generic keep-going request.
