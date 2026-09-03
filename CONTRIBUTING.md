@@ -5,9 +5,9 @@ consistent, and explicit about what their validation proves.
 
 ## Scope
 
-Provingkit contains exactly six members: Rolecasting, Tricritical,
-Versionkeeping, Mergecraft, Artifact Customs, and the code-only Task Witness
-package. Keep changes within those members, their shared validation, and the
+Provingkit's members are Rolecasting, Tricritical, Versionkeeping, Mergecraft,
+Artifact Customs, the code-only Task Witness package, and, once its port lands,
+Tidesmith. Keep changes within those members, their shared validation, and the
 Kit's repository contracts. Hindsight, Base Loadout, personal tools, and
 unrelated experiments belong elsewhere.
 
@@ -22,12 +22,77 @@ authority exist.
 2. Update canonical source before any derived lock or projection.
 3. Preserve each member's manifest identity and independent version boundary.
 4. Use Conventional Commits for commit messages.
-5. Run the focused commands in the README and report the checks that actually
-   ran.
+5. Run the focused commands under [Validate a source checkout](#validate-a-source-checkout)
+   and report the checks that actually ran.
 
 Do not present historical qualification inputs as current evidence. Files
 under `qualification/historical/` are retained for provenance and design
 review only.
+
+## Validate a source checkout
+
+Use CPython 3.13 or newer. Install the validation-only dependencies, then run
+the Kit contract and each member's focused source-stage checks:
+
+```sh
+python -m pip install jsonschema==4.26.0 PyYAML==6.0.3
+
+python -m unittest tests.test_validate_provingkit
+python scripts/validate_provingkit.py .
+
+python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus
+python scripts/validate_rolecasting.py .
+
+python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus
+python scripts/validate_tricritical.py .
+
+python -m unittest tests.test_validate_versionkeeping
+python scripts/validate_versionkeeping.py .
+
+python -m unittest tests.test_validate_mergecraft
+python scripts/validate_mergecraft.py . --source-stage
+
+python -m unittest tests.test_validate_artifact_customs tests.test_artifact_customs_eval_corpus
+python scripts/validate_artifact_customs.py . --source-stage
+
+repository="$(pwd -P)"
+python -m unittest tests.test_task_witness_package
+python scripts/validate_task_witness.py "$repository" --source-stage
+```
+
+These commands validate public source contracts. They do not grant release,
+installation, runtime, or host-mutation authority.
+
+### Prepared source-stage containment
+
+The prepared wrapper exposes only `source-stage` validation. Invoke it from a
+clean outer environment with an absolute, operator-qualified CPython 3.13+
+executable and an absolute public candidate checkout:
+
+```sh
+/usr/bin/env -i LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin TZ=UTC /bin/sh \
+  /absolute/path/to/public-provingkit/scripts/run_prepared_release_validation.sh \
+  source-stage \
+  /absolute/path/to/qualified/cpython \
+  /absolute/path/to/public-provingkit
+```
+
+An exit status of `0` confirms only the prepared source checks; [What the source stage means](docs/release-boundary.md) explains what a release must add beyond them.
+
+## Repository layout
+
+- `plugins/` contains the canonical member source trees and identity
+  manifests.
+- `plugins/task-witness/` contains the code-only Task Witness package and its
+  local manifest identity.
+- `evals/` and `tests/` contain member behavior corpora and contract tests.
+- `scripts/` contains source validators and controlled derived-artifact writers.
+- `release/provingkit/` defines Kit membership and the future immutable
+  release-manifest boundary.
+- `release/plugin-content-locks/` contains generated content locks owned by
+  member validators.
+- `qualification/historical/` retains explicitly stale host-qualification
+  inputs outside active CI discovery.
 
 ## Generated artifacts
 
