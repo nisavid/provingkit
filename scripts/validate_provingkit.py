@@ -15,6 +15,11 @@ from html import unescape as unescape_html
 from pathlib import Path
 from urllib.parse import unquote_to_bytes
 
+try:
+    import idna
+except ModuleNotFoundError:
+    idna = None
+
 
 DEFINITION_RELATIVE = Path("release/provingkit/definition-v1.json")
 PROVENANCE_RELATIVE = Path("release/provingkit/cutover-provenance-v1.json")
@@ -52,6 +57,32 @@ LEGACY_IDENTITY_TOKENS = tuple(
 )
 IDENTITY_SCAN_MAX_DECODE_PASSES = 8
 JSON_ASCII_ESCAPE_PATTERN = re.compile(rb"\\u00([0-7][0-9A-Fa-f])")
+SPECIAL_URL_IGNORED_CONTROL_PATTERN = rb"(?:[\t\r\n]|\\(?:[tnr]|u000[9AaDd]))*"
+SPECIAL_URL_START_PATTERN = re.compile(
+    rb"(?<![A-Za-z0-9+._-])"
+    rb"h"
+    + SPECIAL_URL_IGNORED_CONTROL_PATTERN
+    + rb"t"
+    + SPECIAL_URL_IGNORED_CONTROL_PATTERN
+    + rb"t"
+    + SPECIAL_URL_IGNORED_CONTROL_PATTERN
+    + rb"p"
+    + SPECIAL_URL_IGNORED_CONTROL_PATTERN
+    + rb"(?:s"
+    + SPECIAL_URL_IGNORED_CONTROL_PATTERN
+    + rb")?:",
+    re.IGNORECASE,
+)
+JSON_URL_IGNORED_CONTROL_ESCAPE_PATTERN = re.compile(
+    rb"\\(?:[tnr]|u000[9AaDd])",
+    re.IGNORECASE,
+)
+SPECIAL_URL_TOKEN_PATTERN = re.compile(
+    rb"[^\x00-\x20\"'<>,;()\[\]{}|`]+"
+)
+SPECIAL_URL_PATH_HARD_DELIMITERS = frozenset(
+    b" \t\r\n\f\v\"'<>,;()[]{}|`"
+)
 ACTIVE_LEGACY_REPOSITORY_GUIDANCE_BLOCK = (
     "**Base Loadout**:\n"
     f"The portable declaration in `{LEGACY_REPOSITORY_SLUG}` that selects a "
@@ -360,26 +391,344 @@ def _identity_scan_content(relative_path: Path, content: bytes) -> bytes:
     return json.dumps(parsed, ensure_ascii=False).encode("utf-8")
 
 
-def _decode_identity_scan_content_once(content: bytes) -> bytes:
-    decoded = unquote_to_bytes(content)
+def _decode_identity_scan_syntax_once(content: bytes) -> bytes:
+    decoded = content
     decoded = JSON_ASCII_ESCAPE_PATTERN.sub(
         lambda match: bytes((int(match.group(1), 16),)),
         decoded,
     )
+    decoded = decoded.replace(b"\\/", b"/")
     text = decoded.decode("utf-8", errors="surrogateescape")
     return unescape_html(text).encode("utf-8", errors="surrogateescape")
 
 
+def _decode_identity_scan_content_once(content: bytes) -> bytes:
+    return _decode_identity_scan_syntax_once(unquote_to_bytes(content))
+
+
+def _decode_identity_component(value: bytes) -> bytes:
+    decoded = value
+    for _ in range(IDENTITY_SCAN_MAX_DECODE_PASSES):
+        next_value = unquote_to_bytes(decoded)
+        if next_value == decoded:
+            return decoded
+        decoded = next_value
+    if unquote_to_bytes(decoded) != decoded:
+        raise ValidationError("repository identity encoding depth exceeds limit")
+    return decoded
+
+
+def _special_url_hard_delimiter(byte: int) -> bool:
+    return byte <= 0x20 or byte in SPECIAL_URL_PATH_HARD_DELIMITERS
+
+
+def _hard_path_segment_pop_end(source: bytes, hard_index: int) -> int | None:
+    index = hard_index + 1
+    depth = 1
+    space_group = source[hard_index] in b" \t\f\v"
+    text_after_space = False
+    while index < len(source):
+        segment_end = index
+        while segment_end < len(source):
+            byte = source[segment_end]
+            if byte in b"/\\?#":
+                break
+            if byte in b"\r\n":
+                return None
+            if _special_url_hard_delimiter(byte):
+                if byte in b" \t\f\v":
+                    if space_group and text_after_space:
+                        return None
+                    space_group = True
+                    text_after_space = False
+                segment_end += 1
+                continue
+            if space_group:
+                text_after_space = True
+            segment_end += 1
+        if segment_end == len(source) or source[segment_end] not in b"/\\":
+            return None
+        index = segment_end + 1
+        next_segment_end = index
+        while next_segment_end < len(source):
+            if source[next_segment_end] in b"/\\?#" or _special_url_hard_delimiter(
+                source[next_segment_end]
+            ):
+                break
+            next_segment_end += 1
+        segment = _decode_identity_component(source[index:next_segment_end])
+        if segment == b"..":
+            depth -= 1
+            if depth == 0:
+                return next_segment_end
+        elif segment and segment != b".":
+            depth += 1
+        index = next_segment_end
+    return None
+
+
+def _special_url_candidate_end(source: bytes, scheme_end: int) -> int:
+    index = scheme_end
+    while index < len(source) and source[index] in b"/\\":
+        index += 1
+
+    authority_end = index
+    while authority_end < len(source):
+        json_control = JSON_URL_IGNORED_CONTROL_ESCAPE_PATTERN.match(
+            source, authority_end
+        )
+        if json_control is not None:
+            authority_end = json_control.end()
+            continue
+        if source[authority_end] in b"/\\?#":
+            break
+        authority_end += 1
+    last_userinfo = source.rfind(b"@", index, authority_end)
+
+    while index < len(source):
+        json_control = JSON_URL_IGNORED_CONTROL_ESCAPE_PATTERN.match(source, index)
+        if json_control is not None:
+            index = json_control.end()
+            continue
+        byte = source[index]
+        if byte in b"\t\r\n":
+            index += 1
+            continue
+        if byte in b"/\\":
+            index += 1
+            break
+        if byte in b"?#":
+            while index < len(source) and not _special_url_hard_delimiter(
+                source[index]
+            ):
+                index += 1
+            return index
+        if _special_url_hard_delimiter(byte):
+            if last_userinfo < index:
+                return index
+        index += 1
+
+    while index < len(source):
+        json_control = JSON_URL_IGNORED_CONTROL_ESCAPE_PATTERN.match(source, index)
+        if json_control is not None:
+            index = json_control.end()
+            continue
+        byte = source[index]
+        if byte in b"/\\":
+            index += 1
+            continue
+        if byte in b"?#":
+            while index < len(source) and not _special_url_hard_delimiter(
+                source[index]
+            ):
+                index += 1
+            return index
+        if byte == ord("\t"):
+            index += 1
+            continue
+        if _special_url_hard_delimiter(byte):
+            record_boundary = byte in b"\r\n"
+            pop_end = (
+                None
+                if record_boundary
+                else _hard_path_segment_pop_end(source, index)
+            )
+            if pop_end is not None:
+                index = pop_end
+                continue
+            return index
+        index += 1
+    return index
+
+
+def _decode_url_literal_syntax(
+    candidate: bytes,
+    *,
+    remove_json_controls: bool,
+) -> bytes:
+    decoded = candidate
+    for _ in range(IDENTITY_SCAN_MAX_DECODE_PASSES):
+        next_value = JSON_ASCII_ESCAPE_PATTERN.sub(
+            lambda match: bytes((int(match.group(1), 16),)),
+            decoded,
+        )
+        if remove_json_controls:
+            next_value = JSON_URL_IGNORED_CONTROL_ESCAPE_PATTERN.sub(
+                b"", next_value
+            )
+        next_value = next_value.translate(None, b"\t\r\n")
+        next_value = next_value.replace(b"\\/", b"/")
+        text = next_value.decode("utf-8", errors="surrogateescape")
+        next_value = unescape_html(text).encode(
+            "utf-8", errors="surrogateescape"
+        )
+        if next_value == decoded:
+            return decoded.replace(b"\\", b"/")
+        decoded = next_value
+    return decoded.replace(b"\\", b"/")
+
+
+def _canonical_github_path(special_url: bytes) -> bytes | None:
+    remainder = special_url.partition(b":")[2].lstrip(b"/")
+    delimiter_positions = [
+        position
+        for delimiter in (b"/", b"?", b"#")
+        if (position := remainder.find(delimiter)) >= 0
+    ]
+    authority_end = min(delimiter_positions, default=len(remainder))
+    authority = remainder[:authority_end]
+    host_port = authority.rsplit(b"@", maxsplit=1)[-1]
+    encoded_host = host_port
+    possible_host, separator, possible_port = host_port.rpartition(b":")
+    if separator:
+        if possible_port:
+            normalized_port = possible_port.lstrip(b"0") or b"0"
+            if (
+                not possible_port.isdigit()
+                or len(normalized_port) > 5
+                or (
+                    len(normalized_port) == 5
+                    and normalized_port > b"65535"
+                )
+            ):
+                return None
+        encoded_host = possible_host
+    if idna is None:
+        raise ValidationError("idna is required for URL identity validation")
+    try:
+        host = idna.encode(
+            unquote_to_bytes(encoded_host).decode("utf-8"),
+            uts46=True,
+            std3_rules=True,
+            transitional=False,
+        ).lower()
+    except (UnicodeError, idna.IDNAError):
+        return None
+    if host.endswith(b"."):
+        host = host[:-1]
+    if host != b"github.com":
+        return None
+
+    path = b""
+    if remainder[authority_end : authority_end + 1] == b"/":
+        path = re.split(rb"[?#]", remainder[authority_end:], maxsplit=1)[0]
+    path = _decode_identity_component(path).replace(b"\\", b"/")
+    segments: list[bytes] = []
+    for segment in path.split(b"/"):
+        if not segment or segment == b".":
+            continue
+        if segment == b"..":
+            if segments:
+                segments.pop()
+            continue
+        segments.append(segment)
+    return b"/".join(segments) if segments else None
+
+
+def _canonical_github_url_paths_from_source(source: bytes) -> list[bytes]:
+    canonical_paths: list[bytes] = []
+    search_start = 0
+    while match := SPECIAL_URL_START_PATTERN.search(source, search_start):
+        candidate_end = _special_url_candidate_end(source, match.end())
+        candidate = source[match.start() : candidate_end]
+        syntax_variants = {
+            _decode_url_literal_syntax(
+                candidate,
+                remove_json_controls=remove_json_controls,
+            )
+            for remove_json_controls in (False, True)
+        }
+        for special_url in syntax_variants:
+            canonical_path = _canonical_github_path(special_url)
+            if canonical_path is not None:
+                canonical_paths.append(canonical_path)
+        search_start = max(candidate_end, match.end())
+    return canonical_paths
+
+
+def _json_string_values(content: bytes) -> list[bytes]:
+    try:
+        parsed = json.loads(
+            content,
+            parse_constant=lambda _value: None,
+            parse_float=lambda _value: None,
+            parse_int=lambda _value: None,
+        )
+    except (json.JSONDecodeError, UnicodeDecodeError, RecursionError, ValueError):
+        return []
+    values: list[bytes] = []
+    pending = [parsed]
+    while pending:
+        value = pending.pop()
+        if isinstance(value, str):
+            start = 0
+            for index, character in enumerate(value):
+                if 0xD800 <= ord(character) <= 0xDFFF:
+                    if start < index:
+                        values.append(value[start:index].encode("utf-8"))
+                    start = index + 1
+            if start < len(value):
+                values.append(value[start:].encode("utf-8"))
+        elif isinstance(value, list):
+            pending.extend(value)
+        elif isinstance(value, dict):
+            pending.extend(value.keys())
+            pending.extend(value.values())
+    return values
+
+
+def _canonical_github_url_paths(content: bytes) -> list[bytes]:
+    undecoded_sources = [content, *_json_string_values(content)]
+    sources: list[bytes] = []
+    seen_sources: set[bytes] = set()
+    for undecoded_source in undecoded_sources:
+        source = undecoded_source
+        for _ in range(IDENTITY_SCAN_MAX_DECODE_PASSES + 1):
+            if source not in seen_sources:
+                seen_sources.add(source)
+                sources.append(source)
+            next_source = _decode_identity_scan_syntax_once(source)
+            if next_source == source:
+                break
+            source = next_source
+    canonical_paths: list[bytes] = []
+    for source in sources:
+        canonical_paths.extend(_canonical_github_url_paths_from_source(source))
+        for token_match in SPECIAL_URL_TOKEN_PATTERN.finditer(source):
+            token = token_match.group()
+            if SPECIAL_URL_START_PATTERN.search(token) is not None:
+                continue
+            decoded = token
+            for _ in range(IDENTITY_SCAN_MAX_DECODE_PASSES):
+                syntax_decoded = _decode_identity_scan_syntax_once(decoded)
+                if SPECIAL_URL_START_PATTERN.search(syntax_decoded) is not None:
+                    canonical_paths.extend(
+                        _canonical_github_url_paths_from_source(syntax_decoded)
+                    )
+                    break
+                next_value = unquote_to_bytes(syntax_decoded)
+                if next_value == decoded:
+                    break
+                decoded = next_value
+                if SPECIAL_URL_START_PATTERN.search(decoded) is not None:
+                    canonical_paths.extend(
+                        _canonical_github_url_paths_from_source(decoded)
+                    )
+                    break
+    return canonical_paths
+
+
 def _normalize_identity_scan_content(content: bytes) -> bytes:
     normalized = content
+    canonical_paths = _canonical_github_url_paths(content)
     for _ in range(IDENTITY_SCAN_MAX_DECODE_PASSES):
         decoded = _decode_identity_scan_content_once(normalized)
         if decoded == normalized:
-            return decoded.lower()
+            return (decoded + b"\n" + b"\n".join(canonical_paths)).lower()
         normalized = decoded
     if _decode_identity_scan_content_once(normalized) != normalized:
         raise ValidationError("repository identity encoding depth exceeds limit")
-    return normalized.lower()
+    return (normalized + b"\n" + b"\n".join(canonical_paths)).lower()
 
 
 def _sha256_uri(path: Path, label: str) -> str:

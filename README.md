@@ -81,7 +81,7 @@ Use CPython 3.13 or newer. Install the validation-only dependencies, then run
 the Kit contract and each member's focused source-stage checks:
 
 ```sh
-python -m pip install jsonschema==4.26.0 PyYAML==6.0.3
+python -m pip install idna==3.18 jsonschema==4.26.0 PyYAML==6.0.3
 
 python -m unittest tests.test_validate_provingkit
 python scripts/validate_provingkit.py .
