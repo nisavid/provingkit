@@ -15,9 +15,13 @@ from ._bridge_transition_prepare_support import (
     prepared_bridge_field_surface,
     transition_facts_field_surface,
 )
-from ._freeze5_upgrade_recovery_support import set_resealed_client_profile
+from ._freeze5_upgrade_recovery_support import (
+    load_controller,
+    remove_loaded_controller,
+    set_resealed_client_profile,
+)
 from ._source_evidence_support import exact_tree_state
-from ._support import canonical_bytes, content_document, sha256
+from ._support import PLUGIN, canonical_bytes, content_document, sha256
 
 SHA256 = re.compile(r"[0-9a-f]{64}").fullmatch
 
@@ -30,6 +34,71 @@ class BridgeTransitionPreparationTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
+
+    def test_current_controller_accepts_plain_exact_b1_receipt(self) -> None:
+        outbound = self.fixture.prepare()
+        self.addCleanup(self.fixture.close, outbound)
+        installed = outbound.deployment.prepare_bridge_transition(
+            outbound.request,
+            outbound.staging_root,
+        )
+        current = load_controller(
+            PLUGIN / "controller" / "task_witness_deploy.py",
+            "_task_witness_current_bridge_epoch_regression",
+        )
+        self.addCleanup(remove_loaded_controller, current)
+        precondition = installed.plan.precondition
+        receipts = [
+            (value, raw)
+            for _, value, raw in precondition.retained_chain.deployment_receipts
+        ]
+
+        current._validate_exact_bridge_receipt_epoch(
+            receipts,
+            initial_receipt=json.loads(precondition.receipt_raw),
+            initial_receipt_raw=precondition.receipt_raw,
+            initial_receipt_profile=current.BRIDGE_LEGACY_RECEIPT_PROFILE,
+            bridge_transition_seen=False,
+        )
+
+    def test_current_controller_plans_retained_bridge_repository_identity(
+        self,
+    ) -> None:
+        outbound = self.fixture.prepare()
+        self.addCleanup(self.fixture.close, outbound)
+        installed = outbound.deployment.prepare_bridge_transition(
+            outbound.request,
+            outbound.staging_root,
+        )
+        current = load_controller(
+            PLUGIN / "controller" / "task_witness_deploy.py",
+            "_task_witness_current_bridge_planner_regression",
+        )
+        self.addCleanup(remove_loaded_controller, current)
+        old = outbound.request.deployment
+        old_evidence = old.source_evidence
+        request = current.DeploymentRequest(
+            candidate_root=current.Path(str(old.candidate_root)),
+            canonical_root=current.Path(str(old.canonical_root)),
+            source_selection_raw=bytes(old.source_selection_raw),
+            source_evidence=current.HarnessSnapshotEvidence(
+                binding_raw=bytes(old_evidence.binding_raw),
+                receipt_raw=bytes(old_evidence.receipt_raw),
+            ),
+            runtime_qualification_raw=bytes(old.runtime_qualification_raw),
+            maintenance_transaction_sha256=old.maintenance_transaction_sha256,
+            expected_active_receipt_sha256=old.expected_active_receipt_sha256,
+        )
+
+        prepared = current._prepare_bridge_candidate_against_precondition(
+            request,
+            installed.plan.precondition,
+        )
+
+        self.assertEqual(
+            prepared.plan.trust.smoke.repository,
+            installed.plan.precondition.active_source.repository_url,
+        )
 
     def test_installed_bridge_prepares_current_candidate_without_writes(self) -> None:
         prepared = self.fixture.prepare()

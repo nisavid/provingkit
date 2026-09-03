@@ -34,7 +34,7 @@
     {
       "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
       "path": "plugins/task-witness/controller/task_witness_deploy.py",
-      "sha256": "sha256:746e56c2ed0109d5e65a770b49f4d143510917653b92aed4607606ea059ef5ef"
+      "sha256": "sha256:f544d74e52528d777456d7aabf27064b524578190d1a5491aff1863638c664ca"
     },
     {
       "disposition": "historical-stale-host-qualification",
@@ -144,7 +144,7 @@
     {
       "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
       "path": "scripts/run_task_witness_qualification.py",
-      "sha256": "sha256:79b9405fbd5de18c041c2c84f58414ca75f842f8b0070fd4431eadfb356c1857"
+      "sha256": "sha256:0ca77a2528cb25f2ea57c1342f2097578c93a8a394749aad082e4653299573cf"
     },
     {
       "disposition": "historical-source-lineage-validator",
@@ -154,7 +154,7 @@
     {
       "disposition": "compatibility-validation-for-frozen-task-witness-receipts",
       "path": "scripts/validate_task_witness.py",
-      "sha256": "sha256:82a85074f8cad391e32997d1d5ded5957e80519e8ba59ac1a2a194aef218e77b"
+      "sha256": "sha256:5bfff1ddc5ecf8c9c838b8a07bfd1562a0857a61dc5e8636e6a885ca26b4cecc"
     },
     {
       "disposition": "historical-review-input-fixture",
@@ -184,7 +184,7 @@
     {
       "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
       "path": "tests/test_task_witness_package.py",
-      "sha256": "sha256:b8ec494db61c406f6181ce7e9b4f379c1fddcb17cc318a34c91e0a4646fb28bd"
+      "sha256": "sha256:242b0e04fe67fd82db49124caa245d0e58ad48f8658b0412335ca540257d4846"
     },
     {
       "disposition": "historical-source-lineage-fixture",

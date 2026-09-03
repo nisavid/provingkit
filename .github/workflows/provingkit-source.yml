@@ -26,6 +26,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Check base-to-head diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: git diff --check "$BASE_SHA" "$HEAD_SHA"
+
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.13"

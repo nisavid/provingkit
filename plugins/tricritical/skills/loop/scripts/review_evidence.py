@@ -1196,7 +1196,10 @@ def _cycle(
         raise witness.EvidenceError("Tricritical retained scopes must be a list")
     retained_roles: set[str] = set()
     for value in cycle["retained_scopes"]:
-        raw_role = value.get("role") if isinstance(value, dict) else None
+        raw_role = witness.token(
+            value.get("role") if isinstance(value, dict) else None,
+            f"cycle {index} retained scope role",
+        )
         if raw_role not in increment_scopes:
             raise witness.EvidenceError("Tricritical retained scope has an extra role")
         role = _retained_scope(

@@ -23,7 +23,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/tricritical/content-lock.json",
-          "sha256": "sha256:882c63a663a5081ae79fb09f3957cae4802858b25c2d4a5e568628eb2b382484"
+          "sha256": "sha256:7b9520994cf4c6bbce7fe56c922a972f0233225e7aa7a9ae875f98e8d36d4fbd"
         },
         "display_name": "Tricritical",
         "distribution_kind": "agent-plugin",
@@ -83,7 +83,7 @@
         "content_identity": {
           "kind": "source-shape-review",
           "path": "release/task-witness/source-shape-review.json",
-          "sha256": "sha256:78779f98daa62521330a749a7efe984ba241d5710be17a3e62bec6b8d2ff2a12"
+          "sha256": "sha256:e9620411ee1415f67f7fe4285cd41b258653f2c8f11cbb82756d3041b5a56bd8"
         },
         "display_name": "Task Witness",
         "distribution_kind": "code-only",

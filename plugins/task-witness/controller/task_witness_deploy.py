@@ -3968,6 +3968,8 @@ def _plan_first_install(
     qualification: RuntimeQualification,
     precondition: FirstInstallPrecondition,
     maintenance_transaction_sha256: str,
+    *,
+    intrinsic_repository: str = "https://github.com/nisavid/provingkit",
 ) -> DeploymentPlan:
     """Build the complete nonreceipt artifact plan without filesystem mutation."""
 
@@ -4001,7 +4003,11 @@ def _plan_first_install(
         candidate_policy_sha256=candidate_policy.raw_sha256,
     )
     active = _build_active_runtime(source, qualification)
-    trust = _plan_trust_context(source, canonical_root)
+    trust = _plan_trust_context(
+        source,
+        canonical_root,
+        intrinsic_repository=intrinsic_repository,
+    )
     smoke_manifest_raw = _smoke_bundle_manifest(trust.smoke)
     artifacts = [
         _planned_artifact(
@@ -9510,7 +9516,7 @@ def _validate_exact_bridge_receipt_epoch(
         if (
             bridge_transition_seen
             or sequences != [1, 2]
-            or by_sequence[2] != (initial_receipt, initial_receipt_raw)
+            or by_sequence[2][1] != initial_receipt_raw
         ):
             raise DeploymentError("B1 retained deployment chain is not exact")
     else:
@@ -11243,6 +11249,7 @@ def _prepare_bridge_candidate_against_precondition(
         qualification,
         synthetic,
         request.maintenance_transaction_sha256,
+        intrinsic_repository="https://github.com/nisavid/agents",
     )
     classification = _classify_candidate_source(
         active_source=precondition.active_source,
@@ -25426,13 +25433,18 @@ def _plan_candidate_provider(
 def _plan_intrinsic_smoke_provider(
     source: CandidateSource,
     installed_trust_root: Path,
+    *,
+    repository: str = "https://github.com/nisavid/provingkit",
 ) -> ProviderMaterialization:
     raw = _candidate_file(
         source.tree,
         "smoke/task_witness_smoke_validator.py",
         "the intrinsic smoke validator",
     )
-    provider, declaration_raw = _intrinsic_smoke_definition(raw)
+    provider, declaration_raw = _intrinsic_smoke_definition(
+        raw,
+        repository=repository,
+    )
     return _project_provider(
         provider,
         declaration_raw,
@@ -25656,6 +25668,8 @@ def _bounded_trust_context_document(
 def _plan_trust_context(
     source: CandidateSource,
     canonical_root: Path,
+    *,
+    intrinsic_repository: str = "https://github.com/nisavid/provingkit",
 ) -> PlannedTrust:
     installed_root = (
         _normalized_absolute_path(
@@ -25666,7 +25680,11 @@ def _plan_trust_context(
     )
     provider = _plan_candidate_provider(source, installed_root)
     providers = () if provider is None else (provider,)
-    smoke = _plan_intrinsic_smoke_provider(source, installed_root)
+    smoke = _plan_intrinsic_smoke_provider(
+        source,
+        installed_root,
+        repository=intrinsic_repository,
+    )
     value, raw = _compose_trust_context_document(providers, smoke)
     byte_sha256 = hashlib.sha256(raw).hexdigest()
     path = installed_root / "contexts" / f"sha256-{byte_sha256}.json"
