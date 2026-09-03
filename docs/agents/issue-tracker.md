@@ -62,7 +62,7 @@ Used by `/wayfinder`. The **map** is a single issue with **child** issues as tic
               number
               state
               assignees(first: 1) { totalCount }
-              blockedBy(first: 50) { nodes { state } }
+              blockedBy(first: 50) { pageInfo { hasNextPage endCursor } nodes { state } }
             }
           }
         }

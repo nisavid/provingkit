@@ -57,7 +57,7 @@ _Avoid_: Plugin capability, feature
 ### Kit and release
 
 **Provingkit**:
-The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, Task Witness, and Tidesmith. *The Kit* is its shorthand. Task Witness is the code-only member: a manifest-only plugin whose control plane ships through its own deployment route.
+The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and Task Witness. *The Kit* is its shorthand. Task Witness is the code-only member: a manifest-only plugin whose control plane ships through its own deployment route.
 _Avoid_: Suite, bundle, the six
 
 **Release**:
