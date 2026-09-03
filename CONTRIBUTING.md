@@ -5,11 +5,16 @@ consistent, and explicit about what their validation proves.
 
 ## Scope
 
-Provingkit contains exactly six members: Rolecasting, Tricritical,
-Versionkeeping, Mergecraft, Artifact Customs, and the code-only Task Witness
-package. Keep changes within those members, their shared validation, and the
-Kit's repository contracts. Hindsight, Base Loadout, personal tools, and
-unrelated experiments belong elsewhere.
+Current cutover changes stay within the six source members carried by this
+cutover: Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact
+Customs, and the code-only Task Witness package. Keep changes within those
+members, their shared validation, and the Kit's repository contracts.
+
+The accepted Kit slate has a seven-member first release. Tidesmith enters
+through the [tracked port](https://github.com/nisavid/provingkit/issues/25):
+issue #25 after pull request #11. It is not part of the current six-member
+source stage. Hindsight, Base Loadout, personal tools, and unrelated
+experiments belong elsewhere.
 
 Opening or merging a source change does not authorize a Provingkit release,
 tag, release-manifest instance, marketplace publication, installation, or live

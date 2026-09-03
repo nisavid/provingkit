@@ -12,6 +12,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import unquote_to_bytes
 
 
 DEFINITION_RELATIVE = Path("release/provingkit/definition-v1.json")
@@ -188,6 +189,7 @@ ADOPTED_HISTORY_DELTA_BUNDLE_SHA256 = (
 ADOPTED_HISTORY_DELTA_CONTENT_SHA256 = (
     "sha256:d14da319649492e7ecb64d20a578983cb2cd88e00a5e4d3a1ed7e49a1a526cc5"
 )
+ADOPTED_HISTORY_IMPORT_TIP = "caf9a58769af746fd5b514beff5cb305788f7e1c"
 OID_SHA1_PATTERN = re.compile(r"[0-9a-f]{40}\Z")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 RELEASE_CONTRACT_IDENTIFIER = "provingkit-release-manifest-v1"
@@ -353,6 +355,10 @@ def _identity_scan_content(relative_path: Path, content: bytes) -> bytes:
             raise
         raise ValidationError("active legacy tracker reference scope drift") from error
     return json.dumps(parsed, ensure_ascii=False).encode("utf-8")
+
+
+def _normalize_identity_scan_content(content: bytes) -> bytes:
+    return unquote_to_bytes(content).lower()
 
 
 def _sha256_uri(path: Path, label: str) -> str:
@@ -1134,7 +1140,9 @@ def _validate_historical_identities(repository: Path) -> None:
             content = path.read_bytes()
         except OSError as error:
             raise ValidationError("repository identity scan failed") from error
-        identity_content = _identity_scan_content(relative_path, content)
+        identity_content = _normalize_identity_scan_content(
+            _identity_scan_content(relative_path, content)
+        )
         if any(token in identity_content for token in LEGACY_IDENTITY_TOKENS):
             observed[relative_path.as_posix()] = content
 
@@ -1529,14 +1537,7 @@ def _validate_history(repository: Path) -> None:
     if not observed_import_refs and import_in_head.returncode != 0:
         raise ValidationError("retained history-import ref attestation drift")
     for object_id in observed_import_refs:
-        ancestry = _run_git(
-            repository,
-            "merge-base",
-            "--is-ancestor",
-            macos_last,
-            object_id,
-        )
-        if ancestry.returncode != 0:
+        if object_id != ADOPTED_HISTORY_IMPORT_TIP:
             raise ValidationError("retained history-import ref attestation drift")
 
     for source, destination, expected_blob in EXPECTED_HISTORY_RELOCATIONS:

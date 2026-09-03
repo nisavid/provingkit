@@ -1,12 +1,18 @@
 # Provingkit
 
-Provingkit is the public source repository for six validation and agent-workflow
-members. Each member keeps its own identity and version. The Kit definition
-requires the complete six-member set; a partial selection is not Provingkit.
+Provingkit is the public source repository for the six source members carried
+by this cutover. Each member keeps its own identity and version, and the
+current source-stage definition requires the complete six-member set.
+
+The accepted Kit slate has a seven-member first release. Tidesmith enters
+through the [tracked port](https://github.com/nisavid/provingkit/issues/25):
+issue #25 after pull request #11. It is not part of this source stage or its
+six-member definition.
 
 ## Members
 
-Five members are independently releasable Agent Plugins:
+Five of the six current source members are independently releasable Agent
+Plugins:
 
 - [`plugins/rolecasting/`](plugins/rolecasting/) contains **Rolecasting**, which
   plans model selection and delegation topology.

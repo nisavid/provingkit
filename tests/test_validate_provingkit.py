@@ -163,6 +163,19 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             commands,
         )
 
+    def test_human_docs_distinguish_cutover_members_from_first_release_slate(
+        self,
+    ) -> None:
+        for relative in ("README.md", "CONTRIBUTING.md"):
+            with self.subTest(relative=relative):
+                content = (REPOSITORY / relative).read_text(encoding="utf-8")
+                normalized = " ".join(content.split())
+                self.assertIn("six source members carried by this cutover", normalized)
+                self.assertIn("seven-member first release", normalized)
+                self.assertIn("Tidesmith", normalized)
+                self.assertIn("issue #25", normalized)
+                self.assertIn("pull request #11", normalized)
+
     def test_versioned_definition_is_required(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
@@ -904,6 +917,36 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unallowlisted legacy repository identity", result.stderr)
 
+    def test_unallowlisted_legacy_repository_identity_variants_are_rejected(
+        self,
+    ) -> None:
+        variants = {
+            "percent-encoded": "https://github.com/nisavid/" + "%61gents",
+            "github-case": "https://GitHub.com/NISAVID" + "/AGENTS",
+        }
+        for variant_name, legacy_repository in variants.items():
+            with (
+                self.subTest(variant=variant_name),
+                tempfile.TemporaryDirectory() as directory,
+            ):
+                repository = Path(directory) / "repository"
+                shutil.copytree(
+                    REPOSITORY,
+                    repository,
+                    ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+                )
+                readme = repository / "README.md"
+                readme.write_text(
+                    readme.read_text(encoding="utf-8")
+                    + f"\nUnexpected active link: {legacy_repository}\n",
+                    encoding="utf-8",
+                )
+
+                result = self.validate(repository)
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("unallowlisted legacy repository identity", result.stderr)
+
     def test_active_legacy_repository_guidance_exemption_requires_exact_block(
         self,
     ) -> None:
@@ -1106,6 +1149,50 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Git history attestation unavailable", result.stderr)
+
+    def test_retained_history_import_ref_rejects_a_descendant_tip(self) -> None:
+        expected_tip = "caf9a58769af746fd5b514beff5cb305788f7e1c"
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
+            descendant_tip = subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Provingkit Test",
+                    "-c",
+                    "user.email=provingkit-test@example.invalid",
+                    "commit-tree",
+                    f"{expected_tip}^{{tree}}",
+                    "-p",
+                    expected_tip,
+                    "-m",
+                    "test descendant",
+                ],
+                cwd=repository,
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.strip()
+            subprocess.run(
+                [
+                    "git",
+                    "update-ref",
+                    "refs/remotes/origin/retained/issue-81-history-import",
+                    descendant_tip,
+                ],
+                cwd=repository,
+                check=True,
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("retained history-import ref attestation drift", result.stderr)
 
     def test_attested_history_preserves_the_unreleased_cutover_boundary(self) -> None:
         retained = "8edaf590736621352262457752d087bad835555d"
