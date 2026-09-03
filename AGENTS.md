@@ -26,11 +26,15 @@ Agent Plugins term and a Claude equivalent, the Agent Plugins term is the
 repository's word. Keep `README.md` as the verified human entrypoint and keep
 detailed contracts, research, and specs under `docs/`.
 
-Each plugin under `plugins/` is a package whose README names its validator
-(`scripts/validate_<plugin>.py`), tests, evals, and content lock. The validator
-owns the plugin's projections and content lock: edit source files and
-regenerate with `--write-content-lock` rather than editing projections or
-locks by hand.
+Each member under `plugins/` is a package whose README names its validator
+(`scripts/validate_<plugin>.py`), tests, evals, governed content identity, and
+supported regeneration commands. Edit canonical source first. Use
+`--write-content-lock` only where the member's validator documents that mode;
+Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write only their
+content locks, while Tricritical also regenerates its per-skill reference
+projections. Task Witness uses an independently reviewed source-shape identity,
+has no mechanical writer, and must never be rebaselined as an ordinary content
+lock.
 
 ## Git and validation
 

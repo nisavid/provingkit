@@ -5,12 +5,13 @@ from __future__ import annotations
 
 import base64
 import binascii
-import json
 import hashlib
+import json
 import os
 import re
 import subprocess
 import sys
+from html import unescape as unescape_html
 from pathlib import Path
 from urllib.parse import unquote_to_bytes
 
@@ -49,6 +50,8 @@ LEGACY_IDENTITY_TOKENS = tuple(
         "nisavid-" + "agents",
     )
 )
+IDENTITY_SCAN_MAX_DECODE_PASSES = 8
+JSON_ASCII_ESCAPE_PATTERN = re.compile(rb"\\u00([0-7][0-9A-Fa-f])")
 ACTIVE_LEGACY_REPOSITORY_GUIDANCE_BLOCK = (
     "**Base Loadout**:\n"
     f"The portable declaration in `{LEGACY_REPOSITORY_SLUG}` that selects a "
@@ -357,8 +360,26 @@ def _identity_scan_content(relative_path: Path, content: bytes) -> bytes:
     return json.dumps(parsed, ensure_ascii=False).encode("utf-8")
 
 
+def _decode_identity_scan_content_once(content: bytes) -> bytes:
+    decoded = unquote_to_bytes(content)
+    decoded = JSON_ASCII_ESCAPE_PATTERN.sub(
+        lambda match: bytes((int(match.group(1), 16),)),
+        decoded,
+    )
+    text = decoded.decode("utf-8", errors="surrogateescape")
+    return unescape_html(text).encode("utf-8", errors="surrogateescape")
+
+
 def _normalize_identity_scan_content(content: bytes) -> bytes:
-    return unquote_to_bytes(content).lower()
+    normalized = content
+    for _ in range(IDENTITY_SCAN_MAX_DECODE_PASSES):
+        decoded = _decode_identity_scan_content_once(normalized)
+        if decoded == normalized:
+            return decoded.lower()
+        normalized = decoded
+    if _decode_identity_scan_content_once(normalized) != normalized:
+        raise ValidationError("repository identity encoding depth exceeds limit")
+    return normalized.lower()
 
 
 def _sha256_uri(path: Path, label: str) -> str:
