@@ -27,6 +27,9 @@ COMMIT_MAP_RELATIVE = Path("release/provingkit/agents-commit-map.tsv")
 ADOPTED_HISTORY_IMPORT_MAP_RELATIVE = Path(
     "release/provingkit/adopted-history-import-map-v1.tsv"
 )
+FINAL_MAIN_IMPORT_MAP_RELATIVE = Path(
+    "release/provingkit/final-main-import-map-v1.tsv"
+)
 ADOPTED_HISTORY_DELTA_BUNDLE_RELATIVE = Path(
     "release/provingkit/adopted-history-delta-bundle-v1.json"
 )
@@ -224,6 +227,13 @@ ADOPTED_HISTORY_DELTA_CONTENT_SHA256 = (
     "sha256:d14da319649492e7ecb64d20a578983cb2cd88e00a5e4d3a1ed7e49a1a526cc5"
 )
 ADOPTED_HISTORY_IMPORT_TIP = "caf9a58769af746fd5b514beff5cb305788f7e1c"
+FINAL_MAIN_BASE = "64060b3d81da21c47487eb6e4da732dbbb4cbd3a"
+FINAL_MAIN_TIP = "7d2cbbb8de045fd1ba381b982674131c6ead6919"
+FINAL_MAIN_TREE = "3e5ec43b24517d01ca32319279f6e7365a0fd351"
+REVIEWED_CARRIER = "14352d60d765d634c2da0fa9cca54e465f6571f6"
+FINAL_MAIN_IMPORT_MAP_SHA256 = (
+    "sha256:408de1b00688d05e7f2da00411c490d09c37dbacacd0719f6aef5fa2c62a9f5d"
+)
 OID_SHA1_PATTERN = re.compile(r"[0-9a-f]{40}\Z")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 RELEASE_CONTRACT_IDENTIFIER = "provingkit-release-manifest-v1"
@@ -885,6 +895,42 @@ def _validate_adopted_history_delta_bundle(
     return retained_deltas
 
 
+def _load_final_main_import_map(
+    repository: Path,
+    import_rows: list[list[str]],
+) -> list[list[str]]:
+    map_path = repository / FINAL_MAIN_IMPORT_MAP_RELATIVE
+    if _sha256_uri(map_path, "final main import map") != FINAL_MAIN_IMPORT_MAP_SHA256:
+        raise ValidationError("final main import map drift")
+    try:
+        lines = map_path.read_text(encoding="ascii").splitlines()
+        header = lines[0].split("\t")
+        rows = [line.split("\t") for line in lines[1:]]
+    except (OSError, UnicodeError, IndexError) as error:
+        raise ValidationError("final main import map drift") from error
+    if header != [
+        "platform",
+        "ordinal",
+        "retained_import_commit",
+        "final_main_commit",
+        "full_tree_delta_sha256",
+    ] or len(rows) != 57:
+        raise ValidationError("final main import map drift")
+    if any(len(row) != len(header) for row in rows):
+        raise ValidationError("final main import map drift")
+    expected_rows = [
+        [row[0], row[1], row[4], row[5]]
+        for row in import_rows
+    ]
+    if (
+        [[row[0], row[1], row[2], row[4]] for row in rows] != expected_rows
+        or any(not OID_SHA1_PATTERN.fullmatch(row[3]) for row in rows)
+        or len({row[3] for row in rows}) != 57
+    ):
+        raise ValidationError("final main import map drift")
+    return rows
+
+
 def _validate_definition(repository: Path) -> None:
     path = repository / DEFINITION_RELATIVE
     if not path.is_file():
@@ -1152,8 +1198,23 @@ def _validate_cutover_provenance(repository: Path) -> None:
             "source_roots": _expected_history_source_roots(),
         },
         "final_main_mapping": {
-            "state": "pending-rebase-merge",
             "completion_gate": "required-before-closing-source-issue-81",
+            "contract": "provingkit-final-main-import-map-v1",
+            "final_main": {
+                "base_commit": FINAL_MAIN_BASE,
+                "tip_commit": FINAL_MAIN_TIP,
+                "tree": FINAL_MAIN_TREE,
+            },
+            "merge_method": "rebase",
+            "path": FINAL_MAIN_IMPORT_MAP_RELATIVE.as_posix(),
+            "reviewed_carrier": {
+                "commit": REVIEWED_CARRIER,
+                "tree": FINAL_MAIN_TREE,
+            },
+            "row_count": 57,
+            "sha256": FINAL_MAIN_IMPORT_MAP_SHA256,
+            "source_pull_request": f"{CANONICAL_REPOSITORY}/pull/11",
+            "state": "verified",
         },
         "patch_correspondence": {
             "digest": "sha256",
@@ -1253,6 +1314,7 @@ def _validate_cutover_provenance(repository: Path) -> None:
         raise ValidationError("adopted history import map drift")
 
     _validate_adopted_history_delta_bundle(repository, import_rows)
+    _load_final_main_import_map(repository, import_rows)
 
     adopted = provenance.get("adopted_qualification_history")
     expected_adopted = [
@@ -1806,6 +1868,76 @@ def _validate_history(repository: Path) -> None:
     bundled_original_deltas = _validate_adopted_history_delta_bundle(
         repository, import_rows
     )
+    final_main_rows = _load_final_main_import_map(repository, import_rows)
+    final_main_commits = [row[3] for row in final_main_rows]
+    for commit in (FINAL_MAIN_BASE, *final_main_commits, FINAL_MAIN_TIP):
+        _require_git_output(repository, "rev-parse", "--verify", f"{commit}^{{commit}}")
+    final_main_range = _require_git_output(
+        repository,
+        "rev-list",
+        "--reverse",
+        f"{FINAL_MAIN_BASE}..{FINAL_MAIN_TIP}",
+    ).splitlines()
+    final_main_in_head = _run_git(
+        repository,
+        "merge-base",
+        "--is-ancestor",
+        FINAL_MAIN_TIP,
+        "HEAD",
+    )
+    if (
+        len(final_main_range) != 84
+        or final_main_range[:57] != final_main_commits
+        or final_main_in_head.returncode != 0
+    ):
+        if final_main_in_head.returncode not in (0, 1):
+            raise ValidationError("Git history attestation unavailable")
+        raise ValidationError("final main import reachability drift")
+    if (
+        _require_git_output(repository, "rev-parse", f"{FINAL_MAIN_TIP}^{{tree}}")
+        != FINAL_MAIN_TREE
+    ):
+        raise ValidationError("final main tree drift")
+
+    previous_final_main = FINAL_MAIN_BASE
+    for import_row, final_row in zip(import_rows, final_main_rows, strict=True):
+        original, retained_import = import_row[2], import_row[4]
+        final_main_commit = final_row[3]
+        if (
+            _require_git_output(repository, "rev-parse", f"{final_main_commit}^")
+            != previous_final_main
+        ):
+            raise ValidationError("final main import ancestry drift")
+        message = _require_git_output(
+            repository, "show", "-s", "--format=%B", final_main_commit
+        )
+        trailers = re.findall(
+            r"^\(cherry picked from commit ([0-9a-f]{40})\)$",
+            message,
+            flags=re.MULTILINE,
+        )
+        if trailers != [original]:
+            raise ValidationError("final main import trailer drift")
+        tree_delta = _require_git_bytes(
+            repository,
+            "diff-tree",
+            "-r",
+            "--raw",
+            "-z",
+            "--no-commit-id",
+            "--no-renames",
+            "--abbrev=40",
+            f"{final_main_commit}^",
+            final_main_commit,
+            "--",
+        )
+        if (
+            tree_delta != bundled_original_deltas[retained_import]
+            or hashlib.sha256(tree_delta).hexdigest() != final_row[4]
+        ):
+            raise ValidationError("final main import tree-delta drift")
+        previous_final_main = final_main_commit
+
     linux_first = import_rows[0][4]
     linux_last = import_rows[20][4]
     macos_first = import_rows[21][4]
