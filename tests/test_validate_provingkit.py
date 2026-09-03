@@ -44,19 +44,30 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             capture_output=True,
             check=True,
         )
-        retained_ref = "refs/remotes/origin/retained/issue-81-history-import"
-        retained_tip = subprocess.run(
-            ["git", "-C", str(REPOSITORY), "rev-parse", retained_ref],
-            text=True,
-            capture_output=True,
-            check=True,
-        ).stdout.strip()
-        subprocess.run(
-            ["git", "-C", str(destination), "update-ref", retained_ref, retained_tip],
-            text=True,
-            capture_output=True,
-            check=True,
-        )
+        for retained_name in (
+            "issue-81-history-import",
+            "agents-pr-69",
+        ):
+            retained_ref = f"refs/remotes/origin/retained/{retained_name}"
+            retained_tip = subprocess.run(
+                ["git", "-C", str(REPOSITORY), "rev-parse", retained_ref],
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.strip()
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(destination),
+                    "update-ref",
+                    retained_ref,
+                    retained_tip,
+                ],
+                text=True,
+                capture_output=True,
+                check=True,
+            )
 
     def assert_identity_fixture(
         self,
@@ -162,6 +173,30 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "sha256": digest,
             },
         }
+
+    def test_identity_fixture_clone_preserves_required_retained_refs(self) -> None:
+        expected = {
+            "refs/remotes/origin/retained/issue-81-history-import": (
+                "caf9a58769af746fd5b514beff5cb305788f7e1c"
+            ),
+            "refs/remotes/origin/retained/agents-pr-69": (
+                "8edaf590736621352262457752d087bad835555d"
+            ),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            observed = {
+                ref: subprocess.run(
+                    ["git", "-C", str(repository), "rev-parse", ref],
+                    text=True,
+                    capture_output=True,
+                    check=True,
+                ).stdout.strip()
+                for ref in expected
+            }
+
+        self.assertEqual(observed, expected)
 
     @staticmethod
     def refresh_allowlisted_hash(repository: Path, relative: str) -> None:
