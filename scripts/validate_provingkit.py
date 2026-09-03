@@ -38,6 +38,7 @@ SOURCE_DISPOSITION_LEDGER_RELATIVE = Path(
 SOURCE_DISPOSITION_REFRESH_RELATIVE = Path(
     "release/source-skill-disposition/release-refresh-contract.json"
 )
+ACTIVE_LEGACY_REPOSITORY_GUIDANCE_RELATIVE = Path("CONTEXT.md")
 LEGACY_IDENTITY_TOKENS = tuple(
     value.encode("ascii")
     for value in (
@@ -46,6 +47,12 @@ LEGACY_IDENTITY_TOKENS = tuple(
         "agents-" + "stable",
         "nisavid-" + "agents",
     )
+)
+ACTIVE_LEGACY_REPOSITORY_GUIDANCE_BLOCK = (
+    "**Base Loadout**:\n"
+    f"The portable declaration in `{LEGACY_REPOSITORY_SLUG}` that selects a "
+    "Provingkit release; it is that repository's only Loadout.\n"
+    "_Avoid_: Profile, preset\n\n"
 )
 EXPECTED_MEMBERS = (
     (
@@ -265,6 +272,23 @@ def _strip_reference_once(value: object, reference: str) -> str:
 
 
 def _identity_scan_content(relative_path: Path, content: bytes) -> bytes:
+    if relative_path == ACTIVE_LEGACY_REPOSITORY_GUIDANCE_RELATIVE:
+        try:
+            guidance = content.decode("utf-8")
+        except UnicodeError as error:
+            raise ValidationError(
+                "active legacy repository guidance scope drift"
+            ) from error
+        if guidance.count(ACTIVE_LEGACY_REPOSITORY_GUIDANCE_BLOCK) != 1:
+            raise ValidationError("active legacy repository guidance scope drift")
+        return guidance.replace(
+            ACTIVE_LEGACY_REPOSITORY_GUIDANCE_BLOCK,
+            ACTIVE_LEGACY_REPOSITORY_GUIDANCE_BLOCK.replace(
+                LEGACY_REPOSITORY_SLUG,
+                "",
+            ),
+            1,
+        ).encode("utf-8")
     if relative_path not in {
         SOURCE_DISPOSITION_LEDGER_RELATIVE,
         SOURCE_DISPOSITION_REFRESH_RELATIVE,
