@@ -3692,7 +3692,9 @@ with tempfile.TemporaryDirectory() as raw_directory:
     assert item["target_identity_epoch"]["head_repository"] == "fork/app"
     assert item["publisher_commands"] == []
     assert "audit_reviewable_pr.py" in item["final_audit_command"][1]
-    assert all("gh" not in argument for argument in item["final_audit_command"])
+    assert Path(item["final_audit_command"][0]).resolve() == Path(
+        sys.executable
+    ).resolve()
 '''
 
 
@@ -3707,7 +3709,10 @@ def validate_candidate_runtime_behaviors(root: Path) -> None:
         "TZ": "UTC",
     }
     try:
-        with tempfile.TemporaryDirectory(prefix="mergecraft-runtime-probe-") as cwd:
+        with tempfile.TemporaryDirectory(
+            prefix="mergecraft-runtime-probe-path-with-gh-"
+        ) as cwd:
+            environment["TMPDIR"] = cwd
             result = subprocess.run(
                 [
                     sys.executable,
