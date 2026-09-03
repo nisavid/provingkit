@@ -28,7 +28,7 @@
 
 ## Review checklist
 
-- [ ] The complete six-member Kit boundary remains explicit.
+- [ ] The six source members carried by this cutover remain distinct from the seven-member first release; Tidesmith enters through issue #25 after pull request #11.
 - [ ] Member manifests keep independent identities and versions.
 - [ ] Historical Linux or macOS inputs are not presented as current qualification.
 - [ ] This change creates no Provingkit release, tag, release-manifest instance, marketplace publication, or live installation.

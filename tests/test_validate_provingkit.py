@@ -166,7 +166,11 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     def test_human_docs_distinguish_cutover_members_from_first_release_slate(
         self,
     ) -> None:
-        for relative in ("README.md", "CONTRIBUTING.md"):
+        for relative in (
+            "README.md",
+            "CONTRIBUTING.md",
+            ".github/pull_request_template.md",
+        ):
             with self.subTest(relative=relative):
                 content = (REPOSITORY / relative).read_text(encoding="utf-8")
                 normalized = " ".join(content.split())
@@ -175,6 +179,29 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 self.assertIn("Tidesmith", normalized)
                 self.assertIn("issue #25", normalized)
                 self.assertIn("pull request #11", normalized)
+                self.assertNotIn("complete six-member Kit boundary", normalized)
+
+    def test_agent_guidance_describes_member_specific_content_identity_writers(
+        self,
+    ) -> None:
+        guidance = " ".join((REPOSITORY / "AGENTS.md").read_text().split())
+
+        self.assertIn("Use `--write-content-lock` only where", guidance)
+        self.assertIn(
+            "Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write "
+            "only their content locks",
+            guidance,
+        )
+        self.assertIn(
+            "Tricritical also regenerates its per-skill reference projections",
+            guidance,
+        )
+        self.assertIn("Task Witness", guidance)
+        self.assertIn("has no mechanical writer", guidance)
+        self.assertNotIn(
+            "validator owns the plugin's projections and content lock",
+            guidance,
+        )
 
     def test_versioned_definition_is_required(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -922,6 +949,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     ) -> None:
         variants = {
             "percent-encoded": "https://github.com/nisavid/" + "%61gents",
+            "double-percent-encoded": "https://github.com/nisavid/" + "%2561gents",
+            "html-entity": "https://github.com/nisavid/" + "&#97;gents",
             "github-case": "https://GitHub.com/NISAVID" + "/AGENTS",
         }
         for variant_name, legacy_repository in variants.items():
@@ -946,6 +975,51 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("unallowlisted legacy repository identity", result.stderr)
+
+    def test_json_unicode_escape_for_legacy_repository_identity_is_rejected(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            encoded_identity = "https://github.com/nisavid/" + r"\u0061gents"
+            unexpected = repository / "release/provingkit/unexpected-identity.json"
+            unexpected.write_text(
+                '{"repository":"' + encoded_identity + '"}\n',
+                encoding="utf-8",
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unallowlisted legacy repository identity", result.stderr)
+
+    def test_excessive_nested_identity_encoding_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            encoded_segment = "%61gents"
+            for _ in range(9):
+                encoded_segment = encoded_segment.replace("%", "%25")
+            readme = repository / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8")
+                + f"\nUnexpected active link: https://github.com/nisavid/{encoded_segment}\n",
+                encoding="utf-8",
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("repository identity encoding depth exceeds limit", result.stderr)
 
     def test_active_legacy_repository_guidance_exemption_requires_exact_block(
         self,
