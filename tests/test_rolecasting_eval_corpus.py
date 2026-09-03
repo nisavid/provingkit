@@ -21,7 +21,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
-    def test_rolecasting_has_exactly_twenty_five_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_exactly_twenty_six_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -55,6 +55,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "bounded-wait-and-live-child-reconciliation",
                 "isolated-task-companion-boundary",
                 "dedicated-daybreak-resume-rebinds-account-route",
+                "scarce-specialist-decision-handoff",
             },
         )
 
@@ -213,6 +214,57 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         self.assertRegex(skill, r"(?is)short (?:timeouts|polling).+bounded")
         self.assertRegex(skill, r"(?is)local work.+wait")
         self.assertRegex(skill, r"(?is)reconcile.+live children")
+
+    def test_scarce_specialist_handoff_keeps_coordination_cheap_and_exact(
+        self,
+    ) -> None:
+        delegating_root = (
+            PLUGIN_ROOT / "skills" / "delegating-cross-agent-work"
+        )
+        skill = (delegating_root / "SKILL.md").read_text()
+        reference = " ".join(
+            (
+                delegating_root
+                / "references"
+                / "scarce-specialist-handoffs.md"
+            )
+            .read_text()
+            .split()
+        ).lower()
+
+        self.assertIn(
+            "[scarce-specialist handoffs](references/scarce-specialist-handoffs.md)",
+            skill,
+        )
+        for phrase in (
+            "one bounded decision horizon",
+            "smallest content-addressed frozen input packet",
+            "exact byte-stable artifact",
+            "artifact identity and sha-256 digest",
+            "assumptions and remaining fog",
+            "discovery, setup, status, context assembly, waiting",
+            "relay the returned artifact byte for byte",
+            "byte-preserving placement or integration",
+            "changes meaning, supported inputs, or evidence bytes",
+            "semantic change or evidence-byte change",
+            "no coordinator or adjacent work",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, reference)
+
+        scenario = next(
+            item
+            for item in self.documents["delegating-cross-agent-work"]["evals"]
+            if item["name"] == "scarce-specialist-decision-handoff"
+        )
+        self.assertEqual(
+            {expectation["id"] for expectation in scenario["expectations"]},
+            {
+                "scarce-specialist-bounded-horizon",
+                "specialist-byte-stable-return",
+                "coordinator-exact-relay-and-redispatch",
+            },
+        )
 
     def test_delegation_surface_topology_and_assurance_contract_is_explicit(
         self,
