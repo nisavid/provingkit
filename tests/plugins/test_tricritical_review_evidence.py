@@ -1919,6 +1919,32 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             {"critic-intent", "critic-structure"},
         )
 
+    def test_retained_scope_role_is_validated_before_inventory_lookup(self) -> None:
+        for raw_role, expected in (
+            ([], "retained scope role"),
+            ({}, "retained scope role"),
+            ("critic-unregistered", "retained scope has an extra role"),
+        ):
+            with self.subTest(raw_role=raw_role):
+                bundle, _ = self.revision_bundle()
+                manifest = self.retain_successor_scope(bundle, "critic-runtime")
+                retained = manifest["cycles"][1]["retained_scopes"][0]
+                retained["role"] = raw_role
+                manifest["cycles"][1]["retained_scopes"][0] = signed(
+                    {
+                        key: value
+                        for key, value in retained.items()
+                        if key != "content_sha256"
+                    }
+                )
+                self.store_manifest(bundle, manifest)
+
+                with self.assertRaisesRegex(EvidenceError, expected):
+                    self.validator._validate_bundle(
+                        bundle,
+                        trust_snapshot=self.trust,
+                    )
+
     def test_revision_cannot_retain_scope_that_produced_accepted_finding(self) -> None:
         bundle, _ = self.revision_bundle()
         self.retain_successor_scope(bundle, "critic-intent")

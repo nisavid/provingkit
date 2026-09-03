@@ -241,6 +241,32 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             (REPOSITORY / "README.md").read_text(encoding="utf-8"),
         )
 
+    def test_provingkit_source_job_checks_the_trigger_base_to_head_range(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        steps = workflow["jobs"]["provingkit-source"]["steps"]
+        check = next(
+            step for step in steps if step.get("name") == "Check base-to-head diff"
+        )
+
+        self.assertEqual(
+            check["env"],
+            {
+                "BASE_SHA": (
+                    "${{ github.event.pull_request.base.sha || "
+                    "github.event.before }}"
+                ),
+                "HEAD_SHA": (
+                    "${{ github.event.pull_request.head.sha || github.sha }}"
+                ),
+            },
+        )
+        self.assertEqual(check["run"], 'git diff --check "$BASE_SHA" "$HEAD_SHA"')
+        derived_commands = {
+            step.get("run", "")
+            for step in workflow["jobs"]["derived-locks"]["steps"]
+        }
+        self.assertIn("git diff --exit-code", derived_commands)
+
     def test_rolecasting_source_job_installs_its_validation_dependency(self) -> None:
         workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
         commands = {

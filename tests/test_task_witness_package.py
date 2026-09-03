@@ -3066,8 +3066,8 @@ class TaskWitnessPackageTests(unittest.TestCase):
         legacy_repository = b"https://github.com/nisavid/agents"
         compatibility_repository = b'"nisavid/agents"'
         rewritten_compatibility_repository = b'"nisavid/provingkit"'
-        self.assertEqual(current.count(active_repository), 2)
-        self.assertEqual(current.count(legacy_repository), 3)
+        self.assertEqual(current.count(active_repository), 5)
+        self.assertEqual(current.count(legacy_repository), 4)
         self.assertEqual(current.count(compatibility_repository), 3)
 
         for source, replacement, expected in (
@@ -3604,15 +3604,15 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 "tw0": 1825,
                 "tw1_client": 8650,
                 "tw2_control_plane": 24800,
-                "current_control_set": 35225,
-                "direct_release_owned_tests": 60875,
+                "current_control_set": 35250,
+                "direct_release_owned_tests": 60950,
                 "public_release_registration": 25,
                 "release_documentation": 3300,
                 "release_integration": 10975,
                 "release_integration_tests": 10950,
-                "release_validator": 4675,
+                "release_validator": 4800,
                 "tw4_migration_evidence": 62375,
-                "tw4_qualification_contract": 16175,
+                "tw4_qualification_contract": 16300,
             },
         )
         aggregate_tripwires = record["tripwires"]["aggregate_nonblank_noncomment_lines"]

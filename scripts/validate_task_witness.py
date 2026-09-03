@@ -4212,10 +4212,54 @@ def _project_bridge_controller_to_current(bridge: bytes, current_source: bytes) 
     exact_epoch = current_fragment(
         b"def _validate_exact_bridge_receipt_epoch(",
         retained_chain_start,
-        "9c3791a0055054b578466d276ab24fcfb7a98bf1689990789d8e387509c54f11",
+        "f30e12e57822caba0267c259ebaaa403d86a50be8ba0cdd19f2a71220f5b1d55",
+    )
+    bridge_candidate_start = b"def _prepare_bridge_candidate_against_precondition("
+    bridge_candidate_end = b"def _expected_bridge_active_receipt_core_sha256("
+    if (
+        bridge.count(bridge_candidate_start) != 1
+        or bridge.count(bridge_candidate_end) != 1
+    ):
+        raise ValueError("Task Witness bridge controller snapshot drift")
+    bridge_candidate_offset = bridge.index(bridge_candidate_start)
+    bridge_candidate = bridge[
+        bridge_candidate_offset : bridge.index(
+            bridge_candidate_end,
+            bridge_candidate_offset,
+        )
+    ]
+    current_bridge_candidate = current_fragment(
+        bridge_candidate_start,
+        bridge_candidate_end,
+        "6644dcaed6948296c56b1565feae06f2fd6a5e2ac9771709488c3fba5eb71b30",
     )
     rewrites = (
         (bridge_constants, current_constants),
+        (bridge_candidate, current_bridge_candidate),
+        (
+            b"def _plan_first_install(\n"
+            b"    source: CandidateSource,\n"
+            b"    qualification: RuntimeQualification,\n"
+            b"    precondition: FirstInstallPrecondition,\n"
+            b"    maintenance_transaction_sha256: str,\n"
+            b") -> DeploymentPlan:\n",
+            b"def _plan_first_install(\n"
+            b"    source: CandidateSource,\n"
+            b"    qualification: RuntimeQualification,\n"
+            b"    precondition: FirstInstallPrecondition,\n"
+            b"    maintenance_transaction_sha256: str,\n"
+            b"    *,\n"
+            b'    intrinsic_repository: str = "https://github.com/nisavid/provingkit",\n'
+            b") -> DeploymentPlan:\n",
+        ),
+        (
+            b"    trust = _plan_trust_context(source, canonical_root)\n",
+            b"    trust = _plan_trust_context(\n"
+            b"        source,\n"
+            b"        canonical_root,\n"
+            b"        intrinsic_repository=intrinsic_repository,\n"
+            b"    )\n",
+        ),
         (
             b'    roles = _exact(\n'
             b'        _thaw(deployment_value["role_inventory"]),\n',
@@ -4267,6 +4311,47 @@ def _project_bridge_controller_to_current(bridge: bytes, current_source: bytes) 
             b'        "task-witness-smoke",\n',
             b"        repository,\n"
             b'        "task-witness-smoke",\n',
+        ),
+        (
+            b"def _plan_intrinsic_smoke_provider(\n"
+            b"    source: CandidateSource,\n"
+            b"    installed_trust_root: Path,\n"
+            b") -> ProviderMaterialization:\n",
+            b"def _plan_intrinsic_smoke_provider(\n"
+            b"    source: CandidateSource,\n"
+            b"    installed_trust_root: Path,\n"
+            b"    *,\n"
+            b'    repository: str = "https://github.com/nisavid/provingkit",\n'
+            b") -> ProviderMaterialization:\n",
+        ),
+        (
+            b"    provider, declaration_raw = _intrinsic_smoke_definition(raw)\n"
+            b"    return _project_provider(\n",
+            b"    provider, declaration_raw = _intrinsic_smoke_definition(\n"
+            b"        raw,\n"
+            b"        repository=repository,\n"
+            b"    )\n"
+            b"    return _project_provider(\n",
+        ),
+        (
+            b"def _plan_trust_context(\n"
+            b"    source: CandidateSource,\n"
+            b"    canonical_root: Path,\n"
+            b") -> PlannedTrust:\n",
+            b"def _plan_trust_context(\n"
+            b"    source: CandidateSource,\n"
+            b"    canonical_root: Path,\n"
+            b"    *,\n"
+            b'    intrinsic_repository: str = "https://github.com/nisavid/provingkit",\n'
+            b") -> PlannedTrust:\n",
+        ),
+        (
+            b"    smoke = _plan_intrinsic_smoke_provider(source, installed_root)\n",
+            b"    smoke = _plan_intrinsic_smoke_provider(\n"
+            b"        source,\n"
+            b"        installed_root,\n"
+            b"        repository=intrinsic_repository,\n"
+            b"    )\n",
         ),
         (
             b'        or execution_class not in {"isolated-rehearsal", '
