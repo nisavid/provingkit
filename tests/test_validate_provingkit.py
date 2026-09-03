@@ -904,6 +904,59 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unallowlisted legacy repository identity", result.stderr)
 
+    def test_active_legacy_repository_guidance_exemption_requires_exact_block(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            context_path = repository / "CONTEXT.md"
+            expected = (
+                "**Base Loadout**:\n"
+                f"The portable declaration in `{LEGACY_REPOSITORY_ID}` that selects a "
+                "Provingkit release; it is that repository's only Loadout.\n"
+                "_Avoid_: Profile, preset"
+            )
+            self.assertIn(expected, context_path.read_text(encoding="utf-8"))
+            context_path.write_text(
+                context_path.read_text(encoding="utf-8").replace(
+                    expected,
+                    expected + " from an unscoped branch",
+                ),
+                encoding="utf-8",
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("active legacy repository guidance scope drift", result.stderr)
+
+    def test_active_legacy_repository_guidance_exemption_rejects_extra_content(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            context_path = repository / "CONTEXT.md"
+            context_path.write_text(
+                context_path.read_text(encoding="utf-8")
+                + f"\nUnscoped repository: `{LEGACY_REPOSITORY_ID}`.\n",
+                encoding="utf-8",
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unallowlisted legacy repository identity", result.stderr)
+
     def test_active_legacy_tracker_reference_exemption_requires_an_exact_url(
         self,
     ) -> None:
