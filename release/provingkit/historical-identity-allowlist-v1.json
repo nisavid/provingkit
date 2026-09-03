@@ -79,7 +79,7 @@
     {
       "disposition": "cutover-provenance",
       "path": "release/provingkit/cutover-provenance-v1.json",
-      "sha256": "sha256:77b65ee5245d09343b915eb1857e9f62b498b42de8d94d16d1fcbd31d5f00737"
+      "sha256": "sha256:0595619df8f08ceaa5d64975f162b08bd6fab5d659f66b0144dda535eeadde45"
     },
     {
       "disposition": "historical-stale-source-lineage-manifest-owned-by-provingkit-issue-3",

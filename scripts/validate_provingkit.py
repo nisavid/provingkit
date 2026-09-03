@@ -231,6 +231,16 @@ FINAL_MAIN_BASE = "64060b3d81da21c47487eb6e4da732dbbb4cbd3a"
 FINAL_MAIN_TIP = "7d2cbbb8de045fd1ba381b982674131c6ead6919"
 FINAL_MAIN_TREE = "3e5ec43b24517d01ca32319279f6e7365a0fd351"
 REVIEWED_CARRIER = "14352d60d765d634c2da0fa9cca54e465f6571f6"
+REVIEWED_CARRIER_COMMIT_COUNT = 84
+REVIEWED_CARRIER_COMPARISON = "ordered-tree-and-message-sequence-equality"
+REVIEWED_CARRIER_ENVELOPE = "c566c53db920a6b7048550a4b8f7ee4d3c914003"
+REVIEWED_CARRIER_ENVELOPE_MESSAGE = (
+    "chore(provingkit/cutover): retain reviewed carrier evidence\n\n"
+    "Join final main to the exact PR #11 reviewed carrier on a frozen "
+    "non-release evidence ref. This commit remains outside main and grants no "
+    "release authority."
+)
+REVIEWED_CARRIER_REF = "refs/heads/retained/pr-11-reviewed-carrier"
 FINAL_MAIN_IMPORT_MAP_SHA256 = (
     "sha256:408de1b00688d05e7f2da00411c490d09c37dbacacd0719f6aef5fa2c62a9f5d"
 )
@@ -1209,6 +1219,15 @@ def _validate_cutover_provenance(repository: Path) -> None:
             "path": FINAL_MAIN_IMPORT_MAP_RELATIVE.as_posix(),
             "reviewed_carrier": {
                 "commit": REVIEWED_CARRIER,
+                "commit_count": REVIEWED_CARRIER_COMMIT_COUNT,
+                "comparison": REVIEWED_CARRIER_COMPARISON,
+                "evidence_envelope": {
+                    "commit": REVIEWED_CARRIER_ENVELOPE,
+                    "disposition": "protected-non-release-history-evidence",
+                    "parents": [FINAL_MAIN_TIP, REVIEWED_CARRIER],
+                    "ref": REVIEWED_CARRIER_REF,
+                    "tree": FINAL_MAIN_TREE,
+                },
                 "tree": FINAL_MAIN_TREE,
             },
             "row_count": 57,
@@ -1834,6 +1853,33 @@ def _require_git_bytes(repository: Path, *arguments: str) -> bytes:
     return result.stdout
 
 
+def _require_linear_history_range(
+    repository: Path,
+    base: str,
+    tip: str,
+    *,
+    drift: str,
+) -> list[str]:
+    records = _require_git_output(
+        repository,
+        "rev-list",
+        "--reverse",
+        "--parents",
+        f"{base}..{tip}",
+    ).splitlines()
+    previous = base
+    commits: list[str] = []
+    for record in records:
+        fields = record.split()
+        if len(fields) != 2 or fields[1] != previous:
+            raise ValidationError(drift)
+        commits.append(fields[0])
+        previous = fields[0]
+    if not commits or previous != tip:
+        raise ValidationError(drift)
+    return commits
+
+
 def _validate_history(repository: Path) -> None:
     top_level = _require_git_output(repository, "rev-parse", "--show-toplevel")
     try:
@@ -1872,12 +1918,12 @@ def _validate_history(repository: Path) -> None:
     final_main_commits = [row[3] for row in final_main_rows]
     for commit in (FINAL_MAIN_BASE, *final_main_commits, FINAL_MAIN_TIP):
         _require_git_output(repository, "rev-parse", "--verify", f"{commit}^{{commit}}")
-    final_main_range = _require_git_output(
+    final_main_range = _require_linear_history_range(
         repository,
-        "rev-list",
-        "--reverse",
-        f"{FINAL_MAIN_BASE}..{FINAL_MAIN_TIP}",
-    ).splitlines()
+        FINAL_MAIN_BASE,
+        FINAL_MAIN_TIP,
+        drift="final main import ancestry drift",
+    )
     final_main_in_head = _run_git(
         repository,
         "merge-base",
@@ -1886,7 +1932,7 @@ def _validate_history(repository: Path) -> None:
         "HEAD",
     )
     if (
-        len(final_main_range) != 84
+        len(final_main_range) != REVIEWED_CARRIER_COMMIT_COUNT
         or final_main_range[:57] != final_main_commits
         or final_main_in_head.returncode != 0
     ):
@@ -1898,6 +1944,120 @@ def _validate_history(repository: Path) -> None:
         != FINAL_MAIN_TREE
     ):
         raise ValidationError("final main tree drift")
+
+    reviewed_carrier_refs = (
+        REVIEWED_CARRIER_REF,
+        "refs/remotes/origin/retained/pr-11-reviewed-carrier",
+    )
+    observed_reviewed_carrier_refs: set[str] = set()
+    for ref in reviewed_carrier_refs:
+        ref_probe = _run_git(repository, "show-ref", "--verify", "--hash", ref)
+        if ref_probe.returncode == 0:
+            observed_reviewed_carrier_refs.add(ref_probe.stdout.strip())
+        elif ref_probe.returncode not in (1, 128):
+            raise ValidationError("Git history attestation unavailable")
+    if observed_reviewed_carrier_refs != {REVIEWED_CARRIER_ENVELOPE}:
+        raise ValidationError("reviewed carrier ref attestation drift")
+
+    reviewed_carrier_probe = _run_git(
+        repository,
+        "rev-parse",
+        "--verify",
+        f"{REVIEWED_CARRIER}^{{commit}}",
+    )
+    if reviewed_carrier_probe.returncode != 0:
+        raise ValidationError("reviewed carrier object drift")
+    if (
+        _require_git_output(repository, "rev-parse", f"{REVIEWED_CARRIER}^{{tree}}")
+        != FINAL_MAIN_TREE
+    ):
+        raise ValidationError("reviewed carrier tree drift")
+
+    reviewed_carrier_envelope_probe = _run_git(
+        repository,
+        "rev-parse",
+        "--verify",
+        f"{REVIEWED_CARRIER_ENVELOPE}^{{commit}}",
+    )
+    if reviewed_carrier_envelope_probe.returncode != 0:
+        raise ValidationError("reviewed carrier evidence envelope drift")
+    if (
+        _require_git_output(
+            repository,
+            "rev-parse",
+            f"{REVIEWED_CARRIER_ENVELOPE}^{{tree}}",
+        )
+        != FINAL_MAIN_TREE
+        or _require_git_output(
+            repository,
+            "show",
+            "-s",
+            "--format=%P",
+            REVIEWED_CARRIER_ENVELOPE,
+        )
+        != f"{FINAL_MAIN_TIP} {REVIEWED_CARRIER}"
+        or _require_git_output(
+            repository,
+            "show",
+            "-s",
+            "--format=%B",
+            REVIEWED_CARRIER_ENVELOPE,
+        )
+        != REVIEWED_CARRIER_ENVELOPE_MESSAGE
+    ):
+        raise ValidationError("reviewed carrier evidence envelope drift")
+
+    reviewed_carrier_in_head = _run_git(
+        repository,
+        "merge-base",
+        "--is-ancestor",
+        REVIEWED_CARRIER,
+        "HEAD",
+    )
+    if reviewed_carrier_in_head.returncode == 0:
+        raise ValidationError("reviewed carrier relationship drift")
+    if reviewed_carrier_in_head.returncode != 1:
+        raise ValidationError("Git history attestation unavailable")
+
+    reviewed_carrier_envelope_in_head = _run_git(
+        repository,
+        "merge-base",
+        "--is-ancestor",
+        REVIEWED_CARRIER_ENVELOPE,
+        "HEAD",
+    )
+    if reviewed_carrier_envelope_in_head.returncode == 0:
+        raise ValidationError("reviewed carrier evidence envelope relationship drift")
+    if reviewed_carrier_envelope_in_head.returncode != 1:
+        raise ValidationError("Git history attestation unavailable")
+
+    reviewed_carrier_range = _require_linear_history_range(
+        repository,
+        FINAL_MAIN_BASE,
+        REVIEWED_CARRIER,
+        drift="reviewed carrier history drift",
+    )
+    if (
+        len(reviewed_carrier_range) != REVIEWED_CARRIER_COMMIT_COUNT
+        or len(final_main_range) != REVIEWED_CARRIER_COMMIT_COUNT
+        or _require_git_bytes(
+            repository,
+            "log",
+            "--reverse",
+            "--format=%T%x00%B%x00",
+            "--no-patch",
+            f"{FINAL_MAIN_BASE}..{REVIEWED_CARRIER}",
+        )
+        != _require_git_bytes(
+            repository,
+            "log",
+            "--reverse",
+            "--format=%T%x00%B%x00",
+            "--no-patch",
+            f"{FINAL_MAIN_BASE}..{FINAL_MAIN_TIP}",
+        )
+    ):
+        raise ValidationError("reviewed carrier history drift")
 
     previous_final_main = FINAL_MAIN_BASE
     for import_row, final_row in zip(import_rows, final_main_rows, strict=True):
