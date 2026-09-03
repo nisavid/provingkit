@@ -68,7 +68,7 @@
     "skills/loop/references/review-evidence.md": "2aa96e3e842702143de1a8b447c855ebace1a9304f32848fec5ea0c1abf8a8af",
     "skills/loop/references/review-input-boundary.md": "aa5b55fded8ae9e97196d213a40be9dd63fe12a9cf4a7c1eab051d98b1e4128d",
     "skills/loop/references/topology.json": "a77da49e18d66d39b4d81246b2f4efebfd12ac321a40822383fc9bdd4ab91351",
-    "skills/loop/scripts/review_evidence.py": "1f316276643bf446f8d103bab1f2018e4dd9c1bf4b195467b58dfc55e0edd5c1",
+    "skills/loop/scripts/review_evidence.py": "09ba15f080df2fbce9ceebfa3a8456a623b8b660965657a7b2888e3ae75018dc",
     "skills/review/SKILL.md": "2c4376cba5eedc35d2964a340e662c2dd4d870371219082123cad7cc80190fd8",
     "skills/review/references/completeness-and-synthesis.md": "983ebdb15305ad1df941f1214b281a9cb4a893f0378f307164e4f9c772f9a4ca",
     "skills/review/references/invocation-boundary.md": "6624708d8ec548ce096553242406b7bf0828342d279650c932e6b3f626c7bc9a",
@@ -91,7 +91,7 @@
     "skills/structure/references/review-output-contract.md": "0635fc620986c6fa7324292d576baf8b8d9440b19738fc525700fa85be6bc991",
     "skills/structure/references/rubric.md": "af0bb975b1fb28c214fadc4e5ba7a0c0be2aa53d8a6d0db240c754c28cf00d96",
     "skills/structure/references/topology.json": "a77da49e18d66d39b4d81246b2f4efebfd12ac321a40822383fc9bdd4ab91351",
-    "task-witness-provider.json": "0f9b8bab3306f76b75309f0abb9718d3aa9dfdc8a323675e6b8845a0b9bad022",
+    "task-witness-provider.json": "679cfb70251091d76a05408b6d8939ecabfe117dd0ff450d1024b800c5354661",
     "topology.json": "a77da49e18d66d39b4d81246b2f4efebfd12ac321a40822383fc9bdd4ab91351"
   }
 }

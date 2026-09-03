@@ -253,6 +253,41 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             commands,
         )
 
+    def test_required_jobs_run_current_tricritical_and_projection_contracts(
+        self,
+    ) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        tricritical_commands = {
+            line.strip()
+            for step in workflow["jobs"]["tricritical"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+        provingkit_commands = {
+            line.strip()
+            for step in workflow["jobs"]["provingkit-source"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+        expected_tricritical = (
+            "python -m unittest tests.test_validate_tricritical "
+            "tests.test_tricritical_eval_corpus "
+            "tests.plugins.test_tricritical_review_evidence"
+        )
+        expected_projection = (
+            "python -m unittest "
+            "tests.test_phase7_compatibility_projection."
+            "Phase7CompatibilityProjectionTests."
+            "test_projection_is_byte_identical_to_frozen_v5_fixture"
+        )
+
+        self.assertIn(expected_tricritical, tricritical_commands)
+        self.assertIn(expected_projection, provingkit_commands)
+        self.assertIn(
+            expected_tricritical,
+            (REPOSITORY / "README.md").read_text(encoding="utf-8"),
+        )
+
     def test_task_witness_source_job_runs_the_qualification_selector_guard(self) -> None:
         workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
         commands = {
