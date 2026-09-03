@@ -23,7 +23,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/tricritical/content-lock.json",
-          "sha256": "sha256:d80bf097d73aeeafb8f3d5f48837a9d6d48d54e5438bb3d9e0890f5ead5d5d79"
+          "sha256": "sha256:882c63a663a5081ae79fb09f3957cae4802858b25c2d4a5e568628eb2b382484"
         },
         "display_name": "Tricritical",
         "distribution_kind": "agent-plugin",

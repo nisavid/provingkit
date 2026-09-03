@@ -89,7 +89,7 @@ python scripts/validate_provingkit.py .
 python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus
 python scripts/validate_rolecasting.py .
 
-python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus
+python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus tests.plugins.test_tricritical_review_evidence
 python scripts/validate_tricritical.py .
 
 python -m unittest tests.test_validate_versionkeeping

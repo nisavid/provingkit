@@ -36,6 +36,7 @@ jobs:
       - name: Validate the Kit definition and repository boundary
         run: |
           python -m unittest tests.test_validate_provingkit
+          python -m unittest tests.test_phase7_compatibility_projection.Phase7CompatibilityProjectionTests.test_projection_is_byte_identical_to_frozen_v5_fixture
           python scripts/validate_provingkit.py .
 
       - name: Validate cutover lineage and prepared source-stage guards
@@ -94,7 +95,7 @@ jobs:
 
       - name: Validate Tricritical
         run: |
-          python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus
+          python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus tests.plugins.test_tricritical_review_evidence
           python scripts/validate_tricritical.py .
 
   versionkeeping:

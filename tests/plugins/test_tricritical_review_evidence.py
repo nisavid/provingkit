@@ -1603,6 +1603,23 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         ):
             self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
+    def test_all_duplicate_cause_group_lacks_a_canonical_disposition(self) -> None:
+        bundle, _ = self.clean_bundle(path_tag="-all-duplicate-cause")
+        findings = [
+            self.finding("duplicate-0", cause="shared-duplicate"),
+            self.finding("duplicate-1", cause="shared-duplicate"),
+        ]
+        self.rebind_complete_cycle(
+            bundle,
+            ["duplicate", "duplicate"],
+            findings=findings,
+        )
+
+        with self.assertRaisesRegex(
+            EvidenceError, "duplicate cause lacks a canonical disposition"
+        ):
+            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
     def test_raw_report_finding_scope_must_equal_its_producing_role(self) -> None:
         bundle, _ = self.clean_bundle(path_tag="-cross-role-finding")
         finding = self.finding("cross-role", reviewer_scope="critic-runtime")
@@ -1756,6 +1773,28 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
         self.assertEqual(projection["review_profile"]["required_axes"], ["intent"])
         self.assertEqual(projection["terminal"]["state"], "clean")
 
+    def test_frozen_specialist_only_scope_can_finish_bare_clean(self) -> None:
+        increment = self.current_increment(
+            ["specialist-security"], label="security-only"
+        )
+        subject = {
+            **self.subject,
+            "review_input": self.increment_identity(increment),
+        }
+        bundle, _ = self.clean_bundle(
+            subject=subject,
+            increment=increment,
+            path_tag="-specialist-only",
+        )
+
+        projection = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+        self.assertEqual(projection["review_profile"]["required_axes"], [])
+        self.assertEqual(
+            projection["review_profile"]["selected_specialists"], ["security"]
+        )
+        self.assertEqual(projection["terminal"]["state"], "clean")
+
     def test_retained_unused_mutation_authority_is_reported_and_clean_can_finish(
         self,
     ) -> None:
@@ -1879,6 +1918,15 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
             },
             {"critic-intent", "critic-structure"},
         )
+
+    def test_revision_cannot_retain_scope_that_produced_accepted_finding(self) -> None:
+        bundle, _ = self.revision_bundle()
+        self.retain_successor_scope(bundle, "critic-intent")
+
+        with self.assertRaisesRegex(
+            EvidenceError, "accepted finding scope requires fresh successor review"
+        ):
+            self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
     def test_retained_scope_rejects_overlap_changed_dependencies_and_stale_report(
         self,
@@ -2090,6 +2138,26 @@ class TricriticalReviewEvidenceTests(unittest.TestCase):
 
         with self.assertRaisesRegex(EvidenceError, "recurring cause"):
             self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+    def test_rejected_cause_recurrence_does_not_require_seam_choice(self) -> None:
+        bundle, _ = self.revision_bundle(["reject", "accept"])
+        finding = self.finding(
+            "rejected-again",
+            cause="finding-0",
+            contract_relation="stronger-future-guarantee",
+            material_current_risk=False,
+            current_dependency=False,
+        )
+        self.rebind_complete_cycle(
+            bundle,
+            ["reject"],
+            cycle_index=1,
+            findings=[finding],
+        )
+
+        projection = self.validator._validate_bundle(bundle, trust_snapshot=self.trust)
+
+        self.assertEqual(projection["terminal"]["state"], "clean")
 
     def test_incomplete_cycle_authenticates_choice_without_claiming_its_effect(
         self,

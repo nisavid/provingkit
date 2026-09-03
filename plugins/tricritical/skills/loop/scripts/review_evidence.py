@@ -421,7 +421,7 @@ def _ensemble(
     )
     witness.text(risk["rationale"], "ensemble risk rationale")
     axes = _token_list(risk["selected_axes"], "selected axes")
-    if not axes or not set(axes).issubset({"intent", "runtime", "structure"}):
+    if not set(axes).issubset({"intent", "runtime", "structure"}):
         raise witness.EvidenceError("Tricritical selected axes are invalid")
     selected = _token_list(risk["selected_specialists"], "selected specialists")
     waived = _token_list(risk["waived_specialists"], "waived specialists")
@@ -635,6 +635,15 @@ def _adjudication(
                 raise witness.EvidenceError(
                     "duplicate disposition requires a distinct finding with the same cause"
                 )
+    dispositions_by_cause: dict[str, set[str]] = {}
+    for finding_ref, item in items.items():
+        cause = witness.digest(findings[finding_ref]["cause"])
+        dispositions_by_cause.setdefault(cause, set()).add(item["disposition"])
+    if any(
+        dispositions == {"duplicate"}
+        for dispositions in dispositions_by_cause.values()
+    ):
+        raise witness.EvidenceError("duplicate cause lacks a canonical disposition")
     if not isinstance(value["causal_groups"], list):
         raise witness.EvidenceError("adjudication causal groups must be a list")
     for group in value["causal_groups"]:
@@ -1116,6 +1125,7 @@ def _cycle(
     seen: dict[str, set[str]],
     scope_history: list[dict[str, Any]],
     seen_causes: dict[str, dict[str, Any]],
+    required_fresh_roles: set[str],
     index: int,
 ) -> tuple[dict[str, Any], dict[str, Any] | None, dict[str, Any]]:
     witness = _witness()
@@ -1202,6 +1212,10 @@ def _cycle(
     if fresh_roles & retained_roles:
         raise witness.EvidenceError(
             "Tricritical fresh and retained reviewer scopes overlap"
+        )
+    if retained_roles & required_fresh_roles:
+        raise witness.EvidenceError(
+            "accepted finding scope requires fresh successor review"
         )
     if not isinstance(cycle["reports"], dict) or set(cycle["reports"]) != set(
         executions
@@ -1385,16 +1399,6 @@ def _cycle(
         )
     )
     causes = _finding_causes(findings)
-    recurring_causes = {
-        key: cause for key, cause in causes.items() if key in seen_causes
-    }
-    seam_choices = _seam_choices(
-        cycle["seam_choices"],
-        subject,
-        recurring_causes,
-        trust_snapshot,
-        index,
-    )
     finding_refs = sorted(findings)
     feedback_raw = witness.canonical_bytes(cycle["feedback"]) + b"\n"
     adjudication_subject = _role_subject(
@@ -1440,8 +1444,21 @@ def _cycle(
         adjudicator["returned"],
         witness.digest(finding_refs),
     )
-    _require_confirm_for_future_accepts(findings, items, seam_choices)
     accepted = {ref for ref, item in items.items() if item["disposition"] == "accept"}
+    accepted_causes = _finding_causes(
+        {finding_ref: findings[finding_ref] for finding_ref in accepted}
+    )
+    recurring_causes = {
+        key: cause for key, cause in causes.items() if key in seen_causes
+    }
+    seam_choices = _seam_choices(
+        cycle["seam_choices"],
+        subject,
+        recurring_causes,
+        trust_snapshot,
+        index,
+    )
+    _require_confirm_for_future_accepts(findings, items, seam_choices)
     gate_dispositions = {item["disposition"] for item in items.values()}
     terminal_dispositions = gate_dispositions & {
         "needs operator decision",
@@ -1462,6 +1479,11 @@ def _cycle(
             authority,
             increment["document"],
         )
+        if revision is not None:
+            revision["fresh_roles_required"] = {
+                findings[finding_ref]["reviewer_scope"]
+                for finding_ref in accepted
+            }
         if revision is not None or accepted:
             if cycle["verification"] is not None:
                 raise witness.EvidenceError(
@@ -1505,7 +1527,7 @@ def _cycle(
             "missing_executions": missing_executions,
             "unresolved": unresolved,
             "revision": revision,
-            "causes": causes,
+            "causes": accepted_causes,
             "cycle_owner": cycle["owner"],
             "controls": controls,
             "gate": "complete",
@@ -1596,6 +1618,7 @@ def _validate_bundle(bundle: Any, *, trust_snapshot: dict[str, Any]) -> dict[str
     seen = {"executions": set(), "sessions": set(), "contexts": set()}
     scope_history: list[dict[str, Any]] = []
     seen_causes: dict[str, dict[str, Any]] = {}
+    required_fresh_roles: set[str] = set()
     seen_candidates = {witness.digest(initial_subject["candidate"])}
     for index, cycle in enumerate(manifest["cycles"]):
         cycle_subject, successor, final = _cycle(
@@ -1607,6 +1630,7 @@ def _validate_bundle(bundle: Any, *, trust_snapshot: dict[str, Any]) -> dict[str
             seen,
             scope_history,
             seen_causes,
+            required_fresh_roles,
             index,
         )
         expected_cycle_owner = (
@@ -1630,6 +1654,9 @@ def _validate_bundle(bundle: Any, *, trust_snapshot: dict[str, Any]) -> dict[str
             seen_candidates.add(candidate_digest)
             prior_subject = successor
             expected_increment = final["revision"]["successor_increment"]
+            required_fresh_roles = set(
+                final["revision"]["fresh_roles_required"]
+            )
         elif index != len(manifest["cycles"]) - 1:
             raise witness.EvidenceError(
                 "Tricritical non-revision cycle cannot continue"
