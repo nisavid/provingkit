@@ -27,7 +27,34 @@
     },
     "final_main_mapping": {
       "completion_gate": "required-before-closing-source-issue-81",
-      "state": "pending-rebase-merge"
+      "contract": "provingkit-final-main-import-map-v1",
+      "final_main": {
+        "base_commit": "64060b3d81da21c47487eb6e4da732dbbb4cbd3a",
+        "tip_commit": "7d2cbbb8de045fd1ba381b982674131c6ead6919",
+        "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351"
+      },
+      "merge_method": "rebase",
+      "path": "release/provingkit/final-main-import-map-v1.tsv",
+      "reviewed_carrier": {
+        "commit": "14352d60d765d634c2da0fa9cca54e465f6571f6",
+        "commit_count": 84,
+        "comparison": "ordered-tree-and-message-sequence-equality",
+        "evidence_envelope": {
+          "commit": "c566c53db920a6b7048550a4b8f7ee4d3c914003",
+          "disposition": "protected-non-release-history-evidence",
+          "parents": [
+            "7d2cbbb8de045fd1ba381b982674131c6ead6919",
+            "14352d60d765d634c2da0fa9cca54e465f6571f6"
+          ],
+          "ref": "refs/heads/retained/pr-11-reviewed-carrier",
+          "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351"
+        },
+        "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351"
+      },
+      "row_count": 57,
+      "sha256": "sha256:408de1b00688d05e7f2da00411c490d09c37dbacacd0719f6aef5fa2c62a9f5d",
+      "source_pull_request": "https://github.com/nisavid/provingkit/pull/11",
+      "state": "verified"
     },
     "patch_correspondence": {
       "digest": "sha256",

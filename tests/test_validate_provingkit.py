@@ -47,6 +47,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         for retained_name in (
             "issue-81-history-import",
             "agents-pr-69",
+            "pr-11-reviewed-carrier",
         ):
             retained_ref = f"refs/remotes/origin/retained/{retained_name}"
             retained_tip = subprocess.run(
@@ -68,6 +69,16 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 capture_output=True,
                 check=True,
             )
+        self.overlay_current_final_main_contract(destination)
+
+    @staticmethod
+    def overlay_current_final_main_contract(destination: Path) -> None:
+        for relative in (
+            "release/provingkit/cutover-provenance-v1.json",
+            "release/provingkit/final-main-import-map-v1.tsv",
+            "release/provingkit/historical-identity-allowlist-v1.json",
+        ):
+            shutil.copy2(REPOSITORY / relative, destination / relative)
 
     def assert_identity_fixture(
         self,
@@ -181,6 +192,9 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             ),
             "refs/remotes/origin/retained/agents-pr-69": (
                 "8edaf590736621352262457752d087bad835555d"
+            ),
+            "refs/remotes/origin/retained/pr-11-reviewed-carrier": (
+                "c566c53db920a6b7048550a4b8f7ee4d3c914003"
             ),
         }
         with tempfile.TemporaryDirectory() as directory:
@@ -809,8 +823,40 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertEqual(
             import_history["final_main_mapping"],
             {
-                "state": "pending-rebase-merge",
                 "completion_gate": "required-before-closing-source-issue-81",
+                "contract": "provingkit-final-main-import-map-v1",
+                "final_main": {
+                    "base_commit": "64060b3d81da21c47487eb6e4da732dbbb4cbd3a",
+                    "tip_commit": "7d2cbbb8de045fd1ba381b982674131c6ead6919",
+                    "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351",
+                },
+                "merge_method": "rebase",
+                "path": "release/provingkit/final-main-import-map-v1.tsv",
+                "reviewed_carrier": {
+                    "commit": "14352d60d765d634c2da0fa9cca54e465f6571f6",
+                    "commit_count": 84,
+                    "comparison": "ordered-tree-and-message-sequence-equality",
+                    "evidence_envelope": {
+                        "commit": "c566c53db920a6b7048550a4b8f7ee4d3c914003",
+                        "disposition": "protected-non-release-history-evidence",
+                        "parents": [
+                            "7d2cbbb8de045fd1ba381b982674131c6ead6919",
+                            "14352d60d765d634c2da0fa9cca54e465f6571f6",
+                        ],
+                        "ref": "refs/heads/retained/pr-11-reviewed-carrier",
+                        "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351",
+                    },
+                    "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351",
+                },
+                "row_count": 57,
+                "sha256": (
+                    "sha256:"
+                    "408de1b00688d05e7f2da00411c490d09c37dbacacd0719f6aef5fa2c62a9f5d"
+                ),
+                "source_pull_request": (
+                    "https://github.com/nisavid/provingkit/pull/11"
+                ),
+                "state": "verified",
             },
         )
         rows = (
@@ -835,6 +881,418 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             [("linux", ordinal) for ordinal in range(1, 22)]
             + [("macos", ordinal) for ordinal in range(1, 37)],
         )
+
+    def test_final_main_import_map_binds_rebase_assigned_commits(self) -> None:
+        provenance = json.loads(
+            (REPOSITORY / "release/provingkit/cutover-provenance-v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        mapping = provenance["adopted_history_import"]["final_main_mapping"]
+
+        self.assertEqual(mapping["state"], "verified")
+        self.assertEqual(mapping["contract"], "provingkit-final-main-import-map-v1")
+        self.assertEqual(
+            mapping["path"], "release/provingkit/final-main-import-map-v1.tsv"
+        )
+        self.assertEqual(mapping["row_count"], 57)
+        self.assertEqual(mapping["merge_method"], "rebase")
+        self.assertEqual(
+            mapping["source_pull_request"],
+            "https://github.com/nisavid/provingkit/pull/11",
+        )
+        self.assertEqual(
+            mapping["reviewed_carrier"],
+            {
+                "commit": "14352d60d765d634c2da0fa9cca54e465f6571f6",
+                "commit_count": 84,
+                "comparison": "ordered-tree-and-message-sequence-equality",
+                "evidence_envelope": {
+                    "commit": "c566c53db920a6b7048550a4b8f7ee4d3c914003",
+                    "disposition": "protected-non-release-history-evidence",
+                    "parents": [
+                        "7d2cbbb8de045fd1ba381b982674131c6ead6919",
+                        "14352d60d765d634c2da0fa9cca54e465f6571f6",
+                    ],
+                    "ref": "refs/heads/retained/pr-11-reviewed-carrier",
+                    "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351",
+                },
+                "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351",
+            },
+        )
+        self.assertEqual(
+            mapping["final_main"],
+            {
+                "base_commit": "64060b3d81da21c47487eb6e4da732dbbb4cbd3a",
+                "tip_commit": "7d2cbbb8de045fd1ba381b982674131c6ead6919",
+                "tree": "3e5ec43b24517d01ca32319279f6e7365a0fd351",
+            },
+        )
+
+        rows = (
+            REPOSITORY / "release/provingkit/final-main-import-map-v1.tsv"
+        ).read_text(encoding="ascii").splitlines()
+        self.assertEqual(len(rows), 58)
+        self.assertEqual(
+            rows[0].split("\t"),
+            [
+                "platform",
+                "ordinal",
+                "retained_import_commit",
+                "final_main_commit",
+                "full_tree_delta_sha256",
+            ],
+        )
+        self.assertEqual(
+            rows[1].split("\t")[:4],
+            [
+                "linux",
+                "1",
+                "56af80454bd356097f264bd81f0920234ae17bfc",
+                "d79d1699134cfdf3e19895b40fe75da427961b56",
+            ],
+        )
+        self.assertEqual(
+            rows[-1].split("\t")[:4],
+            [
+                "macos",
+                "36",
+                "604c6e8702c4e3914e862bee58ab35f529866737",
+                "d47e9fbe95c5be6f923c91d0751ccdb1af80280b",
+            ],
+        )
+
+    def test_validator_rejects_an_identical_tree_outside_final_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            synthetic_carrier = subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repository),
+                    "-c",
+                    "user.name=Provingkit Test",
+                    "-c",
+                    "user.email=provingkit-test@example.invalid",
+                    "commit-tree",
+                    "3e5ec43b24517d01ca32319279f6e7365a0fd351",
+                    "-p",
+                    "64060b3d81da21c47487eb6e4da732dbbb4cbd3a",
+                    "-m",
+                    "Synthetic reviewed carrier",
+                ],
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.strip()
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repository),
+                    "checkout",
+                    "--quiet",
+                    "--detach",
+                    "--force",
+                    synthetic_carrier,
+                ],
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            self.overlay_current_final_main_contract(repository)
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("final main import reachability drift", result.stderr)
+
+    def test_validator_rejects_reordered_reachable_final_main_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+
+            map_path = (
+                repository / "release/provingkit/final-main-import-map-v1.tsv"
+            )
+            lines = map_path.read_text(encoding="ascii").splitlines()
+            rows = [line.split("\t") for line in lines[1:]]
+            rows[28][3], rows[29][3] = rows[29][3], rows[28][3]
+            map_path.write_text(
+                "\n".join([lines[0], *("\t".join(row) for row in rows)]) + "\n",
+                encoding="ascii",
+            )
+            map_sha256 = "sha256:" + hashlib.sha256(map_path.read_bytes()).hexdigest()
+
+            provenance_path = (
+                repository / "release/provingkit/cutover-provenance-v1.json"
+            )
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+            provenance["adopted_history_import"]["final_main_mapping"][
+                "sha256"
+            ] = map_sha256
+            provenance_path.write_text(
+                json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+            )
+            provenance_sha256 = (
+                "sha256:" + hashlib.sha256(provenance_path.read_bytes()).hexdigest()
+            )
+
+            allowlist_path = (
+                repository
+                / "release/provingkit/historical-identity-allowlist-v1.json"
+            )
+            allowlist = json.loads(allowlist_path.read_text(encoding="utf-8"))
+            provenance_entry = next(
+                entry
+                for entry in allowlist["entries"]
+                if entry["path"]
+                == "release/provingkit/cutover-provenance-v1.json"
+            )
+            provenance_entry["sha256"] = provenance_sha256
+            allowlist_path.write_text(
+                json.dumps(allowlist, indent=2) + "\n", encoding="utf-8"
+            )
+
+            validator_path = Path(directory) / "validate_provingkit.py"
+            validator_source = VALIDATOR.read_text(encoding="utf-8")
+            current_map_sha256 = (
+                "sha256:"
+                "408de1b00688d05e7f2da00411c490d09c37dbacacd0719f6aef5fa2c62a9f5d"
+            )
+            self.assertEqual(validator_source.count(current_map_sha256), 1)
+            validator_path.write_text(
+                validator_source.replace(current_map_sha256, map_sha256),
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [sys.executable, str(validator_path), str(repository)],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("final main import reachability drift", result.stderr)
+
+    def test_validator_rejects_rewritten_reviewed_carrier(self) -> None:
+        candidates = (
+            ("nonexistent", "0" * 40, "reviewed carrier object drift"),
+            (
+                "wrong-tree",
+                "64060b3d81da21c47487eb6e4da732dbbb4cbd3a",
+                "reviewed carrier tree drift",
+            ),
+            ("same-trees-one-message-drift", None, "reviewed carrier history drift"),
+        )
+        reviewed_carrier = "14352d60d765d634c2da0fa9cca54e465f6571f6"
+        reviewed_carrier_envelope = "c566c53db920a6b7048550a4b8f7ee4d3c914003"
+        final_main_base = "64060b3d81da21c47487eb6e4da732dbbb4cbd3a"
+        final_main_tip = "7d2cbbb8de045fd1ba381b982674131c6ead6919"
+        final_main_tree = "3e5ec43b24517d01ca32319279f6e7365a0fd351"
+        envelope_message = (
+            "chore(provingkit/cutover): retain reviewed carrier evidence\n\n"
+            "Join final main to the exact PR #11 reviewed carrier on a frozen "
+            "non-release evidence ref. This commit remains outside main and grants "
+            "no release authority."
+        )
+        for label, candidate, expected_error in candidates:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                repository = Path(directory) / "repository"
+                self.clone_with_history(repository)
+                candidate_commit = candidate
+                if candidate_commit is None:
+                    carrier_commits = subprocess.run(
+                        [
+                            "git",
+                            "-C",
+                            str(repository),
+                            "rev-list",
+                            "--reverse",
+                            f"{final_main_base}..{reviewed_carrier}",
+                        ],
+                        text=True,
+                        capture_output=True,
+                        check=True,
+                    ).stdout.splitlines()
+                    self.assertEqual(len(carrier_commits), 84)
+                    previous = final_main_base
+                    for ordinal, original in enumerate(carrier_commits, start=1):
+                        tree = subprocess.run(
+                            [
+                                "git",
+                                "-C",
+                                str(repository),
+                                "show",
+                                "-s",
+                                "--format=%T",
+                                original,
+                            ],
+                            text=True,
+                            capture_output=True,
+                            check=True,
+                        ).stdout.strip()
+                        message = subprocess.run(
+                            [
+                                "git",
+                                "-C",
+                                str(repository),
+                                "show",
+                                "-s",
+                                "--format=%B",
+                                original,
+                            ],
+                            text=True,
+                            capture_output=True,
+                            check=True,
+                        ).stdout
+                        if ordinal == 42:
+                            message = message.rstrip() + "\n\nSynthetic message drift\n"
+                        candidate_commit = subprocess.run(
+                            [
+                                "git",
+                                "-C",
+                                str(repository),
+                                "-c",
+                                "user.name=Provingkit Test",
+                                "-c",
+                                "user.email=provingkit-test@example.invalid",
+                                "commit-tree",
+                                tree,
+                                "-p",
+                                previous,
+                                "-F",
+                                "-",
+                            ],
+                            input=message,
+                            text=True,
+                            capture_output=True,
+                            check=True,
+                        ).stdout.strip()
+                        previous = candidate_commit
+
+                forged_envelope_content = (
+                    f"tree {final_main_tree}\n"
+                    f"parent {final_main_tip}\n"
+                    f"parent {candidate_commit}\n"
+                    "author Ivan D Vasin <ivan@nisavid.io> 1788476307 +0000\n"
+                    "committer Ivan D Vasin <ivan@nisavid.io> 1788476307 +0000\n"
+                    "\n"
+                    f"{envelope_message}\n"
+                )
+                forged_envelope = subprocess.run(
+                    [
+                        "git",
+                        "-C",
+                        str(repository),
+                        "hash-object",
+                        "-t",
+                        "commit",
+                        "-w",
+                        "--stdin",
+                    ],
+                    input=forged_envelope_content,
+                    text=True,
+                    capture_output=True,
+                    check=True,
+                ).stdout.strip()
+                subprocess.run(
+                    [
+                        "git",
+                        "-C",
+                        str(repository),
+                        "update-ref",
+                        "refs/remotes/origin/retained/pr-11-reviewed-carrier",
+                        forged_envelope,
+                        reviewed_carrier_envelope,
+                    ],
+                    text=True,
+                    capture_output=True,
+                    check=True,
+                )
+
+                provenance_path = (
+                    repository / "release/provingkit/cutover-provenance-v1.json"
+                )
+                provenance = json.loads(
+                    provenance_path.read_text(encoding="utf-8")
+                )
+                carrier_metadata = provenance["adopted_history_import"][
+                    "final_main_mapping"
+                ]["reviewed_carrier"]
+                carrier_metadata["commit"] = candidate_commit
+                carrier_metadata["evidence_envelope"]["commit"] = forged_envelope
+                carrier_metadata["evidence_envelope"]["parents"][1] = candidate_commit
+                provenance_path.write_text(
+                    json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+                )
+                provenance_sha256 = (
+                    "sha256:"
+                    + hashlib.sha256(provenance_path.read_bytes()).hexdigest()
+                )
+
+                allowlist_path = (
+                    repository
+                    / "release/provingkit/historical-identity-allowlist-v1.json"
+                )
+                allowlist = json.loads(
+                    allowlist_path.read_text(encoding="utf-8")
+                )
+                provenance_entry = next(
+                    entry
+                    for entry in allowlist["entries"]
+                    if entry["path"]
+                    == "release/provingkit/cutover-provenance-v1.json"
+                )
+                provenance_entry["sha256"] = provenance_sha256
+                allowlist_path.write_text(
+                    json.dumps(allowlist, indent=2) + "\n", encoding="utf-8"
+                )
+
+                validator_path = Path(directory) / "validate_provingkit.py"
+                validator_source = VALIDATOR.read_text(encoding="utf-8")
+                self.assertEqual(validator_source.count(reviewed_carrier), 1)
+                self.assertEqual(validator_source.count(reviewed_carrier_envelope), 1)
+                validator_path.write_text(
+                    validator_source.replace(
+                        reviewed_carrier, candidate_commit
+                    ).replace(
+                        reviewed_carrier_envelope, forged_envelope
+                    ),
+                    encoding="utf-8",
+                )
+                result = subprocess.run(
+                    [sys.executable, str(validator_path), str(repository)],
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(expected_error, result.stderr)
+
+    def test_validator_requires_the_reviewed_carrier_retained_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repository),
+                    "update-ref",
+                    "-d",
+                    "refs/remotes/origin/retained/pr-11-reviewed-carrier",
+                ],
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reviewed carrier ref attestation drift", result.stderr)
 
     def test_adopted_history_bundle_base64_must_be_canonical(self) -> None:
         self.assertEqual(validate_provingkit._decode_canonical_base64("YQ=="), b"a")
@@ -1861,11 +2319,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         expected_tip = "caf9a58769af746fd5b514beff5cb305788f7e1c"
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
-            shutil.copytree(
-                REPOSITORY,
-                repository,
-                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
-            )
+            self.clone_with_history(repository)
             descendant_tip = subprocess.run(
                 [
                     "git",
