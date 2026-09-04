@@ -254,6 +254,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         document["evals"][0]["expectations"].pop()
         path.write_text(json.dumps(document) + "\n")
         result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
         self.assertIn("expectations must contain three objects", result.stderr)
 
     def test_published_skill_rejects_grader_answer_in_fixture(self) -> None:
@@ -261,6 +262,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         fixture = self.plugin / "skills" / skill / "evals" / "fixtures" / "case-1.md"
         fixture.write_text(fixture.read_text() + "\nPass if the message is short.\n")
         result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
         self.assertIn("grader answer leaked into fixture", result.stderr)
 
     def test_fixture_prose_may_mention_expectations_as_a_word(self) -> None:
@@ -287,6 +289,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         fixture = self.plugin / "skills" / skill / "evals" / "fixtures" / "case-3.md"
         fixture.write_text(fixture.read_text() + "\nExpected output: a two-line reply.\n")
         result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
         self.assertIn("grader answer leaked into fixture", result.stderr)
 
     def test_fixture_rejects_markdown_wrapped_grader_labels(self) -> None:
@@ -296,6 +299,7 @@ class ValidateTidesmithTests(unittest.TestCase):
             original = fixture.read_text()
             fixture.write_text(original + "\n" + line + "\n")
             result = self.validate("--write-content-lock")
+            self.assertNotEqual(result.returncode, 0, line)
             self.assertIn("grader answer leaked into fixture", result.stderr, line)
             fixture.write_text(original)
 
@@ -303,6 +307,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         skill = self.publish_one_skill()
         (self.plugin / "skills" / skill / "evals" / "fixtures" / "orphan.md").write_text("# Orphan\n")
         result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
         self.assertIn("fixture drift", result.stderr)
 
     def test_published_skill_description_must_start_with_the_trigger_phrase(self) -> None:
