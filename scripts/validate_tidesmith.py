@@ -193,8 +193,15 @@ def build_grader_payload(
 
 
 def load_json(root: Path, relative: str, field: str) -> dict:
+    def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict:
+        value = {}
+        for key, item in pairs:
+            require(key not in value, f"{field} contains duplicate key: {key}")
+            value[key] = item
+        return value
+
     try:
-        value = json.loads(read(root, relative))
+        value = json.loads(read(root, relative), object_pairs_hook=reject_duplicate_keys)
     except json.JSONDecodeError as error:
         raise ContractError(f"{field} is not valid JSON") from error
     require(isinstance(value, dict), f"{field} must be an object")
@@ -755,12 +762,21 @@ def semantic_file_set(skill_files: set[str]) -> set[str]:
     return (BASE_FILES - {"content-lock.json"}) | skill_files
 
 
-def content_lock_document(root: Path, semantic_files: set[str]) -> dict:
+def content_lock_document(
+    root: Path,
+    semantic_files: set[str],
+    byte_overrides: dict[str, bytes] | None = None,
+) -> dict:
+    overrides = byte_overrides or {}
     return {
         "schema_version": 1,
         "algorithm": "sha256",
         "files": {
-            relative: hashlib.sha256(read_bytes(root, relative)).hexdigest()
+            relative: hashlib.sha256(
+                overrides[relative]
+                if relative in overrides
+                else read_bytes(root, relative)
+            ).hexdigest()
             for relative in sorted(semantic_files)
         },
     }
@@ -817,27 +833,40 @@ def validate_text_portability(text: str, label: str) -> None:
 
 
 def publish_generated_files(root: Path, readme: str, semantic_files: set[str]) -> None:
-    """Stage both generated files, then publish them; restore on partial failure."""
+    """Stage both generated files before publishing either one."""
     readme_path = root / "README.md"
     lock_path = root / "content-lock.json"
-    original_readme = readme_path.read_bytes()
     readme_stage = root / ".README.md.tidesmith-stage"
     lock_stage = root / ".content-lock.json.tidesmith-stage"
     try:
-        readme_stage.write_text(readme, encoding="utf-8")
-        readme_stage.replace(readme_path)
+        readme_bytes = readme.encode("utf-8")
+        readme_stage.write_bytes(readme_bytes)
         lock_stage.write_text(
-            json.dumps(content_lock_document(root, semantic_files), indent=2) + "\n",
+            json.dumps(
+                content_lock_document(
+                    root,
+                    semantic_files,
+                    byte_overrides={"README.md": readme_bytes},
+                ),
+                indent=2,
+            )
+            + "\n",
             encoding="utf-8",
         )
+        readme_stage.replace(readme_path)
         lock_stage.replace(lock_path)
-    except OSError:
-        readme_path.write_bytes(original_readme)
-        raise
     finally:
         for stage in (readme_stage, lock_stage):
             if stage.exists():
                 stage.unlink()
+
+
+def restore_generated_file(path: Path, preimage: bytes | None) -> None:
+    if preimage is None:
+        if path.exists():
+            path.unlink()
+    else:
+        path.write_bytes(preimage)
 
 
 def usage() -> None:
@@ -864,14 +893,24 @@ def main() -> None:
             validate_text_portability(readme, "README.md")
             validate_inventory(root, semantic_files, allow_missing_content_lock=True)
             validate_portability(root)
-            publish_generated_files(root, readme, semantic_files)
-            topology, semantic_files = inspect_contract(root)
-            validate_inventory(root, semantic_files)
+            readme_path = root / "README.md"
+            lock_path = root / "content-lock.json"
+            original_readme = readme_path.read_bytes()
+            original_lock = lock_path.read_bytes() if lock_path.exists() else None
+            try:
+                publish_generated_files(root, readme, semantic_files)
+                topology, semantic_files = inspect_contract(root)
+                validate_inventory(root, semantic_files)
+                validate_content_lock(root, semantic_files)
+            except Exception:
+                restore_generated_file(readme_path, original_readme)
+                restore_generated_file(lock_path, original_lock)
+                raise
         else:
             topology, semantic_files = inspect_contract(root)
             validate_inventory(root, semantic_files)
             validate_portability(root)
-        validate_content_lock(root, semantic_files)
+            validate_content_lock(root, semantic_files)
     except (
         AgentPluginContractError,
         ContractError,

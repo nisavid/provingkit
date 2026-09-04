@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = REPO_ROOT / "scripts" / "validate_tidesmith.py"
@@ -48,6 +49,14 @@ class ValidateTidesmithTests(unittest.TestCase):
 
     def write_readme(self, content: str) -> None:
         (self.plugin / "README.md").write_text(content, encoding="utf-8")
+
+    def validator_module(self):
+        scripts_dir = str(REPO_ROOT / "scripts")
+        sys.path.insert(0, scripts_dir)
+        self.addCleanup(lambda: sys.path.remove(scripts_dir))
+        import validate_tidesmith as module
+
+        return module
 
     def test_accepts_current_contract(self) -> None:
         result = self.validate()
@@ -175,6 +184,92 @@ class ValidateTidesmithTests(unittest.TestCase):
         self.assertIn("component inventory drift", result.stderr)
         self.assertEqual(self.readme(), stale)
         self.assertEqual((self.plugin / "content-lock.json").read_bytes(), lock_before)
+
+    def test_failed_second_publish_restores_both_generated_files(self) -> None:
+        module = self.validator_module()
+        readme = self.readme()
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
+        fixture = self.plugin / "skills/writing-for-people/evals/fixtures/stopping-point-report-partial-migration.md"
+        fixture.write_text(fixture.read_text() + "\nA newly discovered constraint.\n")
+        readme_before = (self.plugin / "README.md").read_bytes()
+        lock_before = (self.plugin / "content-lock.json").read_bytes()
+        real_replace = Path.replace
+
+        def fail_lock_replace(path: Path, target: Path):
+            if path.name == ".content-lock.json.tidesmith-stage":
+                real_replace(path, target)
+                raise OSError("injected lock publication failure")
+            return real_replace(path, target)
+
+        with (
+            mock.patch.object(Path, "replace", autospec=True, side_effect=fail_lock_replace),
+            mock.patch.object(sys, "argv", [str(VALIDATOR), "--write-content-lock", str(self.repo)]),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            module.main()
+
+        self.assertEqual(raised.exception.code, 1)
+        self.assertEqual((self.plugin / "README.md").read_bytes(), readme_before)
+        self.assertEqual((self.plugin / "content-lock.json").read_bytes(), lock_before)
+        self.assertFalse((self.plugin / ".README.md.tidesmith-stage").exists())
+        self.assertFalse((self.plugin / ".content-lock.json.tidesmith-stage").exists())
+
+    def test_failed_post_publish_validation_restores_both_generated_files(self) -> None:
+        module = self.validator_module()
+        readme = self.readme()
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
+        fixture = self.plugin / "skills/writing-for-people/evals/fixtures/stopping-point-report-partial-migration.md"
+        fixture.write_text(fixture.read_text() + "\nA newly discovered constraint.\n")
+        readme_before = (self.plugin / "README.md").read_bytes()
+        lock_before = (self.plugin / "content-lock.json").read_bytes()
+        real_validate_content_lock = module.validate_content_lock
+        calls = 0
+
+        def fail_final_validation(root: Path, semantic_files: set[str]) -> None:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise module.ContractError("injected post-publication validation failure")
+            real_validate_content_lock(root, semantic_files)
+
+        with (
+            mock.patch.object(module, "validate_content_lock", side_effect=fail_final_validation),
+            mock.patch.object(sys, "argv", [str(VALIDATOR), "--write-content-lock", str(self.repo)]),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            module.main()
+
+        self.assertEqual(raised.exception.code, 1)
+        self.assertEqual((self.plugin / "README.md").read_bytes(), readme_before)
+        self.assertEqual((self.plugin / "content-lock.json").read_bytes(), lock_before)
+
+    def test_rejects_duplicate_keys_in_every_json_contract(self) -> None:
+        cases = (
+            ("topology.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
+            (".claude-plugin/plugin.json", '"name": "tidesmith",', '"name": "tidesmith", "name": "tidesmith",'),
+            ("plugin.json", '"name": "tidesmith",', '"name": "tidesmith", "name": "tidesmith",'),
+            ("evals/delivery.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
+            (
+                "skills/writing-for-people/evals/evals.json",
+                '"skill_name": "writing-for-people",',
+                '"skill_name": "writing-for-people", "skill_name": "writing-for-people",',
+            ),
+            ("content-lock.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
+        )
+        for relative, original, duplicate in cases:
+            with self.subTest(relative=relative):
+                path = self.plugin / relative
+                content = path.read_text(encoding="utf-8")
+                self.assertIn(original, content)
+                try:
+                    path.write_text(content.replace(original, duplicate, 1), encoding="utf-8")
+                    self.assert_rejected("duplicate key")
+                finally:
+                    path.write_text(content, encoding="utf-8")
 
     def publish_one_skill(self, *, description: str = "Use when prose must meet the house register.") -> str:
         skill = "explaining-to-readers"
@@ -317,10 +412,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         self.assertIn("description trigger drift", result.stderr)
 
     def test_frontmatter_parser_accepts_crlf_and_missing_trailing_newline(self) -> None:
-        scripts_dir = str(REPO_ROOT / "scripts")
-        sys.path.insert(0, scripts_dir)
-        self.addCleanup(lambda: sys.path.remove(scripts_dir))
-        import validate_tidesmith as module
+        module = self.validator_module()
 
         crlf = "---\r\nname: writing-for-people\r\ndescription: Use when x.\r\n---\r\nBody\r\n"
         bare = "---\nname: writing-for-people\ndescription: Use when x.\n---\nBody"

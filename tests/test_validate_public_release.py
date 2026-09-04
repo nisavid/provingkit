@@ -1154,7 +1154,20 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         path.symlink_to(target)
 
         with self.assertRaisesRegex(
-            self.module.ReleaseError, "catalog must be a regular file"
+            self.module.ReleaseError, "catalog contains a symlink"
+        ):
+            self.module.load_public_release_runtime_packages(root)
+
+    def test_runtime_package_catalog_rejects_a_symlinked_parent(self) -> None:
+        root = self.public_release_registration_fixture()
+        release = root / "release"
+        outside = root.parent / "outside-release"
+        shutil.copytree(release, outside)
+        shutil.rmtree(release)
+        release.symlink_to(outside, target_is_directory=True)
+
+        with self.assertRaisesRegex(
+            self.module.ReleaseError, "catalog contains a symlink"
         ):
             self.module.load_public_release_runtime_packages(root)
 
@@ -1318,6 +1331,22 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     ),
                     ("fixture-runtime",) if production_eligible else (),
                 )
+
+    def test_registered_skill_plugin_requires_production_eligibility(self) -> None:
+        root = self.public_release_registration_fixture(
+            name="tidesmith", production_eligible=False
+        )
+        catalog_path = root / "release/public-release-runtime-packages.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        catalog["runtime_packages"] = []
+        catalog["skill_plugins"] = ["tidesmith"]
+        catalog_path.write_text(json.dumps(catalog, sort_keys=True) + "\n")
+
+        with self.assertRaisesRegex(
+            self.module.ReleaseError,
+            "registered skill plugin must be production eligible",
+        ):
+            self.module.load_public_release_registrations(root)
 
     def test_public_release_registration_discovery_rejects_mutated_boundaries(
         self,

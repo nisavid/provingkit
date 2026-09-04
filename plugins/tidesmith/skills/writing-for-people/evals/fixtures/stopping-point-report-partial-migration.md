@@ -39,7 +39,8 @@ stopped because choosing between them is the operator's call, not yours.
 
 One fact bears on that choice: `tests/config/test_remote_loader.py` has a
 test named `test_timeout_returns_empty_settings` that pins the current
-fallback. Whichever option is chosen, that test changes.
+fallback. Raising on timeout changes that test; adding the same fallback to
+`Settings.parse` preserves its expectation.
 
 ## What you have not done
 

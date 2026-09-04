@@ -15,9 +15,9 @@ lives in this plugin.
 Tidesmith owns generic human-facing prose mechanics only. Surface owners keep
 their surface contracts: Mergecraft owns reviewer-facing pull-request text and
 the review-voice reference that applies this register to review threads, and
-Tricritical owns review findings and their structural output contract. Those
-plugins route to Tidesmith for prose mechanics; projections do not cross
-plugin boundaries.
+Tricritical owns review findings and their structural output contract. A caller
+can explicitly compose those surface contracts with Tidesmith when prose
+mechanics also apply; projections do not cross plugin boundaries.
 
 ## Public skills
 

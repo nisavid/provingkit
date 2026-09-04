@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "51d30c5ac9320931f7b66af1ccf288bdd6910f196613ca9466686851c9d15bfa"
+SOURCE_SHA256 = "c50eb7930644e81e70bd6fc9ed3d16e44b996be2275ead13c9aad27730b67c2d"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -524,15 +524,20 @@ def load_public_release_registered_skill_plugins(root: Path) -> tuple[str, ...]:
 def _load_public_release_package_catalog(root: Path) -> dict[str, tuple[str, ...]]:
     """Load the catalog that authorizes package-owned release registrations."""
 
-    path = root / PUBLIC_RELEASE_PACKAGE_CATALOG_PATH
     try:
-        metadata = path.lstat()
-    except FileNotFoundError as error:
+        path = _release_entry(
+            root,
+            PUBLIC_RELEASE_PACKAGE_CATALOG_PATH,
+            "public-release package registration catalog",
+        )
+    except ReleaseError as error:
+        if " is missing:" not in str(error):
+            raise
         raise ReleaseError(
             "public-release package registration catalog is missing"
         ) from error
     require(
-        stat.S_ISREG(metadata.st_mode) and not stat.S_ISLNK(metadata.st_mode),
+        path.is_file(),
         "public-release package registration catalog must be a regular file",
     )
     catalog = strict_json(
@@ -728,6 +733,11 @@ def load_public_release_registrations(root: Path) -> dict[str, dict]:
             package_kind != PUBLIC_RELEASE_SKILL_PLUGIN_KIND
             or name in SKILL_PLUGINS,
             "registered public-release skill plugin is missing from skill inventory",
+        )
+        require(
+            package_kind != PUBLIC_RELEASE_SKILL_PLUGIN_KIND
+            or registration["production_eligible"],
+            "registered skill plugin must be production eligible",
         )
         registrations[name] = {
             "name": name,

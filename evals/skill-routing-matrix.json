@@ -2,7 +2,7 @@
   "schema_version": 2,
   "semantic_definition": {
     "path": "evals/control-plane-matrix.json",
-    "sha256": "7d1f07ac5b363430526f562c95feaeb5e9e82237d9fdf37b1236648698f59dcf"
+    "sha256": "2d92e038fc5d915f6456df22fe11867f511f38ef8a05f3d7e4f9c970e8648f2f"
   },
   "existing_trigger_sources": [
     {
@@ -236,6 +236,17 @@
         "positive_expected_skills": ["stacking-pr-fixups"],
         "negative": "Apply the fix directly on this ordinary unstacked branch and checkpoint it; there is no parent PR head.",
         "negative_expected_skills": ["checkpointing-and-publishing-git-work"]
+      }
+    },
+    {
+      "id": "tidesmith:writing-for-people",
+      "cold_start": "Write this operator-facing stopping-point report so its evidence and next decision are clear.",
+      "explicit": "Use $writing-for-people to write this operator-facing stopping-point report.",
+      "supplemental": {
+        "positive": "Rewrite this technical status note for its operator, opening with the outcome and separating verified facts from the pending decision.",
+        "positive_expected_skills": ["writing-for-people"],
+        "negative": "Review this frozen candidate for runtime failure paths; return findings without rewriting its human-facing prose.",
+        "negative_expected_skills": ["runtime"]
       }
     }
   ]
