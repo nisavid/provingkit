@@ -1,0 +1,21 @@
+{
+  "name": "tidesmith",
+  "displayName": "Tidesmith",
+  "version": "1.0.0",
+  "description": "Tidesmith: house standards and verification for agent-authored human-facing prose.",
+  "author": {
+    "name": "Ivan D Vasin",
+    "url": "https://github.com/nisavid"
+  },
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/tidesmith",
+  "repository": "https://github.com/nisavid/provingkit",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "writing",
+    "prose",
+    "review",
+    "verification"
+  ]
+}
+
