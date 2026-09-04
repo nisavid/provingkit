@@ -93,6 +93,21 @@
           "claude": "plugins/task-witness/.claude-plugin/plugin.json"
         },
         "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "plugins/tidesmith/content-lock.json",
+          "sha256": "sha256:7a3f2816c5a2f8468c083d4206ffbada5bd0dc8f6f684fea4af0a8bda8135eef"
+        },
+        "display_name": "Tidesmith",
+        "distribution_kind": "agent-plugin",
+        "id": "tidesmith",
+        "identity_manifests": {
+          "canonical": "plugins/tidesmith/plugin.json",
+          "claude": "plugins/tidesmith/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
       }
     ],
     "mode": "exact",

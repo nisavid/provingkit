@@ -142,6 +142,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "source-shape-review",
                 "release/task-witness/source-shape-review.json",
             ),
+            (
+                "tidesmith",
+                "agent-plugin",
+                "plugin-content-lock",
+                "plugins/tidesmith/content-lock.json",
+            ),
         ):
             members.append(
                 {
@@ -399,7 +405,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("versioned Provingkit definition is missing", result.stderr)
 
-    def test_definition_requires_the_exact_six_member_set(self) -> None:
+    def test_definition_requires_the_exact_seven_member_set(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -563,6 +569,15 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "plugins/task-witness/.claude-plugin/plugin.json",
                     "source-shape-review",
                     "release/task-witness/source-shape-review.json",
+                ),
+                (
+                    "tidesmith",
+                    "agent-plugin",
+                    "1.0.0",
+                    "plugins/tidesmith/plugin.json",
+                    "plugins/tidesmith/.claude-plugin/plugin.json",
+                    "plugin-content-lock",
+                    "plugins/tidesmith/content-lock.json",
                 ),
             ],
         )
@@ -1520,7 +1535,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("excluded source present", result.stderr)
 
-    def test_marketplace_is_the_exact_five_member_source_projection(self) -> None:
+    def test_marketplace_is_the_exact_six_member_source_projection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(

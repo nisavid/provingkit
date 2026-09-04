@@ -147,6 +147,15 @@ EXPECTED_MEMBERS = (
         "source-shape-review",
         "release/task-witness/source-shape-review.json",
     ),
+    (
+        "tidesmith",
+        "Tidesmith",
+        "agent-plugin",
+        "plugins/tidesmith/plugin.json",
+        "plugins/tidesmith/.claude-plugin/plugin.json",
+        "plugin-content-lock",
+        "plugins/tidesmith/content-lock.json",
+    ),
 )
 EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "rolecasting": "1.0.0",
@@ -155,6 +164,7 @@ EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "mergecraft": "1.0.0",
     "artifact-customs": "1.0.0",
     "task-witness": "1.0.0",
+    "tidesmith": "1.0.0",
 }
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
@@ -257,7 +267,7 @@ EXPECTED_MARKETPLACE = {
     "name": "provingkit",
     "owner": {"name": "Ivan D Vasin"},
     "description": (
-        "Source projection for Provingkit's five Agent Plugins v1 members. "
+        "Source projection for Provingkit's six Agent Plugins v1 members. "
         "This manifest is not a marketplace publication."
     ),
     "plugins": [
@@ -272,6 +282,7 @@ EXPECTED_MARKETPLACE = {
             "versionkeeping",
             "mergecraft",
             "artifact-customs",
+            "tidesmith",
         )
     ],
 }
