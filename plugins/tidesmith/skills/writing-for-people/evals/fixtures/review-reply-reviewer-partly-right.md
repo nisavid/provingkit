@@ -24,4 +24,3 @@ A reviewer left this comment on the retry loop:
   service's published rate limit, which you have not looked up yet. Whether
   3 is the right number is not settled.
 - Nothing else on the PR bears on this thread.
-

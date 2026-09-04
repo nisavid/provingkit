@@ -33,4 +33,3 @@ You handled the incident. Everything below is verified.
 The support lead does not know what a worker pool, a queue, or a
 configuration deploy is, and has no use for the setting's name. They want
 something they can relay to customers.
-

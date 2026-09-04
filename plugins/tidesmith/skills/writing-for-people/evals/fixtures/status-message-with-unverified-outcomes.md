@@ -31,4 +31,3 @@ where things stand before the afternoon. Use only what follows.
 
 You ran `git log`, viewed the PR, opened the CI dashboard, tailed the deploy
 pipeline logs, and opened the config service UI.
-

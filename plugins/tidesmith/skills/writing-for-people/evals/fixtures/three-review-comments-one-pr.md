@@ -30,4 +30,3 @@ parameter `format`. `format` shadows a Python builtin, which is a plausible
 reason the author chose `fmt`, and the existing endpoints already live with
 that shadowing. You lean toward `format` for consistency with the existing
 API surface, but you would not hold the PR over it.
-

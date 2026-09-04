@@ -26,4 +26,3 @@ Whether the `max_attempts` default change was intended, or slipped in
 alongside the jitter work. If it was intended, how the operator wants it
 labeled (fix, behavior change, breaking change) and whether anything should
 be said to users who relied on five attempts.
-

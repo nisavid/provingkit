@@ -98,4 +98,3 @@ did.
 Run [edit-pass.md](references/edit-pass.md) on the finished draft. For
 anything going to a reviewer, a shared channel, or a customer, have a
 second pass hunt for tells and recheck every fact against the brief.
-

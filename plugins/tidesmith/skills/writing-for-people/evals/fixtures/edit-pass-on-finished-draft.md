@@ -26,4 +26,3 @@ is 5.
 - A `retry_budget > 0` check in `RetryPolicy.__post_init__` would raise at
   construction time instead of silently skipping retries.
 - The `RetryPolicy` docstring still states the default as 5.
-

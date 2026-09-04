@@ -47,4 +47,3 @@ fallback. Whichever option is chosen, that test changes.
   tests, or the full suite. Only the two loader test files above were run.
 - Nothing is committed. The two migrated files are modified in the working
   tree.
-

@@ -65,4 +65,3 @@ Fluent rewriting is where facts drift: "should fail" becomes "fails", a
 range becomes a point, a question becomes a commitment. Check each fact
 against the brief after every rewrite, not only when first written. Full
 rules: [evidence-in-prose.md](evidence-in-prose.md).
-

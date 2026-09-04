@@ -59,4 +59,3 @@ when it is genuinely uncertain, and say what makes it so ("my best
 guess from the current API shape; I couldn't find a direct caller").
 When every claim carries a hedge, the reader cannot tell which one needs
 it.
-
