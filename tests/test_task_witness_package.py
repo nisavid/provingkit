@@ -3929,6 +3929,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
             "mergecraft",
             "tricritical",
             "artifact-customs",
+            "tidesmith",
         )
         expected_source_stage_validated = expected_public_plugins + ("task-witness",)
         expected_package_support_paths = set(PUBLIC_RELEASE_SUPPORT_PATHS) | {
@@ -3971,6 +3972,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 "versionkeeping": "./plugins/versionkeeping",
                 "mergecraft": "./plugins/mergecraft",
                 "artifact-customs": "./plugins/artifact-customs",
+                "tidesmith": "./plugins/tidesmith",
             },
         )
         self.assertEqual(
@@ -4127,6 +4129,11 @@ class TaskWitnessPackageTests(unittest.TestCase):
         shutil.copy2(
             REPOSITORY / "release/public-release-runtime-packages.json", catalog
         )
+        catalog_payload = json.loads(catalog.read_text(encoding="utf-8"))
+        catalog_payload["skill_plugins"] = []
+        catalog.write_text(
+            json.dumps(catalog_payload, sort_keys=True) + "\n", encoding="utf-8"
+        )
         registration_path = integration_root / PUBLIC_RELEASE_REGISTRATION
         registration_path.parent.mkdir(parents=True)
         shutil.copy2(REPOSITORY / PUBLIC_RELEASE_REGISTRATION, registration_path)
@@ -4193,10 +4200,14 @@ class TaskWitnessPackageTests(unittest.TestCase):
         shutil.copy2(
             REPOSITORY / "release/public-release-runtime-packages.json", catalog
         )
+        catalog_payload = json.loads(catalog.read_text(encoding="utf-8"))
+        catalog_payload["skill_plugins"] = []
+        catalog.write_text(
+            json.dumps(catalog_payload, sort_keys=True) + "\n", encoding="utf-8"
+        )
         registration = integration_root / PUBLIC_RELEASE_REGISTRATION
         registration.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPOSITORY / PUBLIC_RELEASE_REGISTRATION, registration)
-        catalog_payload = json.loads(catalog.read_text(encoding="utf-8"))
         catalog_payload["runtime_packages"].remove("task-witness")
         catalog.write_text(
             json.dumps(catalog_payload, sort_keys=True) + "\n", encoding="utf-8"

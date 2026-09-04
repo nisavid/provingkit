@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "bd687dcb5ece0e6de7748c29ed6ce10eb11ea333b3563c06df38a3aac9b67305"
+SOURCE_SHA256 = "51d30c5ac9320931f7b66af1ccf288bdd6910f196613ca9466686851c9d15bfa"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -484,8 +484,8 @@ def strict_json(content: str, label: str):
 
 
 PUBLIC_RELEASE_REGISTRATION_FILENAME = "public-release-registration.json"
-PUBLIC_RELEASE_RUNTIME_PACKAGES_PATH = "release/public-release-runtime-packages.json"
-PUBLIC_RELEASE_RUNTIME_PACKAGES_FIELDS = {
+PUBLIC_RELEASE_PACKAGE_CATALOG_PATH = "release/public-release-runtime-packages.json"
+PUBLIC_RELEASE_PACKAGE_CATALOG_FIELDS = {
     "runtime_packages",
     "schema_version",
     "skill_plugins",
@@ -524,28 +524,29 @@ def load_public_release_registered_skill_plugins(root: Path) -> tuple[str, ...]:
 def _load_public_release_package_catalog(root: Path) -> dict[str, tuple[str, ...]]:
     """Load the catalog that authorizes package-owned release registrations."""
 
-    path = root / PUBLIC_RELEASE_RUNTIME_PACKAGES_PATH
+    path = root / PUBLIC_RELEASE_PACKAGE_CATALOG_PATH
     try:
         metadata = path.lstat()
     except FileNotFoundError as error:
         raise ReleaseError(
-            "public-release runtime-package catalog is missing"
+            "public-release package registration catalog is missing"
         ) from error
     require(
         stat.S_ISREG(metadata.st_mode) and not stat.S_ISLNK(metadata.st_mode),
-        "public-release runtime-package catalog must be a regular file",
+        "public-release package registration catalog must be a regular file",
     )
     catalog = strict_json(
-        path.read_text(encoding="utf-8"), "public-release runtime-package catalog"
+        path.read_text(encoding="utf-8"),
+        "public-release package registration catalog",
     )
     require(
         isinstance(catalog, dict)
-        and set(catalog) == PUBLIC_RELEASE_RUNTIME_PACKAGES_FIELDS,
-        "public-release runtime-package catalog schema drift",
+        and set(catalog) == PUBLIC_RELEASE_PACKAGE_CATALOG_FIELDS,
+        "public-release package registration catalog schema drift",
     )
     require(
         type(catalog["schema_version"]) is int and catalog["schema_version"] == 1,
-        "public-release runtime-package catalog schema version drift",
+        "public-release package registration catalog schema version drift",
     )
     inventories = {}
     for field in ("runtime_packages", "skill_plugins"):
@@ -640,7 +641,7 @@ def load_public_release_registrations(root: Path) -> dict[str, dict]:
     )
     require(
         discovered_paths == expected_paths,
-        "public-release runtime-package registration catalog drift",
+        "public-release package registration catalog drift",
     )
     registrations: dict[str, dict] = {}
     for path in sorted(expected_paths):
@@ -836,7 +837,7 @@ def validate_public_release_registration_inventory(repository: Path) -> None:
     )
     require(
         runtime_packages == PUBLIC_RELEASE_RUNTIME_PACKAGES,
-        "public-release runtime-package catalog inventory drift",
+        "public-release runtime-package inventory drift",
     )
     require(
         registered_skill_plugins == PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS,

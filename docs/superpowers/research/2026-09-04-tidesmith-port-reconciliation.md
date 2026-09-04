@@ -10,12 +10,12 @@ record.
 
 | Source change | Disposition | Destination result |
 | --- | --- | --- |
-| PR #97 plugin manifests, license, README, changelog, topology, and delivery eval contract | Correct | Retain the Tidesmith identity and version, rewrite repository URLs to Provingkit, and compose the bootstrap with the skill already present in PR #98. |
-| PR #97 validator and focused tests | Correct | Retain the source contract, rewrite destination identities, and extend it to validate the landed `writing-for-people` roster, resources, and behavior evals. |
-| PR #97 `content-lock.json` | Drop and regenerate | Discard the source lock bytes and regenerate the semantic lock from the destination plugin root through `scripts/validate_tidesmith.py --write-content-lock .`. |
-| PR #98 `writing-for-people` skill, references, adapter metadata, behavior evals, and fixtures | Adopt | Preserve the final skill behavior and evaluation corpus under `plugins/tidesmith/skills/writing-for-people/`. |
-| PR #98 README, changelog, and topology updates | Correct | Compose them with the destination bootstrap, current Provingkit terminology, and the generated roster projection. |
-| PR #98 lock update | Drop and regenerate | Replace the source lock with the destination-generated lock after all authored Tidesmith source is stable. |
+| PR #97 plugin manifests, license, README, changelog, topology, and delivery eval contract | corrected | Retain the Tidesmith identity and version, rewrite repository URLs to Provingkit, and compose the bootstrap with the skill already present in PR #98. |
+| PR #97 validator and focused tests | corrected | Retain the source contract, rewrite destination identities, and extend it to validate the landed `writing-for-people` roster, resources, and behavior evals. |
+| PR #97 `content-lock.json` | intentionally excluded | Discard the source lock bytes and regenerate the semantic lock from the destination plugin root through `scripts/validate_tidesmith.py --write-content-lock .`. |
+| PR #98 `writing-for-people` skill, references, adapter metadata, behavior evals, and fixtures | adopted | Preserve the final skill behavior and evaluation corpus under `plugins/tidesmith/skills/writing-for-people/`. |
+| PR #98 README, changelog, and topology updates | corrected | Compose them with the destination bootstrap, current Provingkit terminology, and the generated roster projection. |
+| PR #98 lock update | intentionally excluded | Replace the source lock with the destination-generated lock after all authored Tidesmith source is stable. |
 
 Issue #25 also adds the destination-only marketplace, Kit-definition,
 public-release registration, plugin-eval calibration, workflow, and
