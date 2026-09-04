@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Tidesmith's Agent Plugins package and Claude projection."""
+"""Validate the Tidesmith Agent Plugin and its Claude projection."""
 
 from __future__ import annotations
 
@@ -34,9 +34,9 @@ CODEX_CAPABILITIES = ["Writing"]
 HOMEPAGE = "https://github.com/nisavid/provingkit/tree/main/plugins/tidesmith"
 REPOSITORY = "https://github.com/nisavid/provingkit"
 MAX_INVOCATION_WORDS = 1200
-REGISTRY_START = "<!-- BEGIN GENERATED SKILL REGISTRY -->"
-REGISTRY_END = "<!-- END GENERATED SKILL REGISTRY -->"
-EMPTY_REGISTRY_LINE = (
+ROSTER_START = "<!-- BEGIN GENERATED SKILL ROSTER -->"
+ROSTER_END = "<!-- END GENERATED SKILL ROSTER -->"
+EMPTY_ROSTER_LINE = (
     "No public skill is published yet. The planned initial roster is the generic "
     "human-facing writing skill and the adversarial draft-pass skill."
 )
@@ -214,7 +214,11 @@ def decoded_strings(value):
 
 
 def validate_decoded_portability(value, field: str) -> None:
-    for text in decoded_strings(value):
+    validate_portable_strings(decoded_strings(value), field)
+
+
+def validate_portable_strings(strings, field: str) -> None:
+    for text in strings:
         for pattern in PORTABILITY_PATTERNS:
             require(
                 pattern.search(text) is None,
@@ -314,11 +318,11 @@ def validate_topology(root: Path) -> dict:
     return topology
 
 
-def render_skill_registry(topology: dict) -> str:
+def render_skill_roster(topology: dict) -> str:
     skills = topology["skills"]
-    lines = [REGISTRY_START]
+    lines = [ROSTER_START]
     if not skills:
-        lines.append(EMPTY_REGISTRY_LINE)
+        lines.append(EMPTY_ROSTER_LINE)
     else:
         lines.append("| Skill | Owns | Calls |")
         lines.append("| --- | --- | --- |")
@@ -328,28 +332,28 @@ def render_skill_registry(topology: dict) -> str:
             lines.append(
                 f"| `{skill}` | {', '.join(node['owns'])} | {calls} |"
             )
-    lines.append(REGISTRY_END)
+    lines.append(ROSTER_END)
     return "\n".join(lines)
 
 
-def locate_registry_span(readme: str) -> tuple[int, int]:
+def locate_roster_span(readme: str) -> tuple[int, int]:
     require(
-        readme.count(REGISTRY_START) == 1 and readme.count(REGISTRY_END) == 1,
-        "README skill registry markers drift",
+        readme.count(ROSTER_START) == 1 and readme.count(ROSTER_END) == 1,
+        "README skill roster markers drift",
     )
-    start = readme.index(REGISTRY_START)
-    end = readme.index(REGISTRY_END) + len(REGISTRY_END)
-    require(start < end, "README skill registry markers drift")
+    start = readme.index(ROSTER_START)
+    end = readme.index(ROSTER_END) + len(ROSTER_END)
+    require(start < end, "README skill roster markers drift")
     return start, end
 
 
 def validate_readme_projection(root: Path, topology: dict) -> None:
     readme = read(root, "README.md")
     require("## Public skills" in readme, "README projection sections drift")
-    start, end = locate_registry_span(readme)
+    start, end = locate_roster_span(readme)
     require(
-        readme[start:end] == render_skill_registry(topology),
-        "README skill registry drift",
+        readme[start:end] == render_skill_roster(topology),
+        "README skill roster projection drift",
     )
 
 
@@ -744,11 +748,7 @@ def validate_portability(root: Path) -> None:
         if not path.is_file() or path.is_symlink():
             continue
         content = path.read_text(encoding="utf-8")
-        for pattern in PORTABILITY_PATTERNS:
-            require(
-                pattern.search(content) is None,
-                f"portability or credential leak in {path.relative_to(root)}",
-            )
+        validate_portable_strings([content], str(path.relative_to(root)))
 
 
 def semantic_file_set(skill_files: set[str]) -> set[str]:
@@ -793,31 +793,27 @@ def validate_content_lock(root: Path, semantic_files: set[str]) -> None:
     require(files == expected["files"], "semantic content lock mismatch")
 
 
-def inspect_contract(root: Path, *, expect_registry: bool = True) -> tuple[dict, set[str]]:
+def inspect_contract(root: Path, *, expect_roster: bool = True) -> tuple[dict, set[str]]:
     topology = validate_topology(root)
     prompts, bodies, skill_files = validate_skills(root, topology)
     validate_manifests(root, topology, prompts)
     delivery = validate_delivery(root)
     skill_files = validate_evals(root, topology, bodies, delivery, skill_files)
-    if expect_registry:
+    if expect_roster:
         validate_readme_projection(root, topology)
     else:
-        locate_registry_span(read(root, "README.md"))
+        locate_roster_span(read(root, "README.md"))
     return topology, semantic_file_set(skill_files)
 
 
 def rendered_readme(root: Path, topology: dict) -> str:
     readme = read(root, "README.md")
-    start, end = locate_registry_span(readme)
-    return readme[:start] + render_skill_registry(topology) + readme[end:]
+    start, end = locate_roster_span(readme)
+    return readme[:start] + render_skill_roster(topology) + readme[end:]
 
 
 def validate_text_portability(text: str, label: str) -> None:
-    for pattern in PORTABILITY_PATTERNS:
-        require(
-            pattern.search(text) is None,
-            f"portability or credential leak in {label}",
-        )
+    validate_portable_strings([text], label)
 
 
 def publish_generated_files(root: Path, readme: str, semantic_files: set[str]) -> None:
@@ -863,7 +859,7 @@ def main() -> None:
         repo_root = Path(arguments[0]) if arguments else Path.cwd()
         root = locate_root(repo_root)
         if write_lock:
-            topology, semantic_files = inspect_contract(root, expect_registry=False)
+            topology, semantic_files = inspect_contract(root, expect_roster=False)
             readme = rendered_readme(root, topology)
             validate_text_portability(readme, "README.md")
             validate_inventory(root, semantic_files, allow_missing_content_lock=True)
@@ -891,4 +887,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

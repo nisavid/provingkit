@@ -87,11 +87,6 @@
       "sha256": "sha256:0595619df8f08ceaa5d64975f162b08bd6fab5d659f66b0144dda535eeadde45"
     },
     {
-      "disposition": "historical-source-disposition-record",
-      "path": "release/source-skill-disposition/disposition-ledger.json",
-      "sha256": "sha256:43953c0e0d28027078aa0b3484c0d9d26c3dd39ef8c451b1805f6e18c876f6d0"
-    },
-    {
       "disposition": "historical-stale-source-lineage-manifest-owned-by-provingkit-issue-3",
       "path": "release/source-skill-lineage/source-manifest.json",
       "sha256": "sha256:d11961ed2d46231f74087e8ce50f96b5087bb3f84d39010f154d4ab475b83670"

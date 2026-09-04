@@ -215,6 +215,38 @@
       "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate repository-wide terms."
     },
     {
+      "kind": "exact_false_positive",
+      "plugin": "tidesmith",
+      "deduction": {
+        "id": "interface-missing-privacyPolicyURL",
+        "category": "manifest",
+        "severity": "error",
+        "status": "fail",
+        "message": "plugin.json interface is missing `privacyPolicyURL`.",
+        "penalty": 14,
+        "remediation": ["Add interface.privacyPolicyURL to plugin.json."],
+        "source": "core",
+        "targetPath": "plugins/tidesmith"
+      },
+      "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate a repository-wide privacy policy."
+    },
+    {
+      "kind": "exact_false_positive",
+      "plugin": "tidesmith",
+      "deduction": {
+        "id": "interface-missing-termsOfServiceURL",
+        "category": "manifest",
+        "severity": "error",
+        "status": "fail",
+        "message": "plugin.json interface is missing `termsOfServiceURL`.",
+        "penalty": 14,
+        "remediation": ["Add interface.termsOfServiceURL to plugin.json."],
+        "source": "core",
+        "targetPath": "plugins/tidesmith"
+      },
+      "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate repository-wide terms."
+    },
+    {
       "kind": "bounded_runtime_cost",
       "plugin": "versionkeeping",
       "metric": "deferred_cost_tokens",

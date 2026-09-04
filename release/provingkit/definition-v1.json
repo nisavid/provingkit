@@ -98,7 +98,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/tidesmith/content-lock.json",
-          "sha256": "sha256:7a3f2816c5a2f8468c083d4206ffbada5bd0dc8f6f684fea4af0a8bda8135eef"
+          "sha256": "sha256:a4727a7f18bd501e464ea26a7acae813c535e53e067b193d81313862d746b03e"
         },
         "display_name": "Tidesmith",
         "distribution_kind": "agent-plugin",

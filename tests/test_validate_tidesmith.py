@@ -11,8 +11,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = REPO_ROOT / "scripts" / "validate_tidesmith.py"
-REGISTRY_START = "<!-- BEGIN GENERATED SKILL REGISTRY -->"
-REGISTRY_END = "<!-- END GENERATED SKILL REGISTRY -->"
+ROSTER_START = "<!-- BEGIN GENERATED SKILL ROSTER -->"
+ROSTER_END = "<!-- END GENERATED SKILL ROSTER -->"
 
 # PyYAML is a test dependency, as for the sibling validator suites: a missing
 # module fails this module loudly instead of skipping every contract check.
@@ -110,16 +110,16 @@ class ValidateTidesmithTests(unittest.TestCase):
         path.write_text(json.dumps(topology) + "\n")
         self.assert_rejected("direct-child skill inventory drift")
 
-    def test_rejects_stale_skill_registry(self) -> None:
+    def test_rejects_stale_skill_roster_projection(self) -> None:
         readme = self.readme()
-        start = readme.index(REGISTRY_START) + len(REGISTRY_START)
-        end = readme.index(REGISTRY_END)
-        self.write_readme(readme[:start] + "\nstale registry\n" + readme[end:])
-        self.assert_rejected("README skill registry drift")
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
+        self.assert_rejected("README skill roster projection drift")
 
-    def test_rejects_registry_marker_drift(self) -> None:
-        self.write_readme(self.readme().replace(REGISTRY_END, ""))
-        self.assert_rejected("README skill registry markers drift")
+    def test_rejects_roster_marker_drift(self) -> None:
+        self.write_readme(self.readme().replace(ROSTER_END, ""))
+        self.assert_rejected("README skill roster markers drift")
 
     def test_rejects_semantic_drift_without_lock_refresh(self) -> None:
         self.write_readme(self.readme() + "\nAn unlocked paragraph.\n")
@@ -149,11 +149,11 @@ class ValidateTidesmithTests(unittest.TestCase):
         self.write_readme(self.readme() + "\nSee /Users/someone/notes for details.\n")
         self.assert_rejected("portability or credential leak in README.md")
 
-    def test_write_content_lock_regenerates_registry_and_lock(self) -> None:
+    def test_write_content_lock_regenerates_roster_projection_and_lock(self) -> None:
         readme = self.readme()
-        start = readme.index(REGISTRY_START) + len(REGISTRY_START)
-        end = readme.index(REGISTRY_END)
-        self.write_readme(readme[:start] + "\nstale registry\n" + readme[end:])
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
         (self.plugin / "content-lock.json").unlink()
         result = self.validate("--write-content-lock")
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -164,9 +164,9 @@ class ValidateTidesmithTests(unittest.TestCase):
 
     def test_failed_write_leaves_generated_files_untouched(self) -> None:
         readme = self.readme()
-        start = readme.index(REGISTRY_START) + len(REGISTRY_START)
-        end = readme.index(REGISTRY_END)
-        stale = readme[:start] + "\nstale registry\n" + readme[end:]
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        stale = readme[:start] + "\nstale roster\n" + readme[end:]
         self.write_readme(stale)
         lock_before = (self.plugin / "content-lock.json").read_bytes()
         (self.plugin / "NOTES.md").write_text("stray\n")
@@ -234,7 +234,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         )
         return skill
 
-    def test_publishing_one_skill_regenerates_registry_and_locks_skill_files(self) -> None:
+    def test_publishing_one_skill_regenerates_roster_and_locks_skill_files(self) -> None:
         skill = self.publish_one_skill()
         result = self.validate("--write-content-lock")
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -332,4 +332,3 @@ class ValidateTidesmithTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

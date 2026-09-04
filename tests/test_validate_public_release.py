@@ -1024,7 +1024,12 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
         (root / "release" / "public-release-runtime-packages.json").write_text(
             json.dumps(
-                {"schema_version": 1, "runtime_packages": [name]}, sort_keys=True
+                {
+                    "runtime_packages": [name],
+                    "schema_version": 1,
+                    "skill_plugins": [],
+                },
+                sort_keys=True,
             )
             + "\n",
             encoding="utf-8",
@@ -1094,35 +1099,40 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 "duplicate key",
                 lambda path: path.write_text(
                     '{"runtime_packages":["fixture-runtime"],'
-                    '"runtime_packages":["fixture-runtime"],"schema_version":1}\n'
+                    '"runtime_packages":["fixture-runtime"],"schema_version":1,'
+                    '"skill_plugins":[]}\n'
                 ),
                 "duplicate JSON key",
             ),
             (
                 "unknown field",
                 lambda path: path.write_text(
-                    '{"ambient":true,"runtime_packages":["fixture-runtime"],"schema_version":1}\n'
+                    '{"ambient":true,"runtime_packages":["fixture-runtime"],'
+                    '"schema_version":1,"skill_plugins":[]}\n'
                 ),
                 "catalog schema drift",
             ),
             (
                 "boolean version",
                 lambda path: path.write_text(
-                    '{"runtime_packages":["fixture-runtime"],"schema_version":true}\n'
+                    '{"runtime_packages":["fixture-runtime"],"schema_version":true,'
+                    '"skill_plugins":[]}\n'
                 ),
                 "catalog schema version drift",
             ),
             (
                 "unsorted duplicate names",
                 lambda path: path.write_text(
-                    '{"runtime_packages":["zeta","fixture-runtime","zeta"],"schema_version":1}\n'
+                    '{"runtime_packages":["zeta","fixture-runtime","zeta"],'
+                    '"schema_version":1,"skill_plugins":[]}\n'
                 ),
                 "sorted unique names",
             ),
             (
                 "invalid name",
                 lambda path: path.write_text(
-                    '{"runtime_packages":["Fixture_Runtime"],"schema_version":1}\n'
+                    '{"runtime_packages":["Fixture_Runtime"],"schema_version":1,'
+                    '"skill_plugins":[]}\n'
                 ),
                 "sorted unique names",
             ),
@@ -1239,9 +1249,15 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
         tidesmith = self.module.PUBLIC_RELEASE_REGISTRATIONS["tidesmith"]
         self.assertTrue(tidesmith["production_eligible"])
+        self.assertEqual(tidesmith["package_kind"], "skill-plugin")
         self.assertEqual(tidesmith["source_stage_validator_flags"], ())
         self.assertIn("tests/test_validate_tidesmith.py", tidesmith["support_paths"])
-        self.assertIn("tidesmith", self.module.PRODUCTION_RUNTIME_PACKAGES)
+        self.assertIn("tidesmith", self.module.SKILL_PLUGINS)
+        self.assertEqual(
+            self.module.PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS,
+            ("tidesmith",),
+        )
+        self.assertNotIn("tidesmith", self.module.PRODUCTION_RUNTIME_PACKAGES)
         self.assertEqual(
             self.module.MARKETPLACE_PLUGINS["tidesmith"],
             "./plugins/tidesmith",
@@ -1447,7 +1463,8 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "release/public-release-runtime-packages.json").write_text(
-            '{"runtime_packages":["fixture-runtime","second-runtime"],"schema_version":1}\n',
+            '{"runtime_packages":["fixture-runtime","second-runtime"],'
+            '"schema_version":1,"skill_plugins":[]}\n',
             encoding="utf-8",
         )
 

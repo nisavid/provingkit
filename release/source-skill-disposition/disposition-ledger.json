@@ -4,7 +4,7 @@
     "managed_source_mutation": "not-granted",
     "release_eligibility": "not-asserted"
   },
-  "content_sha256": "sha256:09466124cc99abbea058c93516a38703f55332ffdfe7ae22d580d5a989ed8e96",
+  "content_sha256": "sha256:c71b82226fef474ae00a6198701212e65dd30df297ffa2267311933c023453b4",
   "contract": "coordinated-source-skill-disposition-ledger-v1",
   "dispositions": [
     {
@@ -261,7 +261,7 @@
         "https://github.com/nisavid/agents/issues/51",
         "https://github.com/nisavid/provingkit/issues/3"
       ],
-      "rationale": "The canonical duo now incorporates, corrects, supersedes, or explicitly excludes every material behavior observed at dotfiles source revision cd2071e4dd885d293325a3af063421db9579a7df, and the review-writing cluster note extends that classification to revision f7004719af092d30c9037425e71c21c0aca4c7ff. The dotfiles-only reviewing-others-prs route, absent from the initial host inventories, is dispositioned supersede-and-remove: its reviewer boundary and Comment Voice thread shape pass to the planned Mergecraft reviewing-others-prs successor and review-voice reference, with removal owned by nisavid/agents issue #51 under install-before-remove. Provingkit issue #3 still owns release qualification, installation, migration, and retirement.",
+      "rationale": "The canonical duo now incorporates, corrects, supersedes, or explicitly excludes every material behavior observed at dotfiles source revision cd2071e4dd885d293325a3af063421db9579a7df, and the review-writing cluster note extends that classification to revision f7004719af092d30c9037425e71c21c0aca4c7ff. The dotfiles-only reviewing-others-prs route, absent from the initial host inventories, is dispositioned supersede-and-remove: its reviewer boundary and Comment Voice thread shape pass to the planned Mergecraft reviewing-others-prs successor and review-voice reference, with removal owned by https://github.com/nisavid/agents/issues/51 under install-before-remove. Provingkit issue #3 still owns release qualification, installation, migration, and retirement.",
       "skill_dispositions": [],
       "source_id": "ivan-mergecraft"
     },

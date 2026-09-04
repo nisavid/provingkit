@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "02da1ca9e24edee893dcbe7b130a686e46e3448ecc26d6e3104cbebd08ffafc3"
+SOURCE_SHA256 = "bd687dcb5ece0e6de7748c29ed6ce10eb11ea333b3563c06df38a3aac9b67305"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -58,6 +58,7 @@ SKILL_PLUGINS = (
     "mergecraft",
     "tricritical",
     "artifact-customs",
+    "tidesmith",
 )
 COMMON_SUPPORT_PATHS = {
     ".claude-plugin/marketplace.json",
@@ -484,7 +485,11 @@ def strict_json(content: str, label: str):
 
 PUBLIC_RELEASE_REGISTRATION_FILENAME = "public-release-registration.json"
 PUBLIC_RELEASE_RUNTIME_PACKAGES_PATH = "release/public-release-runtime-packages.json"
-PUBLIC_RELEASE_RUNTIME_PACKAGES_FIELDS = {"schema_version", "runtime_packages"}
+PUBLIC_RELEASE_RUNTIME_PACKAGES_FIELDS = {
+    "runtime_packages",
+    "schema_version",
+    "skill_plugins",
+}
 PUBLIC_RELEASE_REGISTRATION_FIELDS = {
     "production_eligible",
     "schema_version",
@@ -494,6 +499,7 @@ PUBLIC_RELEASE_REGISTRATION_FIELDS = {
 PUBLIC_RELEASE_NAME = re.compile(r"[a-z][a-z0-9-]*\Z")
 PUBLIC_RELEASE_PATH_PREFIXES = ("docs", "plugins", "release", "scripts", "tests")
 PUBLIC_RELEASE_PACKAGE_KIND = "runtime-package"
+PUBLIC_RELEASE_SKILL_PLUGIN_KIND = "skill-plugin"
 REQUIRED_SOURCE_STAGE_RUNTIME_PACKAGES = ("task-witness",)
 
 
@@ -504,7 +510,19 @@ def canonical_public_release_validator_path(name: str) -> str:
 
 
 def load_public_release_runtime_packages(root: Path) -> tuple[str, ...]:
-    """Load the generic catalog that authorizes every runtime-package record."""
+    """Load the runtime-package names from the public-release catalog."""
+
+    return _load_public_release_package_catalog(root)["runtime_packages"]
+
+
+def load_public_release_registered_skill_plugins(root: Path) -> tuple[str, ...]:
+    """Load skill plugins that carry package-owned release registrations."""
+
+    return _load_public_release_package_catalog(root)["skill_plugins"]
+
+
+def _load_public_release_package_catalog(root: Path) -> dict[str, tuple[str, ...]]:
+    """Load the catalog that authorizes package-owned release registrations."""
 
     path = root / PUBLIC_RELEASE_RUNTIME_PACKAGES_PATH
     try:
@@ -529,17 +547,24 @@ def load_public_release_runtime_packages(root: Path) -> tuple[str, ...]:
         type(catalog["schema_version"]) is int and catalog["schema_version"] == 1,
         "public-release runtime-package catalog schema version drift",
     )
-    runtime_packages = catalog["runtime_packages"]
-    require(
-        isinstance(runtime_packages, list)
-        and all(
-            isinstance(name, str) and PUBLIC_RELEASE_NAME.fullmatch(name)
-            for name in runtime_packages
+    inventories = {}
+    for field in ("runtime_packages", "skill_plugins"):
+        names = catalog[field]
+        require(
+            isinstance(names, list)
+            and all(
+                isinstance(name, str) and PUBLIC_RELEASE_NAME.fullmatch(name)
+                for name in names
+            )
+            and names == sorted(set(names)),
+            "public-release package catalog entries must be sorted unique names",
         )
-        and runtime_packages == sorted(set(runtime_packages)),
-        "public-release runtime-package catalog entries must be sorted unique names",
+        inventories[field] = tuple(names)
+    require(
+        set(inventories["runtime_packages"]).isdisjoint(inventories["skill_plugins"]),
+        "public-release package catalog kinds must be disjoint",
     )
-    return tuple(runtime_packages)
+    return inventories
 
 
 def _registered_relative_path(value: object, label: str) -> str:
@@ -604,9 +629,11 @@ def load_public_release_registrations(root: Path) -> dict[str, dict]:
         "public-release registration root is invalid",
     )
     runtime_packages = load_public_release_runtime_packages(root)
+    registered_skill_plugins = load_public_release_registered_skill_plugins(root)
+    catalog_names = tuple(sorted((*runtime_packages, *registered_skill_plugins)))
     expected_paths = {
         release_root / name / PUBLIC_RELEASE_REGISTRATION_FILENAME
-        for name in runtime_packages
+        for name in catalog_names
     }
     discovered_paths = set(
         release_root.glob(f"*/{PUBLIC_RELEASE_REGISTRATION_FILENAME}")
@@ -691,9 +718,19 @@ def load_public_release_registrations(root: Path) -> dict[str, dict]:
         )
         for support_path in normalized_support_paths:
             _release_entry(root, support_path, "public-release support path")
+        package_kind = (
+            PUBLIC_RELEASE_SKILL_PLUGIN_KIND
+            if name in registered_skill_plugins
+            else PUBLIC_RELEASE_PACKAGE_KIND
+        )
+        require(
+            package_kind != PUBLIC_RELEASE_SKILL_PLUGIN_KIND
+            or name in SKILL_PLUGINS,
+            "registered public-release skill plugin is missing from skill inventory",
+        )
         registrations[name] = {
             "name": name,
-            "package_kind": PUBLIC_RELEASE_PACKAGE_KIND,
+            "package_kind": package_kind,
             "production_eligible": registration["production_eligible"],
             "schema_version": registration["schema_version"],
             "source_stage_validator_flags": tuple(flags),
@@ -704,13 +741,16 @@ def load_public_release_registrations(root: Path) -> dict[str, dict]:
             "registration_path": relative,
         }
     require(
-        tuple(sorted(registrations)) == runtime_packages,
-        "public-release runtime-package registration catalog drift",
+        tuple(sorted(registrations)) == catalog_names,
+        "public-release package registration catalog drift",
     )
     return registrations
 
 
 PUBLIC_RELEASE_RUNTIME_PACKAGES = load_public_release_runtime_packages(
+    SCRIPT_DIR.parent
+)
+PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS = load_public_release_registered_skill_plugins(
     SCRIPT_DIR.parent
 )
 PUBLIC_RELEASE_REGISTRATIONS = MappingProxyType(
@@ -789,6 +829,7 @@ SOURCE_STAGE_VALIDATOR_FLAGS = MappingProxyType(
 
 def validate_public_release_registration_inventory(repository: Path) -> None:
     runtime_packages = load_public_release_runtime_packages(repository)
+    registered_skill_plugins = load_public_release_registered_skill_plugins(repository)
     require(
         set(REQUIRED_SOURCE_STAGE_RUNTIME_PACKAGES) <= set(runtime_packages),
         "required source-stage runtime package is missing: task-witness",
@@ -796,6 +837,10 @@ def validate_public_release_registration_inventory(repository: Path) -> None:
     require(
         runtime_packages == PUBLIC_RELEASE_RUNTIME_PACKAGES,
         "public-release runtime-package catalog inventory drift",
+    )
+    require(
+        registered_skill_plugins == PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS,
+        "public-release skill-plugin catalog inventory drift",
     )
     require(
         load_public_release_registrations(repository) == PUBLIC_RELEASE_REGISTRATIONS,
