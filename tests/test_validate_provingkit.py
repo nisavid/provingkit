@@ -75,11 +75,17 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     def overlay_current_final_main_contract(destination: Path) -> None:
         for relative in (
             ".claude-plugin/marketplace.json",
+            "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
             "release/provingkit/cutover-provenance-v1.json",
             "release/provingkit/definition-v1.json",
             "release/provingkit/final-main-import-map-v1.tsv",
             "release/provingkit/historical-identity-allowlist-v1.json",
             "release/provingkit/release-manifest-v1.schema.json",
+            "release/plugin-content-locks/mergecraft.json",
+            "release/source-skill-disposition/disposition-ledger.json",
+            "release/source-skill-disposition/release-refresh-contract.json",
+            "release/task-witness/source-shape-review.json",
+            "tests/test_task_witness_package.py",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
         shutil.copytree(
