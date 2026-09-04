@@ -583,12 +583,14 @@ def validate_delivery(root: Path) -> dict:
     grader = delivery["grader"]
     require(
         isinstance(executor, dict)
+        and set(executor) == {"tools", "inputs"}
         and executor.get("tools") == "denied"
         and isinstance(executor.get("inputs"), list),
         "eval executor contract drift",
     )
     require(
         isinstance(grader, dict)
+        and set(grader) == {"distinct_from_executor", "available_after", "inputs"}
         and grader.get("distinct_from_executor") is True
         and grader.get("available_after") == "executor-complete"
         and isinstance(grader.get("inputs"), list),

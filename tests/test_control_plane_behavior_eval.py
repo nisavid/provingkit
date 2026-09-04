@@ -15,12 +15,24 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts/run_control_plane_eval.py"
+ROUTING_RUNNER = ROOT / "scripts/run_skill_routing_eval.py"
 GATE = ROOT / "tests/_retired_eval_gate.py"
 DEFINITION = ROOT / "evals/control-plane-matrix.json"
 
 
 def load_runner():
     specification = importlib.util.spec_from_file_location("control_plane_eval", RUNNER)
+    assert specification and specification.loader
+    module = importlib.util.module_from_spec(specification)
+    sys.modules[specification.name] = module
+    specification.loader.exec_module(module)
+    return module
+
+
+def load_routing_runner():
+    specification = importlib.util.spec_from_file_location(
+        "skill_routing_eval_for_control_plane_tests", ROUTING_RUNNER
+    )
     assert specification and specification.loader
     module = importlib.util.module_from_spec(specification)
     sys.modules[specification.name] = module
@@ -397,6 +409,25 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
     } == {
         "plugins/mergecraft/skills/publishing-reviewable-prs/scripts/reviewable_pr_state.py"
     }
+
+
+def test_evaluation_runbook_sizes_the_current_inventory():
+    skill_count = len(json.loads(DEFINITION.read_text())["skills"])
+    routing_runner = load_routing_runner()
+    routing_counts = routing_runner.case_counts(
+        routing_runner.load_definition(ROOT).cases
+    )
+    runbook = (ROOT / "evals/README.md").read_text(encoding="utf-8")
+
+    assert f"{skill_count * 4 * 3} current executor coordinates" in runbook
+    assert f"{skill_count} skills × 4 conditions × 3 repeats" in runbook
+    assert f"{skill_count} current graders" in runbook
+    assert f"{routing_counts['total']}-call production target" in runbook
+    assert (
+        f"{routing_counts['cold_start']} cold-start cases + "
+        f"{routing_counts['explicit_invocation']} explicit invocations + "
+        f"{routing_counts['trigger']} trigger cases"
+    ) in runbook
 
 
 def test_fixture_transport_builds_gate_passing_resumable_evidence(tmp_path: Path):

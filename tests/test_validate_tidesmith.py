@@ -311,6 +311,23 @@ class ValidateTidesmithTests(unittest.TestCase):
                 finally:
                     path.write_text(content, encoding="utf-8")
 
+    def test_rejects_unknown_delivery_contract_fields(self) -> None:
+        path = self.plugin / "evals/delivery.json"
+        original = path.read_text(encoding="utf-8")
+        cases = {
+            "executor": "eval executor contract drift",
+            "grader": "eval grader contract drift",
+        }
+        for section, expected in cases.items():
+            with self.subTest(section=section):
+                try:
+                    delivery = json.loads(original)
+                    delivery[section]["future_policy"] = "ambiguous"
+                    path.write_text(json.dumps(delivery) + "\n", encoding="utf-8")
+                    self.assert_rejected(expected)
+                finally:
+                    path.write_text(original, encoding="utf-8")
+
     def publish_one_skill(self, *, description: str = "Use when prose must meet the house register.") -> str:
         skill = "explaining-to-readers"
         prompt = f"Use $tidesmith:{skill} to explain this to its reader."
