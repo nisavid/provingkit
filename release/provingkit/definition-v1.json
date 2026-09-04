@@ -8,7 +8,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-        "sha256": "sha256:999a8a5f3f0869509ea16f631237fbd9042f153228d4f31acc3b4361901947f4"
+          "sha256": "sha256:825aeec43476170762da993527f1a2777d911d231443604152d8b8ae7dfbb822"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -23,7 +23,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/tricritical/content-lock.json",
-          "sha256": "sha256:7b9520994cf4c6bbce7fe56c922a972f0233225e7aa7a9ae875f98e8d36d4fbd"
+          "sha256": "sha256:bebdee9d17bee6a997a7a56621b43d5bcfa71a03367ccae6234d46ee8a7256de"
         },
         "display_name": "Tricritical",
         "distribution_kind": "agent-plugin",
@@ -53,7 +53,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/mergecraft.json",
-          "sha256": "sha256:8309362a6ca7149fd4f52fdf07e6db839892a51248e85dfc8045dd7d2c09bc88"
+          "sha256": "sha256:0ac5667599149ca140444f13f2e1e85c4cf6c692703147d7360f78d93455d0be"
         },
         "display_name": "Mergecraft",
         "distribution_kind": "agent-plugin",
