@@ -89,7 +89,7 @@ plan- and actuation-bound authorization so a second invocation cannot replay
 it.
 
 No such production issuer, verifier, or mandatory actuator integration is
-registered by this release. These native profiles therefore describe the
+registered by this Plugin source. These native profiles therefore describe the
 required boundary but do not establish a runnable alternate-account Daybreak
 route.
 

@@ -19,7 +19,7 @@
   payload boundary. Cross-bind task, payload, immutable plan, and actuation
   identities, reject bundle fan-out, require exact Daybreak Max selection, and
   leave atomic one-time authorization consumption to the owning actuator. This
-  release registers a denial-only verifier but no production route-evidence
+  Plugin source registers a denial-only verifier but no production route-evidence
   issuer or accepting verifier, safe Codex app-server 0.149.0 status surface,
   or mandatory actuator hook; successful
   alternate-account Daybreak dispatch therefore remains blocked.

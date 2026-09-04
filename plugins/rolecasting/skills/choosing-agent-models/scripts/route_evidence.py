@@ -1,9 +1,9 @@
-"""Fail-closed route-evidence verifier for the public Rolecasting package.
+"""Fail-closed route-evidence verifier for the public Rolecasting Plugin.
 
-The package has no production route-evidence issuer, managed verification
+The Plugin has no production route-evidence issuer, managed verification
 capability, or authenticated status observer. Task Witness retains this module
 in the registered validator closure so portable validation cannot fall back to
-an issuer descriptor and unkeyed content digest. A later production release
+an issuer descriptor and unkeyed content digest. A later production integration
 must replace this denial-only implementation with a verifier backed by the
 product-owned trust boundary.
 """
@@ -14,7 +14,7 @@ from typing import Any
 
 
 class RouteEvidenceError(ValueError):
-    """Authenticated route evidence is unavailable in this source release."""
+    """Authenticated route evidence is unavailable at this source stage."""
 
 
 def validate_authenticated_route_evidence(value: Any) -> Any:

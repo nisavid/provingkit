@@ -29,7 +29,7 @@ the owning actuator to atomically consume each authorization. Every canonical
 Codex app-server semantic version with a `0.149.0` core is explicitly
 ineligible for the standing status-only refresh because its rate-limit path may
 refresh and persist managed authentication; noncanonical or unparseable
-app-server versions also fail closed. This source release registers no
+app-server versions also fail closed. This Plugin source registers no
 production route-evidence issuer or accepting verifier and no mandatory
 actuator hook, so it does not establish a runnable alternate-account Daybreak
 route.

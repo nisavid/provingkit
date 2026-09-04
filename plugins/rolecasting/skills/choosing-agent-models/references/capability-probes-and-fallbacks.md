@@ -38,10 +38,11 @@ version under the standing status authority, even if a caller labels the
 operation read-only. No supported flag or RPC in that version disables the
 provider-side persistence while inspecting the existing managed account.
 
-The current package also registers no production route-evidence issuer or
-verifier, mandatory payload actuator hook, or atomic authorization-consumption
-store. A content-addressed route record or trusted issuer label does not replace
-those controls. Until a separately qualified product or harness integration
+The current Rolecasting Plugin also registers no production route-evidence
+issuer or verifier, mandatory payload actuator hook, or atomic
+authorization-consumption store. A content-addressed route record or trusted
+issuer label does not replace those controls. Until a separately qualified
+product or harness integration
 provides them together with a side-effect-safe exact-version status observer,
 alternate-account Daybreak routing remains blocked rather than repaired.
 
