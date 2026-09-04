@@ -82,6 +82,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/provingkit/historical-identity-allowlist-v1.json",
             "release/provingkit/release-manifest-v1.schema.json",
             "release/plugin-content-locks/mergecraft.json",
+            "release/plugin-content-locks/versionkeeping.json",
             "release/source-skill-disposition/disposition-ledger.json",
             "release/source-skill-disposition/release-refresh-contract.json",
             "release/task-witness/source-shape-review.json",
