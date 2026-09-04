@@ -24,8 +24,8 @@ CURRENT_INCREMENT_CONTRACT = "tricritical-current-increment-v1"
 RETAINED_SCOPE_CONTRACT = "tricritical-retained-scope-v1"
 UNCHANGED_SCOPE_PROOF_CONTRACT = "tricritical-unchanged-scope-proof-v1"
 SEAM_CHOICE_CONTRACT = "tricritical-seam-choice-v1"
-ROLECASTING_EVIDENCE_CONTRACT = "rolecasting-dispatch-evidence-v2"
-ROLECASTING_PROJECTION_CONTRACT = "rolecasting-dispatch-projection-v2"
+ROLECASTING_EVIDENCE_CONTRACT = "rolecasting-dispatch-evidence-v3"
+ROLECASTING_PROJECTION_CONTRACT = "rolecasting-dispatch-projection-v3"
 
 TERMINALS = {
     "clean",
@@ -217,6 +217,7 @@ def _dispatch(
             "evidence_contract",
             "manifest_sha256",
             "plan_sha256",
+            "plan_binding_sha256",
             "subject",
             "producer",
             "executions",
