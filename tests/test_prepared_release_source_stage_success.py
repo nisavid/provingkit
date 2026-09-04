@@ -16,6 +16,7 @@ EXPECTED_MEMBER_IDENTITIES = {
     "mergecraft",
     "rolecasting",
     "task-witness",
+    "tidesmith",
     "tricritical",
     "versionkeeping",
 }

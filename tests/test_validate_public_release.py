@@ -5005,9 +5005,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(retired_names.isdisjoint(installed_skills))
 
-    def test_former_generic_and_deep_review_intents_have_only_tricritical_route(
-        self,
-    ) -> None:
+    def test_review_discovery_routes_include_tidesmith_and_tricritical(self) -> None:
         marketplace = json.loads(
             (self.repository / ".claude-plugin/marketplace.json").read_text()
         )
@@ -5026,8 +5024,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 ).lower()
                 if "review" in discovery_text:
                     review_routes.add(name)
-            for _intent in ("review this change", "perform a deep review"):
-                self.assertEqual(review_routes, {"tricritical"})
+            self.assertEqual(review_routes, {"tidesmith", "tricritical"})
 
     def test_contract_validation_fails_when_release_owned_unit_suites_fail(
         self,
