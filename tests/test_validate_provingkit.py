@@ -81,6 +81,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/provingkit/final-main-import-map-v1.tsv",
             "release/provingkit/historical-identity-allowlist-v1.json",
             "release/provingkit/release-manifest-v1.schema.json",
+            "plugins/rolecasting/content-lock.json",
+            "plugins/tricritical/content-lock.json",
             "release/plugin-content-locks/mergecraft.json",
             "release/plugin-content-locks/versionkeeping.json",
             "release/source-skill-disposition/disposition-ledger.json",
