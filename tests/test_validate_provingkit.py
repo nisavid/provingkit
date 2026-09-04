@@ -74,11 +74,19 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     @staticmethod
     def overlay_current_final_main_contract(destination: Path) -> None:
         for relative in (
+            ".claude-plugin/marketplace.json",
             "release/provingkit/cutover-provenance-v1.json",
+            "release/provingkit/definition-v1.json",
             "release/provingkit/final-main-import-map-v1.tsv",
             "release/provingkit/historical-identity-allowlist-v1.json",
+            "release/provingkit/release-manifest-v1.schema.json",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
+        shutil.copytree(
+            REPOSITORY / "plugins/tidesmith",
+            destination / "plugins/tidesmith",
+            dirs_exist_ok=True,
+        )
 
     def assert_identity_fixture(
         self,
@@ -2535,7 +2543,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 7),
+            ("maxItems", 6),
             ("items", {}),
         )
         for key, value in mutations:
