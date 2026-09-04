@@ -1,10 +1,10 @@
 # Phase 1 control-plane behavior evaluation
 
-`control-plane-matrix.json` is the public, declarative inventory for the 21
-Rolecasting, Tricritical, Versionkeeping, and Mergecraft skills. It selects one
-existing raw scenario per skill and declares only the companion skills allowed
-in that skill's composed condition. It is Phase 1 four-condition behavior
-evidence, not proof that every publication, deployment, hook, or runtime
+`control-plane-matrix.json` is the public, declarative inventory for the 22
+Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Tidesmith skills. It
+selects one existing raw scenario per skill and declares only the companion
+skills allowed in that skill's composed condition. It is Phase 1 four-condition
+behavior evidence, not proof that every publication, deployment, hook, or runtime
 control-plane action is integrated correctly. Those claims need their own
 end-to-end evidence.
 
@@ -96,12 +96,12 @@ not authenticate their external authorization. The shipped evaluation-gate
 executable therefore rejects every invocation before reading evidence and
 grants no evaluation or release authority in this source-stage release.
 
-The production target contract requires 252 current executor coordinates:
-21 skills × 4 conditions × 3 repeats. Its required invalidation drill first
+The production target contract requires 264 current executor coordinates:
+22 skills × 4 conditions × 3 repeats. Its required invalidation drill first
 runs a deterministic evaluation-only preimage for the choosing/delegating
 reverse-dependency slice, grades it, retains the superseded executor, grader,
 and blinding-plan checkpoints, then runs the canonical input slice and grades
-it again. A completed production manifest must also contain 21 current graders,
+it again. A completed production manifest must also contain 22 current graders,
 separate from those superseded records. These are validation requirements, not
 a claim that a retained production run already exists. Checkpoints are atomic
 and resumable; a provider call that finishes after a local timeout but before
@@ -118,11 +118,11 @@ tests.
 
 ## Phase 2 observable routing
 
-`skill-routing-matrix.json` is a separate routing tier. It leaves the 252-run
-semantic target unchanged. Its definition derives a 113-call production target:
-21 cold-start cases + 21 explicit invocations + 71 trigger cases. The trigger
+`skill-routing-matrix.json` is a separate routing tier. It leaves the 264-run
+semantic target unchanged. Its definition derives a 117-call production target:
+22 cold-start cases + 22 explicit invocations + 73 trigger cases. The trigger
 tier retains all 33 existing trigger cases and adds one positive and one
-negative case for each of the other 19 skills. This count describes the gate;
+negative case for each of the other 20 skills. This count describes the gate;
 it does not assert that the paid calls have been completed.
 
 Production routing evidence uses Claude's first-class `Skill` tool and retains

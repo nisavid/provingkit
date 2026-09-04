@@ -48,6 +48,7 @@ CANONICAL_SKILL_IDS = (
     "mergecraft:getting-prs-ready-for-review",
     "mergecraft:getting-prs-merged",
     "mergecraft:stacking-pr-fixups",
+    "tidesmith:writing-for-people",
 )
 CANONICAL_SCENARIO_IDS = (
     "cursor-grok-consequential-review",
@@ -71,6 +72,7 @@ CANONICAL_SCENARIO_IDS = (
     "ready-after-verified-checkpoint",
     "merge-explicit-review-loop",
     "narrow-stacked-fixup",
+    "stopping-point-report-partial-migration",
 )
 CANONICAL_DIRECT_CALLS = {
     "rolecasting:choosing-agent-models": (),
@@ -125,6 +127,7 @@ CANONICAL_DIRECT_CALLS = {
         "mergecraft:graphite",
         "versionkeeping:checkpointing-and-publishing-git-work",
     ),
+    "tidesmith:writing-for-people": (),
 }
 EXECUTOR_SYSTEM_PROMPT = "Respond to the supplied user message."
 GRADER_SYSTEM_PROMPT = "Assess every labeled response against every supplied criterion. Return strict JSON with one grades array preserving the supplied label order."
@@ -2156,7 +2159,7 @@ def validate_evidence(
             skill_inventory == list(CANONICAL_SKILL_IDS),
             "production ordered skill inventory drift",
         )
-        require(len(scenarios) == 21, "production scenario inventory drift")
+        require(len(scenarios) == 22, "production scenario inventory drift")
         canonical_scenarios_by_skill = {
             scenario["skill_id"]: scenario for scenario in scenarios.values()
         }

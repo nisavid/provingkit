@@ -23,6 +23,11 @@
     },
     {
       "disposition": "historical-design-or-research-record",
+      "path": "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
+      "sha256": "sha256:51ecce992966a49a88dcb80746bf4047710dbd1af58023b3fb1f57874dc16a20"
+    },
+    {
+      "disposition": "historical-design-or-research-record",
       "path": "docs/superpowers/specs/2026-08-12-task-witness-tw4-migration-and-qualification-design.md",
       "sha256": "sha256:b1f7a041df6b0b973b12e91ba45841ab6f33f54b673b74a49fab282d5ad73acd"
     },
@@ -184,7 +189,7 @@
     {
       "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
       "path": "tests/test_task_witness_package.py",
-      "sha256": "sha256:242b0e04fe67fd82db49124caa245d0e58ad48f8658b0412335ca540257d4846"
+      "sha256": "sha256:8d2c490a2c652908a8773b5457dc7999c7084eb1378111f05b940c0f2283c43f"
     },
     {
       "disposition": "historical-source-lineage-fixture",

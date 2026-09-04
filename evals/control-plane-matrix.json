@@ -272,6 +272,17 @@
         "source": "evals/mergecraft/skills/stacking-pr-fixups/evals.json",
         "selector": "narrow-stacked-fixup"
       }
+    },
+    {
+      "id": "tidesmith:writing-for-people",
+      "entrypoint": "plugins/tidesmith/skills/writing-for-people/SKILL.md",
+      "companions": [],
+      "scenario": {
+        "id": "stopping-point-report-partial-migration",
+        "kind": "skill-evals",
+        "source": "plugins/tidesmith/skills/writing-for-people/evals/evals.json",
+        "selector": "stopping-point-report-partial-migration"
+      }
     }
   ]
 }

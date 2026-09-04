@@ -162,6 +162,27 @@ jobs:
           python -m unittest tests.test_validate_artifact_customs tests.test_artifact_customs_eval_corpus
           python scripts/validate_artifact_customs.py . --source-stage
 
+  tidesmith:
+    name: Tidesmith source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.3
+
+      - name: Validate Tidesmith
+        run: |
+          python -m unittest tests.test_validate_tidesmith
+          python scripts/validate_tidesmith.py .
+
   task-witness:
     name: Task Witness source contract
     runs-on: ubuntu-latest
@@ -205,6 +226,7 @@ jobs:
           python scripts/validate_versionkeeping.py . --write-content-lock
           python scripts/validate_mergecraft.py . --source-stage --write-content-lock
           python scripts/validate_artifact_customs.py . --source-stage --write-content-lock
+          python scripts/validate_tidesmith.py --write-content-lock .
 
       - name: Require checked-in derived state
         run: git diff --exit-code

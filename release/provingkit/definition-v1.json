@@ -38,7 +38,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/versionkeeping.json",
-          "sha256": "sha256:6c6cee12edcd610e6e0edce3a5c5bfe1dcf794b23fe667c125c6239e6550d50d"
+          "sha256": "sha256:50711e4e975d001c471777e179872a1a52cde73aa11ea83eb3e744201a7496b4"
         },
         "display_name": "Versionkeeping",
         "distribution_kind": "agent-plugin",
@@ -53,7 +53,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/mergecraft.json",
-          "sha256": "sha256:1e740a17c35b9d2fecfc82f54270a4b64eb3a456f01258208a496e21b8610369"
+          "sha256": "sha256:8309362a6ca7149fd4f52fdf07e6db839892a51248e85dfc8045dd7d2c09bc88"
         },
         "display_name": "Mergecraft",
         "distribution_kind": "agent-plugin",
@@ -83,7 +83,7 @@
         "content_identity": {
           "kind": "source-shape-review",
           "path": "release/task-witness/source-shape-review.json",
-          "sha256": "sha256:e9620411ee1415f67f7fe4285cd41b258653f2c8f11cbb82756d3041b5a56bd8"
+          "sha256": "sha256:44b532320f416c3b23d04770b201b1333cc20fe94ccf6df126630765fdc391d7"
         },
         "display_name": "Task Witness",
         "distribution_kind": "code-only",
@@ -91,6 +91,21 @@
         "identity_manifests": {
           "canonical": "plugins/task-witness/plugin.json",
           "claude": "plugins/task-witness/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "plugins/tidesmith/content-lock.json",
+          "sha256": "sha256:5f92a5dffc9eb333a00cb84e7d22173325e04cf93a33d82f5f745d8e8ea0f243"
+        },
+        "display_name": "Tidesmith",
+        "distribution_kind": "agent-plugin",
+        "id": "tidesmith",
+        "identity_manifests": {
+          "canonical": "plugins/tidesmith/plugin.json",
+          "claude": "plugins/tidesmith/.claude-plugin/plugin.json"
         },
         "version": "1.0.0"
       }

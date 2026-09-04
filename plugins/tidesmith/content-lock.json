@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "algorithm": "sha256",
+  "files": {
+    ".claude-plugin/plugin.json": "15394b5fe64d99347e0021e02bc0f44b4a952c5399e67c8905cca12a5791294b",
+    "CHANGELOG.md": "0319101a7bc452af0cd67f7c26f1aadd32e21b94868c6f32693af0187a6ecb0f",
+    "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
+    "README.md": "846ba55ffe1745c910d82ff76a0ede6aac8985e508974646153365271506f073",
+    "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
+    "plugin.json": "cce35333f3e6a4caefddfa5322974ce61a2ec9846c559d00f778dba8bdef61f6",
+    "skills/writing-for-people/SKILL.md": "5abfa704566abeccbeb0c3414f8178f65a8a7fc21d3b24e8601740cead0836a5",
+    "skills/writing-for-people/agents/openai.yaml": "a88fd74733cd79d4b749b4df4cc4c4dd47ff6ea6ece2a67ee916ab84f9911194",
+    "skills/writing-for-people/evals/evals.json": "7f8b753bd82ae0195896fa3b5780d4e2f0824ff2c07ee5f90b2371011cec83c9",
+    "skills/writing-for-people/evals/fixtures/edit-pass-on-finished-draft.md": "a8e529c86318395f532865620ad5319de5c3f398f6dcb4ff4249f68d3978fa12",
+    "skills/writing-for-people/evals/fixtures/export-delay-for-non-expert.md": "85146056f254233cf15b9b9729f4f179a2920d12f3edf61a6d80cc8e8cea2568",
+    "skills/writing-for-people/evals/fixtures/review-reply-reviewer-partly-right.md": "df50d1877cb61311eb6dc431ef54d08806625d7fdf707dd57bd6de64eb496b73",
+    "skills/writing-for-people/evals/fixtures/status-message-with-unverified-outcomes.md": "e9f381e3fba66ee17f092caa59580a26ac3e67d90309e9529eb6daf2811ecfa0",
+    "skills/writing-for-people/evals/fixtures/stopping-point-report-partial-migration.md": "3348d72591b08696da333f2de89fa555106433a06417a14fe524f5f0be5b2510",
+    "skills/writing-for-people/evals/fixtures/three-review-comments-one-pr.md": "e983ff4fdd0edcd71da9e973ced7dc8b49832e2191b0be3c267490982db75b37",
+    "skills/writing-for-people/evals/fixtures/under-grounded-release-note.md": "da712244d918c75b5ece33dd0e36b76637de5baa34ef8f48aad491936c06b634",
+    "skills/writing-for-people/references/edit-pass.md": "93268aa6cfda549339e780b6ebe7aefa602a7ed9ea50858d976a7808cbfc0066",
+    "skills/writing-for-people/references/evidence-in-prose.md": "c59d898b26d1fa9cc8db72cb290e5d6af6a834f68bec6a42a5699892c1b2e7da",
+    "topology.json": "37b35752e39fde9e4753f0bf59562e0e26207d465b89026e0d58adf2de0543b5"
+  }
+}

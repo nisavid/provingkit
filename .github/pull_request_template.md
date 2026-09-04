@@ -28,7 +28,7 @@
 
 ## Review checklist
 
-- [ ] The six source members carried by this cutover remain distinct from the seven-member first release; Tidesmith enters through issue #25 after pull request #11.
+- [ ] The seven source members remain independently identified: the six Agent Plugins, including Tidesmith, and the code-only Task Witness package.
 - [ ] Member manifests keep independent identities and versions.
 - [ ] Historical Linux or macOS inputs are not presented as current qualification.
 - [ ] This change creates no Provingkit release, tag, release-manifest instance, marketplace publication, or live installation.

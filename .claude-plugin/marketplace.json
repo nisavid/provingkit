@@ -3,7 +3,7 @@
   "owner": {
     "name": "Ivan D Vasin"
   },
-  "description": "Source projection for Provingkit's five Agent Plugins v1 members. This manifest is not a marketplace publication.",
+  "description": "Source projection for Provingkit's six Agent Plugins v1 members. This manifest is not a marketplace publication.",
   "plugins": [
     {
       "name": "rolecasting",
@@ -28,6 +28,11 @@
     {
       "name": "artifact-customs",
       "source": "./plugins/artifact-customs",
+      "category": "developer-tools"
+    },
+    {
+      "name": "tidesmith",
+      "source": "./plugins/tidesmith",
       "category": "developer-tools"
     }
   ]

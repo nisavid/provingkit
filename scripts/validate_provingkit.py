@@ -147,6 +147,15 @@ EXPECTED_MEMBERS = (
         "source-shape-review",
         "release/task-witness/source-shape-review.json",
     ),
+    (
+        "tidesmith",
+        "Tidesmith",
+        "agent-plugin",
+        "plugins/tidesmith/plugin.json",
+        "plugins/tidesmith/.claude-plugin/plugin.json",
+        "plugin-content-lock",
+        "plugins/tidesmith/content-lock.json",
+    ),
 )
 EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "rolecasting": "1.0.0",
@@ -155,6 +164,7 @@ EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "mergecraft": "1.0.0",
     "artifact-customs": "1.0.0",
     "task-witness": "1.0.0",
+    "tidesmith": "1.0.0",
 }
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
@@ -257,7 +267,7 @@ EXPECTED_MARKETPLACE = {
     "name": "provingkit",
     "owner": {"name": "Ivan D Vasin"},
     "description": (
-        "Source projection for Provingkit's five Agent Plugins v1 members. "
+        "Source projection for Provingkit's six Agent Plugins v1 members. "
         "This manifest is not a marketplace publication."
     ),
     "plugins": [
@@ -272,6 +282,7 @@ EXPECTED_MARKETPLACE = {
             "versionkeeping",
             "mergecraft",
             "artifact-customs",
+            "tidesmith",
         )
     ],
 }
@@ -383,6 +394,23 @@ def _identity_scan_content(relative_path: Path, content: bytes) -> bytes:
                 raise ValueError
             skill_records[0]["rationale"] = _strip_reference_once(
                 skill_records[0].get("rationale"), AGENTS_ISSUE_51
+            )
+            mergecraft_records = [
+                item
+                for item in dispositions
+                if isinstance(item, dict)
+                and item.get("contribution_id")
+                == "mergecraft-installed-source-relationship-unresolved"
+            ]
+            if (
+                len(mergecraft_records) != 1
+                or mergecraft_records[0].get("follow_up_issues")
+                != [AGENTS_ISSUE_51, f"{CANONICAL_REPOSITORY}/issues/3"]
+            ):
+                raise ValueError
+            mergecraft_records[0]["follow_up_issues"][0] = ""
+            mergecraft_records[0]["rationale"] = _strip_reference_once(
+                mergecraft_records[0].get("rationale"), AGENTS_ISSUE_51
             )
         else:
             follow_ups = parsed["follow_up_issues"]
@@ -1538,7 +1566,7 @@ def _validate_historical_identities(repository: Path) -> None:
         or allowlist["schema_version"] != 1
         or allowlist.get("matching") != "exact-relative-path-and-whole-file-sha256"
         or not isinstance(allowlist.get("entries"), list)
-        or len(allowlist["entries"]) != 38
+        or len(allowlist["entries"]) != 39
     ):
         raise ValidationError("historical identity allowlist drift")
 

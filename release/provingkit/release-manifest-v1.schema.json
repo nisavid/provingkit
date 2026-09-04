@@ -50,8 +50,8 @@
     },
     "members": {
       "items": false,
-      "maxItems": 6,
-      "minItems": 6,
+      "maxItems": 7,
+      "minItems": 7,
       "prefixItems": [
         {
           "$ref": "#/$defs/rolecasting"
@@ -70,6 +70,9 @@
         },
         {
           "$ref": "#/$defs/task-witness"
+        },
+        {
+          "$ref": "#/$defs/tidesmith"
         }
       ],
       "type": "array"
@@ -395,6 +398,48 @@
               "properties": {
                 "path": {
                   "const": "plugins/tricritical/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tidesmith": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "plugin-content-lock"
+            },
+            "path": {
+              "const": "plugins/tidesmith/content-lock.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "agent-plugin"
+        },
+        "id": {
+          "const": "tidesmith"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/tidesmith/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/tidesmith/.claude-plugin/plugin.json"
                 }
               }
             }

@@ -33,6 +33,7 @@ AGENTS_ISSUE_51 = "https://github.com/nisavid" + "/agents/issues/51"
 AGENTS_ISSUE_6 = "https://github.com/nisavid" + "/agents/issues/6"
 PROVINGKIT_ISSUE_3 = "https://github.com/nisavid/provingkit/issues/3"
 PROVINGKIT_ISSUE_6 = "https://github.com/nisavid/provingkit/issues/6"
+PROVINGKIT_ISSUE_12 = "https://github.com/nisavid/provingkit/issues/12"
 
 
 def canonical_sha256(value: object) -> str:
@@ -283,11 +284,15 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
             mergecraft["evidence_paths"],
             [
                 "docs/superpowers/research/2026-08-26-mergecraft-statline-source-resync.md",
+                "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
                 "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
                 "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
             ],
         )
-        self.assertEqual(mergecraft["follow_up_issues"], [PROVINGKIT_ISSUE_3])
+        self.assertEqual(
+            mergecraft["follow_up_issues"],
+            [AGENTS_ISSUE_51, PROVINGKIT_ISSUE_3],
+        )
         self.assertEqual(mergecraft["authority"]["host_removal"], "not-granted")
         self.assertEqual(
             mergecraft["authority"]["managed_source_mutation"], "not-granted"
@@ -299,6 +304,24 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
             "cd2071e4dd885d293325a3af063421db9579a7df",
             mergecraft["rationale"],
         )
+        self.assertIn(
+            "f7004719af092d30c9037425e71c21c0aca4c7ff",
+            mergecraft["rationale"],
+        )
+        self.assertIn("reviewing-others-prs", mergecraft["rationale"])
+
+    def test_tidesmith_writing_mechanics_preserve_external_style_ownership(self) -> None:
+        ledger = self.load(LEDGER)
+        style = next(
+            item
+            for item in ledger["dispositions"]
+            if item["contribution_id"]
+            == "obra-elements-of-style-contribution-unresolved"
+        )
+
+        self.assertEqual(style["disposition"], "retain-side-by-side")
+        self.assertEqual(style["follow_up_issues"], [PROVINGKIT_ISSUE_12])
+        self.assertIn("Tidesmith", style["rationale"])
 
     def test_mergecraft_disposition_rejects_host_removal_authority(self) -> None:
         ledger = self.load(LEDGER)
@@ -544,6 +567,20 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
 
     def test_refresh_contract_defines_all_distribution_identity_artifacts(self) -> None:
         contract = self.load(REFRESH)
+        tidesmith = next(
+            item
+            for item in contract["candidate_identity"]["distributions"]
+            if item["id"] == "tidesmith"
+        )
+        self.assertEqual(
+            tidesmith,
+            {
+                "id": "tidesmith",
+                "identity_artifact_paths": ["plugins/tidesmith/content-lock.json"],
+                "plugin_root": "plugins/tidesmith",
+            },
+        )
+
         contract["candidate_identity"]["distributions"].pop()
         self.write(REFRESH, contract)
 

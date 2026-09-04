@@ -74,11 +74,26 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     @staticmethod
     def overlay_current_final_main_contract(destination: Path) -> None:
         for relative in (
+            ".claude-plugin/marketplace.json",
+            "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
             "release/provingkit/cutover-provenance-v1.json",
+            "release/provingkit/definition-v1.json",
             "release/provingkit/final-main-import-map-v1.tsv",
             "release/provingkit/historical-identity-allowlist-v1.json",
+            "release/provingkit/release-manifest-v1.schema.json",
+            "release/plugin-content-locks/mergecraft.json",
+            "release/plugin-content-locks/versionkeeping.json",
+            "release/source-skill-disposition/disposition-ledger.json",
+            "release/source-skill-disposition/release-refresh-contract.json",
+            "release/task-witness/source-shape-review.json",
+            "tests/test_task_witness_package.py",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
+        shutil.copytree(
+            REPOSITORY / "plugins/tidesmith",
+            destination / "plugins/tidesmith",
+            dirs_exist_ok=True,
+        )
 
     def assert_identity_fixture(
         self,
@@ -141,6 +156,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "code-only",
                 "source-shape-review",
                 "release/task-witness/source-shape-review.json",
+            ),
+            (
+                "tidesmith",
+                "agent-plugin",
+                "plugin-content-lock",
+                "plugins/tidesmith/content-lock.json",
             ),
         ):
             members.append(
@@ -342,9 +363,29 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             commands,
         )
 
-    def test_human_docs_distinguish_cutover_members_from_first_release_slate(
-        self,
-    ) -> None:
+    def test_tidesmith_source_job_and_derived_lock_are_covered(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        source_commands = {
+            line.strip()
+            for step in workflow["jobs"]["tidesmith"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+        lock_commands = {
+            line.strip()
+            for step in workflow["jobs"]["derived-locks"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+
+        self.assertIn("python -m unittest tests.test_validate_tidesmith", source_commands)
+        self.assertIn("python scripts/validate_tidesmith.py .", source_commands)
+        self.assertIn(
+            "python scripts/validate_tidesmith.py --write-content-lock .",
+            lock_commands,
+        )
+
+    def test_human_docs_state_the_current_seven_member_source_set(self) -> None:
         for relative in (
             "README.md",
             "CONTRIBUTING.md",
@@ -353,12 +394,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             with self.subTest(relative=relative):
                 content = (REPOSITORY / relative).read_text(encoding="utf-8")
                 normalized = " ".join(content.split())
-                self.assertIn("six source members carried by this cutover", normalized)
-                self.assertIn("seven-member first release", normalized)
+                self.assertIn("seven source members", normalized)
+                self.assertIn("six Agent Plugins", normalized)
                 self.assertIn("Tidesmith", normalized)
-                self.assertIn("issue #25", normalized)
-                self.assertIn("pull request #11", normalized)
-                self.assertNotIn("complete six-member Kit boundary", normalized)
+                self.assertIn("Task Witness", normalized)
+                self.assertNotIn("six source members carried by this cutover", normalized)
+                self.assertNotIn("issue #25 after pull request #11", normalized)
 
     def test_agent_guidance_describes_member_specific_content_identity_writers(
         self,
@@ -399,7 +440,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("versioned Provingkit definition is missing", result.stderr)
 
-    def test_definition_requires_the_exact_six_member_set(self) -> None:
+    def test_definition_requires_the_exact_seven_member_set(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -563,6 +604,15 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "plugins/task-witness/.claude-plugin/plugin.json",
                     "source-shape-review",
                     "release/task-witness/source-shape-review.json",
+                ),
+                (
+                    "tidesmith",
+                    "agent-plugin",
+                    "1.0.0",
+                    "plugins/tidesmith/plugin.json",
+                    "plugins/tidesmith/.claude-plugin/plugin.json",
+                    "plugin-content-lock",
+                    "plugins/tidesmith/content-lock.json",
                 ),
             ],
         )
@@ -1309,7 +1359,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 / "release/provingkit/historical-identity-allowlist-v1.json"
             ).read_text(encoding="utf-8")
         )
-        self.assertEqual(len(allowlist["entries"]), 38)
+        self.assertEqual(len(allowlist["entries"]), 39)
         self.assertIn(
             {
                 "disposition": (
@@ -1520,7 +1570,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("excluded source present", result.stderr)
 
-    def test_marketplace_is_the_exact_five_member_source_projection(self) -> None:
+    def test_marketplace_is_the_exact_six_agent_plugin_source_projection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -2520,7 +2570,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 7),
+            ("maxItems", 6),
             ("items", {}),
         )
         for key, value in mutations:

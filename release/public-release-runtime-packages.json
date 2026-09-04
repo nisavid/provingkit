@@ -1,4 +1,5 @@
 {
   "runtime_packages": ["task-witness"],
+  "skill_plugins": ["tidesmith"],
   "schema_version": 1
 }

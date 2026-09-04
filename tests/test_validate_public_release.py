@@ -1024,7 +1024,12 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
         (root / "release" / "public-release-runtime-packages.json").write_text(
             json.dumps(
-                {"schema_version": 1, "runtime_packages": [name]}, sort_keys=True
+                {
+                    "runtime_packages": [name],
+                    "schema_version": 1,
+                    "skill_plugins": [],
+                },
+                sort_keys=True,
             )
             + "\n",
             encoding="utf-8",
@@ -1094,35 +1099,40 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 "duplicate key",
                 lambda path: path.write_text(
                     '{"runtime_packages":["fixture-runtime"],'
-                    '"runtime_packages":["fixture-runtime"],"schema_version":1}\n'
+                    '"runtime_packages":["fixture-runtime"],"schema_version":1,'
+                    '"skill_plugins":[]}\n'
                 ),
                 "duplicate JSON key",
             ),
             (
                 "unknown field",
                 lambda path: path.write_text(
-                    '{"ambient":true,"runtime_packages":["fixture-runtime"],"schema_version":1}\n'
+                    '{"ambient":true,"runtime_packages":["fixture-runtime"],'
+                    '"schema_version":1,"skill_plugins":[]}\n'
                 ),
                 "catalog schema drift",
             ),
             (
                 "boolean version",
                 lambda path: path.write_text(
-                    '{"runtime_packages":["fixture-runtime"],"schema_version":true}\n'
+                    '{"runtime_packages":["fixture-runtime"],"schema_version":true,'
+                    '"skill_plugins":[]}\n'
                 ),
                 "catalog schema version drift",
             ),
             (
                 "unsorted duplicate names",
                 lambda path: path.write_text(
-                    '{"runtime_packages":["zeta","fixture-runtime","zeta"],"schema_version":1}\n'
+                    '{"runtime_packages":["zeta","fixture-runtime","zeta"],'
+                    '"schema_version":1,"skill_plugins":[]}\n'
                 ),
                 "sorted unique names",
             ),
             (
                 "invalid name",
                 lambda path: path.write_text(
-                    '{"runtime_packages":["Fixture_Runtime"],"schema_version":1}\n'
+                    '{"runtime_packages":["Fixture_Runtime"],"schema_version":1,'
+                    '"skill_plugins":[]}\n'
                 ),
                 "sorted unique names",
             ),
@@ -1144,7 +1154,20 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         path.symlink_to(target)
 
         with self.assertRaisesRegex(
-            self.module.ReleaseError, "catalog must be a regular file"
+            self.module.ReleaseError, "catalog contains a symlink"
+        ):
+            self.module.load_public_release_runtime_packages(root)
+
+    def test_runtime_package_catalog_rejects_a_symlinked_parent(self) -> None:
+        root = self.public_release_registration_fixture()
+        release = root / "release"
+        outside = root.parent / "outside-release"
+        shutil.copytree(release, outside)
+        shutil.rmtree(release)
+        release.symlink_to(outside, target_is_directory=True)
+
+        with self.assertRaisesRegex(
+            self.module.ReleaseError, "catalog contains a symlink"
         ):
             self.module.load_public_release_runtime_packages(root)
 
@@ -1237,6 +1260,22 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     registration["source_stage_validator_flags"],
                 )
 
+        tidesmith = self.module.PUBLIC_RELEASE_REGISTRATIONS["tidesmith"]
+        self.assertTrue(tidesmith["production_eligible"])
+        self.assertEqual(tidesmith["package_kind"], "skill-plugin")
+        self.assertEqual(tidesmith["source_stage_validator_flags"], ())
+        self.assertIn("tests/test_validate_tidesmith.py", tidesmith["support_paths"])
+        self.assertIn("tidesmith", self.module.SKILL_PLUGINS)
+        self.assertEqual(
+            self.module.PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS,
+            ("tidesmith",),
+        )
+        self.assertNotIn("tidesmith", self.module.PRODUCTION_RUNTIME_PACKAGES)
+        self.assertEqual(
+            self.module.MARKETPLACE_PLUGINS["tidesmith"],
+            "./plugins/tidesmith",
+        )
+
     def test_public_release_registration_projection_is_immutable(self) -> None:
         runtime_package = next(iter(self.module.PUBLIC_RELEASE_REGISTRATIONS))
         registration = self.module.PUBLIC_RELEASE_REGISTRATIONS[runtime_package]
@@ -1292,6 +1331,22 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     ),
                     ("fixture-runtime",) if production_eligible else (),
                 )
+
+    def test_registered_skill_plugin_requires_production_eligibility(self) -> None:
+        root = self.public_release_registration_fixture(
+            name="tidesmith", production_eligible=False
+        )
+        catalog_path = root / "release/public-release-runtime-packages.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        catalog["runtime_packages"] = []
+        catalog["skill_plugins"] = ["tidesmith"]
+        catalog_path.write_text(json.dumps(catalog, sort_keys=True) + "\n")
+
+        with self.assertRaisesRegex(
+            self.module.ReleaseError,
+            "registered skill plugin must be production eligible",
+        ):
+            self.module.load_public_release_registrations(root)
 
     def test_public_release_registration_discovery_rejects_mutated_boundaries(
         self,
@@ -1437,7 +1492,8 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "release/public-release-runtime-packages.json").write_text(
-            '{"runtime_packages":["fixture-runtime","second-runtime"],"schema_version":1}\n',
+            '{"runtime_packages":["fixture-runtime","second-runtime"],'
+            '"schema_version":1,"skill_plugins":[]}\n',
             encoding="utf-8",
         )
 
@@ -4832,18 +4888,18 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             policy["thresholds"],
             {
                 "trigger_cost_tokens": {
-                    "goodMax": 66,
+                    "goodMax": 96,
                     "moderateMax": 254,
                     "heavyMax": 614,
                 },
                 "invoke_cost_tokens": {
-                    "goodMax": 462,
+                    "goodMax": 768,
                     "moderateMax": 4493,
                     "heavyMax": 17204,
                 },
                 "deferred_cost_tokens": {
-                    "goodMax": 27,
-                    "moderateMax": 7622,
+                    "goodMax": 128,
+                    "moderateMax": 8982,
                     "heavyMax": 58894,
                 },
             },
@@ -4978,9 +5034,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(retired_names.isdisjoint(installed_skills))
 
-    def test_former_generic_and_deep_review_intents_have_only_tricritical_route(
-        self,
-    ) -> None:
+    def test_review_discovery_routes_include_tidesmith_and_tricritical(self) -> None:
         marketplace = json.loads(
             (self.repository / ".claude-plugin/marketplace.json").read_text()
         )
@@ -4999,8 +5053,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 ).lower()
                 if "review" in discovery_text:
                     review_routes.add(name)
-            for _intent in ("review this change", "perform a deep review"):
-                self.assertEqual(review_routes, {"tricritical"})
+            self.assertEqual(review_routes, {"tidesmith", "tricritical"})
 
     def test_contract_validation_fails_when_release_owned_unit_suites_fail(
         self,

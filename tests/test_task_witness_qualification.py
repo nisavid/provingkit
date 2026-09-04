@@ -134,7 +134,8 @@ def create_synthetic_candidate(
         ".gitignore": b"ignored\n",
         "outside.txt": b'{"name":"fixture"}\n',
         "release/public-release-runtime-packages.json": (
-            b'{"runtime_packages":["task-witness"],"schema_version":1}\n'
+            b'{"runtime_packages":["task-witness"],"schema_version":1,'
+            b'"skill_plugins":[]}\n'
         ),
         "scripts/agent_plugins_standard.py": b"MARKER = 'captured-agent-standard'\n",
     }

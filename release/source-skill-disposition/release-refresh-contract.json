@@ -36,6 +36,13 @@
         "plugin_root": "plugins/task-witness"
       },
       {
+        "id": "tidesmith",
+        "identity_artifact_paths": [
+          "plugins/tidesmith/content-lock.json"
+        ],
+        "plugin_root": "plugins/tidesmith"
+      },
+      {
         "id": "tricritical",
         "identity_artifact_paths": [
           "plugins/tricritical/content-lock.json"
@@ -72,11 +79,11 @@
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   },
-  "content_sha256": "sha256:de591f7b319d0fc1120b3d66314d7ed54db1f7aed352cfca82cffdafce4b0ef8",
+  "content_sha256": "sha256:a7c50070d80d553d9e16a6e95944e921b8935f50290e116fe103db2f81d45f6c",
   "contract": "coordinated-source-skill-release-refresh-v1",
   "disposition_ledger": {
     "path": "release/source-skill-disposition/disposition-ledger.json",
-    "sha256": "sha256:2bf373c5c25d353bd61c693f598125189c365f335f0099d803bc68c5bc238114"
+    "sha256": "sha256:11396accf000f69283aa7fc929dc44f76edb2a0dc3660c7981797df49f46db48"
   },
   "final_rescout_artifact": {
     "contract": "coordinated-final-installed-library-rescout-v1",
@@ -153,6 +160,7 @@
         "mergecraft",
         "rolecasting",
         "task-witness",
+        "tidesmith",
         "tricritical",
         "versionkeeping"
       ],
@@ -237,6 +245,9 @@
             "artifact-customs",
             "mergecraft",
             "task-witness"
+          ],
+          "tidesmith": [
+            "tidesmith"
           ],
           "tricritical": [
             "artifact-customs",
@@ -362,6 +373,31 @@
             "scripts/run_task_witness_qualification.py",
             "scripts/run_task_witness_qualification_suite.py",
             "scripts/validate_task_witness.py"
+          ]
+        },
+        {
+          "documentation_paths": [
+            "plugins/tidesmith/README.md",
+            "plugins/tidesmith/skills"
+          ],
+          "evaluation_paths": [
+            "plugins/tidesmith/evals",
+            "plugins/tidesmith/skills/writing-for-people/evals"
+          ],
+          "id": "tidesmith",
+          "identity_artifact_paths": [
+            "plugins/tidesmith/content-lock.json"
+          ],
+          "manifest_path": "plugins/tidesmith/plugin.json",
+          "package_root": "plugins/tidesmith",
+          "test_paths": [
+            "tests/test_validate_tidesmith.py"
+          ],
+          "topology_and_owner_paths": [
+            "plugins/tidesmith/topology.json"
+          ],
+          "validation_entrypoints": [
+            "scripts/validate_tidesmith.py"
           ]
         },
         {
@@ -636,6 +672,13 @@
         "id": "task-witness",
         "regenerate_paths": [
           "release/task-witness/source-shape-review.json"
+        ]
+      },
+      {
+        "conditional_regenerate_paths": [],
+        "id": "tidesmith",
+        "regenerate_paths": [
+          "plugins/tidesmith/content-lock.json"
         ]
       },
       {

@@ -113,8 +113,8 @@
       "tests/plugins/task_witness_deployment/test_source_evidence_transitions.py": 257,
       "tests/plugins/task_witness_deployment/test_staged_client_integration.py": 265,
       "tests/plugins/task_witness_deployment/test_transaction_result_reconciliation.py": 1452,
-      "tests/test_task_witness_package.py": 4275,
-      "tests/test_task_witness_qualification.py": 6628
+      "tests/test_task_witness_package.py": 4286,
+      "tests/test_task_witness_qualification.py": 6629
     },
     "sets": {
       "current_control_set": {
@@ -133,7 +133,7 @@
         ]
       },
       "direct_release_owned_tests": {
-        "aggregate_nonblank_noncomment_lines": 60917,
+        "aggregate_nonblank_noncomment_lines": 60929,
         "paths": [
           "tests/plugins/task_witness_client/__init__.py",
           "tests/plugins/task_witness_client/_activation_smoke_driver.py",
@@ -224,7 +224,7 @@
         ]
       },
       "release_integration": {
-        "aggregate_nonblank_noncomment_lines": 10926,
+        "aggregate_nonblank_noncomment_lines": 10938,
         "paths": [
           "release/task-witness/public-release-registration.json",
           "tests/test_task_witness_package.py",
@@ -232,7 +232,7 @@
         ]
       },
       "release_integration_tests": {
-        "aggregate_nonblank_noncomment_lines": 10903,
+        "aggregate_nonblank_noncomment_lines": 10915,
         "paths": [
           "tests/test_task_witness_package.py",
           "tests/test_task_witness_qualification.py"
@@ -286,7 +286,7 @@
         ]
       },
       "tw4_qualification_contract": {
-        "aggregate_nonblank_noncomment_lines": 16245,
+        "aggregate_nonblank_noncomment_lines": 16246,
         "paths": [
           "release/task-witness/tw4-suite-inventory.json",
           "scripts/run_task_witness_qualification.py",
@@ -300,17 +300,17 @@
   "source_byte_identity": {
     "aggregate_sha256_by_set": {
       "current_control_set": "f0ba9629f113b52f04eacf0b544b97ae7e0d97611786ff0e392a4ee49a8b1524",
-      "direct_release_owned_tests": "a34399e78ea39a8a3de618c4a5615f2c69048890f346684d2afd9cc247e69199",
+      "direct_release_owned_tests": "53dcb99dc321321c9c558bebb8aec7d828122b720fc12e691f3162e2e4f1d36e",
       "public_release_registration": "e3e97ca609e4806d3d6445f0f9e4b07a6cac739fa828f6d5f432824511e8390e",
       "release_documentation": "b0a5feb9ceae5f823b41360ef9cc4f70f73040cb767570a6b189c3144622790a",
-      "release_integration": "5425a4bdf637817c58fcb7d5183b8f0930f53905da84b9c9908ba089ce92f346",
-      "release_integration_tests": "ff6026c4fe36c37534b122d669b17fb8d7d20f62a4123250948385a339decf15",
+      "release_integration": "c5a95778b1aaaa15b0b6b2ab69bba0d5ef1eb2fa92319857f7d729368dfe5ce5",
+      "release_integration_tests": "45ce39762fe345e5d2a9fdeb9c04b6c1daf72f9545479dd30dab159c4a35c562",
       "release_validator": "c73a631c276a24958f3d0a762378990548a9166b1afaaa538c5b453f6d134cb0",
       "tw0": "3559210111eaab4a310bd4db2b3ce7133aeff4bde35dbb4821db5bb2fc5fc0b3",
       "tw1_client": "9ca6833117f5f8cf68c68d4a1463572957c125e03e51d1fb462fac9b23b49b47",
       "tw2_control_plane": "e2f794485164ef20bb71ee2626a023e02c24e1ac36ef0eadae6b5295b81e22e2",
       "tw4_migration_evidence": "ff578b10c2ccd00636e017dfae4befe407acc2d86b084392ecfe4518614634b4",
-      "tw4_qualification_contract": "905d87c4353ca14c2510e53853a444c8283f95ecf0327db76899e407a28908a5"
+      "tw4_qualification_contract": "8393ec0ef290ab5cb9f85ea299a40166985d3b46a5c250656c44797b37ec18b3"
     },
     "algorithm": "sha256",
     "entries": [
@@ -712,11 +712,11 @@
       },
       {
         "path": "tests/test_task_witness_package.py",
-        "sha256": "242b0e04fe67fd82db49124caa245d0e58ad48f8658b0412335ca540257d4846"
+        "sha256": "8d2c490a2c652908a8773b5457dc7999c7084eb1378111f05b940c0f2283c43f"
       },
       {
         "path": "tests/test_task_witness_qualification.py",
-        "sha256": "23347c8928b67d85d54e764b3cd8c68c2b47cdacea5ad64a4e0930ba8e7f1011"
+        "sha256": "17832aed592d8d21c8647cb543c62016f147edb18878d129aa1c117e8f02ba4a"
       }
     ],
     "framing": "path-utf8-nul-sha256-hex-nul-v1"

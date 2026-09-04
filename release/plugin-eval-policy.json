@@ -13,7 +13,7 @@
   },
   "calibration": {
     "manifest_path": "release/plugin-eval-baseline-v1.json",
-    "manifest_sha256": "sha256:836d412b734cbf8a74fe98004cb0e805758e643e81700d9bfe8723e300160f09"
+    "manifest_sha256": "sha256:606c015e11a02c086830515b51f7e5f5bed9006a1d3fd9bbcab3e4ca1f7df2ae"
   },
   "native_budget_findings": [
     {
@@ -211,6 +211,38 @@
         "remediation": ["Add interface.termsOfServiceURL to plugin.json."],
         "source": "core",
         "targetPath": "plugins/artifact-customs"
+      },
+      "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate repository-wide terms."
+    },
+    {
+      "kind": "exact_false_positive",
+      "plugin": "tidesmith",
+      "deduction": {
+        "id": "interface-missing-privacyPolicyURL",
+        "category": "manifest",
+        "severity": "error",
+        "status": "fail",
+        "message": "plugin.json interface is missing `privacyPolicyURL`.",
+        "penalty": 14,
+        "remediation": ["Add interface.privacyPolicyURL to plugin.json."],
+        "source": "core",
+        "targetPath": "plugins/tidesmith"
+      },
+      "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate a repository-wide privacy policy."
+    },
+    {
+      "kind": "exact_false_positive",
+      "plugin": "tidesmith",
+      "deduction": {
+        "id": "interface-missing-termsOfServiceURL",
+        "category": "manifest",
+        "severity": "error",
+        "status": "fail",
+        "message": "plugin.json interface is missing `termsOfServiceURL`.",
+        "penalty": 14,
+        "remediation": ["Add interface.termsOfServiceURL to plugin.json."],
+        "source": "core",
+        "targetPath": "plugins/tidesmith"
       },
       "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate repository-wide terms."
     },

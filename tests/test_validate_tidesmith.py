@@ -1,0 +1,525 @@
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+VALIDATOR = REPO_ROOT / "scripts" / "validate_tidesmith.py"
+ROSTER_START = "<!-- BEGIN GENERATED SKILL ROSTER -->"
+ROSTER_END = "<!-- END GENERATED SKILL ROSTER -->"
+
+# PyYAML is a test dependency, as for the sibling validator suites: a missing
+# module fails this module loudly instead of skipping every contract check.
+import yaml  # noqa: E402,F401
+
+
+class ValidateTidesmithTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.temp_root = Path(self.tempdir.name).resolve()
+        self.repo = self.temp_root / "repo"
+        self.plugin = self.repo / "plugins" / "tidesmith"
+        shutil.copytree(REPO_ROOT / "plugins" / "tidesmith", self.plugin)
+
+    def tearDown(self) -> None:
+        self.tempdir.cleanup()
+
+    def validate(self, *arguments: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(VALIDATOR), *arguments, str(self.repo)],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def assert_rejected(self, expected: str) -> None:
+        result = self.validate()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(expected, result.stderr)
+
+    def readme(self) -> str:
+        return (self.plugin / "README.md").read_text(encoding="utf-8")
+
+    def write_readme(self, content: str) -> None:
+        (self.plugin / "README.md").write_text(content, encoding="utf-8")
+
+    def validator_module(self):
+        scripts_dir = str(REPO_ROOT / "scripts")
+        sys.path.insert(0, scripts_dir)
+        self.addCleanup(lambda: sys.path.remove(scripts_dir))
+        import validate_tidesmith as module
+
+        return module
+
+    def test_accepts_current_contract(self) -> None:
+        result = self.validate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "Tidesmith contract validation passed\n")
+
+    def test_committed_lock_covers_base_and_skill_files(self) -> None:
+        lock = json.loads((self.plugin / "content-lock.json").read_text())
+        self.assertEqual(set(lock), {"schema_version", "algorithm", "files"})
+        files = set(lock["files"])
+        self.assertTrue(
+            {
+                ".claude-plugin/plugin.json",
+                "CHANGELOG.md",
+                "LICENSE",
+                "README.md",
+                "evals/delivery.json",
+                "plugin.json",
+                "topology.json",
+                "skills/writing-for-people/SKILL.md",
+                "skills/writing-for-people/agents/openai.yaml",
+                "skills/writing-for-people/evals/evals.json",
+            }
+            <= files
+        )
+        self.assertNotIn("content-lock.json", files)
+
+    def test_publishes_writing_for_people(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        self.assertEqual(set(topology["skills"]), {"writing-for-people"})
+        self.assertTrue((self.plugin / "skills" / "writing-for-people" / "SKILL.md").is_file())
+        manifest = json.loads((self.plugin / "plugin.json").read_text())
+        prompts = manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"]
+        self.assertEqual(len(prompts), 1)
+        self.assertIn("$tidesmith:writing-for-people", prompts[0])
+
+    def test_rejects_claude_projection_drift(self) -> None:
+        path = self.plugin / ".claude-plugin" / "plugin.json"
+        claude = json.loads(path.read_text())
+        claude["description"] = "Tidesmith: something else."
+        path.write_text(json.dumps(claude, indent=2) + "\n")
+        self.assert_rejected("Claude manifest projection drift: description")
+
+    def test_rejects_display_name_drift(self) -> None:
+        path = self.plugin / ".claude-plugin" / "plugin.json"
+        claude = json.loads(path.read_text())
+        claude["displayName"] = "Copydesk"
+        path.write_text(json.dumps(claude, indent=2) + "\n")
+        self.assert_rejected("Claude displayName drift")
+
+    def test_rejects_topology_schema_drift(self) -> None:
+        path = self.plugin / "topology.json"
+        path.write_text(json.dumps({"schema_version": 2, "skills": {}}) + "\n")
+        self.assert_rejected("topology schema_version drift")
+
+    def test_rejects_skill_declared_without_skill_directory(self) -> None:
+        path = self.plugin / "topology.json"
+        topology = json.loads(path.read_text())
+        topology["skills"]["explaining-to-readers"] = {"owns": ["register"], "may_call": []}
+        path.write_text(json.dumps(topology) + "\n")
+        self.assert_rejected("direct-child skill inventory drift")
+
+    def test_rejects_stale_skill_roster_projection(self) -> None:
+        readme = self.readme()
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
+        self.assert_rejected("README skill roster projection drift")
+
+    def test_rejects_roster_marker_drift(self) -> None:
+        self.write_readme(self.readme().replace(ROSTER_END, ""))
+        self.assert_rejected("README skill roster markers drift")
+
+    def test_rejects_semantic_drift_without_lock_refresh(self) -> None:
+        self.write_readme(self.readme() + "\nAn unlocked paragraph.\n")
+        self.assert_rejected("semantic content lock mismatch")
+
+    def test_rejects_inventory_drift(self) -> None:
+        (self.plugin / "NOTES.md").write_text("stray\n")
+        self.assert_rejected("component inventory drift")
+
+    def test_rejects_symlinked_inventory(self) -> None:
+        target = self.plugin / "LICENSE"
+        link = self.plugin / "LICENSE.link"
+        os.symlink(target, link)
+        self.assert_rejected("plugin inventory contains a symlink")
+
+    def test_rejects_persona_agents(self) -> None:
+        (self.plugin / "agents").mkdir()
+        (self.plugin / "agents" / "writer.md").write_text("persona\n")
+        self.assert_rejected("Tidesmith must not define persona agents")
+
+    def test_rejects_missing_release_heading(self) -> None:
+        path = self.plugin / "CHANGELOG.md"
+        path.write_text(path.read_text().replace("## 1.0.0", "## Unreleased"))
+        self.assert_rejected("changelog release drift")
+
+    def test_rejects_portability_leak(self) -> None:
+        self.write_readme(self.readme() + "\nSee /Users/someone/notes for details.\n")
+        self.assert_rejected("portability or credential leak in README.md")
+
+    def test_rejects_cyclic_yaml_containers_without_traceback(self) -> None:
+        path = self.plugin / "skills/writing-for-people/agents/openai.yaml"
+        cases = {
+            "sequence": (
+                "interface: &node [*node]\n",
+                "writing-for-people skill interface contains a cyclic container",
+            ),
+            "mapping": (
+                "interface: &node {self: *node}\n",
+                "writing-for-people skill interface contains invalid YAML",
+            ),
+        }
+        for kind, (content, expected) in cases.items():
+            with self.subTest(kind=kind):
+                path.write_text(content, encoding="utf-8")
+                result = self.validate()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(expected, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_decoded_portability_rejects_only_active_container_cycles(self) -> None:
+        module = self.validator_module()
+        cyclic_list: list[object] = []
+        cyclic_list.append(cyclic_list)
+        cyclic_dict: dict[str, object] = {}
+        cyclic_dict["self"] = cyclic_dict
+        for kind, value in (("list", cyclic_list), ("dict", cyclic_dict)):
+            with self.subTest(kind=kind):
+                with self.assertRaisesRegex(
+                    module.ContractError,
+                    "test field contains a cyclic container",
+                ):
+                    module.validate_decoded_portability(value, "test field")
+
+        shared = ["portable text"]
+        module.validate_decoded_portability(
+            {"first": shared, "second": shared},
+            "test field",
+        )
+
+    def test_write_content_lock_regenerates_roster_projection_and_lock(self) -> None:
+        readme = self.readme()
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
+        (self.plugin / "content-lock.json").unlink()
+        result = self.validate("--write-content-lock")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Tidesmith semantic content lock updated", result.stdout)
+        self.assertEqual(self.readme(), readme)
+        self.assertTrue((self.plugin / "content-lock.json").is_file())
+        self.assertEqual(self.validate().returncode, 0)
+
+    def test_failed_write_leaves_generated_files_untouched(self) -> None:
+        readme = self.readme()
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        stale = readme[:start] + "\nstale roster\n" + readme[end:]
+        self.write_readme(stale)
+        lock_before = (self.plugin / "content-lock.json").read_bytes()
+        (self.plugin / "NOTES.md").write_text("stray\n")
+        result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("component inventory drift", result.stderr)
+        self.assertEqual(self.readme(), stale)
+        self.assertEqual((self.plugin / "content-lock.json").read_bytes(), lock_before)
+
+    def test_failed_second_publish_restores_both_generated_files(self) -> None:
+        module = self.validator_module()
+        readme = self.readme()
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
+        fixture = self.plugin / "skills/writing-for-people/evals/fixtures/stopping-point-report-partial-migration.md"
+        fixture.write_text(fixture.read_text() + "\nA newly discovered constraint.\n")
+        readme_before = (self.plugin / "README.md").read_bytes()
+        lock_before = (self.plugin / "content-lock.json").read_bytes()
+        real_replace = Path.replace
+
+        def fail_lock_replace(path: Path, target: Path):
+            if path.name == ".content-lock.json.tidesmith-stage":
+                real_replace(path, target)
+                raise OSError("injected lock publication failure")
+            return real_replace(path, target)
+
+        with (
+            mock.patch.object(Path, "replace", autospec=True, side_effect=fail_lock_replace),
+            mock.patch.object(sys, "argv", [str(VALIDATOR), "--write-content-lock", str(self.repo)]),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            module.main()
+
+        self.assertEqual(raised.exception.code, 1)
+        self.assertEqual((self.plugin / "README.md").read_bytes(), readme_before)
+        self.assertEqual((self.plugin / "content-lock.json").read_bytes(), lock_before)
+        self.assertFalse((self.plugin / ".README.md.tidesmith-stage").exists())
+        self.assertFalse((self.plugin / ".content-lock.json.tidesmith-stage").exists())
+
+    def test_failed_post_publish_validation_restores_both_generated_files(self) -> None:
+        module = self.validator_module()
+        readme = self.readme()
+        start = readme.index(ROSTER_START) + len(ROSTER_START)
+        end = readme.index(ROSTER_END)
+        self.write_readme(readme[:start] + "\nstale roster\n" + readme[end:])
+        fixture = self.plugin / "skills/writing-for-people/evals/fixtures/stopping-point-report-partial-migration.md"
+        fixture.write_text(fixture.read_text() + "\nA newly discovered constraint.\n")
+        readme_before = (self.plugin / "README.md").read_bytes()
+        lock_before = (self.plugin / "content-lock.json").read_bytes()
+        real_validate_content_lock = module.validate_content_lock
+        calls = 0
+
+        def fail_final_validation(root: Path, semantic_files: set[str]) -> None:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise module.ContractError("injected post-publication validation failure")
+            real_validate_content_lock(root, semantic_files)
+
+        with (
+            mock.patch.object(module, "validate_content_lock", side_effect=fail_final_validation),
+            mock.patch.object(sys, "argv", [str(VALIDATOR), "--write-content-lock", str(self.repo)]),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            module.main()
+
+        self.assertEqual(raised.exception.code, 1)
+        self.assertEqual((self.plugin / "README.md").read_bytes(), readme_before)
+        self.assertEqual((self.plugin / "content-lock.json").read_bytes(), lock_before)
+
+    def test_rejects_duplicate_keys_in_every_json_contract(self) -> None:
+        cases = (
+            ("topology.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
+            (".claude-plugin/plugin.json", '"name": "tidesmith",', '"name": "tidesmith", "name": "tidesmith",'),
+            ("plugin.json", '"name": "tidesmith",', '"name": "tidesmith", "name": "tidesmith",'),
+            ("evals/delivery.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
+            (
+                "skills/writing-for-people/evals/evals.json",
+                '"skill_name": "writing-for-people",',
+                '"skill_name": "writing-for-people", "skill_name": "writing-for-people",',
+            ),
+            ("content-lock.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
+        )
+        for relative, original, duplicate in cases:
+            with self.subTest(relative=relative):
+                path = self.plugin / relative
+                content = path.read_text(encoding="utf-8")
+                self.assertIn(original, content)
+                try:
+                    path.write_text(content.replace(original, duplicate, 1), encoding="utf-8")
+                    self.assert_rejected("duplicate key")
+                finally:
+                    path.write_text(content, encoding="utf-8")
+
+    def test_rejects_unknown_delivery_contract_fields(self) -> None:
+        path = self.plugin / "evals/delivery.json"
+        original = path.read_text(encoding="utf-8")
+        cases = {
+            "executor": "eval executor contract drift",
+            "grader": "eval grader contract drift",
+        }
+        for section, expected in cases.items():
+            with self.subTest(section=section):
+                try:
+                    delivery = json.loads(original)
+                    delivery[section]["future_policy"] = "ambiguous"
+                    path.write_text(json.dumps(delivery) + "\n", encoding="utf-8")
+                    self.assert_rejected(expected)
+                finally:
+                    path.write_text(original, encoding="utf-8")
+
+    def test_rejects_delivery_input_drift(self) -> None:
+        path = self.plugin / "evals/delivery.json"
+        original = path.read_text(encoding="utf-8")
+        cases = (
+            ("executor", ["expected_output"], "eval executor contract drift"),
+            ("executor", ["prompt", "fixture", 7], "eval executor contract drift"),
+            ("grader", [], "eval grader contract drift"),
+            (
+                "grader",
+                [
+                    "prompt",
+                    "fixture",
+                    "candidate_bundle",
+                    "response",
+                    "expected_output",
+                    None,
+                ],
+                "eval grader contract drift",
+            ),
+        )
+        for section, inputs, expected in cases:
+            with self.subTest(section=section, inputs=inputs):
+                try:
+                    delivery = json.loads(original)
+                    delivery[section]["inputs"] = inputs
+                    path.write_text(json.dumps(delivery) + "\n", encoding="utf-8")
+                    self.assert_rejected(expected)
+                finally:
+                    path.write_text(original, encoding="utf-8")
+
+    def test_delivery_schema_version_requires_an_integer(self) -> None:
+        path = self.plugin / "evals/delivery.json"
+        delivery = json.loads(path.read_text(encoding="utf-8"))
+        delivery["schema_version"] = True
+        path.write_text(json.dumps(delivery) + "\n", encoding="utf-8")
+        self.assert_rejected("eval delivery schema_version must be an integer")
+
+    def publish_one_skill(self, *, description: str = "Use when prose must meet the house register.") -> str:
+        skill = "explaining-to-readers"
+        prompt = f"Use $tidesmith:{skill} to explain this to its reader."
+        topology_path = self.plugin / "topology.json"
+        topology = json.loads(topology_path.read_text())
+        topology["skills"][skill] = {"owns": ["register"], "may_call": []}
+        topology_path.write_text(json.dumps(topology, indent=2) + "\n")
+        root = self.plugin / "skills" / skill
+        (root / "agents").mkdir(parents=True)
+        (root / "references").mkdir()
+        (root / "SKILL.md").write_text(
+            "---\n"
+            f"name: {skill}\n"
+            f"description: {description}\n"
+            "---\n\n"
+            "# Writing for people\n\n"
+            "Open with the finding. Details live in "
+            "[the register reference](references/register.md).\n",
+            encoding="utf-8",
+        )
+        (root / "references" / "register.md").write_text("# Register\n\nPlain speech.\n")
+        (root / "agents" / "openai.yaml").write_text(
+            "interface:\n"
+            '  display_name: "Writing for people"\n'
+            '  short_description: "Write human-facing prose to house standards."\n'
+            f'  default_prompt: "{prompt}"\n'
+        )
+        manifest_path = self.plugin / "plugin.json"
+        manifest = json.loads(manifest_path.read_text())
+        prompts = manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"]
+        manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"] = [prompt, *prompts]
+        manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+        (root / "evals" / "fixtures").mkdir(parents=True)
+        evals = []
+        for number in range(1, 6):
+            fixture = f"case-{number}.md"
+            (root / "evals" / "fixtures" / fixture).write_text(
+                f"# Case {number}\n\nA reader needs a short status message; facts: item {number} is done.\n"
+            )
+            evals.append(
+                {
+                    "id": number,
+                    "name": f"case-{number}",
+                    "prompt": "Using the fixture, write the message. Do not use tools.",
+                    "fixture_paths": [f"evals/fixtures/{fixture}"],
+                    "expected_output": "A plain message that opens with the outcome.",
+                    "expectations": [
+                        {"id": "opens-with-outcome", "text": "Opens with the outcome.", "severity": "quality"},
+                        {"id": "no-invention", "text": "States only fixture facts.", "severity": "safety"},
+                        {"id": "no-tells", "text": "No mic-drop closer.", "severity": "quality"},
+                    ],
+                }
+            )
+        (root / "evals" / "evals.json").write_text(
+            json.dumps({"skill_name": skill, "evals": evals}, indent=2) + "\n"
+        )
+        return skill
+
+    def test_publishing_one_skill_regenerates_roster_and_locks_skill_files(self) -> None:
+        skill = self.publish_one_skill()
+        result = self.validate("--write-content-lock")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f"| `{skill}` | register | - |", self.readme())
+        lock = json.loads((self.plugin / "content-lock.json").read_text())
+        self.assertIn(f"skills/{skill}/SKILL.md", lock["files"])
+        self.assertIn(f"skills/{skill}/agents/openai.yaml", lock["files"])
+        self.assertIn(f"skills/{skill}/references/register.md", lock["files"])
+        self.assertIn(f"skills/{skill}/evals/evals.json", lock["files"])
+        self.assertIn(f"skills/{skill}/evals/fixtures/case-1.md", lock["files"])
+        self.assertEqual(self.validate().returncode, 0)
+
+    def test_published_skill_requires_three_expectations_per_eval(self) -> None:
+        skill = self.publish_one_skill()
+        path = self.plugin / "skills" / skill / "evals" / "evals.json"
+        document = json.loads(path.read_text())
+        document["evals"][0]["expectations"].pop()
+        path.write_text(json.dumps(document) + "\n")
+        result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("expectations must contain three objects", result.stderr)
+
+    def test_published_skill_rejects_grader_answer_in_fixture(self) -> None:
+        skill = self.publish_one_skill()
+        fixture = self.plugin / "skills" / skill / "evals" / "fixtures" / "case-1.md"
+        fixture.write_text(fixture.read_text() + "\nPass if the message is short.\n")
+        result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("grader answer leaked into fixture", result.stderr)
+
+    def test_fixture_prose_may_mention_expectations_as_a_word(self) -> None:
+        skill = self.publish_one_skill()
+        fixture = self.plugin / "skills" / skill / "evals" / "fixtures" / "case-1.md"
+        fixture.write_text(
+            fixture.read_text() + "\nThe reader's expectations were set by last week's note.\n"
+        )
+        result = self.validate("--write-content-lock")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_fixture_prose_may_mention_grader_and_expected_output_as_words(self) -> None:
+        skill = self.publish_one_skill()
+        fixture = self.plugin / "skills" / skill / "evals" / "fixtures" / "case-2.md"
+        fixture.write_text(
+            fixture.read_text()
+            + "\nThe grader reviewed the draft last week and asked about the expected_output field.\n"
+        )
+        result = self.validate("--write-content-lock")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_fixture_rejects_labeled_grader_instruction(self) -> None:
+        skill = self.publish_one_skill()
+        fixture = self.plugin / "skills" / skill / "evals" / "fixtures" / "case-3.md"
+        fixture.write_text(fixture.read_text() + "\nExpected output: a two-line reply.\n")
+        result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("grader answer leaked into fixture", result.stderr)
+
+    def test_fixture_rejects_markdown_wrapped_grader_labels(self) -> None:
+        skill = self.publish_one_skill()
+        for number, line in ((4, "- **Expected output:** a two-line reply."), (5, "> **Grader:** check the opening.")):
+            fixture = self.plugin / "skills" / skill / "evals" / "fixtures" / f"case-{number}.md"
+            original = fixture.read_text()
+            fixture.write_text(original + "\n" + line + "\n")
+            result = self.validate("--write-content-lock")
+            self.assertNotEqual(result.returncode, 0, line)
+            self.assertIn("grader answer leaked into fixture", result.stderr, line)
+            fixture.write_text(original)
+
+    def test_published_skill_rejects_unreferenced_fixture(self) -> None:
+        skill = self.publish_one_skill()
+        (self.plugin / "skills" / skill / "evals" / "fixtures" / "orphan.md").write_text("# Orphan\n")
+        result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("fixture drift", result.stderr)
+
+    def test_published_skill_description_must_start_with_the_trigger_phrase(self) -> None:
+        self.publish_one_skill(description="Writes prose to the house register.")
+        result = self.validate("--write-content-lock")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("description trigger drift", result.stderr)
+
+    def test_frontmatter_parser_accepts_crlf_and_missing_trailing_newline(self) -> None:
+        module = self.validator_module()
+
+        crlf = "---\r\nname: writing-for-people\r\ndescription: Use when x.\r\n---\r\nBody\r\n"
+        bare = "---\nname: writing-for-people\ndescription: Use when x.\n---\nBody"
+        for content in (crlf, bare):
+            frontmatter = module.load_skill_frontmatter(content, "writing-for-people")
+            self.assertEqual(frontmatter["name"], "writing-for-people")
+        with self.assertRaises(module.ContractError):
+            module.load_skill_frontmatter("---\nname: x\ndescription: Use when x.\n---", "x")
+
+    def test_rejects_unknown_flag(self) -> None:
+        result = self.validate("--unknown")
+        self.assertEqual(result.returncode, 2)
+
+
+if __name__ == "__main__":
+    unittest.main()
