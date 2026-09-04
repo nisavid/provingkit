@@ -158,6 +158,46 @@ class ValidateTidesmithTests(unittest.TestCase):
         self.write_readme(self.readme() + "\nSee /Users/someone/notes for details.\n")
         self.assert_rejected("portability or credential leak in README.md")
 
+    def test_rejects_cyclic_yaml_containers_without_traceback(self) -> None:
+        path = self.plugin / "skills/writing-for-people/agents/openai.yaml"
+        cases = {
+            "sequence": (
+                "interface: &node [*node]\n",
+                "writing-for-people skill interface contains a cyclic container",
+            ),
+            "mapping": (
+                "interface: &node {self: *node}\n",
+                "writing-for-people skill interface contains invalid YAML",
+            ),
+        }
+        for kind, (content, expected) in cases.items():
+            with self.subTest(kind=kind):
+                path.write_text(content, encoding="utf-8")
+                result = self.validate()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(expected, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_decoded_portability_rejects_only_active_container_cycles(self) -> None:
+        module = self.validator_module()
+        cyclic_list: list[object] = []
+        cyclic_list.append(cyclic_list)
+        cyclic_dict: dict[str, object] = {}
+        cyclic_dict["self"] = cyclic_dict
+        for kind, value in (("list", cyclic_list), ("dict", cyclic_dict)):
+            with self.subTest(kind=kind):
+                with self.assertRaisesRegex(
+                    module.ContractError,
+                    "test field contains a cyclic container",
+                ):
+                    module.validate_decoded_portability(value, "test field")
+
+        shared = ["portable text"]
+        module.validate_decoded_portability(
+            {"first": shared, "second": shared},
+            "test field",
+        )
+
     def test_write_content_lock_regenerates_roster_projection_and_lock(self) -> None:
         readme = self.readme()
         start = readme.index(ROSTER_START) + len(ROSTER_START)

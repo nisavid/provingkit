@@ -208,20 +208,28 @@ def load_json(root: Path, relative: str, field: str) -> dict:
     return value
 
 
-def decoded_strings(value):
+def decoded_strings(value, field: str, active_container_ids: set[int] | None = None):
     if isinstance(value, str):
         yield value
-    elif isinstance(value, dict):
-        for key, item in value.items():
-            yield from decoded_strings(key)
-            yield from decoded_strings(item)
-    elif isinstance(value, list):
-        for item in value:
-            yield from decoded_strings(item)
+    elif isinstance(value, (dict, list)):
+        active = active_container_ids if active_container_ids is not None else set()
+        identity = id(value)
+        require(identity not in active, f"{field} contains a cyclic container")
+        active.add(identity)
+        try:
+            if isinstance(value, dict):
+                for key, item in value.items():
+                    yield from decoded_strings(key, field, active)
+                    yield from decoded_strings(item, field, active)
+            else:
+                for item in value:
+                    yield from decoded_strings(item, field, active)
+        finally:
+            active.remove(identity)
 
 
 def validate_decoded_portability(value, field: str) -> None:
-    validate_portable_strings(decoded_strings(value), field)
+    validate_portable_strings(decoded_strings(value, field), field)
 
 
 def validate_portable_strings(strings, field: str) -> None:
