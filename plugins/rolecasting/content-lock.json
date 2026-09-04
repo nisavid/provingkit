@@ -23,7 +23,7 @@
     "skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": "b5b653ef79756734e3f1c5cdcc5c9f9fc25b79dfa151bc9e06b53af3183d56f4",
     "skills/choosing-agent-models/scripts/model_transition.py": "096d4bb82040423ba35c89c97542fc69f39f04296a989d782fc8ec472ef7e585",
     "skills/choosing-agent-models/scripts/route_evidence.py": "e9def07e99ac2976c3378c81594aabc5954bd6cad47715dbf7cc88e4818f8efa",
-    "skills/delegating-cross-agent-work/SKILL.md": "0cdfb2fcf7e194ed4fe6d71ec83f1eebd4ded5310dcaeade2d693629a39a2b57",
+    "skills/delegating-cross-agent-work/SKILL.md": "37ff7c0752a8090a0c9f3a30dea765e132d569ac866496216a3c24f3d67667bc",
     "skills/delegating-cross-agent-work/agents/openai.yaml": "4440bba50209bde34f4c866233262f396f69e5e11978b200cd480787998a86dd",
     "skills/delegating-cross-agent-work/evals/evals.json": "7a363c5d199d174488bd4deab136337d1e2ef6c0b4996fbfb5e5cb4f000b1576",
     "skills/delegating-cross-agent-work/evals/fixtures/absent-foreign-executable-native-fallback.md": "4501a205b9a25e7e9085b8f0f21e78b5a4e4bf7d3d5b9028c53e482e067f53bb",

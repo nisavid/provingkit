@@ -272,6 +272,10 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             "[scarce-specialist handoffs](references/scarce-specialist-handoffs.md)",
             skill,
         )
+        self.assertIn(
+            "before scarce-specialist delegation",
+            " ".join(skill.split()).lower(),
+        )
         for phrase in (
             "one bounded decision horizon",
             "smallest content-addressed frozen input packet",

@@ -55,10 +55,10 @@ absence, or capacity loss as permission to downgrade.
 
 Each prompt binds goal, acceptance, worktree, immutable base, facts, behavior,
 scope, edit, subdelegation, and external-action authority, verification,
-output, and stop conditions. Unstated authority is absent; preserve existing
+output, and stop conditions. Unstated authority is absent; preserve
 edits.
 
-Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before delegating.
+Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before scarce-specialist delegation.
 
 Native Codex children follow
 [native-codex-subagents.md](references/native-codex-subagents.md).
