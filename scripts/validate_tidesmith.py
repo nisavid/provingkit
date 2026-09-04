@@ -578,6 +578,10 @@ def validate_delivery(root: Path) -> dict:
         set(delivery) == {"schema_version", "executor", "grader"},
         "eval delivery contract keys drift",
     )
+    require_integer(
+        delivery["schema_version"],
+        "eval delivery schema_version must be an integer",
+    )
     require(delivery["schema_version"] == 1, "eval delivery schema_version drift")
     executor = delivery["executor"]
     grader = delivery["grader"]

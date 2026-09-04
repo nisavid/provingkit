@@ -328,6 +328,13 @@ class ValidateTidesmithTests(unittest.TestCase):
                 finally:
                     path.write_text(original, encoding="utf-8")
 
+    def test_delivery_schema_version_requires_an_integer(self) -> None:
+        path = self.plugin / "evals/delivery.json"
+        delivery = json.loads(path.read_text(encoding="utf-8"))
+        delivery["schema_version"] = True
+        path.write_text(json.dumps(delivery) + "\n", encoding="utf-8")
+        self.assert_rejected("eval delivery schema_version must be an integer")
+
     def publish_one_skill(self, *, description: str = "Use when prose must meet the house register.") -> str:
         skill = "explaining-to-readers"
         prompt = f"Use $tidesmith:{skill} to explain this to its reader."
