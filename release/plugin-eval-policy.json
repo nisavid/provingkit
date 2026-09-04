@@ -13,7 +13,7 @@
   },
   "calibration": {
     "manifest_path": "release/plugin-eval-baseline-v1.json",
-    "manifest_sha256": "sha256:836d412b734cbf8a74fe98004cb0e805758e643e81700d9bfe8723e300160f09"
+    "manifest_sha256": "sha256:606c015e11a02c086830515b51f7e5f5bed9006a1d3fd9bbcab3e4ca1f7df2ae"
   },
   "native_budget_findings": [
     {

@@ -1237,6 +1237,16 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     registration["source_stage_validator_flags"],
                 )
 
+        tidesmith = self.module.PUBLIC_RELEASE_REGISTRATIONS["tidesmith"]
+        self.assertTrue(tidesmith["production_eligible"])
+        self.assertEqual(tidesmith["source_stage_validator_flags"], ())
+        self.assertIn("tests/test_validate_tidesmith.py", tidesmith["support_paths"])
+        self.assertIn("tidesmith", self.module.PRODUCTION_RUNTIME_PACKAGES)
+        self.assertEqual(
+            self.module.MARKETPLACE_PLUGINS["tidesmith"],
+            "./plugins/tidesmith",
+        )
+
     def test_public_release_registration_projection_is_immutable(self) -> None:
         runtime_package = next(iter(self.module.PUBLIC_RELEASE_REGISTRATIONS))
         registration = self.module.PUBLIC_RELEASE_REGISTRATIONS[runtime_package]
@@ -4832,18 +4842,18 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             policy["thresholds"],
             {
                 "trigger_cost_tokens": {
-                    "goodMax": 66,
+                    "goodMax": 96,
                     "moderateMax": 254,
                     "heavyMax": 614,
                 },
                 "invoke_cost_tokens": {
-                    "goodMax": 462,
+                    "goodMax": 768,
                     "moderateMax": 4493,
                     "heavyMax": 17204,
                 },
                 "deferred_cost_tokens": {
-                    "goodMax": 27,
-                    "moderateMax": 7622,
+                    "goodMax": 128,
+                    "moderateMax": 8982,
                     "heavyMax": 58894,
                 },
             },

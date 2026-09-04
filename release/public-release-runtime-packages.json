@@ -1,4 +1,4 @@
 {
-  "runtime_packages": ["task-witness"],
+  "runtime_packages": ["task-witness", "tidesmith"],
   "schema_version": 1
 }

@@ -1,17 +1,12 @@
 # Provingkit
 
-Provingkit is the public source repository for the six source members carried
-by this cutover. Each member keeps its own identity and version, and the
-current source-stage definition requires the complete six-member set.
-
-The accepted Kit slate has a seven-member first release. Tidesmith enters
-through the [tracked port](https://github.com/nisavid/provingkit/issues/25):
-issue #25 after pull request #11. It is not part of this source stage or its
-six-member definition.
+Provingkit is the public source repository for seven source members. Each
+member keeps its own identity and version, and the current source-stage
+definition requires the complete seven-member set.
 
 ## Members
 
-Five of the six current source members are independently releasable Agent
+Six of the seven current source members are independently releasable Agent
 Plugins:
 
 - [`plugins/rolecasting/`](plugins/rolecasting/) contains **Rolecasting**, which
@@ -28,8 +23,10 @@ Plugins:
 - [`plugins/artifact-customs/`](plugins/artifact-customs/) contains
   **Artifact Customs**, which assesses and maintains exact third-party software
   components under explicit policy.
+- [`plugins/tidesmith/`](plugins/tidesmith/) contains **Tidesmith**, which holds
+  portable standards and verification for agent-authored human-facing prose.
 
-**Task Witness** is the sixth member. It is a code-only validation package with
+**Task Witness** is the seventh member. It is a code-only validation package with
 a manifest identity, not a portable Agent Plugin surface. Its current source
 state is production-ineligible and supports source-stage validation only. See
 the [Task Witness package reference](plugins/task-witness/README.md).
@@ -45,7 +42,7 @@ This repository is currently an unreleased source stage. It does not establish
 a Provingkit version, tag, release, marketplace publication, installation, or
 runtime qualification. The root
 [`marketplace.json`](.claude-plugin/marketplace.json) is a source projection of
-the five Agent Plugins; its presence is not marketplace publication.
+the six Agent Plugins; its presence is not marketplace publication.
 
 The retained Linux and macOS Task Witness material under
 [`qualification/historical/`](qualification/historical/) is historical input.
@@ -59,7 +56,7 @@ remain disabled until that rescout.
 
 ## Repository layout
 
-- `plugins/` contains the six canonical member source trees and identity
+- `plugins/` contains the seven canonical member source trees and identity
   manifests.
 - `plugins/task-witness/` contains the code-only Task Witness package and its
   local manifest identity.
@@ -100,6 +97,9 @@ python scripts/validate_mergecraft.py . --source-stage
 
 python -m unittest tests.test_validate_artifact_customs tests.test_artifact_customs_eval_corpus
 python scripts/validate_artifact_customs.py . --source-stage
+
+python -m unittest tests.test_validate_tidesmith
+python scripts/validate_tidesmith.py .
 
 repository="$(pwd -P)"
 python -m unittest tests.test_task_witness_package

@@ -23,6 +23,11 @@
     },
     {
       "disposition": "historical-design-or-research-record",
+      "path": "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
+      "sha256": "sha256:51ecce992966a49a88dcb80746bf4047710dbd1af58023b3fb1f57874dc16a20"
+    },
+    {
+      "disposition": "historical-design-or-research-record",
       "path": "docs/superpowers/specs/2026-08-12-task-witness-tw4-migration-and-qualification-design.md",
       "sha256": "sha256:b1f7a041df6b0b973b12e91ba45841ab6f33f54b673b74a49fab282d5ad73acd"
     },
@@ -80,6 +85,11 @@
       "disposition": "cutover-provenance",
       "path": "release/provingkit/cutover-provenance-v1.json",
       "sha256": "sha256:0595619df8f08ceaa5d64975f162b08bd6fab5d659f66b0144dda535eeadde45"
+    },
+    {
+      "disposition": "historical-source-disposition-record",
+      "path": "release/source-skill-disposition/disposition-ledger.json",
+      "sha256": "sha256:43953c0e0d28027078aa0b3484c0d9d26c3dd39ef8c451b1805f6e18c876f6d0"
     },
     {
       "disposition": "historical-stale-source-lineage-manifest-owned-by-provingkit-issue-3",
