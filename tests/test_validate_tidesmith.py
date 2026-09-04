@@ -328,6 +328,36 @@ class ValidateTidesmithTests(unittest.TestCase):
                 finally:
                     path.write_text(original, encoding="utf-8")
 
+    def test_rejects_delivery_input_drift(self) -> None:
+        path = self.plugin / "evals/delivery.json"
+        original = path.read_text(encoding="utf-8")
+        cases = (
+            ("executor", ["expected_output"], "eval executor contract drift"),
+            ("executor", ["prompt", "fixture", 7], "eval executor contract drift"),
+            ("grader", [], "eval grader contract drift"),
+            (
+                "grader",
+                [
+                    "prompt",
+                    "fixture",
+                    "candidate_bundle",
+                    "response",
+                    "expected_output",
+                    None,
+                ],
+                "eval grader contract drift",
+            ),
+        )
+        for section, inputs, expected in cases:
+            with self.subTest(section=section, inputs=inputs):
+                try:
+                    delivery = json.loads(original)
+                    delivery[section]["inputs"] = inputs
+                    path.write_text(json.dumps(delivery) + "\n", encoding="utf-8")
+                    self.assert_rejected(expected)
+                finally:
+                    path.write_text(original, encoding="utf-8")
+
     def test_delivery_schema_version_requires_an_integer(self) -> None:
         path = self.plugin / "evals/delivery.json"
         delivery = json.loads(path.read_text(encoding="utf-8"))
