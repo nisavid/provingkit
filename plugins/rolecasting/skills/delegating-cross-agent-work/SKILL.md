@@ -25,13 +25,13 @@ Freeze each axis independently:
 - transport: `native-tool`, `task-api`, `cli`, `app-server`, or `remote-api`; and
 - required assurance: `product-attested`, `controller-observed`, or `self-reported`.
 
-Do not infer one axis from another. A leader-owned child is bounded work the
-leader creates and ends. A leader-owned peer may have an independent session.
-A user-owned peer requires explicit consent to create or steer. Cross a
-product or control boundary only when useful.
+Never infer axes. A leader-owned child is bounded work its leader creates and
+ends. Leader-owned peers may have independent sessions. User-owned peers
+require explicit consent to create or steer. Cross a product or control
+boundary only when it materially helps.
 
-Task identity and purpose are route gates; model availability never makes an
-unrelated task valid. Read
+Task identity and bounded purpose are route gates; model availability never
+makes an unrelated task valid. Read
 [foreign-harness-peers.md](references/foreign-harness-peers.md) before using a
 non-native, separately owned, companion, sibling, or dedicated-task surface.
 
@@ -54,41 +54,44 @@ absence, or capacity loss as permission to downgrade.
 ## Bounded Handoff
 
 Each prompt binds goal, acceptance, worktree, immutable base, facts, behavior,
-scope, edit and subdelegation authority,
-external-action authority, verification, output, and stop conditions.
-Unstated authority is absent. Workers preserve existing edits.
+scope, edit, subdelegation, and external-action authority, verification,
+output, and stop conditions. Unstated authority is absent; preserve existing
+edits.
 
-Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before scarce-specialist delegation.
+Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before delegating.
 
-For native ChatGPT Codex or Codex CLI/TUI children, follow
+Native Codex children follow
 [native-codex-subagents.md](references/native-codex-subagents.md).
 
-For frozen multi-worker plans, issue
+Frozen multi-worker plans require
 [invocation-topology-receipt.md](references/invocation-topology-receipt.md).
 The harness serializes it as `adapter:rolecasting-invocation-topology-receipt`.
 Model selection never supplies dispatch authority. Use
 [dispatch-evidence.md](references/dispatch-evidence.md) for witnessed execution.
 
-Ask workers to return one status:
+Require one worker status:
 
 - `DONE`: complete and verified
 - `DONE_WITH_CONCERNS`: complete with concrete concerns
 - `NEEDS_CONTEXT`: a named fact or decision is missing
 - `BLOCKED`: impossible within current scope, authority, or environment
 
-Before retrying `NEEDS_CONTEXT` or `BLOCKED`, change the named missing input,
-authority, boundary, or capability and authorize a new transition.
+Retry `NEEDS_CONTEXT` or `BLOCKED` only after changing missing input,
+authority, boundary, or capability and authorizing a new transition.
 
 ## Batch and Wait
 
-Batch small independent same-shape work; separate work needing its own judgment,
-tests, or review surface. Do useful local work before a bounded wait, then
-reconcile live children and recover missed terminal results.
+Batch small independent same-shape work in one dispatch; review its combined
+diff as one unit. Separate work with distinct judgment, tests, or review
+surfaces. Work locally while children run; avoid short polling and open-ended
+silent waits. Use bounded waits only when idle; reconcile live children and
+recover missed terminal results.
 
 ## Leader Integration
 
-- Keep parallel edit scopes disjoint and record the immutable base before edits.
-- Review returned patches, claims, captures, logs, and summaries.
+- Keep parallel edit scopes disjoint; record immutable base before edits, never
+  inferring it as `HEAD~1`.
+- Review worker outputs.
 - Treat results as inputs; reconcile, integrate, and verify centrally.
 - Retain final authority for architecture, root cause, user-facing wording, and
   consequential external actions.

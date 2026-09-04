@@ -125,7 +125,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
 
         for phrase in (
             "task identity",
-            "purpose are route gates",
+            "task identity and bounded purpose are route gates",
             "peer, sibling, companion, or dedicated task",
             "newly created for the current source task",
             "same-purpose companion",
@@ -203,9 +203,9 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             / "SKILL.md"
         ).read_text()
 
-        self.assertRegex(skill, r"(?is)same[- ]shape")
-        self.assertRegex(skill, r"(?is)review.+results")
-        self.assertRegex(skill, r"(?is)own judgment.+tests.+review surface")
+        self.assertRegex(skill, r"(?is)same[- ]shape.+one dispatch")
+        self.assertRegex(skill, r"(?is)review.+combined\s+diff.+one unit")
+        self.assertRegex(skill, r"(?is)distinct judgment.+tests.+review\s+surface")
 
     def test_delegation_skill_uses_bounded_waits_and_reconciles_live_children(
         self,
@@ -217,9 +217,39 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             / "SKILL.md"
         ).read_text()
 
-        self.assertRegex(skill, r"(?is)bounded wait")
-        self.assertRegex(skill, r"(?is)local work.+wait")
-        self.assertRegex(skill, r"(?is)reconcile.+live children")
+        self.assertRegex(skill, r"(?is)short polling.+bounded wait")
+        self.assertRegex(skill, r"(?is)open-ended\s+silent\s+wait.+bounded wait")
+        self.assertRegex(skill, r"(?is)bounded wait.+only when idle")
+        self.assertRegex(skill, r"(?is)(?:local work|work locally).+wait")
+        self.assertRegex(skill, r"(?is)reconcile.+live\s+children")
+
+    def test_delegation_skill_preserves_base_and_boundary_guards(self) -> None:
+        skill = (
+            PLUGIN_ROOT
+            / "skills"
+            / "delegating-cross-agent-work"
+            / "SKILL.md"
+        ).read_text()
+
+        self.assertRegex(
+            skill,
+            r"(?is)immutable base.+never\s+infer\w*.+`HEAD~1`",
+        )
+        self.assertRegex(
+            skill,
+            r"(?is)(?:a )?product(?:/| or )control\s+"
+            r"boundar(?:y|ies).+materially help",
+        )
+
+    def test_selection_skill_reports_material_fallbacks(self) -> None:
+        skill = (
+            PLUGIN_ROOT / "skills" / "choosing-agent-models" / "SKILL.md"
+        ).read_text()
+
+        self.assertRegex(
+            skill,
+            r"(?is)report.+material fallback.+confidence.+cost.+speed",
+        )
 
     def test_scarce_specialist_handoff_keeps_coordination_cheap_and_exact(
         self,

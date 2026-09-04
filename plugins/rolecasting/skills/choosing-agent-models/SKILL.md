@@ -7,7 +7,7 @@ description: Use when selecting a model or reasoning effort for an agent, subage
 
 ## Scope
 
-Own model and effort selection, capability proof, and transition policy.
+Own model/effort selection, capability proof, and transition policy.
 [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) owns
 topology, authority, actuation, and integration. Model choice cannot repair topology.
 
@@ -19,8 +19,8 @@ decision binds the payload, task, target, account, model, and effort.
 
 Carry task identity, judgment floor, Daybreak requirement, and operator choice
 until explicit replacement; security remains sticky. Use the hardest mixed-task
-role. Stale or ineligible evidence, identity drift,
-unknown capacity, and an unavailable required model fail closed.
+role. Stale or ineligible evidence, identity drift, unknown capacity, and
+required-model unavailability fail closed.
 
 ## Inventory Before Selection
 
@@ -62,7 +62,10 @@ independent code, architecture, and closeout reviewers to Sol high.
 
 ## Fallback And Authority Gates
 
-An eligible fallback must still satisfy the carried floor and fresh route
-proof. Capacity failover is a new transition, never permission to downgrade.
+Eligible fallbacks still require the carried floor and fresh route proof.
+Capacity failover is a new transition, never downgrade permission.
+Report a material fallback when it changes confidence, cost, or speed.
 
-Treat Claude Fable as unavailable unless proof is supplied. Model selection does not authorize a proof invocation; only the operator's explicit authorization for that exact invocation permits attempting one.
+Treat Claude Fable as unavailable without proof.
+Model selection does not authorize a proof invocation; only explicit operator
+authorization for that exact invocation permits one.
