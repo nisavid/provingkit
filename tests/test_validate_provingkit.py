@@ -339,7 +339,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "python -m unittest "
             "tests.test_phase7_compatibility_projection."
             "Phase7CompatibilityProjectionTests."
-            "test_projection_is_byte_identical_to_frozen_v5_fixture"
+            "test_projection_is_byte_identical_to_frozen_v6_fixture"
         )
 
         self.assertIn(expected_tricritical, tricritical_commands)
@@ -347,6 +347,38 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertIn(
             expected_tricritical,
             (REPOSITORY / "README.md").read_text(encoding="utf-8"),
+        )
+
+    def test_required_jobs_run_rolecasting_affected_closure(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+
+        commands = {
+            job: {
+                line.strip()
+                for step in workflow["jobs"][job]["steps"]
+                for line in step.get("run", "").splitlines()
+                if line.strip()
+            }
+            for job in ("rolecasting", "mergecraft", "artifact-customs")
+        }
+
+        self.assertIn(
+            "python -m unittest tests.plugins.test_rolecasting_model_transition "
+            "tests.plugins.test_rolecasting_native_codex "
+            "tests.plugins.test_rolecasting_dispatch_evidence",
+            commands["rolecasting"],
+        )
+        self.assertIn(
+            "python -m unittest discover -s "
+            "tests/plugins/mergecraft/publishing-reviewable-prs "
+            "-p 'test_publish_reviewable_pr.py'",
+            commands["mergecraft"],
+        )
+        self.assertIn(
+            "python -m unittest tests.test_validate_artifact_customs "
+            "tests.test_artifact_customs_eval_corpus "
+            "tests.test_artifact_customs_behavior_eval",
+            commands["artifact-customs"],
         )
 
     def test_task_witness_source_job_runs_the_qualification_selector_guard(self) -> None:
