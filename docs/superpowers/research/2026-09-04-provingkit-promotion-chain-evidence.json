@@ -1,0 +1,484 @@
+{
+  "schema_version": 1,
+  "kind": "research-inventory",
+  "observed_at": "2026-09-05T00:44:08.375090+00:00",
+  "repository": "nisavid/provingkit",
+  "source_commit": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
+  "source_tree": "3c256c2541ec60f4ded5d7baeaf929611700666e",
+  "coordination_comment": "https://github.com/nisavid/provingkit/issues/2#issuecomment-5548103388",
+  "predecessor_closeout": "https://github.com/nisavid/agents/issues/99#issuecomment-5547454605",
+  "preserved_inputs": {
+    "destination_draft": {
+      "number": 40,
+      "title": "fix(rolecasting/routing): port retained transition guard",
+      "html_url": "https://github.com/nisavid/provingkit/pull/40",
+      "state": "open",
+      "draft": true,
+      "updated_at": "2026-09-04T20:24:24Z",
+      "head": "ae45339e05d1a65d881eac582dee7509b8ccb811",
+      "base": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08"
+    },
+    "source_draft": {
+      "number": 69,
+      "title": "fix(rolecasting/model-routing): gate every payload transition",
+      "html_url": "https://github.com/nisavid/agents/pull/69",
+      "state": "open",
+      "draft": true,
+      "updated_at": "2026-09-04T17:40:17Z",
+      "head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+      "base": "44ee979cdae1d47f2ef3fdc713eaa6f04adf9892"
+    },
+    "retained_ref": {
+      "ref": "refs/heads/retained/agents-pr-69",
+      "commit": "8edaf590736621352262457752d087bad835555d"
+    }
+  },
+  "other_open_provingkit_pr": {
+    "number": 35,
+    "title": "docs(readme): rework the README as a landing page for human readers",
+    "html_url": "https://github.com/nisavid/provingkit/pull/35",
+    "state": "open",
+    "draft": true,
+    "updated_at": "2026-09-04T13:22:06Z",
+    "head": "10324107bd5894d88b0a0a7441511c530fde1bc4",
+    "base": "7d2cbbb8de045fd1ba381b982674131c6ead6919"
+  },
+  "github_release_inventory": {
+    "tags_endpoint": "https://api.github.com/repos/nisavid/provingkit/tags?per_page=100",
+    "releases_endpoint": "https://api.github.com/repos/nisavid/provingkit/releases?per_page=100",
+    "pagination": "gh api --paginate; both complete responses were empty arrays",
+    "tags": [],
+    "releases": []
+  },
+  "native_graph": {
+    "snapshot_utc": "2026-09-05T00:37:34.518Z",
+    "traversal": {
+      "scope": "recursive closure over native subIssues, blockedBy, and blocking relations",
+      "relationPageSize": 100,
+      "complete": true,
+      "nodeCount": 258,
+      "edgeCount": 1025
+    },
+    "all_connection_pages_terminal": true,
+    "audit_gate_rows": [
+      {
+        "issue": {
+          "id": "I_kwDOULKFi88AAAABPNKguw",
+          "assignees": [
+            "nisavid"
+          ],
+          "repository": "nisavid/provingkit",
+          "number": 2,
+          "title": "Audit the Provingkit promotion and release chain",
+          "url": "https://github.com/nisavid/provingkit/issues/2",
+          "state": "OPEN"
+        },
+        "native_blockers": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABPJOldA",
+            "assignees": [
+              "nisavid"
+            ],
+            "repository": "nisavid/agents",
+            "number": 81,
+            "title": "Extract Provingkit into its release repository",
+            "url": "https://github.com/nisavid/agents/issues/81",
+            "state": "CLOSED"
+          },
+          {
+            "id": "I_kwDOTOkJAM8AAAABPr8LUg",
+            "assignees": [
+              "nisavid"
+            ],
+            "repository": "nisavid/agents",
+            "number": 99,
+            "title": "Retire Provingkit source and discovery routes from nisavid/agents",
+            "url": "https://github.com/nisavid/agents/issues/99",
+            "state": "CLOSED"
+          }
+        ],
+        "native_parent_maps": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 41,
+            "title": "Map the Provingkit release and Base Loadout adoption",
+            "url": "https://github.com/nisavid/agents/issues/41",
+            "state": "OPEN"
+          }
+        ],
+        "native_dependents": [
+          {
+            "id": "I_kwDOULKFi88AAAABPNKiHQ",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 3,
+            "title": "Define the Provingkit release contract",
+            "url": "https://github.com/nisavid/provingkit/issues/3",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPmTYbg",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 36,
+            "title": "Integrate release-ops and publish the first signed Provingkit release",
+            "url": "https://github.com/nisavid/provingkit/issues/36",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKoeQ",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 8,
+            "title": "Choose the production evidence producer and issuer boundary",
+            "url": "https://github.com/nisavid/provingkit/issues/8",
+            "state": "OPEN"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "I_kwDOULKFi88AAAABPNKiHQ",
+          "assignees": [],
+          "repository": "nisavid/provingkit",
+          "number": 3,
+          "title": "Define the Provingkit release contract",
+          "url": "https://github.com/nisavid/provingkit/issues/3",
+          "state": "OPEN"
+        },
+        "native_blockers": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_Wr5A",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 50,
+            "title": "Define the source-skill disposition and release-refresh contract",
+            "url": "https://github.com/nisavid/agents/issues/50",
+            "state": "CLOSED"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKffA",
+            "assignees": [
+              "nisavid"
+            ],
+            "repository": "nisavid/provingkit",
+            "number": 1,
+            "title": "Research release and update routes for the target harnesses",
+            "url": "https://github.com/nisavid/provingkit/issues/1",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNK8-w",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 10,
+            "title": "Implement Mergecraft feedback response routing and correlation",
+            "url": "https://github.com/nisavid/provingkit/issues/10",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPdtwFg",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 12,
+            "title": "Map the Tidesmith plugin and review-writing policy landing",
+            "url": "https://github.com/nisavid/provingkit/issues/12",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKguw",
+            "assignees": [
+              "nisavid"
+            ],
+            "repository": "nisavid/provingkit",
+            "number": 2,
+            "title": "Audit the Provingkit promotion and release chain",
+            "url": "https://github.com/nisavid/provingkit/issues/2",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKklg",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 5,
+            "title": "Security-review source-skill lineage evidence with Daybreak Blue",
+            "url": "https://github.com/nisavid/provingkit/issues/5",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKmTw",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 6,
+            "title": "security(source-skill-disposition): review and bind disposition evidence",
+            "url": "https://github.com/nisavid/provingkit/issues/6",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKoeQ",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 8,
+            "title": "Choose the production evidence producer and issuer boundary",
+            "url": "https://github.com/nisavid/provingkit/issues/8",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNK7SQ",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 9,
+            "title": "Implement the portable GitHub Markdown authoring contract",
+            "url": "https://github.com/nisavid/provingkit/issues/9",
+            "state": "OPEN"
+          }
+        ],
+        "native_parent_maps": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 41,
+            "title": "Map the Provingkit release and Base Loadout adoption",
+            "url": "https://github.com/nisavid/agents/issues/41",
+            "state": "OPEN"
+          }
+        ],
+        "native_dependents": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_OBXA",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 47,
+            "title": "Define the live adoption, validation, and rollback contract",
+            "url": "https://github.com/nisavid/agents/issues/47",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_WsYw",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 51,
+            "title": "Define source-skill upgrade and retirement convergence",
+            "url": "https://github.com/nisavid/agents/issues/51",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOTOkJAM8AAAABPJOnEQ",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 82,
+            "title": "Publish the Base Loadout declaration",
+            "url": "https://github.com/nisavid/agents/issues/82",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOLl3dHs8AAAABNyObtg",
+            "assignees": [],
+            "repository": "nisavid/dotfiles",
+            "number": 112,
+            "title": "Choose the coordinated release receipt binding and version",
+            "url": "https://github.com/nisavid/dotfiles/issues/112",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPmTYbg",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 36,
+            "title": "Integrate release-ops and publish the first signed Provingkit release",
+            "url": "https://github.com/nisavid/provingkit/issues/36",
+            "state": "OPEN"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "I_kwDOULKFi88AAAABPNKjVg",
+          "assignees": [],
+          "repository": "nisavid/provingkit",
+          "number": 4,
+          "title": "Support authenticated HTTPS in the Versionkeeping publication executor",
+          "url": "https://github.com/nisavid/provingkit/issues/4",
+          "state": "OPEN"
+        },
+        "native_blockers": [],
+        "native_parent_maps": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 41,
+            "title": "Map the Provingkit release and Base Loadout adoption",
+            "url": "https://github.com/nisavid/agents/issues/41",
+            "state": "OPEN"
+          }
+        ],
+        "native_dependents": []
+      },
+      {
+        "issue": {
+          "id": "I_kwDOULKFi88AAAABPNKoeQ",
+          "assignees": [],
+          "repository": "nisavid/provingkit",
+          "number": 8,
+          "title": "Choose the production evidence producer and issuer boundary",
+          "url": "https://github.com/nisavid/provingkit/issues/8",
+          "state": "OPEN"
+        },
+        "native_blockers": [
+          {
+            "id": "I_kwDOULKFi88AAAABPNKguw",
+            "assignees": [
+              "nisavid"
+            ],
+            "repository": "nisavid/provingkit",
+            "number": 2,
+            "title": "Audit the Provingkit promotion and release chain",
+            "url": "https://github.com/nisavid/provingkit/issues/2",
+            "state": "OPEN"
+          }
+        ],
+        "native_parent_maps": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 41,
+            "title": "Map the Provingkit release and Base Loadout adoption",
+            "url": "https://github.com/nisavid/agents/issues/41",
+            "state": "OPEN"
+          }
+        ],
+        "native_dependents": [
+          {
+            "id": "I_kwDOULKFi88AAAABPNKiHQ",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 3,
+            "title": "Define the Provingkit release contract",
+            "url": "https://github.com/nisavid/provingkit/issues/3",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPmTYbg",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 36,
+            "title": "Integrate release-ops and publish the first signed Provingkit release",
+            "url": "https://github.com/nisavid/provingkit/issues/36",
+            "state": "OPEN"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "I_kwDOULKFi88AAAABPmTYbg",
+          "assignees": [],
+          "repository": "nisavid/provingkit",
+          "number": 36,
+          "title": "Integrate release-ops and publish the first signed Provingkit release",
+          "url": "https://github.com/nisavid/provingkit/issues/36",
+          "state": "OPEN"
+        },
+        "native_blockers": [
+          {
+            "id": "I_kwDOLl3dHs8AAAABPmTIKg",
+            "assignees": [],
+            "repository": "nisavid/dotfiles",
+            "number": 266,
+            "title": "Publish and operationally accept the first release-ops release",
+            "url": "https://github.com/nisavid/dotfiles/issues/266",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKguw",
+            "assignees": [
+              "nisavid"
+            ],
+            "repository": "nisavid/provingkit",
+            "number": 2,
+            "title": "Audit the Provingkit promotion and release chain",
+            "url": "https://github.com/nisavid/provingkit/issues/2",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKiHQ",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 3,
+            "title": "Define the Provingkit release contract",
+            "url": "https://github.com/nisavid/provingkit/issues/3",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPgCV1w",
+            "assignees": [
+              "nisavid"
+            ],
+            "repository": "nisavid/provingkit",
+            "number": 32,
+            "title": "Rework the README for its Diataxis role and human audiences",
+            "url": "https://github.com/nisavid/provingkit/issues/32",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOULKFi88AAAABPNKoeQ",
+            "assignees": [],
+            "repository": "nisavid/provingkit",
+            "number": 8,
+            "title": "Choose the production evidence producer and issuer boundary",
+            "url": "https://github.com/nisavid/provingkit/issues/8",
+            "state": "OPEN"
+          }
+        ],
+        "native_parent_maps": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 41,
+            "title": "Map the Provingkit release and Base Loadout adoption",
+            "url": "https://github.com/nisavid/agents/issues/41",
+            "state": "OPEN"
+          }
+        ],
+        "native_dependents": [
+          {
+            "id": "I_kwDOTOkJAM8AAAABPJOnEQ",
+            "assignees": [],
+            "repository": "nisavid/agents",
+            "number": 82,
+            "title": "Publish the Base Loadout declaration",
+            "url": "https://github.com/nisavid/agents/issues/82",
+            "state": "OPEN"
+          },
+          {
+            "id": "I_kwDOLl3dHs8AAAABPmTJQg",
+            "assignees": [],
+            "repository": "nisavid/dotfiles",
+            "number": 268,
+            "title": "Accept the operational crypto-ops and release-ops portfolio",
+            "url": "https://github.com/nisavid/dotfiles/issues/268",
+            "state": "OPEN"
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "page_size": 100,
+      "page_count": 1032,
+      "terminal_page_count": 1032,
+      "pages_by_connection": {
+        "assignees": 258,
+        "subIssues": 258,
+        "blockedBy": 258,
+        "blocking": 258
+      },
+      "every_discovered_issue_has_all_four_terminal_connections": true
+    }
+  },
+  "claim_boundary": "Source and native graph inventory only; no release, production authority, or live qualification claim."
+}
