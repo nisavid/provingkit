@@ -480,5 +480,21 @@
       "every_discovered_issue_has_all_four_terminal_connections": true
     }
   },
-  "claim_boundary": "Source and native graph inventory only; no release, production authority, or live qualification claim."
+  "claim_boundary": "Source and native graph inventory only; no release, production authority, or live qualification claim.",
+  "security_research": {
+    "source_commit": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
+    "assessment": "2026-09-05-provingkit-promotion-chain-security-assessment.md",
+    "assessment_sha256": "f737f419f10d1ee72824e8e3bbcc0e3b59a58883b1cebe9c643e9e0b6e068913",
+    "public_issue_snapshot": "2026-09-05-provingkit-promotion-chain-public-context.json",
+    "public_issue_snapshot_sha256": "00c5e25ea2735142efae60b54e36ff532238c60ae4aed396b82dd19c0b7ffe1d",
+    "input_manifest_sha256": "f9b6cfd31634b88f1952b09a332a6ed4373c7e40fd048bb78a9c4ee664a92226",
+    "method": "static source, registry, entrypoint, caller, test, and workflow tracing; no repository code or live operations executed",
+    "authority": "research evidence only; no product attestation or release authority"
+  },
+  "revalidation": {
+    "native_graph_snapshot_utc": "2026-09-05T05:43:30.649Z",
+    "native_graph_result": "same nodes, edges, assignments, and states as the inventory snapshot",
+    "source_and_preserved_inputs": "unchanged in the accompanying public issue snapshot",
+    "pagination": "all nine public issue comment collections fetched through terminal pagination"
+  }
 }
