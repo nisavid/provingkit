@@ -1,0 +1,304 @@
+{
+  "schema": "provingkit-eval-route-public-context/v1",
+  "generatedAt": "2026-09-05T06:35:43.673Z",
+  "scope": "public issue bodies/comments and native-graph relations only; no security judgment",
+  "graph": {
+    "root": {
+      "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+      "assignees": [],
+      "repository": "nisavid/agents",
+      "number": 41,
+      "title": "Map the Provingkit release and Base Loadout adoption",
+      "url": "https://github.com/nisavid/agents/issues/41",
+      "state": "OPEN"
+    },
+    "traversal": {
+      "scope": "recursive closure over native subIssues, blockedBy, and blocking relations",
+      "relationPageSize": 100,
+      "complete": true,
+      "nodeCount": 258,
+      "edgeCount": 1025
+    },
+    "rootRelations": {
+      "parents": [],
+      "blockedBy": [],
+      "blocking": [
+        {
+          "issue": "nisavid/dotfiles#112",
+          "title": "Choose the coordinated release receipt binding and version",
+          "url": "https://github.com/nisavid/dotfiles/issues/112",
+          "state": "OPEN",
+          "assignees": []
+        }
+      ],
+      "openBlockers": [],
+      "openDependents": [
+        {
+          "issue": "nisavid/dotfiles#112",
+          "title": "Choose the coordinated release receipt binding and version",
+          "url": "https://github.com/nisavid/dotfiles/issues/112",
+          "state": "OPEN",
+          "assignees": []
+        }
+      ]
+    }
+  },
+  "issues": [
+    {
+      "number": 1,
+      "title": "Research release and update routes for the target harnesses",
+      "url": "https://github.com/nisavid/provingkit/issues/1",
+      "state": "OPEN",
+      "body": "## Question\n\nWhich supported release, installation, update, rollback, and identity-verification mechanisms can deliver an exact versioned Provingkit component to every selected ChatGPT Codex, Codex, Claude Code, Claude Desktop, Cursor, and Cursor Agent cell?\n\nDetermine artifact formats, marketplaces or native-manager semantics, version and digest observability, update controls, platform limits, and unsupported boundaries. Surface facts without choosing the final Provingkit release policy.",
+      "assignees": [
+        "nisavid"
+      ],
+      "updated_at": "2026-09-01T18:32:00Z",
+      "comments": [
+        {
+          "url": "https://github.com/nisavid/provingkit/issues/1#issuecomment-5498560106",
+          "body": "## Research checkpoint (2026-08-24)\n\nNo current per-client release/update route matrix is checked in yet. The existing standard-adoption note is a research checkpoint, not evidence of settled artifact formats, marketplace/native-manager semantics, digest observability, rollback, or unsupported boundaries.\n\nThe next safe step is read-only route research for each selected client and host. Any authentication, signing, or other security-sensitive design remains a separate Daybreak-gated lane; this issue does not authorize publication or host changes.",
+          "author": "nisavid",
+          "created_at": "2026-08-24T13:03:39Z",
+          "updated_at": "2026-08-24T13:03:39Z"
+        },
+        {
+          "url": "https://github.com/nisavid/provingkit/issues/1#issuecomment-5498560152",
+          "body": "## Fact matrix checkpoint (2026-08-24)\n\nRead-only public-doc research now gives these route facts; host applicability and observed versions remain nisavid/agents#42 work:\n\n- Agent Plugins’ portable format is `plugin.json` plus skills/MCP; compatible-client docs list Cursor and ChatGPT/Codex, but the spec does not define a coordinated update, digest, or rollback contract ([spec](https://agent-plugins.org/specification), [clients](https://agent-plugins.org/compatible-clients)).\n- ChatGPT/Codex exposes plugin-directory installation and Codex CLI `/plugins` marketplace install/list/remove. Public docs do not promise plugin update/version/digest/rollback semantics. Codex source/app-server surfaces marketplace version/localVersion and Git ref/SHA selectors, but that is not host evidence ([app-server](https://github.com/openai/codex/blob/main/codex-rs/app-server/README.md), [marketplace source](https://raw.githubusercontent.com/openai/codex/main/codex-rs/core-plugins/src/marketplace.rs)).\n- Claude Code supports Git/local/remote/archive marketplaces and install/update/list/uninstall; manifests/marketplaces expose versions, and Git/archive SHA pinning is observable. Reinstalling an older ref/archive is a possible rollback technique, not a documented rollback command ([plugin reference](https://code.claude.com/docs/en/plugins-reference), [marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)). Claude Desktop shares that manager but is documented for macOS/Windows, so the Linux cell is unsupported ([desktop](https://code.claude.com/docs/en/desktop)).\n- Cursor supports marketplace/team marketplace and project/user scopes with manual/automatic refresh, but public docs do not define per-plugin digests, rollback, or CLI plugin install/update semantics ([plugins](https://prod.cursor.com/docs/plugins), [CLI installation](https://cursor.com/docs/cli/installation)). Cursor Agent’s own CLI update route is separate from plugin lifecycle.\n\nnisavid/provingkit#3 should therefore bind coordinated release bytes through per-surface adapters and treat native versions/digests/rollback as observed capabilities, not promises. nisavid/agents#46 needs explicit applicable/unavailable/unsupported/unknown cells and host-local probes; `hatchery` Claude Desktop is unsupported and ChatGPT desktop Linux remains tied to [chatgpt-linux#119](https://github.com/nisavid/chatgpt-linux/issues/119). No publication or host mutation is authorized by this checkpoint.",
+          "author": "nisavid",
+          "created_at": "2026-08-24T13:14:21Z",
+          "updated_at": "2026-08-24T13:14:21Z"
+        }
+      ],
+      "commentsPagination": [
+        {
+          "page": 1,
+          "requestCursor": null,
+          "returned": 2,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpHPAAAAAUe9Xpg="
+          }
+        }
+      ],
+      "commentsComplete": true,
+      "nativeRelations": {
+        "parents": [
+          {
+            "issue": "nisavid/agents#41",
+            "title": "Map the Provingkit release and Base Loadout adoption",
+            "url": "https://github.com/nisavid/agents/issues/41",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "blockedBy": [],
+        "blocking": [
+          {
+            "issue": "nisavid/agents#46",
+            "title": "Define Base Loadout and two-host binding composition",
+            "url": "https://github.com/nisavid/agents/issues/46",
+            "state": "OPEN",
+            "assignees": []
+          },
+          {
+            "issue": "nisavid/provingkit#3",
+            "title": "Define the Provingkit release contract",
+            "url": "https://github.com/nisavid/provingkit/issues/3",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "openBlockers": [],
+        "openDependents": [
+          {
+            "issue": "nisavid/agents#46",
+            "title": "Define Base Loadout and two-host binding composition",
+            "url": "https://github.com/nisavid/agents/issues/46",
+            "state": "OPEN",
+            "assignees": []
+          },
+          {
+            "issue": "nisavid/provingkit#3",
+            "title": "Define the Provingkit release contract",
+            "url": "https://github.com/nisavid/provingkit/issues/3",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ]
+      }
+    },
+    {
+      "number": 33,
+      "title": "Define the eval receipt schema, behavior-eval policy, and source-stage receipt check",
+      "url": "https://github.com/nisavid/provingkit/issues/33",
+      "state": "OPEN",
+      "body": "## Question\n\nImplement the receipt half of [Codify eval receipts as a PR readiness and merge gate](https://github.com/nisavid/provingkit/issues/29): the receipt schema under `release/eval-receipts/<plugin>/<skill>.json` (content-lock digest, `evals.json` and fixture digests, executor and grader model IDs, runs per case, per-case results by expectation and severity, trigger precision, candidate revision, private raw-evidence path and digest, reserved attestation fields), `release/behavior-eval-policy.json` with the decided thresholds (every safety expectation passes in every run; each quality expectation passes in at least two of three runs; every trigger eval correct), and a `--source-stage` receipt check in each `validate_<plugin>.py` that fails a changed eval-bearing skill whose receipt is missing, stale, or below threshold. CI checks the receipt and never executes an eval. Include the local runner or runner adapter that writes a receipt from an eval run, and the waiver-receipt shape (operator-issued, reason, expiry at the next release). Lands in this repository after [the cutover PR](https://github.com/nisavid/provingkit/pull/11) merges.\n\n## Cross-member thread boundary\n\nThis cross-member receipt schema must run in a fresh dedicated thread unless the current thread was created specifically for this issue; otherwise invoke `handoff` before implementation. Follow [the coordinator's thread contract](https://github.com/nisavid/agents/issues/41#thread-coordination). Suggested skills: `wayfinder`, `domain-modeling`, `checkpointing-and-publishing-git-work`, `publishing-reviewable-prs`, and `code-review`.\n\nBecause this issue changes every member validator and shared release policy, the receiving thread must first coordinate with active Provingkit port, Tidesmith, and Mergecraft implementation threads. Exchange branches and exact revisions, agree on validator, receipt, lock, and policy-file ownership, and choose a landing order; independently regenerated shared outputs must never overwrite one another.\n\nAfter closing this issue, create separate fresh handoffs for [Carry eval results in equipment PR bodies](https://github.com/nisavid/provingkit/issues/28) and [Gate Mergecraft ready and merge coordinators on eval receipts](https://github.com/nisavid/provingkit/issues/34) only when each is open, unassigned, and unblocked. Bind both handoffs to the same published schema revision and require their receiving threads to coordinate overlapping Mergecraft writer, publisher, coordinator, validator, and content-lock paths.\n",
+      "assignees": [],
+      "updated_at": "2026-09-04T12:35:04Z",
+      "comments": [],
+      "commentsPagination": [
+        {
+          "page": 1,
+          "requestCursor": null,
+          "returned": 0,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          }
+        }
+      ],
+      "commentsComplete": true,
+      "nativeRelations": {
+        "parents": [
+          {
+            "issue": "nisavid/provingkit#12",
+            "title": "Map the Tidesmith plugin and review-writing policy landing",
+            "url": "https://github.com/nisavid/provingkit/issues/12",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "blockedBy": [],
+        "blocking": [
+          {
+            "issue": "nisavid/provingkit#28",
+            "title": "Carry eval results in equipment PR bodies",
+            "url": "https://github.com/nisavid/provingkit/issues/28",
+            "state": "OPEN",
+            "assignees": []
+          },
+          {
+            "issue": "nisavid/provingkit#34",
+            "title": "Gate Mergecraft ready and merge coordinators on eval receipts",
+            "url": "https://github.com/nisavid/provingkit/issues/34",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "openBlockers": [],
+        "openDependents": [
+          {
+            "issue": "nisavid/provingkit#28",
+            "title": "Carry eval results in equipment PR bodies",
+            "url": "https://github.com/nisavid/provingkit/issues/28",
+            "state": "OPEN",
+            "assignees": []
+          },
+          {
+            "issue": "nisavid/provingkit#34",
+            "title": "Gate Mergecraft ready and merge coordinators on eval receipts",
+            "url": "https://github.com/nisavid/provingkit/issues/34",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ]
+      }
+    },
+    {
+      "number": 34,
+      "title": "Gate Mergecraft ready and merge coordinators on eval receipts",
+      "url": "https://github.com/nisavid/provingkit/issues/34",
+      "state": "OPEN",
+      "body": "## Question\n\nImplement the gate half of [Codify eval receipts as a PR readiness and merge gate](https://github.com/nisavid/provingkit/issues/29): `getting-prs-ready-for-review` refuses ready when a touched eval-bearing skill (anything under its skill directory, or a shared reference it projects) has no receipt for the PR head or a failing one; `getting-prs-merged` treats a missing, stale, or failing receipt like a failing required check; the only bypass is an operator-issued waiver receipt recorded in the PR body's Evals disclosure. Agents never issue waivers. Depends on the receipt schema and check.\n",
+      "assignees": [],
+      "updated_at": "2026-09-03T10:40:47Z",
+      "comments": [],
+      "commentsPagination": [
+        {
+          "page": 1,
+          "requestCursor": null,
+          "returned": 0,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          }
+        }
+      ],
+      "commentsComplete": true,
+      "nativeRelations": {
+        "parents": [
+          {
+            "issue": "nisavid/provingkit#12",
+            "title": "Map the Tidesmith plugin and review-writing policy landing",
+            "url": "https://github.com/nisavid/provingkit/issues/12",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "blockedBy": [
+          {
+            "issue": "nisavid/provingkit#33",
+            "title": "Define the eval receipt schema, behavior-eval policy, and source-stage receipt check",
+            "url": "https://github.com/nisavid/provingkit/issues/33",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "blocking": [],
+        "openBlockers": [
+          {
+            "issue": "nisavid/provingkit#33",
+            "title": "Define the eval receipt schema, behavior-eval policy, and source-stage receipt check",
+            "url": "https://github.com/nisavid/provingkit/issues/33",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "openDependents": []
+      }
+    }
+  ],
+  "mapDecisionEvidence": {
+    "issue": {
+      "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+      "assignees": [],
+      "repository": "nisavid/agents",
+      "number": 41,
+      "title": "Map the Provingkit release and Base Loadout adoption",
+      "url": "https://github.com/nisavid/agents/issues/41",
+      "state": "OPEN"
+    },
+    "comments": [
+      {
+        "id": 5524459718,
+        "url": "https://github.com/nisavid/agents/issues/41#issuecomment-5524459718",
+        "author": "nisavid",
+        "body": "Eval-gate decision from the Tidesmith map ([provingkit#29](https://github.com/nisavid/provingkit/issues/29)), Kit-wide in effect: PR readiness and merge gate on a committed per-skill eval receipt (bound to content-lock, eval, and fixture digests; thresholds in `release/behavior-eval-policy.json`); CI checks the receipt and never executes evals; receipts are ordinary release evidence with attestation fields reserved for Task Witness, so the issuer boundary stays with provingkit#8 and the release contract's staleness rule (#3) covers them. Implementation: provingkit#33 (receipt + source-stage check) and #34 (Mergecraft gates), after the cutover.",
+        "created_at": "2026-09-03T10:40:55Z",
+        "updated_at": "2026-09-03T10:40:55Z"
+      },
+      {
+        "id": 5407043582,
+        "url": "https://github.com/nisavid/agents/issues/41#issuecomment-5407043582",
+        "author": "nisavid",
+        "body": "## Public release boundary decision (2026-08-25)\n\nThis issue governs the first public release of the six Agent Plugins v1 distributions. It does not govern the first private release of the dotfiles global-equipment tracker and installer; that system remains the sibling task's responsibility.\n\nThe first public qualification covers both audited hosts: work macOS (`sltz-ivan-mbp`) and Linux `hatchery`. A qualification cell is one host plus one distinct harness/provider route. Support the Codex, Claude, Cursor, and Cursor Agent routes where the host supports them; Claude Desktop is unsupported on `hatchery` and remains a macOS-only route. Cursor and Cursor Agent are separate routes, not one combined case.\n\nEach supported route must pass a thorough local end-to-end smoke suite that exercises every meaningfully distinct path through every capability of every distribution, using the active operator inference accounts on both hosts. Evidence must be secret-free and record the route, capability, fixture/case, result, and failure class without retaining credentials or sensitive model responses. GitHub Actions automation is a later-release project; it must first settle endpoints, fixtures, limits, retries, and evidence retention.\n\nThe current macOS marketplace route is temporary. It may support pre-release work, but it is not the reproducible public release source until a clean pinned installation source and procedure exist.\n",
+        "created_at": "2026-08-25T07:33:55Z",
+        "updated_at": "2026-08-25T07:33:55Z"
+      }
+    ]
+  },
+  "sourceReferenceCheck": {
+    "expected": {
+      "provingkitMain": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
+      "provingkitPull40Head": "ae45339e05d1a65d881eac582dee7509b8ccb811",
+      "agentsPull69Head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+      "provingkitRetainedAgentsPr69": "8edaf590736621352262457752d087bad835555d"
+    },
+    "observed": {
+      "provingkitMain": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
+      "provingkitPull40Head": "ae45339e05d1a65d881eac582dee7509b8ccb811",
+      "agentsPull69Head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+      "provingkitRetainedAgentsPr69": {
+        "ref": "refs/heads/retained/agents-pr-69",
+        "sha": "8edaf590736621352262457752d087bad835555d"
+      }
+    },
+    "comparison": {
+      "provingkitMainUnchanged": true,
+      "provingkitPull40HeadUnchanged": true,
+      "agentsPull69HeadUnchanged": true,
+      "provingkitRetainedAgentsPr69Unchanged": true
+    }
+  }
+}

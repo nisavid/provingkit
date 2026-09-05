@@ -484,17 +484,24 @@
   "security_research": {
     "source_commit": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
     "assessment": "2026-09-05-provingkit-promotion-chain-security-assessment.md",
-    "assessment_sha256": "f737f419f10d1ee72824e8e3bbcc0e3b59a58883b1cebe9c643e9e0b6e068913",
+    "assessment_sha256": "2add5916588d482d26166b717dc9926f3de47b57eae54b93b9032821b7292fd0",
     "public_issue_snapshot": "2026-09-05-provingkit-promotion-chain-public-context.json",
-    "public_issue_snapshot_sha256": "00c5e25ea2735142efae60b54e36ff532238c60ae4aed396b82dd19c0b7ffe1d",
-    "input_manifest_sha256": "f9b6cfd31634b88f1952b09a332a6ed4373c7e40fd048bb78a9c4ee664a92226",
+    "public_issue_snapshot_sha256": "58be25dae19b6843db8754ef1da977c0a67ea3ce3f62b834b701d345eb70119c",
     "method": "static source, registry, entrypoint, caller, test, and workflow tracing; no repository code or live operations executed",
-    "authority": "research evidence only; no product attestation or release authority"
+    "authority": "research evidence only; no product attestation or release authority",
+    "source_selection": {
+      "repository": "https://github.com/nisavid/provingkit",
+      "commit": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
+      "tree": "3c256c2541ec60f4ded5d7baeaf929611700666e",
+      "rule": "Source references resolve in this immutable Git tree; public issue context resolves in the accompanying snapshot."
+    },
+    "supplemental_public_issue_snapshot": "2026-09-05-provingkit-eval-and-route-context.json",
+    "supplemental_public_issue_snapshot_sha256": "ef56c55310cbc2b97c1ac76d3776c4193f71ade7be7639d35f92a07f4416ee75"
   },
   "revalidation": {
-    "native_graph_snapshot_utc": "2026-09-05T05:43:30.649Z",
+    "native_graph_snapshot_utc": "2026-09-05T06:31:56.674Z",
     "native_graph_result": "same nodes, edges, assignments, and states as the inventory snapshot",
     "source_and_preserved_inputs": "unchanged in the accompanying public issue snapshot",
-    "pagination": "all nine public issue comment collections fetched through terminal pagination"
+    "pagination": "The nine primary and three supplemental public issue comment collections were fetched through terminal pagination; native graph connection pages are terminal."
   }
 }
