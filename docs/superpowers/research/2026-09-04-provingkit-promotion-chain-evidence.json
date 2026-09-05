@@ -484,7 +484,7 @@
   "security_research": {
     "source_commit": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
     "assessment": "2026-09-05-provingkit-promotion-chain-security-assessment.md",
-    "assessment_sha256": "2add5916588d482d26166b717dc9926f3de47b57eae54b93b9032821b7292fd0",
+    "assessment_sha256": "6e2007d4799ead5d2573184343410d77198f51ca37293efe485c4ef95abce96f",
     "public_issue_snapshot": "2026-09-05-provingkit-promotion-chain-public-context.json",
     "public_issue_snapshot_sha256": "58be25dae19b6843db8754ef1da977c0a67ea3ce3f62b834b701d345eb70119c",
     "method": "static source, registry, entrypoint, caller, test, and workflow tracing; no repository code or live operations executed",
@@ -496,7 +496,9 @@
       "rule": "Source references resolve in this immutable Git tree; public issue context resolves in the accompanying snapshot."
     },
     "supplemental_public_issue_snapshot": "2026-09-05-provingkit-eval-and-route-context.json",
-    "supplemental_public_issue_snapshot_sha256": "ef56c55310cbc2b97c1ac76d3776c4193f71ade7be7639d35f92a07f4416ee75"
+    "supplemental_public_issue_snapshot_sha256": "ef56c55310cbc2b97c1ac76d3776c4193f71ade7be7639d35f92a07f4416ee75",
+    "release_gate_review_context": "2026-09-05-provingkit-release-gate-review-context.json",
+    "release_gate_review_context_sha256": "c0d852e9876f71cc7de7e54c6e3a898005d394fe1c7bb35b1c2a6bdfcf563cde"
   },
   "revalidation": {
     "native_graph_snapshot_utc": "2026-09-05T06:31:56.674Z",

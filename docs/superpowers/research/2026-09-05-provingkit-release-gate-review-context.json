@@ -1,0 +1,1179 @@
+{
+  "schema_version": 1,
+  "kind": "public-release-gate-review-context",
+  "assembled_at": "2026-09-05T07:11:17.476896+00:00",
+  "scope": "Public host-inventory ownership and later graph/repository observations. Each embedded capture retains its own timestamp; these later observations do not replace the earlier snapshots.",
+  "host_inventory_owner": {
+    "schema": "agents-42-public-owner-context/v1",
+    "captured_at": "2026-09-05T07:10:15.877Z",
+    "scope": "public issue body/comments, assignment, and native graph relations only",
+    "issue": {
+      "repository": "nisavid/agents",
+      "number": 42,
+      "title": "Inventory the selected live harness surfaces on both hosts",
+      "url": "https://github.com/nisavid/agents/issues/42",
+      "state": "OPEN",
+      "body": "## Question\n\nWhich exact versions, installation origins, native manager and plugin capabilities, discovery paths, invocation surfaces, and validation probes currently exist for every accepted harness cell on work macOS and `hatchery` CachyOS?\n\nTreat **ChatGPT Codex** as Codex mode in the ChatGPT desktop app and **Codex** as the CLI/TUI. On `hatchery`, `chatgpt-desktop-bin` from the configured CachyOS repository is the live ChatGPT producer. Bind its residual routine-upgrade acceptance and fallback retirement evidence to [Accept the next routine signed CachyOS ChatGPT upgrade](https://github.com/nisavid/arch-pkgs/issues/76) and [Remove the retained fallback only after official-app continuity is accepted](https://github.com/nisavid/arch-pkgs/issues/77); do not revive or duplicate the archived `chatgpt-linux` migration.\n\nReturn a secret-free matrix with applicable, unavailable, and unsupported cells plus exact evidence sources.\n",
+      "assignees": [
+        "nisavid"
+      ],
+      "assignees_pagination": [
+        {
+          "page": 1,
+          "requestCursor": null,
+          "returned": 1,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "MQ"
+          }
+        }
+      ],
+      "assignees_complete": true,
+      "updated_at": "2026-08-31T05:35:45Z",
+      "closed_at": null,
+      "comments": [
+        {
+          "id": "IC_kwDOTOkJAM8AAAABPH4wJw",
+          "url": "https://github.com/nisavid/agents/issues/42#issuecomment-5309870119",
+          "body": "<!-- This is an auto-generated issue plan by CodeRabbit -->\n<details>\n<summary>\ud83d\udd17 Related PRs</summary>\n\nnisavid/agents#8 - feat(chatgpt-airgap-unlock): establish isolated desktop route [merged]\n</details>\n\n---\n<details>\n<summary>\ud83d\udcdd Issue Planner</summary>\n\n<sub>Check the box below or use the `@coderabbitai plan` command to generate an implementation plan and prompts that you can use with your favorite coding assistant.</sub>\n\n- [ ] <!-- {\"checkboxId\": \"8d4f2b9c-3e1a-4f7c-a9b2-d5e8f1c4a7b9\"} --> Create Plan\n</details>\n\n\n---\n<details>\n<summary> \ud83e\uddea Issue enrichment is currently in open beta.</summary>\n\n\nYou can configure auto-planning by selecting labels in the issue_enrichment configuration.\n\nTo disable automatic issue enrichment, add the following to your `.coderabbit.yaml`:\n```yaml\nissue_enrichment:\n  auto_enrich:\n    enabled: false\n```\n</details>\n\n\ud83d\udcac Have feedback or questions? Drop into our [discord](https://discord.gg/coderabbit)!",
+          "author": "coderabbitai",
+          "created_at": "2026-08-16T21:56:05Z",
+          "updated_at": "2026-08-16T21:56:05Z"
+        },
+        {
+          "id": "IC_kwDOTOkJAM8AAAABQZoHeg",
+          "url": "https://github.com/nisavid/agents/issues/42#issuecomment-5395580794",
+          "body": "## Research checkpoint (2026-08-24)\n\nThe issue remains open. The current source-stage snapshots from PR #54/#57 are historical skill/route evidence, not a fresh inventory of installed harness versions, native managers, discovery paths, or invocation probes on work macOS and `hatchery` CachyOS. No secret-free current harness matrix is checked in yet.\n\nThe next safe step is a read-only, per-host/per-harness inventory; the `hatchery` ChatGPT transition remains owned by [chatgpt-linux#119](https://github.com/nisavid/chatgpt-linux/issues/119). This research does not authorize host mutation or release.",
+          "author": "nisavid",
+          "created_at": "2026-08-24T13:03:27Z",
+          "updated_at": "2026-08-24T13:03:27Z"
+        },
+        {
+          "id": "IC_kwDOTOkJAM8AAAABRkSAMg",
+          "url": "https://github.com/nisavid/agents/issues/42#issuecomment-5473861682",
+          "body": "## Two-host scout checkpoint (2026-08-31)\n\nA fresh read-only scout establishes this current baseline:\n\n- Both dotfiles primary checkouts are clean at `c138ef33daac59863e16e7ca61eeed0e937497b0`, matching hosted `main`.\n- The `hatchery` agents checkout is clean at `0ca226c6ced4229718d627fcbaa367d325c12ce6`, 23 commits behind hosted `main` `18c921e4b2715dd35ae954c907a2fe62c5dc07ad`.\n- The work macOS agents checkout is clean at `3e8787ef8cb70db659125133c03027c703ed8233`, 5 commits behind hosted `main`.\n- The verified SSH alias and host spelling is `stlz-ivan-mbp`; `sltz-ivan-mbp` is not the configured alias.\n- Both hosts have the current dotfiles launcher, catalog, and lock foundation, but controller status fails closed with `STATUS_RUNTIME_UNAVAILABLE` and exit 69 because the production adapter registry is empty. Neither host has the independent release authority, trusted archive/receipt path, host profiles, or deployed coordinated six-distribution release.\n- `hatchery` inventory has drifted since the checked-in August 18 snapshot: standalone skills 122\u2192119, Claude plugin entries 47\u219257, Codex entries 59\u219266, and direct Claude/Codex/Cursor MCP entries 5/8/4\u21924/7/2. Cursor Context7 is ready; Firecrawl is not currently healthy.\n- The work Mac has current installed harnesses for ChatGPT, Codex, Claude Code, Claude Desktop, and Cursor, but only cached development copies of the six distributions; none is installed as the coordinated production release.\n\nThis does not close the inventory ticket. Exact current installation routes, capability boundaries, validation probes, and a public secret-free host manifest still need to be refreshed. The unmerged and dirty candidate work that affects this baseline is separately owned by [#64](https://github.com/nisavid/agents/issues/64).\n",
+          "author": "nisavid",
+          "created_at": "2026-08-31T04:48:29Z",
+          "updated_at": "2026-08-31T04:48:29Z"
+        }
+      ],
+      "comments_pagination": [
+        {
+          "page": 1,
+          "requestCursor": null,
+          "returned": 3,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpHPAAAAAUZEgDI="
+          }
+        }
+      ],
+      "comments_complete": true,
+      "nativeRelations": {
+        "parents": [
+          {
+            "issue": "nisavid/agents#41",
+            "title": "Map the Provingkit release and Base Loadout adoption",
+            "url": "https://github.com/nisavid/agents/issues/41",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "blockedBy": [],
+        "blocking": [
+          {
+            "issue": "nisavid/agents#46",
+            "title": "Define Base Loadout and two-host binding composition",
+            "url": "https://github.com/nisavid/agents/issues/46",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ],
+        "openBlockers": [],
+        "openDependents": [
+          {
+            "issue": "nisavid/agents#46",
+            "title": "Define Base Loadout and two-host binding composition",
+            "url": "https://github.com/nisavid/agents/issues/46",
+            "state": "OPEN",
+            "assignees": []
+          }
+        ]
+      }
+    },
+    "graph": {
+      "traversal": {
+        "scope": "recursive closure over native subIssues, blockedBy, and blocking relations",
+        "relationPageSize": 100,
+        "complete": true,
+        "nodeCount": 260,
+        "edgeCount": 1029
+      },
+      "allPaginationTerminal": true
+    }
+  },
+  "repository_revalidation": {
+    "schema": "provingkit-final-review-public-revalidation/v1",
+    "captured_at": "2026-09-05T07:01:59.194Z",
+    "scope": "public GitHub refs, pull-request and issue metadata, and complete native graph only",
+    "references": {
+      "expected": {
+        "provingkitMain": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
+        "provingkitPr40Head": "ae45339e05d1a65d881eac582dee7509b8ccb811",
+        "agentsPr69Head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+        "provingkitRetainedAgentsPr69": "8edaf590736621352262457752d087bad835555d",
+        "provingkitPr35Head": "10324107bd5894d88b0a0a7441511c530fde1bc4"
+      },
+      "observed": {
+        "provingkitMain": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
+        "provingkitPr40Head": "ae45339e05d1a65d881eac582dee7509b8ccb811",
+        "agentsPr69Head": "02e3c721bdbd922883948bb3af84c5bafd702984",
+        "provingkitRetainedAgentsPr69": {
+          "ref": "refs/heads/retained/agents-pr-69",
+          "sha": "8edaf590736621352262457752d087bad835555d"
+        },
+        "provingkitPr35Head": "10324107bd5894d88b0a0a7441511c530fde1bc4"
+      },
+      "unchanged": {
+        "provingkitMain": true,
+        "provingkitPr40Head": true,
+        "agentsPr69Head": true,
+        "provingkitRetainedAgentsPr69": true,
+        "provingkitPr35Head": true
+      }
+    },
+    "currentOpenPullRequests": [
+      {
+        "repository": "nisavid/provingkit",
+        "pullRequests": [
+          {
+            "number": 35,
+            "title": "docs(readme): rework the README as a landing page for human readers",
+            "url": "https://github.com/nisavid/provingkit/pull/35",
+            "isDraft": true,
+            "headRefOid": "10324107bd5894d88b0a0a7441511c530fde1bc4",
+            "headRefName": "ivan/readme-diataxis-rework",
+            "baseRefName": "main",
+            "updatedAt": "2026-09-04T13:22:06Z",
+            "author": "nisavid"
+          },
+          {
+            "number": 40,
+            "title": "fix(rolecasting/routing): port retained transition guard",
+            "url": "https://github.com/nisavid/provingkit/pull/40",
+            "isDraft": true,
+            "headRefOid": "ae45339e05d1a65d881eac582dee7509b8ccb811",
+            "headRefName": "ivan/port-rolecasting-transition-guard",
+            "baseRefName": "main",
+            "updatedAt": "2026-09-04T20:24:24Z",
+            "author": "nisavid"
+          }
+        ],
+        "pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 2,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "Y3Vyc29yOnYyOpHPAAAAAQkFQ0M="
+            }
+          }
+        ],
+        "complete": true
+      },
+      {
+        "repository": "nisavid/agents",
+        "pullRequests": [
+          {
+            "number": 36,
+            "title": "feat(hindsight): harden guarded activation and exact-drain recovery",
+            "url": "https://github.com/nisavid/agents/pull/36",
+            "isDraft": true,
+            "headRefOid": "eddaad69f9c136f1b15e0afd7eda4d387153491a",
+            "headRefName": "ivan/hindsight-activation-replay",
+            "baseRefName": "main",
+            "updatedAt": "2026-08-28T16:00:06Z",
+            "author": "nisavid"
+          },
+          {
+            "number": 69,
+            "title": "fix(rolecasting/model-routing): gate every payload transition",
+            "url": "https://github.com/nisavid/agents/pull/69",
+            "isDraft": true,
+            "headRefOid": "02e3c721bdbd922883948bb3af84c5bafd702984",
+            "headRefName": "nisavid/rolecasting-model-transition-guard",
+            "baseRefName": "main",
+            "updatedAt": "2026-09-04T17:40:17Z",
+            "author": "nisavid"
+          }
+        ],
+        "pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 2,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "Y3Vyc29yOnYyOpHPAAAAAQaF_4o="
+            }
+          }
+        ],
+        "complete": true
+      }
+    ],
+    "issueAssignments": [
+      {
+        "number": 2,
+        "title": "Audit the Provingkit promotion and release chain",
+        "url": "https://github.com/nisavid/provingkit/issues/2",
+        "state": "OPEN",
+        "updatedAt": "2026-09-05T01:00:38Z",
+        "assignees": [
+          "nisavid"
+        ],
+        "assigneesPagination": {
+          "hasNextPage": false,
+          "endCursor": "MQ"
+        }
+      },
+      {
+        "number": 8,
+        "title": "Choose the production evidence producer and issuer boundary",
+        "url": "https://github.com/nisavid/provingkit/issues/8",
+        "state": "OPEN",
+        "updatedAt": "2026-09-04T15:13:02Z",
+        "assignees": [],
+        "assigneesPagination": {
+          "hasNextPage": false,
+          "endCursor": null
+        }
+      }
+    ],
+    "graph": {
+      "root": {
+        "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+        "url": "https://github.com/nisavid/agents/issues/41",
+        "issue": "nisavid/agents#41"
+      },
+      "traversal": {
+        "scope": "recursive closure over native subIssues, blockedBy, and blocking relations",
+        "relationPageSize": 100,
+        "complete": true,
+        "nodeCount": 260,
+        "edgeCount": 1029
+      },
+      "allPaginationTerminal": true
+    }
+  },
+  "graph_delta": {
+    "before": {
+      "scope": "recursive closure over native subIssues, blockedBy, and blocking relations",
+      "relationPageSize": 100,
+      "complete": true,
+      "nodeCount": 258,
+      "edgeCount": 1025
+    },
+    "after": {
+      "scope": "recursive closure over native subIssues, blockedBy, and blocking relations",
+      "relationPageSize": 100,
+      "complete": true,
+      "nodeCount": 260,
+      "edgeCount": 1029
+    },
+    "nodesAdded": [
+      {
+        "key": "nisavid/release-ops#7",
+        "state": "OPEN",
+        "assignees": [],
+        "title": "Apply the Codiquarium repository identity before implementation",
+        "url": "https://github.com/nisavid/release-ops/issues/7"
+      },
+      {
+        "key": "nisavid/release-ops#8",
+        "state": "OPEN",
+        "assignees": [],
+        "title": "Establish the single-package Rust build skeleton",
+        "url": "https://github.com/nisavid/release-ops/issues/8"
+      }
+    ],
+    "nodesRemoved": [],
+    "edgesAdded": [
+      "nisavid/release-ops#2|blocking|nisavid/release-ops#7",
+      "nisavid/release-ops#3|blocked_by|nisavid/release-ops#8",
+      "nisavid/release-ops#7|blocked_by|nisavid/release-ops#2",
+      "nisavid/release-ops#7|blocking|nisavid/release-ops#8",
+      "nisavid/release-ops#8|blocked_by|nisavid/release-ops#7",
+      "nisavid/release-ops#8|blocking|nisavid/release-ops#3"
+    ],
+    "edgesRemoved": [
+      "nisavid/dotfiles#143|blocking|nisavid/dotfiles#260",
+      "nisavid/dotfiles#260|blocked_by|nisavid/dotfiles#143"
+    ],
+    "issue2Before": {
+      "id": "I_kwDOULKFi88AAAABPNKguw",
+      "assignees": [
+        "nisavid"
+      ],
+      "repository": "nisavid/provingkit",
+      "number": 2,
+      "title": "Audit the Provingkit promotion and release chain",
+      "url": "https://github.com/nisavid/provingkit/issues/2",
+      "state": "OPEN"
+    },
+    "issue2After": {
+      "id": "I_kwDOULKFi88AAAABPNKguw",
+      "assignees": [
+        "nisavid"
+      ],
+      "repository": "nisavid/provingkit",
+      "number": 2,
+      "title": "Audit the Provingkit promotion and release chain",
+      "url": "https://github.com/nisavid/provingkit/issues/2",
+      "state": "OPEN"
+    },
+    "issue2RelationsBefore": [
+      {
+        "from": "nisavid/agents#41",
+        "type": "sub_issue",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/agents#81",
+        "type": "blocking",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/agents#99",
+        "type": "blocking",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocked_by",
+        "to": "nisavid/agents#81"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocked_by",
+        "to": "nisavid/agents#99"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocking",
+        "to": "nisavid/provingkit#3"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocking",
+        "to": "nisavid/provingkit#36"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocking",
+        "to": "nisavid/provingkit#8"
+      },
+      {
+        "from": "nisavid/provingkit#3",
+        "type": "blocked_by",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/provingkit#36",
+        "type": "blocked_by",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/provingkit#8",
+        "type": "blocked_by",
+        "to": "nisavid/provingkit#2"
+      }
+    ],
+    "issue2RelationsAfter": [
+      {
+        "from": "nisavid/agents#41",
+        "type": "sub_issue",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/agents#81",
+        "type": "blocking",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/agents#99",
+        "type": "blocking",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocked_by",
+        "to": "nisavid/agents#81"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocked_by",
+        "to": "nisavid/agents#99"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocking",
+        "to": "nisavid/provingkit#3"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocking",
+        "to": "nisavid/provingkit#36"
+      },
+      {
+        "from": "nisavid/provingkit#2",
+        "type": "blocking",
+        "to": "nisavid/provingkit#8"
+      },
+      {
+        "from": "nisavid/provingkit#3",
+        "type": "blocked_by",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/provingkit#36",
+        "type": "blocked_by",
+        "to": "nisavid/provingkit#2"
+      },
+      {
+        "from": "nisavid/provingkit#8",
+        "type": "blocked_by",
+        "to": "nisavid/provingkit#2"
+      }
+    ],
+    "issue2MetadataSame": true,
+    "issue2RelationsSame": true
+  },
+  "changed_endpoint_context": {
+    "schema": "final-review-native-graph-delta-public-context/v1",
+    "captured_at": "2026-09-05T07:05:40.639Z",
+    "scope": "public issue bodies/comments, assignments, and current native graph only; no security assessment",
+    "graph": {
+      "root": {
+        "id": "I_kwDOTOkJAM8AAAABM_Nz2A",
+        "url": "https://github.com/nisavid/agents/issues/41",
+        "issue": "nisavid/agents#41"
+      },
+      "traversal": {
+        "scope": "recursive closure over native subIssues, blockedBy, and blocking relations",
+        "relationPageSize": 100,
+        "complete": true,
+        "nodeCount": 260,
+        "edgeCount": 1029
+      },
+      "allPaginationTerminal": true
+    },
+    "changedEndpoints": [
+      {
+        "repository": "nisavid/release-ops",
+        "number": 2,
+        "title": "Choose the implementation substrate and public package coordinates",
+        "url": "https://github.com/nisavid/release-ops/issues/2",
+        "state": "CLOSED",
+        "body": "## Question\n\nWhich implementation language and toolchain, package and command coordinates, source layout, minimum platform versions, dependency-lock rules, and reviewed-source bootstrap constraints should define the first release-ops core distribution?\n\nThe answer must preserve the settled provider-neutral contract and public/private ownership boundary. It must not choose command grammar, wire shapes, or adapter transports beyond what the implementation substrate forces.",
+        "assignees": [
+          "nisavid"
+        ],
+        "updated_at": "2026-09-05T06:39:34Z",
+        "closed_at": "2026-09-05T06:39:34Z",
+        "comments": [
+          {
+            "id": "IC_kwDOUNp1Qs8AAAABSs6wxA",
+            "url": "https://github.com/nisavid/release-ops/issues/2#issuecomment-5550026948",
+            "body": "I've settled the first distribution as one native Rust package containing Codiquarium's reusable library and the thin `cophax` executable. This records the accepted substrate choices and applies the [retained naming decision](https://github.com/nisavid/dotfiles/blob/b1656b63bd7d271321bff9258fa6bcce34c0d01c/docs/research/CRYPTO_RELEASE_OPS_NAMING.md).\n\n| Surface | Coordinate |\n| --- | --- |\n| Project and repository | Codiquarium; `nisavid/codiquarium`, by renaming the existing repository |\n| Public operator | Codophylax |\n| Cargo package and library crate | `codiquarium` |\n| Executable | `cophax` |\n\nThe repository rename and source-facing naming migration precede implementation. They preserve repository identity, issue history, existing policy, and release protections. No package is published or reserved by this decision.\n\nThe source shape is one root Cargo package, not a workspace. `src/lib.rs` owns reusable logic; `src/main.rs` handles presentation and orchestration. Keep deterministic policy, parsing, validation, and state-transition logic self-contained, with cryptographic implementations and provider effects behind narrow adapters. Executable adapter modules belong in `src/adapters/`; the established top-level `adapters/` directory remains the public adapter-contract and conformance surface. Preserve the other existing top-level domains. A second crate or workspace requires a demonstrated dependency, privilege, platform, or release-cadence seam.\n\nUse Rust edition 2024, pin Rust 1.98.1 exactly in `rust-toolchain.toml`, and set `rust-version = \"1.98.1\"` in `Cargo.toml`. Authoritative builds use that exact stable toolchain. Newer compilers may be experimental but produce no accepted artifact; nightly and unstable features are excluded. Before 1.0, a compiler change is a reviewed closure update, not an automatic compatibility promise. Go remains a deliberate fallback only if the dependency or implementation shape defeats end-to-end auditability; it is not a second implementation or an automatic fallback.\n\nCommit `Cargo.lock`, the complete versioned `vendor/` tree for the selected dependencies, and `.cargo/config.toml`. Authoritative Cargo builds use `--frozen`. Builds have no network access, opaque downloads, or unpinned generation. Git dependencies, build scripts, procedural macros, unsafe dependencies, and native linkage are default-denied; each exception requires qualification and renewed review. An admitted build script must run from vendored, locked source. Native FFI is admitted only when a required reviewed implementation forces that seam and receives separate cross-platform qualification.\n\nBind the compiler, Cargo, standard-library artifacts, linker, Linux build image, and macOS SDK/Xcode inputs by exact version and digest where distributable. These are explicit trusted build inputs: genesis does not recursively audit or bootstrap Rust, LLVM, libc, or the Apple SDK. Independently rebuild the same frozen closure on another host and compare the resulting evidence. Acceptance binds reviewed source, dependencies, toolchain, build inputs and process, independent rebuild, and resulting artifact digests. Byte reproducibility is a per-target qualification property where supported, not a demand for identical bytes across different target platforms.\n\nThe initial acceptance targets are:\n\n- `x86_64-unknown-linux-gnu`: Linux kernel 6.8 or later and glibc 2.39 or later;\n- `aarch64-apple-darwin`: macOS 14 or later.\n\nOther targets, including Linux arm64, macOS x86_64, and static musl, may receive inexpensive portability CI but have no pre-1.0 support claim until independently qualified.\n\nThis settles substrate and coordinates only. Command grammar, normative wire shapes, adapter transports, qualification, authority bootstrap, and production adoption stay with their owning tickets. The reviewed-source genesis and authenticated self-release gates remain intact. Existing `release-state/v1` and `admission-result/v1` identifiers remain unchanged; release writ and admission verdict are human-facing vocabulary.\n\n<!-- resolution:2 -->\n",
+            "author": "nisavid",
+            "created_at": "2026-09-05T06:38:30Z",
+            "updated_at": "2026-09-05T06:38:30Z"
+          }
+        ],
+        "comments_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 1,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "Y3Vyc29yOnYyOpHPAAAAAUrOsMQ="
+            }
+          }
+        ],
+        "comments_complete": true,
+        "assignees_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 1,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "MQ"
+            }
+          }
+        ],
+        "assignees_complete": true,
+        "nativeRelations": {
+          "parents": [],
+          "blockedBy": [],
+          "blocking": [
+            {
+              "issue": "nisavid/release-ops#3",
+              "title": "Build and qualify the immutable genesis closure",
+              "url": "https://github.com/nisavid/release-ops/issues/3",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/release-ops#7",
+              "title": "Apply the Codiquarium repository identity before implementation",
+              "url": "https://github.com/nisavid/release-ops/issues/7",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openBlockers": [],
+          "openDependents": [
+            {
+              "issue": "nisavid/release-ops#3",
+              "title": "Build and qualify the immutable genesis closure",
+              "url": "https://github.com/nisavid/release-ops/issues/3",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/release-ops#7",
+              "title": "Apply the Codiquarium repository identity before implementation",
+              "url": "https://github.com/nisavid/release-ops/issues/7",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ]
+        }
+      },
+      {
+        "repository": "nisavid/release-ops",
+        "number": 3,
+        "title": "Build and qualify the immutable genesis closure",
+        "url": "https://github.com/nisavid/release-ops/issues/3",
+        "state": "OPEN",
+        "body": "## Outcome\n\nProduce the complete public release-ops implementation and documentation needed to bootstrap the first operational release authority from reviewed immutable source.\n\n## Scope\n\n- Materialize the normative contracts, one primary core implementation, adapter interfaces and justified reference adapters, public profiles, fixtures, conformance, qualification records, and complete documentation.\n- Bind source, dependencies, tools, tests, reviews, and resulting artifacts to one immutable genesis revision.\n- Exercise positive, hostile, interruption, indeterminate-effect, reconciliation, recovery, and interoperability cases using disposable value-free inputs.\n- Preserve standard-tool and helper-assisted operator paths without inventing custom cryptography.\n\nNo production keys, credentials, provider resources, host bindings, trust state, or release publication occur here.\n\n## Acceptance evidence\n\n- The immutable closure reproduces from reviewed source and passes every selected conformance and qualification focus.\n- Every selected review focus has a clean latest pass on the same final revision.\n- The closure is sufficient for an operator to inspect the complete authority-bootstrap and self-release procedure before authorizing actuation.",
+        "assignees": [],
+        "updated_at": "2026-09-03T22:49:39Z",
+        "closed_at": null,
+        "comments": [],
+        "comments_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "comments_complete": true,
+        "assignees_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "assignees_complete": true,
+        "nativeRelations": {
+          "parents": [],
+          "blockedBy": [
+            {
+              "issue": "nisavid/dotfiles#213",
+              "title": "Prototype the conformance and executable-documentation system",
+              "url": "https://github.com/nisavid/dotfiles/issues/213",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#221",
+              "title": "Qualify the FIDO custody adapter on Linux and macOS",
+              "url": "https://github.com/nisavid/dotfiles/issues/221",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#250",
+              "title": "Define the generic release-operator scalability profile",
+              "url": "https://github.com/nisavid/dotfiles/issues/250",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#262",
+              "title": "Build and qualify the crypto-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/262",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/release-ops#2",
+              "title": "Choose the implementation substrate and public package coordinates",
+              "url": "https://github.com/nisavid/release-ops/issues/2",
+              "state": "CLOSED",
+              "assignees": [
+                "nisavid"
+              ]
+            },
+            {
+              "issue": "nisavid/release-ops#8",
+              "title": "Establish the single-package Rust build skeleton",
+              "url": "https://github.com/nisavid/release-ops/issues/8",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "blocking": [
+            {
+              "issue": "nisavid/dotfiles#263",
+              "title": "Build and qualify the release-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/263",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/release-ops#4",
+              "title": "Define and validate the authority-bootstrap handoff",
+              "url": "https://github.com/nisavid/release-ops/issues/4",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openBlockers": [
+            {
+              "issue": "nisavid/dotfiles#213",
+              "title": "Prototype the conformance and executable-documentation system",
+              "url": "https://github.com/nisavid/dotfiles/issues/213",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#221",
+              "title": "Qualify the FIDO custody adapter on Linux and macOS",
+              "url": "https://github.com/nisavid/dotfiles/issues/221",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#250",
+              "title": "Define the generic release-operator scalability profile",
+              "url": "https://github.com/nisavid/dotfiles/issues/250",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#262",
+              "title": "Build and qualify the crypto-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/262",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/release-ops#8",
+              "title": "Establish the single-package Rust build skeleton",
+              "url": "https://github.com/nisavid/release-ops/issues/8",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openDependents": [
+            {
+              "issue": "nisavid/dotfiles#263",
+              "title": "Build and qualify the release-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/263",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/release-ops#4",
+              "title": "Define and validate the authority-bootstrap handoff",
+              "url": "https://github.com/nisavid/release-ops/issues/4",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ]
+        }
+      },
+      {
+        "repository": "nisavid/release-ops",
+        "number": 7,
+        "title": "Apply the Codiquarium repository identity before implementation",
+        "url": "https://github.com/nisavid/release-ops/issues/7",
+        "state": "OPEN",
+        "body": "## Objective\n\nApply the accepted Codiquarium identity to the existing public repository and source scaffold before implementation begins.\n\n## Details\n\nRename `nisavid/release-ops` to `nisavid/codiquarium` in place. Preserve the repository's numeric identity, Git history, issues and dependencies, existing pull requests, policy, and protections. Use Codophylax for the public operator and `cophax` for its future executable. The Cargo package/library coordinate is `codiquarium`.\n\nUpdate current project identity, links, repository metadata, and agent entrypoints through the repository's normal reviewed change workflow. Preserve historical provenance and normative protocol identifiers. This ticket changes names, not behavior or policy.\n\n## Checklist\n\n- [ ] The same public repository resolves at `nisavid/codiquarium`; no replacement repository is created.\n- [ ] Current source-facing names and links use the accepted identities, with historical provenance preserved.\n- [ ] The implementation map and known delivery-map references point to the renamed repository; native issue/dependency identities remain intact.\n- [ ] Existing main-branch and tag protections remain in force, and existing pull requests remain available.\n- [ ] Repository-policy checks pass on the reviewed migration commit.\n\n## Dependencies\n\nNative dependency: Choose the implementation substrate and public package coordinates.\n\n## Notes\n\nNo Rust implementation, command grammar, cryptographic behavior, production data, provider/host mutation, tag, package publication, or release is part of this naming migration. Do not change protocol identifiers to match the branding.\n",
+        "assignees": [],
+        "updated_at": "2026-09-05T06:39:35Z",
+        "closed_at": null,
+        "comments": [],
+        "comments_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "comments_complete": true,
+        "assignees_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "assignees_complete": true,
+        "nativeRelations": {
+          "parents": [],
+          "blockedBy": [
+            {
+              "issue": "nisavid/release-ops#2",
+              "title": "Choose the implementation substrate and public package coordinates",
+              "url": "https://github.com/nisavid/release-ops/issues/2",
+              "state": "CLOSED",
+              "assignees": [
+                "nisavid"
+              ]
+            }
+          ],
+          "blocking": [
+            {
+              "issue": "nisavid/release-ops#8",
+              "title": "Establish the single-package Rust build skeleton",
+              "url": "https://github.com/nisavid/release-ops/issues/8",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openBlockers": [],
+          "openDependents": [
+            {
+              "issue": "nisavid/release-ops#8",
+              "title": "Establish the single-package Rust build skeleton",
+              "url": "https://github.com/nisavid/release-ops/issues/8",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ]
+        }
+      },
+      {
+        "repository": "nisavid/release-ops",
+        "number": 8,
+        "title": "Establish the single-package Rust build skeleton",
+        "url": "https://github.com/nisavid/release-ops/issues/8",
+        "state": "OPEN",
+        "body": "## Objective\n\nEstablish the accepted single-package Rust build surface for Codiquarium without implementing release or cryptographic behavior.\n\n## Details\n\nUse the settled substrate and coordinates: root Cargo package/library `codiquarium`, executable `cophax`, Rust edition 2024, exact Rust 1.98.1 toolchain and MSRV, `src/lib.rs`, thin `src/main.rs`, and the existing top-level contract/documentation domains. This is not a Cargo workspace.\n\nKeep the library and binary non-operational placeholders. Add only the build metadata and checks needed to compile and test that skeleton. Apply the accepted lock/source configuration to actual dependencies; do not add dependencies merely to populate a vendor directory. This proves a build scaffold, not the qualified genesis closure or support for the minimum OS versions.\n\n## Checklist\n\n- [ ] The package, library, and binary names match the settled coordinates, with no workspace or second crate.\n- [ ] Exact toolchain/MSRV and edition are declared. Commit `Cargo.lock` and `.cargo/config.toml`, plus the complete versioned `vendor/` tree for any actual dependencies.\n- [ ] Build/test checks using `cargo --frozen` pass on both accepted target architectures, with actual runner/toolchain versions recorded.\n- [ ] Existing repository-policy checks remain in force and pass on the reviewed commit.\n- [ ] The scaffold provides no release, signing, verification, admission, installation, or provider operation and makes no genesis-qualification claim.\n\n## Dependencies\n\nNative dependency: Apply the Codiquarium repository identity before implementation.\n\n## Notes\n\nUse ordinary implementation and review models for the build-only work. Any newly required security decision goes to its owning decision ticket and permitted specialist route; it is not resolved by the scaffold. Tags, package publication, releases, real credentials, and host/provider changes remain outside this ticket.\n",
+        "assignees": [],
+        "updated_at": "2026-09-05T06:38:48Z",
+        "closed_at": null,
+        "comments": [],
+        "comments_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "comments_complete": true,
+        "assignees_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "assignees_complete": true,
+        "nativeRelations": {
+          "parents": [],
+          "blockedBy": [
+            {
+              "issue": "nisavid/release-ops#7",
+              "title": "Apply the Codiquarium repository identity before implementation",
+              "url": "https://github.com/nisavid/release-ops/issues/7",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "blocking": [
+            {
+              "issue": "nisavid/release-ops#3",
+              "title": "Build and qualify the immutable genesis closure",
+              "url": "https://github.com/nisavid/release-ops/issues/3",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openBlockers": [
+            {
+              "issue": "nisavid/release-ops#7",
+              "title": "Apply the Codiquarium repository identity before implementation",
+              "url": "https://github.com/nisavid/release-ops/issues/7",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openDependents": [
+            {
+              "issue": "nisavid/release-ops#3",
+              "title": "Build and qualify the immutable genesis closure",
+              "url": "https://github.com/nisavid/release-ops/issues/3",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ]
+        }
+      },
+      {
+        "repository": "nisavid/dotfiles",
+        "number": 143,
+        "title": "Define the repository domain model and disabled Sal extension boundary",
+        "url": "https://github.com/nisavid/dotfiles/issues/143",
+        "state": "OPEN",
+        "body": "## Question\n\nWhat durable repository model should hold the Cryptographic Operations Policy, Key and Certificate Lifecycle Runbook, Protocol/Profile Registry, public metadata, provisioning interfaces, and future Sal integration points?\n\nDefine context vocabulary and file/schema ownership, separation from age encryption and process-scoped secret injection, extension hooks for Sal\u2019s currently disabled identity and procedures, validation/test surfaces, and how future application-specific policies can be added without changing the personal root contract. The Sal interface must be documented but inert.\n\nThis decision is blocked by `Choose the Hatchery and stlz-ivan-mbp subkey topology`, `Choose private-key custody and the explicit provisioning contract`, `Settle publication, trust anchors, and compatibility exceptions`, and `Settle lifecycle, recovery, and acceptance evidence`. Do not create Sal key material, enable Sal operations, or commit secrets.",
+        "assignees": [],
+        "updated_at": "2026-08-24T07:28:11Z",
+        "closed_at": null,
+        "comments": [],
+        "comments_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "comments_complete": true,
+        "assignees_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "assignees_complete": true,
+        "nativeRelations": {
+          "parents": [],
+          "blockedBy": [
+            {
+              "issue": "nisavid/dotfiles#138",
+              "title": "Choose the Hatchery and stlz-ivan-mbp subkey topology",
+              "url": "https://github.com/nisavid/dotfiles/issues/138",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#139",
+              "title": "Choose private-key custody and the explicit provisioning contract",
+              "url": "https://github.com/nisavid/dotfiles/issues/139",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#140",
+              "title": "Settle publication, trust anchors, and compatibility exceptions",
+              "url": "https://github.com/nisavid/dotfiles/issues/140",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#142",
+              "title": "Settle lifecycle, recovery, and acceptance evidence",
+              "url": "https://github.com/nisavid/dotfiles/issues/142",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#207",
+              "title": "Define the reusable core, adapter, and adopter-profile boundary",
+              "url": "https://github.com/nisavid/dotfiles/issues/207",
+              "state": "CLOSED",
+              "assignees": [
+                "nisavid"
+              ]
+            }
+          ],
+          "blocking": [
+            {
+              "issue": "nisavid/dotfiles#156",
+              "title": "Materialize the crypto-ops policy, registry, runbook, and inert Sal boundary",
+              "url": "https://github.com/nisavid/dotfiles/issues/156",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#157",
+              "title": "Build the disposable RFC 9980 ceremony and continuity harness",
+              "url": "https://github.com/nisavid/dotfiles/issues/157",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#158",
+              "title": "Build the Proton Pass custody and offline-recovery fixture",
+              "url": "https://github.com/nisavid/dotfiles/issues/158",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#159",
+              "title": "Implement explicit two-host private-key provisioning and chezmoi convergence",
+              "url": "https://github.com/nisavid/dotfiles/issues/159",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#160",
+              "title": "Build the public certificate and revocation publication bundle",
+              "url": "https://github.com/nisavid/dotfiles/issues/160",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#161",
+              "title": "Implement the generic personal sign-and-verify profile",
+              "url": "https://github.com/nisavid/dotfiles/issues/161",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#262",
+              "title": "Build and qualify the crypto-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/262",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openBlockers": [
+            {
+              "issue": "nisavid/dotfiles#138",
+              "title": "Choose the Hatchery and stlz-ivan-mbp subkey topology",
+              "url": "https://github.com/nisavid/dotfiles/issues/138",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#139",
+              "title": "Choose private-key custody and the explicit provisioning contract",
+              "url": "https://github.com/nisavid/dotfiles/issues/139",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#140",
+              "title": "Settle publication, trust anchors, and compatibility exceptions",
+              "url": "https://github.com/nisavid/dotfiles/issues/140",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#142",
+              "title": "Settle lifecycle, recovery, and acceptance evidence",
+              "url": "https://github.com/nisavid/dotfiles/issues/142",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openDependents": [
+            {
+              "issue": "nisavid/dotfiles#156",
+              "title": "Materialize the crypto-ops policy, registry, runbook, and inert Sal boundary",
+              "url": "https://github.com/nisavid/dotfiles/issues/156",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#157",
+              "title": "Build the disposable RFC 9980 ceremony and continuity harness",
+              "url": "https://github.com/nisavid/dotfiles/issues/157",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#158",
+              "title": "Build the Proton Pass custody and offline-recovery fixture",
+              "url": "https://github.com/nisavid/dotfiles/issues/158",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#159",
+              "title": "Implement explicit two-host private-key provisioning and chezmoi convergence",
+              "url": "https://github.com/nisavid/dotfiles/issues/159",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#160",
+              "title": "Build the public certificate and revocation publication bundle",
+              "url": "https://github.com/nisavid/dotfiles/issues/160",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#161",
+              "title": "Implement the generic personal sign-and-verify profile",
+              "url": "https://github.com/nisavid/dotfiles/issues/161",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#262",
+              "title": "Build and qualify the crypto-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/262",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ]
+        }
+      },
+      {
+        "repository": "nisavid/dotfiles",
+        "number": 260,
+        "title": "Provision the public Cryptosacristy repository",
+        "url": "https://github.com/nisavid/dotfiles/issues/260",
+        "state": "OPEN",
+        "body": "## Outcome\n\nCreate `nisavid/cryptosacristy` as the public, independently versioned home of Cryptosacristy, the reusable cryptographic-operations product. Its public operator is Cryptosacrist and its prospective command is `sacrypt`.\n\n## Scope\n\n- Establish Apache-2.0 licensing, governance, DCO/contribution policy, security reporting, CI, release metadata, and the initial source and documentation layout.\n- Preserve the reviewed ownership boundary: reusable policy, schemas, helpers, and operator documentation live here; dotfiles retains private bindings, protected bootstrap state, host adoption, and production evidence.\n- Record the source migration and provenance handoff from the dotfiles design work.\n- Create a repository-native Wayfinder map for implementation and first release.\n\nDo not create keys, credentials, provider objects, host bindings, or releases in this ticket.\n\n## Acceptance evidence\n\n- The public repository exists with its required policy and CI surfaces.\n- Its native implementation map names the genesis closure and first authenticated release.\n- The dotfiles-to-public ownership handoff is explicit and reviewable.\n\n## Execution\n\nAFK after repository-creation authority is confirmed.\n",
+        "assignees": [],
+        "updated_at": "2026-09-05T06:39:30Z",
+        "closed_at": null,
+        "comments": [
+          {
+            "id": "IC_kwDOLl3dHs8AAAABSs7Edw",
+            "url": "https://github.com/nisavid/dotfiles/issues/260#issuecomment-5550031991",
+            "body": "The planned public repository is Cryptosacristy, with `nisavid/cryptosacristy` as its repository coordinate and `sacrypt` as the prospective command, per the [retained naming decision](https://github.com/nisavid/dotfiles/blob/b1656b63bd7d271321bff9258fa6bcce34c0d01c/docs/research/CRYPTO_RELEASE_OPS_NAMING.md).\n\nI'm applying the settled repository-only gate correction: [Define the repository domain model and disabled Sal extension boundary](https://github.com/nisavid/dotfiles/issues/143) does not block this value-free public scaffold. The established [reusable ownership boundary](https://github.com/nisavid/dotfiles/issues/207), [reference-adoption profile](https://github.com/nisavid/dotfiles/issues/217), and [operational delivery boundary](https://github.com/nisavid/dotfiles/issues/259) supply its repository-level scope.\n\nThe domain-model decision remains open and continues to block [Build and qualify the crypto-ops genesis closure](https://github.com/nisavid/dotfiles/issues/262) and its downstream adoption. Removing the provisioning edge neither resolves that decision nor authorizes keys, credentials, private bindings, provider resources, host changes, or production adoption. This issue remains open until the repository and its scoped acceptance evidence actually exist.\n\n<!-- repository-gate-correction:260 -->\n",
+            "author": "nisavid",
+            "created_at": "2026-09-05T06:39:30Z",
+            "updated_at": "2026-09-05T06:39:30Z"
+          }
+        ],
+        "comments_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 1,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "Y3Vyc29yOnYyOpHPAAAAAUrOxHc="
+            }
+          }
+        ],
+        "comments_complete": true,
+        "assignees_pagination": [
+          {
+            "page": 1,
+            "requestCursor": null,
+            "returned": 0,
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            }
+          }
+        ],
+        "assignees_complete": true,
+        "nativeRelations": {
+          "parents": [],
+          "blockedBy": [],
+          "blocking": [
+            {
+              "issue": "nisavid/dotfiles#220",
+              "title": "Build the pinned one-shot FIDO custody adapter",
+              "url": "https://github.com/nisavid/dotfiles/issues/220",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#262",
+              "title": "Build and qualify the crypto-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/262",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ],
+          "openBlockers": [],
+          "openDependents": [
+            {
+              "issue": "nisavid/dotfiles#220",
+              "title": "Build the pinned one-shot FIDO custody adapter",
+              "url": "https://github.com/nisavid/dotfiles/issues/220",
+              "state": "OPEN",
+              "assignees": []
+            },
+            {
+              "issue": "nisavid/dotfiles#262",
+              "title": "Build and qualify the crypto-ops genesis closure",
+              "url": "https://github.com/nisavid/dotfiles/issues/262",
+              "state": "OPEN",
+              "assignees": []
+            }
+          ]
+        }
+      }
+    ],
+    "namedReleaseLinks": {
+      "nodes": [
+        {
+          "issue": "nisavid/dotfiles#266",
+          "title": "Publish and operationally accept the first release-ops release",
+          "url": "https://github.com/nisavid/dotfiles/issues/266",
+          "state": "OPEN",
+          "assignees": []
+        },
+        {
+          "issue": "nisavid/provingkit#36",
+          "title": "Integrate release-ops and publish the first signed Provingkit release",
+          "url": "https://github.com/nisavid/provingkit/issues/36",
+          "state": "OPEN",
+          "assignees": []
+        }
+      ],
+      "directEdgesToChangedEndpoints": [],
+      "directEdgesBetweenNamedReleaseNodes": [
+        {
+          "from": "nisavid/dotfiles#266",
+          "type": "blocking",
+          "to": "nisavid/provingkit#36"
+        },
+        {
+          "from": "nisavid/provingkit#36",
+          "type": "blocked_by",
+          "to": "nisavid/dotfiles#266"
+        }
+      ]
+    }
+  }
+}
