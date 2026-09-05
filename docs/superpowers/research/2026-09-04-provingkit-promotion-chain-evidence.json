@@ -484,7 +484,7 @@
   "security_research": {
     "source_commit": "e7965b0a2ad5c4f96dad8c2eea97f2d3d6db5c08",
     "assessment": "2026-09-05-provingkit-promotion-chain-security-assessment.md",
-    "assessment_sha256": "6e2007d4799ead5d2573184343410d77198f51ca37293efe485c4ef95abce96f",
+    "assessment_sha256": "9fee651da1a8ae3759cdcd85d89ae2ffd813050e5f9fd1a7adb211cc86363f7d",
     "public_issue_snapshot": "2026-09-05-provingkit-promotion-chain-public-context.json",
     "public_issue_snapshot_sha256": "58be25dae19b6843db8754ef1da977c0a67ea3ce3f62b834b701d345eb70119c",
     "method": "static source, registry, entrypoint, caller, test, and workflow tracing; no repository code or live operations executed",
