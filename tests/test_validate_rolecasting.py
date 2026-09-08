@@ -509,23 +509,26 @@ class ValidateRolecastingTests(unittest.TestCase):
         self.assertNotIn("api_key", path.read_text())
         self.assert_rejected("portability or credential leak")
 
-    def test_rejects_candidate_two_model_semantic_loss(self) -> None:
+    def test_rejects_model_role_semantic_loss(self) -> None:
         path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
         original = path.read_text()
         mutated = original.replace(
-            "preferred bounded GPT-5.6 role snapshot as of 2026-07-20",
-            "current model role family",
+            "**Astra low** (`gpt-6-astra`, `low`)",
+            "**Luna xhigh** (`gpt-5.6-luna`, `xhigh`)",
         )
         self.assertNotEqual(mutated, original)
         path.write_text(mutated)
         self.assert_rejected("semantic content lock mismatch")
 
     def test_rejects_non_codex_catalog_scope_regression(self) -> None:
-        path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
+        path = (
+            self.plugin / "skills" / "choosing-agent-models" / "references"
+            / "capability-probes-and-fallbacks.md"
+        )
         original = path.read_text()
         mutated = original.replace(
-            "otherwise probe the target harness",
-            "otherwise reuse the Codex live model catalog",
+            "or the target harness's live model catalog for another target",
+            "or the Codex catalog for every other target",
         )
         self.assertNotEqual(mutated, original)
         path.write_text(mutated)
@@ -608,14 +611,19 @@ class ValidateRolecastingTests(unittest.TestCase):
                 self.assert_rejected("semantic content lock mismatch")
                 path.write_text(original)
 
-    def test_rejects_topology_without_conditional_selection_edge(self) -> None:
+    def test_rejects_topology_that_skips_resolved_continuations(self) -> None:
         path = self.plugin / "topology.json"
         document = json.loads(path.read_text())
-        document["skills"]["delegating-cross-agent-work"]["may_call"] = []
-        path.write_text(json.dumps(document, indent=2) + "\n")
-        self.assert_rejected(
-            "may call model selection only when model or effort is unresolved"
-        )
+        for calls in (
+            [],
+            [{"skill": "choosing-agent-models", "when": "model-or-effort-unresolved"}],
+        ):
+            with self.subTest(calls=calls):
+                document["skills"]["delegating-cross-agent-work"]["may_call"] = calls
+                path.write_text(json.dumps(document, indent=2) + "\n")
+                self.assert_rejected(
+                    "must call model selection before every dispatch or continuation"
+                )
 
     def test_rejects_reverse_selection_edge(self) -> None:
         path = self.plugin / "topology.json"

@@ -4,7 +4,7 @@
 
 1. Identify the exact target family, surface, version, executor, and transport
    from the invocation topology receipt.
-2. For a Codex target, refresh the live catalog with `codex debug models`. For every non-Codex target, refresh that target harness's live model catalog instead.
+2. Require a currently fresh catalog observation. For Daybreak, including continuations, reuse an unchanged observation inside its declared freshness window; refresh only when missing, stale, or invalidated. Use `codex debug models` for a needed Codex refresh or the target harness's live model catalog for another target.
 3. Inspect the target executor tool or schema for accepted model slugs and reasoning efforts.
 4. Record the exact live-catalog and target-executor-schema intersection, and pass only a pair present in both.
 
@@ -20,7 +20,7 @@ During an already authorized no-task-data refresh, you may inspect route metadat
 
 ## Re-prove Continuation Capability
 
-Initial capability proof does not prove continuation capability. Before sending continuation task data, run a fresh no-task-data refresh against the same private account binding and require the exact selected model to remain exposed on the continuation surface. A task or session ID and its stored provider or model are useful identity facts, but a shared session database is not account-affinity evidence.
+Initial capability proof does not prove continuation capability. Before sending continuation task data, require a currently fresh observation of the same private account binding and the exact selected model on the continuation surface. Reuse an unchanged observation inside its declared freshness window; run a new no-task-data refresh only when the observation is missing, stale, or invalidated by a tuple change. A task or session ID and its stored provider or model are useful identity facts, but a shared session database is not account-affinity evidence.
 
 Require the continuation actuator to select and observe the same private account binding used for the successful initial dispatch. If it cannot, treat capability as unproven and fail closed without sending the continuation payload. A newly created dedicated task or session still requires the owning workflow's creation authority and a fresh capability proof; it does not make an unrelated task eligible.
 
@@ -34,9 +34,9 @@ Use a sufficient native route only when it preserves the original task contract.
 
 ## Apply Fallbacks
 
-Choose the lowest accepted effort that preserves the task's judgment margin. Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
+For roles without a fixed effort, choose the lowest accepted effort that preserves the task's judgment margin. Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
 
-When Luna fits the task but is absent from the native-subagent schema, use accepted Terra at the lowest safe effort. If explicit selection is unavailable, inherit an appropriate fixed model. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
+When Luna xhigh fits the task but is absent from the native-subagent schema, use accepted Astra low. If explicit selection is unavailable, inherit an appropriate fixed model. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
 
 For another harness, inspect its local capability surface and use only its exact supported values. Report an unavailable user-requested model rather than silently substituting.
 

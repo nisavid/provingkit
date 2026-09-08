@@ -27,7 +27,7 @@ Task identity and bounded purpose are route gates: model availability never make
 
 ## Kickoff
 
-Record the leader, repository, branch, immutable base, dirty state, submodules, and owning worktree. Compare plans with live state and policy before dispatch. Freeze every topology axis and the consumer's minimum assurance before model choice or edit authority. If model or effort remains unresolved, use `choosing-agent-models`.
+Record the leader, repository, branch, immutable base, dirty state, submodules, and owning worktree. Check plans against live state and policy. Freeze every topology axis and minimum consumer assurance before model choice or edits. Before every dispatch or continuation, use `choosing-agent-models` to reclassify scope, including resolved model/effort pairs.
 
 ## Bounded Handoff
 

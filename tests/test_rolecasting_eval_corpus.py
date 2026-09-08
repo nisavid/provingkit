@@ -21,7 +21,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
-    def test_rolecasting_has_exactly_twenty_six_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_exactly_twenty_eight_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -38,6 +38,8 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "high-risk-independent-review",
                 "cursor-grok-consequential-review",
                 "unrelated-task-model-is-not-a-route",
+                "daybreak-routing-matrix",
+                "daybreak-route-evidence",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
@@ -441,7 +443,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "blocked-with-probe-evidence",
                 "no-unauthorized-authority-escalation",
                 "explicit-authorization-before-retry",
-                "reviewer-sol-high-default",
+                "reviewer-astra-high-default",
                 "clerical-luna-separation",
                 "no-unproven-review-overescalation",
                 "cursor-grok-high-fit",
