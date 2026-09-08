@@ -24,7 +24,7 @@ Luna is not a substitute for Astra on judgment work.
 ## Prove Target Capability
 
 Use only a pair proven by both the target's live catalog and executor schema.
-For Codex, probe `codex debug models`; otherwise probe the target harness.
+Reuse fresh, unchanged Daybreak observations under its routing rules.
 Never infer executor support, invent a slug or effort, or treat selection as
 invocation authority.
 

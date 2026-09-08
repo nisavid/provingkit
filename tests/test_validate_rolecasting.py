@@ -521,11 +521,14 @@ class ValidateRolecastingTests(unittest.TestCase):
         self.assert_rejected("semantic content lock mismatch")
 
     def test_rejects_non_codex_catalog_scope_regression(self) -> None:
-        path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
+        path = (
+            self.plugin / "skills" / "choosing-agent-models" / "references"
+            / "capability-probes-and-fallbacks.md"
+        )
         original = path.read_text()
         mutated = original.replace(
-            "otherwise probe the target harness",
-            "otherwise reuse the Codex live model catalog",
+            "or the target harness's live model catalog for another target",
+            "or the Codex catalog for every other target",
         )
         self.assertNotEqual(mutated, original)
         path.write_text(mutated)

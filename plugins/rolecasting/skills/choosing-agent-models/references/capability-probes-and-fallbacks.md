@@ -4,7 +4,7 @@
 
 1. Identify the exact target family, surface, version, executor, and transport
    from the invocation topology receipt.
-2. For a Codex target, refresh the live catalog with `codex debug models`. For every non-Codex target, refresh that target harness's live model catalog instead.
+2. Require a currently fresh catalog observation. For Daybreak, including continuations, reuse an unchanged observation inside its declared freshness window; refresh only when missing, stale, or invalidated. Use `codex debug models` for a needed Codex refresh or the target harness's live model catalog for another target.
 3. Inspect the target executor tool or schema for accepted model slugs and reasoning efforts.
 4. Record the exact live-catalog and target-executor-schema intersection, and pass only a pair present in both.
 
