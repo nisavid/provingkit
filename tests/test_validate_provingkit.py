@@ -89,11 +89,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "tests/test_task_witness_package.py",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
-        shutil.copytree(
-            REPOSITORY / "plugins/tidesmith",
-            destination / "plugins/tidesmith",
-            dirs_exist_ok=True,
-        )
+        for member in ("rolecasting", "tidesmith"):
+            shutil.copytree(
+                REPOSITORY / "plugins" / member,
+                destination / "plugins" / member,
+                dirs_exist_ok=True,
+            )
 
     def assert_identity_fixture(
         self,

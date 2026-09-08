@@ -360,8 +360,8 @@ def validate_topology(root: Path) -> dict:
     require(
         len(delegating_calls) == 1
         and delegating_calls[0]["skill"] == CHOOSING_SKILL
-        and delegating_calls[0]["when"] == "model-or-effort-unresolved",
-        "delegation may call model selection only when model or effort is unresolved",
+        and delegating_calls[0]["when"] == "before-every-dispatch-or-continuation",
+        "delegation must call model selection before every dispatch or continuation",
     )
     require(
         skills[CHOOSING_SKILL]["may_call"] == [],

@@ -8,9 +8,9 @@
     "plugin.json": "d1833e0a8d23bac7c7c32bcf67880faf28af99e459d7fe57b9eaf33b7a95de29",
     "skills/choosing-agent-models/SKILL.md": "09852af8726040200afa46992e3df714ec991033bffb8d49e95d9538b6f60210",
     "skills/choosing-agent-models/agents/openai.yaml": "e1a582079fe7cb2026f9fcbe1963f65c8c04622e8d9d2354b2e2242ba9f2d7c8",
-    "skills/choosing-agent-models/evals/evals.json": "ef1003e5b4d1a90e8bf53a535e950abbc15c14f766e7432ba4d0c950e5d93f04",
+    "skills/choosing-agent-models/evals/evals.json": "53c46ab5463129e8c59ec01357952255c49984a1e44f5a89975c9e092ed7c9eb",
     "skills/choosing-agent-models/evals/fixtures/cursor-grok-consequential-review.md": "24fca6f04f90051aafaec333b2a6fb434f6eb99cafc202d5eb4138cb97d4db11",
-    "skills/choosing-agent-models/evals/fixtures/daybreak-route-evidence.md": "f148bb124a4ace437bf88532368cf40d2d72479cafefacb4b7005ecda0b3cdd7",
+    "skills/choosing-agent-models/evals/fixtures/daybreak-route-evidence.md": "f28be2161ed017e57105683f9bbc4c8a8bfa2492b32c46f5c508dda70a4edd87",
     "skills/choosing-agent-models/evals/fixtures/daybreak-routing-matrix.md": "9add27ff72268ef4cb3f3a73c4f4d4f2a5b21b4c23a3290403adfc516d6bea46",
     "skills/choosing-agent-models/evals/fixtures/delegation-already-chosen.md": "5e6b95b15b909150e045d0a2cad1850d3de9102bd7bc8b5e760ef8efdceaf9a1",
     "skills/choosing-agent-models/evals/fixtures/fable-proof-authority.md": "28cabb9da4451920fee78ccd1fad0f9925790ac37a6fc6021dfe6fff82916f2d",
@@ -19,9 +19,9 @@
     "skills/choosing-agent-models/evals/fixtures/unavailable-non-codex-capability.md": "48d5e328686213a17ce0dedd35e836e9ed99a85ba72b37957df037938d78071d",
     "skills/choosing-agent-models/evals/fixtures/unrelated-task-model-route.md": "7fba87298576ed589d54c7b10cf11925a913b4182fdda143a9572a11db03da12",
     "skills/choosing-agent-models/evals/fixtures/unsupported-luna-surface.md": "c2f00f8e9ffd9dd3d39539c0c4895f6945c2cb2e9e36141cb163eb3765809502",
-    "skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": "69d2b0d119ad9b451d81a058737048a23dfd4be05e4a79399a5126fb1495c608",
-    "skills/choosing-agent-models/references/daybreak-routing.md": "1dc500e9260f60b6470083785031febad9d6881509ecac55ccd752eba00bbaac",
-    "skills/delegating-cross-agent-work/SKILL.md": "5ab36f272c9c2468880b6c89914abf81ba458a0d5fe65a8f189c517898a056c9",
+    "skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": "f51fabf07c87d676a0cdf77d44d8d4bd6030ac2acae74289d651a132cec431d1",
+    "skills/choosing-agent-models/references/daybreak-routing.md": "082ebc54f7b207dacf606bb4d833f884d225d4ba125b7b2e565b78be6ac18ea7",
+    "skills/delegating-cross-agent-work/SKILL.md": "7ccbfda5344c5b2b802ba35365ed6b681ec2d32bdd3f13a5a92de98bad517e54",
     "skills/delegating-cross-agent-work/agents/openai.yaml": "02a299ec3000226ea22d472130a54bb3b6f45d8fbe28304de2359aa38c9fdc83",
     "skills/delegating-cross-agent-work/evals/evals.json": "ac5508e5b83bd80d2b1beb1087176f41681c07ffa1cd2446d45993bc0ddc6cdf",
     "skills/delegating-cross-agent-work/evals/fixtures/absent-foreign-executable-native-fallback.md": "4501a205b9a25e7e9085b8f0f21e78b5a4e4bf7d3d5b9028c53e482e067f53bb",
@@ -43,7 +43,7 @@
     "skills/delegating-cross-agent-work/evals/fixtures/user-owned-peer-consent.md": "a2de7f24651f2f88be1114fe687326caeeacf3a107009b489fbd63c24f609eca",
     "skills/delegating-cross-agent-work/evals/fixtures/user-owned-task-authority.md": "9dfd8cbf0319c0a77079100f578c810d458546e4496fdf96be04738aaac67e04",
     "skills/delegating-cross-agent-work/references/dispatch-evidence.md": "c1afb68b5e7be415a7ef09b5ce94d4711db9c144a59aa1dce78b243f29e51567",
-    "skills/delegating-cross-agent-work/references/foreign-harness-peers.md": "0c34531afa804c4a93b97914238091368834e7d44152acf522c5e446a79d1654",
+    "skills/delegating-cross-agent-work/references/foreign-harness-peers.md": "15fa6b03f544f079521d2e8c9b36a7c0f9cc8408207b539bc5d8a789b64edc63",
     "skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "368a53e7454124898e6684f3357d49bb5385884761c710a8d557ee67ce87c73b",
     "skills/delegating-cross-agent-work/references/native-codex-subagents.md": "bfb971790460fe6edaf52ca12f7b218d97fd2bcc661fe4af4d8ff95a5b9d1d6c",
     "skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "5be6b94721527c9f34fae389ade4028f3c6c95e9d95f1feacd0f0ded60289560",
@@ -51,6 +51,6 @@
     "skills/delegating-cross-agent-work/scripts/dispatch_evidence.py": "72de96e122b73a645e5e41d793724733db1766cebf23e12578a95364d8f5e4a4",
     "skills/delegating-cross-agent-work/scripts/native_codex.py": "ee1b54ae187f3c5ef8f086668802079d72519e0ffeac31b82619e82e8d062e65",
     "task-witness-provider.json": "d2d7a2a64fa7c7b097e6646607fa2055a9569b2f2b1b007477a22fa986348d50",
-    "topology.json": "c7180de08b0526b10f33d7f0e559fab2957b7d0ea32ddbfb4d278ce0ae4de101"
+    "topology.json": "bdc48f2f19bd997fb997908446322f85a815c5e9f6b5710c18925e3f05ccf997"
   }
 }

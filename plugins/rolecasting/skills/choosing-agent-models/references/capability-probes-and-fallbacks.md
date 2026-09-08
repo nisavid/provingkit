@@ -20,7 +20,7 @@ During an already authorized no-task-data refresh, you may inspect route metadat
 
 ## Re-prove Continuation Capability
 
-Initial capability proof does not prove continuation capability. Before sending continuation task data, run a fresh no-task-data refresh against the same private account binding and require the exact selected model to remain exposed on the continuation surface. A task or session ID and its stored provider or model are useful identity facts, but a shared session database is not account-affinity evidence.
+Initial capability proof does not prove continuation capability. Before sending continuation task data, require a currently fresh observation of the same private account binding and the exact selected model on the continuation surface. Reuse an unchanged observation inside its declared freshness window; run a new no-task-data refresh only when the observation is missing, stale, or invalidated by a tuple change. A task or session ID and its stored provider or model are useful identity facts, but a shared session database is not account-affinity evidence.
 
 Require the continuation actuator to select and observe the same private account binding used for the successful initial dispatch. If it cannot, treat capability as unproven and fail closed without sending the continuation payload. A newly created dedicated task or session still requires the owning workflow's creation authority and a fresh capability proof; it does not make an unrelated task eligible.
 

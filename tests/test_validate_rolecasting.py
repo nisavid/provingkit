@@ -608,14 +608,19 @@ class ValidateRolecastingTests(unittest.TestCase):
                 self.assert_rejected("semantic content lock mismatch")
                 path.write_text(original)
 
-    def test_rejects_topology_without_conditional_selection_edge(self) -> None:
+    def test_rejects_topology_that_skips_resolved_continuations(self) -> None:
         path = self.plugin / "topology.json"
         document = json.loads(path.read_text())
-        document["skills"]["delegating-cross-agent-work"]["may_call"] = []
-        path.write_text(json.dumps(document, indent=2) + "\n")
-        self.assert_rejected(
-            "may call model selection only when model or effort is unresolved"
-        )
+        for calls in (
+            [],
+            [{"skill": "choosing-agent-models", "when": "model-or-effort-unresolved"}],
+        ):
+            with self.subTest(calls=calls):
+                document["skills"]["delegating-cross-agent-work"]["may_call"] = calls
+                path.write_text(json.dumps(document, indent=2) + "\n")
+                self.assert_rejected(
+                    "must call model selection before every dispatch or continuation"
+                )
 
     def test_rejects_reverse_selection_edge(self) -> None:
         path = self.plugin / "topology.json"

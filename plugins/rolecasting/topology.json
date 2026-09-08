@@ -40,7 +40,7 @@
       "may_call": [
         {
           "skill": "choosing-agent-models",
-          "when": "model-or-effort-unresolved"
+          "when": "before-every-dispatch-or-continuation"
         }
       ]
     },
