@@ -34,9 +34,9 @@ Use a sufficient native route only when it preserves the original task contract.
 
 ## Apply Fallbacks
 
-Choose the lowest accepted effort that preserves the task's judgment margin. Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
+For roles without a fixed effort, choose the lowest accepted effort that preserves the task's judgment margin. Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
 
-When Luna fits the task but is absent from the native-subagent schema, use accepted Terra at the lowest safe effort. If explicit selection is unavailable, inherit an appropriate fixed model. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
+When Luna xhigh fits the task but is absent from the native-subagent schema, use accepted Astra low. If explicit selection is unavailable, inherit an appropriate fixed model. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
 
 For another harness, inspect its local capability surface and use only its exact supported values. Report an unavailable user-requested model rather than silently substituting.
 

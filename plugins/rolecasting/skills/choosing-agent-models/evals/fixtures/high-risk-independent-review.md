@@ -10,7 +10,7 @@ machine-readable evidence packet into a ledger. That worker performs no
 synthesis or readiness judgment, and any transcription error is cheap to
 detect and repair.
 
-The target executor accepts `gpt-5.6-sol` and `gpt-5.6-luna` at `high`. No prior
-review has failed for lack of reasoning depth, and there is no evidence that an
-effort above `high` is needed. Delegation, scope, authority, and output contracts
-are already settled.
+The target executor accepts `gpt-6-astra` at `high` and `gpt-5.6-luna` at
+`xhigh`. No prior review has failed for lack of reasoning depth, and there is no
+evidence that reviewer effort above `high` is needed. Delegation, scope,
+authority, and output contracts are already settled.

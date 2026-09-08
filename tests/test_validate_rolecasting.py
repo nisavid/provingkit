@@ -509,12 +509,12 @@ class ValidateRolecastingTests(unittest.TestCase):
         self.assertNotIn("api_key", path.read_text())
         self.assert_rejected("portability or credential leak")
 
-    def test_rejects_candidate_two_model_semantic_loss(self) -> None:
+    def test_rejects_model_role_semantic_loss(self) -> None:
         path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
         original = path.read_text()
         mutated = original.replace(
-            "preferred bounded GPT-5.6 role snapshot as of 2026-07-20",
-            "current model role family",
+            "**Astra low** (`gpt-6-astra`, `low`)",
+            "**Luna xhigh** (`gpt-5.6-luna`, `xhigh`)",
         )
         self.assertNotEqual(mutated, original)
         path.write_text(mutated)
