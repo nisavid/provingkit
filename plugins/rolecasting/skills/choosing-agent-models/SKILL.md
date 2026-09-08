@@ -11,7 +11,7 @@ Own model/effort selection and capability proof post-delegation. [delegating-cro
 
 Choose the lowest-cost model that preserves required judgment. Escalate for ambiguity, hard-to-reverse decisions, architecture, reviewer-facing work, or final integration.
 
-Before every delegation or continuation, apply [Daybreak routing](references/daybreak-routing.md) to the current scope; use the general matrix for unrelated work.
+Before every dispatch or continuation, apply [Daybreak routing](references/daybreak-routing.md) to the current scope; use the general matrix for unrelated work.
 
 ## Preferred Codex Role Family
 
