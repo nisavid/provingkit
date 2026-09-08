@@ -338,13 +338,13 @@ def incumbent_mapping(path: Path, skill_count: int) -> Path:
 def test_definition_is_exact_public_inventory_and_scenario_map():
     definition = json.loads(DEFINITION.read_text())
     skills = definition["skills"]
-    assert len(skills) == 22
+    assert len(skills) == 23
     counts: dict[str, int] = {}
     for skill in skills:
         plugin = skill["id"].split(":", 1)[0]
         counts[plugin] = counts.get(plugin, 0) + 1
     assert counts == {
-        "mergecraft": 9,
+        "mergecraft": 10,
         "rolecasting": 2,
         "tidesmith": 1,
         "tricritical": 7,
@@ -363,6 +363,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         "merged-remote-ref-cleanup",
         "non-default-fork-sync",
         "persistent-worktree-containment",
+        "markdown-authoring-recursive-issue-body",
         "writer-owns-content",
         "publisher-owns-actuation",
         "graphite-transport-boundary",
@@ -381,7 +382,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         capture_output=True,
         text=True,
     )
-    assert json.loads(validated.stdout) == {"passed": True, "skills": 22}
+    assert json.loads(validated.stdout) == {"passed": True, "skills": 23}
 
     getting_prs_merged = next(
         skill for skill in skills if skill["id"] == "mergecraft:getting-prs-merged"
@@ -533,7 +534,7 @@ def test_fixture_runner_rejects_symlinked_output_components_without_writing_targ
 
 
 def test_fixture_transport_cannot_masquerade_as_production_matrix(tmp_path: Path):
-    mapping = incumbent_mapping(tmp_path / "incumbents.json", 22)
+    mapping = incumbent_mapping(tmp_path / "incumbents.json", 23)
     rejected = subprocess.run(
         [
             sys.executable,

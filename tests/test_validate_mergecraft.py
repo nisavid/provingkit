@@ -24,6 +24,19 @@ EVAL_ROOT = Path("evals/mergecraft")
 CONTENT_LOCK = Path("release/plugin-content-locks/mergecraft.json")
 ATLAS_RELEASE = Path("release/mergecraft")
 RETIREMENT_LEDGER = Path("release/mergecraft-retirement-contribution-ledger.json")
+MARKDOWN_AUTHORING_SKILL = "writing-github-issue-and-pr-markdown"
+MARKDOWN_AUTHORING_SOURCE = Path(
+    "skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md"
+)
+MARKDOWN_AUTHORING_PROJECTIONS = {
+    "writing-reviewable-pr-descriptions": Path(
+        "references/github-markdown-authoring.md"
+    ),
+    "interacting-with-pr-review-feedback": Path(
+        "references/github-markdown-authoring.md"
+    ),
+    "getting-prs-merged": Path("references/github-markdown-authoring.md"),
+}
 AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 CANONICAL_IDENTITY_FIELDS = (
     "name",
@@ -165,6 +178,81 @@ class ValidateMergecraftTests(unittest.TestCase):
             ),
             sorted(component["name"] for component in topology["skills"]),
         )
+
+    def test_markdown_authoring_contract_is_public_and_writer_local(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        components = {component["name"]: component for component in topology["skills"]}
+        canonical = (self.plugin / MARKDOWN_AUTHORING_SOURCE).read_bytes()
+
+        self.assertIn(MARKDOWN_AUTHORING_SKILL, components)
+        self.assertEqual(
+            components[MARKDOWN_AUTHORING_SKILL]["references"],
+            [MARKDOWN_AUTHORING_SOURCE.as_posix()],
+        )
+        for skill, relative in MARKDOWN_AUTHORING_PROJECTIONS.items():
+            with self.subTest(skill=skill):
+                installed_root = Path(self.temporary_directory.name) / "installed" / skill
+                shutil.copytree(self.plugin / "skills" / skill, installed_root)
+                projection = installed_root / relative
+                self.assertEqual(projection.read_bytes(), canonical)
+                self.assertIn(
+                    f"({relative.as_posix()})",
+                    (installed_root / "SKILL.md").read_text(encoding="utf-8"),
+                )
+
+    def test_source_stage_rejects_markdown_authoring_projection_drift(self) -> None:
+        projection = (
+            self.plugin
+            / "skills/writing-reviewable-pr-descriptions"
+            / MARKDOWN_AUTHORING_PROJECTIONS["writing-reviewable-pr-descriptions"]
+        )
+        projection.write_bytes(projection.read_bytes() + b"\nDrift.\n")
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("writer-local Markdown authoring projection drift", result.stderr)
+
+    def test_content_lock_writer_refreshes_markdown_authoring_projections(self) -> None:
+        canonical = self.plugin / MARKDOWN_AUTHORING_SOURCE
+        canonical.write_bytes(canonical.read_bytes() + b"\nCanonical extension.\n")
+
+        VALIDATE_MERGECRAFT.write_content_lock(self.repo, self.plugin)
+
+        for skill, relative in MARKDOWN_AUTHORING_PROJECTIONS.items():
+            with self.subTest(skill=skill):
+                self.assertEqual(
+                    (self.plugin / "skills" / skill / relative).read_bytes(),
+                    canonical.read_bytes(),
+                )
+        VALIDATE_MERGECRAFT.validate_content_lock(self.repo, self.plugin)
+
+    def test_markdown_authoring_eval_corpus_has_a_blind_executor_boundary(self) -> None:
+        VALIDATE_MERGECRAFT.validate_markdown_authoring_eval_corpus(self.plugin)
+        eval_root = self.plugin / "skills" / MARKDOWN_AUTHORING_SKILL / "evals"
+        delivery = json.loads((eval_root / "delivery.json").read_text())
+        document = json.loads((eval_root / "evals.json").read_text())
+
+        self.assertEqual(
+            delivery["executor"]["inputs"],
+            ["prompt", "fixture", "candidate_bundle"],
+        )
+        self.assertNotIn("expected_output", delivery["executor"]["inputs"])
+        self.assertNotIn("expectations", delivery["executor"]["inputs"])
+        for item in document["evals"]:
+            fixture = (
+                self.plugin
+                / "skills"
+                / MARKDOWN_AUTHORING_SKILL
+                / item["fixture_paths"][0]
+            )
+            self.assertTrue(fixture.is_file())
+            self.assertFalse(
+                any(
+                    expectation["text"] in fixture.read_text(encoding="utf-8")
+                    for expectation in item["expectations"]
+                )
+            )
 
     def test_claude_manifest_is_exact_canonical_projection(self) -> None:
         canonical = json.loads((self.plugin / "plugin.json").read_text())
@@ -1277,7 +1365,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "2b0e30b1861ef820296d8cc14776141797ea850bfe135190a707b03e92c754c1"
+                "078c2229f7f26e2af1fba8022cca12c1540d11d03a153bd44bed92089531917a"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"

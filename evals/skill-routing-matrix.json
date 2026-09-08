@@ -2,7 +2,7 @@
   "schema_version": 2,
   "semantic_definition": {
     "path": "evals/control-plane-matrix.json",
-    "sha256": "2d92e038fc5d915f6456df22fe11867f511f38ef8a05f3d7e4f9c970e8648f2f"
+    "sha256": "e24fa90f8315bdbd22653d789eb2f31d0017ae0c1b84024dcec13b0386c051b6"
   },
   "existing_trigger_sources": [
     {
@@ -14,6 +14,11 @@
       "skill": "mergecraft:getting-prs-merged",
       "path": "evals/mergecraft/skills/getting-prs-merged/trigger-evals.json",
       "sha256": "447a5f51340e6b4eb79b318ae544cc476c3c80a7d79c70e0a5c687f2b7d290e9"
+    },
+    {
+      "skill": "mergecraft:writing-github-issue-and-pr-markdown",
+      "path": "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/trigger-evals.json",
+      "sha256": "a95f5228363fdd7cfc8b1db00a3838f8a6c7926fced43d4d27376233c0ca9766"
     }
   ],
   "skills": [
@@ -143,6 +148,12 @@
         "negative": "The persistent worktree already exists; commit its verified task-owned changes without creating another worktree.",
         "negative_expected_skills": ["checkpointing-and-publishing-git-work"]
       }
+    },
+    {
+      "id": "mergecraft:writing-github-issue-and-pr-markdown",
+      "cold_start": "Author exact human-facing GitHub Issue and pull-request body bytes while preserving source shape, retained spans, line endings, and terminal-newline state.",
+      "explicit": "Use $writing-github-issue-and-pr-markdown to author these exact GitHub body bytes without actuation.",
+      "supplemental": null
     },
     {
       "id": "mergecraft:writing-reviewable-pr-descriptions",

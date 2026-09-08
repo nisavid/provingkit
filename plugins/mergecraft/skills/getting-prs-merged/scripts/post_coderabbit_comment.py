@@ -156,9 +156,13 @@ def _read_body(path: Path) -> str:
     if not path.is_absolute():
         raise PublicationError("comment body path must be absolute")
     try:
-        return path.read_text(encoding="utf-8")
+        raw = path.read_bytes()
     except OSError as error:
         raise PublicationError(f"cannot read comment body: {error}") from error
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise PublicationError("comment body must be valid UTF-8") from error
 
 
 def main() -> int:

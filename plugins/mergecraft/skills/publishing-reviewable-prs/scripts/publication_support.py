@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 import tempfile
 from pathlib import Path
-from typing import IO
+from typing import BinaryIO
 
 from reviewable_pr_state import (
     ExpectedIdentity,
@@ -50,11 +50,11 @@ def validate_pr_content(
     run_read(arguments, input_text=body)
 
 
-def temporary_body(body: str) -> IO[str]:
-    """Return a flushed private body file suitable for one forge command."""
+def temporary_body(body: str) -> BinaryIO:
+    """Return a flushed private byte-preserving body file for one forge command."""
 
-    temporary = tempfile.NamedTemporaryFile(mode="w", encoding="utf-8")
-    temporary.write(body)
+    temporary = tempfile.NamedTemporaryFile(mode="wb")
+    temporary.write(body.encode("utf-8"))
     temporary.flush()
     return temporary
 

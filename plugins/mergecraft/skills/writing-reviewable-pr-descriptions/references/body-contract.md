@@ -113,14 +113,12 @@ confidence beyond automated checks.
 
 ## Source Shape
 
-GitHub Markdown treats ordinary source newlines within prose as soft breaks, so
-they must not encode an intended visible break. Put each paragraph, list item,
-table row, and blockquote line on one source line, however long, and express
-every intended intra-block break as `<br>`.
-
-Fenced code, raw HTML blocks, and Mermaid retain their required line structure.
-A blank line separates block elements. Repository docs, fixtures, and diffs may
-wrap; their shape is not a model for the rendered PR body.
+Apply the generated
+[GitHub Markdown authoring contract](github-markdown-authoring.md) to every newly
+authored or replaced PR-body span. It owns recursive flowing-prose lines,
+explicit hard breaks, literal and opaque exceptions, retained bytes, instruction
+conflicts, and exact line-ending and terminal-newline state. This PR-specific
+contract adds no second source-shape rule.
 
 ## Preservation
 
@@ -184,7 +182,8 @@ atlas route in `SKILL.md` only after static views fail this test.
   must be complete and mark one current PR.
 - Manual evidence must identify the core confidence path, intended and observed
   results, literal non-core classifications, and cleanup for executed state.
-- Every prose block occupies one source line, with explicit `<br>` for an
-  intended intra-block break.
+- Every newly authored or replaced span satisfies the generated GitHub
+  Markdown authoring contract; retained and opaque spans preserve their exact
+  bytes.
 - Return complete validated title/body bytes, the authorized text surface, and
   their bound review-input manifest without forge mutation.

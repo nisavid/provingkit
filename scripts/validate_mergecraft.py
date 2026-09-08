@@ -62,6 +62,7 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
 )
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
+    "writing-github-issue-and-pr-markdown",
     "writing-reviewable-pr-descriptions",
     "publishing-reviewable-prs",
     "graphite",
@@ -213,11 +214,70 @@ GITHUB_ALIAS_ACCESS = {
     "merge-write": "write",
 }
 COMMON_SKILL_FILES = {"SKILL.md", "agents/openai.yaml"}
+MARKDOWN_AUTHORING_SOURCE = (
+    "skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md"
+)
+MARKDOWN_AUTHORING_PROJECTIONS = {
+    "writing-reviewable-pr-descriptions": "references/github-markdown-authoring.md",
+    "interacting-with-pr-review-feedback": "references/github-markdown-authoring.md",
+    "getting-prs-merged": "references/github-markdown-authoring.md",
+}
+MARKDOWN_AUTHORING_EVAL_CASES = (
+    "recursive-issue-body",
+    "crlf-issue-conversation-comment",
+    "literal-and-opaque-pr-body",
+    "mixed-legacy-pr-body-edit",
+    "pr-conversation-comment-no-terminal-newline",
+    "submitted-review-ambient-wrapping-pressure",
+    "review-thread-root-compatible-instructions",
+    "review-thread-reply-material-conflict",
+)
+MARKDOWN_AUTHORING_FIELDS = {
+    "issue-body",
+    "issue-conversation-comment",
+    "pull-request-body",
+    "pull-request-conversation-comment",
+    "submitted-review-body",
+    "review-thread-root",
+    "review-thread-reply",
+}
+MARKDOWN_AUTHORING_FEATURES = {
+    "recursive-containers",
+    "explicit-br",
+    "fenced-code",
+    "table",
+    "raw-html",
+    "preformatted",
+    "opaque-region",
+    "control-region",
+    "mixed-retained-replaced",
+    "lf",
+    "crlf",
+    "terminal-newline-present",
+    "terminal-newline-absent",
+    "ambient-wrapping-pressure",
+    "compatible-global-instructions",
+    "material-conflict",
+}
 EXPECTED_SKILL_FILES = {
+    "writing-github-issue-and-pr-markdown": COMMON_SKILL_FILES
+    | {
+        "references/authoring-contract.md",
+        "evals/coverage.json",
+        "evals/delivery.json",
+        "evals/evals.json",
+        "evals/policy.json",
+        "evals/trigger-evals.json",
+        *{
+            f"evals/fixtures/{name}.md"
+            for name in MARKDOWN_AUTHORING_EVAL_CASES
+        },
+    },
     "writing-reviewable-pr-descriptions": COMMON_SKILL_FILES
     | {
         "references/body-contract.md",
         "references/change-navigation.md",
+        "references/github-markdown-authoring.md",
         "references/review-atlas-extension.json",
         "review-atlas-reference-design.md",
         "scripts/validate_change_navigation.py",
@@ -242,18 +302,24 @@ EXPECTED_SKILL_FILES = {
     "interacting-with-pr-review-feedback": COMMON_SKILL_FILES
     | {
         "references/interaction-authority.md",
+        "references/github-markdown-authoring.md",
     },
     "resuming-reviewed-prs": COMMON_SKILL_FILES,
     "getting-prs-ready-for-review": COMMON_SKILL_FILES,
     "getting-prs-merged": COMMON_SKILL_FILES
     | {
         "references/gh-fix-ci-adapter.md",
+        "references/github-markdown-authoring.md",
         "references/merge-actuator.md",
         "scripts/post_coderabbit_comment.py",
     },
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "writing-github-issue-and-pr-markdown": (
+        "Use $mergecraft:writing-github-issue-and-pr-markdown to author the "
+        "exact GFM body without GitHub actuation."
+    ),
     "writing-reviewable-pr-descriptions": (
         "Use $mergecraft:writing-reviewable-pr-descriptions to prepare and "
         "validate the exact PR title and body without forge mutation."
@@ -285,6 +351,10 @@ CODEX_PROMPTS = {
     ),
 }
 MANIFEST_PROMPTS = [
+    (
+        "Use $mergecraft:writing-github-issue-and-pr-markdown to author the "
+        "exact GFM body without GitHub actuation."
+    ),
     (
         "Use $mergecraft:writing-reviewable-pr-descriptions to prepare and "
         "validate the exact PR title and body without forge mutation."
@@ -512,8 +582,8 @@ ATLAS_EXTENSION_CONTRACT = {
 }
 EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
-    "writer": "db848932da6f2c5bb6f4c1270cf8c5d5fc4f5ad182104064a62a64d62e092f61",
-    "body": "6f5715844094002cf86cc2f3de8a21aa20e05837f8549859904e9e6345b68b14",
+    "writer": "03d2888242dc2a5b8c86edb61340c163250e458281a13b09df9f4a11a142c945",
+    "body": "d327115c7165f6ed961587f968e1cc8f264fb6cbe8b9d8d41af5ee020e47e806",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
 }
 RELEASE_VERSION = "1.0.0"
@@ -826,6 +896,270 @@ def read(root: Path, relative: str) -> str:
         f"required regular file is missing: {relative}",
     )
     return path.read_text(encoding="utf-8")
+
+
+def read_bytes(root: Path, relative: str) -> bytes:
+    path = root / relative
+    require(
+        path.is_file() and not path.is_symlink(),
+        f"required regular file is missing: {relative}",
+    )
+    return path.read_bytes()
+
+
+def validate_markdown_authoring_projections(root: Path) -> None:
+    canonical = read_bytes(root, MARKDOWN_AUTHORING_SOURCE)
+    topology = load_json(root, "topology.json")
+    components = {component["name"]: component for component in topology["skills"]}
+    require(
+        components["writing-github-issue-and-pr-markdown"]["references"]
+        == [MARKDOWN_AUTHORING_SOURCE],
+        "canonical Markdown authoring source discovery drift",
+    )
+    for skill, local_path in MARKDOWN_AUTHORING_PROJECTIONS.items():
+        projection_path = f"skills/{skill}/{local_path}"
+        require(
+            projection_path in components[skill]["references"],
+            f"writer-local Markdown authoring projection discovery drift: {skill}",
+        )
+        require(
+            f"({local_path})" in read(root, f"skills/{skill}/SKILL.md"),
+            f"writer-local Markdown authoring projection link drift: {skill}",
+        )
+        require(
+            read_bytes(root, projection_path) == canonical,
+            f"writer-local Markdown authoring projection drift: {skill}",
+        )
+
+
+def validate_markdown_authoring_eval_corpus(root: Path) -> None:
+    prefix = "skills/writing-github-issue-and-pr-markdown/evals"
+    delivery = load_json(root, f"{prefix}/delivery.json")
+    require(
+        isinstance(delivery, dict)
+        and set(delivery) == {"schema_version", "executor", "grader"}
+        and type(delivery["schema_version"]) is int
+        and delivery["schema_version"] == 1,
+        "Markdown authoring eval delivery schema drift",
+    )
+    executor = delivery["executor"]
+    grader = delivery["grader"]
+    require(
+        executor
+        == {
+            "inputs": ["prompt", "fixture", "candidate_bundle"],
+            "tools": "denied",
+        },
+        "Markdown authoring eval executor boundary drift",
+    )
+    require(
+        isinstance(grader, dict)
+        and set(grader) == {"distinct_from_executor", "available_after", "inputs"}
+        and grader["distinct_from_executor"] is True
+        and grader["available_after"] == "executor-complete"
+        and grader["inputs"]
+        == [
+            "prompt",
+            "fixture",
+            "candidate_bundle",
+            "response",
+            "expected_output",
+            "expectations",
+        ],
+        "Markdown authoring eval grader boundary drift",
+    )
+
+    policy = load_json(root, f"{prefix}/policy.json")
+    require(
+        isinstance(policy, dict)
+        and set(policy)
+        == {
+            "schema_version",
+            "repetitions",
+            "expectation_thresholds",
+            "trigger_cases",
+        }
+        and type(policy["schema_version"]) is int
+        and policy["schema_version"] == 1
+        and type(policy["repetitions"]) is int
+        and policy["repetitions"] == 3
+        and policy["expectation_thresholds"]
+        == {
+            "safety": {"required_passes": 3},
+            "quality": {"required_passes": 2},
+        }
+        and policy["trigger_cases"] == {"required_correct": "all"},
+        "Markdown authoring eval pass policy drift",
+    )
+
+    document = load_json(root, f"{prefix}/evals.json")
+    require(
+        isinstance(document, dict)
+        and set(document) == {"skill_name", "evals"}
+        and document["skill_name"] == "writing-github-issue-and-pr-markdown"
+        and isinstance(document["evals"], list),
+        "Markdown authoring eval manifest schema drift",
+    )
+    evals = document["evals"]
+    require(
+        len(evals) == len(MARKDOWN_AUTHORING_EVAL_CASES),
+        "Markdown authoring eval coverage drift",
+    )
+    observed_names: list[str] = []
+    referenced_fixtures: set[str] = set()
+    for position, item in enumerate(evals, 1):
+        require(
+            isinstance(item, dict)
+            and set(item)
+            == {
+                "id",
+                "name",
+                "prompt",
+                "fixture_paths",
+                "expected_output",
+                "expectations",
+            }
+            and type(item["id"]) is int
+            and item["id"] == position
+            and item["name"] == MARKDOWN_AUTHORING_EVAL_CASES[position - 1]
+            and isinstance(item["prompt"], str)
+            and item["prompt"]
+            and isinstance(item["expected_output"], str)
+            and item["expected_output"],
+            f"Markdown authoring eval item schema drift: {position}",
+        )
+        name = item["name"]
+        fixture_relative = f"evals/fixtures/{name}.md"
+        require(
+            item["fixture_paths"] == [fixture_relative],
+            f"Markdown authoring eval fixture binding drift: {name}",
+        )
+        fixture = read(
+            root,
+            f"skills/writing-github-issue-and-pr-markdown/{fixture_relative}",
+        )
+        lowered = fixture.lower()
+        for marker in (
+            "expected_output",
+            "expectations",
+            "pass if",
+            "must include",
+            "must not include",
+            "grader expectation",
+        ):
+            require(
+                marker not in lowered,
+                f"Markdown authoring grader answer leaked into fixture: {name}",
+            )
+        expectations = item["expectations"]
+        require(
+            isinstance(expectations, list) and len(expectations) == 3,
+            f"Markdown authoring eval expectation count drift: {name}",
+        )
+        expectation_ids: set[str] = set()
+        for expectation in expectations:
+            require(
+                isinstance(expectation, dict)
+                and set(expectation) == {"id", "text", "severity"}
+                and isinstance(expectation["id"], str)
+                and expectation["id"]
+                and expectation["id"] not in expectation_ids
+                and isinstance(expectation["text"], str)
+                and expectation["text"]
+                and expectation["severity"] in {"safety", "quality"}
+                and expectation["text"] not in fixture,
+                f"Markdown authoring eval expectation drift: {name}",
+            )
+            expectation_ids.add(expectation["id"])
+        observed_names.append(name)
+        referenced_fixtures.add(f"{name}.md")
+    require(
+        tuple(observed_names) == MARKDOWN_AUTHORING_EVAL_CASES,
+        "Markdown authoring eval name coverage drift",
+    )
+
+    coverage = load_json(root, f"{prefix}/coverage.json")
+    require(
+        isinstance(coverage, dict)
+        and set(coverage) == {"schema_version", "cases"}
+        and type(coverage["schema_version"]) is int
+        and coverage["schema_version"] == 1
+        and isinstance(coverage["cases"], list),
+        "Markdown authoring eval coverage schema drift",
+    )
+    coverage_names: list[str] = []
+    fields: set[str] = set()
+    features: set[str] = set()
+    for case in coverage["cases"]:
+        require(
+            isinstance(case, dict)
+            and set(case) == {"name", "fields", "features"}
+            and isinstance(case["name"], str)
+            and case["name"]
+            and isinstance(case["fields"], list)
+            and case["fields"]
+            and len(case["fields"]) == len(set(case["fields"]))
+            and all(field in MARKDOWN_AUTHORING_FIELDS for field in case["fields"])
+            and isinstance(case["features"], list)
+            and case["features"]
+            and len(case["features"]) == len(set(case["features"]))
+            and all(
+                feature in MARKDOWN_AUTHORING_FEATURES
+                for feature in case["features"]
+            ),
+            "Markdown authoring eval coverage case drift",
+        )
+        coverage_names.append(case["name"])
+        fields.update(case["fields"])
+        features.update(case["features"])
+    require(
+        tuple(coverage_names) == MARKDOWN_AUTHORING_EVAL_CASES
+        and fields == MARKDOWN_AUTHORING_FIELDS
+        and features == MARKDOWN_AUTHORING_FEATURES,
+        "Markdown authoring seven-field or feature coverage drift",
+    )
+
+    trigger_evals = load_json(root, f"{prefix}/trigger-evals.json")
+    require(
+        isinstance(trigger_evals, list)
+        and len(trigger_evals) == 11
+        and sum(
+            item.get("should_trigger") is True
+            for item in trigger_evals
+            if isinstance(item, dict)
+        )
+        == 7
+        and sum(
+            item.get("should_trigger") is False
+            for item in trigger_evals
+            if isinstance(item, dict)
+        )
+        == 4,
+        "Markdown authoring trigger coverage drift",
+    )
+    trigger_queries: set[str] = set()
+    for item in trigger_evals:
+        require(
+            isinstance(item, dict)
+            and set(item) == {"query", "should_trigger"}
+            and isinstance(item["query"], str)
+            and item["query"]
+            and item["query"] not in trigger_queries
+            and type(item["should_trigger"]) is bool,
+            "Markdown authoring trigger case schema drift",
+        )
+        trigger_queries.add(item["query"])
+
+    fixture_root = root / prefix / "fixtures"
+    actual_fixtures = {
+        path.name
+        for path in fixture_root.iterdir()
+        if path.is_file() and not path.is_symlink()
+    }
+    require(
+        actual_fixtures == referenced_fixtures,
+        "Markdown authoring raw fixture inventory drift",
+    )
 
 
 def load_json(root: Path, relative: str) -> Any:
@@ -3958,19 +4292,97 @@ def capture_content_lock_write_snapshot(
 def require_content_lock_write_snapshot_unchanged(
     repo_root: Path,
     snapshot: ContentLockWriteSnapshot,
+    ignored_temporary_paths: frozenset[Path] = frozenset(),
 ) -> None:
+    observed = capture_content_lock_write_snapshot(repo_root)
+    expected = snapshot
+    if ignored_temporary_paths:
+        root = locate_plugin(repo_root)
+        ignored_relatives = {
+            path.relative_to(root).as_posix()
+            for path in ignored_temporary_paths
+            if path.is_relative_to(root)
+        }
+        ignored_relatives.update(
+            f"skills/{skill}/{local_path}"
+            for skill, local_path in MARKDOWN_AUTHORING_PROJECTIONS.items()
+        )
+        observed = observed._replace(
+            plugin_entries=tuple(
+                entry
+                for entry in observed.plugin_entries
+                if entry[0] not in ignored_relatives
+            )
+        )
+        expected = expected._replace(
+            plugin_entries=tuple(
+                entry
+                for entry in expected.plugin_entries
+                if entry[0] not in ignored_relatives
+            )
+        )
     require(
-        capture_content_lock_write_snapshot(repo_root) == snapshot,
+        observed == expected,
         "validated inputs changed before semantic content lock replacement",
     )
 
 
+def _snapshot_entries(snapshot: ContentLockWriteSnapshot) -> dict[str, InputEntry]:
+    return dict(snapshot.plugin_entries)
+
+
+def _projection_replacement_plan(
+    root: Path,
+    snapshot: ContentLockWriteSnapshot,
+) -> dict[Path, tuple[bytes, int]]:
+    entries = _snapshot_entries(snapshot)
+    source_entry = entries.get(MARKDOWN_AUTHORING_SOURCE)
+    require(
+        source_entry is not None
+        and source_entry.kind == "regular"
+        and source_entry.mode is not None
+        and source_entry.sha256 is not None,
+        "canonical Markdown authoring source snapshot is invalid",
+    )
+    source = read_bytes(root, MARKDOWN_AUTHORING_SOURCE)
+    require(
+        hashlib.sha256(source).hexdigest() == source_entry.sha256,
+        "canonical Markdown authoring source changed after snapshot",
+    )
+    replacements: dict[Path, tuple[bytes, int]] = {}
+    for skill, local_path in MARKDOWN_AUTHORING_PROJECTIONS.items():
+        relative = f"skills/{skill}/{local_path}"
+        entry = entries.get(relative)
+        require(
+            entry is not None and entry.kind == "regular" and entry.mode is not None,
+            f"writer-local Markdown authoring projection snapshot is invalid: {skill}",
+        )
+        replacements[root / relative] = (source, entry.mode)
+    return replacements
+
+
+def _projected_plugin_entries(
+    snapshot: ContentLockWriteSnapshot,
+    replacements: dict[Path, tuple[bytes, int]],
+    root: Path,
+) -> tuple[tuple[str, InputEntry], ...]:
+    entries = _snapshot_entries(snapshot)
+    for path, (content, mode) in replacements.items():
+        relative = path.relative_to(root).as_posix()
+        entries[relative] = InputEntry(
+            "regular", mode, hashlib.sha256(content).hexdigest()
+        )
+    return tuple(sorted(entries.items()))
+
+
 def content_lock_document_from_snapshot(
     snapshot: ContentLockWriteSnapshot,
+    projected_entries: tuple[tuple[str, InputEntry], ...] | None = None,
 ) -> dict:
+    plugin_entries = projected_entries or snapshot.plugin_entries
     files = {
         relative: entry.sha256
-        for relative, entry in snapshot.plugin_entries
+        for relative, entry in plugin_entries
         if relative != "."
         and entry.kind == "regular"
         and relative not in CONTENT_LOCK_EXCLUSIONS
@@ -4012,22 +4424,38 @@ def write_content_lock(
         require(root.resolve() == located_root, "Mergecraft plugin root drift")
     if snapshot is None:
         snapshot = capture_content_lock_write_snapshot(repo_root)
-    path = repo_root / CONTENT_LOCK_RELATIVE
+    lock_path = repo_root / CONTENT_LOCK_RELATIVE
     require(
-        snapshot.lock_parent.kind == "directory" and not path.parent.is_symlink(),
+        snapshot.lock_parent.kind == "directory" and not lock_path.parent.is_symlink(),
         "semantic content lock parent is invalid",
     )
     require(
         snapshot.lock_entry.kind in {"missing", "regular"},
         "semantic content lock is not a regular file",
     )
-    content = (
-        json.dumps(content_lock_document_from_snapshot(snapshot), indent=2) + "\n"
+    projection_plan = _projection_replacement_plan(located_root, snapshot)
+    projected_entries = _projected_plugin_entries(
+        snapshot, projection_plan, located_root
+    )
+    lock_content = (
+        json.dumps(
+            content_lock_document_from_snapshot(snapshot, projected_entries),
+            indent=2,
+        )
+        + "\n"
     ).encode("utf-8")
-    mode = snapshot.lock_entry.mode if snapshot.lock_entry.mode is not None else 0o644
+    lock_mode = (
+        snapshot.lock_entry.mode if snapshot.lock_entry.mode is not None else 0o644
+    )
+    replacements = {
+        **projection_plan,
+        lock_path: (lock_content, lock_mode),
+    }
 
-    def recheck(_temporary_paths: frozenset[Path]) -> None:
-        require_content_lock_write_snapshot_unchanged(repo_root, snapshot)
+    def recheck(temporary_paths: frozenset[Path]) -> None:
+        require_content_lock_write_snapshot_unchanged(
+            repo_root, snapshot, temporary_paths
+        )
 
     def verify() -> None:
         require(
@@ -4035,7 +4463,7 @@ def write_content_lock(
                 located_root,
                 error_type=ContractError,
             )
-            == snapshot.plugin_entries
+            == projected_entries
             and snapshot_tree(
                 repo_root / EVAL_RELATIVE,
                 error_type=ContractError,
@@ -4055,23 +4483,21 @@ def write_content_lock(
             == snapshot.retirement_ledger,
             "validated inputs changed during semantic content lock replacement",
         )
-        replacement = capture_input_entry(
-            path,
-            error_type=ContractError,
-        )
-        require(
-            replacement
-            == InputEntry(
-                "regular",
-                mode,
-                hashlib.sha256(content).hexdigest(),
-            ),
-            "semantic content lock replacement identity is invalid",
-        )
+        for path, (content, mode) in replacements.items():
+            replacement = capture_input_entry(path, error_type=ContractError)
+            require(
+                replacement
+                == InputEntry(
+                    "regular",
+                    mode,
+                    hashlib.sha256(content).hexdigest(),
+                ),
+                "generated Mergecraft artifact replacement identity is invalid",
+            )
 
     replace_generated_artifacts(
         repo_root,
-        {path: (content, mode)},
+        replacements,
         recheck=recheck,
         verify=verify,
     )
@@ -4111,6 +4537,7 @@ def validate(
     *,
     source_stage: bool = False,
     check_content_lock: bool | None = None,
+    check_projections: bool = True,
     emit_success: bool = True,
 ) -> None:
     root = locate_plugin(repo_root)
@@ -4118,7 +4545,10 @@ def validate(
     validate_topology(root)
     validate_no_compatibility_shims(root)
     validate_inventories(root)
+    if check_projections:
+        validate_markdown_authoring_projections(root)
     validate_serialized_files(root, source_stage=source_stage)
+    validate_markdown_authoring_eval_corpus(root)
     validate_manifests(root)
     # Source-stage Atlas validation proves the candidate's public source shape.
     # Adapter YAML is a release-only concern and may require an optional parser.
@@ -4169,6 +4599,7 @@ def main() -> int:
                 args.skill,
                 source_stage=args.source_stage,
                 check_content_lock=False,
+                check_projections=False,
                 emit_success=False,
             )
             require_content_lock_write_snapshot_unchanged(repository, snapshot)

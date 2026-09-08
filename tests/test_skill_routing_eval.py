@@ -80,12 +80,12 @@ def test_routing_definition_has_the_complete_inventory():
     runner = load_runner()
     bundle = runner.load_definition(ROOT)
     cases = bundle.cases
-    assert len(cases) == 117
+    assert len(cases) == 130
     assert runner.case_counts(cases) == {
-        "cold_start": 22,
-        "explicit_invocation": 22,
-        "trigger": 73,
-        "total": 117,
+        "cold_start": 23,
+        "explicit_invocation": 23,
+        "trigger": 84,
+        "total": 130,
     }
     assert (
         sum(
@@ -93,7 +93,7 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 38
+        == 45
     )
     assert (
         sum(
@@ -101,10 +101,11 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 35
+        == 39
     )
     assert {
         "versionkeeping:using-persistent-git-worktrees",
+        "mergecraft:writing-github-issue-and-pr-markdown",
         "mergecraft:writing-reviewable-pr-descriptions",
         "mergecraft:publishing-reviewable-prs",
         "mergecraft:graphite",
@@ -348,7 +349,7 @@ def test_evidence_validation_compares_the_declared_candidate_repository(
 
 def test_fixture_mode_rejects_a_full_or_empty_matrix(tmp_path: Path):
     repository, revision = frozen_copy(tmp_path)
-    for limit in (None, "117", "0"):
+    for limit in (None, "130", "0"):
         command = [
             sys.executable,
             str(SCRIPT),

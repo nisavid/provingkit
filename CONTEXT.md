@@ -54,6 +54,14 @@ A README, license, changelog, topology, eval corpus, content lock, receipt, or v
 A facility of the client or environment that a skill's instructions rely on but the plugin does not provide: shell and file access, Git or forge access, user elicitation, delegation, model selection, browser or computer use, scheduling.
 _Avoid_: Plugin capability, feature
 
+**Semantic writer**:
+A skill or operation that owns valid human-facing content and its exact output bytes. Authoring coverage does not grant authority to post, submit, or otherwise actuate that content.
+_Avoid_: Poster, transport, actuator
+
+**Actuator**:
+An operation-specific component that performs a separately authorized state change from fully bound inputs. When it consumes semantic-writer output, that content remains opaque unless the operation contract explicitly says otherwise.
+_Avoid_: Writer, generic GitHub client
+
 ### Kit and release
 
 **Provingkit**:

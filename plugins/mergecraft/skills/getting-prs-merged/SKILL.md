@@ -76,9 +76,14 @@ mutation and reports findings or missing evidence before PR status.
 
 ## CodeRabbit request
 
-For a policy-required skipped CodeRabbit review, treat the skip as no completed
-cycle, check readiness and any explicit operator or repository limit, and
-require explicit authority for one top-level comment. Bind PR/base/head and
+For a policy-required skipped CodeRabbit review, this coordinator is the
+semantic writer for the selected top-level pull-request conversation-comment
+body. Read the generated
+[GitHub Markdown authoring contract](references/github-markdown-authoring.md),
+compose compatible consumer instructions, own valid GFM and the exact body
+bytes, and stop on a material conflict. Treat the skip as no completed cycle,
+check readiness and any explicit operator or repository limit, and require
+explicit authority for one top-level comment. Bind PR/base/head and
 head repository/owner, caller-supplied expected
 authenticated login, bytes, and SHA-256. Use the helper once; independently
 verify the active login, then reread ID/URL, PR, head, author, body, and

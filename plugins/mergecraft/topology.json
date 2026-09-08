@@ -3,11 +3,49 @@
   "plugin": "mergecraft",
   "skills": [
     {
+      "name": "writing-github-issue-and-pr-markdown",
+      "entrypoint": "skills/writing-github-issue-and-pr-markdown/SKILL.md",
+      "interface": "skills/writing-github-issue-and-pr-markdown/agents/openai.yaml",
+      "references": [
+        "skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md"
+      ],
+      "scripts": [],
+      "modules": [],
+      "calls": [],
+      "conditional_calls": {},
+      "operations": ["github-markdown-content"],
+      "contract": {
+        "trigger": "human-facing-github-issue-or-pr-body-authoring-request",
+        "modes": ["author", "edit"],
+        "authority": "valid GFM and exact candidate body bytes only",
+        "inputs": [
+          "covered-github-field",
+          "authoring-intent",
+          "applicable-consumer-instructions",
+          "retained-replaced-removed-spans",
+          "line-ending-and-terminal-newline-policy"
+        ],
+        "outputs": [
+          "exact-body-candidate",
+          "line-ending-and-terminal-newline-state",
+          "material-conflict-blocker"
+        ],
+        "forbidden_reverse_calls": [
+          "publishing-reviewable-prs",
+          "interacting-with-pr-review-feedback",
+          "getting-prs-merged"
+        ],
+        "loop_owner": null,
+        "terminal_statuses": ["authored", "blocked"]
+      }
+    },
+    {
       "name": "writing-reviewable-pr-descriptions",
       "entrypoint": "skills/writing-reviewable-pr-descriptions/SKILL.md",
       "interface": "skills/writing-reviewable-pr-descriptions/agents/openai.yaml",
       "references": [
         "skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+        "skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
         "skills/writing-reviewable-pr-descriptions/references/change-navigation.md",
         "skills/writing-reviewable-pr-descriptions/references/review-atlas-extension.json",
         "skills/writing-reviewable-pr-descriptions/review-atlas-reference-design.md"
@@ -224,7 +262,8 @@
       "entrypoint": "skills/interacting-with-pr-review-feedback/SKILL.md",
       "interface": "skills/interacting-with-pr-review-feedback/agents/openai.yaml",
       "references": [
-        "skills/interacting-with-pr-review-feedback/references/interaction-authority.md"
+        "skills/interacting-with-pr-review-feedback/references/interaction-authority.md",
+        "skills/interacting-with-pr-review-feedback/references/github-markdown-authoring.md"
       ],
       "scripts": [],
       "modules": [],
@@ -344,6 +383,7 @@
       "interface": "skills/getting-prs-merged/agents/openai.yaml",
       "references": [
         "skills/getting-prs-merged/references/gh-fix-ci-adapter.md",
+        "skills/getting-prs-merged/references/github-markdown-authoring.md",
         "skills/getting-prs-merged/references/merge-actuator.md"
       ],
       "scripts": [
@@ -448,6 +488,18 @@
     }
   ],
   "operations": [
+    {
+      "semantic_id": "github-markdown-content",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "writing-github-issue-and-pr-markdown",
+      "implementation": "skills/writing-github-issue-and-pr-markdown/SKILL.md",
+      "import": null,
+      "access": "coordinate",
+      "authority": "valid GFM and exact candidate body bytes only",
+      "callers": ["writing-github-issue-and-pr-markdown"],
+      "disposition": "public-skill"
+    },
     {
       "semantic_id": "pr-content",
       "github_aliases": [],

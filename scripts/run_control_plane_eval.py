@@ -1751,7 +1751,7 @@ def validate_definition(repo: Path, definition: dict[str, Any]) -> None:
         "rolecasting": 2,
         "tricritical": 7,
         "versionkeeping": 3,
-        "mergecraft": 9,
+        "mergecraft": 10,
         "tidesmith": 1,
     }:
         raise EvaluationError(f"public skill inventory drift: {counts}")
@@ -1768,6 +1768,21 @@ def validate_definition(repo: Path, definition: dict[str, Any]) -> None:
     ):
         raise EvaluationError("comparative target inventory is invalid")
     public_calls = topology_calls(repo)
+    if require_topology:
+        declared_mergecraft = {
+            skill_id
+            for skill_id in declarations
+            if skill_id.startswith("mergecraft:")
+        }
+        topology_mergecraft = {
+            skill_id
+            for skill_id in public_calls
+            if skill_id.startswith("mergecraft:")
+        }
+        if declared_mergecraft != topology_mergecraft:
+            raise EvaluationError(
+                "Mergecraft control-plane inventory differs from public topology discovery"
+            )
     for skill_id, declaration in declarations.items():
         expected_calls = public_calls.get(skill_id)
         if expected_calls is None:

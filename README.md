@@ -18,8 +18,8 @@ Plugins:
   **Versionkeeping**, which owns safe Git checkpoints, publication planning,
   conflict resolution, worktree lifecycle, and fork synchronization.
 - [`plugins/mergecraft/`](plugins/mergecraft/) contains **Mergecraft**, which
-  owns pull-request authoring, publication, feedback, readiness, merge, and
-  stack repair.
+  owns exact human-facing GitHub body authoring plus pull-request publication,
+  feedback, readiness, merge, and stack repair.
 - [`plugins/artifact-customs/`](plugins/artifact-customs/) contains
   **Artifact Customs**, which assesses and maintains exact third-party software
   components under explicit policy.

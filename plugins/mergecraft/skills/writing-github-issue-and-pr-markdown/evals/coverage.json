@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "recursive-issue-body",
+      "fields": ["issue-body"],
+      "features": ["recursive-containers", "explicit-br", "lf", "terminal-newline-absent"]
+    },
+    {
+      "name": "crlf-issue-conversation-comment",
+      "fields": ["issue-conversation-comment"],
+      "features": ["crlf", "terminal-newline-present"]
+    },
+    {
+      "name": "literal-and-opaque-pr-body",
+      "fields": ["pull-request-body"],
+      "features": ["fenced-code", "table", "raw-html", "preformatted", "opaque-region", "control-region"]
+    },
+    {
+      "name": "mixed-legacy-pr-body-edit",
+      "fields": ["pull-request-body"],
+      "features": ["mixed-retained-replaced", "lf", "crlf", "terminal-newline-present"]
+    },
+    {
+      "name": "pr-conversation-comment-no-terminal-newline",
+      "fields": ["pull-request-conversation-comment"],
+      "features": ["lf", "terminal-newline-absent"]
+    },
+    {
+      "name": "submitted-review-ambient-wrapping-pressure",
+      "fields": ["submitted-review-body"],
+      "features": ["ambient-wrapping-pressure", "lf", "terminal-newline-absent"]
+    },
+    {
+      "name": "review-thread-root-compatible-instructions",
+      "fields": ["review-thread-root"],
+      "features": ["compatible-global-instructions", "lf", "terminal-newline-absent"]
+    },
+    {
+      "name": "review-thread-reply-material-conflict",
+      "fields": ["review-thread-reply"],
+      "features": ["material-conflict"]
+    }
+  ]
+}

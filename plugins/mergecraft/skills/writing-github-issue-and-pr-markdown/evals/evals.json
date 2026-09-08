@@ -1,0 +1,101 @@
+{
+  "skill_name": "writing-github-issue-and-pr-markdown",
+  "evals": [
+    {
+      "id": 1,
+      "name": "recursive-issue-body",
+      "prompt": "Using the fixture, author the requested body without tools or GitHub actuation. Return only a JSON string whose decoded value is the complete exact body.",
+      "fixture_paths": ["evals/fixtures/recursive-issue-body.md"],
+      "expected_output": "A valid nested Issue body keeps each flowing-prose block on one physical line at every container depth, uses the requested explicit hard break, and preserves structural lines with the selected LF/no-terminal-newline state.",
+      "expectations": [
+        {"id": "recursive-source-shape", "text": "Every newly authored flowing-prose block is one physical line recursively inside the ordered list, nested list, blockquote, and details container while structural lines remain separate.", "severity": "safety"},
+        {"id": "explicit-hard-break", "text": "The author-intended opening break is represented with explicit <br> rather than a soft newline, trailing spaces, or a backslash.", "severity": "safety"},
+        {"id": "useful-issue-body", "text": "The body accurately organizes the three checks, checksum blocker, and separate operator decision without claiming Issue mutation.", "severity": "quality"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "crlf-issue-conversation-comment",
+      "prompt": "Using the fixture, author the requested body without tools or GitHub actuation. Return only a JSON string whose decoded value is the complete exact body.",
+      "fixture_paths": ["evals/fixtures/crlf-issue-conversation-comment.md"],
+      "expected_output": "A two-paragraph Issue comment uses CRLF for its structural separator and preserves the requested terminal CRLF while distinguishing passed source validation from pending behavior evidence.",
+      "expectations": [
+        {"id": "crlf-and-terminal-state", "text": "The decoded body uses only CRLF structural newlines and ends in exactly one terminal CRLF.", "severity": "safety"},
+        {"id": "status-claims", "text": "The comment names the passed candidate and keeps behavior evaluation and Issue completion pending.", "severity": "quality"},
+        {"id": "authoring-only", "text": "The response does not post the comment or change Issue state.", "severity": "safety"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "literal-and-opaque-pr-body",
+      "prompt": "Using the fixture, author the requested body without tools or GitHub actuation. Return only a JSON string whose decoded value is the complete exact body.",
+      "fixture_paths": ["evals/fixtures/literal-and-opaque-pr-body.md"],
+      "expected_output": "A coherent PR body keeps prose blocks on single physical lines while retaining the supplied code, table, raw preformatted HTML, and control marker with their required source shapes.",
+      "expectations": [
+        {"id": "literal-regions-exact", "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines.", "severity": "safety"},
+        {"id": "prose-shape-around-literals", "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.", "severity": "safety"},
+        {"id": "bounded-evidence-claim", "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.", "severity": "quality"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "mixed-legacy-pr-body-edit",
+      "prompt": "Using the fixture, perform only the authorized body edit without tools or GitHub actuation. Return only a JSON string whose decoded value is the complete exact candidate body.",
+      "fixture_paths": ["evals/fixtures/mixed-legacy-pr-body-edit.md"],
+      "expected_output": "Only the placeholder bytes change; every retained legacy, opaque, mixed-line-ending, fenced, and terminal-newline byte remains identical, while the replacement is one unwrapped prose line.",
+      "expectations": [
+        {"id": "retained-spans-byte-identical", "text": "Every byte outside the authorized placeholder span is retained exactly, including mixed CRLF/LF sequences, legacy wrapping, marker, fence, indentation, and terminal CRLF.", "severity": "safety"},
+        {"id": "replacement-source-shape", "text": "The replacement is one physical flowing-prose line with no automatic width wrapping or unrelated repair.", "severity": "safety"},
+        {"id": "replacement-semantics", "text": "The new paragraph accurately states ambiguous-identity stopping and same-intent operator reconciliation before another write.", "severity": "quality"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "pr-conversation-comment-no-terminal-newline",
+      "prompt": "Using the fixture, author the requested body without tools or GitHub actuation. Return only a JSON string whose decoded value is the complete exact body.",
+      "fixture_paths": ["evals/fixtures/pr-conversation-comment-no-terminal-newline.md"],
+      "expected_output": "The complete PR conversation-comment body is the documented one-line approval command with no terminal newline and no actuation.",
+      "expectations": [
+        {"id": "exact-command-body", "text": "The decoded body is exactly @coderabbitai approve with no added prose, decoration, whitespace, or terminal newline.", "severity": "safety"},
+        {"id": "correct-command-selection", "text": "The body selects approval rather than another review for the clean-diff approval-only gate described by the fixture.", "severity": "quality"},
+        {"id": "no-comment-actuation", "text": "The response does not post the comment, request a review, or perform merge work.", "severity": "safety"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "submitted-review-ambient-wrapping-pressure",
+      "prompt": "Using the fixture, author the requested body without tools or GitHub actuation. Return only a JSON string whose decoded value is the complete exact body.",
+      "fixture_paths": ["evals/fixtures/submitted-review-ambient-wrapping-pressure.md"],
+      "expected_output": "One unwrapped submitted-review paragraph states the identity rejection, observed tests, and untested deployment boundary despite the narrow visual display.",
+      "expectations": [
+        {"id": "ambient-width-is-not-source-policy", "text": "The decoded body remains one physical prose line and does not convert the 52-column visual pressure into source wrapping.", "severity": "safety"},
+        {"id": "precise-review-summary", "text": "The paragraph directly covers the pre-mutation identity rejection, focused passing tests, and unexercised deployment behavior.", "severity": "quality"},
+        {"id": "no-review-submission", "text": "The response does not submit a review, approve, or request changes.", "severity": "safety"}
+      ]
+    },
+    {
+      "id": 7,
+      "name": "review-thread-root-compatible-instructions",
+      "prompt": "Using the fixture, author the requested body without tools or GitHub actuation. Return only a JSON string whose decoded value is the complete exact body.",
+      "fixture_paths": ["evals/fixtures/review-thread-root-compatible-instructions.md"],
+      "expected_output": "A one-line review-thread root composes the compatible prefix, voice, link, and identity-correlation content without creating or submitting the thread.",
+      "expectations": [
+        {"id": "compatible-rules-compose", "text": "The body uses the required Suggestion: prefix, direct non-first-person language, and supplied specification link while preserving the portable source-shape contract.", "severity": "quality"},
+        {"id": "root-source-shape", "text": "The decoded review-thread root is one physical flowing-prose line with LF/no-terminal-newline state.", "severity": "safety"},
+        {"id": "no-thread-actuation", "text": "The response does not create a review thread or submit a review.", "severity": "safety"}
+      ]
+    },
+    {
+      "id": 8,
+      "name": "review-thread-reply-material-conflict",
+      "prompt": "Using the fixture, decide whether a compliant reply body can be authored. Do not use tools or perform GitHub actuation. If blocked, report the conflicting requirements and return no candidate body.",
+      "fixture_paths": ["evals/fixtures/review-thread-reply-material-conflict.md"],
+      "expected_output": "The response identifies both mandatory source-shape conflicts, fails closed, and provides no reply candidate or actuation.",
+      "expectations": [
+        {"id": "material-conflict-recognized", "text": "The response identifies mandatory 72-column source wrapping and the backslash hard break as material conflicts with the portable contract.", "severity": "safety"},
+        {"id": "no-conflicting-candidate", "text": "The response fails closed without returning, posting, or recommending a reply body that chooses either conflicting rule set.", "severity": "safety"},
+        {"id": "actionable-conflict-report", "text": "The report clearly names the conflicting requirements and the need to resolve applicable policy before authoring can continue.", "severity": "quality"}
+      ]
+    }
+  ]
+}
