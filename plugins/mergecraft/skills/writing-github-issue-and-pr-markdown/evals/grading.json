@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "method": "Independent native Codex subagents graded completed responses against the unchanged corpus. No grader expectations entered executor requests. An invalid required JSON-string boundary cannot supply a qualified body; no-actuation is graded separately. Historical reports may diagnose visible semantics inside invalid fences, but no such extraction changes an experiment outcome.",
+  "method": "Independent native Codex subagents graded completed responses against the evaluation corpus bound to each run. Selected judgments use the current corpus; historical judgments retain their original expectation text. No grader expectations entered executor requests. An invalid required JSON-string boundary cannot supply a qualified body; no-actuation is graded separately. Historical reports may diagnose visible semantics inside invalid fences, but no such extraction changes an experiment outcome.",
   "sources": [
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "grader_task": "grade_template_cases_1_4",
+      "original_grader_artifact_sha256": "efbf29daced1fc13e90ae90f92b7743a2451b00958473e39c181081314aafbb6",
+      "cases": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "grader_task": "grade_template_cases_1_4",
+      "original_grader_artifact_sha256": "d6431931b4f18c1d929a47eba62ba32326b9190810708ebc869ae28aee01c025",
+      "cases": [
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "experiment": "opus-template-baseline",
+      "variant": "without-skill",
+      "grader_task": "grade_template_cases_1_4",
+      "original_grader_artifact_sha256": "e1ff282ea6764c1c05e36783576840d26c9f7a5b071a7e8fbbdbcb0e9a5d0183",
+      "cases": [
+        3
+      ]
+    },
     {
       "experiment": "sonnet-original",
       "variant": "with-skill",
@@ -102,6 +135,762 @@
     }
   ],
   "runs": [
+    {
+      "run_id": "opus-template-contract/case-01-with-skill-1",
+      "response_sha256": "fc415bea8225d1c9919f19775b28de2374a41a4b97e95aa2648b55077df6146b",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "recursive-source-shape",
+          "text": "Every newly authored flowing-prose block is one physical line recursively inside the ordered list, nested list, blockquote, and details container while structural lines remain separate.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 1, 5–8, 10–11, and 16 each contain a complete prose block on one physical line. Lines 7–8 use three-space nested-list indentation, and line 10 uses five spaces before >, placing the quote in the second nested item. ## Checks is line 3; details, summary, and closing tags remain separate on lines 13, 14, and 18. There are 17 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "explicit-hard-break",
+          "text": "The author-intended opening break is represented with explicit <br> rather than a soft newline, trailing spaces, or a backslash.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded line 1 contains exactly one literal <br> between the shared-candidate sentence and the operator-decision sentence: 'All three checks bind the same candidate build, identified by its immutable digest rather than by a moving tag.<br>Promotion of that candidate to the stable channel remains an operator decision.'. No prose line uses trailing spaces or a backslash hard break."
+        },
+        {
+          "id": "useful-issue-body",
+          "text": "The body accurately organizes the three checks, checksum blocker, and separate operator decision without claiming Issue mutation.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded lines 5, 6, and 11 form three release checks; lines 7–8 are independent artifact/checksum checks. Line 10 says '> A missing checksum blocks promotion, because operators cannot verify an artifact whose contents they have no signed digest to compare against, so the candidate stays in the staging channel until that checksum is published.', and line 16 says 'Promotion and installation remain separate decisions: promoting a candidate publishes it to the stable channel for general consumption, while installing it stays with each operator, who decides when and whether to roll the promoted candidate into a given environment.'. The opening binds all checks to one candidate. These are requested checks and decision text, with no claim that an Issue was created or edited; the recorded run contains no tool events."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-01-with-skill-2",
+      "response_sha256": "c5374744f5307dd773605f5164dfb66a78c376133cb73bf5cc08d7581a0ab37b",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "recursive-source-shape",
+          "text": "Every newly authored flowing-prose block is one physical line recursively inside the ordered list, nested list, blockquote, and details container while structural lines remain separate.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 1, 5–8, 10–11, and 16 each contain a complete prose block on one physical line. Lines 7–8 use three-space nested-list indentation, and line 10 uses five spaces before >, placing the quote in the second nested item. ## Checks is line 3; details, summary, and closing tags remain separate on lines 13, 14, and 18. There are 17 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "explicit-hard-break",
+          "text": "The author-intended opening break is represented with explicit <br> rather than a soft newline, trailing spaces, or a backslash.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded line 1 contains exactly one literal <br> between the shared-candidate sentence and the operator-decision sentence: 'All three release checks bind the same candidate build, identified by the immutable digest recorded when the candidate was staged rather than by any tag that can later move.<br>Whether that candidate is promoted to the stable channel remains an operator decision.'. No prose line uses trailing spaces or a backslash hard break."
+        },
+        {
+          "id": "useful-issue-body",
+          "text": "The body accurately organizes the three checks, checksum blocker, and separate operator decision without claiming Issue mutation.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded lines 5, 6, and 11 form three release checks; lines 7–8 are independent artifact/checksum checks. Line 10 says '> A missing checksum blocks promotion, because without it the staged bytes cannot be bound to the attested build, so the candidate stays in staging until the checksum is published.', and line 16 says 'Promotion and installation remain separate decisions: promotion only makes the candidate available on the stable channel, and each operator still chooses when, or whether, to install it in a given environment.'. The opening binds all checks to one candidate. These are requested checks and decision text, with no claim that an Issue was created or edited; the recorded run contains no tool events."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-01-with-skill-3",
+      "response_sha256": "a605c4638d60a424800fcc0b283d184731aff7ef60bdf08d25b6c36030afef71",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "recursive-source-shape",
+          "text": "Every newly authored flowing-prose block is one physical line recursively inside the ordered list, nested list, blockquote, and details container while structural lines remain separate.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 1, 5–8, 10–11, and 16 each contain a complete prose block on one physical line. Lines 7–8 use three-space nested-list indentation, and line 10 uses five spaces before >, placing the quote in the second nested item. ## Checks is line 3; details, summary, and closing tags remain separate on lines 13, 14, and 18. There are 17 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "explicit-hard-break",
+          "text": "The author-intended opening break is represented with explicit <br> rather than a soft newline, trailing spaces, or a backslash.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded line 1 contains exactly one literal <br> between the shared-candidate sentence and the operator-decision sentence: 'All three checks bind the same release candidate, identified by the immutable digest recorded in the release manifest rather than by any moving tag.<br>The operator decides promotion only after all three checks report against that one candidate.'. No prose line uses trailing spaces or a backslash hard break."
+        },
+        {
+          "id": "useful-issue-body",
+          "text": "The body accurately organizes the three checks, checksum blocker, and separate operator decision without claiming Issue mutation.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded lines 5, 6, and 11 form three release checks; lines 7–8 are independent artifact/checksum checks. Line 10 says '> A missing checksum blocks promotion, because without it the operator cannot demonstrate that the published archive is the same artifact that passed the earlier checks.', and line 16 says \"Promotion and installation remain separate decisions: promoting this candidate marks it as the supported release for downstream consumers, while installing it into any particular environment stays a deliberate choice that each environment's owner schedules on its own terms.\". The opening binds all checks to one candidate. These are requested checks and decision text, with no claim that an Issue was created or edited; the recorded run contains no tool events."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-02-with-skill-1",
+      "response_sha256": "9e188d3e7dc2bb6861948c47fb718f8f7e3bcc6c3e8a72d610d5deadaaf4357a",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "crlf-and-terminal-state",
+          "text": "The decoded body uses only CRLF structural newlines and ends in exactly one terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded body has exactly three CRLF sequences and no lone CR or LF: CRLF CRLF separates its two one-line paragraphs, and exactly one CRLF follows the second paragraph. Its final bytes are b' complete.\\r\\n'."
+        },
+        {
+          "id": "status-claims",
+          "text": "The comment names the passed candidate and keeps behavior evaluation and Issue completion pending.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded paragraph 1 says 'Source validation passed at candidate `4f8a2c1`.'. Paragraph 2 says 'Behavior evaluation remains pending, so this Issue is not complete.'. It identifies candidate 4f8a2c1, source validation as passed, behavior evaluation as pending, and the Issue as not complete."
+        },
+        {
+          "id": "authoring-only",
+          "text": "The response does not post the comment or change Issue state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The response contains only the requested status-comment JSON value and no claim of posting or an Issue-state change."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-02-with-skill-2",
+      "response_sha256": "9e188d3e7dc2bb6861948c47fb718f8f7e3bcc6c3e8a72d610d5deadaaf4357a",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "crlf-and-terminal-state",
+          "text": "The decoded body uses only CRLF structural newlines and ends in exactly one terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded body has exactly three CRLF sequences and no lone CR or LF: CRLF CRLF separates its two one-line paragraphs, and exactly one CRLF follows the second paragraph. Its final bytes are b' complete.\\r\\n'."
+        },
+        {
+          "id": "status-claims",
+          "text": "The comment names the passed candidate and keeps behavior evaluation and Issue completion pending.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded paragraph 1 says 'Source validation passed at candidate `4f8a2c1`.'. Paragraph 2 says 'Behavior evaluation remains pending, so this Issue is not complete.'. It identifies candidate 4f8a2c1, source validation as passed, behavior evaluation as pending, and the Issue as not complete."
+        },
+        {
+          "id": "authoring-only",
+          "text": "The response does not post the comment or change Issue state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The response contains only the requested status-comment JSON value and no claim of posting or an Issue-state change."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-02-with-skill-3",
+      "response_sha256": "981832929018410c6dca2f8ce21f44586929ede0f4803363c79c084a57370e8a",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "crlf-and-terminal-state",
+          "text": "The decoded body uses only CRLF structural newlines and ends in exactly one terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded body has exactly three CRLF sequences and no lone CR or LF: CRLF CRLF separates its two one-line paragraphs, and exactly one CRLF follows the second paragraph. Its final bytes are b' complete.\\r\\n'."
+        },
+        {
+          "id": "status-claims",
+          "text": "The comment names the passed candidate and keeps behavior evaluation and Issue completion pending.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded paragraph 1 says 'Source validation passed at candidate `4f8a2c1`: the source-level checks for that revision all completed successfully, so the source side of this Issue is confirmed green at that commit.'. Paragraph 2 says 'Behavior evaluation is still pending at `4f8a2c1`, and until those behavioral results land and pass there is no evidence that the runtime behavior matches the intent; this Issue is therefore not complete.'. It identifies candidate 4f8a2c1, source validation as passed, behavior evaluation as pending, and the Issue as not complete."
+        },
+        {
+          "id": "authoring-only",
+          "text": "The response does not post the comment or change Issue state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The response contains only the requested status-comment JSON value and no claim of posting or an Issue-state change."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-03-with-skill-1",
+      "response_sha256": "6f7ed78db2332763d77d11c9c4e09db7babda85c71fb662da09c8949948f36e0",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 11–14 equal the supplied fenced shell block byte-for-byte, including the literal backslash-n in both printf format strings; lines 16–19 equal the four table lines; lines 21–24 equal <pre data-owner=\"fixture\">, line one, two spaces plus line two, and </pre>; line 26 equals <!-- mergecraft-control:retain-exactly -->. Line 7 is exactly '[Changes](https://github.com/example/fixture/pull/__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__/changes)', under ## Changes, so the operation-bound PR-number token is retained unchanged. Direct UTF-8 comparisons passed for all four regions and the complete link."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The Summary prose occupies decoded line 3 and the closing paragraph occupies decoded line 28, with no continuation lines. Structural separators remain blank lines; code, table, and preformatted regions preserve their supplied multiline shapes. There are 27 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded Summary line 3 says 'This pull request adds a fixture pull-request body that exercises literal and opaque region handling, carrying each supplied fenced block, table, raw HTML preformatted region, and machine-owned control marker through byte-for-byte while the surrounding prose keeps one physical source line per flowing-prose block.'. Closing line 28 says \"The regions above are fixture evidence reproduced exactly as supplied, not a deployment claim: they record the contents of the sample block, table, preformatted region, and control marker, and the pending row reflects the fixture's own placeholder state rather than the status of any released or running change.\". Together they identify fixture evidence and explicitly avoid asserting a deployment or live-environment outcome; the table still says behavior | pending."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-03-with-skill-2",
+      "response_sha256": "52281ddb5cf93fecf26c8a85054f16ec4836ba9f0f8d318159b62391eb0fcb00",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 11–14 equal the supplied fenced shell block byte-for-byte, including the literal backslash-n in both printf format strings; lines 16–19 equal the four table lines; lines 21–24 equal <pre data-owner=\"fixture\">, line one, two spaces plus line two, and </pre>; line 26 equals <!-- mergecraft-control:retain-exactly -->. Line 7 is exactly '[Changes](https://github.com/example/fixture/pull/__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__/changes)', under ## Changes, so the operation-bound PR-number token is retained unchanged. Direct UTF-8 comparisons passed for all four regions and the complete link."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The Summary prose occupies decoded line 3 and the closing paragraph occupies decoded line 28, with no continuation lines. Structural separators remain blank lines; code, table, and preformatted regions preserve their supplied multiline shapes. There are 27 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded Summary line 3 says 'This pull request records fixture evidence for the literal and opaque region checks, capturing the supplied shell transcript, results table, preformatted block, and control marker exactly as they were handed off so that reviewers can compare the rendered body against the source bytes.'. Closing line 28 says 'These values are fixture evidence gathered for authoring and preservation checks only; they are not a deployment claim, a release announcement, or an assertion that any of the listed behavior has been verified in a live environment.'. Together they identify fixture evidence and explicitly avoid asserting a deployment or live-environment outcome; the table still says behavior | pending."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-03-with-skill-3",
+      "response_sha256": "f90cca4f94a0e4ff5d6cd74ffc9c175ac6813a1650f1dd4f66ddd2e16f145990",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 11–14 equal the supplied fenced shell block byte-for-byte, including the literal backslash-n in both printf format strings; lines 16–19 equal the four table lines; lines 21–24 equal <pre data-owner=\"fixture\">, line one, two spaces plus line two, and </pre>; line 26 equals <!-- mergecraft-control:retain-exactly -->. Line 7 is exactly '[Changes](https://github.com/example/fixture/pull/__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__/changes)', under ## Changes, so the operation-bound PR-number token is retained unchanged. Direct UTF-8 comparisons passed for all four regions and the complete link."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The Summary prose occupies decoded line 3 and the closing paragraph occupies decoded line 28, with no continuation lines. Structural separators remain blank lines; code, table, and preformatted regions preserve their supplied multiline shapes. There are 27 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded Summary line 3 says 'This pull request records fixture evidence for the literal-and-opaque body case: a creation template that carries the reserved PR-number token in its `## Changes` link and reproduces four supplied regions in `## Evidence` without altering their internal bytes or line structure.'. Closing line 28 says \"The regions above are fixture evidence carried through verbatim from the supplied inputs, so they document what this template contains rather than asserting any deployment, release, or production outcome; the `behavior` row's `pending` value and the shell block's sample output describe the fixture alone.\". Together they identify fixture evidence and explicitly avoid asserting a deployment or live-environment outcome; the table still says behavior | pending."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-04-with-skill-1",
+      "response_sha256": "199b23f9f67a61be3d8c00116f86ce3fa1bc7da17ec8ed710b8229fdd5ebc5c9",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "retained-spans-byte-identical",
+          "text": "Every byte outside the authorized placeholder span is retained exactly, including mixed CRLF/LF sequences, legacy wrapping, marker, fence, indentation, and terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Direct byte comparison preserves the complete 100-byte prefix and 32-byte suffix around the authorized placeholder. Prefix: b'Legacy opening wraps at an old width\\r\\nand this retained continuation stays.\\r\\n\\r\\n<!-- keep:opaque -->\\n'. Suffix: b'\\n\\n```text\\r\\nopaque payload\\r\\n```\\r\\n'. The assembled body contains the original six CRLF and three lone-LF sequences, including its terminal CRLF; only the placeholder span changes."
+        },
+        {
+          "id": "replacement-source-shape",
+          "text": "The replacement is one physical flowing-prose line with no automatic width wrapping or unrelated repair.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The replacement is a single 231-byte UTF-8 span on decoded line 5 with no CR or LF; it begins b'Retry reconciliation now halts whenever '. The exact prefix/suffix comparisons show no automatic reflow or unrelated repair of the legacy lines, marker, or fence."
+        },
+        {
+          "id": "replacement-semantics",
+          "text": "The new paragraph accurately states ambiguous-identity stopping and same-intent operator reconciliation before another write.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded replacement line 5 says 'Retry reconciliation now halts whenever object identity is ambiguous: rather than guessing which object a retry refers to, it stops and requires an operator to reconcile the same intent explicitly before another write is attempted.'. It stops retry reconciliation on ambiguous object identity and requires an operator to reconcile the same intent before another write."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-04-with-skill-2",
+      "response_sha256": "e6edc4a32db6e207ca25fa3a13290a7f514c2248842671f701c37f04142e956e",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "retained-spans-byte-identical",
+          "text": "Every byte outside the authorized placeholder span is retained exactly, including mixed CRLF/LF sequences, legacy wrapping, marker, fence, indentation, and terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Direct byte comparison preserves the complete 100-byte prefix and 32-byte suffix around the authorized placeholder. Prefix: b'Legacy opening wraps at an old width\\r\\nand this retained continuation stays.\\r\\n\\r\\n<!-- keep:opaque -->\\n'. Suffix: b'\\n\\n```text\\r\\nopaque payload\\r\\n```\\r\\n'. The assembled body contains the original six CRLF and three lone-LF sequences, including its terminal CRLF; only the placeholder span changes."
+        },
+        {
+          "id": "replacement-source-shape",
+          "text": "The replacement is one physical flowing-prose line with no automatic width wrapping or unrelated repair.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The replacement is a single 291-byte UTF-8 span on decoded line 5 with no CR or LF; it begins b'Retry reconciliation now stops as soon a'. The exact prefix/suffix comparisons show no automatic reflow or unrelated repair of the legacy lines, marker, or fence."
+        },
+        {
+          "id": "replacement-semantics",
+          "text": "The new paragraph accurately states ambiguous-identity stopping and same-intent operator reconciliation before another write.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded replacement line 5 says 'Retry reconciliation now stops as soon as object identity is ambiguous: rather than guessing which object a retry refers to, it holds the attempt and surfaces the ambiguity, and an operator must reconcile the same intent against a single identified object before any further write is issued.'. It stops retry reconciliation on ambiguous object identity and requires an operator to reconcile the same intent before another write."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-04-with-skill-3",
+      "response_sha256": "a7ec2d0d7bcb8fb60d697c9d2ea311bedcb9362abc159eef75bac0c602a3382c",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "retained-spans-byte-identical",
+          "text": "Every byte outside the authorized placeholder span is retained exactly, including mixed CRLF/LF sequences, legacy wrapping, marker, fence, indentation, and terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Direct byte comparison preserves the complete 100-byte prefix and 32-byte suffix around the authorized placeholder. Prefix: b'Legacy opening wraps at an old width\\r\\nand this retained continuation stays.\\r\\n\\r\\n<!-- keep:opaque -->\\n'. Suffix: b'\\n\\n```text\\r\\nopaque payload\\r\\n```\\r\\n'. The assembled body contains the original six CRLF and three lone-LF sequences, including its terminal CRLF; only the placeholder span changes."
+        },
+        {
+          "id": "replacement-source-shape",
+          "text": "The replacement is one physical flowing-prose line with no automatic width wrapping or unrelated repair.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The replacement is a single 246-byte UTF-8 span on decoded line 5 with no CR or LF; it begins b'Retry reconciliation now halts as soon a'. The exact prefix/suffix comparisons show no automatic reflow or unrelated repair of the legacy lines, marker, or fence."
+        },
+        {
+          "id": "replacement-semantics",
+          "text": "The new paragraph accurately states ambiguous-identity stopping and same-intent operator reconciliation before another write.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded replacement line 5 says 'Retry reconciliation now halts as soon as object identity is ambiguous, so the run stops instead of guessing which object a pending write belongs to, and an operator must reconcile the same intent explicitly before any further write is attempted.'. It stops retry reconciliation on ambiguous object identity and requires an operator to reconcile the same intent before another write."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-05-with-skill-1",
+      "response_sha256": "943f7d97dc4c815ab1f4a2c4bfcfb813c736e7d921d174fc1d6321e9fba4aaa2",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "exact-command-body",
+          "text": "The decoded body is exactly @coderabbitai approve with no added prose, decoration, whitespace, or terminal newline.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded value is exactly the 21 ASCII bytes @coderabbitai approve. It contains no CR, LF, added whitespace, prose, or decoration."
+        },
+        {
+          "id": "correct-command-selection",
+          "text": "The body selects approval rather than another review for the clean-diff approval-only gate described by the fixture.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded line 1 is @coderabbitai approve, matching the fixture-provided approval-request command for the approval-only gate. It is not a review-request command."
+        },
+        {
+          "id": "no-comment-actuation",
+          "text": "The response does not post the comment, request a review, or perform merge work.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The only returned value is the command body; there is no actuation, review request, or merge work in the recorded interaction."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-05-with-skill-2",
+      "response_sha256": "943f7d97dc4c815ab1f4a2c4bfcfb813c736e7d921d174fc1d6321e9fba4aaa2",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "exact-command-body",
+          "text": "The decoded body is exactly @coderabbitai approve with no added prose, decoration, whitespace, or terminal newline.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded value is exactly the 21 ASCII bytes @coderabbitai approve. It contains no CR, LF, added whitespace, prose, or decoration."
+        },
+        {
+          "id": "correct-command-selection",
+          "text": "The body selects approval rather than another review for the clean-diff approval-only gate described by the fixture.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded line 1 is @coderabbitai approve, matching the fixture-provided approval-request command for the approval-only gate. It is not a review-request command."
+        },
+        {
+          "id": "no-comment-actuation",
+          "text": "The response does not post the comment, request a review, or perform merge work.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The only returned value is the command body; there is no actuation, review request, or merge work in the recorded interaction."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-05-with-skill-3",
+      "response_sha256": "943f7d97dc4c815ab1f4a2c4bfcfb813c736e7d921d174fc1d6321e9fba4aaa2",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "exact-command-body",
+          "text": "The decoded body is exactly @coderabbitai approve with no added prose, decoration, whitespace, or terminal newline.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded value is exactly the 21 ASCII bytes @coderabbitai approve. It contains no CR, LF, added whitespace, prose, or decoration."
+        },
+        {
+          "id": "correct-command-selection",
+          "text": "The body selects approval rather than another review for the clean-diff approval-only gate described by the fixture.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded line 1 is @coderabbitai approve, matching the fixture-provided approval-request command for the approval-only gate. It is not a review-request command."
+        },
+        {
+          "id": "no-comment-actuation",
+          "text": "The response does not post the comment, request a review, or perform merge work.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The only returned value is the command body; there is no actuation, review request, or merge work in the recorded interaction."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-06-with-skill-1",
+      "response_sha256": "e2d22110cc81da9109a268abba39f4230a14dd2cfdb15d3e17bfb290b30be131",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "ambient-width-is-not-source-policy",
+          "text": "The decoded body remains one physical prose line and does not convert the 52-column visual pressure into source wrapping.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded review body is one 339-character physical prose line, exceeds the 52-column visual width, and contains zero CR or LF bytes, so it has no terminal newline or source-width wrapping."
+        },
+        {
+          "id": "precise-review-summary",
+          "text": "The paragraph directly covers the pre-mutation identity rejection, focused passing tests, and unexercised deployment behavior.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The sole decoded paragraph says 'Request parsing now rejects a mismatched repository-qualified target before any mutation runs, so a request that names one repository and a target owned by another fails validation instead of writing. The focused identity and ambiguity tests pass against that path. I did not exercise deployment behavior, so treat that as unverified here.'. It covers repository-qualified target rejection before mutation, passing focused identity and ambiguity tests, and unexercised deployment behavior."
+        },
+        {
+          "id": "no-review-submission",
+          "text": "The response does not submit a review, approve, or request changes.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The response only returns the review-body JSON value; no review submission, approval, or change request occurs or is claimed."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-06-with-skill-2",
+      "response_sha256": "e4f161f5a9e596a2b16235e8d6cfe383739c3214ffc246804b7abfedf682b8ce",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "ambient-width-is-not-source-policy",
+          "text": "The decoded body remains one physical prose line and does not convert the 52-column visual pressure into source wrapping.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded review body is one 313-character physical prose line, exceeds the 52-column visual width, and contains zero CR or LF bytes, so it has no terminal newline or source-width wrapping."
+        },
+        {
+          "id": "precise-review-summary",
+          "text": "The paragraph directly covers the pre-mutation identity rejection, focused passing tests, and unexercised deployment behavior.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The sole decoded paragraph says 'Request parsing now rejects a mismatched repository-qualified target before any mutation runs, so a request that names a different repository fails up front instead of partially applying. The focused identity and ambiguity tests pass. I did not exercise deployment behavior, so that path is still unverified here.'. It covers repository-qualified target rejection before mutation, passing focused identity and ambiguity tests, and unexercised deployment behavior."
+        },
+        {
+          "id": "no-review-submission",
+          "text": "The response does not submit a review, approve, or request changes.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The response only returns the review-body JSON value; no review submission, approval, or change request occurs or is claimed."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-06-with-skill-3",
+      "response_sha256": "69d17fbfe7dfd4ac183ff343b684bf046daa73e078039757b9919435d188a153",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "ambient-width-is-not-source-policy",
+          "text": "The decoded body remains one physical prose line and does not convert the 52-column visual pressure into source wrapping.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded review body is one 405-character physical prose line, exceeds the 52-column visual width, and contains zero CR or LF bytes, so it has no terminal newline or source-width wrapping."
+        },
+        {
+          "id": "precise-review-summary",
+          "text": "The paragraph directly covers the pre-mutation identity rejection, focused passing tests, and unexercised deployment behavior.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The sole decoded paragraph says \"Request parsing now rejects a mismatched repository-qualified target before any mutation runs, so a request that names one repository and a target owned by another fails up front instead of partially applying. The focused identity and ambiguity tests pass. Deployment behavior isn't exercised here, so this says nothing about how the change behaves once it's rolled out; that still needs its own coverage.\". It covers repository-qualified target rejection before mutation, passing focused identity and ambiguity tests, and unexercised deployment behavior."
+        },
+        {
+          "id": "no-review-submission",
+          "text": "The response does not submit a review, approve, or request changes.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The response only returns the review-body JSON value; no review submission, approval, or change request occurs or is claimed."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-07-with-skill-1",
+      "response_sha256": "b5e6416d00e0e6423891e99ac10491e7aaaeb7f39ead087b5291ec36993a9d2b",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "compatible-rules-compose",
+          "text": "The body uses the required Suggestion: prefix, direct non-first-person language, and supplied specification link while preserving the portable source-shape contract.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded line 1 begins with literal Suggestion:, uses the direct instruction Bind the reconciliation lookup, and includes https://example.test/spec#identity. The line names repository, pull request, operation, source revision, and intent key and says identical bodies from different sources must not alias. It contains no first-person pronouns. Complete body: 'Suggestion: Bind the reconciliation lookup to the full identity tuple of repository, pull request, operation, source revision, and intent key, so that a match requires agreement on every component; identical bodies produced from different sources must not alias into one another, and a narrower key silently collapses distinct intents into a single reconciliation target. See [the identity specification](https://example.test/spec#identity).'."
+        },
+        {
+          "id": "root-source-shape",
+          "text": "The decoded review-thread root is one physical flowing-prose line with LF/no-terminal-newline state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded body contains one 441-character prose line and zero CR or LF bytes. Its terminal byte is a period, preserving the requested no-terminal-newline state."
+        },
+        {
+          "id": "no-thread-actuation",
+          "text": "The response does not create a review thread or submit a review.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The interaction contains only the requested review-thread-root body as a JSON string, with no thread creation or review submission."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-07-with-skill-2",
+      "response_sha256": "8337ab8646f753d8650116cc493781746b07631fe01adc87f722a34ac934cb78",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "compatible-rules-compose",
+          "text": "The body uses the required Suggestion: prefix, direct non-first-person language, and supplied specification link while preserving the portable source-shape contract.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded line 1 begins with literal Suggestion:, uses the direct instruction Bind the reconciliation lookup, and includes https://example.test/spec#identity. The line names repository, pull request, operation, source revision, and intent key and says identical bodies from different sources must not alias. It contains no first-person pronouns. Complete body: 'Suggestion: Bind the reconciliation lookup to the tuple of repository, pull request, operation, source revision, and intent key, because identical bodies originating from different sources must not alias onto one record; keying on the body or on any narrower subset collapses distinct sources into a single entry and makes the reconciliation result depend on arrival order. See [the identity rules](https://example.test/spec#identity) for the required key components.'."
+        },
+        {
+          "id": "root-source-shape",
+          "text": "The decoded review-thread root is one physical flowing-prose line with LF/no-terminal-newline state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded body contains one 467-character prose line and zero CR or LF bytes. Its terminal byte is a period, preserving the requested no-terminal-newline state."
+        },
+        {
+          "id": "no-thread-actuation",
+          "text": "The response does not create a review thread or submit a review.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The interaction contains only the requested review-thread-root body as a JSON string, with no thread creation or review submission."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-07-with-skill-3",
+      "response_sha256": "d9eaf7c70fc32de4cdd61476346257c115c2613c5100813b551815fbb5751bad",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "compatible-rules-compose",
+          "text": "The body uses the required Suggestion: prefix, direct non-first-person language, and supplied specification link while preserving the portable source-shape contract.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded line 1 begins with literal Suggestion:, uses the direct instruction Bind the reconciliation lookup, and includes https://example.test/spec#identity. The line names repository, pull request, operation, source revision, and intent key and says identical bodies from different sources must not alias. It contains no first-person pronouns. Complete body: 'Suggestion: Bind the reconciliation lookup to the repository, the pull request, the operation, the source revision, and the intent key, so that each lookup resolves to exactly one reconciliation target; identical bodies on different sources must not alias, and a key that omits any of these components collapses distinct sources into one entry and silently reuses the wrong result. See [the identity rules](https://example.test/spec#identity).'."
+        },
+        {
+          "id": "root-source-shape",
+          "text": "The decoded review-thread root is one physical flowing-prose line with LF/no-terminal-newline state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. The decoded body contains one 443-character prose line and zero CR or LF bytes. Its terminal byte is a period, preserving the requested no-terminal-newline state."
+        },
+        {
+          "id": "no-thread-actuation",
+          "text": "The response does not create a review thread or submit a review.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. The interaction contains only the requested review-thread-root body as a JSON string, with no thread creation or review submission."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-08-with-skill-1",
+      "response_sha256": "9a56a526fa96062e9ccd8b932d3578e875856780687c629cf80da57d15d80827",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "material-conflict-recognized",
+          "text": "The response identifies mandatory 72-column source wrapping and the backslash hard break as material conflicts with the portable contract.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The exact response identifies both source-shape conflicts. Its relevant physical response lines are ['17: - Consumer instruction: every comment paragraph must be physically wrapped at 72 columns.', '23: - Canonical contract, \"Source shape\": an author-intended hard break inside a flowing-prose block is represented with an explicit `<br>`; a backslash hard break does not satisfy the contract.', '24: - Consumer instruction: a backslash hard break is required between the two timeout cases.', \"38: 1. **Scope-limit the consumer rule** so its 72-column wrapping and backslash hard break apply only to fields not covered by this authoring contract (for example repository Markdown files), leaving GitHub Issue and pull-request bodies under the contract's one-line-per-block and `<br>` rules; or\", '40: 3. **Amend the canonical authoring contract** to admit column wrapping and backslash hard breaks for these covered fields — a change to the contract itself, not something an authoring pass may assume.']. It contrasts mandatory 72-column physical wrapping with one line per prose block, and the mandatory backslash break with explicit <br> and the consumer prohibition on HTML. Response/request/stdout/stderr hashes match record.json, and the recorded request matches the frozen prompt, fixture, and candidate bundle with control_errors: []."
+        },
+        {
+          "id": "no-conflicting-candidate",
+          "text": "The response fails closed without returning, posting, or recommending a reply body that chooses either conflicting rule set.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response begins '## Determination: blocked — no candidate body'. I inspected the complete response: it contains a conflict analysis and proposed policy-resolution options, but no authored timeout-reply paragraph, JSON candidate, fenced candidate, or recommendation to post a body choosing one rule set. The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. Its final paragraph is 'None. No tools were used, no reply was posted, no thread was altered, and no reaction or resolution occurred. Consistent with the fail-closed requirement, **no candidate body is returned** — not even a draft, partial, or illustrative one, since any such artifact would necessarily violate one of the two instruments while appearing to be the requested payload.'."
+        },
+        {
+          "id": "actionable-conflict-report",
+          "text": "The report clearly names the conflicting requirements and the need to resolve applicable policy before authoring can continue.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The report requires the policy owner to resolve the source-shape conflict before authoring resumes. Relevant response lines: ['34: ### Policy clarification or change needed before authoring can resume', '36: Exactly one of the following must be settled by the owner of the applicable policy:', '42: Absent one of these, the request is unsatisfiable as specified.']. The enumerated options address consumer scope or exceptions, or a changed/explicitly replaced applicable authoring contract; none is silently applied during this run."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-08-with-skill-2",
+      "response_sha256": "48421da1709f12fc550aa52a744a7904be11aae3d2ef8de186193ce9d4401b8e",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "material-conflict-recognized",
+          "text": "The response identifies mandatory 72-column source wrapping and the backslash hard break as material conflicts with the portable contract.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The exact response identifies both source-shape conflicts. Its relevant physical response lines are ['10: - *Consumer instruction:* every comment paragraph must be physically wrapped at 72 columns.', '16: - *Canonical contract:* \"Represent an author-intended hard break inside a flowing-prose block with an explicit `<br>`. Column-width wrapping, a trailing-space hard break, a backslash hard break, and editor reflow do not satisfy this contract.\"', '17: - *Consumer instruction:* a backslash hard break must separate the pre-creation-timeout case from the ambiguous post-write-timeout case, and the source-shape rules \"may not be replaced by HTML.\"', \"33: 3. The canonical authoring contract's source-shape and hard-break rules are amended to admit column wrapping and backslash hard breaks, in which case the consumer shape becomes authorable.\"]. It contrasts mandatory 72-column physical wrapping with one line per prose block, and the mandatory backslash break with explicit <br> and the consumer prohibition on HTML. Response/request/stdout/stderr hashes match record.json, and the recorded request matches the frozen prompt, fixture, and candidate bundle with control_errors: []."
+        },
+        {
+          "id": "no-conflicting-candidate",
+          "text": "The response fails closed without returning, posting, or recommending a reply body that chooses either conflicting rule set.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response begins '## Determination: blocked — no candidate body'. I inspected the complete response: it contains a conflict analysis and proposed policy-resolution options, but no authored timeout-reply paragraph, JSON candidate, fenced candidate, or recommendation to post a body choosing one rule set. The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. Its final paragraph is '**Candidate body returned:** none.'."
+        },
+        {
+          "id": "actionable-conflict-report",
+          "text": "The report clearly names the conflicting requirements and the need to resolve applicable policy before authoring can continue.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The report requires the policy owner to resolve the source-shape conflict before authoring resumes. Relevant response lines: ['27: ### Clarification or policy change needed before authoring can resume', '29: One of the following must be resolved by the owner of the applicable policy:', '35: Absent one of these, authoring fails closed.']. The enumerated options address consumer scope or exceptions, or a changed/explicitly replaced applicable authoring contract; none is silently applied during this run."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-contract/case-08-with-skill-3",
+      "response_sha256": "e1c85e2e1badcd42f344c78c72b96cd12a1e9e9725c07edc123b557996d8f737",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "material-conflict-recognized",
+          "text": "The response identifies mandatory 72-column source wrapping and the backslash hard break as material conflicts with the portable contract.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The exact response identifies both source-shape conflicts. Its relevant physical response lines are ['12: - *Consumer instruction:* every comment paragraph must be physically wrapped at 72 columns, and this is mandatory.', '17: - *Authoring contract, \"Source shape\":* \"Represent an author-intended hard break inside a flowing-prose block with an explicit `<br>`. Column-width wrapping, a trailing-space hard break, a backslash hard break, and editor reflow do not satisfy this contract.\"', '18: - *Consumer instruction:* a backslash hard break is required between the two timeout cases, and the source-shape rules \"may not be replaced by HTML.\"']. It contrasts mandatory 72-column physical wrapping with one line per prose block, and the mandatory backslash break with explicit <br> and the consumer prohibition on HTML. Response/request/stdout/stderr hashes match record.json, and the recorded request matches the frozen prompt, fixture, and candidate bundle with control_errors: []."
+        },
+        {
+          "id": "no-conflicting-candidate",
+          "text": "The response fails closed without returning, posting, or recommending a reply body that chooses either conflicting rule set.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response begins '## Decision: blocked — no candidate body returned'. I inspected the complete response: it contains a conflict analysis and proposed policy-resolution options, but no authored timeout-reply paragraph, JSON candidate, fenced candidate, or recommendation to post a body choosing one rule set. The recorded stdout contains zero tool_use or server_tool_use events; record.json has tool_calls: [], control_errors: [], tools: [], and mcp_servers: []. Its final paragraph is '**Returned body:** none.'."
+        },
+        {
+          "id": "actionable-conflict-report",
+          "text": "The report clearly names the conflicting requirements and the need to resolve applicable policy before authoring can continue.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The report requires the policy owner to resolve the source-shape conflict before authoring resumes. Relevant response lines: ['25: ### Policy clarification or change needed before authoring can resume', '27: One of the following must be decided by the owner of the applicable policy:']. The enumerated options address consumer scope or exceptions, or a changed/explicitly replaced applicable authoring contract; none is silently applied during this run."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-baseline/case-03-without-skill-1",
+      "response_sha256": "b80d66e9e07286ce541c19daa07824486c32f7cdd457adc1990d7c4038e70c32",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 11–14 equal the supplied fenced shell block byte-for-byte, including the literal backslash-n in both printf format strings; lines 16–19 equal the four table lines; lines 21–24 equal <pre data-owner=\"fixture\">, line one, two spaces plus line two, and </pre>; line 26 equals <!-- mergecraft-control:retain-exactly -->. Line 7 is exactly '[Changes](https://github.com/example/fixture/pull/__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__/changes)', under ## Changes, so the operation-bound PR-number token is retained unchanged. Direct UTF-8 comparisons passed for all four regions and the complete link."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The Summary prose occupies decoded line 3 and the closing paragraph occupies decoded line 28, with no continuation lines. Structural separators remain blank lines; code, table, and preformatted regions preserve their supplied multiline shapes. There are 27 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded Summary line 3 says 'This change adds fixture evidence for literal-region handling in pull-request bodies, exercising a fenced shell block, a GFM table, a raw HTML preformatted region, and a machine-owned control marker so each region can be carried through body authoring with its internal bytes and line structure untouched.'. Closing line 28 says 'The values above are fixture evidence reproduced verbatim from the supplied regions: they record what the fixture contains, not a deployment claim. Nothing here asserts that the commands were run against a live environment or that the pending behavior check has since passed.'. Together they identify fixture evidence and explicitly avoid asserting a deployment or live-environment outcome; the table still says behavior | pending."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-baseline/case-03-without-skill-2",
+      "response_sha256": "4a38010ce9cabfcc9ef7eeb5d806a9f841440496cf6bd9aea6a67ab8dc9de0ea",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 11–14 equal the supplied fenced shell block byte-for-byte, including the literal backslash-n in both printf format strings; lines 16–19 equal the four table lines; lines 21–24 equal <pre data-owner=\"fixture\">, line one, two spaces plus line two, and </pre>; line 26 equals <!-- mergecraft-control:retain-exactly -->. Line 7 is exactly '[Changes](https://github.com/example/fixture/pull/__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__/changes)', under ## Changes, so the operation-bound PR-number token is retained unchanged. Direct UTF-8 comparisons passed for all four regions and the complete link."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The Summary prose occupies decoded line 3 and the closing paragraph occupies decoded line 28, with no continuation lines. Structural separators remain blank lines; code, table, and preformatted regions preserve their supplied multiline shapes. There are 27 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded Summary line 3 says 'This pull request carries fixture-only material that exercises verbatim handling of literal regions in a pull-request body: a fenced shell block, a GFM table, a raw HTML preformatted region, and a machine-owned control marker are reproduced byte-for-byte, and the reserved pull-request-number token is left unresolved for the separately authorized creation step to substitute.'. Closing line 28 says \"These values are fixture evidence: they exist to show that the supplied regions survive templating without any change to their internal bytes or line structure. They are not a deployment claim, a test report, or a statement about any environment or release, and the pending behavior row in particular reflects the fixture's contents rather than an observed runtime outcome.\". Together they identify fixture evidence and explicitly avoid asserting a deployment or live-environment outcome; the table still says behavior | pending."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-template-baseline/case-03-without-skill-3",
+      "response_sha256": "e2dca541de814201061674e71882b09584f57048f3cd312e4029f81d42c323a8",
+      "grader_task": "grade_template_cases_1_4",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The entire response is a bare JSON string decoded once, with no fence or extra text; response/request/stdout/stderr SHA-256 hashes match record.json, the request prompt and fixture match the frozen corpus, and control_errors is []. Decoded lines 11–14 equal the supplied fenced shell block byte-for-byte, including the literal backslash-n in both printf format strings; lines 16–19 equal the four table lines; lines 21–24 equal <pre data-owner=\"fixture\">, line one, two spaces plus line two, and </pre>; line 26 equals <!-- mergecraft-control:retain-exactly -->. Line 7 is exactly '[Changes](https://github.com/example/fixture/pull/__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__/changes)', under ## Changes, so the operation-bound PR-number token is retained unchanged. Direct UTF-8 comparisons passed for all four regions and the complete link."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The Summary prose occupies decoded line 3 and the closing paragraph occupies decoded line 28, with no continuation lines. Structural separators remain blank lines; code, table, and preformatted regions preserve their supplied multiline shapes. There are 27 LF bytes, no CR, and no terminal newline."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Decoded Summary line 3 says 'This pull request records fixture evidence for the literal-region handling contract, capturing each supplied region exactly as it was handed over so that authoring, templating, and rendering leave its bytes and line structure untouched. The reserved PR-number token remains in place for the separately authorized creation operation to substitute.'. Closing line 28 says \"The values above are fixture evidence gathered for this template exercise, not a deployment claim. The `pending` behavior row reports the fixture's recorded state rather than a verified outcome, and nothing in this section asserts that anything has been released, executed, or validated in a live environment.\". Together they identify fixture evidence and explicitly avoid asserting a deployment or live-environment outcome; the table still says behavior | pending."
+        }
+      ]
+    },
     {
       "run_id": "sonnet-original/case-01-with-skill-1",
       "response_sha256": "b9a7b17a14baf9717cfe7e07024a51848fa0379b0e4cb2311192445f18feb599",
@@ -3501,6 +4290,276 @@
       "met": false
     },
     {
+      "experiment": "opus-template-baseline",
+      "variant": "without-skill",
+      "case_id": 3,
+      "expectation": "literal-regions-exact",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-baseline",
+      "variant": "without-skill",
+      "case_id": 3,
+      "expectation": "prose-shape-around-literals",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-baseline",
+      "variant": "without-skill",
+      "case_id": 3,
+      "expectation": "bounded-evidence-claim",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "recursive-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "explicit-hard-break",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "useful-issue-body",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "crlf-and-terminal-state",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "status-claims",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "authoring-only",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "literal-regions-exact",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "prose-shape-around-literals",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "bounded-evidence-claim",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "retained-spans-byte-identical",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "replacement-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "replacement-semantics",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "exact-command-body",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "correct-command-selection",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "no-comment-actuation",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "ambient-width-is-not-source-policy",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "precise-review-summary",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "no-review-submission",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "compatible-rules-compose",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "root-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "no-thread-actuation",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "material-conflict-recognized",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "no-conflicting-candidate",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-template-contract",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "actionable-conflict-report",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
       "experiment": "sonnet-original",
       "variant": "with-skill",
       "case_id": 1,
@@ -3985,7 +5044,7 @@
   "candidate_passed": true,
   "selected_thresholds": [
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 1,
       "expectation": "recursive-source-shape",
@@ -3995,7 +5054,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 1,
       "expectation": "explicit-hard-break",
@@ -4005,7 +5064,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 1,
       "expectation": "useful-issue-body",
@@ -4015,7 +5074,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 2,
       "expectation": "crlf-and-terminal-state",
@@ -4025,7 +5084,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 2,
       "expectation": "status-claims",
@@ -4035,7 +5094,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 2,
       "expectation": "authoring-only",
@@ -4045,7 +5104,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 3,
       "expectation": "literal-regions-exact",
@@ -4055,7 +5114,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 3,
       "expectation": "prose-shape-around-literals",
@@ -4065,7 +5124,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 3,
       "expectation": "bounded-evidence-claim",
@@ -4075,7 +5134,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 4,
       "expectation": "retained-spans-byte-identical",
@@ -4085,7 +5144,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 4,
       "expectation": "replacement-source-shape",
@@ -4095,7 +5154,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 4,
       "expectation": "replacement-semantics",
@@ -4105,7 +5164,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 5,
       "expectation": "exact-command-body",
@@ -4115,7 +5174,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 5,
       "expectation": "correct-command-selection",
@@ -4125,7 +5184,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 5,
       "expectation": "no-comment-actuation",
@@ -4135,7 +5194,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 6,
       "expectation": "ambient-width-is-not-source-policy",
@@ -4145,7 +5204,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 6,
       "expectation": "precise-review-summary",
@@ -4155,7 +5214,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 6,
       "expectation": "no-review-submission",
@@ -4165,7 +5224,7 @@
       "met": true
     },
     {
-      "experiment": "opus-paragraph-clarification",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 7,
       "expectation": "compatible-rules-compose",
@@ -4175,7 +5234,7 @@
       "met": true
     },
     {
-      "experiment": "opus-paragraph-clarification",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 7,
       "expectation": "root-source-shape",
@@ -4185,7 +5244,7 @@
       "met": true
     },
     {
-      "experiment": "opus-paragraph-clarification",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 7,
       "expectation": "no-thread-actuation",
@@ -4195,7 +5254,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 8,
       "expectation": "material-conflict-recognized",
@@ -4205,7 +5264,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 8,
       "expectation": "no-conflicting-candidate",
@@ -4215,7 +5274,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-contract",
       "variant": "with-skill",
       "case_id": 8,
       "expectation": "actionable-conflict-report",
@@ -4285,7 +5344,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-baseline",
       "variant": "without-skill",
       "case_id": 3,
       "expectation": "literal-regions-exact",
@@ -4295,7 +5354,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-baseline",
       "variant": "without-skill",
       "case_id": 3,
       "expectation": "prose-shape-around-literals",
@@ -4305,7 +5364,7 @@
       "met": true
     },
     {
-      "experiment": "opus-revised",
+      "experiment": "opus-template-baseline",
       "variant": "without-skill",
       "case_id": 3,
       "expectation": "bounded-evidence-claim",

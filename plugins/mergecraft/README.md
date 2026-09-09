@@ -64,11 +64,20 @@ conversation-comment bytes. Other lifecycle skills delegate body content or
 actuation and do not become duplicate semantic writers.
 
 Change only the canonical source. From the repository root, run
-`python scripts/validate_mergecraft.py . --write-content-lock` to refresh all
-writer-local projections and the ordinary Mergecraft content lock in one
-rollback-safe generation transaction. Inspect the complete diff, then run the
-ordinary validator. Source-stage validation checks discovery, projection links,
-and byte equality but intentionally skips the ordinary content lock. A
+`python scripts/validate_mergecraft.py . --write-markdown-projections` to
+regenerate the three writer-local projections. This command preserves the
+content lock and permits stale behavior evidence during canonical development.
+Inspect the projection diff and refresh the evidence for the changed candidate,
+then run `python scripts/validate_mergecraft.py . --write-content-lock`.
+The lock command validates the current projections and evidence before writing
+only the ordinary Mergecraft content lock. The two writing modes are mutually
+exclusive; each uses the generated-artifact recovery transaction for its own
+files.
+
+Run `python scripts/validate_mergecraft.py .` after both steps. A completed
+projection refresh leaves the previous content lock stale until the lock step
+succeeds. Source-stage validation checks discovery, projection links, byte
+equality, and evidence bindings but skips the ordinary content lock. A
 projection that drifts or a supported route that cannot discover the direct
 skill is not evidence that the capability is available.
 

@@ -1164,6 +1164,257 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
     )
 
 
+def validate_markdown_authoring_evidence(root: Path) -> None:
+    """Check retained experiment consistency without judging model behavior."""
+    skill = "skills/writing-github-issue-and-pr-markdown"
+    experiment = load_json(root, f"{skill}/evals/experiment.json")
+    corpus = load_json(root, f"{skill}/evals/evals.json")["evals"]
+    source_paths = {
+        "SKILL.md",
+        "references/authoring-contract.md",
+        "evals/evals.json",
+        "evals/policy.json",
+        "evals/delivery.json",
+        "evals/trigger-evals.json",
+        *(path for case in corpus for path in case["fixture_paths"]),
+    }
+    require(
+        isinstance(experiment, dict)
+        and experiment.get("current_source_sha256")
+        == {
+            path: hashlib.sha256(read_bytes(root, f"{skill}/{path}")).hexdigest()
+            for path in source_paths
+        },
+        "Markdown authoring evidence source binding drift",
+    )
+
+    def text_digest(value: str) -> str:
+        try:
+            return hashlib.sha256(value.encode("utf-8")).hexdigest()
+        except UnicodeEncodeError as error:
+            raise ContractError("Markdown authoring evidence text is not UTF-8") from error
+
+    grading = load_json(root, f"{skill}/evals/grading.json")
+    require(isinstance(grading, dict), "Markdown authoring grading must be an object")
+    requests = experiment.get("requests_by_sha256")
+    runs = experiment.get("behavior_runs")
+    selected = grading.get("selected_thresholds")
+    require(
+        isinstance(requests, dict)
+        and isinstance(runs, list)
+        and isinstance(selected, list),
+        "Markdown authoring evidence record shape drift",
+    )
+    for digest, request in requests.items():
+        require(
+            isinstance(request, str)
+            and text_digest(request) == digest,
+            "Markdown authoring request digest mismatch",
+        )
+    run_index: dict[str, dict] = {}
+    recorded_sessions: set[str] = set()
+    for run in runs:
+        require(
+            isinstance(run, dict)
+            and isinstance(run.get("id"), str)
+            and run["id"]
+            and run["id"] not in run_index
+            and run.get("variant") in ("with-skill", "without-skill")
+            and type(run.get("case_id")) is int
+            and run["case_id"] > 0
+            and type(run.get("repetition")) is int
+            and run["repetition"] > 0
+            and isinstance(run.get("session_id"), str)
+            and run["session_id"]
+            and run["session_id"] not in recorded_sessions
+            and isinstance(run.get("request_sha256"), str)
+            and run["request_sha256"] in requests
+            and isinstance(run.get("response"), str)
+            and text_digest(run["response"])
+            == run.get("response_sha256"),
+            "Markdown authoring run identity or response binding drift",
+        )
+        run_index[run["id"]] = run
+        recorded_sessions.add(run["session_id"])
+    cases = {case["id"]: case for case in corpus}
+    selected_groups: set[tuple[str, str, int]] = set()
+    for threshold in selected:
+        require(
+            isinstance(threshold, dict)
+            and isinstance(threshold.get("experiment"), str)
+            and threshold["experiment"]
+            and threshold.get("variant") in ("with-skill", "without-skill")
+            and type(threshold.get("case_id")) is int
+            and threshold["case_id"] in cases,
+            "Markdown authoring selected threshold identity drift",
+        )
+        selected_groups.add(
+            (threshold["experiment"], threshold["variant"], threshold["case_id"])
+        )
+    require(
+        len(selected_groups) == len(cases) * 2
+        and {(variant, case_id) for _, variant, case_id in selected_groups}
+        == {(variant, case_id) for variant in ("with-skill", "without-skill")
+            for case_id in cases},
+        "Markdown authoring selected case coverage drift",
+    )
+    policy = load_json(root, f"{skill}/evals/policy.json")
+    selected_runs: dict[str, dict] = {}
+    sessions: set[str] = set()
+    for group, variant, case_id in sorted(selected_groups):
+        case = cases[case_id]
+        fixtures = {
+            path: read_bytes(root, f"{skill}/{path}").decode("utf-8")
+            for path in case["fixture_paths"]
+        }
+        bundle = {
+            path: read_bytes(root, f"{skill}/{path}").decode("utf-8")
+            for path in ("SKILL.md", "references/authoring-contract.md")
+        } if variant == "with-skill" else {}
+        expected = {
+            "prompt": case["prompt"], "fixture": fixtures, "candidate_bundle": bundle,
+        }
+        for repetition in range(1, policy["repetitions"] + 1):
+            run_id = f"{group}/case-{case_id:02d}-{variant}-{repetition}"
+            run = run_index.get(run_id)
+            require(
+                run is not None
+                and run.get("case_id") == case_id
+                and run.get("case_name") == case["name"]
+                and run.get("variant") == variant
+                and type(run.get("repetition")) is int
+                and run["repetition"] == repetition
+                and isinstance(run.get("session_id"), str)
+                and run["session_id"]
+                and run["session_id"] not in sessions,
+                "Markdown authoring selected repetition or session drift",
+            )
+            require(
+                strict_json(requests[run["request_sha256"]], run_id) == expected
+                and run.get("fixture_sha256")
+                == {path: experiment["current_source_sha256"][path] for path in fixtures}
+                and run.get("candidate_sha256")
+                == {path: experiment["current_source_sha256"][path] for path in bundle},
+                f"Markdown authoring selected request binding drift: {run_id}",
+            )
+            sessions.add(run["session_id"])
+            selected_runs[run_id] = run
+
+    grades = grading.get("runs")
+    require(isinstance(grades, list), "Markdown authoring grade record shape drift")
+    grade_index: dict[str, dict] = {}
+    grouped_grades: dict[tuple[str, str, int], list[dict]] = {}
+    for grade in grades:
+        require(
+            isinstance(grade, dict)
+            and isinstance(grade.get("run_id"), str)
+            and grade["run_id"] in run_index
+            and grade["run_id"] not in grade_index,
+            "Markdown authoring grade run reference drift",
+        )
+        run = run_index[grade["run_id"]]
+        require(
+            grade.get("response_sha256") == run["response_sha256"]
+            and isinstance(grade.get("grader_task"), str)
+            and grade["grader_task"],
+            "Markdown authoring grade response binding drift",
+        )
+        expectations = grade.get("expectations")
+        require(
+            isinstance(expectations, list) and expectations,
+            "Markdown authoring grade expectations missing",
+        )
+        ids: set[str] = set()
+        for expectation in expectations:
+            require(
+                isinstance(expectation, dict)
+                and isinstance(expectation.get("id"), str)
+                and expectation["id"]
+                and expectation["id"] not in ids
+                and isinstance(expectation.get("text"), str)
+                and expectation["text"]
+                and isinstance(expectation.get("severity"), str)
+                and expectation["severity"] in policy["expectation_thresholds"]
+                and type(expectation.get("passed")) is bool
+                and isinstance(expectation.get("evidence"), str),
+                "Markdown authoring grade expectation shape drift",
+            )
+            ids.add(expectation["id"])
+        if grade["run_id"] in selected_runs:
+            require(
+                {item["id"]: {key: item[key] for key in ("id", "text", "severity")}
+                 for item in expectations}
+                == {item["id"]: item for item in cases[run["case_id"]]["expectations"]},
+                "Markdown authoring selected grading contract drift",
+            )
+        group = (grade["run_id"].rsplit("/", 1)[0], run["variant"], run["case_id"])
+        grouped_grades.setdefault(group, []).append(grade)
+        grade_index[grade["run_id"]] = grade
+    require(
+        set(selected_runs) <= set(grade_index),
+        "Markdown authoring selected grades missing",
+    )
+    derived: dict[tuple[str, str, int, str], dict] = {}
+    for (group, variant, case_id), group_grades in grouped_grades.items():
+        require(
+            len(group_grades) == policy["repetitions"]
+            and {run_index[grade["run_id"]]["repetition"] for grade in group_grades}
+            == set(range(1, policy["repetitions"] + 1)),
+            "Markdown authoring graded repetitions drift",
+        )
+        first = group_grades[0]["expectations"]
+        contract = {item["id"]: (item["text"], item["severity"]) for item in first}
+        for grade in group_grades:
+            require(
+                {item["id"]: (item["text"], item["severity"])
+                 for item in grade["expectations"]} == contract,
+                "Markdown authoring grading contract differs across repetitions",
+            )
+        for expectation_id, (_, severity) in contract.items():
+            passes = sum(
+                item["passed"] for grade in group_grades for item in grade["expectations"]
+                if item["id"] == expectation_id
+            )
+            required = policy["expectation_thresholds"][severity]["required_passes"]
+            key = (group, variant, case_id, expectation_id)
+            derived[key] = {
+                "experiment": group, "variant": variant, "case_id": case_id,
+                "expectation": expectation_id, "severity": severity,
+                "passes": passes, "required": required, "met": passes >= required,
+            }
+    for rows, expected_keys in (
+        (grading.get("thresholds"), set(derived)),
+        (selected, {key for key in derived if key[:3] in selected_groups}),
+    ):
+        require(isinstance(rows, list), "Markdown authoring thresholds must be a list")
+        observed: set[tuple[str, str, int, str]] = set()
+        for row in rows:
+            require(
+                isinstance(row, dict)
+                and isinstance(row.get("experiment"), str)
+                and isinstance(row.get("variant"), str)
+                and type(row.get("case_id")) is int
+                and isinstance(row.get("expectation"), str)
+                and type(row.get("passes")) is int
+                and type(row.get("required")) is int
+                and type(row.get("met")) is bool,
+                "Markdown authoring threshold derivation drift",
+            )
+            key = (row["experiment"], row["variant"], row["case_id"], row["expectation"])
+            require(
+                key not in observed and row == derived.get(key),
+                "Markdown authoring threshold derivation drift",
+            )
+            observed.add(key)
+        require(observed == expected_keys, "Markdown authoring threshold coverage drift")
+    require(
+        type(grading.get("candidate_passed")) is bool
+        and grading["candidate_passed"]
+        == all(row["met"] for row in selected if row["variant"] == "with-skill"),
+        "Markdown authoring candidate result derivation drift",
+    )
+
+
 def load_json(root: Path, relative: str) -> Any:
     return strict_json(read(root, relative), relative)
 
@@ -4294,21 +4545,17 @@ def capture_content_lock_write_snapshot(
 def require_content_lock_write_snapshot_unchanged(
     repo_root: Path,
     snapshot: ContentLockWriteSnapshot,
-    ignored_temporary_paths: frozenset[Path] = frozenset(),
+    ignored_paths: frozenset[Path] = frozenset(),
 ) -> None:
     observed = capture_content_lock_write_snapshot(repo_root)
     expected = snapshot
-    if ignored_temporary_paths:
+    if ignored_paths:
         root = locate_plugin(repo_root)
         ignored_relatives = {
             path.relative_to(root).as_posix()
-            for path in ignored_temporary_paths
+            for path in ignored_paths
             if path.is_relative_to(root)
         }
-        ignored_relatives.update(
-            f"skills/{skill}/{local_path}"
-            for skill, local_path in MARKDOWN_AUTHORING_PROJECTIONS.items()
-        )
         observed = observed._replace(
             plugin_entries=tuple(
                 entry
@@ -4325,7 +4572,7 @@ def require_content_lock_write_snapshot_unchanged(
         )
     require(
         observed == expected,
-        "validated inputs changed before semantic content lock replacement",
+        "validated inputs changed before generated artifact replacement",
     )
 
 
@@ -4377,14 +4624,45 @@ def _projected_plugin_entries(
     return tuple(sorted(entries.items()))
 
 
+def write_markdown_projections(
+    repo_root: Path,
+    *,
+    snapshot: ContentLockWriteSnapshot | None = None,
+) -> None:
+    root = locate_plugin(repo_root)
+    if snapshot is None:
+        snapshot = capture_content_lock_write_snapshot(repo_root)
+    replacements = _projection_replacement_plan(root, snapshot)
+    expected = snapshot._replace(
+        plugin_entries=_projected_plugin_entries(snapshot, replacements, root)
+    )
+
+    def recheck(temporary_paths: frozenset[Path]) -> None:
+        require_content_lock_write_snapshot_unchanged(
+            repo_root, snapshot, temporary_paths | frozenset(replacements)
+        )
+
+    def verify() -> None:
+        require(
+            capture_content_lock_write_snapshot(repo_root) == expected,
+            "validated inputs changed during Markdown authoring projection replacement",
+        )
+        validate_markdown_authoring_projections(root)
+
+    replace_generated_artifacts(
+        repo_root,
+        replacements,
+        recheck=recheck,
+        verify=verify,
+    )
+
+
 def content_lock_document_from_snapshot(
     snapshot: ContentLockWriteSnapshot,
-    projected_entries: tuple[tuple[str, InputEntry], ...] | None = None,
 ) -> dict:
-    plugin_entries = projected_entries or snapshot.plugin_entries
     files = {
         relative: entry.sha256
-        for relative, entry in plugin_entries
+        for relative, entry in snapshot.plugin_entries
         if relative != "."
         and entry.kind == "regular"
         and relative not in CONTENT_LOCK_EXCLUSIONS
@@ -4435,13 +4713,9 @@ def write_content_lock(
         snapshot.lock_entry.kind in {"missing", "regular"},
         "semantic content lock is not a regular file",
     )
-    projection_plan = _projection_replacement_plan(located_root, snapshot)
-    projected_entries = _projected_plugin_entries(
-        snapshot, projection_plan, located_root
-    )
     lock_content = (
         json.dumps(
-            content_lock_document_from_snapshot(snapshot, projected_entries),
+            content_lock_document_from_snapshot(snapshot),
             indent=2,
         )
         + "\n"
@@ -4449,10 +4723,7 @@ def write_content_lock(
     lock_mode = (
         snapshot.lock_entry.mode if snapshot.lock_entry.mode is not None else 0o644
     )
-    replacements = {
-        **projection_plan,
-        lock_path: (lock_content, lock_mode),
-    }
+    replacements = {lock_path: (lock_content, lock_mode)}
 
     def recheck(temporary_paths: frozenset[Path]) -> None:
         require_content_lock_write_snapshot_unchanged(
@@ -4465,7 +4736,7 @@ def write_content_lock(
                 located_root,
                 error_type=ContractError,
             )
-            == projected_entries
+            == snapshot.plugin_entries
             and snapshot_tree(
                 repo_root / EVAL_RELATIVE,
                 error_type=ContractError,
@@ -4540,6 +4811,7 @@ def validate(
     source_stage: bool = False,
     check_content_lock: bool | None = None,
     check_projections: bool = True,
+    check_markdown_evidence: bool = True,
     emit_success: bool = True,
 ) -> None:
     root = locate_plugin(repo_root)
@@ -4551,6 +4823,8 @@ def validate(
         validate_markdown_authoring_projections(root)
     validate_serialized_files(root, source_stage=source_stage)
     validate_markdown_authoring_eval_corpus(root)
+    if check_markdown_evidence:
+        validate_markdown_authoring_evidence(root)
     validate_manifests(root)
     # Source-stage Atlas validation proves the candidate's public source shape.
     # Adapter YAML is a release-only concern and may require an optional parser.
@@ -4582,7 +4856,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repository", type=Path)
     parser.add_argument("--skill", choices=PUBLIC_SKILLS)
-    parser.add_argument("--write-content-lock", action="store_true")
+    writing = parser.add_mutually_exclusive_group()
+    writing.add_argument("--write-content-lock", action="store_true")
+    writing.add_argument("--write-markdown-projections", action="store_true")
     parser.add_argument(
         "--source-stage",
         action="store_true",
@@ -4594,19 +4870,30 @@ def main() -> int:
             repository = Path(os.path.abspath(args.repository.expanduser()))
         except RuntimeError as error:
             raise ContractError(str(error)) from error
-        if args.write_content_lock:
+        if args.write_content_lock or args.write_markdown_projections:
             snapshot = capture_content_lock_write_snapshot(repository)
             validate(
                 repository,
                 args.skill,
                 source_stage=args.source_stage,
                 check_content_lock=False,
-                check_projections=False,
+                check_projections=not args.write_markdown_projections,
+                check_markdown_evidence=not args.write_markdown_projections,
                 emit_success=False,
             )
             require_content_lock_write_snapshot_unchanged(repository, snapshot)
-            write_content_lock(repository, snapshot=snapshot)
-        validate(repository, args.skill, source_stage=args.source_stage)
+            if args.write_markdown_projections:
+                write_markdown_projections(repository, snapshot=snapshot)
+            else:
+                write_content_lock(repository, snapshot=snapshot)
+        validate(
+            repository,
+            args.skill,
+            source_stage=args.source_stage,
+            check_content_lock=False if args.write_markdown_projections else None,
+            check_markdown_evidence=not args.write_markdown_projections,
+            emit_success=not args.write_markdown_projections,
+        )
     except (
         AgentPluginContractError,
         ContractError,
@@ -4620,6 +4907,8 @@ def main() -> int:
         return 1
     if args.write_content_lock:
         print("Mergecraft semantic content lock updated")
+    elif args.write_markdown_projections:
+        print("Mergecraft Markdown authoring projections updated")
     return 0
 
 

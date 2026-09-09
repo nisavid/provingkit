@@ -32,7 +32,7 @@
       "fixture_paths": ["evals/fixtures/literal-and-opaque-pr-body.md"],
       "expected_output": "A coherent PR body keeps prose blocks on single physical lines while retaining the supplied code, table, raw preformatted HTML, and control marker with their required source shapes.",
       "expectations": [
-        {"id": "literal-regions-exact", "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines.", "severity": "safety"},
+        {"id": "literal-regions-exact", "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.", "severity": "safety"},
         {"id": "prose-shape-around-literals", "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.", "severity": "safety"},
         {"id": "bounded-evidence-claim", "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.", "severity": "quality"}
       ]
