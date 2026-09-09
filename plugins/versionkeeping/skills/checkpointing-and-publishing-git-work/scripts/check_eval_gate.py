@@ -39,6 +39,7 @@ CANONICAL_SKILL_IDS = (
     "versionkeeping:checkpointing-and-publishing-git-work",
     "versionkeeping:syncing-forks-with-upstream",
     "versionkeeping:using-persistent-git-worktrees",
+    "mergecraft:writing-github-issue-and-pr-markdown",
     "mergecraft:writing-reviewable-pr-descriptions",
     "mergecraft:publishing-reviewable-prs",
     "mergecraft:graphite",
@@ -63,6 +64,7 @@ CANONICAL_SCENARIO_IDS = (
     "merged-remote-ref-cleanup",
     "non-default-fork-sync",
     "persistent-worktree-containment",
+    "markdown-authoring-recursive-issue-body",
     "writer-owns-content",
     "publisher-owns-actuation",
     "graphite-transport-boundary",
@@ -99,6 +101,7 @@ CANONICAL_DIRECT_CALLS = {
     "versionkeeping:using-persistent-git-worktrees": (
         "versionkeeping:checkpointing-and-publishing-git-work",
     ),
+    "mergecraft:writing-github-issue-and-pr-markdown": (),
     "mergecraft:writing-reviewable-pr-descriptions": ("tricritical:loop",),
     "mergecraft:publishing-reviewable-prs": (
         "mergecraft:writing-reviewable-pr-descriptions",
@@ -2159,7 +2162,7 @@ def validate_evidence(
             skill_inventory == list(CANONICAL_SKILL_IDS),
             "production ordered skill inventory drift",
         )
-        require(len(scenarios) == 22, "production scenario inventory drift")
+        require(len(scenarios) == 23, "production scenario inventory drift")
         canonical_scenarios_by_skill = {
             scenario["skill_id"]: scenario for scenario in scenarios.values()
         }
