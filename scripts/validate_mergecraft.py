@@ -266,6 +266,8 @@ EXPECTED_SKILL_FILES = {
         "evals/coverage.json",
         "evals/delivery.json",
         "evals/evals.json",
+        "evals/experiment.json",
+        "evals/grading.json",
         "evals/policy.json",
         "evals/trigger-evals.json",
         *{

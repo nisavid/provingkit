@@ -163,3 +163,14 @@ evidence lives at `evals/mergecraft/`, the Markdown writer's skill-local raw
 eval corpus, `tests/plugins/mergecraft/`, and
 `release/plugin-content-locks/mergecraft.json`. Skill-local eval resources are
 package support artifacts, not runtime authority.
+
+The Markdown writer's [experiment](skills/writing-github-issue-and-pr-markdown/evals/experiment.json)
+retains exact requests and responses, source hashes, and selected runtime
+observations; its [grading](skills/writing-github-issue-and-pr-markdown/evals/grading.json)
+records independent judgments and the final selected repetitions. Claude Code
+2.1.263 with `claude-opus-5` at high effort meets every selected behavior
+threshold, loads the skill and reference through native tools, and passes all
+11 trigger cases. Sonnet at the CLI's default effort fails the exact output
+boundary; those failed runs remain in the experiment. This is unsigned
+development evidence for the tested configuration. It does not qualify other
+models or harnesses or grant release, installation, or actuation authority.
