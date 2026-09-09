@@ -18,7 +18,7 @@ The semantic writer owns valid GFM and the exact body bytes, including line endi
 
 Apply compatible repository, consumer, and field-specific instructions together with this contract. Tone, required headings, vocabulary, disclosure, and stricter content or security rules normally compose when they do not change the source-shape, preservation, or exact-body requirements. A rule that forbids emitting unsafe content composes by blocking authoring, not by silently rewriting a retained span.
 
-A conflict is material when satisfying another instruction would require wrapping or reflowing a flowing-prose block, using an implicit source newline for an intended hard break, normalizing line endings or terminal-newline state, changing a retained or opaque span, making the posting actuator rewrite the body, or exceeding the granted authoring or actuation authority. Report the conflicting requirements and fail closed without a candidate body. Do not silently choose one contract, weaken a protected clause, or describe a conflicting result as compliant.
+A conflict is material when satisfying another instruction would require wrapping or reflowing a flowing-prose block, using an implicit source newline for an intended hard break, normalizing line endings or terminal-newline state, changing a retained or opaque span, making the posting actuator rewrite the body, or exceeding the granted authoring or actuation authority. Report the conflicting requirements and the policy clarification or change needed before authoring can resume, then fail closed without a candidate body. Do not silently choose one contract, weaken a protected clause, or describe a conflicting result as compliant.
 
 ## Source shape
 
@@ -41,6 +41,8 @@ Choose exact line endings and terminal-newline state before authoring. For an ed
 ## Exact-body handoff
 
 Return or hand off the complete body as one exact value, separate from explanatory text. Preserve every character from the first body byte through the terminal-newline state. When a display medium cannot preserve that value, use a caller-approved lossless artifact or escaped display and label it as a representation rather than the posting payload; otherwise report that exact handoff is unavailable.
+
+Honor the caller's exact handoff format as well as the body bytes. When the caller requests only a JSON string, the entire response is that string, without a Markdown fence, preamble, suffix, or separate line-ending metadata. JSON escaping represents the body; decoding the string once yields its exact value. A caller-bound line-ending and terminal-newline state remains binding without an added restatement. Label an escaped display separately only when the caller's format permits explanatory text.
 
 An operation-specific actuator receives the writer-produced body as opaque data. It may encode the surrounding transport request but must not parse, reflow, normalize, repair, decorate, or otherwise rewrite the body. Posting and exact reread verification belong to that separately authorized actuator, not to this authoring contract.
 
