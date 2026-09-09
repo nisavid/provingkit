@@ -123,11 +123,14 @@ The canonical Markdown writer keeps its raw eight-case behavior corpus, eleven t
 ## Phase 2 observable routing
 
 `skill-routing-matrix.json` is a separate routing tier. It leaves the 276-run
-semantic target unchanged. Its definition derives a 130-call production target:
-23 cold-start cases + 23 explicit invocations + 84 trigger cases. The trigger
-tier retains all 44 skill-local trigger cases and adds one positive and one
-negative case for each of the other 20 skills. This count describes the gate;
-it does not assert that the paid calls have been completed.
+semantic target unchanged. Its definition derives a 121-call production target:
+23 cold-start cases + 23 explicit invocations + 75 trigger cases. The trigger
+tier retains 33 imported skill-local trigger cases and adds one positive and one
+negative case for each of the other 21 skills. The Markdown writer uses an
+explicit integrated pair so a complete PR title and description selects the
+PR-description writer; its eleven standalone trigger cases remain separate.
+This count describes the gate; it does not assert that the paid calls have been
+completed.
 
 Production routing evidence uses Claude's first-class `Skill` tool and retains
 the raw JSONL stream, init inventory, model and usage accounting, every failed

@@ -14,11 +14,6 @@
       "skill": "mergecraft:getting-prs-merged",
       "path": "evals/mergecraft/skills/getting-prs-merged/trigger-evals.json",
       "sha256": "447a5f51340e6b4eb79b318ae544cc476c3c80a7d79c70e0a5c687f2b7d290e9"
-    },
-    {
-      "skill": "mergecraft:writing-github-issue-and-pr-markdown",
-      "path": "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/trigger-evals.json",
-      "sha256": "a95f5228363fdd7cfc8b1db00a3838f8a6c7926fced43d4d27376233c0ca9766"
     }
   ],
   "skills": [
@@ -153,7 +148,12 @@
       "id": "mergecraft:writing-github-issue-and-pr-markdown",
       "cold_start": "Author exact human-facing GitHub Issue and pull-request body bytes while preserving source shape, retained spans, line endings, and terminal-newline state.",
       "explicit": "Use $writing-github-issue-and-pr-markdown to author these exact GitHub body bytes without actuation.",
-      "supplemental": null
+      "supplemental": {
+        "positive": "Author the exact GFM source for this new Issue body, including the requested CRLF bytes and terminal-newline state; do not create the Issue.",
+        "positive_expected_skills": ["writing-github-issue-and-pr-markdown"],
+        "negative": "Use the pushed diff to prepare a reviewer-facing Conventional Commit pull-request title and complete navigable description.",
+        "negative_expected_skills": ["writing-reviewable-pr-descriptions"]
+      }
     },
     {
       "id": "mergecraft:writing-reviewable-pr-descriptions",

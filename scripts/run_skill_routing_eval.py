@@ -3,7 +3,7 @@
 
 Production evidence is bound to one clean Git commit, its tree, the exact
 ``git archive`` bytes, the real Claude Code executable selected from ``PATH``,
-and a complete 130-case routing definition loaded only from that archive.
+and a complete 121-case routing definition loaded only from that archive.
 Fixture mode is a deterministic, provider-free transport for a proper subset.
 """
 
@@ -69,8 +69,8 @@ REPLAY_SEMANTICS = (
 EXPECTED_COUNTS = {
     "cold_start": 23,
     "explicit_invocation": 23,
-    "trigger": 84,
-    "total": 130,
+    "trigger": 75,
+    "total": 121,
 }
 REVIEWED_BUILTIN_AGENTS = frozenset(("claude", "Explore", "general-purpose", "Plan"))
 CLAUDE_VERSION = re.compile(r"^(\d+\.\d+\.\d+) \(Claude Code\)$")
@@ -426,7 +426,7 @@ def load_definition(
 
     sources = definition["existing_trigger_sources"]
     require(
-        isinstance(sources, list) and len(sources) == 3,
+        isinstance(sources, list) and len(sources) == 2,
         "existing trigger source inventory drift",
     )
     source_records: list[dict[str, str]] = [
@@ -488,7 +488,7 @@ def load_definition(
                 "source_index": str(source_index),
             }
         )
-    require(len(existing_cases) == 44, "frozen trigger sources must contain 44 cases")
+    require(len(existing_cases) == 33, "frozen trigger sources must contain 33 cases")
 
     cases: list[RoutingCase] = []
     supplemental_queries: set[str] = set()
@@ -2053,7 +2053,7 @@ def run(arguments: argparse.Namespace) -> int:
         else:
             require(
                 arguments.case_limit is None,
-                "Claude CLI routing evidence must run all 130 cases",
+                "Claude CLI routing evidence must run all 121 cases",
             )
             cases = bundle.cases
         config = configuration(arguments.adapter, requested_model, binary_identity)
