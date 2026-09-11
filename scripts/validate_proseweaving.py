@@ -68,7 +68,8 @@ BASE_FILES = {
 AGENT_PATH = "agents/proseweaver.md"
 AGENT_NAME = "proseweaver"
 AGENT_DESCRIPTION = (
-    "Forward the supplied task to Proseweaving's writing-for-people skill."
+    "Use this agent when drafting, editing, or checking human-facing prose; it "
+    "applies Proseweaving's register and evidence discipline."
 )
 
 
@@ -753,7 +754,7 @@ def validate_agent(root: Path) -> None:
         content
         == "---\n"
         "name: proseweaver\n"
-        "description: Forward the supplied task to Proseweaving's writing-for-people skill.\n"
+        "description: Use this agent when drafting, editing, or checking human-facing prose; it applies Proseweaving's register and evidence discipline.\n"
         "---\n\n"
         "Use `$proseweaving:writing-for-people` for the supplied task.\n",
         "Proseweaver agent adapter must be an exact minimal forwarder",
