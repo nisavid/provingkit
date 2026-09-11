@@ -23,7 +23,7 @@ Plugins:
 - [`plugins/artifact-customs/`](plugins/artifact-customs/) contains
   **Artifact Customs**, which assesses and maintains exact third-party software
   components under explicit policy.
-- [`plugins/tidesmith/`](plugins/tidesmith/) contains **Tidesmith**, which holds
+- [`plugins/proseweaving/`](plugins/proseweaving/) contains **Proseweaving**, which holds
   portable standards and verification for agent-authored human-facing prose.
 
 **Task Witness** is the seventh member. It is a code-only validation package with
@@ -98,8 +98,8 @@ python scripts/validate_mergecraft.py . --source-stage
 python -m unittest tests.test_validate_artifact_customs tests.test_artifact_customs_eval_corpus
 python scripts/validate_artifact_customs.py . --source-stage
 
-python -m unittest tests.test_validate_tidesmith
-python scripts/validate_tidesmith.py .
+python -m unittest tests.test_validate_proseweaving
+python scripts/validate_proseweaving.py .
 
 repository="$(pwd -P)"
 python -m unittest tests.test_task_witness_package

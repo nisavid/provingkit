@@ -72,7 +72,7 @@
           "$ref": "#/$defs/task-witness"
         },
         {
-          "$ref": "#/$defs/tidesmith"
+          "$ref": "#/$defs/proseweaving"
         }
       ],
       "type": "array"
@@ -405,7 +405,7 @@
         }
       }
     },
-    "tidesmith": {
+    "proseweaving": {
       "$ref": "#/$defs/member",
       "properties": {
         "content_identity": {
@@ -414,7 +414,7 @@
               "const": "plugin-content-lock"
             },
             "path": {
-              "const": "plugins/tidesmith/content-lock.json"
+              "const": "plugins/proseweaving/content-lock.json"
             }
           }
         },
@@ -422,7 +422,7 @@
           "const": "agent-plugin"
         },
         "id": {
-          "const": "tidesmith"
+          "const": "proseweaving"
         },
         "version": {
           "const": "1.0.0"
@@ -432,14 +432,14 @@
             "canonical": {
               "properties": {
                 "path": {
-                  "const": "plugins/tidesmith/plugin.json"
+                  "const": "plugins/proseweaving/plugin.json"
                 }
               }
             },
             "claude": {
               "properties": {
                 "path": {
-                  "const": "plugins/tidesmith/.claude-plugin/plugin.json"
+                  "const": "plugins/proseweaving/.claude-plugin/plugin.json"
                 }
               }
             }

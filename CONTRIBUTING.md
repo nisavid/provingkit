@@ -7,7 +7,7 @@ consistent, and explicit about what their validation proves.
 
 Current changes stay within the seven source members: the six Agent Plugins
 Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and
-Tidesmith, plus the code-only Task Witness package. Keep changes within those
+Proseweaving, plus the code-only Task Witness package. Keep changes within those
 members, their shared validation, and the Kit's repository contracts.
 Hindsight, Base Loadout, personal tools, and unrelated experiments belong
 elsewhere.

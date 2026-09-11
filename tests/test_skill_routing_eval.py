@@ -112,7 +112,7 @@ def test_routing_definition_has_the_complete_inventory():
         "mergecraft:graphite",
         "mergecraft:addressing-pr-review-feedback",
         "mergecraft:resuming-reviewed-prs",
-        "tidesmith:writing-for-people",
+        "proseweaving:writing-for-people",
     } <= {case.target for case in cases}
 
 

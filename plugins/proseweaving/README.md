@@ -1,6 +1,6 @@
-# Tidesmith plugin
+# Proseweaving plugin
 
-Tidesmith is an Agent Plugins v1 plugin for prose that agents write to
+Proseweaving is an Agent Plugins v1 plugin for prose that agents write to
 people: the register a reader should meet, the evidence discipline behind
 every claim in that prose, the post-draft edit passes that enforce style as
 actions rather than preferences, and the adversarial pass that reads a finished
@@ -12,12 +12,17 @@ without the author's own global instructions still receives the mechanics.
 Personal voice composes on top through consumer-global instructions and never
 lives in this plugin.
 
-Tidesmith owns generic human-facing prose mechanics only. Surface owners keep
+Proseweaving owns generic human-facing prose mechanics only. Surface owners keep
 their surface contracts: Mergecraft owns reviewer-facing pull-request text and
 the review-voice reference that applies this register to review threads, and
 Tricritical owns review findings and their structural output contract. A caller
-can explicitly compose those surface contracts with Tidesmith when prose
+can explicitly compose those surface contracts with Proseweaving when prose
 mechanics also apply; projections do not cross plugin boundaries.
+
+Claude Code also discovers the native `proseweaver` agent alias. It is a thin
+forwarder to the public skill, so the skill remains the portable policy owner.
+Codex and other Agent Plugins clients consume the standard skill surface and do
+not load this Claude-native agent definition.
 
 ## Public skills
 
@@ -32,13 +37,15 @@ mechanics also apply; projections do not cross plugin boundaries.
 Root `plugin.json` and `skills/` are the canonical Agent Plugins plugin root;
 `.claude-plugin/plugin.json` is a projection of the same identity. Skill-to-skill
 edges use literal public identities linked to sibling `SKILL.md` files. Codex
-adapters and each skill's `agents/openai.yaml` use `$tidesmith:<skill>` targets.
-The roster projection above is generated from `topology.json` by the content-lock writer.
+adapters and each skill's `agents/openai.yaml` use `$proseweaving:<skill>` targets.
+The root `agents/proseweaver.md` file is a Claude-native adapter and is not a
+portable Agent Plugins component. The roster projection above is generated from
+`topology.json` by the content-lock writer.
 
 ## Validation
 
-`python -m unittest tests.test_validate_tidesmith` exercises the focused
-contract suite. `python3 scripts/validate_tidesmith.py .` validates the plugin from the
+`python -m unittest tests.test_validate_proseweaving` exercises the focused
+contract suite. `python3 scripts/validate_proseweaving.py .` validates the plugin from the
 repository root: manifest identity and projection, topology, skill contracts,
 the generated roster projection, inventory, portability, and the semantic content lock.
 `--write-content-lock` regenerates the roster projection and the lock after an

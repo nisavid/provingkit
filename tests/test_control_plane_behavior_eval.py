@@ -346,7 +346,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
     assert counts == {
         "mergecraft": 10,
         "rolecasting": 2,
-        "tidesmith": 1,
+        "proseweaving": 1,
         "tricritical": 7,
         "versionkeeping": 3,
     }

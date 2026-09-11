@@ -1260,20 +1260,20 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     registration["source_stage_validator_flags"],
                 )
 
-        tidesmith = self.module.PUBLIC_RELEASE_REGISTRATIONS["tidesmith"]
-        self.assertTrue(tidesmith["production_eligible"])
-        self.assertEqual(tidesmith["package_kind"], "skill-plugin")
-        self.assertEqual(tidesmith["source_stage_validator_flags"], ())
-        self.assertIn("tests/test_validate_tidesmith.py", tidesmith["support_paths"])
-        self.assertIn("tidesmith", self.module.SKILL_PLUGINS)
+        proseweaving = self.module.PUBLIC_RELEASE_REGISTRATIONS["proseweaving"]
+        self.assertTrue(proseweaving["production_eligible"])
+        self.assertEqual(proseweaving["package_kind"], "skill-plugin")
+        self.assertEqual(proseweaving["source_stage_validator_flags"], ())
+        self.assertIn("tests/test_validate_proseweaving.py", proseweaving["support_paths"])
+        self.assertIn("proseweaving", self.module.SKILL_PLUGINS)
         self.assertEqual(
             self.module.PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS,
-            ("tidesmith",),
+            ("proseweaving",),
         )
-        self.assertNotIn("tidesmith", self.module.PRODUCTION_RUNTIME_PACKAGES)
+        self.assertNotIn("proseweaving", self.module.PRODUCTION_RUNTIME_PACKAGES)
         self.assertEqual(
-            self.module.MARKETPLACE_PLUGINS["tidesmith"],
-            "./plugins/tidesmith",
+            self.module.MARKETPLACE_PLUGINS["proseweaving"],
+            "./plugins/proseweaving",
         )
 
     def test_public_release_registration_projection_is_immutable(self) -> None:
@@ -1334,12 +1334,12 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
     def test_registered_skill_plugin_requires_production_eligibility(self) -> None:
         root = self.public_release_registration_fixture(
-            name="tidesmith", production_eligible=False
+            name="proseweaving", production_eligible=False
         )
         catalog_path = root / "release/public-release-runtime-packages.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         catalog["runtime_packages"] = []
-        catalog["skill_plugins"] = ["tidesmith"]
+        catalog["skill_plugins"] = ["proseweaving"]
         catalog_path.write_text(json.dumps(catalog, sort_keys=True) + "\n")
 
         with self.assertRaisesRegex(
@@ -5034,7 +5034,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(retired_names.isdisjoint(installed_skills))
 
-    def test_review_discovery_routes_include_tidesmith_and_tricritical(self) -> None:
+    def test_review_discovery_routes_include_proseweaving_and_tricritical(self) -> None:
         marketplace = json.loads(
             (self.repository / ".claude-plugin/marketplace.json").read_text()
         )
@@ -5053,7 +5053,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 ).lower()
                 if "review" in discovery_text:
                     review_routes.add(name)
-            self.assertEqual(review_routes, {"tidesmith", "tricritical"})
+            self.assertEqual(review_routes, {"proseweaving", "tricritical"})
 
     def test_contract_validation_fails_when_release_owned_unit_suites_fail(
         self,

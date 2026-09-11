@@ -31,8 +31,8 @@
       "category": "developer-tools"
     },
     {
-      "name": "tidesmith",
-      "source": "./plugins/tidesmith",
+      "name": "proseweaving",
+      "source": "./plugins/proseweaving",
       "category": "developer-tools"
     }
   ]

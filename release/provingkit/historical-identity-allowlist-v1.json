@@ -189,7 +189,7 @@
     {
       "disposition": "compatibility-fixture-for-frozen-task-witness-receipts",
       "path": "tests/test_task_witness_package.py",
-      "sha256": "sha256:8d2c490a2c652908a8773b5457dc7999c7084eb1378111f05b940c0f2283c43f"
+      "sha256": "sha256:86fc766304956169a62c8846a862cc089fb72bd2659efb9f39745e9e060b9ad7"
     },
     {
       "disposition": "historical-source-lineage-fixture",

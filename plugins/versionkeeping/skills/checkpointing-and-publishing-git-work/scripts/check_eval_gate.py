@@ -49,7 +49,7 @@ CANONICAL_SKILL_IDS = (
     "mergecraft:getting-prs-ready-for-review",
     "mergecraft:getting-prs-merged",
     "mergecraft:stacking-pr-fixups",
-    "tidesmith:writing-for-people",
+    "proseweaving:writing-for-people",
 )
 CANONICAL_SCENARIO_IDS = (
     "cursor-grok-consequential-review",
@@ -130,7 +130,7 @@ CANONICAL_DIRECT_CALLS = {
         "mergecraft:graphite",
         "versionkeeping:checkpointing-and-publishing-git-work",
     ),
-    "tidesmith:writing-for-people": (),
+    "proseweaving:writing-for-people": (),
 }
 EXECUTOR_SYSTEM_PROMPT = "Respond to the supplied user message."
 GRADER_SYSTEM_PROMPT = "Assess every labeled response against every supplied criterion. Return strict JSON with one grades array preserving the supplied label order."

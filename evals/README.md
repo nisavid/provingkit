@@ -1,7 +1,7 @@
 # Phase 1 control-plane behavior evaluation
 
 `control-plane-matrix.json` is the public, declarative inventory for the 23
-Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Tidesmith skills. It
+Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Proseweaving skills. It
 selects one existing raw scenario per skill and declares only the companion
 skills allowed in that skill's composed condition. It is Phase 1 four-condition
 behavior evidence, not proof that every publication, deployment, hook, or runtime

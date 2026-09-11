@@ -300,11 +300,11 @@
   "source_byte_identity": {
     "aggregate_sha256_by_set": {
       "current_control_set": "f0ba9629f113b52f04eacf0b544b97ae7e0d97611786ff0e392a4ee49a8b1524",
-      "direct_release_owned_tests": "53dcb99dc321321c9c558bebb8aec7d828122b720fc12e691f3162e2e4f1d36e",
+      "direct_release_owned_tests": "31d6bc23d1c798452d86500df4f70302f36c7c87e54872be80b855895c0e7006",
       "public_release_registration": "e3e97ca609e4806d3d6445f0f9e4b07a6cac739fa828f6d5f432824511e8390e",
       "release_documentation": "b0a5feb9ceae5f823b41360ef9cc4f70f73040cb767570a6b189c3144622790a",
-      "release_integration": "c5a95778b1aaaa15b0b6b2ab69bba0d5ef1eb2fa92319857f7d729368dfe5ce5",
-      "release_integration_tests": "45ce39762fe345e5d2a9fdeb9c04b6c1daf72f9545479dd30dab159c4a35c562",
+      "release_integration": "d3df16ba767667d56907febd9b93c256923ebf575f1774f1a8ff05637101bc32",
+      "release_integration_tests": "2a7e1fbc750827c3a162861af75cee9c15e461910bf281c455c22c04921c3f93",
       "release_validator": "c73a631c276a24958f3d0a762378990548a9166b1afaaa538c5b453f6d134cb0",
       "tw0": "3559210111eaab4a310bd4db2b3ce7133aeff4bde35dbb4821db5bb2fc5fc0b3",
       "tw1_client": "9ca6833117f5f8cf68c68d4a1463572957c125e03e51d1fb462fac9b23b49b47",
@@ -712,7 +712,7 @@
       },
       {
         "path": "tests/test_task_witness_package.py",
-        "sha256": "8d2c490a2c652908a8773b5457dc7999c7084eb1378111f05b940c0f2283c43f"
+        "sha256": "86fc766304956169a62c8846a862cc089fb72bd2659efb9f39745e9e060b9ad7"
       },
       {
         "path": "tests/test_task_witness_qualification.py",

@@ -3,6 +3,6 @@
   "schema_version": 1,
   "source_stage_validator_flags": [],
   "support_paths": [
-    "tests/test_validate_tidesmith.py"
+    "tests/test_validate_proseweaving.py"
   ]
 }

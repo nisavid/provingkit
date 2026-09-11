@@ -216,7 +216,7 @@
     },
     {
       "kind": "exact_false_positive",
-      "plugin": "tidesmith",
+      "plugin": "proseweaving",
       "deduction": {
         "id": "interface-missing-privacyPolicyURL",
         "category": "manifest",
@@ -226,13 +226,13 @@
         "penalty": 14,
         "remediation": ["Add interface.privacyPolicyURL to plugin.json."],
         "source": "core",
-        "targetPath": "plugins/tidesmith"
+        "targetPath": "plugins/proseweaving"
       },
       "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate a repository-wide privacy policy."
     },
     {
       "kind": "exact_false_positive",
-      "plugin": "tidesmith",
+      "plugin": "proseweaving",
       "deduction": {
         "id": "interface-missing-termsOfServiceURL",
         "category": "manifest",
@@ -242,7 +242,7 @@
         "penalty": 14,
         "remediation": ["Add interface.termsOfServiceURL to plugin.json."],
         "source": "core",
-        "targetPath": "plugins/tidesmith"
+        "targetPath": "plugins/proseweaving"
       },
       "reason": "The current Codex manifest contract makes this URL optional; the operator declined to fabricate repository-wide terms."
     },

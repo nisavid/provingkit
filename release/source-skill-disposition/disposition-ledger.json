@@ -4,7 +4,7 @@
     "managed_source_mutation": "not-granted",
     "release_eligibility": "not-asserted"
   },
-  "content_sha256": "sha256:c71b82226fef474ae00a6198701212e65dd30df297ffa2267311933c023453b4",
+  "content_sha256": "sha256:d4b99ea99c842e7f9acdf46c1d4d6ae503e0d47ef12e2801171afb151fdadd62",
   "contract": "coordinated-source-skill-disposition-ledger-v1",
   "dispositions": [
     {
@@ -303,7 +303,7 @@
       "follow_up_issues": [
         "https://github.com/nisavid/provingkit/issues/12"
       ],
-      "rationale": "The Elements of Style skill remains an external owner retained side by side. Portable writing mechanics for agent-authored prose are Provingkit equipment in Tidesmith, while follow-up work remains governed by the Tidesmith map.",
+      "rationale": "The Elements of Style skill remains an external owner retained side by side. Portable writing mechanics for agent-authored prose are Provingkit equipment in Proseweaving, while follow-up work remains governed by the Proseweaving map.",
       "skill_dispositions": [],
       "source_id": "obra-elements-of-style"
     },

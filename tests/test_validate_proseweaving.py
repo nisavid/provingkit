@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR = REPO_ROOT / "scripts" / "validate_tidesmith.py"
+VALIDATOR = REPO_ROOT / "scripts" / "validate_proseweaving.py"
 ROSTER_START = "<!-- BEGIN GENERATED SKILL ROSTER -->"
 ROSTER_END = "<!-- END GENERATED SKILL ROSTER -->"
 
@@ -20,13 +20,13 @@ ROSTER_END = "<!-- END GENERATED SKILL ROSTER -->"
 import yaml  # noqa: E402,F401
 
 
-class ValidateTidesmithTests(unittest.TestCase):
+class ValidateProseweavingTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tempdir = tempfile.TemporaryDirectory()
         self.temp_root = Path(self.tempdir.name).resolve()
         self.repo = self.temp_root / "repo"
-        self.plugin = self.repo / "plugins" / "tidesmith"
-        shutil.copytree(REPO_ROOT / "plugins" / "tidesmith", self.plugin)
+        self.plugin = self.repo / "plugins" / "proseweaving"
+        shutil.copytree(REPO_ROOT / "plugins" / "proseweaving", self.plugin)
 
     def tearDown(self) -> None:
         self.tempdir.cleanup()
@@ -54,14 +54,14 @@ class ValidateTidesmithTests(unittest.TestCase):
         scripts_dir = str(REPO_ROOT / "scripts")
         sys.path.insert(0, scripts_dir)
         self.addCleanup(lambda: sys.path.remove(scripts_dir))
-        import validate_tidesmith as module
+        import validate_proseweaving as module
 
         return module
 
     def test_accepts_current_contract(self) -> None:
         result = self.validate()
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, "Tidesmith contract validation passed\n")
+        self.assertEqual(result.stdout, "Proseweaving contract validation passed\n")
 
     def test_committed_lock_covers_base_and_skill_files(self) -> None:
         lock = json.loads((self.plugin / "content-lock.json").read_text())
@@ -91,12 +91,12 @@ class ValidateTidesmithTests(unittest.TestCase):
         manifest = json.loads((self.plugin / "plugin.json").read_text())
         prompts = manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"]
         self.assertEqual(len(prompts), 1)
-        self.assertIn("$tidesmith:writing-for-people", prompts[0])
+        self.assertIn("$proseweaving:writing-for-people", prompts[0])
 
     def test_rejects_claude_projection_drift(self) -> None:
         path = self.plugin / ".claude-plugin" / "plugin.json"
         claude = json.loads(path.read_text())
-        claude["description"] = "Tidesmith: something else."
+        claude["description"] = "Proseweaving: something else."
         path.write_text(json.dumps(claude, indent=2) + "\n")
         self.assert_rejected("Claude manifest projection drift: description")
 
@@ -144,10 +144,15 @@ class ValidateTidesmithTests(unittest.TestCase):
         os.symlink(target, link)
         self.assert_rejected("plugin inventory contains a symlink")
 
-    def test_rejects_persona_agents(self) -> None:
-        (self.plugin / "agents").mkdir()
-        (self.plugin / "agents" / "writer.md").write_text("persona\n")
-        self.assert_rejected("Tidesmith must not define persona agents")
+    def test_accepts_proseweaver_agent(self) -> None:
+        agent = self.plugin / "agents" / "proseweaver.md"
+        self.assertTrue(agent.is_file())
+        self.assertEqual(self.validate().returncode, 0)
+
+    def test_rejects_proseweaver_agent_drift(self) -> None:
+        agent = self.plugin / "agents" / "proseweaver.md"
+        agent.write_text(agent.read_text().replace("proseweaver", "writer", 1))
+        self.assert_rejected("Proseweaver agent name drift")
 
     def test_rejects_missing_release_heading(self) -> None:
         path = self.plugin / "CHANGELOG.md"
@@ -206,7 +211,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         (self.plugin / "content-lock.json").unlink()
         result = self.validate("--write-content-lock")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("Tidesmith semantic content lock updated", result.stdout)
+        self.assertIn("Proseweaving semantic content lock updated", result.stdout)
         self.assertEqual(self.readme(), readme)
         self.assertTrue((self.plugin / "content-lock.json").is_file())
         self.assertEqual(self.validate().returncode, 0)
@@ -238,7 +243,7 @@ class ValidateTidesmithTests(unittest.TestCase):
         real_replace = Path.replace
 
         def fail_lock_replace(path: Path, target: Path):
-            if path.name == ".content-lock.json.tidesmith-stage":
+            if path.name == ".content-lock.json.proseweaving-stage":
                 real_replace(path, target)
                 raise OSError("injected lock publication failure")
             return real_replace(path, target)
@@ -253,8 +258,8 @@ class ValidateTidesmithTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, 1)
         self.assertEqual((self.plugin / "README.md").read_bytes(), readme_before)
         self.assertEqual((self.plugin / "content-lock.json").read_bytes(), lock_before)
-        self.assertFalse((self.plugin / ".README.md.tidesmith-stage").exists())
-        self.assertFalse((self.plugin / ".content-lock.json.tidesmith-stage").exists())
+        self.assertFalse((self.plugin / ".README.md.proseweaving-stage").exists())
+        self.assertFalse((self.plugin / ".content-lock.json.proseweaving-stage").exists())
 
     def test_failed_post_publish_validation_restores_both_generated_files(self) -> None:
         module = self.validator_module()
@@ -290,8 +295,8 @@ class ValidateTidesmithTests(unittest.TestCase):
     def test_rejects_duplicate_keys_in_every_json_contract(self) -> None:
         cases = (
             ("topology.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
-            (".claude-plugin/plugin.json", '"name": "tidesmith",', '"name": "tidesmith", "name": "tidesmith",'),
-            ("plugin.json", '"name": "tidesmith",', '"name": "tidesmith", "name": "tidesmith",'),
+            (".claude-plugin/plugin.json", '"name": "proseweaving",', '"name": "proseweaving", "name": "proseweaving",'),
+            ("plugin.json", '"name": "proseweaving",', '"name": "proseweaving", "name": "proseweaving",'),
             ("evals/delivery.json", '"schema_version": 1,', '"schema_version": 1, "schema_version": 1,'),
             (
                 "skills/writing-for-people/evals/evals.json",
@@ -367,7 +372,7 @@ class ValidateTidesmithTests(unittest.TestCase):
 
     def publish_one_skill(self, *, description: str = "Use when prose must meet the house register.") -> str:
         skill = "explaining-to-readers"
-        prompt = f"Use $tidesmith:{skill} to explain this to its reader."
+        prompt = f"Use $proseweaving:{skill} to explain this to its reader."
         topology_path = self.plugin / "topology.json"
         topology = json.loads(topology_path.read_text())
         topology["skills"][skill] = {"owns": ["register"], "may_call": []}
