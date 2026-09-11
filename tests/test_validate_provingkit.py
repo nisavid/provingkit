@@ -89,7 +89,19 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "tests/test_task_witness_package.py",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
-        for member in ("rolecasting", "tidesmith"):
+        expected_members = {
+            "artifact-customs",
+            "mergecraft",
+            "proseweaving",
+            "rolecasting",
+            "task-witness",
+            "tricritical",
+            "versionkeeping",
+        }
+        for stale_member in (destination / "plugins").iterdir():
+            if stale_member.is_dir() and stale_member.name not in expected_members:
+                shutil.rmtree(stale_member)
+        for member in ("rolecasting", "proseweaving"):
             shutil.copytree(
                 REPOSITORY / "plugins" / member,
                 destination / "plugins" / member,
@@ -159,10 +171,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "release/task-witness/source-shape-review.json",
             ),
             (
-                "tidesmith",
+                "proseweaving",
                 "agent-plugin",
                 "plugin-content-lock",
-                "plugins/tidesmith/content-lock.json",
+                "plugins/proseweaving/content-lock.json",
             ),
         ):
             members.append(
@@ -364,11 +376,11 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             commands,
         )
 
-    def test_tidesmith_source_job_and_derived_lock_are_covered(self) -> None:
+    def test_proseweaving_source_job_and_derived_lock_are_covered(self) -> None:
         workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
         source_commands = {
             line.strip()
-            for step in workflow["jobs"]["tidesmith"]["steps"]
+            for step in workflow["jobs"]["proseweaving"]["steps"]
             for line in step.get("run", "").splitlines()
             if line.strip()
         }
@@ -379,10 +391,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             if line.strip()
         }
 
-        self.assertIn("python -m unittest tests.test_validate_tidesmith", source_commands)
-        self.assertIn("python scripts/validate_tidesmith.py .", source_commands)
+        self.assertIn("python -m unittest tests.test_validate_proseweaving", source_commands)
+        self.assertIn("python scripts/validate_proseweaving.py .", source_commands)
         self.assertIn(
-            "python scripts/validate_tidesmith.py --write-content-lock .",
+            "python scripts/validate_proseweaving.py --write-content-lock .",
             lock_commands,
         )
 
@@ -397,7 +409,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 normalized = " ".join(content.split())
                 self.assertIn("seven source members", normalized)
                 self.assertIn("six Agent Plugins", normalized)
-                self.assertIn("Tidesmith", normalized)
+                self.assertIn("Proseweaving", normalized)
                 self.assertIn("Task Witness", normalized)
                 self.assertNotIn("six source members carried by this cutover", normalized)
                 self.assertNotIn("issue #25 after pull request #11", normalized)
@@ -607,13 +619,13 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "release/task-witness/source-shape-review.json",
                 ),
                 (
-                    "tidesmith",
+                    "proseweaving",
                     "agent-plugin",
                     "1.0.0",
-                    "plugins/tidesmith/plugin.json",
-                    "plugins/tidesmith/.claude-plugin/plugin.json",
+                    "plugins/proseweaving/plugin.json",
+                    "plugins/proseweaving/.claude-plugin/plugin.json",
                     "plugin-content-lock",
-                    "plugins/tidesmith/content-lock.json",
+                    "plugins/proseweaving/content-lock.json",
                 ),
             ],
         )

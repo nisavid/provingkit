@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Tidesmith Agent Plugin and its Claude projection."""
+"""Validate the Proseweaving Agent Plugin and its Claude projection."""
 
 from __future__ import annotations
 
@@ -24,14 +24,14 @@ try:
 except ModuleNotFoundError:
     yaml = None
 
-PLUGIN_RELATIVE = Path("plugins/tidesmith")
-PLUGIN_NAME = "tidesmith"
-DISPLAY_NAME = "Tidesmith"
+PLUGIN_RELATIVE = Path("plugins/proseweaving")
+PLUGIN_NAME = "proseweaving"
+DISPLAY_NAME = "Proseweaving"
 RELEASE_VERSION = "1.0.0"
 TOPOLOGY_SCHEMA_VERSION = 1
-DESCRIPTION_PREFIX = "Tidesmith: "
+DESCRIPTION_PREFIX = "Proseweaving: "
 CODEX_CAPABILITIES = ["Writing"]
-HOMEPAGE = "https://github.com/nisavid/provingkit/tree/main/plugins/tidesmith"
+HOMEPAGE = "https://github.com/nisavid/provingkit/tree/main/plugins/proseweaving"
 REPOSITORY = "https://github.com/nisavid/provingkit"
 MAX_INVOCATION_WORDS = 1200
 ROSTER_START = "<!-- BEGIN GENERATED SKILL ROSTER -->"
@@ -282,7 +282,7 @@ def load_skill_frontmatter(content: str, skill: str) -> dict:
 
 
 def validate_topology(root: Path) -> dict:
-    topology = load_json(root, "topology.json", "Tidesmith topology")
+    topology = load_json(root, "topology.json", "Proseweaving topology")
     require(set(topology) == {"schema_version", "skills"}, "topology keys drift")
     require_integer(
         topology["schema_version"], "topology schema_version must be an integer"
@@ -700,7 +700,7 @@ def validate_evals(
                     f"{skill} eval expectations contain duplicate ids: {name}",
                 )
                 expectation_ids.add(expectation_id)
-            require(name not in names, f"duplicate Tidesmith eval name: {name}")
+            require(name not in names, f"duplicate Proseweaving eval name: {name}")
             names.add(name)
             observed_ids.append(eval_id)
             for pattern in GRADER_LEAK_PATTERNS:
@@ -739,7 +739,7 @@ def validate_inventory(
     allow_missing_content_lock: bool = False,
 ) -> None:
     require(
-        not (root / "agents").exists(), "Tidesmith must not define persona agents"
+        not (root / "agents").exists(), "Proseweaving must not define persona agents"
     )
     expected_files = BASE_FILES | semantic_files
     actual_files: set[str] = set()
@@ -858,8 +858,8 @@ def publish_generated_files(root: Path, readme: str, semantic_files: set[str]) -
     """Stage both generated files before publishing either one."""
     readme_path = root / "README.md"
     lock_path = root / "content-lock.json"
-    readme_stage = root / ".README.md.tidesmith-stage"
-    lock_stage = root / ".content-lock.json.tidesmith-stage"
+    readme_stage = root / ".README.md.proseweaving-stage"
+    lock_stage = root / ".content-lock.json.proseweaving-stage"
     try:
         readme_bytes = readme.encode("utf-8")
         readme_stage.write_bytes(readme_bytes)
@@ -893,7 +893,7 @@ def restore_generated_file(path: Path, preimage: bytes | None) -> None:
 
 def usage() -> None:
     print(
-        "usage: validate_tidesmith.py [--write-content-lock] [repo-root]",
+        "usage: validate_proseweaving.py [--write-content-lock] [repo-root]",
         file=sys.stderr,
     )
 
@@ -939,11 +939,11 @@ def main() -> None:
         OSError,
         UnicodeDecodeError,
     ) as error:
-        print(f"Tidesmith contract validation failed: {error}", file=sys.stderr)
+        print(f"Proseweaving contract validation failed: {error}", file=sys.stderr)
         raise SystemExit(1) from error
     if write_lock:
-        print("Tidesmith semantic content lock updated")
-    print("Tidesmith contract validation passed")
+        print("Proseweaving semantic content lock updated")
+    print("Proseweaving contract validation passed")
 
 
 if __name__ == "__main__":

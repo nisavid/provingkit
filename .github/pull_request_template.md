@@ -28,7 +28,7 @@
 
 ## Review checklist
 
-- [ ] The seven source members remain independently identified: the six Agent Plugins, including Tidesmith, and the code-only Task Witness package.
+- [ ] The seven source members remain independently identified: the six Agent Plugins, including Proseweaving, and the code-only Task Witness package.
 - [ ] Member manifests keep independent identities and versions.
 - [ ] Historical Linux or macOS inputs are not presented as current qualification.
 - [ ] This change creates no Provingkit release, tag, release-manifest instance, marketplace publication, or live installation.

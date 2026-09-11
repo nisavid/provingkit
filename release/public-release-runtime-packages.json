@@ -1,5 +1,5 @@
 {
   "runtime_packages": ["task-witness"],
-  "skill_plugins": ["tidesmith"],
+  "skill_plugins": ["proseweaving"],
   "schema_version": 1
 }

@@ -1,13 +1,13 @@
 {
-  "name": "tidesmith",
-  "displayName": "Tidesmith",
+  "name": "proseweaving",
+  "displayName": "Proseweaving",
   "version": "1.0.0",
-  "description": "Tidesmith: house standards and verification for agent-authored human-facing prose.",
+  "description": "Proseweaving: house standards and verification for agent-authored human-facing prose.",
   "author": {
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
   },
-  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/tidesmith",
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/proseweaving",
   "repository": "https://github.com/nisavid/provingkit",
   "license": "MIT",
   "keywords": [

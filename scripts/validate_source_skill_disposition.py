@@ -91,7 +91,7 @@ WORKFLOW_STEPS = [
     "capture-final-refresh-and-qualification-receipts",
 ]
 DISPOSITION_INVENTORY_SHA256 = (
-    "sha256:37dc157fb094af78e7943ffb1697574993b47b10789082fb227f5c494eaae3a2"
+    "sha256:d1196c5e88a8a2dad16381d9b799bc00634631ee5b4f9fde78983559f6ee59a1"
 )
 FRESHNESS = {
     "maximum_age_seconds": 86400,
@@ -147,9 +147,9 @@ DISTRIBUTION_IDENTITIES = [
         "plugin_root": "plugins/task-witness",
     },
     {
-        "id": "tidesmith",
-        "identity_artifact_paths": ["plugins/tidesmith/content-lock.json"],
-        "plugin_root": "plugins/tidesmith",
+        "id": "proseweaving",
+        "identity_artifact_paths": ["plugins/proseweaving/content-lock.json"],
+        "plugin_root": "plugins/proseweaving",
     },
     {
         "id": "tricritical",
@@ -287,7 +287,7 @@ DEPENDENCY_EDGES = [
     },
 ]
 DISTRIBUTION_CLOSURE_SHA256 = (
-    "sha256:4c63dc80b9d3d27048e58447da28f35af76717460dcede71ff56e4d968678d2c"
+    "sha256:2c3ef70541cfde42b661040984c4ab126e3687e4c9f923c8efcaf1142acecd12"
 )
 TRIGGER_CHANGE_CLASSES = {
     "candidate-identity-artifact": ["identity-artifact-change"],
@@ -415,8 +415,8 @@ DISTRIBUTION_REGENERATION = [
     },
     {
         "conditional_regenerate_paths": [],
-        "id": "tidesmith",
-        "regenerate_paths": ["plugins/tidesmith/content-lock.json"],
+        "id": "proseweaving",
+        "regenerate_paths": ["plugins/proseweaving/content-lock.json"],
     },
     {
         "conditional_regenerate_paths": [],

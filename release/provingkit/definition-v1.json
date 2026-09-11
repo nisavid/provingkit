@@ -1,6 +1,20 @@
 {
   "canonical_repository": "https://github.com/nisavid/provingkit",
   "contract": "provingkit-definition-v1",
+  "cutover_provenance": "release/provingkit/cutover-provenance-v1.json",
+  "excluded_source": {
+    "paths": [
+      ".scratch",
+      "tooling"
+    ],
+    "products": [
+      "Base Loadout",
+      "Hindsight",
+      "personal tools",
+      "unrelated experiments"
+    ]
+  },
+  "historical_identity_allowlist": "release/provingkit/historical-identity-allowlist-v1.json",
   "membership": {
     "all_members_required": true,
     "members": [
@@ -38,7 +52,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/versionkeeping.json",
-          "sha256": "sha256:6ca968aec22163261f632e6f98617ce4871c321617855e3fe3ca880a9667ae3a"
+          "sha256": "sha256:893a0d3e199f9a8e3fdc7b9dd2f6b629333a97e5e9856c701783b13ed00a32a6"
         },
         "display_name": "Versionkeeping",
         "distribution_kind": "agent-plugin",
@@ -83,7 +97,7 @@
         "content_identity": {
           "kind": "source-shape-review",
           "path": "release/task-witness/source-shape-review.json",
-          "sha256": "sha256:44b532320f416c3b23d04770b201b1333cc20fe94ccf6df126630765fdc391d7"
+          "sha256": "sha256:8a9f36ea7586e31cedcf4af2d99a70c5d2046c033d5c107faf76063e57d3cf58"
         },
         "display_name": "Task Witness",
         "distribution_kind": "code-only",
@@ -97,15 +111,15 @@
       {
         "content_identity": {
           "kind": "plugin-content-lock",
-          "path": "plugins/tidesmith/content-lock.json",
-          "sha256": "sha256:5f92a5dffc9eb333a00cb84e7d22173325e04cf93a33d82f5f745d8e8ea0f243"
+          "path": "plugins/proseweaving/content-lock.json",
+          "sha256": "sha256:5cd80657d8ff7ac5a91f27205b9dd2c47ede108d20101e646b98fa0d1b218d65"
         },
-        "display_name": "Tidesmith",
+        "display_name": "Proseweaving",
         "distribution_kind": "agent-plugin",
-        "id": "tidesmith",
+        "id": "proseweaving",
         "identity_manifests": {
-          "canonical": "plugins/tidesmith/plugin.json",
-          "claude": "plugins/tidesmith/.claude-plugin/plugin.json"
+          "canonical": "plugins/proseweaving/plugin.json",
+          "claude": "plugins/proseweaving/.claude-plugin/plugin.json"
         },
         "version": "1.0.0"
       }
@@ -113,20 +127,6 @@
     "mode": "exact",
     "partial_selection_is_provingkit": false
   },
-  "cutover_provenance": "release/provingkit/cutover-provenance-v1.json",
-  "excluded_source": {
-    "paths": [
-      ".scratch",
-      "tooling"
-    ],
-    "products": [
-      "Base Loadout",
-      "Hindsight",
-      "personal tools",
-      "unrelated experiments"
-    ]
-  },
-  "historical_identity_allowlist": "release/provingkit/historical-identity-allowlist-v1.json",
   "name": "Provingkit",
   "release_manifest": {
     "instances": [],

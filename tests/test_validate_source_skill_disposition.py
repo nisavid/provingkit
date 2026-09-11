@@ -310,7 +310,7 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
         )
         self.assertIn("reviewing-others-prs", mergecraft["rationale"])
 
-    def test_tidesmith_writing_mechanics_preserve_external_style_ownership(self) -> None:
+    def test_proseweaving_writing_mechanics_preserve_external_style_ownership(self) -> None:
         ledger = self.load(LEDGER)
         style = next(
             item
@@ -321,7 +321,7 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
 
         self.assertEqual(style["disposition"], "retain-side-by-side")
         self.assertEqual(style["follow_up_issues"], [PROVINGKIT_ISSUE_12])
-        self.assertIn("Tidesmith", style["rationale"])
+        self.assertIn("Proseweaving", style["rationale"])
 
     def test_mergecraft_disposition_rejects_host_removal_authority(self) -> None:
         ledger = self.load(LEDGER)
@@ -567,17 +567,17 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
 
     def test_refresh_contract_defines_all_distribution_identity_artifacts(self) -> None:
         contract = self.load(REFRESH)
-        tidesmith = next(
+        proseweaving = next(
             item
             for item in contract["candidate_identity"]["distributions"]
-            if item["id"] == "tidesmith"
+            if item["id"] == "proseweaving"
         )
         self.assertEqual(
-            tidesmith,
+            proseweaving,
             {
-                "id": "tidesmith",
-                "identity_artifact_paths": ["plugins/tidesmith/content-lock.json"],
-                "plugin_root": "plugins/tidesmith",
+                "id": "proseweaving",
+                "identity_artifact_paths": ["plugins/proseweaving/content-lock.json"],
+                "plugin_root": "plugins/proseweaving",
             },
         )
 

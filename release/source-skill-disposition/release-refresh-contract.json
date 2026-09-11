@@ -36,11 +36,11 @@
         "plugin_root": "plugins/task-witness"
       },
       {
-        "id": "tidesmith",
+        "id": "proseweaving",
         "identity_artifact_paths": [
-          "plugins/tidesmith/content-lock.json"
+          "plugins/proseweaving/content-lock.json"
         ],
-        "plugin_root": "plugins/tidesmith"
+        "plugin_root": "plugins/proseweaving"
       },
       {
         "id": "tricritical",
@@ -79,11 +79,11 @@
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   },
-  "content_sha256": "sha256:a7c50070d80d553d9e16a6e95944e921b8935f50290e116fe103db2f81d45f6c",
+  "content_sha256": "sha256:d091d5416983063a8e94946305e0f0277665c0c791a240937be1df5774cc2ce4",
   "contract": "coordinated-source-skill-release-refresh-v1",
   "disposition_ledger": {
     "path": "release/source-skill-disposition/disposition-ledger.json",
-    "sha256": "sha256:11396accf000f69283aa7fc929dc44f76edb2a0dc3660c7981797df49f46db48"
+    "sha256": "sha256:5e1337a8b6b6dfc1f962d2c397bc768ba28acab9d5eb3abf8c1b2bbc2d2c7307"
   },
   "final_rescout_artifact": {
     "contract": "coordinated-final-installed-library-rescout-v1",
@@ -160,7 +160,7 @@
         "mergecraft",
         "rolecasting",
         "task-witness",
-        "tidesmith",
+        "proseweaving",
         "tricritical",
         "versionkeeping"
       ],
@@ -235,6 +235,9 @@
             "artifact-customs",
             "mergecraft"
           ],
+          "proseweaving": [
+            "proseweaving"
+          ],
           "rolecasting": [
             "artifact-customs",
             "mergecraft",
@@ -245,9 +248,6 @@
             "artifact-customs",
             "mergecraft",
             "task-witness"
-          ],
-          "tidesmith": [
-            "tidesmith"
           ],
           "tricritical": [
             "artifact-customs",
@@ -377,27 +377,27 @@
         },
         {
           "documentation_paths": [
-            "plugins/tidesmith/README.md",
-            "plugins/tidesmith/skills"
+            "plugins/proseweaving/README.md",
+            "plugins/proseweaving/skills"
           ],
           "evaluation_paths": [
-            "plugins/tidesmith/evals",
-            "plugins/tidesmith/skills/writing-for-people/evals"
+            "plugins/proseweaving/evals",
+            "plugins/proseweaving/skills/writing-for-people/evals"
           ],
-          "id": "tidesmith",
+          "id": "proseweaving",
           "identity_artifact_paths": [
-            "plugins/tidesmith/content-lock.json"
+            "plugins/proseweaving/content-lock.json"
           ],
-          "manifest_path": "plugins/tidesmith/plugin.json",
-          "package_root": "plugins/tidesmith",
+          "manifest_path": "plugins/proseweaving/plugin.json",
+          "package_root": "plugins/proseweaving",
           "test_paths": [
-            "tests/test_validate_tidesmith.py"
+            "tests/test_validate_proseweaving.py"
           ],
           "topology_and_owner_paths": [
-            "plugins/tidesmith/topology.json"
+            "plugins/proseweaving/topology.json"
           ],
           "validation_entrypoints": [
-            "scripts/validate_tidesmith.py"
+            "scripts/validate_proseweaving.py"
           ]
         },
         {
@@ -676,9 +676,9 @@
       },
       {
         "conditional_regenerate_paths": [],
-        "id": "tidesmith",
+        "id": "proseweaving",
         "regenerate_paths": [
-          "plugins/tidesmith/content-lock.json"
+          "plugins/proseweaving/content-lock.json"
         ]
       },
       {

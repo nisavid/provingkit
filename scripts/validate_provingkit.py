@@ -148,13 +148,13 @@ EXPECTED_MEMBERS = (
         "release/task-witness/source-shape-review.json",
     ),
     (
-        "tidesmith",
-        "Tidesmith",
+        "proseweaving",
+        "Proseweaving",
         "agent-plugin",
-        "plugins/tidesmith/plugin.json",
-        "plugins/tidesmith/.claude-plugin/plugin.json",
+        "plugins/proseweaving/plugin.json",
+        "plugins/proseweaving/.claude-plugin/plugin.json",
         "plugin-content-lock",
-        "plugins/tidesmith/content-lock.json",
+        "plugins/proseweaving/content-lock.json",
     ),
 )
 EXPECTED_CUTOVER_MEMBER_VERSIONS = {
@@ -164,7 +164,7 @@ EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "mergecraft": "1.0.0",
     "artifact-customs": "1.0.0",
     "task-witness": "1.0.0",
-    "tidesmith": "1.0.0",
+    "proseweaving": "1.0.0",
 }
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
@@ -282,7 +282,7 @@ EXPECTED_MARKETPLACE = {
             "versionkeeping",
             "mergecraft",
             "artifact-customs",
-            "tidesmith",
+            "proseweaving",
         )
     ],
 }

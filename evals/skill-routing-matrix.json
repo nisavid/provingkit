@@ -250,7 +250,7 @@
       }
     },
     {
-      "id": "tidesmith:writing-for-people",
+      "id": "proseweaving:writing-for-people",
       "cold_start": "Write this operator-facing stopping-point report so its evidence and next decision are clear.",
       "explicit": "Use $writing-for-people to write this operator-facing stopping-point report.",
       "supplemental": {

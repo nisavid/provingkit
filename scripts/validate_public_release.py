@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "c50eb7930644e81e70bd6fc9ed3d16e44b996be2275ead13c9aad27730b67c2d"
+SOURCE_SHA256 = "1df32c3c6934e35bba449877f6217afbe3b01ebc41564b081669fcdcb1c223b9"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -58,7 +58,7 @@ SKILL_PLUGINS = (
     "mergecraft",
     "tricritical",
     "artifact-customs",
-    "tidesmith",
+    "proseweaving",
 )
 COMMON_SUPPORT_PATHS = {
     ".claude-plugin/marketplace.json",

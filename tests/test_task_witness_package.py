@@ -3929,7 +3929,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
             "mergecraft",
             "tricritical",
             "artifact-customs",
-            "tidesmith",
+            "proseweaving",
         )
         expected_source_stage_validated = expected_public_plugins + ("task-witness",)
         expected_package_support_paths = set(PUBLIC_RELEASE_SUPPORT_PATHS) | {
@@ -3972,7 +3972,7 @@ class TaskWitnessPackageTests(unittest.TestCase):
                 "versionkeeping": "./plugins/versionkeeping",
                 "mergecraft": "./plugins/mergecraft",
                 "artifact-customs": "./plugins/artifact-customs",
-                "tidesmith": "./plugins/tidesmith",
+                "proseweaving": "./plugins/proseweaving",
             },
         )
         self.assertEqual(
