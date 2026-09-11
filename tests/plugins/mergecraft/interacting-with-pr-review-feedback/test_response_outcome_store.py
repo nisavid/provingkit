@@ -372,6 +372,8 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             )
             response_outcome_store.fold_semantic_history(records)
             self.assertEqual(records, records_before_fold)
+            with runtime.store.locked(exclusive=False):
+                self.assertEqual(runtime.store.staging_remnants(), [])
 
     def test_staging_remnants_are_reported_but_never_folded_as_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -1425,8 +1427,14 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             ("sync_directory_open", "replacement_basis"),
             ("directory_fsync", "replacement_basis"),
             ("directory_close", "replacement_basis"),
+            ("staging_unlink", "replacement_basis"),
         )
-        survives = {"sync_directory_open", "directory_fsync", "directory_close"}
+        survives = {
+            "sync_directory_open",
+            "directory_fsync",
+            "directory_close",
+            "staging_unlink",
+        }
         for step, context in fault_cases:
             with (
                 self.subTest(step=step),
@@ -1494,8 +1502,14 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             "sync_directory_open",
             "directory_fsync",
             "directory_close",
+            "staging_unlink",
         )
-        survives = {"sync_directory_open", "directory_fsync", "directory_close"}
+        survives = {
+            "sync_directory_open",
+            "directory_fsync",
+            "directory_close",
+            "staging_unlink",
+        }
         for record_kind in ("reconciliation_started", "reconciliation_resolution"):
             for step in fault_steps:
                 with (
@@ -1581,6 +1595,7 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             "sync_directory_open",
             "directory_fsync",
             "directory_close",
+            "staging_unlink",
         )
         for changed_revision in (False, True):
             for step in fault_steps:
@@ -1649,7 +1664,12 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
                         len(successors),
                         1
                         if step
-                        in {"sync_directory_open", "directory_fsync", "directory_close"}
+                        in {
+                            "sync_directory_open",
+                            "directory_fsync",
+                            "directory_close",
+                            "staging_unlink",
+                        }
                         else 0,
                     )
                     for owner_id in history["owners"]:
@@ -1675,6 +1695,7 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             "file_fsync",
             "hard_link",
             "directory_fsync",
+            "staging_unlink",
         )
         for record_kind in ("ordinary_admission", "follow_up_admission"):
             for step in fault_steps:
@@ -1721,7 +1742,10 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
                         if item["intent_key"] == intent["intent_key"]
                     ]
                     self.assertEqual(
-                        len(admitted), 1 if step == "directory_fsync" else 0
+                        len(admitted),
+                        1
+                        if step in {"directory_fsync", "staging_unlink"}
+                        else 0,
                     )
                     writes = sum(
                         call["operation"] == "response_write"

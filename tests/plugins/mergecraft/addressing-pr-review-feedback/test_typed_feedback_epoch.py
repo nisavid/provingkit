@@ -17,6 +17,7 @@ RESPONSE_SKILL_DIR = (
 sys.path.insert(0, str(RESPONSE_SKILL_DIR / "scripts"))
 
 import response_outcome_store
+import response_source_owner
 import review_feedback_state
 
 
@@ -56,6 +57,31 @@ def repeated_pages():
 
 
 class TypedFeedbackEpochTests(unittest.TestCase):
+    def test_nullable_repository_database_id_uses_stable_node_identity(self):
+        first, second = repeated_pages()
+        first["data"]["repository"]["databaseId"] = None
+        second["data"]["repository"]["databaseId"] = None
+
+        epoch = review_feedback_state.typed_epoch_from_pages(
+            "base-owner/base-repo", [first, second], pr_number=7
+        )
+
+        self.assertEqual(
+            epoch["repository"]["provider_identity"],
+            {"database_id": None, "node_id": "REPO_node_77"},
+        )
+        self.assertIs(
+            response_outcome_store.validate_epoch(epoch, "nullable-repository"),
+            epoch,
+        )
+        owner = response_source_owner.source_owner_from_epoch(
+            epoch, epoch["sources"][0]
+        )
+        self.assertEqual(
+            owner["source_identity"]["repository_identity"],
+            {"database_id": None, "node_id": "REPO_node_77"},
+        )
+
     def test_empty_submitted_review_is_retained_as_metadata_and_runtime_valid(self):
         page = fixture()
         reviews = page["data"]["repository"]["pullRequest"]["reviews"]["nodes"]

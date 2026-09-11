@@ -873,12 +873,23 @@ def _required_string(node: dict[str, Any], field: str, source: str) -> str:
     return value
 
 
-def _provider_identity(node: dict[str, Any], source: str) -> dict[str, Any]:
+def _provider_identity(
+    node: dict[str, Any], source: str, *, database_required: bool = True
+) -> dict[str, Any]:
     node_id = _required_string(node, "id", source)
-    database_id = node.get("databaseId")
-    if type(database_id) is not int or database_id <= 0:
+    if "databaseId" not in node:
         raise ResponseShapeError(
             f"{source} lacked strict response evidence: databaseId"
+        )
+    database_id = node["databaseId"]
+    if database_id is None:
+        if database_required:
+            raise ResponseShapeError(
+                f"{source} lacked strict response evidence: databaseId"
+            )
+    elif type(database_id) is not int or database_id <= 0:
+        raise ResponseShapeError(
+            f"{source} supplied invalid databaseId"
         )
     return {"node_id": node_id, "database_id": database_id}
 
@@ -1489,7 +1500,9 @@ def typed_epoch_from_pages(
     if pagination_evidence is None:
         pagination_evidence = pagination_evidence_from_pages(pages)
     repository = pages[0]["data"]["repository"]
-    repository_identity = _provider_identity(repository, "repository")
+    repository_identity = _provider_identity(
+        repository, "repository", database_required=False
+    )
     epoch = {
         "schema_version": 1,
         "complete": True,
@@ -1722,7 +1735,9 @@ def validate_repository_page_identity(
     source: str,
 ) -> dict[str, Any]:
     repository = page["data"]["repository"]
-    actual = _provider_identity(repository, f"{source} repository")
+    actual = _provider_identity(
+        repository, f"{source} repository", database_required=False
+    )
     if expected is not None:
         validate_matching_identity(expected, actual, f"{source} repository")
         return expected

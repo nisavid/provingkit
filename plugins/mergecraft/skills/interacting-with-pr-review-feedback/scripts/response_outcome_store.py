@@ -111,10 +111,18 @@ def _identity(value: Any, name: str, record_id: str) -> tuple[str, int, str]:
     )
 
 
-def _provider_identity(value: Any, name: str, record_id: str) -> tuple[int, str]:
+def _provider_identity(
+    value: Any, name: str, record_id: str, *, database_required: bool = True
+) -> tuple[int | None, str]:
     item = _exact(value, {"database_id", "node_id"}, name, record_id)
+    database_id = item["database_id"]
+    if database_id is None:
+        if database_required:
+            _positive(database_id, f"{name}.database_id", record_id)
+    else:
+        _positive(database_id, f"{name}.database_id", record_id)
     return (
-        _positive(item["database_id"], f"{name}.database_id", record_id),
+        database_id,
         _text(item["node_id"], f"{name}.node_id", record_id),
     )
 
@@ -803,7 +811,10 @@ def validate_epoch(value: Any, record_id: str) -> dict[str, Any]:
     _text(repository["name_with_owner"], "repository.name_with_owner", record_id)
     _text(repository["owner_login"], "repository.owner_login", record_id)
     _provider_identity(
-        repository["provider_identity"], "repository.provider_identity", record_id
+        repository["provider_identity"],
+        "repository.provider_identity",
+        record_id,
+        database_required=False,
     )
     pr = _exact(
         epoch["pull_request"],
@@ -3179,6 +3190,13 @@ class ResponseOutcomeStore:
             finally:
                 os.close(directory_fd)
                 self._inject("directory_close", context)
+            # The hard link above makes the final record durable while the
+            # staging name remains an extra link to the same inode.  Remove
+            # that temporary name after the final directory has been synced;
+            # failures before this point intentionally leave the staging file
+            # available for crash inspection and recovery diagnostics.
+            self._inject("staging_unlink", context)
+            staging_path.unlink()
         except OSError as error:
             raise OutcomeStoreError(
                 f"storage-capability-failure: {context}: {error}"

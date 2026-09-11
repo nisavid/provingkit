@@ -20,15 +20,18 @@ def _digest(value: Any) -> str:
     return hashlib.sha256(_canonical(value).encode()).hexdigest()
 
 
-def _provider_identity(value: Any, name: str) -> dict[str, Any]:
+def _provider_identity(
+    value: Any, name: str, *, database_required: bool = True
+) -> dict[str, Any]:
     if not isinstance(value, dict) or set(value) != {"database_id", "node_id"}:
         raise SourceOwnerIdentityError(f"{name} is not a typed provider identity")
-    if (
-        type(value["database_id"]) is not int
-        or value["database_id"] <= 0
-        or not isinstance(value["node_id"], str)
-        or not value["node_id"]
-    ):
+    database_id = value["database_id"]
+    if database_id is None:
+        if database_required:
+            raise SourceOwnerIdentityError(f"{name} is not a typed provider identity")
+    elif type(database_id) is not int or database_id <= 0:
+        raise SourceOwnerIdentityError(f"{name} is not a typed provider identity")
+    if not isinstance(value["node_id"], str) or not value["node_id"]:
         raise SourceOwnerIdentityError(f"{name} is not a typed provider identity")
     return copy.deepcopy(value)
 
@@ -44,7 +47,9 @@ def _construct(
     source_revision_identity: Any,
     legacy_repository: Any,
 ) -> dict[str, Any]:
-    repository = _provider_identity(repository_identity, "repository identity")
+    repository = _provider_identity(
+        repository_identity, "repository identity", database_required=False
+    )
     source = _provider_identity(source_identity, "source identity")
     if (
         type(pull_request_database_id) is not int
