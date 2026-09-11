@@ -1,0 +1,1050 @@
+{
+  "schema_version": 1,
+  "claim": "Authored no-tools Daybreak selection on frozen public metadata and raw requests; no actual harness discovery or skill invocation claim.",
+  "recipe": {
+    "schema_version": 1,
+    "contract_id": "mergecraft-feedback-discovery-authored-observation-v1",
+    "status": "recipe-only-no-observations",
+    "decision_horizon": {
+      "authorized_outcome": "Produce authored Daybreak selection observations for the two Mergecraft feedback skills from frozen public metadata and raw existing routing requests.",
+      "claim_on_full_pass": "On the frozen inputs, gpt-daybreak-blue-latest authored the expected single-skill discovery decision in all three independent repetitions of all eight selected coordinates.",
+      "excluded_claims": [
+        "actual harness skill discovery",
+        "actual skill loading or invocation",
+        "Skill tool use",
+        "full procedure adherence",
+        "application success, failure, or no-op behavior",
+        "provider identity attestation",
+        "general routing behavior outside the two named skills"
+      ]
+    },
+    "source_bindings": {
+      "routing_matrix": {
+        "path": "evals/skill-routing-matrix.json",
+        "byte_length": 15610,
+        "sha256": "db881387cd1af415470edf92e1e426b4bf65faca30ce9e8f02aa286259e0d466"
+      },
+      "published_metadata": [
+        {
+          "skill": "addressing-pr-review-feedback",
+          "path": "plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md",
+          "slice": "lines 1-4 inclusive, retaining LF after line 4",
+          "byte_length": 261,
+          "sha256": "f57a43632f202f21a5a8188eb2a658fc856f0a7e7b40ba6fbb46d75df4329217",
+          "utf8": "---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n"
+        },
+        {
+          "skill": "interacting-with-pr-review-feedback",
+          "path": "plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md",
+          "slice": "lines 1-4 inclusive, retaining LF after line 4",
+          "byte_length": 256,
+          "sha256": "e969c7550c1ed92f548065d061880d8078ad410638671a12c307d08daf1d08ce",
+          "utf8": "---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n"
+        }
+      ],
+      "derivation_reference": {
+        "path": "scripts/run_skill_routing_eval.py",
+        "sha256": "6855519d2783eaa87dc93fffb94602a5772f71add6c4e13dd5dd0f1775bfdcbf",
+        "use": "Case-coordinate and expected-label derivation only; do not use its Claude adapter or invocation claim."
+      }
+    },
+    "executor": {
+      "model": "gpt-daybreak-blue-latest",
+      "reasoning_effort": "high",
+      "on_model_unavailable": "stop-no-substitution",
+      "tools": "none",
+      "network": "disabled",
+      "session_policy": "one fresh session per case repetition; no prior or later turns",
+      "repetitions_per_case": 3,
+      "total_expected_observations": 24,
+      "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+      "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+      "user_message_construction": "Use the selected case request_utf8 as the complete user-message bytes, encoded as UTF-8 with no terminal newline.",
+      "response_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "selected_skill"
+        ],
+        "properties": {
+          "selected_skill": {
+            "enum": [
+              "addressing-pr-review-feedback",
+              "interacting-with-pr-review-feedback",
+              "none"
+            ]
+          }
+        }
+      },
+      "withheld_from_executor": [
+        "case_id",
+        "tier",
+        "target_skill",
+        "grader_only",
+        "repetition number",
+        "other case requests",
+        "prior responses or aggregate results",
+        "full SKILL.md bodies and references",
+        "behavioral fixtures and expectations",
+        "evals/skill-routing-matrix.json as a whole"
+      ]
+    },
+    "cases": [
+      {
+        "case_id": "cold:mergecraft:addressing-pr-review-feedback",
+        "tier": "cold_start",
+        "target_skill": "addressing-pr-review-feedback",
+        "source_json_pointer": "/skills/16/cold_start",
+        "request_utf8": "Collect complete PR feedback, classify the requested changes, and address the actionable findings.",
+        "request_terminal_newline": false,
+        "request_sha256": "2f622fe09eeefdc4f4c6e2a48342e7c6c1c06e850bdefd9c0c740f9e578e4f08",
+        "grader_only": {
+          "expected_selected_skill": "addressing-pr-review-feedback",
+          "derivation": "The maintained runner maps a cold_start entry to the name in its enclosing skill id."
+        }
+      },
+      {
+        "case_id": "explicit:mergecraft:addressing-pr-review-feedback",
+        "tier": "explicit_invocation",
+        "target_skill": "addressing-pr-review-feedback",
+        "source_json_pointer": "/skills/16/explicit",
+        "request_utf8": "Use $addressing-pr-review-feedback to coordinate these requested changes.",
+        "request_terminal_newline": false,
+        "request_sha256": "88a4118e5972ec3fd38fb9dca329a958d05e024217d8a0368b17c67e7034b41a",
+        "grader_only": {
+          "expected_selected_skill": "addressing-pr-review-feedback",
+          "derivation": "The maintained runner maps an explicit entry to the name in its enclosing skill id."
+        }
+      },
+      {
+        "case_id": "trigger:supplemental-positive:mergecraft:addressing-pr-review-feedback",
+        "tier": "trigger",
+        "target_skill": "addressing-pr-review-feedback",
+        "source_json_pointer": "/skills/16/supplemental/positive",
+        "request_utf8": "Acquire the complete review snapshot, adjudicate each requested change, and coordinate the authorized fixes.",
+        "request_terminal_newline": false,
+        "request_sha256": "c8d32eac2e4aaeaecf4a6637708e6f45ee163dfeee31b777bcf0caac04bb741a",
+        "grader_only": {
+          "expected_selected_skill": "addressing-pr-review-feedback",
+          "derivation": "Copied from /skills/16/supplemental/positive_expected_skills, whose singleton value is the selected label."
+        }
+      },
+      {
+        "case_id": "trigger:supplemental-negative:mergecraft:addressing-pr-review-feedback",
+        "tier": "trigger",
+        "target_skill": "addressing-pr-review-feedback",
+        "source_json_pointer": "/skills/16/supplemental/negative",
+        "request_utf8": "The finding is already adjudicated and fixed; post one evidence-backed reply to its existing review thread.",
+        "request_terminal_newline": false,
+        "request_sha256": "882593aa674d26a187889ee2a39d5422b38c7c5cab59144f5398ca0aa3bd9f42",
+        "grader_only": {
+          "expected_selected_skill": "interacting-with-pr-review-feedback",
+          "derivation": "Copied from /skills/16/supplemental/negative_expected_skills, whose singleton value is the selected label."
+        }
+      },
+      {
+        "case_id": "cold:mergecraft:interacting-with-pr-review-feedback",
+        "tier": "cold_start",
+        "target_skill": "interacting-with-pr-review-feedback",
+        "source_json_pointer": "/skills/17/cold_start",
+        "request_utf8": "Post an evidence-backed reply to this exact PR review comment.",
+        "request_terminal_newline": false,
+        "request_sha256": "1dce8b9a3274d26662dd4c36cbc4be8fc5c26692773d6d9149714ceb6da7bee5",
+        "grader_only": {
+          "expected_selected_skill": "interacting-with-pr-review-feedback",
+          "derivation": "The maintained runner maps a cold_start entry to the name in its enclosing skill id."
+        }
+      },
+      {
+        "case_id": "explicit:mergecraft:interacting-with-pr-review-feedback",
+        "tier": "explicit_invocation",
+        "target_skill": "interacting-with-pr-review-feedback",
+        "source_json_pointer": "/skills/17/explicit",
+        "request_utf8": "Use $interacting-with-pr-review-feedback to reply to this review feedback.",
+        "request_terminal_newline": false,
+        "request_sha256": "6773159c40dfd983f6997e5b91b5f53614df692b4911e1e3c22ca8f1e8728fd3",
+        "grader_only": {
+          "expected_selected_skill": "interacting-with-pr-review-feedback",
+          "derivation": "The maintained runner maps an explicit entry to the name in its enclosing skill id."
+        }
+      },
+      {
+        "case_id": "trigger:supplemental-positive:mergecraft:interacting-with-pr-review-feedback",
+        "tier": "trigger",
+        "target_skill": "interacting-with-pr-review-feedback",
+        "source_json_pointer": "/skills/17/supplemental/positive",
+        "request_utf8": "Post the approved evidence-backed reply on this exact review comment and verify the resulting interaction.",
+        "request_terminal_newline": false,
+        "request_sha256": "084d452212c493ced6bbc7f8716be8a5395f68abe2cbbe48dd67b7b7fa71b18e",
+        "grader_only": {
+          "expected_selected_skill": "interacting-with-pr-review-feedback",
+          "derivation": "Copied from /skills/17/supplemental/positive_expected_skills, whose singleton value is the selected label."
+        }
+      },
+      {
+        "case_id": "trigger:supplemental-negative:mergecraft:interacting-with-pr-review-feedback",
+        "tier": "trigger",
+        "target_skill": "interacting-with-pr-review-feedback",
+        "source_json_pointer": "/skills/17/supplemental/negative",
+        "request_utf8": "First collect every review thread and classify which findings are actionable, stale, or human-owned.",
+        "request_terminal_newline": false,
+        "request_sha256": "f36d92a53892177ec5516e804b3b1f5922976cdad7ac617a4c759bb3f2398df0",
+        "grader_only": {
+          "expected_selected_skill": "addressing-pr-review-feedback",
+          "derivation": "Copied from /skills/17/supplemental/negative_expected_skills, whose singleton value is the selected label."
+        }
+      }
+    ],
+    "grading": {
+      "method": "deterministic-exact-comparison",
+      "model_grader": false,
+      "response_requirements": [
+        "valid UTF-8",
+        "entire response is one JSON object",
+        "only key is selected_skill",
+        "value is in the allowed label set",
+        "value exactly equals grader_only.expected_selected_skill"
+      ],
+      "coordinate_pass": "all 3 repetitions pass",
+      "contract_pass": "all 8 coordinates pass, yielding 24 of 24 passing observations",
+      "majority_vote": false,
+      "independent_review": "Required only for provenance, byte-binding, or contract-conformance disputes; it must not reinterpret a malformed or mismatched response."
+    },
+    "evidence_binding": {
+      "hash": "sha256",
+      "digest_encoding": "lowercase hexadecimal",
+      "preserve_exact_bytes": true,
+      "per_attempt_artifacts": [
+        "system message bytes",
+        "developer message bytes",
+        "each published frontmatter slice",
+        "raw user request bytes",
+        "raw response bytes",
+        "raw harness session or event-stream bytes"
+      ],
+      "manifest_fields": [
+        "unique attempt id",
+        "case id stored outside the conversation",
+        "repetition stored outside the conversation",
+        "attempt disposition",
+        "requested and observed model identity",
+        "reasoning effort",
+        "tool and network policy",
+        "session and response identifiers when exposed",
+        "byte length and sha256 for every retained artifact",
+        "source binding digests",
+        "DISCOVERY-CONTRACT.md sha256",
+        "DISCOVERY-CONTRACT.json sha256",
+        "DISCOVERY-CONTRACT-DIGESTS.json bytes and sha256"
+      ],
+      "normalization_before_hashing": "forbidden",
+      "retry_policy": "Retain every failed attempt under a distinct identity; never overwrite or count a transport failure as an observation.",
+      "missing_raw_session_policy": "Mark unavailable and fail provenance; do not reconstruct and label coordinator-authored bytes as raw session evidence."
+    },
+    "capture_discovery_assessment": {
+      "sufficient_within_authored_observation_boundary": true,
+      "basis": "The selected cases include positive discovery for both skills, nearby negative discovery for each target that selects the other skill, a reply-only exact-source cold-start request for interacting-with-pr-review-feedback, cold-start discovery, and explicit-name recognition, each repeated in three fresh sessions.",
+      "no_op_used_as_negative_discovery": false,
+      "remaining_capability": "A Daybreak-capable harness route with trustworthy actual skill-invocation telemetry and raw session evidence remains unavailable in the existing Claude-only routing runner."
+    }
+  },
+  "frozen_artifact_sha256": {
+    "DISCOVERY-CONTRACT.md": "08bfd1a15794eea68ed77694f6fdd16e77e34fbe0524170f6f2a1efa6760f604",
+    "DISCOVERY-CONTRACT.json": "03d45303f74e22d898a158516cd99c4ae0937e75ddc8e3ba8f7357305fc06763",
+    "DISCOVERY-CONTRACT-DIGESTS.json": "0efdbf35eb0e6d0c7a54828ae1b88f889eeeac4e3be9a1c0824735f612d7c1ec",
+    "discovery-batch.py": "5309b3a1367c33a706ad3bb2e712fb3e7eb810ef1c83c93872e93f8fa0cc95dd"
+  },
+  "raw_transport": {
+    "incoming_events_sha256": "51e0e188c248d495fdb465577516118e6a865154e61fe7536cd8885bb027f441",
+    "outgoing_requests_sha256": "552647f77a79f8fb403340d521070ee90f57d6e356b8916426ea0ddf1b41a1d5",
+    "observed_model": "gpt-daybreak-blue-latest",
+    "matched_raw_sessions": 24,
+    "publication_status": "raw transport remains local; may contain transport paths and is not copied into public evidence"
+  },
+  "records": [
+    {
+      "coordinate": {
+        "job_id": "cold-mergecraft-addressing-pr-review-feedback-run-1",
+        "case_id": "cold:mergecraft:addressing-pr-review-feedback",
+        "repetition": 1,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "cold-mergecraft-addressing-pr-review-feedback-run-1",
+        "session_id": "01a08751-a067-7750-b7f5-c8c9cd6b7deb",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Collect complete PR feedback, classify the requested changes, and address the actionable findings.",
+        "request_sha256": "2f622fe09eeefdc4f4c6e2a48342e7c6c1c06e850bdefd9c0c740f9e578e4f08",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "00f1581eb865f701f8bcfe660b75f0eaf5c45f5683d829ec0447c89adc6a6eff",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "cold-mergecraft-addressing-pr-review-feedback-run-2",
+        "case_id": "cold:mergecraft:addressing-pr-review-feedback",
+        "repetition": 2,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "cold-mergecraft-addressing-pr-review-feedback-run-2",
+        "session_id": "01a08751-a067-7750-b7f5-c8afe325d435",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Collect complete PR feedback, classify the requested changes, and address the actionable findings.",
+        "request_sha256": "2f622fe09eeefdc4f4c6e2a48342e7c6c1c06e850bdefd9c0c740f9e578e4f08",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "76dc899a25cf7afc3669134ba2e7fcf25c0e57e7e5157193d274c69e027e4c69",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "cold-mergecraft-addressing-pr-review-feedback-run-3",
+        "case_id": "cold:mergecraft:addressing-pr-review-feedback",
+        "repetition": 3,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "cold-mergecraft-addressing-pr-review-feedback-run-3",
+        "session_id": "01a08751-dc6b-7d93-a515-eab276400a83",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Collect complete PR feedback, classify the requested changes, and address the actionable findings.",
+        "request_sha256": "2f622fe09eeefdc4f4c6e2a48342e7c6c1c06e850bdefd9c0c740f9e578e4f08",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "7de65130e1241db8a1f9a2f516010adecde9dcf8f67dbd15d9c2ccea598b0369",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "explicit-mergecraft-addressing-pr-review-feedback-run-1",
+        "case_id": "explicit:mergecraft:addressing-pr-review-feedback",
+        "repetition": 1,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "explicit-mergecraft-addressing-pr-review-feedback-run-1",
+        "session_id": "01a08751-dc83-7a82-8f2c-3cb115607890",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Use $addressing-pr-review-feedback to coordinate these requested changes.",
+        "request_sha256": "88a4118e5972ec3fd38fb9dca329a958d05e024217d8a0368b17c67e7034b41a",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "35d39d2d1fc080db2803c210a8cfd44bf6a3e6a9c2a6598f44265a17caa5276c",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "explicit-mergecraft-addressing-pr-review-feedback-run-2",
+        "case_id": "explicit:mergecraft:addressing-pr-review-feedback",
+        "repetition": 2,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "explicit-mergecraft-addressing-pr-review-feedback-run-2",
+        "session_id": "01a08751-ff25-7090-8c83-9e4696153ffb",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Use $addressing-pr-review-feedback to coordinate these requested changes.",
+        "request_sha256": "88a4118e5972ec3fd38fb9dca329a958d05e024217d8a0368b17c67e7034b41a",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "b5144705643c31fbdde0807605e91a6a611e1b0b93788a94f6b532d12fdf2830",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "explicit-mergecraft-addressing-pr-review-feedback-run-3",
+        "case_id": "explicit:mergecraft:addressing-pr-review-feedback",
+        "repetition": 3,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "explicit-mergecraft-addressing-pr-review-feedback-run-3",
+        "session_id": "01a08752-0a89-7872-a4a1-3ef9265648c7",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Use $addressing-pr-review-feedback to coordinate these requested changes.",
+        "request_sha256": "88a4118e5972ec3fd38fb9dca329a958d05e024217d8a0368b17c67e7034b41a",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "f4950d2875540eb7834904574028c84b86d4976f58456a45f9bd53e83820f14b",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-positive-mergecraft-addressing-pr-review-feedback-run-1",
+        "case_id": "trigger:supplemental-positive:mergecraft:addressing-pr-review-feedback",
+        "repetition": 1,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-positive-mergecraft-addressing-pr-review-feedback-run-1",
+        "session_id": "01a08752-32ea-7ef3-967a-7ead0f08b740",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Acquire the complete review snapshot, adjudicate each requested change, and coordinate the authorized fixes.",
+        "request_sha256": "c8d32eac2e4aaeaecf4a6637708e6f45ee163dfeee31b777bcf0caac04bb741a",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "c5255373a3ae841d340eda71a5aa98cb712cb61019fd06510676f2fe3672d360",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-positive-mergecraft-addressing-pr-review-feedback-run-2",
+        "case_id": "trigger:supplemental-positive:mergecraft:addressing-pr-review-feedback",
+        "repetition": 2,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-positive-mergecraft-addressing-pr-review-feedback-run-2",
+        "session_id": "01a08752-36ec-72a0-9150-ddbf347b97f0",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Acquire the complete review snapshot, adjudicate each requested change, and coordinate the authorized fixes.",
+        "request_sha256": "c8d32eac2e4aaeaecf4a6637708e6f45ee163dfeee31b777bcf0caac04bb741a",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "fe61e7429485e1d291db118936fdec18617fe0431ff074487c86d77d37a1c187",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-positive-mergecraft-addressing-pr-review-feedback-run-3",
+        "case_id": "trigger:supplemental-positive:mergecraft:addressing-pr-review-feedback",
+        "repetition": 3,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-positive-mergecraft-addressing-pr-review-feedback-run-3",
+        "session_id": "01a08752-60a3-7820-a059-4ea4ce0bdf02",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Acquire the complete review snapshot, adjudicate each requested change, and coordinate the authorized fixes.",
+        "request_sha256": "c8d32eac2e4aaeaecf4a6637708e6f45ee163dfeee31b777bcf0caac04bb741a",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "ca86bdb9ee6c1e7c48a5a2b66989a4a4661c4e2a778c9dc11d62b7b95735f300",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-negative-mergecraft-addressing-pr-review-feedback-run-1",
+        "case_id": "trigger:supplemental-negative:mergecraft:addressing-pr-review-feedback",
+        "repetition": 1,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-negative-mergecraft-addressing-pr-review-feedback-run-1",
+        "session_id": "01a08752-65ec-7020-8449-bd4d3794b958",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "The finding is already adjudicated and fixed; post one evidence-backed reply to its existing review thread.",
+        "request_sha256": "882593aa674d26a187889ee2a39d5422b38c7c5cab59144f5398ca0aa3bd9f42",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "9c110f4e8e50cb115e4c1f958ec23e297655c120e242a3c16225083d0f763617",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-negative-mergecraft-addressing-pr-review-feedback-run-2",
+        "case_id": "trigger:supplemental-negative:mergecraft:addressing-pr-review-feedback",
+        "repetition": 2,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-negative-mergecraft-addressing-pr-review-feedback-run-2",
+        "session_id": "01a08752-93c9-7e30-a169-31a1920a0b95",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "The finding is already adjudicated and fixed; post one evidence-backed reply to its existing review thread.",
+        "request_sha256": "882593aa674d26a187889ee2a39d5422b38c7c5cab59144f5398ca0aa3bd9f42",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "89114e2da2e96c7d461095c57d08b6472e75cf824c1456e4789fd15619359e24",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-negative-mergecraft-addressing-pr-review-feedback-run-3",
+        "case_id": "trigger:supplemental-negative:mergecraft:addressing-pr-review-feedback",
+        "repetition": 3,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-negative-mergecraft-addressing-pr-review-feedback-run-3",
+        "session_id": "01a08752-98fd-7a11-b8ca-3caed2d51ee3",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "The finding is already adjudicated and fixed; post one evidence-backed reply to its existing review thread.",
+        "request_sha256": "882593aa674d26a187889ee2a39d5422b38c7c5cab59144f5398ca0aa3bd9f42",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "ab88b8a5b5e84ef9d857ab2567ab165909343f632c6a0514397e4743b87ed925",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "cold-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "case_id": "cold:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 1,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "cold-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "session_id": "01a08752-c83e-78d1-a05d-44cd27cddbe5",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Post an evidence-backed reply to this exact PR review comment.",
+        "request_sha256": "1dce8b9a3274d26662dd4c36cbc4be8fc5c26692773d6d9149714ceb6da7bee5",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "5b571133ebe8d648a3cb611c291b15fad50a952baf0df1a9cee2686cd268e97e",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "cold-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "case_id": "cold:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 2,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "cold-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "session_id": "01a08752-cd0e-7112-b9df-81f6a565bb2a",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Post an evidence-backed reply to this exact PR review comment.",
+        "request_sha256": "1dce8b9a3274d26662dd4c36cbc4be8fc5c26692773d6d9149714ceb6da7bee5",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "61868e9a731492be1ffc06c59f837d24a28d81370552b3f7fa6987e7237d15d9",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "cold-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "case_id": "cold:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 3,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "cold-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "session_id": "01a08752-fa76-7b12-ae0d-7b76eb6aa8cd",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Post an evidence-backed reply to this exact PR review comment.",
+        "request_sha256": "1dce8b9a3274d26662dd4c36cbc4be8fc5c26692773d6d9149714ceb6da7bee5",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "22b4bd790724dc4db221be0a4bf161062d9020d0746ab42a5c9c58288d654125",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "explicit-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "case_id": "explicit:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 1,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "explicit-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "session_id": "01a08752-fbe4-7b82-9ec0-ab026416cd9b",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Use $interacting-with-pr-review-feedback to reply to this review feedback.",
+        "request_sha256": "6773159c40dfd983f6997e5b91b5f53614df692b4911e1e3c22ca8f1e8728fd3",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "9e3fc4954b0f555d2f545ce564689f703e0fd0a987dee5bd4c5e201a284fe90f",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "explicit-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "case_id": "explicit:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 2,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "explicit-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "session_id": "01a08753-26d3-7361-b725-8a7eabfd8b2c",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Use $interacting-with-pr-review-feedback to reply to this review feedback.",
+        "request_sha256": "6773159c40dfd983f6997e5b91b5f53614df692b4911e1e3c22ca8f1e8728fd3",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "797ea419f081ac46f44b814a6063932589f38904c3f494387eef9bcec73c5b52",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "explicit-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "case_id": "explicit:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 3,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "explicit-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "session_id": "01a08753-436c-7e01-a13b-083a92f87583",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Use $interacting-with-pr-review-feedback to reply to this review feedback.",
+        "request_sha256": "6773159c40dfd983f6997e5b91b5f53614df692b4911e1e3c22ca8f1e8728fd3",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "7e9c402bff8277ab0c5ab3702ad0d4742d141217303a105919ad90a288bc156b",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-positive-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "case_id": "trigger:supplemental-positive:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 1,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-positive-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "session_id": "01a08753-5440-76e2-b160-83bf116d13a1",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Post the approved evidence-backed reply on this exact review comment and verify the resulting interaction.",
+        "request_sha256": "084d452212c493ced6bbc7f8716be8a5395f68abe2cbbe48dd67b7b7fa71b18e",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "61cfa28a7222c5ce3f1e288e7319d63a7cd4463cdf81bfe4b2958323698cb4ed",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-positive-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "case_id": "trigger:supplemental-positive:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 2,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-positive-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "session_id": "01a08753-7860-7980-91ab-1f4b049dbd4b",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Post the approved evidence-backed reply on this exact review comment and verify the resulting interaction.",
+        "request_sha256": "084d452212c493ced6bbc7f8716be8a5395f68abe2cbbe48dd67b7b7fa71b18e",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "a2e71f1e51a69fa886c4f390afeededf08b61a6a116c661d8baec54f70b3bdfc",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-positive-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "case_id": "trigger:supplemental-positive:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 3,
+        "expected": "interacting-with-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-positive-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "session_id": "01a08753-9f2b-77c0-ac21-68dd43961af3",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "Post the approved evidence-backed reply on this exact review comment and verify the resulting interaction.",
+        "request_sha256": "084d452212c493ced6bbc7f8716be8a5395f68abe2cbbe48dd67b7b7fa71b18e",
+        "response": "{\"selected_skill\":\"interacting-with-pr-review-feedback\"}",
+        "response_sha256": "10df0046bec3d6960a4fd9d0995867523c71966858b4a251d320f4d1a9e877e3",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "c2bd78c17f6d9345d54e83c423e2f6b8bd4e5268ec7670bad1fae99ac9481098",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "interacting-with-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-negative-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "case_id": "trigger:supplemental-negative:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 1,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-negative-mergecraft-interacting-with-pr-review-feedback-run-1",
+        "session_id": "01a08753-c392-7b63-a7fd-13cebeb1df7c",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "First collect every review thread and classify which findings are actionable, stale, or human-owned.",
+        "request_sha256": "f36d92a53892177ec5516e804b3b1f5922976cdad7ac617a4c759bb3f2398df0",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "d4a30686ce877d15cd398407f5f1d113608f45615bf4192e3ceef3269a47aa72",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-negative-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "case_id": "trigger:supplemental-negative:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 2,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-negative-mergecraft-interacting-with-pr-review-feedback-run-2",
+        "session_id": "01a08753-d381-72a1-946a-33b2223c3706",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "First collect every review thread and classify which findings are actionable, stale, or human-owned.",
+        "request_sha256": "f36d92a53892177ec5516e804b3b1f5922976cdad7ac617a4c759bb3f2398df0",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "d992b0c24df4f638efedfe01114200e7458d16d13f516ae89aeb346b55dbf018",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    },
+    {
+      "coordinate": {
+        "job_id": "trigger-supplemental-negative-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "case_id": "trigger:supplemental-negative:mergecraft:interacting-with-pr-review-feedback",
+        "repetition": 3,
+        "expected": "addressing-pr-review-feedback"
+      },
+      "execution": {
+        "job_id": "trigger-supplemental-negative-mergecraft-interacting-with-pr-review-feedback-run-3",
+        "session_id": "01a08753-ee55-7601-a22f-d7d4fcdd09e2",
+        "model": "gpt-daybreak-blue-latest",
+        "reasoning_effort": "high",
+        "request": "First collect every review thread and classify which findings are actionable, stale, or human-owned.",
+        "request_sha256": "f36d92a53892177ec5516e804b3b1f5922976cdad7ac617a4c759bb3f2398df0",
+        "response": "{\"selected_skill\":\"addressing-pr-review-feedback\"}",
+        "response_sha256": "70551ec9525d3a1f98b047fa1cb3d4b03fdae8f4f6316d985b08edc4c14fa30a",
+        "tool_events": [],
+        "system_message_utf8": "You are a read-only skill-discovery evaluator. Given the published metadata in the developer message and one raw user request in the user message, identify the single best skill for the request. Do not execute, simulate, or claim to invoke a skill. Use no tools or outside context. Return exactly one UTF-8 JSON object with no Markdown or extra text: {\"selected_skill\":\"<label>\"}. <label> must be \"addressing-pr-review-feedback\", \"interacting-with-pr-review-feedback\", or \"none\". Choose \"none\" only if neither published description applies.",
+        "developer_message_utf8": "Use only the following published skill frontmatter as discovery metadata. Metadata order is not a priority signal.\n\n<skill-metadata path=\"plugins/mergecraft/skills/addressing-pr-review-feedback/SKILL.md\">\n---\nname: addressing-pr-review-feedback\ndescription: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments.\n---\n</skill-metadata>\n\n<skill-metadata path=\"plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md\">\n---\nname: interacting-with-pr-review-feedback\ndescription: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.\n---\n</skill-metadata>\n",
+        "turn_status": "completed"
+      },
+      "execution_record_sha256": "8cba7f513050b6a77f734f18fa1d55cec257fa16ca0067838392e7846fb57507",
+      "grading": {
+        "method": "deterministic strict JSON and exact label comparison",
+        "passed": true,
+        "parsed_response": {
+          "selected_skill": "addressing-pr-review-feedback"
+        },
+        "parse_error": null
+      }
+    }
+  ],
+  "summary": {
+    "observations": 24,
+    "unique_sessions": 24,
+    "passed": 24,
+    "full_pass": true,
+    "per_coordinate": {
+      "cold:mergecraft:addressing-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      },
+      "explicit:mergecraft:addressing-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      },
+      "trigger:supplemental-positive:mergecraft:addressing-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      },
+      "trigger:supplemental-negative:mergecraft:addressing-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      },
+      "cold:mergecraft:interacting-with-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      },
+      "explicit:mergecraft:interacting-with-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      },
+      "trigger:supplemental-positive:mergecraft:interacting-with-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      },
+      "trigger:supplemental-negative:mergecraft:interacting-with-pr-review-feedback": {
+        "passed": 3,
+        "total": 3
+      }
+    }
+  }
+}

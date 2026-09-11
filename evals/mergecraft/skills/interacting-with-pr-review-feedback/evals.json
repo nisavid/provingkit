@@ -5,15 +5,207 @@
       "id": 0,
       "name": "authorized-reply-and-resolution-boundary",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request. Do not use live forge tools; give the ordered decision, any required receipt verification, and the stopping status.",
-      "expected_output": "The agent performs only an explicitly authorized reviewer interaction after confirming the target identity, preserves resolution state when resolution authority is absent, and reports a durable interaction receipt.",
+      "expected_output": "The agent blocks the response because the fixture lacks required typed source and revision evidence, while retaining the separate reaction and thread-resolution boundaries.",
       "files": [
         "interacting-with-pr-review-feedback/fixtures/authorized-reply-and-resolution-boundary.md"
       ],
       "expectations": [
-        "The response confirms the exact pull request and review-thread identity before the interaction.",
-        "The response treats reply and resolution as separate authorities.",
-        "The response does not resolve the thread when the verified author or explicit authority is absent.",
-        "The response requires a post-action receipt that binds the interaction to the intended target."
+        "The response identifies that the exact typed source comment identity and source revision evidence are missing and requires fresh complete acquisition before posting.",
+        "The response does not claim to have posted or verified a reply using this incomplete fixture.",
+        "The response preserves thread state and does not perform a reaction, review submission, or other operation.",
+        "The response explains that a later authorized write needs exact writer bytes, stable reread evidence, and an append-only outcome."
+      ]
+    },
+    {
+      "id": 1,
+      "name": "mixed-review-and-inline-sources",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, any requested draft, evidence sequence, and stopping state.",
+      "expected_output": "The response follows the exact source, operation, byte-preservation, epoch and durable-outcome contract for the supplied scenario.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/mixed-review-and-inline-sources.md"
+      ],
+      "expectations": [
+        "The review body and both inline comments remain three distinct typed sources, with independent adjudication.",
+        "The duplicate review body receives no automatic top-level response and does not suppress the independently eligible inline response.",
+        "The authorized response goes inside thread PRRT_thread7 with exact source correlation to comment 61; it never submits a review or resolves the thread.",
+        "Comment 62 remains open for the operator decision; the response does not claim all feedback is addressed."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "resolved-intermediate-reply-bytes",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, any requested draft, evidence sequence, and stopping state.",
+      "expected_output": "The response follows the exact source, operation, byte-preservation, epoch and durable-outcome contract for the supplied scenario.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/resolved-intermediate-reply-bytes.md"
+      ],
+      "expectations": [
+        "The selected operation replies within existing thread PRRT_thread8, using root comment ID 70 as the provider reply address while retaining source comment ID 72 in correlation.",
+        "The response preserves the thread as resolved and outdated, with no resolution, reopening, or top-level conversion.",
+        "The writer body is forwarded opaquely with its CRLF, spaces, and final newline, without markers, reflow, or response edits.",
+        "The response requires a stable typed result identity, exact reread equality, and a durable leaf receipt and semantic outcome."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "two-top-level-source-types",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, any requested draft, evidence sequence, and stopping state.",
+      "expected_output": "The response follows the exact source, operation, byte-preservation, epoch and durable-outcome contract for the supplied scenario.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/two-top-level-source-types.md"
+      ],
+      "expectations": [
+        "Each source receives a separate new top-level PR conversation comment, with separate key, writer output, revalidation, attempt, and receipt.",
+        "Each draft visibly links to its own exact source permalink in natural prose before the body is frozen.",
+        "The submitted-review source never causes review creation, submission, approval, request changes, edit, or dismissal.",
+        "Each top-level response routes through the Provingkit-owned operation-specific PR conversation actuator for the verified pull request.",
+        "The missing selected review-voice route is disclosed without claiming it was loaded; applicable ambient writing policy is applied before the portable writer."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "unknown-and-key-reuse",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, any requested draft, evidence sequence, and stopping state.",
+      "expected_output": "The response follows the exact source, operation, byte-preservation, epoch and durable-outcome contract for the supplied scenario.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/unknown-and-key-reuse.md"
+      ],
+      "expectations": [
+        "The unknown intent is not retried automatically, under a new key, or with changed wording, and operator assertion does not bypass the uncertainty.",
+        "Reconciliation retains the same intent identity and the unknown attempt; an empty listing alone does not prove a timed-out write never happened.",
+        "Only one stable exclusive exact result may confirm success; empty, ambiguous, or incomplete observations remain unknown and cannot create retry eligibility through an absence assertion.",
+        "Repeated identical still_unknown rounds retain distinct reconciliation outcome identities while the current attempt remains effectively unknown.",
+        "The separate retryable confirmed_failure with operation-produced side_effect none may retry only under the same key after full unchanged-binding revalidation.",
+        "The separate completed response remains credited and the affected dependent or conflict scope stays blocked."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "persistence-failure-and-post-write-drift",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, any requested draft, evidence sequence, and stopping state.",
+      "expected_output": "The response follows the exact source, operation, byte-preservation, epoch and durable-outcome contract for the supplied scenario.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/persistence-failure-and-post-write-drift.md"
+      ],
+      "expectations": [
+        "The failed atomic resolution leaves write_started conservatively unknown; its attempted provider result, drift, and identity claim are not treated as durable records.",
+        "The response is not posted again while semantic persistence is incomplete; same-intent reconciliation can atomically credit the uniquely observed exact result without another write.",
+        "The source edit ends the old epoch, requires fresh acquisition/adjudication for subsequent work, and prevents an all-feedback-addressed claim.",
+        "Prior attempts and receipts remain immutable with typed reconciliation links, without response editing or rollback."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "epochs-followups-and-independent-operations",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, any requested draft, evidence sequence, and stopping state.",
+      "expected_output": "The response follows the exact source, operation, byte-preservation, epoch and durable-outcome contract for the supplied scenario.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/epochs-followups-and-independent-operations.md"
+      ],
+      "expectations": [
+        "The late reviewer comment ends the epoch; B cannot write from the old snapshot and can carry forward only after fresh acquisition and evidence of independence and unchanged binding.",
+        "A remains credited, and its separately authorized addendum uses a new intent with a typed link to the confirmed predecessor outcome without editing or replacing A.",
+        "Calling a fresh key a follow-up cannot bypass C while its result is unknown.",
+        "D's unequal provider-observable correlation group may continue independently after its own full validation; ambiguity in another group is not a global freeze.",
+        "All responses remain separate one-intent operations with independent receipts; the answer does not imply shared completion or rollback."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "unexecuted-invalidation-and-readjudication",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, durable evidence sequence, and stopping state.",
+      "expected_output": "The executor prepares a post-terminal replacement basis before new semantic authoring and admits only an exact basis-bound successor.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/unexecuted-invalidation-and-readjudication.md"
+      ],
+      "expectations": [
+        "The predecessor key remains immutable; predecessor epochs, decision artifacts, renamed labels, and provider reversion cannot authorize a successor.",
+        "The runtime validates the bundle, acquires after the terminal record, and atomically records a read-only basis before classification, adjudication, authority, or writer authoring.",
+        "Replacement caller schema 2 contains only the fresh ordinary key, basis ID, and four exact canonical wrappers; the runtime derives source, route, actor, and binding and compares exact body bytes.",
+        "The provider can run only after the successor commits prewrite_validation_started, passes complete revalidation, and commits write_started."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "unsupported-development-format",
+      "prompt": "Using the supplied scenario, respond as the agent handling the request. Do not use tools. Give the response decision, evidence handling, and stopping state.",
+      "expected_output": "The executor returns unsupported-development-format before lock creation or provider use and preserves the legacy bytes.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/unsupported-development-format.md"
+      ],
+      "expectations": [
+        "The presence of attempts.jsonl blocks the command regardless of whether its content is complete or parseable.",
+        "The legacy file remains byte-for-byte unchanged, and the executor creates no lock, marker, converted state, truncation, or recovery record.",
+        "No acquisition, revalidation, write, or reread provider operation occurs.",
+        "The stopping state names unsupported-development-format and requires a separately decided state-directory disposition rather than an in-place repair."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "exclusive-identity-and-crash-recovery",
+      "prompt": "Using the supplied scenario, respond as the agent handling this request. Do not use tools. Give the reconciliation decisions, durable evidence, and stopping state.",
+      "expected_output": "B alone owns response 901, A remains unknown, and D can be credited only with conservative historical drift after its missing leaf.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/exclusive-identity-and-crash-recovery.md"
+      ],
+      "expectations": [
+        "B retains the exclusive full typed identity claim for response 901; equal body, actor, and thread evidence cannot credit it to A.",
+        "A excludes B's identity before deciding candidate uniqueness, stays unknown, and performs no second write.",
+        "D durably reserves identity 902 before reread; the other intent cannot observe, reserve, own, supersede, release, or reread it, and selecting 903 later converts 902 into permanent same-intent observation.",
+        "D's uniquely reread response may establish success in one atomic reconciliation resolution without another write, but the failed attempt resolution leaves historical drift unknown.",
+        "The later matching head cannot change D's historical drift to not_observed or erase a previously committed observed assessment.",
+        "Every identity effect and the effective outcome commits in one fold transaction; a late conflict leaves the semantic and identity projections unchanged."
+      ]
+    },
+    {
+      "id": 10,
+      "name": "semantic-history-validation-and-atomic-transitions",
+      "prompt": "Using the supplied scenario, respond as the agent handling this request. Do not use tools. Give the provider-call decision, trusted durable states, and stopping state.",
+      "expected_output": "The executor rejects the malformed semantic history before any provider action and accepts only a whole atomic admission or its absence after restart.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/semantic-history-validation-and-atomic-transitions.md"
+      ],
+      "expectations": [
+        "Canonical envelopes and a valid digest chain do not make dangling references, an unsupported record kind, a forged proven-absence result, a nonnull absence assertion, or the retired proven-absence retry predecessor semantically valid.",
+        "Older-validator acceptance does not preserve a baseless replacement, wrong-attempt reconciliation, conflicting reservation, or malformed basis and artifact relation.",
+        "The malformed bundle returns invalid-response-outcome-bundle without acquisition, revalidation, reconciliation, write, reread, repair, or ignored records.",
+        "Restart after the admission fault exposes either no owner or the complete atomically admitted owner and intent, never a reusable partial owner.",
+        "No provider call is permitted until the complete bundle has a clean semantic and identity fold.",
+        "A cross-intent observation of a reserved identity invalidates the whole bundle before provider access even when the envelope and all individual payload schemas are valid."
+      ]
+    },
+    {
+      "id": 11,
+      "name": "two-effective-unknown-intents",
+      "prompt": "Using the supplied raw scenario, respond as the interaction owner. Do not use tools. Give the closed reconciliation decisions, permitted provider actions, durable identity effects, and stopping state for both the equal-head and changed-head variants.",
+      "expected_output": "Both indistinguishable current-effective-unknown intents remain unknown without candidate attribution, identity effects, reread, or another write, regardless of whether their full bindings have equal or different heads.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/two-effective-unknown-intents.md"
+      ],
+      "expectations": [
+        "The response treats A and B as members of one provider-observable correlation group because their stable typed PR, operation, placement, actor, and exact opaque body agree.",
+        "The response reaches the same ambiguous_effective_unknown decision when the full bindings have equal heads and when only head, base, repository names, or permalink differ.",
+        "Neither intent lists candidates, attributes the visible object, reserves, observes, owns, rereads, retries, changes key or body, or performs a second write.",
+        "The original unknown outcomes and every repeated still_unknown outcome remain current group membership under their original intent identities.",
+        "A different stable typed PR, operation and derived object kind, placement, actor, or exact body belongs to an independent group and may continue through its own full validation.",
+        "The result does not claim that a canonical-key SHA-256 collision establishes equality; the validated canonical values themselves must be equal."
+      ]
+    },
+    {
+      "id": 12,
+      "name": "stable-source-owner-across-repository-rename",
+      "prompt": "Using the supplied raw scenario, respond as the interaction owner. Do not use tools. Give the stable owner decision, provider-write decision, replacement acquisition prerequisite, and final binding behavior.",
+      "expected_output": "The completed source revision keeps one permanent ordinary owner across mutable repository coordinates; a fresh ordinary key cannot write, and post-terminal replacement waits for current-locator resolution before reusing that owner with freshly validated full context.",
+      "files": [
+        "interacting-with-pr-review-feedback/fixtures/stable-source-owner-across-repository-rename.md"
+      ],
+      "expectations": [
+        "The owner is defined by the stable typed Repository and pull-request identities plus PR number, typed source kind and identity, and exact source revision; repository name/owner, links, head/base, and head repository do not split it.",
+        "Fresh ordinary key ordinary-b conflicts before provider access, so the completed revision still has exactly one ordinary response write, one owner, and one source chain.",
+        "The answer compares the canonical typed owner values and does not claim that digest equality alone establishes semantic equality.",
+        "Replacement preparation stops before basis publication or semantic authoring while the predecessor's old repository locator cannot resolve the current stable typed Repository and pull request.",
+        "After the acquisition owner resolves the current locator, the fresh complete epoch and basis retain the new mutable context, the successor reuses the predecessor owner, and complete prewrite validation still governs the write.",
+        "The answer keeps PullRequestReviewComment for inline replies and IssueComment for PR conversation comments and does not broaden ordinary, follow-up, independent, retry, reconciliation, or replacement authority."
       ]
     }
   ]

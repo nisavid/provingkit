@@ -93,6 +93,9 @@ class ValidateMergecraftTests(unittest.TestCase):
             symlinks=True,
         )
         shutil.copytree(REPO_ROOT / EVAL_ROOT, self.repo / EVAL_ROOT, symlinks=True)
+        for skill in ("addressing-pr-review-feedback", "interacting-with-pr-review-feedback"):
+            relative = Path("tests/plugins/mergecraft") / skill
+            shutil.copytree(REPO_ROOT / relative, self.repo / relative, symlinks=True)
         shutil.copytree(
             REPO_ROOT / ATLAS_RELEASE,
             self.repo / ATLAS_RELEASE,
@@ -120,6 +123,21 @@ class ValidateMergecraftTests(unittest.TestCase):
             capture_output=True,
             check=False,
             timeout=30,
+        )
+
+    def run_candidate_runtime_probe(self) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                "-I",
+                "-B",
+                "-c",
+                VALIDATE_MERGECRAFT.CANDIDATE_RUNTIME_PROBE,
+                str(self.plugin),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
         )
 
     def assert_rejected(self, expected: str) -> None:
@@ -200,6 +218,44 @@ class ValidateMergecraftTests(unittest.TestCase):
                     f"({relative.as_posix()})",
                     (installed_root / "SKILL.md").read_text(encoding="utf-8"),
                 )
+
+    def test_response_authoring_contract_requires_portable_writer_edge(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        response = next(
+            component
+            for component in topology["skills"]
+            if component["name"] == "interacting-with-pr-review-feedback"
+        )
+        writer = next(
+            operation
+            for operation in topology["operations"]
+            if operation["semantic_id"] == "github-markdown-content"
+        )
+        projection = (
+            "skills/interacting-with-pr-review-feedback/"
+            "references/github-markdown-authoring.md"
+        )
+        self.assertIn(projection, response["references"])
+        self.assertIn("operation:github-markdown-content", response["calls"])
+        self.assertIn("interacting-with-pr-review-feedback", writer["callers"])
+
+        response["calls"] = [
+            call
+            for call in response["calls"]
+            if call != "operation:github-markdown-content"
+        ]
+        writer["callers"] = [
+            caller
+            for caller in writer["callers"]
+            if caller != "interacting-with-pr-review-feedback"
+        ]
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "response Markdown authoring operation edge drift",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
 
     def test_source_stage_rejects_markdown_authoring_projection_drift(self) -> None:
         projection = (
@@ -1368,6 +1424,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             "patch-inspection",
             "top-level-comment-read",
             "top-level-comment-write",
+            "feedback-conversation-response-write",
             "review-comment-read",
             "review-reply-write",
             "labels-read",
@@ -1404,6 +1461,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             "pr-text-write",
             "pr-readiness-write",
             "check-rerun",
+            "feedback-conversation-response-write",
             "merge-write",
         ):
             self.assertEqual(operations[alias][0], "write")
@@ -1858,6 +1916,81 @@ class ValidateMergecraftTests(unittest.TestCase):
         audit.write_text(audit.read_text() + "\nreconcile = lambda **kwargs: None\n")
         self.assert_rejected("candidate runtime behavior")
 
+    def test_rejects_effective_unknown_ambiguity_probe_regression(self) -> None:
+        helper = (
+            self.plugin
+            / "skills/interacting-with-pr-review-feedback/scripts"
+            / "response_identity_lifecycle.py"
+        )
+        source = helper.read_text(encoding="utf-8")
+        changed = source.replace(
+            'if len(group["intent_ids"]) > 1:',
+            'if False:',
+            1,
+        )
+        self.assertNotEqual(changed, source)
+        helper.write_text(changed, encoding="utf-8")
+
+        probe = self.run_candidate_runtime_probe()
+        self.assertNotEqual(probe.returncode, 0)
+        self.assertIn("C6-S1 ambiguity guard", probe.stderr)
+        self.assertNotIn("trusted ssh executable is unavailable", probe.stderr)
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("candidate runtime behavior drift", result.stderr)
+
+    def test_rejects_cross_intent_lifecycle_probe_regression(self) -> None:
+        helper = (
+            self.plugin
+            / "skills/interacting-with-pr-review-feedback/scripts"
+            / "response_identity_lifecycle.py"
+        )
+        source = helper.read_text(encoding="utf-8")
+        changed = source.replace(
+            'if self._roles(identity) - {intent_id}:',
+            'if False:',
+            1,
+        )
+        self.assertNotEqual(changed, source)
+        helper.write_text(changed, encoding="utf-8")
+
+        probe = self.run_candidate_runtime_probe()
+        self.assertNotEqual(probe.returncode, 0)
+        self.assertIn("C6-S2 cross-intent lifecycle guard", probe.stderr)
+        self.assertNotIn("trusted ssh executable is unavailable", probe.stderr)
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("candidate runtime behavior drift", result.stderr)
+
+    def test_rejects_stable_source_owner_probe_regression(self) -> None:
+        helper = (
+            self.plugin
+            / "skills/interacting-with-pr-review-feedback/scripts"
+            / "response_source_owner.py"
+        )
+        source = helper.read_text(encoding="utf-8")
+        changed = source.replace(
+            '"repository_identity": repository,',
+            '"repository_identity": copy.deepcopy(legacy_repository),',
+            1,
+        )
+        self.assertNotEqual(changed, source)
+        helper.write_text(changed, encoding="utf-8")
+
+        probe = self.run_candidate_runtime_probe()
+        self.assertNotEqual(probe.returncode, 0)
+        self.assertIn("S7-S1 stable owner rename guard", probe.stderr)
+        self.assertNotIn("trusted ssh executable is unavailable", probe.stderr)
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("candidate runtime behavior drift", result.stderr)
+
     def test_rejects_required_review_authority_behavior_drift(self) -> None:
         required_review = (
             self.plugin
@@ -2059,7 +2192,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             timeout=30,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('"skills": 15', result.stdout)
+        self.assertIn('"skills": 16', result.stdout)
 
     def test_rejects_retirement_destination_owner_missing_from_bundle(self) -> None:
         definition_path = self.repo / EVAL_ROOT / "retirement-control-plane.json"

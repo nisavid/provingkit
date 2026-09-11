@@ -246,7 +246,9 @@
         ],
         "outputs": [
           "complete-feedback-snapshot",
+          "typed-source-epoch",
           "finding-dispositions",
+          "response-outcome-bundle",
           "verified-feedback-outcome"
         ],
         "forbidden_reverse_calls": [
@@ -265,28 +267,43 @@
         "skills/interacting-with-pr-review-feedback/references/interaction-authority.md",
         "skills/interacting-with-pr-review-feedback/references/github-markdown-authoring.md"
       ],
-      "scripts": [],
-      "modules": [],
-      "calls": [],
+      "scripts": [
+        "skills/interacting-with-pr-review-feedback/scripts/response_cli.py"
+      ],
+      "modules": [
+        "skills/interacting-with-pr-review-feedback/scripts/github_response_provider.py",
+        "skills/interacting-with-pr-review-feedback/scripts/response_identity_lifecycle.py",
+        "skills/interacting-with-pr-review-feedback/scripts/response_outcome_store.py",
+        "skills/interacting-with-pr-review-feedback/scripts/response_source_owner.py",
+        "skills/interacting-with-pr-review-feedback/scripts/response_runtime.py"
+      ],
+      "calls": [
+        "operation:github-markdown-content",
+        "operation:feedback-inline-response",
+        "operation:feedback-conversation-response"
+      ],
       "conditional_calls": {},
       "operations": ["feedback-interaction"],
       "contract": {
-        "trigger": "authorized-single-feedback-interaction",
-        "modes": ["reply", "react", "resolve"],
-        "authority": "exact selected feedback leaf and verified reviewer identity",
+        "trigger": "authorized-single-feedback-response-or-reconciliation",
+        "modes": ["respond", "reconcile", "read-outcomes"],
+        "authority": "one exact typed source revision and independently authorized response intent",
         "inputs": [
           "bound-repository-pr-head",
-          "selected-feedback-leaf",
-          "interaction-authority"
+          "typed-source-epoch",
+          "source-adjudication-and-response-authority",
+          "immutable-caller-intent-key",
+          "exact-writer-body-and-policy-identities",
+          "durable-response-outcome-store"
         ],
-        "outputs": ["verified-feedback-interaction"],
+        "outputs": ["authoritative-leaf-receipt", "append-only-response-outcome", "epoch-drift-or-reconciliation-state"],
         "forbidden_reverse_calls": [
           "addressing-pr-review-feedback",
           "resuming-reviewed-prs",
           "getting-prs-merged"
         ],
         "loop_owner": null,
-        "terminal_statuses": ["verified", "blocked", "ambiguous"]
+        "terminal_statuses": ["confirmed_success", "confirmed_no_op", "confirmed_failure", "unknown", "blocked"]
       }
     },
     {
@@ -497,7 +514,10 @@
       "import": null,
       "access": "coordinate",
       "authority": "valid GFM and exact candidate body bytes only",
-      "callers": ["writing-github-issue-and-pr-markdown"],
+      "callers": [
+        "interacting-with-pr-review-feedback",
+        "writing-github-issue-and-pr-markdown"
+      ],
       "disposition": "public-skill"
     },
     {
@@ -684,22 +704,42 @@
     },
     {
       "semantic_id": "feedback-interaction",
-      "github_aliases": [
-        "reactions-write",
-        "review-reply-write",
-        "review-thread-resolution"
-      ],
-      "surface": "github",
+      "github_aliases": [],
+      "surface": "workflow",
       "owner": "interacting-with-pr-review-feedback",
       "implementation": "skills/interacting-with-pr-review-feedback/SKILL.md",
       "import": null,
-      "access": "write",
-      "authority": "exact selected feedback leaf and verified reviewer identity",
+      "access": "coordinate",
+      "authority": "one exact typed source revision and independently authorized response intent",
       "callers": [
         "addressing-pr-review-feedback",
         "interacting-with-pr-review-feedback"
       ],
       "disposition": "public-skill"
+    },
+    {
+      "semantic_id": "feedback-inline-response",
+      "github_aliases": ["review-reply-write"],
+      "surface": "github",
+      "owner": "internal:feedback-inline-response",
+      "implementation": "skills/interacting-with-pr-review-feedback/scripts/github_response_provider.py",
+      "import": null,
+      "access": "write",
+      "authority": "one bound inline source revision, existing thread, exact body, and response intent",
+      "callers": ["interacting-with-pr-review-feedback"],
+      "disposition": "internal-helper"
+    },
+    {
+      "semantic_id": "feedback-conversation-response",
+      "github_aliases": ["feedback-conversation-response-write"],
+      "surface": "github",
+      "owner": "internal:feedback-conversation-response",
+      "implementation": "skills/interacting-with-pr-review-feedback/scripts/github_response_provider.py",
+      "import": null,
+      "access": "write",
+      "authority": "one bound PR conversation or submitted-review source, verified PR target, exact body, and response intent",
+      "callers": ["interacting-with-pr-review-feedback"],
+      "disposition": "internal-helper"
     },
     {
       "semantic_id": "readiness-outcome",
@@ -1003,6 +1043,30 @@
       "import": null,
       "access": "read",
       "authority": "bound feedback or comment identity",
+      "callers": [],
+      "disposition": "ordinary-tool"
+    },
+    {
+      "semantic_id": "github:feedback-reaction",
+      "github_aliases": ["reactions-write"],
+      "surface": "github",
+      "owner": "internal:github-feedback-reaction",
+      "implementation": "ordinary operation-specific GitHub reaction actuator",
+      "import": null,
+      "access": "write",
+      "authority": "separate exact feedback reaction authority; unavailable to response routing",
+      "callers": [],
+      "disposition": "ordinary-tool"
+    },
+    {
+      "semantic_id": "github:review-thread-resolution",
+      "github_aliases": ["review-thread-resolution"],
+      "surface": "github",
+      "owner": "internal:github-review-thread-resolution",
+      "implementation": "ordinary operation-specific GitHub thread-resolution actuator",
+      "import": null,
+      "access": "write",
+      "authority": "separate exact thread-resolution authority and repository/operator identity policy; unavailable to response routing",
       "callers": [],
       "disposition": "ordinary-tool"
     },

@@ -141,7 +141,9 @@ jobs:
 
       - name: Validate Mergecraft at source stage
         run: |
-          python -m unittest tests.test_validate_mergecraft
+          python -m unittest tests.test_validate_mergecraft tests.test_feedback_response_evidence
+          python -m unittest discover -s tests/plugins/mergecraft/addressing-pr-review-feedback
+          python -m unittest discover -s tests/plugins/mergecraft/interacting-with-pr-review-feedback
           python scripts/validate_mergecraft.py . --source-stage
 
   artifact-customs:

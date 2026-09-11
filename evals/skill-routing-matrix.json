@@ -201,7 +201,7 @@
     },
     {
       "id": "mergecraft:interacting-with-pr-review-feedback",
-      "cold_start": "Post an evidence-backed reply to this PR review comment and resolve the authorized thread.",
+      "cold_start": "Post an evidence-backed reply to this exact PR review comment.",
       "explicit": "Use $interacting-with-pr-review-feedback to reply to this review feedback.",
       "supplemental": {
         "positive": "Post the approved evidence-backed reply on this exact review comment and verify the resulting interaction.",

@@ -4,12 +4,16 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
+import hashlib
 import json
 import os
 import re
 import subprocess
 import sys
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -30,7 +34,7 @@ class PaginationError(FeedbackAcquisitionError):
     """A paginated connection was incomplete or did not progress."""
 
 
-class IdentityError(FeedbackAcquisitionError):
+class IdentityError(ResponseShapeError):
     """Repository or pull-request identity was missing or changed."""
 
 
@@ -39,6 +43,165 @@ GITHUB_HOST = "github.com"
 READ_TIMEOUT_SECONDS = 30
 MAX_TOP_LEVEL_PAGES = 10_000
 MAX_THREAD_COMMENT_PAGES = 10_000
+
+
+class AcquiredPageSequence(list[dict[str, Any]]):
+    """Retain the cursors used by the real acquisition requests."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.collection_pages = {key: [] for key in CONNECTION_KEYS}
+        self.hydrated_threads: dict[str, dict[str, Any]] = {}
+
+    def pagination_evidence(self) -> dict[str, Any]:
+        return {
+            "complete": True,
+            "collections": {
+                key: {
+                    "complete": True,
+                    "node_count": sum(page["node_count"] for page in pages),
+                    "pages": copy.deepcopy(pages),
+                }
+                for key, pages in self.collection_pages.items()
+            },
+            "hydrated_threads": copy.deepcopy(list(self.hydrated_threads.values())),
+        }
+
+
+ACQUISITION_FIELD_CONTRACT = {
+    "Actor": ("login",),
+    "Node": ("id",),
+    "IssueComment": (
+        "id",
+        "databaseId",
+        "author",
+        "authorAssociation",
+        "body",
+        "createdAt",
+        "updatedAt",
+        "url",
+    ),
+    "PullRequestReview": (
+        "id",
+        "databaseId",
+        "author",
+        "authorAssociation",
+        "state",
+        "body",
+        "createdAt",
+        "submittedAt",
+        "updatedAt",
+        "url",
+        "commit",
+    ),
+    "PullRequestReviewComment": (
+        "id",
+        "databaseId",
+        "author",
+        "authorAssociation",
+        "body",
+        "createdAt",
+        "updatedAt",
+        "url",
+        "path",
+        "line",
+        "originalLine",
+        "originalPosition",
+        "originalStartLine",
+        "outdated",
+        "startLine",
+        "subjectType",
+        "state",
+        "replyTo",
+        "commit",
+        "originalCommit",
+        "pullRequestReview",
+    ),
+    "PullRequestReviewThread": (
+        "id",
+        "isResolved",
+        "isOutdated",
+        "path",
+        "line",
+        "diffSide",
+        "originalLine",
+        "originalStartLine",
+        "startDiffSide",
+        "startLine",
+        "subjectType",
+        "comments",
+    ),
+}
+
+ACTOR_IDENTITY_FRAGMENT = """
+fragment ActorIdentity on Actor {
+  __typename
+  login
+  ... on Node { id }
+}
+""".strip()
+
+ISSUE_COMMENT_EVIDENCE_FRAGMENT = """
+fragment IssueCommentEvidence on IssueComment {
+  id
+  databaseId
+  author { ...ActorIdentity }
+  authorAssociation
+  body
+  createdAt
+  updatedAt
+  url
+}
+""".strip()
+
+REVIEW_COMMENT_EVIDENCE_FRAGMENT = """
+fragment ReviewCommentEvidence on PullRequestReviewComment {
+  id
+  databaseId
+  author { ...ActorIdentity }
+  authorAssociation
+  body
+  createdAt
+  updatedAt
+  url
+  path
+  line
+  originalLine
+  originalPosition
+  originalStartLine
+  outdated
+  startLine
+  subjectType
+  state
+  replyTo { id databaseId }
+  commit { oid }
+  originalCommit { oid }
+  pullRequestReview { id databaseId }
+}
+""".strip()
+
+REVIEW_EVIDENCE_FRAGMENT = """
+fragment ReviewEvidence on PullRequestReview {
+  id
+  databaseId
+  author { ...ActorIdentity }
+  authorAssociation
+  state
+  body
+  createdAt
+  submittedAt
+  updatedAt
+  url
+  commit { oid }
+}
+""".strip()
+
+SOURCE_EVIDENCE_FRAGMENTS = (
+    f"{ACTOR_IDENTITY_FRAGMENT}\n\n"
+    f"{ISSUE_COMMENT_EVIDENCE_FRAGMENT}\n\n"
+    f"{REVIEW_COMMENT_EVIDENCE_FRAGMENT}\n\n"
+    f"{REVIEW_EVIDENCE_FRAGMENT}"
+)
 
 
 def strict_json(content: str, source: str) -> Any:
@@ -79,7 +242,8 @@ def build_pr_query(
         "checks": True,
         "review_requests": True,
     }
-    query = """
+    query = (
+        """
 query PrReviewState(
   $owner: String!
   $name: String!
@@ -96,9 +260,13 @@ query PrReviewState(
   $includeReviewRequests: Boolean!
 ) {
   repository(owner: $owner, name: $name) {
+    id
+    databaseId
     nameWithOwner
     owner { login }
     pullRequest(number: $prNumber) {
+      id
+      databaseId
       number
       url
       isDraft
@@ -120,12 +288,15 @@ query PrReviewState(
           isOutdated
           path
           line
+          diffSide
+          originalLine
+          originalStartLine
+          startDiffSide
+          startLine
+          subjectType
           comments(first: 100) {
             nodes {
-              author { login }
-              body
-              createdAt
-              url
+              ...ReviewCommentEvidence
             }
             pageInfo { hasNextPage endCursor }
           }
@@ -134,20 +305,13 @@ query PrReviewState(
       }
       comments(first: 100, after: $commentsCursor) @include(if: $includeComments) {
         nodes {
-          author { login }
-          body
-          createdAt
-          url
+          ...IssueCommentEvidence
         }
         pageInfo { hasNextPage endCursor }
       }
       reviews(first: 100, after: $reviewsCursor) @include(if: $includeReviews) {
         nodes {
-          author { login }
-          state
-          body
-          submittedAt
-          url
+          ...ReviewEvidence
         }
         pageInfo { hasNextPage endCursor }
       }
@@ -185,6 +349,9 @@ query PrReviewState(
   }
 }
 """.strip()
+        + "\n\n"
+        + SOURCE_EVIDENCE_FRAGMENTS
+    )
     variables = {
         "owner": owner,
         "name": name,
@@ -220,7 +387,7 @@ def validate_head_repository_identity(name_with_owner: str, owner: str) -> None:
 
 
 def fetch_pages(repo: str, pr_number: int) -> list[dict[str, Any]]:
-    pages: list[dict[str, Any]] = []
+    pages = AcquiredPageSequence()
     cursors: dict[str, str | None] = {
         "threads": None,
         "comments": None,
@@ -249,6 +416,20 @@ def fetch_pages(repo: str, pr_number: int) -> list[dict[str, Any]]:
             )
         pages.append(page)
         page_info = page_infos(page)
+        pr = extract_pr(page)
+        for key in CONNECTION_KEYS:
+            if not include.get(key):
+                continue
+            connection = _pr_connection(pr, key, True, "retained pagination evidence")
+            pages.collection_pages[key].append(
+                {
+                    "page_index": len(pages.collection_pages[key]),
+                    "request_cursor": cursors[key],
+                    "node_count": len(connection.get("nodes") or []),
+                    "has_next_page": page_info[key].get("hasNextPage"),
+                    "end_cursor": page_info[key].get("endCursor"),
+                }
+            )
         next_cursors = {
             key: next_cursor(key, page_info[key], cursors[key], seen_cursors[key])
             for key in cursors
@@ -270,6 +451,15 @@ def hydrate_thread_comments(
             seen_cursors: set[str] = set()
             cursor: str | None = None
             page_count = 0
+            thread_pages = [
+                {
+                    "page_index": 0,
+                    "request_cursor": None,
+                    "node_count": len(comments.get("nodes") or []),
+                    "has_next_page": page_info.get("hasNextPage"),
+                    "end_cursor": page_info.get("endCursor"),
+                }
+            ]
             while page_info.get("hasNextPage"):
                 if page_count >= MAX_THREAD_COMMENT_PAGES:
                     raise PaginationError(
@@ -297,10 +487,43 @@ def hydrate_thread_comments(
                 page_info = next_comments.get("pageInfo") or {}
                 comments["pageInfo"] = page_info
                 page_count += 1
+                thread_pages.append(
+                    {
+                        "page_index": page_count,
+                        "request_cursor": cursor,
+                        "node_count": len(next_comments.get("nodes") or []),
+                        "has_next_page": page_info.get("hasNextPage"),
+                        "end_cursor": page_info.get("endCursor"),
+                    }
+                )
+            if isinstance(pages, AcquiredPageSequence):
+                hydration = {
+                    "thread_node_id": thread["id"],
+                    "complete": True,
+                    "comment_count": sum(item["node_count"] for item in thread_pages),
+                    "terminal_end_cursor": page_info.get("endCursor"),
+                    "pages": thread_pages,
+                }
+                prior = pages.hydrated_threads.get(thread["id"])
+                if prior is not None and prior != hydration:
+                    raise IdentityError(
+                        f"thread {thread['id']} had contradictory pagination evidence"
+                    )
+                pages.hydrated_threads[thread["id"]] = hydration
 
 
 def fetch_thread_comments(thread_id: str, cursor: str | None) -> dict[str, Any]:
-    query = """
+    query, variables = build_thread_comments_query(thread_id, cursor)
+    page = run_gh_graphql(query, variables)
+    validate_thread_comments_page(page, f"thread {thread_id} comment page")
+    return page
+
+
+def build_thread_comments_query(
+    thread_id: str, cursor: str | None
+) -> tuple[str, dict[str, Any]]:
+    query = (
+        """
 query ThreadComments($threadId: ID!, $commentsCursor: String) {
   node(id: $threadId) {
     ... on PullRequestReviewThread {
@@ -321,10 +544,7 @@ query ThreadComments($threadId: ID!, $commentsCursor: String) {
       }
       comments(first: 100, after: $commentsCursor) {
         nodes {
-          author { login }
-          body
-          createdAt
-          url
+          ...ReviewCommentEvidence
         }
         pageInfo { hasNextPage endCursor }
       }
@@ -332,9 +552,12 @@ query ThreadComments($threadId: ID!, $commentsCursor: String) {
   }
 }
 """.strip()
-    page = run_gh_graphql(query, {"threadId": thread_id, "commentsCursor": cursor})
-    validate_thread_comments_page(page, f"thread {thread_id} comment page")
-    return page
+        + "\n\n"
+        + ACTOR_IDENTITY_FRAGMENT
+        + "\n\n"
+        + REVIEW_COMMENT_EVIDENCE_FRAGMENT
+    )
+    return query, {"threadId": thread_id, "commentsCursor": cursor}
 
 
 def run_gh_graphql(query: str, variables: dict[str, Any]) -> dict[str, Any]:
@@ -343,6 +566,8 @@ def run_gh_graphql(query: str, variables: dict[str, Any]) -> dict[str, Any]:
         "api",
         "--hostname",
         GITHUB_HOST,
+        "--method",
+        "POST",
         "graphql",
         "--input",
         "-",
@@ -537,7 +762,7 @@ def _validate_connection(
     return nodes, page_info
 
 
-def _validate_connection_node(  # noqa: C901
+def _validate_connection_node(
     node: dict[str, Any], connection_name: str, source: str, index: int
 ) -> None:
     if connection_name == "threads":
@@ -632,6 +857,742 @@ def validate_supplied_page_sequence(pages: list[dict[str, Any]]) -> None:
         raise PaginationError(
             "supplied pages ended before thread comment hydration completed"
         )
+
+
+def _canonical_digest(value: Any) -> str:
+    encoded = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _required_string(node: dict[str, Any], field: str, source: str) -> str:
+    value = node.get(field)
+    if not isinstance(value, str) or not value:
+        raise ResponseShapeError(f"{source} lacked strict response evidence: {field}")
+    return value
+
+
+def _provider_identity(node: dict[str, Any], source: str) -> dict[str, Any]:
+    node_id = _required_string(node, "id", source)
+    database_id = node.get("databaseId")
+    if type(database_id) is not int or database_id <= 0:
+        raise ResponseShapeError(
+            f"{source} lacked strict response evidence: databaseId"
+        )
+    return {"node_id": node_id, "database_id": database_id}
+
+
+class _IdentityRegistry:
+    """Validate one acquisition-wide provider identity namespace."""
+
+    def __init__(self) -> None:
+        self._by_node: dict[str, tuple[str, int | None]] = {}
+        self._by_database: dict[tuple[str, int], str] = {}
+        self._fingerprints: dict[tuple[str, str, int | None], str] = {}
+        self._observed: set[tuple[str, str, int | None]] = set()
+        self._associations: list[tuple[tuple[str, str, int | None], str]] = []
+
+    def register(
+        self,
+        object_kind: str,
+        node: dict[str, Any],
+        source: str,
+        *,
+        database_required: bool = True,
+        observed: bool = True,
+        fingerprint: Any | None = None,
+    ) -> tuple[str, str, int | None]:
+        node_id = _required_string(node, "id", source)
+        database_id = node.get("databaseId")
+        if database_required:
+            if type(database_id) is not int or database_id <= 0:
+                raise ResponseShapeError(
+                    f"{source} lacked strict response evidence: databaseId"
+                )
+        elif database_id is not None:
+            raise ResponseShapeError(
+                f"{source} supplied databaseId not exposed by the public schema"
+            )
+        typed = (object_kind, node_id, database_id)
+        prior_node = self._by_node.get(node_id)
+        if prior_node is not None and prior_node != (object_kind, database_id):
+            raise IdentityError(
+                f"{source} had contradictory typed identity for node ID {node_id}"
+            )
+        self._by_node[node_id] = (object_kind, database_id)
+        if database_id is not None:
+            database_key = (object_kind, database_id)
+            prior_database = self._by_database.get(database_key)
+            if prior_database is not None and prior_database != node_id:
+                raise IdentityError(
+                    f"{source} had contradictory typed identity for database ID "
+                    f"{database_id}"
+                )
+            self._by_database[database_key] = node_id
+        if fingerprint is not None:
+            digest = _canonical_digest(fingerprint)
+            prior_fingerprint = self._fingerprints.get(typed)
+            if prior_fingerprint is not None and prior_fingerprint != digest:
+                label = (
+                    "thread scalars"
+                    if object_kind == "PullRequestReviewThread"
+                    else "repeated provider object"
+                )
+                raise IdentityError(f"{source} changed {label} for one typed identity")
+            self._fingerprints[typed] = digest
+        if observed:
+            self._observed.add(typed)
+        else:
+            self._associations.append((typed, source))
+        return typed
+
+    def validate_associations(self) -> None:
+        for typed, source in self._associations:
+            if typed not in self._observed:
+                target = (
+                    "its observed thread root"
+                    if "replyTo" in source
+                    else "an observed provider object"
+                )
+                raise IdentityError(f"{source} did not resolve to {target}")
+
+    def entries(self) -> list[dict[str, Any]]:
+        result = []
+        for object_kind, node_id, database_id in sorted(self._observed):
+            result.append(
+                {
+                    "object_kind": object_kind,
+                    "node_id": node_id,
+                    "database_id": (
+                        {"availability": "available", "value": database_id}
+                        if database_id is not None
+                        else {
+                            "availability": "unavailable",
+                            "reason": "not_exposed_by_public_schema",
+                        }
+                    ),
+                }
+            )
+        return result
+
+
+def _identity_consistent_collections(
+    pages: list[dict[str, Any]],
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    registry = _IdentityRegistry()
+    comments_by_identity: dict[tuple[str, str, int | None], dict[str, Any]] = {}
+    reviews_by_identity: dict[tuple[str, str, int | None], dict[str, Any]] = {}
+    threads_by_identity: dict[tuple[str, str, int | None], dict[str, Any]] = {}
+    expected_repository_identity: dict[str, Any] | None = None
+
+    for page_index, page in enumerate(pages, 1):
+        expected_repository_identity = validate_repository_page_identity(
+            expected_repository_identity, page, f"supplied page {page_index}"
+        )
+        pr = extract_pr(page)
+        registry.register("PullRequest", pr, f"supplied page {page_index} pull request")
+        for index, comment in enumerate((pr.get("comments") or {}).get("nodes") or []):
+            source = f"supplied page {page_index} IssueComment {index}"
+            typed = registry.register(
+                "IssueComment", comment, source, fingerprint=comment
+            )
+            comments_by_identity.setdefault(typed, copy.deepcopy(comment))
+        for index, review in enumerate((pr.get("reviews") or {}).get("nodes") or []):
+            source = f"supplied page {page_index} PullRequestReview {index}"
+            typed = registry.register(
+                "PullRequestReview", review, source, fingerprint=review
+            )
+            reviews_by_identity.setdefault(typed, copy.deepcopy(review))
+        for thread_index, thread in enumerate(
+            (pr.get("reviewThreads") or {}).get("nodes") or []
+        ):
+            source = f"supplied page {page_index} review thread {thread_index}"
+            scalar_evidence = {
+                key: value for key, value in thread.items() if key != "comments"
+            }
+            typed_thread = registry.register(
+                "PullRequestReviewThread",
+                thread,
+                source,
+                database_required=False,
+                fingerprint=scalar_evidence,
+            )
+            merged = threads_by_identity.setdefault(typed_thread, copy.deepcopy(thread))
+            merged_comments = merged.setdefault("comments", {}).setdefault("nodes", [])
+            if merged is not thread and typed_thread in threads_by_identity:
+                existing = {
+                    (item.get("id"), item.get("databaseId")) for item in merged_comments
+                }
+            else:  # pragma: no cover - defensive; setdefault always returns a value
+                existing = set()
+            for comment_index, comment in enumerate(
+                (thread.get("comments") or {}).get("nodes") or []
+            ):
+                comment_source = f"{source} comment {comment_index}"
+                typed_comment = registry.register(
+                    "PullRequestReviewComment",
+                    comment,
+                    comment_source,
+                    fingerprint=comment,
+                )
+                comment_pair = (typed_comment[1], typed_comment[2])
+                if comment_pair not in existing:
+                    merged_comments.append(copy.deepcopy(comment))
+                    existing.add(comment_pair)
+                reply_to = comment.get("replyTo")
+                if isinstance(reply_to, dict):
+                    registry.register(
+                        "PullRequestReviewComment",
+                        reply_to,
+                        f"{comment_source} replyTo association",
+                        observed=False,
+                    )
+                review = comment.get("pullRequestReview")
+                if isinstance(review, dict):
+                    registry.register(
+                        "PullRequestReview",
+                        review,
+                        f"{comment_source} review association",
+                        observed=False,
+                    )
+
+    registry.validate_associations()
+    return (
+        list(threads_by_identity.values()),
+        list(comments_by_identity.values()),
+        list(reviews_by_identity.values()),
+        registry.entries(),
+    )
+
+
+def _required_bool(node: dict[str, Any], field: str, source: str) -> bool:
+    value = node.get(field)
+    if not isinstance(value, bool):
+        raise ResponseShapeError(f"{source} lacked strict response evidence: {field}")
+    return value
+
+
+def _required_int(node: dict[str, Any], field: str, source: str) -> int:
+    value = node.get(field)
+    if type(value) is not int:
+        raise ResponseShapeError(f"{source} lacked strict response evidence: {field}")
+    return value
+
+
+def _optional_int(node: dict[str, Any], field: str, source: str) -> int | None:
+    if field not in node:
+        raise ResponseShapeError(f"{source} lacked strict response evidence: {field}")
+    value = node[field]
+    if value is not None and type(value) is not int:
+        raise ResponseShapeError(
+            f"{source} had malformed strict response evidence: {field}"
+        )
+    return value
+
+
+def _optional_string(node: dict[str, Any], field: str, source: str) -> str | None:
+    if field not in node:
+        raise ResponseShapeError(f"{source} lacked strict response evidence: {field}")
+    value = node[field]
+    if value is not None and (not isinstance(value, str) or not value):
+        raise ResponseShapeError(
+            f"{source} had malformed strict response evidence: {field}"
+        )
+    return value
+
+
+def _selected_nullable(node: dict[str, Any], field: str, source: str) -> Any:
+    if field not in node:
+        raise ResponseShapeError(f"{source} lacked strict response evidence: {field}")
+    return node[field]
+
+
+def _optional_revision(node: Any, source: str) -> dict[str, Any]:
+    if node is None:
+        return {"availability": "unavailable", "reason": "provider_returned_null"}
+    if not isinstance(node, dict):
+        raise ResponseShapeError(f"{source} had malformed strict response evidence")
+    return {
+        "availability": "available",
+        "oid": _required_string(node, "oid", source),
+    }
+
+
+def _author_evidence(node: dict[str, Any], source: str) -> dict[str, Any]:
+    association = _required_string(node, "authorAssociation", source)
+    author = _selected_nullable(node, "author", source)
+    if author is None:
+        return {
+            "availability": "unavailable",
+            "reason": "provider_returned_null",
+            "association": association,
+        }
+    if not isinstance(author, dict):
+        raise ResponseShapeError(f"{source} lacked strict response evidence: author")
+    return {
+        "availability": "available",
+        "node_id": _required_string(author, "id", f"{source} author"),
+        "login": _required_string(author, "login", f"{source} author"),
+        "provider_type": _required_string(author, "__typename", f"{source} author"),
+        "association": association,
+    }
+
+
+def _body_evidence(body: str) -> dict[str, Any]:
+    body_bytes = body.encode("utf-8")
+    return {
+        "utf8_base64": base64.b64encode(body_bytes).decode("ascii"),
+        "byte_length": len(body_bytes),
+        "sha256": hashlib.sha256(body_bytes).hexdigest(),
+    }
+
+
+def _source_revision_identity(source: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "body": source["body"],
+        "provider_revision": {
+            "availability": "available",
+            "kind": "updated_at",
+            "value": source["updated_at"],
+        },
+        "associated_commit": source["associated_revision"],
+    }
+
+
+def _bind_source_revision(source: dict[str, Any]) -> None:
+    source["source_revision_identity"] = _source_revision_identity(source)
+    source["source_revision"] = _canonical_digest(source["source_revision_identity"])
+
+
+def _strict_inline_source(
+    comment: dict[str, Any],
+    thread: dict[str, Any],
+    root_identity: dict[str, Any],
+) -> dict[str, Any]:
+    identity = _provider_identity(comment, "inline review comment")
+    root_nodes = (thread.get("comments") or {}).get("nodes") or []
+    state = _required_string(comment, "state", "inline review comment")
+    if "replyTo" not in comment:
+        raise ResponseShapeError(
+            "inline review comment lacked strict response evidence: replyTo"
+        )
+    reply_to = comment["replyTo"]
+    if reply_to is None:
+        if identity != root_identity:
+            raise ResponseShapeError(
+                "inline review comment replyTo contradicted the thread root"
+            )
+        reply_evidence = {"availability": "unavailable", "reason": "thread_root"}
+    else:
+        if not isinstance(reply_to, dict):
+            raise ResponseShapeError(
+                "inline review comment lacked strict response evidence: replyTo"
+            )
+        reply_identity = _provider_identity(reply_to, "inline comment replyTo")
+        if reply_identity != root_identity:
+            raise ResponseShapeError(
+                "inline review comment replyTo did not identify the thread root"
+            )
+        reply_evidence = {"availability": "available", **reply_identity}
+    review = _selected_nullable(comment, "pullRequestReview", "inline review comment")
+    if review is None and state == "PENDING":
+        review_evidence = {
+            "availability": "unavailable",
+            "reason": "provider_returned_null",
+        }
+    elif not isinstance(review, dict):
+        raise ResponseShapeError(
+            "inline review comment lacked strict response evidence: pullRequestReview"
+        )
+    else:
+        review_evidence = _provider_identity(review, "inline comment review")
+    commit = _selected_nullable(comment, "commit", "inline review comment")
+    if commit is not None and not isinstance(commit, dict):
+        raise ResponseShapeError(
+            "inline review comment had malformed strict response evidence: commit"
+        )
+    original_commit = _selected_nullable(
+        comment, "originalCommit", "inline review comment"
+    )
+    if original_commit is not None and not isinstance(original_commit, dict):
+        raise ResponseShapeError(
+            "inline review comment had malformed strict response evidence: "
+            "originalCommit"
+        )
+    body = comment.get("body")
+    if not isinstance(body, str):
+        raise ResponseShapeError(
+            "inline review comment lacked strict response evidence: body"
+        )
+    source = {
+        "kind": "inline_review_comment",
+        "provider_identity": identity,
+        "permalink": _required_string(comment, "url", "inline review comment"),
+        "body": _body_evidence(body),
+        "author": _author_evidence(comment, "inline review comment"),
+        "created_at": _required_string(comment, "createdAt", "inline review comment"),
+        "updated_at": _required_string(comment, "updatedAt", "inline review comment"),
+        "state": {
+            "availability": "available",
+            "value": state,
+            "outdated": _required_bool(comment, "outdated", "inline review comment"),
+        },
+        "reply_to": reply_evidence,
+        "location": {
+            "path": _required_string(comment, "path", "inline review comment"),
+            "line": _optional_int(comment, "line", "inline review comment"),
+            "original_line": _optional_int(
+                comment, "originalLine", "inline review comment"
+            ),
+            "original_position": _required_int(
+                comment, "originalPosition", "inline review comment"
+            ),
+            "original_start_line": _optional_int(
+                comment, "originalStartLine", "inline review comment"
+            ),
+            "start_line": _optional_int(comment, "startLine", "inline review comment"),
+            "subject_type": _required_string(
+                comment, "subjectType", "inline review comment"
+            ),
+        },
+        "associated_revision": (
+            {
+                "availability": "available",
+                "oid": _required_string(commit, "oid", "inline review comment commit"),
+            }
+            if commit is not None
+            else {"availability": "unavailable", "reason": "provider_returned_null"}
+        ),
+        "original_revision": _optional_revision(
+            original_commit, "inline review comment originalCommit"
+        ),
+        "thread": {
+            "node_id": _required_string(thread, "id", "inline review thread"),
+            "root_comment_node_id": root_identity["node_id"],
+            "root_comment_database_id": root_identity["database_id"],
+            "is_resolved": thread.get("isResolved"),
+            "is_outdated": thread.get("isOutdated"),
+            "path": _required_string(thread, "path", "inline review thread"),
+            "line": _optional_int(thread, "line", "inline review thread"),
+            "diff_side": _required_string(thread, "diffSide", "inline review thread"),
+            "original_line": _optional_int(
+                thread, "originalLine", "inline review thread"
+            ),
+            "original_start_line": _optional_int(
+                thread, "originalStartLine", "inline review thread"
+            ),
+            "start_diff_side": _optional_string(
+                thread, "startDiffSide", "inline review thread"
+            ),
+            "start_line": _optional_int(thread, "startLine", "inline review thread"),
+            "subject_type": _required_string(
+                thread, "subjectType", "inline review thread"
+            ),
+            "comment_node_ids": [
+                _provider_identity(item, "inline thread comment")["node_id"]
+                for item in root_nodes
+            ],
+        },
+        "review": review_evidence,
+    }
+    if not isinstance(source["thread"]["is_resolved"], bool) or not isinstance(
+        source["thread"]["is_outdated"], bool
+    ):
+        raise ResponseShapeError(
+            "inline review thread lacked strict response evidence: state"
+        )
+    _bind_source_revision(source)
+    return source
+
+
+def _strict_conversation_source(comment: dict[str, Any]) -> dict[str, Any]:
+    body = comment.get("body")
+    if not isinstance(body, str):
+        raise ResponseShapeError(
+            "pull request conversation comment lacked strict response evidence: body"
+        )
+    source = {
+        "kind": "pr_conversation_comment",
+        "provider_identity": _provider_identity(
+            comment, "pull request conversation comment"
+        ),
+        "permalink": _required_string(
+            comment, "url", "pull request conversation comment"
+        ),
+        "body": _body_evidence(body),
+        "author": _author_evidence(comment, "pull request conversation comment"),
+        "created_at": _required_string(
+            comment, "createdAt", "pull request conversation comment"
+        ),
+        "updated_at": _required_string(
+            comment, "updatedAt", "pull request conversation comment"
+        ),
+        "state": {
+            "availability": "unavailable",
+            "reason": "not_exposed_for_issue_comment",
+        },
+        "location": {"placement": "pull_request_conversation"},
+        "associated_revision": {
+            "availability": "unavailable",
+            "reason": "not_exposed_for_issue_comment",
+        },
+    }
+    _bind_source_revision(source)
+    return source
+
+
+def _strict_review_source(review: dict[str, Any]) -> dict[str, Any]:
+    body = review.get("body")
+    if not isinstance(body, str):
+        raise ResponseShapeError(
+            "submitted review lacked strict response evidence: body"
+        )
+    commit = _selected_nullable(review, "commit", "review")
+    if commit is not None and not isinstance(commit, dict):
+        raise ResponseShapeError(
+            "review had malformed strict response evidence: commit"
+        )
+    submitted_at = _selected_nullable(review, "submittedAt", "review")
+    if submitted_at is not None and (
+        not isinstance(submitted_at, str) or not submitted_at
+    ):
+        raise ResponseShapeError(
+            "review had malformed strict response evidence: submittedAt"
+        )
+    state = _required_string(review, "state", "submitted review")
+    if (state == "PENDING") != (submitted_at is None):
+        raise ResponseShapeError(
+            "review state contradicted strict response evidence: submittedAt"
+        )
+    source = {
+        "kind": "submitted_review_body",
+        "provider_identity": _provider_identity(review, "submitted review"),
+        "permalink": _required_string(review, "url", "submitted review"),
+        "body": _body_evidence(body),
+        "author": _author_evidence(review, "submitted review"),
+        "created_at": _required_string(review, "createdAt", "submitted review"),
+        "submitted_at": (
+            {"availability": "available", "value": submitted_at}
+            if submitted_at is not None
+            else {"availability": "unavailable", "reason": "review_not_submitted"}
+        ),
+        "updated_at": _required_string(review, "updatedAt", "submitted review"),
+        "state": {
+            "availability": "available",
+            "value": state,
+        },
+        "location": {"placement": "submitted_review"},
+        "associated_revision": (
+            {
+                "availability": "available",
+                "oid": _required_string(commit, "oid", "submitted review commit"),
+            }
+            if commit is not None
+            else {"availability": "unavailable", "reason": "provider_returned_null"}
+        ),
+    }
+    _bind_source_revision(source)
+    return source
+
+
+def _validate_inline_associations(
+    sources: list[dict[str, Any]], review_identities: list[dict[str, Any]]
+) -> None:
+    for source in sources:
+        if (
+            source["location"]["path"] != source["thread"]["path"]
+            or source["location"]["subject_type"] != source["thread"]["subject_type"]
+        ):
+            raise ResponseShapeError(
+                "inline review comment placement contradicted its containing thread"
+            )
+        if (
+            source["state"]["value"] == "SUBMITTED"
+            and source["review"] not in review_identities
+        ):
+            raise ResponseShapeError(
+                "inline review comment review association was absent or contradictory"
+            )
+
+
+def typed_epoch_from_pages(
+    repo: str,
+    pages: list[dict[str, Any]],
+    pr_number: int | None = None,
+    *,
+    acquisition_start_observation: dict[str, Any] | None = None,
+    acquisition_end_observation: dict[str, Any] | None = None,
+    pagination_evidence: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return strict response evidence without changing schema-v2 orientation."""
+    if acquisition_start_observation is None:
+        acquisition_start_observation = local_acquisition_observation("start")
+    state_from_pages(repo, pages, pr_number=pr_number)
+    first = extract_pr(pages[0])
+    identity = pull_request_identity(pages[0])
+    pr_identity = _provider_identity(first, "pull request")
+    threads, comments, reviews, identity_registry = _identity_consistent_collections(
+        pages
+    )
+    review_sources = [_strict_review_source(item) for item in reviews]
+    review_identities = [item["provider_identity"] for item in review_sources]
+    all_sources: list[dict[str, Any]] = []
+    observations: list[dict[str, Any]] = []
+    for thread in threads:
+        thread_comments = (thread.get("comments") or {}).get("nodes") or []
+        root_comments = [
+            item for item in thread_comments if item.get("replyTo") is None
+        ]
+        if len(root_comments) != 1 or any(
+            "replyTo" not in item for item in thread_comments
+        ):
+            raise ResponseShapeError(
+                "inline review thread lacked one unambiguous replyTo thread root"
+            )
+        root_identity = _provider_identity(
+            root_comments[0], "inline thread root comment"
+        )
+        thread_sources = [
+            _strict_inline_source(comment, thread, root_identity)
+            for comment in thread_comments
+        ]
+        _validate_inline_associations(thread_sources, review_identities)
+        observations.extend(thread_sources)
+        all_sources.extend(
+            source
+            for source in thread_sources
+            if source["state"]["value"] == "SUBMITTED"
+            and base64.b64decode(source["body"]["utf8_base64"]).strip()
+        )
+    conversation_sources = [_strict_conversation_source(item) for item in comments]
+    observations.extend(conversation_sources)
+    observations.extend(review_sources)
+    all_sources.extend(
+        source
+        for source in conversation_sources
+        if base64.b64decode(source["body"]["utf8_base64"]).strip()
+    )
+    all_sources.extend(
+        source
+        for source in review_sources
+        if source["state"]["value"] != "PENDING"
+        and base64.b64decode(source["body"]["utf8_base64"]).strip()
+    )
+    if acquisition_end_observation is None:
+        acquisition_end_observation = local_acquisition_observation("end")
+    if pagination_evidence is None:
+        pagination_evidence = pagination_evidence_from_pages(pages)
+    repository = pages[0]["data"]["repository"]
+    repository_identity = _provider_identity(repository, "repository")
+    epoch = {
+        "schema_version": 1,
+        "complete": True,
+        "snapshot_atomicity": "not_claimed",
+        "repository": {
+            "name_with_owner": identity["repo"],
+            "owner_login": identity["owner"],
+            "provider_identity": repository_identity,
+        },
+        "pull_request": {
+            **pr_identity,
+            "number": identity["number"],
+            "permalink": _required_string(first, "url", "pull request"),
+            "head_oid": identity["head_oid"],
+            "base_oid": identity["base_oid"],
+            "head_repository": identity["head_repo"],
+        },
+        "sources": all_sources,
+        "observations": observations,
+        "observation_digest": _canonical_digest(observations),
+        "identity_registry": identity_registry,
+        "identity_registry_digest": _canonical_digest(identity_registry),
+        "acquisition_start_observation": acquisition_start_observation,
+        "acquisition_end_observation": acquisition_end_observation,
+        "pagination_evidence": pagination_evidence,
+    }
+    epoch["epoch_id"] = _canonical_digest(epoch)
+    return epoch
+
+
+def local_acquisition_observation(phase: str) -> dict[str, Any]:
+    if phase not in {"start", "end"}:
+        raise ValueError("acquisition observation phase must be start or end")
+    return {
+        "kind": "local_acquisition_observation",
+        "phase": phase,
+        "observed_at": datetime.now(timezone.utc)
+        .isoformat(timespec="microseconds")
+        .replace("+00:00", "Z"),
+        "monotonic_ns": time.monotonic_ns(),
+    }
+
+
+def pagination_evidence_from_pages(
+    pages: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if isinstance(pages, AcquiredPageSequence):
+        return pages.pagination_evidence()
+    collections: dict[str, Any] = {}
+    for name in CONNECTION_KEYS:
+        observations = []
+        request_cursor = None
+        for page in pages:
+            pr = extract_pr(page)
+            connection = _pr_connection(pr, name, False, "pagination evidence")
+            if connection is None:
+                continue
+            page_info = connection.get("pageInfo") or {}
+            observations.append(
+                {
+                    "page_index": len(observations),
+                    "request_cursor": request_cursor,
+                    "node_count": len(connection.get("nodes") or []),
+                    "has_next_page": page_info.get("hasNextPage"),
+                    "end_cursor": page_info.get("endCursor"),
+                }
+            )
+            request_cursor = page_info.get("endCursor")
+        if not observations or observations[-1]["has_next_page"] is not False:
+            raise PaginationError(f"{name} pagination evidence was incomplete")
+        collections[name] = {
+            "complete": True,
+            "node_count": sum(page["node_count"] for page in observations),
+            "pages": observations,
+        }
+    hydrated_threads = []
+    for thread in collect_review_threads([extract_pr(page) for page in pages]):
+        comments = thread.get("comments") or {}
+        page_info = comments.get("pageInfo") or {}
+        if page_info.get("hasNextPage") is not False:
+            raise PaginationError("hydrated thread pagination evidence was incomplete")
+        hydrated_threads.append(
+            {
+                "thread_node_id": thread.get("id"),
+                "complete": True,
+                "comment_count": len(comments.get("nodes") or []),
+                "terminal_end_cursor": page_info.get("endCursor"),
+                "pages": [
+                    {
+                        "page_index": 0,
+                        "request_cursor": None,
+                        "node_count": len(comments.get("nodes") or []),
+                        "has_next_page": page_info.get("hasNextPage"),
+                        "end_cursor": page_info.get("endCursor"),
+                    }
+                ],
+            }
+        )
+    return {
+        "complete": True,
+        "collections": collections,
+        "hydrated_threads": hydrated_threads,
+    }
 
 
 def state_from_pages(
@@ -753,6 +1714,19 @@ def pull_request_identity(page: dict[str, Any]) -> dict[str, Any]:
     }
     require_complete_identity(identity, "page")
     return identity
+
+
+def validate_repository_page_identity(
+    expected: dict[str, Any] | None,
+    page: dict[str, Any],
+    source: str,
+) -> dict[str, Any]:
+    repository = page["data"]["repository"]
+    actual = _provider_identity(repository, f"{source} repository")
+    if expected is not None:
+        validate_matching_identity(expected, actual, f"{source} repository")
+        return expected
+    return actual
 
 
 def thread_comments_identity(page: dict[str, Any]) -> dict[str, Any]:
@@ -1123,6 +2097,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--json", action="store_true", help="Print JSON state")
     parser.add_argument(
+        "--typed-epoch",
+        action="store_true",
+        help="Print strict typed response-source evidence",
+    )
+    parser.add_argument(
         "--summary", action="store_true", help="Print terse human summary"
     )
     parser.add_argument(
@@ -1152,6 +2131,10 @@ def main(argv: list[str] | None = None) -> int:
         pages = [load_fixture_page(path) for path in args.fixture]
     else:
         pages = fetch_pages(args.repo, args.pr)
+    if args.typed_epoch:
+        epoch = typed_epoch_from_pages(args.repo, pages, pr_number=args.pr)
+        print(json.dumps(epoch, indent=2, sort_keys=True))
+        return 0
     state = state_from_pages(args.repo, pages, pr_number=args.pr)
     if args.json or not args.summary:
         print(json.dumps(state, indent=2, sort_keys=True))

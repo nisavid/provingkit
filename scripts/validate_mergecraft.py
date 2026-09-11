@@ -32,6 +32,12 @@ from refresh_transaction import (  # noqa: E402
     replace_generated_artifacts,
     snapshot_tree,
 )
+from validate_feedback_response_evidence import (
+    EvidenceError as FeedbackEvidenceError,
+)
+from validate_feedback_response_evidence import (
+    validate as validate_feedback_response_evidence,
+)
 
 try:
     import yaml
@@ -154,6 +160,18 @@ RAW_SKILL_EVAL_FIXTURES = {
     "graphite": ("latest-publication-receipt-drift.md",),
     "interacting-with-pr-review-feedback": (
         "authorized-reply-and-resolution-boundary.md",
+        "mixed-review-and-inline-sources.md",
+        "resolved-intermediate-reply-bytes.md",
+        "two-top-level-source-types.md",
+        "unknown-and-key-reuse.md",
+        "persistence-failure-and-post-write-drift.md",
+        "epochs-followups-and-independent-operations.md",
+        "unexecuted-invalidation-and-readjudication.md",
+        "unsupported-development-format.md",
+        "exclusive-identity-and-crash-recovery.md",
+        "semantic-history-validation-and-atomic-transitions.md",
+        "two-effective-unknown-intents.md",
+        "stable-source-owner-across-repository-rename.md",
     ),
     "resuming-reviewed-prs": (
         "latest-publication-receipt-drift.md",
@@ -193,6 +211,7 @@ GITHUB_ALIAS_ACCESS = {
     "patch-inspection": "read",
     "top-level-comment-read": "read",
     "top-level-comment-write": "write",
+    "feedback-conversation-response-write": "write",
     "review-comment-read": "read",
     "review-reply-write": "write",
     "labels-read": "read",
@@ -303,8 +322,16 @@ EXPECTED_SKILL_FILES = {
     },
     "interacting-with-pr-review-feedback": COMMON_SKILL_FILES
     | {
+        "evals/response-evidence.json",
+        "evals/discovery-evidence.json",
         "references/interaction-authority.md",
         "references/github-markdown-authoring.md",
+        "scripts/github_response_provider.py",
+        "scripts/response_identity_lifecycle.py",
+        "scripts/response_outcome_store.py",
+        "scripts/response_source_owner.py",
+        "scripts/response_cli.py",
+        "scripts/response_runtime.py",
     },
     "resuming-reviewed-prs": COMMON_SKILL_FILES,
     "getting-prs-ready-for-review": COMMON_SKILL_FILES,
@@ -1789,6 +1816,17 @@ def validate_topology(root: Path) -> None:
                 "nested loop ownership",
             )
     skills_by_name = {component["name"]: component for component in skills}
+    response_skill = "interacting-with-pr-review-feedback"
+    response_authoring_projection = (
+        f"skills/{response_skill}/{MARKDOWN_AUTHORING_PROJECTIONS[response_skill]}"
+    )
+    require(
+        response_authoring_projection in skills_by_name[response_skill]["references"]
+        and "operation:github-markdown-content"
+        in skills_by_name[response_skill]["calls"]
+        and response_skill in operation_by_id["github-markdown-content"]["callers"],
+        "response Markdown authoring operation edge drift",
+    )
     outcome_coordinators = {
         component["name"]
         for component in skills
@@ -3244,6 +3282,7 @@ def validate_writer_publisher_trigger_evals(repo_root: Path) -> None:
 
 CANDIDATE_RUNTIME_PROBE = r'''
 import copy
+import contextlib
 import hashlib
 import json
 import os
@@ -3257,12 +3296,14 @@ root = Path(sys.argv[1])
 publication_scripts = root / "skills/publishing-reviewable-prs/scripts"
 writer_scripts = root / "skills/writing-reviewable-pr-descriptions/scripts"
 feedback_scripts = root / "skills/addressing-pr-review-feedback/scripts"
+interaction_scripts = root / "skills/interacting-with-pr-review-feedback/scripts"
 graphite_scripts = root / "skills/graphite/scripts"
 comment_scripts = root / "skills/getting-prs-merged/scripts"
 for directory in (
     publication_scripts,
     writer_scripts,
     feedback_scripts,
+    interaction_scripts,
     graphite_scripts,
     comment_scripts,
 ):
@@ -3276,19 +3317,206 @@ import post_coderabbit_comment as comments
 import publication_support as support
 import reviewable_pr_state as state
 import review_feedback_state as feedback
+import response_identity_lifecycle as identity_lifecycle
+import response_outcome_store
+import response_runtime
+import response_source_owner
 import submit_draft_stack as graphite
 import update_reviewable_pr as update
 from change_navigation import review_input
 
+assert response_outcome_store.SemanticHistoryFold
+assert response_runtime.ResponseRuntime
 
-def must_reject(action, error_type, expected_message=None):
+owner_epoch = {
+    "repository": {
+        "name_with_owner": "acme/app",
+        "owner_login": "acme",
+        "provider_identity": {"database_id": 10, "node_id": "R_10"},
+    },
+    "pull_request": {"database_id": 20, "node_id": "PR_20", "number": 7},
+}
+owner_source = {
+    "kind": "inline_review_comment",
+    "provider_identity": {"database_id": 30, "node_id": "C_30"},
+    "source_revision_identity": {
+        "body": {"utf8_base64": "RG9uZQ==", "byte_length": 4, "sha256": "6" * 64},
+        "provider_revision": {
+            "availability": "available",
+            "kind": "updated_at",
+            "value": "2026-09-10T00:00:00Z",
+        },
+        "associated_commit": {"availability": "available", "oid": "head"},
+    },
+}
+owner_before = response_source_owner.source_owner_from_epoch(owner_epoch, owner_source)
+renamed_epoch = copy.deepcopy(owner_epoch)
+renamed_epoch["repository"].update(
+    name_with_owner="new-owner/new-name", owner_login="new-owner"
+)
+owner_after = response_source_owner.source_owner_from_epoch(
+    renamed_epoch, owner_source
+)
+assert owner_before["source_identity"] == owner_after["source_identity"], (
+    "S7-S1 stable owner rename guard"
+)
+assert owner_before["source_scope"] == owner_after["source_scope"], (
+    "S7-S1 stable owner revision guard"
+)
+other_repository = copy.deepcopy(owner_epoch)
+other_repository["repository"]["provider_identity"] = {
+    "database_id": 11,
+    "node_id": "R_11",
+}
+assert response_source_owner.source_owner_from_epoch(
+    other_repository, owner_source
+)["source_scope"] != owner_before["source_scope"], "S7-S1 repository discriminator"
+
+
+def response_binding(head_oid):
+    return {
+        "target": {
+            "host": "github.com",
+            "repository": {
+                "name_with_owner": "acme/app",
+                "owner_login": "acme",
+                "provider_identity": {"database_id": 10, "node_id": "R_10"},
+            },
+            "pull_request": {
+                "number": 7,
+                "database_id": 20,
+                "node_id": "PR_20",
+                "head_oid": head_oid,
+                "base_oid": "base",
+                "head_repository": "acme/app",
+                "permalink": "https://github.com/acme/app/pull/7",
+            },
+        },
+        "operation": "create_inline_reply",
+        "placement": {
+            "kind": "review_thread",
+            "thread_node_id": "THREAD_1",
+            "root_comment_database_id": 30,
+        },
+        "expected_actor_identity": {"availability": "available", "login": "ivan"},
+        "body": {"utf8_base64": "RG9uZQ==", "byte_length": 4, "sha256": "6" * 64},
+    }
+
+
+identity_state = {
+    "intents": {
+        "intent-a": {"binding": response_binding("head-a")},
+        "intent-b": {"binding": response_binding("head-b")},
+    },
+    "current_attempt_by_intent": {"intent-a": "attempt-a", "intent-b": "attempt-b"},
+    "effective_disposition_by_attempt": {"attempt-a": "unknown", "attempt-b": "unknown"},
+    "effective_outcome_by_attempt": {"attempt-a": None, "attempt-b": None},
+    "outcomes": {},
+    "reconciliations": {},
+    "identity_owners": {},
+    "identity_observers": {},
+    "identity_reservations": {},
+}
+identity_authority = identity_lifecycle.ResponseIdentityAuthority(
+    lambda: identity_state
+)
+ambiguity = identity_authority.reconciliation_decision("intent-a")
+assert ambiguity["kind"] == "ambiguous_effective_unknown", "C6-S1 ambiguity guard"
+assert ambiguity["intent_ids"] == ["intent-a", "intent-b"], "C6-S1 group membership"
+
+
+class ProbeStore:
+    def __init__(self, history):
+        self.history = history
+        self.appended = []
+
+    @contextlib.contextmanager
+    def locked(self, *, exclusive):
+        assert exclusive is True
+        yield
+
+    def semantic_history(self):
+        return self.history
+
+    def append(self, kind, payload, *, record_id):
+        self.appended.append((kind, payload, record_id))
+
+
+class ForbiddenProvider:
+    def __getattr__(self, name):
+        raise AssertionError(f"ambiguous reconciliation accessed provider method {name}")
+
+
+runtime_history = {
+    "keys": {"key-a": "intent-a"},
+    "intents": {
+        "intent-a": {
+            "intent_id": "intent-a",
+            "owner_id": "owner-a",
+            "binding_digest": "a" * 64,
+            "binding": response_binding("head-a"),
+        }
+    },
+    "owners": {"owner-a": {"owner_id": "owner-a"}},
+    "attempts": {"attempt-a": {"attempt_id": "attempt-a"}},
+    "current_attempt_by_intent": {"intent-a": "attempt-a"},
+    "effective_outcome_by_attempt": {"attempt-a": None},
+    "outcomes": {},
+    "reconciliations": {},
+    "reconciliation_decisions": {"intent-a": ambiguity},
+}
+probe_store = ProbeStore(runtime_history)
+runtime_probe = object.__new__(response_runtime.ResponseRuntime)
+runtime_probe.store = probe_store
+runtime_probe.epoch_adapter = ForbiddenProvider()
+runtime_probe.inline_adapter = ForbiddenProvider()
+runtime_probe.conversation_adapter = ForbiddenProvider()
+runtime_probe._outcome = lambda owner, admitted, attempt, receipt, drift, **links: {
+    "status": receipt["status"],
+    "reason": receipt["reason"],
+}
+ambiguous_outcome = runtime_probe.reconcile("key-a")
+assert ambiguous_outcome["status"] == "unknown"
+assert [kind for kind, _, _ in probe_store.appended] == [
+    "reconciliation_started",
+    "reconciliation_resolution",
+]
+
+reserved_identity = {
+    "object_kind": "PullRequestReviewComment",
+    "database_id": 950,
+    "node_id": "RESPONSE_950",
+}
+identity_state["identity_reservations"][("PullRequestReviewComment", 950, "RESPONSE_950")] = {
+    "reconciliation_id": "round-a",
+    "attempt_id": "attempt-a",
+    "intent_id": "intent-a",
+    "binding_digest": "a" * 64,
+}
+
+
+def must_reject(action, error_type, expected_message=None, failure_message=None):
     try:
         action()
     except error_type as error:
         if expected_message is not None and str(error) != expected_message:
             raise AssertionError("candidate failed at the wrong behavior seam")
         return
-    raise AssertionError("malformed candidate input was accepted")
+    raise AssertionError(failure_message or "malformed candidate input was accepted")
+
+
+must_reject(
+    lambda: identity_authority.apply_transition(
+        "attempt_resolution",
+        {
+            "intent_id": "intent-b",
+            "identity_observations": [reserved_identity],
+            "identity_claim": None,
+        },
+    ),
+    identity_lifecycle.ResponseIdentityError,
+    failure_message="C6-S2 cross-intent lifecycle guard",
+)
 
 
 for parser, error_type in (
@@ -4812,6 +5040,7 @@ def validate(
     check_content_lock: bool | None = None,
     check_projections: bool = True,
     check_markdown_evidence: bool = True,
+    check_feedback_evidence: bool = True,
     emit_success: bool = True,
 ) -> None:
     root = locate_plugin(repo_root)
@@ -4841,6 +5070,11 @@ def validate(
     validate_raw_skill_eval_isolation(repo_root)
     validate_writer_publisher_trigger_evals(repo_root)
     validate_runtime_contracts(root)
+    if check_feedback_evidence:
+        try:
+            validate_feedback_response_evidence(repo_root)
+        except FeedbackEvidenceError as error:
+            raise ContractError(f"feedback response evidence: {error}") from error
     if check_content_lock is None:
         check_content_lock = not source_stage
     if check_content_lock:
@@ -4879,6 +5113,7 @@ def main() -> int:
                 check_content_lock=False,
                 check_projections=not args.write_markdown_projections,
                 check_markdown_evidence=not args.write_markdown_projections,
+                check_feedback_evidence=not args.write_markdown_projections,
                 emit_success=False,
             )
             require_content_lock_write_snapshot_unchanged(repository, snapshot)
@@ -4892,6 +5127,7 @@ def main() -> int:
             source_stage=args.source_stage,
             check_content_lock=False if args.write_markdown_projections else None,
             check_markdown_evidence=not args.write_markdown_projections,
+            check_feedback_evidence=not args.write_markdown_projections,
             emit_success=not args.write_markdown_projections,
         )
     except (
