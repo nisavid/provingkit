@@ -5,6 +5,7 @@ import json
 import shutil
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -80,12 +81,12 @@ def test_routing_definition_has_the_complete_inventory():
     runner = load_runner()
     bundle = runner.load_definition(ROOT)
     cases = bundle.cases
-    assert len(cases) == 117
+    assert len(cases) == 121
     assert runner.case_counts(cases) == {
-        "cold_start": 22,
-        "explicit_invocation": 22,
-        "trigger": 73,
-        "total": 117,
+        "cold_start": 23,
+        "explicit_invocation": 23,
+        "trigger": 75,
+        "total": 121,
     }
     assert (
         sum(
@@ -93,7 +94,7 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 38
+        == 39
     )
     assert (
         sum(
@@ -101,10 +102,11 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 35
+        == 36
     )
     assert {
         "versionkeeping:using-persistent-git-worktrees",
+        "mergecraft:writing-github-issue-and-pr-markdown",
         "mergecraft:writing-reviewable-pr-descriptions",
         "mergecraft:publishing-reviewable-prs",
         "mergecraft:graphite",
@@ -112,6 +114,47 @@ def test_routing_definition_has_the_complete_inventory():
         "mergecraft:resuming-reviewed-prs",
         "tidesmith:writing-for-people",
     } <= {case.target for case in cases}
+
+
+@pytest.mark.parametrize(
+    "selected_skills",
+    [
+        ("writing-reviewable-pr-descriptions",),
+        (),
+        ("writing-github-issue-and-pr-markdown",),
+    ],
+)
+def test_complete_pr_title_and_description_selects_description_writer(
+    tmp_path: Path, selected_skills: tuple[str, ...]
+):
+    runner = load_runner()
+    bundle = runner.load_definition(ROOT)
+    case = next(
+        case
+        for case in bundle.cases
+        if case.query
+        == "Use the pushed diff to prepare a reviewer-facing Conventional Commit "
+        "pull-request title and complete navigable description."
+    )
+    stream = runner.fixture_stream(
+        replace(case, expected_skills=selected_skills), bundle.skill_names, tmp_path
+    )
+
+    def observe():
+        return runner.observe_route(
+            stream,
+            case,
+            bundle.skill_names,
+            expected_cwd=tmp_path,
+            expected_claude_version="fixture-1",
+            expected_model="fixture-model",
+        )
+
+    if selected_skills == ("writing-reviewable-pr-descriptions",):
+        assert observe()["selected_skills"] == ["writing-reviewable-pr-descriptions"]
+    else:
+        with pytest.raises(runner.RoutingError, match="routing selection mismatch"):
+            observe()
 
 
 def test_definition_rejects_a_negative_expectation_that_still_selects_target(
@@ -348,7 +391,7 @@ def test_evidence_validation_compares_the_declared_candidate_repository(
 
 def test_fixture_mode_rejects_a_full_or_empty_matrix(tmp_path: Path):
     repository, revision = frozen_copy(tmp_path)
-    for limit in (None, "117", "0"):
+    for limit in (None, "121", "0"):
         command = [
             sys.executable,
             str(SCRIPT),

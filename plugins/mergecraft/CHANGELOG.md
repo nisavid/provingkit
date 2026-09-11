@@ -2,6 +2,9 @@
 
 ## 1.0.0
 
+- Add the portable seven-field GitHub Markdown authoring skill, generated
+  writer-local projections, conflict-safe exact-body ownership, and raw behavior
+  and routing corpora.
 - Use Agent Plugins v1 as the canonical package format, with a native Claude
   manifest projection and skill-local Codex metadata.
 - Bind create, text, and ready publication to an explicit review mode, exact

@@ -22,6 +22,7 @@ SCRIPTS = REPOSITORY / "plugins/mergecraft/skills/publishing-reviewable-prs/scri
 sys.path.insert(0, str(SCRIPTS))
 STATE = importlib.import_module("reviewable_pr_state")
 RECEIPTS = importlib.import_module("publication_receipts")
+PUBLICATION_SUPPORT = importlib.import_module("publication_support")
 
 
 def load(name: str, filename: str):
@@ -56,6 +57,11 @@ class RequiredReviewTests(unittest.TestCase):
             separators=(",", ":"),
             ensure_ascii=False,
         ).encode("utf-8")
+
+    def test_temporary_body_preserves_exact_utf8_line_endings(self) -> None:
+        body = "first\r\nsecond\nλ"
+        with PUBLICATION_SUPPORT.temporary_body(body) as temporary:
+            self.assertEqual(Path(temporary.name).read_bytes(), body.encode("utf-8"))
 
     def test_publication_review_constructor_is_private(self) -> None:
         with self.assertRaisesRegex(

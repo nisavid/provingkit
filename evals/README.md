@@ -1,6 +1,6 @@
 # Phase 1 control-plane behavior evaluation
 
-`control-plane-matrix.json` is the public, declarative inventory for the 22
+`control-plane-matrix.json` is the public, declarative inventory for the 23
 Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Tidesmith skills. It
 selects one existing raw scenario per skill and declares only the companion
 skills allowed in that skill's composed condition. It is Phase 1 four-condition
@@ -96,12 +96,12 @@ not authenticate their external authorization. The shipped evaluation-gate
 executable therefore rejects every invocation before reading evidence and
 grants no evaluation or release authority in this source-stage release.
 
-The production target contract requires 264 current executor coordinates:
-22 skills × 4 conditions × 3 repeats. Its required invalidation drill first
+The production target contract requires 276 current executor coordinates:
+23 skills × 4 conditions × 3 repeats. Its required invalidation drill first
 runs a deterministic evaluation-only preimage for the choosing/delegating
 reverse-dependency slice, grades it, retains the superseded executor, grader,
 and blinding-plan checkpoints, then runs the canonical input slice and grades
-it again. A completed production manifest must also contain 22 current graders,
+it again. A completed production manifest must also contain 23 current graders,
 separate from those superseded records. These are validation requirements, not
 a claim that a retained production run already exists. Checkpoints are atomic
 and resumable; a provider call that finishes after a local timeout but before
@@ -116,14 +116,21 @@ responses, blinded grader batches, an explicit invalidation/replacement event,
 adjudications, aggregates, and a schema-v2 manifest for retained structural
 tests.
 
+## Mergecraft GitHub Markdown authoring
+
+The canonical Markdown writer keeps its raw eight-case behavior corpus, eleven trigger cases, delivery boundary, coverage map, and pass policy under `plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/`. Executors receive only the task prompt, raw fixture, and immutable candidate bundle; expected output, expectation text, coverage metadata, and pass policy remain grader-side until execution completes. Run three repetitions: every safety expectation passes all three, each quality expectation passes at least two, and every trigger case is correct. These declarations are evaluation inputs, not evidence that any harness selected or followed the skill.
+
 ## Phase 2 observable routing
 
-`skill-routing-matrix.json` is a separate routing tier. It leaves the 264-run
-semantic target unchanged. Its definition derives a 117-call production target:
-22 cold-start cases + 22 explicit invocations + 73 trigger cases. The trigger
-tier retains all 33 existing trigger cases and adds one positive and one
-negative case for each of the other 20 skills. This count describes the gate;
-it does not assert that the paid calls have been completed.
+`skill-routing-matrix.json` is a separate routing tier. It leaves the 276-run
+semantic target unchanged. Its definition derives a 121-call production target:
+23 cold-start cases + 23 explicit invocations + 75 trigger cases. The trigger
+tier retains 33 imported skill-local trigger cases and adds one positive and one
+negative case for each of the other 21 skills. The Markdown writer uses an
+explicit integrated pair so a complete PR title and description selects the
+PR-description writer; its eleven standalone trigger cases remain separate.
+This count describes the gate; it does not assert that the paid calls have been
+completed.
 
 Production routing evidence uses Claude's first-class `Skill` tool and retains
 the raw JSONL stream, init inventory, model and usage accounting, every failed

@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import contextlib
 import copy
+import hashlib
 import importlib.util
 import io
 import json
@@ -24,6 +25,19 @@ EVAL_ROOT = Path("evals/mergecraft")
 CONTENT_LOCK = Path("release/plugin-content-locks/mergecraft.json")
 ATLAS_RELEASE = Path("release/mergecraft")
 RETIREMENT_LEDGER = Path("release/mergecraft-retirement-contribution-ledger.json")
+MARKDOWN_AUTHORING_SKILL = "writing-github-issue-and-pr-markdown"
+MARKDOWN_AUTHORING_SOURCE = Path(
+    "skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md"
+)
+MARKDOWN_AUTHORING_PROJECTIONS = {
+    "writing-reviewable-pr-descriptions": Path(
+        "references/github-markdown-authoring.md"
+    ),
+    "interacting-with-pr-review-feedback": Path(
+        "references/github-markdown-authoring.md"
+    ),
+    "getting-prs-merged": Path("references/github-markdown-authoring.md"),
+}
 AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 CANONICAL_IDENTITY_FIELDS = (
     "name",
@@ -165,6 +179,383 @@ class ValidateMergecraftTests(unittest.TestCase):
             ),
             sorted(component["name"] for component in topology["skills"]),
         )
+
+    def test_markdown_authoring_contract_is_public_and_writer_local(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        components = {component["name"]: component for component in topology["skills"]}
+        canonical = (self.plugin / MARKDOWN_AUTHORING_SOURCE).read_bytes()
+
+        self.assertIn(MARKDOWN_AUTHORING_SKILL, components)
+        self.assertEqual(
+            components[MARKDOWN_AUTHORING_SKILL]["references"],
+            [MARKDOWN_AUTHORING_SOURCE.as_posix()],
+        )
+        for skill, relative in MARKDOWN_AUTHORING_PROJECTIONS.items():
+            with self.subTest(skill=skill):
+                installed_root = Path(self.temporary_directory.name) / "installed" / skill
+                shutil.copytree(self.plugin / "skills" / skill, installed_root)
+                projection = installed_root / relative
+                self.assertEqual(projection.read_bytes(), canonical)
+                self.assertIn(
+                    f"({relative.as_posix()})",
+                    (installed_root / "SKILL.md").read_text(encoding="utf-8"),
+                )
+
+    def test_source_stage_rejects_markdown_authoring_projection_drift(self) -> None:
+        projection = (
+            self.plugin
+            / "skills/writing-reviewable-pr-descriptions"
+            / MARKDOWN_AUTHORING_PROJECTIONS["writing-reviewable-pr-descriptions"]
+        )
+        projection.write_bytes(projection.read_bytes() + b"\nDrift.\n")
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("writer-local Markdown authoring projection drift", result.stderr)
+
+    def test_content_lock_command_rejects_stale_markdown_projections(self) -> None:
+        projection = (
+            self.plugin
+            / "skills/writing-reviewable-pr-descriptions"
+            / MARKDOWN_AUTHORING_PROJECTIONS["writing-reviewable-pr-descriptions"]
+        )
+        projection.write_bytes(projection.read_bytes() + b"\nDrift.\n")
+        before = {
+            path: path.read_bytes()
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+
+        for extra in ((), ("--source-stage",)):
+            with self.subTest(extra=extra):
+                result = self.run_validator("--write-content-lock", *extra)
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("Markdown authoring projection drift", result.stderr)
+                self.assertEqual(
+                    {path: path.read_bytes() for path in before}, before
+                )
+
+    def test_projection_command_regenerates_only_projections_with_stale_evidence(
+        self,
+    ) -> None:
+        canonical = self.plugin / MARKDOWN_AUTHORING_SOURCE
+        canonical.write_bytes(canonical.read_bytes() + b"\nCanonical extension.\n")
+        projections = {
+            self.plugin / "skills" / skill / relative
+            for skill, relative in MARKDOWN_AUTHORING_PROJECTIONS.items()
+        }
+        next(iter(projections)).chmod(0o640)
+        before = {
+            path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+
+        result = self.run_validator("--write-markdown-projections")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Mergecraft Markdown authoring projections updated", result.stdout)
+        self.assertEqual(
+            {path for path in self.repo.rglob("*") if path.is_file()}, set(before)
+        )
+        for path, (content, mode, inode) in before.items():
+            with self.subTest(path=path.relative_to(self.repo)):
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode), mode)
+                if path in projections:
+                    self.assertEqual(path.read_bytes(), canonical.read_bytes())
+                else:
+                    self.assertEqual(path.read_bytes(), content)
+                    self.assertEqual(path.stat().st_ino, inode)
+
+    def test_content_lock_command_preserves_every_plugin_file(self) -> None:
+        lock = self.repo / CONTENT_LOCK
+        expected_lock = lock.read_bytes()
+        lock.write_bytes(b"{}\n")
+        before = {
+            path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+            for path in self.plugin.rglob("*")
+            if path.is_file()
+        }
+
+        result = self.run_validator("--write-content-lock")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(lock.read_bytes(), expected_lock)
+        self.assertEqual(
+            {
+                path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+                for path in before
+            },
+            before,
+        )
+
+    def test_generation_commands_are_mutually_exclusive(self) -> None:
+        before = {
+            path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+
+        result = self.run_validator(
+            "--write-content-lock", "--write-markdown-projections"
+        )
+
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("not allowed with argument", result.stderr)
+        self.assertEqual(
+            {
+                path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+                for path in before
+            },
+            before,
+        )
+
+    def test_projection_command_rolls_back_after_late_input_changes(self) -> None:
+        canonical = self.plugin / MARKDOWN_AUTHORING_SOURCE
+        canonical.write_bytes(canonical.read_bytes() + b"\nCanonical extension.\n")
+        lock = self.repo / CONTENT_LOCK
+        projections = {
+            self.plugin / "skills" / skill / relative
+            for skill, relative in MARKDOWN_AUTHORING_PROJECTIONS.items()
+        }
+        original = {
+            path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode))
+            for path in projections
+        }
+        real_replace = os.replace
+
+        for changed_input in (canonical, lock):
+            with self.subTest(changed_input=changed_input.relative_to(self.repo)):
+                before_input = changed_input.read_bytes()
+                replacements = 0
+
+                def replace_then_drift(
+                    source: object, destination: object, **kwargs: object
+                ) -> None:
+                    nonlocal replacements
+                    real_replace(source, destination, **kwargs)
+                    if Path(destination).name == "github-markdown-authoring.md":
+                        replacements += 1
+                        if replacements == len(projections):
+                            changed_input.write_bytes(
+                                before_input + b"\nConcurrent input change.\n"
+                            )
+
+                stderr = io.StringIO()
+                with (
+                    mock.patch.object(os, "replace", side_effect=replace_then_drift),
+                    mock.patch.object(
+                        VALIDATE_MERGECRAFT.sys,
+                        "argv",
+                        [
+                            "validate_mergecraft.py",
+                            str(self.repo),
+                            "--write-markdown-projections",
+                        ],
+                    ),
+                    contextlib.redirect_stderr(stderr),
+                ):
+                    result = VALIDATE_MERGECRAFT.main()
+
+                self.assertEqual(result, 1, stderr.getvalue())
+                self.assertIn("validated inputs changed", stderr.getvalue())
+                self.assertEqual(
+                    {
+                        path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode))
+                        for path in projections
+                    },
+                    original,
+                )
+                self.assertEqual(
+                    changed_input.read_bytes(),
+                    before_input + b"\nConcurrent input change.\n",
+                )
+                changed_input.write_bytes(before_input)
+
+    def test_markdown_authoring_eval_corpus_has_a_blind_executor_boundary(self) -> None:
+        VALIDATE_MERGECRAFT.validate_markdown_authoring_eval_corpus(self.plugin)
+        eval_root = self.plugin / "skills" / MARKDOWN_AUTHORING_SKILL / "evals"
+        delivery = json.loads((eval_root / "delivery.json").read_text())
+        document = json.loads((eval_root / "evals.json").read_text())
+
+        self.assertEqual(
+            delivery["executor"]["inputs"],
+            ["prompt", "fixture", "candidate_bundle"],
+        )
+        self.assertNotIn("expected_output", delivery["executor"]["inputs"])
+        self.assertNotIn("expectations", delivery["executor"]["inputs"])
+        for item in document["evals"]:
+            fixture = (
+                self.plugin
+                / "skills"
+                / MARKDOWN_AUTHORING_SKILL
+                / item["fixture_paths"][0]
+            )
+            self.assertTrue(fixture.is_file())
+            self.assertFalse(
+                any(
+                    expectation["text"] in fixture.read_text(encoding="utf-8")
+                    for expectation in item["expectations"]
+                )
+            )
+
+    def test_lock_refresh_rejects_stale_markdown_evidence(self) -> None:
+        skill = self.plugin / "skills" / MARKDOWN_AUTHORING_SKILL / "SKILL.md"
+        skill.write_bytes(skill.read_bytes() + b"\nChanged authoring instruction.\n")
+        lock = self.repo / CONTENT_LOCK
+        before = lock.read_bytes()
+
+        result = self.run_validator("--source-stage", "--write-content-lock")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Markdown authoring evidence source binding drift", result.stderr)
+        self.assertEqual(lock.read_bytes(), before)
+
+    def test_lock_refresh_rejects_relabelled_markdown_requests(self) -> None:
+        prefix = f"skills/{MARKDOWN_AUTHORING_SKILL}"
+        skill = self.plugin / prefix / "SKILL.md"
+        skill.write_bytes(skill.read_bytes() + b"\nChanged authoring instruction.\n")
+        path = self.plugin / prefix / "evals/experiment.json"
+        experiment = json.loads(path.read_bytes())
+        experiment["current_source_sha256"]["SKILL.md"] = hashlib.sha256(
+            skill.read_bytes()
+        ).hexdigest()
+        self.write_json(f"{prefix}/evals/experiment.json", experiment)
+        before = (self.repo / CONTENT_LOCK).read_bytes()
+
+        result = self.run_validator("--source-stage", "--write-content-lock")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Markdown authoring selected request binding drift", result.stderr)
+        self.assertEqual((self.repo / CONTENT_LOCK).read_bytes(), before)
+
+    def test_validator_rejects_contradictory_selected_markdown_threshold(self) -> None:
+        relative = f"skills/{MARKDOWN_AUTHORING_SKILL}/evals/grading.json"
+        grading = json.loads((self.plugin / relative).read_bytes())
+        grading["selected_thresholds"][0]["passes"] = 0
+        grading["selected_thresholds"][0]["met"] = True
+        self.write_json(relative, grading)
+        before = (self.repo / CONTENT_LOCK).read_bytes()
+
+        result = self.run_validator("--source-stage", "--write-content-lock")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Markdown authoring threshold derivation drift", result.stderr)
+        self.assertEqual((self.repo / CONTENT_LOCK).read_bytes(), before)
+
+    def test_validator_rejects_inconsistent_markdown_records_without_tracebacks(
+        self,
+    ) -> None:
+        prefix = f"skills/{MARKDOWN_AUTHORING_SKILL}/evals"
+        experiment = json.loads((self.plugin / prefix / "experiment.json").read_bytes())
+        grading = json.loads((self.plugin / prefix / "grading.json").read_bytes())
+        threshold = grading["selected_thresholds"][0]
+        selected_id = (
+            f"{threshold['experiment']}/case-{threshold['case_id']:02d}"
+            f"-{threshold['variant']}-1"
+        )
+
+        def current_grade(document: dict) -> dict:
+            return next(row for row in document["runs"] if row["run_id"] == selected_id)
+
+        mutations = [
+            ("missing source hash", "experiment",
+             lambda d: d["current_source_sha256"].pop("SKILL.md")),
+            ("changed request", "experiment",
+             lambda d: d["requests_by_sha256"].update(
+                 {next(iter(d["requests_by_sha256"])): "changed request"})),
+            ("changed response", "experiment",
+             lambda d: d["behavior_runs"][0].update(response="changed response")),
+            ("unbound request", "experiment",
+             lambda d: d["behavior_runs"][0].update(request_sha256="0" * 64)),
+            ("duplicate run", "experiment",
+             lambda d: d["behavior_runs"].append(d["behavior_runs"][0])),
+            ("reused session", "experiment",
+             lambda d: d["behavior_runs"][1].update(
+                 session_id=d["behavior_runs"][0]["session_id"])),
+            ("missing variant", "experiment",
+             lambda d: d["behavior_runs"][0].pop("variant")),
+            ("invalid case", "experiment",
+             lambda d: d["behavior_runs"][0].update(case_id=[])),
+            ("invalid repetition", "experiment",
+             lambda d: d["behavior_runs"][0].update(repetition={})),
+            ("missing selected run", "experiment",
+             lambda d: d.update(behavior_runs=[
+                 r for r in d["behavior_runs"] if r["id"] != selected_id])),
+            ("orphan grade", "grading",
+             lambda d: d["runs"][0].update(run_id="missing")),
+            ("duplicate grade", "grading",
+             lambda d: d["runs"].append(d["runs"][0])),
+            ("unbound grade response", "grading",
+             lambda d: current_grade(d).update(response_sha256="0" * 64)),
+            ("stale selected expectation", "grading",
+             lambda d: current_grade(d)["expectations"][0].update(text="Previous contract")),
+            ("nonboolean judgment", "grading",
+             lambda d: current_grade(d)["expectations"][0].update(passed="false")),
+            ("invalid severity", "grading",
+             lambda d: d["runs"][0]["expectations"][0].update(severity=[])),
+            ("missing selected expectation", "grading",
+             lambda d: current_grade(d)["expectations"].pop()),
+            ("missing selected threshold", "grading",
+             lambda d: d["selected_thresholds"].pop()),
+            ("duplicate selected threshold", "grading",
+             lambda d: d["selected_thresholds"].append(d["selected_thresholds"][0])),
+            ("wrong required count", "grading",
+             lambda d: d["selected_thresholds"][0].update(required=1)),
+            ("wrong candidate result", "grading",
+             lambda d: d.update(candidate_passed=not d["candidate_passed"])),
+        ]
+        before = (self.repo / CONTENT_LOCK).read_bytes()
+        for name, target, mutate in mutations:
+            with self.subTest(name=name):
+                documents = {
+                    "experiment": copy.deepcopy(experiment),
+                    "grading": copy.deepcopy(grading),
+                }
+                mutate(documents[target])
+                for label, document in documents.items():
+                    self.write_json(f"{prefix}/{label}.json", document)
+
+                result = self.run_validator("--source-stage", "--write-content-lock")
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertTrue(
+                    result.stderr.startswith("Mergecraft contract validation failed:"),
+                    result.stderr,
+                )
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual((self.repo / CONTENT_LOCK).read_bytes(), before)
+
+    def test_validator_accepts_a_consistently_recorded_markdown_failure(self) -> None:
+        relative = f"skills/{MARKDOWN_AUTHORING_SKILL}/evals/grading.json"
+        grading = json.loads((self.plugin / relative).read_bytes())
+        threshold = grading["selected_thresholds"][0]
+        self.assertEqual((threshold["severity"], threshold["passes"]), ("safety", 3))
+        run_id = (
+            f"{threshold['experiment']}/case-{threshold['case_id']:02d}"
+            f"-{threshold['variant']}-1"
+        )
+        grade = next(row for row in grading["runs"] if row["run_id"] == run_id)
+        expectation = next(
+            item for item in grade["expectations"]
+            if item["id"] == threshold["expectation"]
+        )
+        expectation["passed"] = False
+        expectation["evidence"] = "Constructed independent failure for this regression."
+        for rows in (grading["thresholds"], grading["selected_thresholds"]):
+            for row in rows:
+                if all(
+                    row[key] == threshold[key]
+                    for key in ("experiment", "variant", "case_id", "expectation")
+                ):
+                    row.update(passes=2, met=False)
+        grading["candidate_passed"] = False
+        self.write_json(relative, grading)
+
+        result = self.run_validator("--source-stage")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_claude_manifest_is_exact_canonical_projection(self) -> None:
         canonical = json.loads((self.plugin / "plugin.json").read_text())
@@ -1277,7 +1668,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "2b0e30b1861ef820296d8cc14776141797ea850bfe135190a707b03e92c754c1"
+                "078c2229f7f26e2af1fba8022cca12c1540d11d03a153bd44bed92089531917a"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"

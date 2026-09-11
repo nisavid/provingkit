@@ -38,7 +38,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/versionkeeping.json",
-          "sha256": "sha256:50711e4e975d001c471777e179872a1a52cde73aa11ea83eb3e744201a7496b4"
+          "sha256": "sha256:6ca968aec22163261f632e6f98617ce4871c321617855e3fe3ca880a9667ae3a"
         },
         "display_name": "Versionkeeping",
         "distribution_kind": "agent-plugin",
@@ -53,7 +53,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/mergecraft.json",
-          "sha256": "sha256:8309362a6ca7149fd4f52fdf07e6db839892a51248e85dfc8045dd7d2c09bc88"
+          "sha256": "sha256:1687bf7e51b62648f0246d96351c4edb57720bfe562ff5f0e668a893a5ba6455"
         },
         "display_name": "Mergecraft",
         "distribution_kind": "agent-plugin",

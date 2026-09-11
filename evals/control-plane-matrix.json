@@ -158,6 +158,17 @@
       }
     },
     {
+      "id": "mergecraft:writing-github-issue-and-pr-markdown",
+      "entrypoint": "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/SKILL.md",
+      "companions": [],
+      "scenario": {
+        "id": "markdown-authoring-recursive-issue-body",
+        "kind": "skill-evals",
+        "source": "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/evals.json",
+        "selector": "recursive-issue-body"
+      }
+    },
+    {
       "id": "mergecraft:writing-reviewable-pr-descriptions",
       "entrypoint": "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
       "companions": ["tricritical:loop"],

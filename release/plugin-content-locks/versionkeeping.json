@@ -35,7 +35,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/check_eval_gate.py": {
-      "sha256": "bbc1dda7da47c2c72d967572d65c971a267b87e6c319e7f5f7d583b6fe02c9bd",
+      "sha256": "b5eefd796dac774bad40cf64bcf705aef6eb2502db83d2faba234db84d024f66",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/execute_git_publication.py": {

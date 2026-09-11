@@ -1,0 +1,46 @@
+[
+  {
+    "query": "Author the exact GFM source for this new Issue body, including the requested CRLF bytes and terminal-newline state; do not create the Issue.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write an Issue conversation-comment body with one physical line per prose block and return the exact body without posting it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Edit only the selected span of this pull-request body, preserving its retained mixed-line-ending suffix byte-for-byte.",
+    "should_trigger": true
+  },
+  {
+    "query": "Author the exact top-level pull-request conversation-comment body for a separate actuator, but do not post it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Draft the submitted-review summary body as valid GFM with no terminal newline; do not submit a review.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write the exact review-thread root body with an explicit <br> hard break, without creating or submitting the thread.",
+    "should_trigger": true
+  },
+  {
+    "query": "Author an evidence-backed review-thread reply body and preserve the supplied opaque marker exactly; do not reply on GitHub.",
+    "should_trigger": true
+  },
+  {
+    "query": "Rewrite this repository README in clear Markdown and wrap its source at 88 columns.",
+    "should_trigger": false
+  },
+  {
+    "query": "Inspect these existing Issue and pull-request comments and report whether any contain malformed Markdown; change nothing.",
+    "should_trigger": false
+  },
+  {
+    "query": "Post this already-approved exact comment body to pull request #42 and verify the stored comment.",
+    "should_trigger": false
+  },
+  {
+    "query": "Use the pushed diff to prepare a reviewer-facing Conventional Commit pull-request title and complete navigable description.",
+    "should_trigger": false
+  }
+]

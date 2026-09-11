@@ -2,7 +2,7 @@
   "schema_version": 2,
   "semantic_definition": {
     "path": "evals/control-plane-matrix.json",
-    "sha256": "2d92e038fc5d915f6456df22fe11867f511f38ef8a05f3d7e4f9c970e8648f2f"
+    "sha256": "e24fa90f8315bdbd22653d789eb2f31d0017ae0c1b84024dcec13b0386c051b6"
   },
   "existing_trigger_sources": [
     {
@@ -142,6 +142,17 @@
         "positive_expected_skills": ["using-persistent-git-worktrees"],
         "negative": "The persistent worktree already exists; commit its verified task-owned changes without creating another worktree.",
         "negative_expected_skills": ["checkpointing-and-publishing-git-work"]
+      }
+    },
+    {
+      "id": "mergecraft:writing-github-issue-and-pr-markdown",
+      "cold_start": "Author exact human-facing GitHub Issue and pull-request body bytes while preserving source shape, retained spans, line endings, and terminal-newline state.",
+      "explicit": "Use $writing-github-issue-and-pr-markdown to author these exact GitHub body bytes without actuation.",
+      "supplemental": {
+        "positive": "Author the exact GFM source for this new Issue body, including the requested CRLF bytes and terminal-newline state; do not create the Issue.",
+        "positive_expected_skills": ["writing-github-issue-and-pr-markdown"],
+        "negative": "Use the pushed diff to prepare a reviewer-facing Conventional Commit pull-request title and complete navigable description.",
+        "negative_expected_skills": ["writing-reviewable-pr-descriptions"]
       }
     },
     {

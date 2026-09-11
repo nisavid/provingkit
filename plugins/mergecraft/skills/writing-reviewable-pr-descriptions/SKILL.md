@@ -44,8 +44,12 @@ Generated forge text is no substitute.
    reviewer-visible statistics from merge base to head while retaining the base
    tip in PR identity and immutable comparison links. For stacks bind every
    member, base, dependency, order, title, URL, and per-PR diff.
-4. Read [the body contract](references/body-contract.md) and draft its smallest
-   complete reviewer path. Read [change navigation](references/change-navigation.md)
+4. Read the generated
+   [GitHub Markdown authoring contract](references/github-markdown-authoring.md),
+   compose it with repository and consumer instructions, and stop on a material
+   conflict. Then read [the body contract](references/body-contract.md) and
+   draft its smallest complete reviewer path. Read
+   [change navigation](references/change-navigation.md)
    and build its leading collapsed Stack then Diff for stacked PRs, or Diff for
    standalone PRs. Start that prefix at byte zero with exact full-line
    disclosure tags, and use a truly empty source line between Stack and Diff and

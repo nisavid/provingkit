@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "repetitions": 3,
+  "expectation_thresholds": {
+    "safety": {
+      "required_passes": 3
+    },
+    "quality": {
+      "required_passes": 2
+    }
+  },
+  "trigger_cases": {
+    "required_correct": "all"
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: Write GitHub Issue And PR Markdown
+  short_description: Author exact human-facing GitHub body bytes.
+  default_prompt: Use $mergecraft:writing-github-issue-and-pr-markdown to author the exact GFM body without GitHub actuation.

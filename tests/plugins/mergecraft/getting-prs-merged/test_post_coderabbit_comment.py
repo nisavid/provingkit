@@ -5,6 +5,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -108,6 +109,55 @@ class TopLevelCommentActuatorTests(unittest.TestCase):
         self.assertEqual(receipt, created)
         self.assertEqual(mutate.call_count, 1)
         self.assertEqual(stored.call_count, 2)
+
+    def test_cli_preserves_body_file_line_endings_and_terminal_newline(self) -> None:
+        bodies = (
+            b"first\r\nsecond",
+            b"first\r\nsecond\r\n",
+            b"first\nsecond",
+            b"first\nsecond\n",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "body.md"
+            for raw in bodies:
+                with self.subTest(raw=raw):
+                    path.write_bytes(raw)
+                    arguments = [
+                        "post_coderabbit_comment.py",
+                        "--repository",
+                        self.repository,
+                        "--pr",
+                        str(self.pr_number),
+                        "--base",
+                        self.base,
+                        "--base-oid",
+                        self.base_oid,
+                        "--head",
+                        self.head,
+                        "--head-oid",
+                        self.head_oid,
+                        "--head-owner",
+                        self.head_owner,
+                        "--head-repository",
+                        self.head_repository,
+                        "--body-file",
+                        str(path),
+                        "--body-sha256",
+                        hashlib.sha256(raw).hexdigest(),
+                        "--expected-authenticated-login",
+                        self.login,
+                    ]
+                    with (
+                        mock.patch.object(sys, "argv", arguments),
+                        mock.patch.object(
+                            COMMENT, "post_comment", return_value={"id": 91}
+                        ) as post,
+                        mock.patch("builtins.print"),
+                    ):
+                        self.assertEqual(COMMENT.main(), 0)
+                    self.assertEqual(
+                        post.call_args.kwargs["body"].encode("utf-8"), raw
+                    )
 
     def test_comment_receipt_rejects_boolean_identifier(self) -> None:
         body = "@coderabbitai review"
