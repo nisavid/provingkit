@@ -65,6 +65,11 @@ BASE_FILES = {
     "plugin.json",
     "topology.json",
 }
+AGENT_PATH = "agents/proseweaver.md"
+AGENT_NAME = "proseweaver"
+AGENT_DESCRIPTION = (
+    "Forward the supplied task to Proseweaving's writing-for-people skill."
+)
 
 
 class ContractError(ValueError):
@@ -732,16 +737,37 @@ def validate_evals(
     return semantic_files
 
 
+def validate_agent(root: Path) -> None:
+    content = read(root, AGENT_PATH)
+    frontmatter = load_skill_frontmatter(content, AGENT_NAME)
+    require(
+        set(frontmatter) == {"name", "description"},
+        "Proseweaver agent frontmatter keys drift",
+    )
+    require(frontmatter["name"] == AGENT_NAME, "Proseweaver agent name drift")
+    require(
+        frontmatter["description"] == AGENT_DESCRIPTION,
+        "Proseweaver agent description drift",
+    )
+    require(
+        content
+        == "---\n"
+        "name: proseweaver\n"
+        "description: Forward the supplied task to Proseweaving's writing-for-people skill.\n"
+        "---\n\n"
+        "Use `$proseweaving:writing-for-people` for the supplied task.\n",
+        "Proseweaver agent adapter must be an exact minimal forwarder",
+    )
+
+
 def validate_inventory(
     root: Path,
     semantic_files: set[str],
     *,
     allow_missing_content_lock: bool = False,
 ) -> None:
-    require(
-        not (root / "agents").exists(), "Proseweaving must not define persona agents"
-    )
-    expected_files = BASE_FILES | semantic_files
+    validate_agent(root)
+    expected_files = BASE_FILES | semantic_files | {AGENT_PATH}
     actual_files: set[str] = set()
     actual_directories: set[str] = set()
     for path in root.rglob("*"):

@@ -144,10 +144,15 @@ class ValidateProseweavingTests(unittest.TestCase):
         os.symlink(target, link)
         self.assert_rejected("plugin inventory contains a symlink")
 
-    def test_rejects_persona_agents(self) -> None:
-        (self.plugin / "agents").mkdir()
-        (self.plugin / "agents" / "writer.md").write_text("persona\n")
-        self.assert_rejected("Proseweaving must not define persona agents")
+    def test_accepts_proseweaver_agent(self) -> None:
+        agent = self.plugin / "agents" / "proseweaver.md"
+        self.assertTrue(agent.is_file())
+        self.assertEqual(self.validate().returncode, 0)
+
+    def test_rejects_proseweaver_agent_drift(self) -> None:
+        agent = self.plugin / "agents" / "proseweaver.md"
+        agent.write_text(agent.read_text().replace("proseweaver", "writer", 1))
+        self.assert_rejected("Proseweaver agent name drift")
 
     def test_rejects_missing_release_heading(self) -> None:
         path = self.plugin / "CHANGELOG.md"

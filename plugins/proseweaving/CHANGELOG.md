@@ -2,6 +2,8 @@
 
 ## 1.0.0
 
+- Add the Claude-native `proseweaver` agent alias as a thin forwarder to the
+  portable `writing-for-people` skill.
 - Publish `writing-for-people`: the generic mechanics for prose an agent writes
   to a person (grounding first, one graded ask, evidence as a hard constraint, a
   post-draft edit pass with a usage-judged dash rule) with seven behavior evals

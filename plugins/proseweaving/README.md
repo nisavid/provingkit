@@ -19,6 +19,11 @@ Tricritical owns review findings and their structural output contract. A caller
 can explicitly compose those surface contracts with Proseweaving when prose
 mechanics also apply; projections do not cross plugin boundaries.
 
+Claude Code also discovers the native `proseweaver` agent alias. It is a thin
+forwarder to the public skill, so the skill remains the portable policy owner.
+Codex and other Agent Plugins clients consume the standard skill surface and do
+not load this Claude-native agent definition.
+
 ## Public skills
 
 <!-- BEGIN GENERATED SKILL ROSTER -->
@@ -33,7 +38,9 @@ Root `plugin.json` and `skills/` are the canonical Agent Plugins plugin root;
 `.claude-plugin/plugin.json` is a projection of the same identity. Skill-to-skill
 edges use literal public identities linked to sibling `SKILL.md` files. Codex
 adapters and each skill's `agents/openai.yaml` use `$proseweaving:<skill>` targets.
-The roster projection above is generated from `topology.json` by the content-lock writer.
+The root `agents/proseweaver.md` file is a Claude-native adapter and is not a
+portable Agent Plugins component. The roster projection above is generated from
+`topology.json` by the content-lock writer.
 
 ## Validation
 

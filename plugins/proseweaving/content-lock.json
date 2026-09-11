@@ -3,9 +3,9 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "30adcd47fd8c9b885666ff648e162beacdf7d967b07fb3348c67c84310a27e5f",
-    "CHANGELOG.md": "bcc1c70d41fb6d55d1f69f6837bb375678ab3d8064949b7207e3bf2ca111b26b",
+    "CHANGELOG.md": "c492c66f942d37d3cd4314a03006b459697abe949f10740d76f0f177027ed0bd",
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
-    "README.md": "3ef5814dedfe23a35fd0042532636ec5bf54402fff7f83973d625feec5d4d399",
+    "README.md": "8ad2fe22e8546fc649719a1e8d33905ff1663270ba92dbb3e7c6c35fc2989659",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
     "plugin.json": "ce9286aa50eff2628a7610736acb4daa972c58b8491a1efd68a22cc551b6b572",
     "skills/writing-for-people/SKILL.md": "5abfa704566abeccbeb0c3414f8178f65a8a7fc21d3b24e8601740cead0836a5",
