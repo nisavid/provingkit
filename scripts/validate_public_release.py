@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "1df32c3c6934e35bba449877f6217afbe3b01ebc41564b081669fcdcb1c223b9"
+SOURCE_SHA256 = "5683f9fc9e061756f5f1cd1d38d9cef53e2b9ddba8d5e76b0c363bff57f85d32"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -126,6 +126,7 @@ BASE_PLUGIN_SUPPORT_PATHS = {
     "mergecraft": {
         "scripts/refresh_transaction.py",
         "scripts/validate_mergecraft.py",
+        "scripts/validate_feedback_response_evidence.py",
         "tests/test_validate_mergecraft.py",
         "evals/mergecraft",
         "tests/plugins/mergecraft",

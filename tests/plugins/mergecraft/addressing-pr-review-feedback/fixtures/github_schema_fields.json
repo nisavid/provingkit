@@ -1,0 +1,1378 @@
+{
+  "schema_version": 1,
+  "source": "https://api.github.com/graphql",
+  "capture_date": "2026-09-09",
+  "capture_sha256": "2b8544d00c16b877960b06911e061ed7425bff52ab92cfff9f4ea6add5b0e1be",
+  "projection": "Field names and possible concrete types from the captured public schema; no runtime provider authority.",
+  "supplemental_captures": [
+    {
+      "source": "https://api.github.com/graphql",
+      "capture_date": "2026-09-09",
+      "capture_sha256": "ad360cc48bc1c9e745b1e13f0010a4c76684467e07d45152172d39f9ea5904f5",
+      "projection": "Repository field names and GraphQL types from the verified primary capture; no runtime provider authority."
+    }
+  ],
+  "types": [
+    {
+      "name": "Actor",
+      "fields": [
+        {
+          "name": "avatarUrl"
+        },
+        {
+          "name": "login"
+        },
+        {
+          "name": "resourcePath"
+        },
+        {
+          "name": "url"
+        }
+      ],
+      "possibleTypes": [
+        {
+          "name": "Bot"
+        },
+        {
+          "name": "EnterpriseUserAccount"
+        },
+        {
+          "name": "Mannequin"
+        },
+        {
+          "name": "Organization"
+        },
+        {
+          "name": "User"
+        }
+      ]
+    },
+    {
+      "name": "IssueComment",
+      "fields": [
+        {
+          "name": "author"
+        },
+        {
+          "name": "authorAssociation"
+        },
+        {
+          "name": "body"
+        },
+        {
+          "name": "bodyHTML"
+        },
+        {
+          "name": "bodyText"
+        },
+        {
+          "name": "createdAt"
+        },
+        {
+          "name": "createdViaEmail"
+        },
+        {
+          "name": "databaseId"
+        },
+        {
+          "name": "editor"
+        },
+        {
+          "name": "fullDatabaseId"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "includesCreatedEdit"
+        },
+        {
+          "name": "isMinimized"
+        },
+        {
+          "name": "isPinned"
+        },
+        {
+          "name": "issue"
+        },
+        {
+          "name": "lastEditedAt"
+        },
+        {
+          "name": "minimizedReason"
+        },
+        {
+          "name": "pinnedAt"
+        },
+        {
+          "name": "pinnedBy"
+        },
+        {
+          "name": "publishedAt"
+        },
+        {
+          "name": "pullRequest"
+        },
+        {
+          "name": "reactionGroups"
+        },
+        {
+          "name": "reactions"
+        },
+        {
+          "name": "repository"
+        },
+        {
+          "name": "resourcePath"
+        },
+        {
+          "name": "updatedAt"
+        },
+        {
+          "name": "url"
+        },
+        {
+          "name": "userContentEdits"
+        },
+        {
+          "name": "viewerCanDelete"
+        },
+        {
+          "name": "viewerCanMinimize"
+        },
+        {
+          "name": "viewerCanPin"
+        },
+        {
+          "name": "viewerCanReact"
+        },
+        {
+          "name": "viewerCanUnminimize"
+        },
+        {
+          "name": "viewerCanUnpin"
+        },
+        {
+          "name": "viewerCanUpdate"
+        },
+        {
+          "name": "viewerCannotUpdateReasons"
+        },
+        {
+          "name": "viewerDidAuthor"
+        }
+      ],
+      "possibleTypes": []
+    },
+    {
+      "name": "Node",
+      "fields": [
+        {
+          "name": "id"
+        }
+      ],
+      "possibleTypes": [
+        {
+          "name": "AddedToMergeQueueEvent"
+        },
+        {
+          "name": "AddedToProjectEvent"
+        },
+        {
+          "name": "AddedToProjectV2Event"
+        },
+        {
+          "name": "App"
+        },
+        {
+          "name": "AssignedEvent"
+        },
+        {
+          "name": "AutoMergeDisabledEvent"
+        },
+        {
+          "name": "AutoMergeEnabledEvent"
+        },
+        {
+          "name": "AutoRebaseEnabledEvent"
+        },
+        {
+          "name": "AutoSquashEnabledEvent"
+        },
+        {
+          "name": "AutomaticBaseChangeFailedEvent"
+        },
+        {
+          "name": "AutomaticBaseChangeSucceededEvent"
+        },
+        {
+          "name": "BaseRefChangedEvent"
+        },
+        {
+          "name": "BaseRefDeletedEvent"
+        },
+        {
+          "name": "BaseRefForcePushedEvent"
+        },
+        {
+          "name": "Blob"
+        },
+        {
+          "name": "BlockedByAddedEvent"
+        },
+        {
+          "name": "BlockedByRemovedEvent"
+        },
+        {
+          "name": "BlockingAddedEvent"
+        },
+        {
+          "name": "BlockingRemovedEvent"
+        },
+        {
+          "name": "Bot"
+        },
+        {
+          "name": "BranchProtectionRule"
+        },
+        {
+          "name": "BypassForcePushAllowance"
+        },
+        {
+          "name": "BypassPullRequestAllowance"
+        },
+        {
+          "name": "CWE"
+        },
+        {
+          "name": "CheckRun"
+        },
+        {
+          "name": "CheckSuite"
+        },
+        {
+          "name": "ClosedEvent"
+        },
+        {
+          "name": "CodeOfConduct"
+        },
+        {
+          "name": "CommentDeletedEvent"
+        },
+        {
+          "name": "Commit"
+        },
+        {
+          "name": "CommitComment"
+        },
+        {
+          "name": "CommitCommentThread"
+        },
+        {
+          "name": "Comparison"
+        },
+        {
+          "name": "ConnectedEvent"
+        },
+        {
+          "name": "ConvertToDraftEvent"
+        },
+        {
+          "name": "ConvertedFromDraftEvent"
+        },
+        {
+          "name": "ConvertedNoteToIssueEvent"
+        },
+        {
+          "name": "ConvertedToDiscussionEvent"
+        },
+        {
+          "name": "CrossReferencedEvent"
+        },
+        {
+          "name": "DemilestonedEvent"
+        },
+        {
+          "name": "DependencyGraphManifest"
+        },
+        {
+          "name": "DeployKey"
+        },
+        {
+          "name": "DeployedEvent"
+        },
+        {
+          "name": "Deployment"
+        },
+        {
+          "name": "DeploymentEnvironmentChangedEvent"
+        },
+        {
+          "name": "DeploymentReview"
+        },
+        {
+          "name": "DeploymentStatus"
+        },
+        {
+          "name": "DisconnectedEvent"
+        },
+        {
+          "name": "Discussion"
+        },
+        {
+          "name": "DiscussionCategory"
+        },
+        {
+          "name": "DiscussionComment"
+        },
+        {
+          "name": "DiscussionPoll"
+        },
+        {
+          "name": "DiscussionPollOption"
+        },
+        {
+          "name": "DraftIssue"
+        },
+        {
+          "name": "Enterprise"
+        },
+        {
+          "name": "EnterpriseAdministratorInvitation"
+        },
+        {
+          "name": "EnterpriseIdentityProvider"
+        },
+        {
+          "name": "EnterpriseMemberInvitation"
+        },
+        {
+          "name": "EnterpriseRepositoryInfo"
+        },
+        {
+          "name": "EnterpriseServerInstallation"
+        },
+        {
+          "name": "EnterpriseServerUserAccount"
+        },
+        {
+          "name": "EnterpriseServerUserAccountEmail"
+        },
+        {
+          "name": "EnterpriseServerUserAccountsUpload"
+        },
+        {
+          "name": "EnterpriseTeam"
+        },
+        {
+          "name": "EnterpriseUserAccount"
+        },
+        {
+          "name": "Environment"
+        },
+        {
+          "name": "ExternalIdentity"
+        },
+        {
+          "name": "Gist"
+        },
+        {
+          "name": "GistComment"
+        },
+        {
+          "name": "HeadRefDeletedEvent"
+        },
+        {
+          "name": "HeadRefForcePushedEvent"
+        },
+        {
+          "name": "HeadRefRestoredEvent"
+        },
+        {
+          "name": "IpAllowListEntry"
+        },
+        {
+          "name": "Issue"
+        },
+        {
+          "name": "IssueComment"
+        },
+        {
+          "name": "IssueCommentPinnedEvent"
+        },
+        {
+          "name": "IssueCommentUnpinnedEvent"
+        },
+        {
+          "name": "IssueFieldAddedEvent"
+        },
+        {
+          "name": "IssueFieldChangedEvent"
+        },
+        {
+          "name": "IssueFieldDate"
+        },
+        {
+          "name": "IssueFieldDateValue"
+        },
+        {
+          "name": "IssueFieldMultiSelect"
+        },
+        {
+          "name": "IssueFieldMultiSelectValue"
+        },
+        {
+          "name": "IssueFieldNumber"
+        },
+        {
+          "name": "IssueFieldNumberValue"
+        },
+        {
+          "name": "IssueFieldRemovedEvent"
+        },
+        {
+          "name": "IssueFieldSingleSelect"
+        },
+        {
+          "name": "IssueFieldSingleSelectOption"
+        },
+        {
+          "name": "IssueFieldSingleSelectValue"
+        },
+        {
+          "name": "IssueFieldText"
+        },
+        {
+          "name": "IssueFieldTextValue"
+        },
+        {
+          "name": "IssueType"
+        },
+        {
+          "name": "IssueTypeAddedEvent"
+        },
+        {
+          "name": "IssueTypeChangedEvent"
+        },
+        {
+          "name": "IssueTypeRemovedEvent"
+        },
+        {
+          "name": "Label"
+        },
+        {
+          "name": "LabeledEvent"
+        },
+        {
+          "name": "Language"
+        },
+        {
+          "name": "License"
+        },
+        {
+          "name": "LinkedBranch"
+        },
+        {
+          "name": "LockedEvent"
+        },
+        {
+          "name": "Mannequin"
+        },
+        {
+          "name": "MarkedAsDuplicateEvent"
+        },
+        {
+          "name": "MarketplaceCategory"
+        },
+        {
+          "name": "MarketplaceListing"
+        },
+        {
+          "name": "MemberFeatureRequestNotification"
+        },
+        {
+          "name": "MembersCanDeleteReposClearAuditEntry"
+        },
+        {
+          "name": "MembersCanDeleteReposDisableAuditEntry"
+        },
+        {
+          "name": "MembersCanDeleteReposEnableAuditEntry"
+        },
+        {
+          "name": "MentionedEvent"
+        },
+        {
+          "name": "MergeQueue"
+        },
+        {
+          "name": "MergeQueueEntry"
+        },
+        {
+          "name": "MergedEvent"
+        },
+        {
+          "name": "MigrationSource"
+        },
+        {
+          "name": "Milestone"
+        },
+        {
+          "name": "MilestonedEvent"
+        },
+        {
+          "name": "MovedColumnsInProjectEvent"
+        },
+        {
+          "name": "OIDCProvider"
+        },
+        {
+          "name": "OauthApplicationCreateAuditEntry"
+        },
+        {
+          "name": "OrgAddBillingManagerAuditEntry"
+        },
+        {
+          "name": "OrgAddMemberAuditEntry"
+        },
+        {
+          "name": "OrgBlockUserAuditEntry"
+        },
+        {
+          "name": "OrgConfigDisableCollaboratorsOnlyAuditEntry"
+        },
+        {
+          "name": "OrgConfigEnableCollaboratorsOnlyAuditEntry"
+        },
+        {
+          "name": "OrgCreateAuditEntry"
+        },
+        {
+          "name": "OrgDisableOauthAppRestrictionsAuditEntry"
+        },
+        {
+          "name": "OrgDisableSamlAuditEntry"
+        },
+        {
+          "name": "OrgDisableTwoFactorRequirementAuditEntry"
+        },
+        {
+          "name": "OrgEnableOauthAppRestrictionsAuditEntry"
+        },
+        {
+          "name": "OrgEnableSamlAuditEntry"
+        },
+        {
+          "name": "OrgEnableTwoFactorRequirementAuditEntry"
+        },
+        {
+          "name": "OrgInviteMemberAuditEntry"
+        },
+        {
+          "name": "OrgInviteToBusinessAuditEntry"
+        },
+        {
+          "name": "OrgOauthAppAccessApprovedAuditEntry"
+        },
+        {
+          "name": "OrgOauthAppAccessBlockedAuditEntry"
+        },
+        {
+          "name": "OrgOauthAppAccessDeniedAuditEntry"
+        },
+        {
+          "name": "OrgOauthAppAccessRequestedAuditEntry"
+        },
+        {
+          "name": "OrgOauthAppAccessUnblockedAuditEntry"
+        },
+        {
+          "name": "OrgRemoveBillingManagerAuditEntry"
+        },
+        {
+          "name": "OrgRemoveMemberAuditEntry"
+        },
+        {
+          "name": "OrgRemoveOutsideCollaboratorAuditEntry"
+        },
+        {
+          "name": "OrgRestoreMemberAuditEntry"
+        },
+        {
+          "name": "OrgUnblockUserAuditEntry"
+        },
+        {
+          "name": "OrgUpdateDefaultRepositoryPermissionAuditEntry"
+        },
+        {
+          "name": "OrgUpdateMemberAuditEntry"
+        },
+        {
+          "name": "OrgUpdateMemberRepositoryCreationPermissionAuditEntry"
+        },
+        {
+          "name": "OrgUpdateMemberRepositoryInvitationPermissionAuditEntry"
+        },
+        {
+          "name": "Organization"
+        },
+        {
+          "name": "OrganizationIdentityProvider"
+        },
+        {
+          "name": "OrganizationInvitation"
+        },
+        {
+          "name": "OrganizationMigration"
+        },
+        {
+          "name": "Package"
+        },
+        {
+          "name": "PackageFile"
+        },
+        {
+          "name": "PackageTag"
+        },
+        {
+          "name": "PackageVersion"
+        },
+        {
+          "name": "ParentIssueAddedEvent"
+        },
+        {
+          "name": "ParentIssueRemovedEvent"
+        },
+        {
+          "name": "PinnedDiscussion"
+        },
+        {
+          "name": "PinnedEnvironment"
+        },
+        {
+          "name": "PinnedEvent"
+        },
+        {
+          "name": "PinnedIssue"
+        },
+        {
+          "name": "PinnedIssueComment"
+        },
+        {
+          "name": "PrivateRepositoryForkingDisableAuditEntry"
+        },
+        {
+          "name": "PrivateRepositoryForkingEnableAuditEntry"
+        },
+        {
+          "name": "Project"
+        },
+        {
+          "name": "ProjectCard"
+        },
+        {
+          "name": "ProjectColumn"
+        },
+        {
+          "name": "ProjectV2"
+        },
+        {
+          "name": "ProjectV2Field"
+        },
+        {
+          "name": "ProjectV2Item"
+        },
+        {
+          "name": "ProjectV2ItemFieldDateValue"
+        },
+        {
+          "name": "ProjectV2ItemFieldIterationValue"
+        },
+        {
+          "name": "ProjectV2ItemFieldMultiSelectValue"
+        },
+        {
+          "name": "ProjectV2ItemFieldNumberValue"
+        },
+        {
+          "name": "ProjectV2ItemFieldSingleSelectValue"
+        },
+        {
+          "name": "ProjectV2ItemFieldTextValue"
+        },
+        {
+          "name": "ProjectV2ItemStatusChangedEvent"
+        },
+        {
+          "name": "ProjectV2IterationField"
+        },
+        {
+          "name": "ProjectV2MultiSelectField"
+        },
+        {
+          "name": "ProjectV2SingleSelectField"
+        },
+        {
+          "name": "ProjectV2StatusUpdate"
+        },
+        {
+          "name": "ProjectV2View"
+        },
+        {
+          "name": "ProjectV2Workflow"
+        },
+        {
+          "name": "PublicKey"
+        },
+        {
+          "name": "PullRequest"
+        },
+        {
+          "name": "PullRequestCommit"
+        },
+        {
+          "name": "PullRequestCommitCommentThread"
+        },
+        {
+          "name": "PullRequestReview"
+        },
+        {
+          "name": "PullRequestReviewComment"
+        },
+        {
+          "name": "PullRequestReviewThread"
+        },
+        {
+          "name": "PullRequestStack"
+        },
+        {
+          "name": "PullRequestStackEntry"
+        },
+        {
+          "name": "PullRequestThread"
+        },
+        {
+          "name": "Push"
+        },
+        {
+          "name": "PushAllowance"
+        },
+        {
+          "name": "Query"
+        },
+        {
+          "name": "Reaction"
+        },
+        {
+          "name": "ReadyForReviewEvent"
+        },
+        {
+          "name": "Ref"
+        },
+        {
+          "name": "ReferencedEvent"
+        },
+        {
+          "name": "Release"
+        },
+        {
+          "name": "ReleaseAsset"
+        },
+        {
+          "name": "RemovedFromMergeQueueEvent"
+        },
+        {
+          "name": "RemovedFromProjectEvent"
+        },
+        {
+          "name": "RemovedFromProjectV2Event"
+        },
+        {
+          "name": "RenamedTitleEvent"
+        },
+        {
+          "name": "ReopenedEvent"
+        },
+        {
+          "name": "RepoAccessAuditEntry"
+        },
+        {
+          "name": "RepoAddMemberAuditEntry"
+        },
+        {
+          "name": "RepoAddTopicAuditEntry"
+        },
+        {
+          "name": "RepoArchivedAuditEntry"
+        },
+        {
+          "name": "RepoChangeMergeSettingAuditEntry"
+        },
+        {
+          "name": "RepoConfigDisableAnonymousGitAccessAuditEntry"
+        },
+        {
+          "name": "RepoConfigDisableCollaboratorsOnlyAuditEntry"
+        },
+        {
+          "name": "RepoConfigDisableContributorsOnlyAuditEntry"
+        },
+        {
+          "name": "RepoConfigDisableSockpuppetDisallowedAuditEntry"
+        },
+        {
+          "name": "RepoConfigEnableAnonymousGitAccessAuditEntry"
+        },
+        {
+          "name": "RepoConfigEnableCollaboratorsOnlyAuditEntry"
+        },
+        {
+          "name": "RepoConfigEnableContributorsOnlyAuditEntry"
+        },
+        {
+          "name": "RepoConfigEnableSockpuppetDisallowedAuditEntry"
+        },
+        {
+          "name": "RepoConfigLockAnonymousGitAccessAuditEntry"
+        },
+        {
+          "name": "RepoConfigUnlockAnonymousGitAccessAuditEntry"
+        },
+        {
+          "name": "RepoCreateAuditEntry"
+        },
+        {
+          "name": "RepoDestroyAuditEntry"
+        },
+        {
+          "name": "RepoRemoveMemberAuditEntry"
+        },
+        {
+          "name": "RepoRemoveTopicAuditEntry"
+        },
+        {
+          "name": "Repository"
+        },
+        {
+          "name": "RepositoryCustomProperty"
+        },
+        {
+          "name": "RepositoryInvitation"
+        },
+        {
+          "name": "RepositoryMigration"
+        },
+        {
+          "name": "RepositoryRule"
+        },
+        {
+          "name": "RepositoryRuleset"
+        },
+        {
+          "name": "RepositoryRulesetBypassActor"
+        },
+        {
+          "name": "RepositoryTopic"
+        },
+        {
+          "name": "RepositoryVisibilityChangeDisableAuditEntry"
+        },
+        {
+          "name": "RepositoryVisibilityChangeEnableAuditEntry"
+        },
+        {
+          "name": "RepositoryVulnerabilityAlert"
+        },
+        {
+          "name": "ReviewDismissalAllowance"
+        },
+        {
+          "name": "ReviewDismissedEvent"
+        },
+        {
+          "name": "ReviewRequest"
+        },
+        {
+          "name": "ReviewRequestRemovedEvent"
+        },
+        {
+          "name": "ReviewRequestedEvent"
+        },
+        {
+          "name": "SavedReply"
+        },
+        {
+          "name": "SecurityAdvisory"
+        },
+        {
+          "name": "SponsorsActivity"
+        },
+        {
+          "name": "SponsorsListing"
+        },
+        {
+          "name": "SponsorsListingFeaturedItem"
+        },
+        {
+          "name": "SponsorsTier"
+        },
+        {
+          "name": "Sponsorship"
+        },
+        {
+          "name": "SponsorshipNewsletter"
+        },
+        {
+          "name": "Status"
+        },
+        {
+          "name": "StatusCheckRollup"
+        },
+        {
+          "name": "StatusContext"
+        },
+        {
+          "name": "SubIssueAddedEvent"
+        },
+        {
+          "name": "SubIssueRemovedEvent"
+        },
+        {
+          "name": "SubscribedEvent"
+        },
+        {
+          "name": "Tag"
+        },
+        {
+          "name": "Team"
+        },
+        {
+          "name": "TeamAddMemberAuditEntry"
+        },
+        {
+          "name": "TeamAddRepositoryAuditEntry"
+        },
+        {
+          "name": "TeamChangeParentTeamAuditEntry"
+        },
+        {
+          "name": "TeamRemoveMemberAuditEntry"
+        },
+        {
+          "name": "TeamRemoveRepositoryAuditEntry"
+        },
+        {
+          "name": "Topic"
+        },
+        {
+          "name": "TransferredEvent"
+        },
+        {
+          "name": "Tree"
+        },
+        {
+          "name": "UnassignedEvent"
+        },
+        {
+          "name": "UnlabeledEvent"
+        },
+        {
+          "name": "UnlockedEvent"
+        },
+        {
+          "name": "UnmarkedAsDuplicateEvent"
+        },
+        {
+          "name": "UnpinnedEvent"
+        },
+        {
+          "name": "UnsubscribedEvent"
+        },
+        {
+          "name": "User"
+        },
+        {
+          "name": "UserBlockedEvent"
+        },
+        {
+          "name": "UserContentEdit"
+        },
+        {
+          "name": "UserList"
+        },
+        {
+          "name": "UserNamespaceRepository"
+        },
+        {
+          "name": "UserStatus"
+        },
+        {
+          "name": "VerifiableDomain"
+        },
+        {
+          "name": "Workflow"
+        },
+        {
+          "name": "WorkflowRun"
+        },
+        {
+          "name": "WorkflowRunFile"
+        }
+      ]
+    },
+    {
+      "name": "PullRequestReview",
+      "fields": [
+        {
+          "name": "author"
+        },
+        {
+          "name": "authorAssociation"
+        },
+        {
+          "name": "authorCanPushToRepository"
+        },
+        {
+          "name": "body"
+        },
+        {
+          "name": "bodyHTML"
+        },
+        {
+          "name": "bodyText"
+        },
+        {
+          "name": "comments"
+        },
+        {
+          "name": "commit"
+        },
+        {
+          "name": "createdAt"
+        },
+        {
+          "name": "createdViaEmail"
+        },
+        {
+          "name": "databaseId"
+        },
+        {
+          "name": "editor"
+        },
+        {
+          "name": "fullDatabaseId"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "includesCreatedEdit"
+        },
+        {
+          "name": "isMinimized"
+        },
+        {
+          "name": "lastEditedAt"
+        },
+        {
+          "name": "minimizedReason"
+        },
+        {
+          "name": "onBehalfOf"
+        },
+        {
+          "name": "publishedAt"
+        },
+        {
+          "name": "pullRequest"
+        },
+        {
+          "name": "reactionGroups"
+        },
+        {
+          "name": "reactions"
+        },
+        {
+          "name": "repository"
+        },
+        {
+          "name": "resourcePath"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "submittedAt"
+        },
+        {
+          "name": "updatedAt"
+        },
+        {
+          "name": "url"
+        },
+        {
+          "name": "userContentEdits"
+        },
+        {
+          "name": "viewerCanDelete"
+        },
+        {
+          "name": "viewerCanMinimize"
+        },
+        {
+          "name": "viewerCanReact"
+        },
+        {
+          "name": "viewerCanUnminimize"
+        },
+        {
+          "name": "viewerCanUpdate"
+        },
+        {
+          "name": "viewerCannotUpdateReasons"
+        },
+        {
+          "name": "viewerDidAuthor"
+        }
+      ],
+      "possibleTypes": []
+    },
+    {
+      "name": "PullRequestReviewComment",
+      "fields": [
+        {
+          "name": "author"
+        },
+        {
+          "name": "authorAssociation"
+        },
+        {
+          "name": "body"
+        },
+        {
+          "name": "bodyHTML"
+        },
+        {
+          "name": "bodyText"
+        },
+        {
+          "name": "commit"
+        },
+        {
+          "name": "createdAt"
+        },
+        {
+          "name": "createdViaEmail"
+        },
+        {
+          "name": "databaseId"
+        },
+        {
+          "name": "diffHunk"
+        },
+        {
+          "name": "draftedAt"
+        },
+        {
+          "name": "editor"
+        },
+        {
+          "name": "fullDatabaseId"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "includesCreatedEdit"
+        },
+        {
+          "name": "isMinimized"
+        },
+        {
+          "name": "lastEditedAt"
+        },
+        {
+          "name": "line"
+        },
+        {
+          "name": "minimizedReason"
+        },
+        {
+          "name": "originalCommit"
+        },
+        {
+          "name": "originalLine"
+        },
+        {
+          "name": "originalPosition"
+        },
+        {
+          "name": "originalStartLine"
+        },
+        {
+          "name": "outdated"
+        },
+        {
+          "name": "path"
+        },
+        {
+          "name": "position"
+        },
+        {
+          "name": "publishedAt"
+        },
+        {
+          "name": "pullRequest"
+        },
+        {
+          "name": "pullRequestReview"
+        },
+        {
+          "name": "reactionGroups"
+        },
+        {
+          "name": "reactions"
+        },
+        {
+          "name": "replyTo"
+        },
+        {
+          "name": "repository"
+        },
+        {
+          "name": "resourcePath"
+        },
+        {
+          "name": "startLine"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "subjectType"
+        },
+        {
+          "name": "updatedAt"
+        },
+        {
+          "name": "url"
+        },
+        {
+          "name": "userContentEdits"
+        },
+        {
+          "name": "viewerCanDelete"
+        },
+        {
+          "name": "viewerCanMinimize"
+        },
+        {
+          "name": "viewerCanReact"
+        },
+        {
+          "name": "viewerCanUnminimize"
+        },
+        {
+          "name": "viewerCanUpdate"
+        },
+        {
+          "name": "viewerCannotUpdateReasons"
+        },
+        {
+          "name": "viewerDidAuthor"
+        }
+      ],
+      "possibleTypes": []
+    },
+    {
+      "name": "PullRequestReviewThread",
+      "fields": [
+        {
+          "name": "comments"
+        },
+        {
+          "name": "diffSide"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "isCollapsed"
+        },
+        {
+          "name": "isOutdated"
+        },
+        {
+          "name": "isResolved"
+        },
+        {
+          "name": "line"
+        },
+        {
+          "name": "originalLine"
+        },
+        {
+          "name": "originalStartLine"
+        },
+        {
+          "name": "path"
+        },
+        {
+          "name": "pullRequest"
+        },
+        {
+          "name": "repository"
+        },
+        {
+          "name": "resolvedBy"
+        },
+        {
+          "name": "startDiffSide"
+        },
+        {
+          "name": "startLine"
+        },
+        {
+          "name": "subjectType"
+        },
+        {
+          "name": "viewerCanReply"
+        },
+        {
+          "name": "viewerCanResolve"
+        },
+        {
+          "name": "viewerCanUnresolve"
+        }
+      ],
+      "possibleTypes": []
+    },
+    {
+      "name": "Repository",
+      "capture_sha256": "ad360cc48bc1c9e745b1e13f0010a4c76684467e07d45152172d39f9ea5904f5",
+      "fields": [
+        {
+          "name": "databaseId",
+          "type": {
+            "kind": "SCALAR",
+            "name": "Int",
+            "ofType": null
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "ID",
+              "ofType": null
+            }
+          }
+        }
+      ],
+      "possibleTypes": []
+    }
+  ]
+}

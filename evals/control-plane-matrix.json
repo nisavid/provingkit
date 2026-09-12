@@ -223,7 +223,7 @@
     {
       "id": "mergecraft:interacting-with-pr-review-feedback",
       "entrypoint": "plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md",
-      "companions": [],
+      "companions": ["mergecraft:writing-github-issue-and-pr-markdown"],
       "scenario": {
         "id": "authorized-reply-and-resolution-boundary",
         "kind": "skill-evals",

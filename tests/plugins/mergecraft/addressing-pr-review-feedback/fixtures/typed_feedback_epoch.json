@@ -1,0 +1,159 @@
+{
+  "data": {
+    "repository": {
+      "id": "REPO_node_77",
+      "databaseId": 77,
+      "nameWithOwner": "base-owner/base-repo",
+      "owner": { "login": "base-owner" },
+      "pullRequest": {
+        "id": "PR_node_7",
+        "databaseId": 7,
+        "number": 7,
+        "url": "https://github.com/base-owner/base-repo/pull/7",
+        "isDraft": false,
+        "baseRefName": "main",
+        "headRefName": "feature",
+        "baseRefOid": "base-sha",
+        "headRefOid": "head-sha",
+        "headRepository": {
+          "nameWithOwner": "base-owner/base-repo",
+          "owner": { "login": "base-owner" }
+        },
+        "reviewDecision": "CHANGES_REQUESTED",
+        "mergeStateStatus": "BLOCKED",
+        "mergeable": "MERGEABLE",
+        "comments": {
+          "nodes": [
+            {
+              "id": "NODE_conversation_401",
+              "databaseId": 401,
+              "author": {
+                "__typename": "User",
+                "id": "USER_reviewer",
+                "login": "reviewer"
+              },
+              "authorAssociation": "CONTRIBUTOR",
+              "body": "Conversation feedback",
+              "createdAt": "2026-09-01T10:00:00Z",
+              "updatedAt": "2026-09-01T10:01:00Z",
+              "url": "https://github.com/base-owner/base-repo/pull/7#issuecomment-401"
+            }
+          ],
+          "pageInfo": { "hasNextPage": false, "endCursor": "terminal-comments" }
+        },
+        "reviewThreads": {
+          "nodes": [
+            {
+              "id": "THREAD_node_21",
+              "isResolved": false,
+              "isOutdated": false,
+              "path": "src/example.py",
+              "line": 12,
+              "diffSide": "RIGHT",
+              "originalLine": 11,
+              "originalStartLine": 10,
+              "startDiffSide": "RIGHT",
+              "startLine": 11,
+              "subjectType": "LINE",
+              "comments": {
+                "nodes": [
+                  {
+                    "id": "NODE_inline_301",
+                    "databaseId": 301,
+                    "author": {
+                      "__typename": "Bot",
+                      "id": "BOT_reviewer",
+                      "login": "review-bot"
+                    },
+                    "authorAssociation": "NONE",
+                    "body": "Inline root",
+                    "createdAt": "2026-09-01T09:00:00Z",
+                    "updatedAt": "2026-09-01T09:00:30Z",
+                    "url": "https://github.com/base-owner/base-repo/pull/7#discussion_r301",
+                    "path": "src/example.py",
+                    "line": 12,
+                    "originalLine": 11,
+                    "originalPosition": 5,
+                    "originalStartLine": 10,
+                    "outdated": false,
+                    "startLine": 11,
+                    "subjectType": "LINE",
+                    "state": "SUBMITTED",
+                    "replyTo": null,
+                    "commit": { "oid": "review-sha" },
+                    "originalCommit": { "oid": "original-review-sha" },
+                    "pullRequestReview": { "id": "REVIEW_node_51", "databaseId": 51 }
+                  },
+                  {
+                    "id": "NODE_inline_302",
+                    "databaseId": 302,
+                    "author": {
+                      "__typename": "User",
+                      "id": "USER_reviewer",
+                      "login": "reviewer"
+                    },
+                    "authorAssociation": "MEMBER",
+                    "body": "Reviewer follow-up",
+                    "createdAt": "2026-09-01T09:02:00Z",
+                    "updatedAt": "2026-09-01T09:02:00Z",
+                    "url": "https://github.com/base-owner/base-repo/pull/7#discussion_r302",
+                    "path": "src/example.py",
+                    "line": 12,
+                    "originalLine": 11,
+                    "originalPosition": 5,
+                    "originalStartLine": 10,
+                    "outdated": false,
+                    "startLine": 11,
+                    "subjectType": "LINE",
+                    "state": "SUBMITTED",
+                    "replyTo": {
+                      "id": "NODE_inline_301",
+                      "databaseId": 301
+                    },
+                    "commit": { "oid": "review-sha" },
+                    "originalCommit": { "oid": "original-review-sha" },
+                    "pullRequestReview": { "id": "REVIEW_node_51", "databaseId": 51 }
+                  }
+                ],
+                "pageInfo": { "hasNextPage": false, "endCursor": "terminal-thread-comments" }
+              }
+            }
+          ],
+          "pageInfo": { "hasNextPage": false, "endCursor": "terminal-threads" }
+        },
+        "reviews": {
+          "nodes": [
+            {
+              "id": "REVIEW_node_51",
+              "databaseId": 51,
+              "author": {
+                "__typename": "User",
+                "id": "USER_reviewer",
+                "login": "reviewer"
+              },
+              "authorAssociation": "MEMBER",
+              "state": "CHANGES_REQUESTED",
+              "body": "Review summary",
+              "createdAt": "2026-09-01T08:58:00Z",
+              "submittedAt": "2026-09-01T09:03:00Z",
+              "updatedAt": "2026-09-01T09:03:00Z",
+              "url": "https://github.com/base-owner/base-repo/pull/7#pullrequestreview-51",
+              "commit": { "oid": "review-sha" }
+            }
+          ],
+          "pageInfo": { "hasNextPage": false, "endCursor": "terminal-reviews" }
+        },
+        "reviewRequests": {
+          "nodes": [],
+          "pageInfo": { "hasNextPage": false, "endCursor": null }
+        },
+        "statusCheckRollup": {
+          "contexts": {
+            "nodes": [],
+            "pageInfo": { "hasNextPage": false, "endCursor": null }
+          }
+        }
+      }
+    }
+  }
+}

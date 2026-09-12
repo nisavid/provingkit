@@ -59,6 +59,8 @@ class PrReviewStateTests(unittest.TestCase):
                 "api",
                 "--hostname",
                 review_feedback_state.GITHUB_HOST,
+                "--method",
+                "POST",
                 "graphql",
                 "--input",
                 "-",

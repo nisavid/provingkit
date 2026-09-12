@@ -1,4 +1,4 @@
 interface:
   display_name: Interact With PR Review Feedback
-  short_description: Reply, react, or resolve authorized feedback.
+  short_description: Route and verify one exact feedback response.
   default_prompt: Use $mergecraft:interacting-with-pr-review-feedback for one authorized feedback interaction.
