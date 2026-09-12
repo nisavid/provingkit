@@ -59,7 +59,8 @@ leaf actuator. Perform exactly one authorized response intent per invocation.
    validation start is also terminal for that old intent. Neither can later be
    revived by provider state reverting.
    For either terminal state, run `scripts/response_cli.py
-   prepare-replacement --repo OWNER/REPO` with the old key before requesting new semantic work.
+   prepare-replacement --state-dir STATE --intent-key KEY --repo OWNER/REPO`
+   with the old key before requesting new semantic work.
    The runtime validates the whole history, acquires a complete post-terminal
    epoch, and publishes a read-only replacement basis without writing a
    response. When a repository rename or transfer makes the predecessor's old

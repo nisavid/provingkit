@@ -138,6 +138,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             capture_output=True,
             text=True,
             check=False,
+            timeout=30,
         )
 
     def assert_rejected(self, expected: str) -> None:

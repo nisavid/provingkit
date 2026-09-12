@@ -3195,8 +3195,15 @@ class ResponseOutcomeStore:
             # that temporary name after the final directory has been synced;
             # failures before this point intentionally leave the staging file
             # available for crash inspection and recovery diagnostics.
-            self._inject("staging_unlink", context)
-            staging_path.unlink()
+            try:
+                self._inject("staging_unlink", context)
+                staging_path.unlink()
+            except OSError:
+                # The final hard link and its directory sync already make the
+                # record durable. A failed cleanup leaves a reportable
+                # remnant but must not turn a committed append into an
+                # uncertain semantic persistence result.
+                pass
         except OSError as error:
             raise OutcomeStoreError(
                 f"storage-capability-failure: {context}: {error}"

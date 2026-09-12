@@ -281,7 +281,7 @@ or unsupported record blocks the whole bundle with zero provider calls.
 | `admitted_epoch`, `source` | Complete acquired epoch and one exact member of its `sources` |
 | `operation` | `create_inline_reply` or `create_pull_request_conversation_comment`, selected from source kind |
 | `placement` | Inline: `kind: review_thread`, `thread_node_id`, and `root_comment_database_id`; top-level: `kind: pull_request_conversation` and `pr_number` |
-| `writer` | `identity`, `contract: portable-github-markdown-authoring`, `contract_version: 1`, selected `field`, and `body_sha256` of its exact UTF-8 bytes |
+| `writer` | `identity`, `contract: portable-github-markdown-authoring`, `contract_version: "1"` (string), selected `field`, and `body_sha256` of its exact UTF-8 bytes |
 | `authority` | `decision: authorized`, `evidence_id`, and verified `actor_login` |
 | `classification` | `result: human_feedback` or `automated_feedback`, and its `evidence_id` |
 | `adjudication` | `disposition: respond` and the supporting `evidence_id` |

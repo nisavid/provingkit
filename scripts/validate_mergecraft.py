@@ -1824,7 +1824,8 @@ def validate_topology(root: Path) -> None:
         response_authoring_projection in skills_by_name[response_skill]["references"]
         and "operation:github-markdown-content"
         in skills_by_name[response_skill]["calls"]
-        and response_skill in operation_by_id["github-markdown-content"]["callers"],
+        and response_skill
+        in operation_by_id.get("github-markdown-content", {}).get("callers", []),
         "response Markdown authoring operation edge drift",
     )
     outcome_coordinators = {

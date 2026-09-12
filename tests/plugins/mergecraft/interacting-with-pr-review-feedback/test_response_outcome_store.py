@@ -384,6 +384,24 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
                 self.assertIn("interrupted.tmp", runtime.store.staging_remnants())
                 self.assertEqual(runtime.store.records(), [])
 
+    def test_staging_cleanup_failure_keeps_committed_append_successful(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, runtime, epoch = self.environment(Path(temporary))
+
+            def inject(step, _context):
+                if step == "staging_unlink":
+                    raise OSError("injected staging cleanup failure")
+
+            runtime.store = response_outcome_store.ResponseOutcomeStore(
+                runtime.store.directory, fault_injector=inject
+            )
+            outcome = runtime.invoke(make_intent(epoch, epoch["sources"][0]), b"Done")
+
+            self.assertEqual(outcome["status"], "confirmed_success")
+            with runtime.store.locked(exclusive=False):
+                self.assertTrue(runtime.store.records())
+                self.assertTrue(runtime.store.staging_remnants())
+
     def test_malformed_committed_record_blocks_without_repair(self):
         with tempfile.TemporaryDirectory() as temporary:
             _, _, runtime, epoch = self.environment(Path(temporary))
@@ -1427,13 +1445,11 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             ("sync_directory_open", "replacement_basis"),
             ("directory_fsync", "replacement_basis"),
             ("directory_close", "replacement_basis"),
-            ("staging_unlink", "replacement_basis"),
         )
         survives = {
             "sync_directory_open",
             "directory_fsync",
             "directory_close",
-            "staging_unlink",
         }
         for step, context in fault_cases:
             with (
@@ -1502,13 +1518,11 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             "sync_directory_open",
             "directory_fsync",
             "directory_close",
-            "staging_unlink",
         )
         survives = {
             "sync_directory_open",
             "directory_fsync",
             "directory_close",
-            "staging_unlink",
         }
         for record_kind in ("reconciliation_started", "reconciliation_resolution"):
             for step in fault_steps:
@@ -1595,7 +1609,6 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             "sync_directory_open",
             "directory_fsync",
             "directory_close",
-            "staging_unlink",
         )
         for changed_revision in (False, True):
             for step in fault_steps:
@@ -1668,7 +1681,6 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
                             "sync_directory_open",
                             "directory_fsync",
                             "directory_close",
-                            "staging_unlink",
                         }
                         else 0,
                     )
@@ -1695,7 +1707,6 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             "file_fsync",
             "hard_link",
             "directory_fsync",
-            "staging_unlink",
         )
         for record_kind in ("ordinary_admission", "follow_up_admission"):
             for step in fault_steps:
@@ -1744,7 +1755,7 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
                     self.assertEqual(
                         len(admitted),
                         1
-                        if step in {"directory_fsync", "staging_unlink"}
+                        if step == "directory_fsync"
                         else 0,
                     )
                     writes = sum(

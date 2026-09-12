@@ -2356,7 +2356,6 @@ class ResponseRuntimeTests(unittest.TestCase):
             ("sync_directory_open", "write_started"),
             ("directory_fsync", "write_started"),
             ("directory_close", "write_started"),
-            ("staging_unlink", "write_started"),
         ):
             with self.subTest(step=step):
                 root = Path(self.temporary.name) / f"fault-{step}"
@@ -2401,7 +2400,6 @@ class ResponseRuntimeTests(unittest.TestCase):
                     "sync_directory_open",
                     "directory_fsync",
                     "directory_close",
-                    "staging_unlink",
                 }:
                     store._fault_injector = None
                     restarted = response_runtime.ResponseRuntime(
