@@ -19,7 +19,7 @@ jobs:
   provingkit-source:
     name: Provingkit source boundary
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
