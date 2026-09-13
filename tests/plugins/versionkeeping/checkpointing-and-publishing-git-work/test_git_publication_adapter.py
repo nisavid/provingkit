@@ -266,6 +266,20 @@ class RequestTests(unittest.TestCase):
             "protocol=https\nhost=github.com\npath=nisavid/provingkit.git\n\n",
         )
 
+    def test_cached_https_credentials_recheck_host_configuration(self):
+        repository = object.__new__(adapter.GitRepository)
+        repository.path = Path("/controlled/repository")
+        repository.config_profile = "host-compatible"
+        repository._https_credentials_enabled = True
+        repository._reject_configured_classes = mock.Mock()
+
+        repository.enable_https_credentials("https://github.com/nisavid/provingkit.git")
+
+        repository._reject_configured_classes.assert_called_once_with(
+            adapter._unsafe_https_git_config_class,
+            scopes={"local", "worktree"},
+        )
+
     def test_remote_push_selection_and_digest_share_one_config_snapshot(self):
         class ChangingConfigRepository:
             def __init__(self):

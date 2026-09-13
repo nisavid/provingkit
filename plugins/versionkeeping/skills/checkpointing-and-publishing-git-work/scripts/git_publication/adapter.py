@@ -1132,6 +1132,13 @@ class GitRepository:
         if urllib.parse.urlsplit(endpoint).scheme.lower() != "https":
             return
         if self._https_credentials_enabled:
+            if self.config_profile == "host-compatible":
+                self._reject_configured_classes(
+                    _unsafe_https_git_config_class,
+                    scopes={"local", "worktree"},
+                )
+            else:
+                self._reject_configured_classes(_unsafe_https_git_config_class)
             return
         if self.config_profile == "host-compatible":
             self._reject_configured_classes(
