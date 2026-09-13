@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "source_root": "plugins",
+  "slate": [
+    "rolecasting",
+    "tricritical",
+    "versionkeeping",
+    "mergecraft",
+    "artifact-customs",
+    "proseweaving"
+  ],
+  "targets": {
+    "agent-plugins": {
+      "catalog": ".agents/plugins/marketplace.json",
+      "plugin_root": "plugins",
+      "include": [
+        "plugin.json",
+        "README.md",
+        "LICENSE",
+        "CHANGELOG.md",
+        "NOTICE",
+        "references/**",
+        "skills/**"
+      ],
+      "exclude": [
+        ".claude-plugin/**",
+        "agents/**",
+        "evals/**",
+        "**/evals/**",
+        "**/fixtures/**",
+        "**/content-lock.json",
+        "**/topology.json",
+        "**/task-witness-provider.json",
+        "**/__pycache__/**",
+        "**/*.pyc"
+      ]
+    },
+    "claude": {
+      "catalog": ".claude-plugin/marketplace.json",
+      "plugin_root": "plugins",
+      "include": [
+        "plugin.json",
+        ".claude-plugin/plugin.json",
+        "README.md",
+        "LICENSE",
+        "CHANGELOG.md",
+        "NOTICE",
+        "references/**",
+        "skills/**",
+        "agents/**"
+      ],
+      "exclude": [
+        "evals/**",
+        "**/evals/**",
+        "**/fixtures/**",
+        "**/content-lock.json",
+        "**/topology.json",
+        "**/task-witness-provider.json",
+        "**/__pycache__/**",
+        "**/*.pyc",
+        "skills/**/agents/openai.yaml"
+      ]
+    },
+    "cursor": {
+      "catalog": ".cursor-plugin/marketplace.json",
+      "plugin_root": "plugins",
+      "include": [
+        "plugin.json",
+        "README.md",
+        "LICENSE",
+        "CHANGELOG.md",
+        "NOTICE",
+        "references/**",
+        "skills/**",
+        "agents/**"
+      ],
+      "exclude": [
+        ".claude-plugin/**",
+        "evals/**",
+        "**/evals/**",
+        "**/fixtures/**",
+        "**/content-lock.json",
+        "**/topology.json",
+        "**/task-witness-provider.json",
+        "**/__pycache__/**",
+        "**/*.pyc",
+        "skills/**/agents/openai.yaml"
+      ]
+    }
+  }
+}
