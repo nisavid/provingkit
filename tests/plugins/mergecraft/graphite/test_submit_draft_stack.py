@@ -227,6 +227,19 @@ class GraphiteTransportTests(unittest.TestCase):
             )
         self.assertEqual(result.stdout, "host-global\n")
 
+    def test_configuration_digest_binds_the_selected_profile(self) -> None:
+        inventory = subprocess.CompletedProcess(
+            [], 0, "global\0file:/tmp/gitconfig\0user.name\nuser\0", ""
+        )
+        with mock.patch.object(GRAPHITE, "_run_raw", return_value=inventory):
+            host_digest = GRAPHITE._effective_config_sha256(
+                self.root, "host-compatible"
+            )
+            hardened_digest = GRAPHITE._effective_config_sha256(
+                self.root, "hardened"
+            )
+        self.assertNotEqual(host_digest, hardened_digest)
+
     def test_submission_never_executes_candidate_path_git_gt_or_ssh(self) -> None:
         self.initialize_git_repository()
         candidate_bin = Path(self.temporary.name) / "candidate-bin"
