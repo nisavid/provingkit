@@ -56,6 +56,7 @@ class RepositorySnapshot:
     default_branch_ref: str
     target: TargetState
     start_is_ancestor: bool
+    config_profile: str = "host-compatible"
 
 
 def _reason(code: str, **evidence: Any) -> dict:
@@ -107,6 +108,7 @@ def _base_result(request: PublicationRequest, snapshot: RepositorySnapshot) -> d
             "endpoint_fingerprint": snapshot.endpoint_fingerprint,
             "config_digest": snapshot.config_digest,
             "default_branch_ref": snapshot.default_branch_ref,
+            "config_profile": snapshot.config_profile,
         },
         "target": {"present": present, "sha": target_sha},
         "outgoing_shas": list(snapshot.target.outgoing_shas),

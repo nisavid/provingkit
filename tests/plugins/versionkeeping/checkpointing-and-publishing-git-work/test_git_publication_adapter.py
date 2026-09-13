@@ -381,6 +381,11 @@ class RequestTests(unittest.TestCase):
 
 class RepositoryPlanningTests(unittest.TestCase):
     def setUp(self):
+        self.profile = mock.patch.dict(
+            os.environ,
+            {adapter.GIT_CONFIG_PROFILE_ENV: "hardened"},
+        )
+        self.profile.start()
         self.temp = tempfile.TemporaryDirectory()
         root = Path(self.temp.name)
         self.root = root
@@ -396,9 +401,67 @@ class RepositoryPlanningTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+        self.profile.stop()
 
     def plan(self, request):
         return plan_repository(self.repo, request)
+
+    def test_unknown_git_config_profile_is_typed(self):
+        with self.assertRaises(adapter.PolicyGate) as raised:
+            adapter.GitRepository(self.repo, config_profile="unknown")
+        self.assertEqual(raised.exception.code, "GIT_CONFIG_PROFILE_UNSUPPORTED")
+
+    def test_host_compatible_profile_reads_global_git_config(self):
+        home = self.root / "host-home"
+        config_home = home / ".config" / "git"
+        config_home.mkdir(parents=True)
+        (config_home / "config").write_text(
+            "[user]\n\tname = Host Config User\n",
+            encoding="utf-8",
+        )
+        with mock.patch.dict(
+            os.environ,
+            {
+                "HOME": str(home),
+                "XDG_CONFIG_HOME": str(home / ".config"),
+                adapter.GIT_CONFIG_PROFILE_ENV: "host-compatible",
+            },
+            clear=False,
+        ):
+            with adapter.GitRepository(self.repo) as repository:
+                self.assertEqual(
+                    repository.output(["config", "--get", "user.name"]),
+                    "Host Config User",
+                )
+                self.assertNotIn("GIT_CONFIG_GLOBAL", repository.env)
+                self.assertNotIn("GIT_CONFIG_NOSYSTEM", repository.env)
+
+    def test_hardened_profile_masks_global_git_config(self):
+        home = self.root / "hardened-home"
+        config_home = home / ".config" / "git"
+        config_home.mkdir(parents=True)
+        (config_home / "config").write_text(
+            "[user]\n\tname = Host Config User\n",
+            encoding="utf-8",
+        )
+        with mock.patch.dict(
+            os.environ,
+            {
+                "HOME": str(home),
+                "XDG_CONFIG_HOME": str(home / ".config"),
+                adapter.GIT_CONFIG_PROFILE_ENV: "hardened",
+            },
+            clear=False,
+        ):
+            with adapter.GitRepository(self.repo) as repository:
+                self.assertEqual(
+                    repository.output(
+                        ["config", "--get", "user.name"], allowed=(1,)
+                    ),
+                    "",
+                )
+                self.assertEqual(repository.env["GIT_CONFIG_GLOBAL"], os.devnull)
+                self.assertEqual(repository.env["GIT_CONFIG_NOSYSTEM"], "1")
 
     def test_policy_bootstrap_never_executes_candidate_path_git(self):
         candidate_bin = self.root / "candidate-bin"

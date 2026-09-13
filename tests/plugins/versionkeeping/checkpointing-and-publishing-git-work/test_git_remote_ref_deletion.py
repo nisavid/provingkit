@@ -112,6 +112,11 @@ def execute(repo: Path, plan: dict) -> dict:
 
 class RemoteRefDeletionTests(unittest.TestCase):
     def setUp(self) -> None:
+        self.profile = mock.patch.dict(
+            os.environ,
+            {publication_adapter.GIT_CONFIG_PROFILE_ENV: "hardened"},
+        )
+        self.profile.start()
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name)
         self.remote = self.root / "remote.git"
@@ -126,6 +131,7 @@ class RemoteRefDeletionTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.tempdir.cleanup()
+        self.profile.stop()
 
     def test_deletes_exact_leased_ref_and_verifies_absence(self) -> None:
         result = execute(self.repo, self.plan)
@@ -353,6 +359,7 @@ class RemoteRefDeletionTests(unittest.TestCase):
                 "endpoint_fingerprint": "sha256:" + "a" * 64,
                 "config_digest": "sha256:" + "b" * 64,
                 "default_branch_ref": "refs/heads/main",
+                "config_profile": "host-compatible",
             },
             "target": {"present": True, "sha": self.target},
             "outgoing_shas": [],

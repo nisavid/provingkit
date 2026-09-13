@@ -79,6 +79,16 @@ remote name is discovery metadata, not a publication actuator.
 
 ## Authenticated HTTPS Boundary
 
+Ordinary publication uses the `host-compatible` Git configuration profile by
+default. It inherits the effective host Git configuration and credential
+helpers visible to the harness, while retaining endpoint, ref, lease, prompt,
+and post-push verification gates. Set
+`VERSIONKEEPING_GIT_CONFIG_PROFILE=hardened` for the explicit closed profile.
+That profile clears global and system configuration and permits only the
+validated platform provider described below. The selected profile is included
+in the reviewed destination configuration digest; changing it requires a fresh
+plan and review.
+
 The ordinary publication executor supports noninteractive HTTPS credentials on
 modern macOS, Linux, and Windows through closed platform-provider sets:
 
@@ -113,7 +123,7 @@ executor neither starts an interactive acquisition flow nor reads a persistent
 desktop secret store whose API may request an unlock prompt; a cache miss fails
 closed.
 
-The executor first installs an empty command-scope `credential.helper` to clear
+In the hardened profile, the executor installs an empty command-scope `credential.helper` to clear
 all ambient helpers, rejects every repository or worktree `credential.*`
 setting for HTTPS execution, and then appends only the validated platform
 helper. Every repository or worktree `http.*` setting is rejected so transport,

@@ -243,6 +243,11 @@ def credential_protocol_fields(output: str) -> dict[str, str]:
 
 class PublicationExecutionTests(unittest.TestCase):
     def setUp(self) -> None:
+        self.profile = mock.patch.dict(
+            os.environ,
+            {adapter.GIT_CONFIG_PROFILE_ENV: "hardened"},
+        )
+        self.profile.start()
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name)
         self.remote = self.root / "remote.git"
@@ -260,6 +265,7 @@ class PublicationExecutionTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.tempdir.cleanup()
+        self.profile.stop()
 
     def _linux_https_closed_config(
         self,
