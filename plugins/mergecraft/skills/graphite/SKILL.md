@@ -65,7 +65,7 @@ branch can be tracked without moving or deleting the worktree.
    fetch/push endpoint hashes to the stack's single head repository. It also
    binds the selected Git configuration profile and effective configuration
    digest so a plan cannot be executed under a different profile, along with
-   binds diagnostic Graphite log/trunk hashes, candidate inputs, existing PR
+   diagnostic Graphite log/trunk hashes, candidate inputs, existing PR
    preimages, and each entry's mandatory `review_mode`, `review_bundle`
    (absolute only for `required`, otherwise null), and sorted explicit
    `selected_specialists`. Stop if the typed mutation inventory differs from

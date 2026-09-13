@@ -241,6 +241,31 @@ class RequestTests(unittest.TestCase):
             repo.env_overrides, {"VERSIONKEEPING_PUBLICATION_ENDPOINT": endpoint}
         )
 
+    def test_https_credential_preflight_includes_repository_path(self):
+        repository = object.__new__(adapter.GitRepository)
+        repository.git_executable = "git"
+        repository.path = Path("/controlled/repository")
+        repository.env = {}
+        repository.timeout_seconds = 1
+        repository.enable_https_credentials = mock.Mock()
+        completed = subprocess.CompletedProcess(
+            ["git", "credential", "fill"], 0, "protocol=https\n", ""
+        )
+        with mock.patch.object(
+            adapter.subprocess, "run", return_value=completed
+        ) as run:
+            repository.ensure_https_credentials(
+                "https://github.com/nisavid/provingkit.git"
+            )
+
+        repository.enable_https_credentials.assert_called_once_with(
+            "https://github.com/nisavid/provingkit.git"
+        )
+        self.assertEqual(
+            run.call_args.kwargs["input"],
+            "protocol=https\nhost=github.com\npath=nisavid/provingkit.git\n\n",
+        )
+
     def test_remote_push_selection_and_digest_share_one_config_snapshot(self):
         class ChangingConfigRepository:
             def __init__(self):

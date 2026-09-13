@@ -1175,7 +1175,11 @@ class GitRepository:
             return
         self.enable_https_credentials(endpoint)
         parsed = urllib.parse.urlsplit(endpoint)
-        query = f"protocol={parsed.scheme}\nhost={parsed.netloc}\n\n"
+        query = (
+            f"protocol={parsed.scheme}\n"
+            f"host={parsed.netloc}\n"
+            f"path={parsed.path.lstrip('/')}\n\n"
+        )
         try:
             result = subprocess.run(
                 [self.git_executable, "credential", "fill"],

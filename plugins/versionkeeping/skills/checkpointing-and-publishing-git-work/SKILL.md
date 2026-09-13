@@ -79,10 +79,11 @@ Before planning/executing, read [publication execution](references/publication-e
 for script routes, effects, trusted handoff, transport, push, and verification.
 The adapter uses the host-compatible Git configuration profile by default and
 supports an explicit `VERSIONKEEPING_GIT_CONFIG_PROFILE=hardened` profile for
-closed-environment publication. The hardened profile disables
-implicit commit/tag/push signing and rejects command-valued local/worktree settings;
-(including signing programs) and unsafe includes without exposing their values,
-and permits only HTTPS, SSH, or ancestry-guarded local endpoints.
+closed-environment publication. Both profiles reject command-valued local/worktree
+settings (including signing programs) and unsafe includes without exposing their
+values. The hardened profile additionally disables implicit commit/tag/push signing
+and closes configuration across all scopes; it permits only HTTPS, SSH, or
+ancestry-guarded local endpoints.
 
 Follow its typed gates exactly. Ordinary publication never deletes a remote ref;
 the separate terminal route requires verified merge and explicit
