@@ -135,6 +135,7 @@ def validate_ready_plan(raw: Any) -> tuple[dict, Any]:
             "endpoint_fingerprint",
             "config_digest",
             "default_branch_ref",
+            "config_profile",
         },
         "destination fields differ",
     )
@@ -314,6 +315,7 @@ def execute_repository(
                 )
             selection = dict(selection)
             selection["default_branch_ref"] = default_branch_ref
+            selection["config_profile"] = repo.config_profile
             config_digest = _config_digest(selection, endpoint_fingerprint)
             if config_digest != destination["config_digest"]:
                 raise PolicyGate(
@@ -341,6 +343,8 @@ def execute_repository(
                     expected_ref=destination["default_branch_ref"],
                     observed_ref=latest_default_branch_ref,
                 )
+
+            repo.ensure_https_credentials(endpoint)
 
             push = plan["push"]
             push_attempted = True

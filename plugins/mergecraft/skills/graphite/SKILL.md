@@ -50,15 +50,22 @@ branch can be tracked without moving or deleting the worktree.
 2. Build a schema-v2 absolute-path JSON request for the exact bottom-to-top stack
    and run
    `scripts/submit_draft_stack.py plan`. Review its content-addressed private
-   plan. Before the first Git or Graphite command, the script isolates ambient
-   Git configuration, disables implicit commit/tag/push signing, and rejects
-   executable local/worktree configuration (including signing programs),
-   unsafe includes, and unsupported remotes without printing their values. The
+   plan. Git operations use the host-compatible configuration profile by
+   default, keeping the host's global/system config, credential providers, and
+   normal command path available. Set
+   `MERGECRAFT_GIT_CONFIG_PROFILE=hardened` for the explicit closed profile;
+   it masks global/system config, uses a fixed trusted command path, disables
+   implicit commit/tag/push signing, and rejects executable local/worktree
+   configuration (including signing programs). Both profiles reject unsafe
+   repository/worktree configuration, unsafe includes, and unsupported remotes
+   without printing their values. The
    plan binds the clean worktree, current branch, local base/head OIDs, the exact
    current-to-trunk chain and revisions from validated read-only Graphite
    metadata, Graphite 1.8.6's target repository, and the selected remote's exact
    fetch/push endpoint hashes to the stack's single head repository. It also
-   binds diagnostic Graphite log/trunk hashes, candidate inputs, existing PR
+   binds the selected Git configuration profile and effective configuration
+   digest so a plan cannot be executed under a different profile, along with
+   diagnostic Graphite log/trunk hashes, candidate inputs, existing PR
    preimages, and each entry's mandatory `review_mode`, `review_bundle`
    (absolute only for `required`, otherwise null), and sorted explicit
    `selected_specialists`. Stop if the typed mutation inventory differs from

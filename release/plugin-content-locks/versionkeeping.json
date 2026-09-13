@@ -15,7 +15,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/SKILL.md": {
-      "sha256": "b2b978e21660ed513eb2e15ae7a6be77bfaaf284f51bdaa3acb0fa4288a1ba38",
+      "sha256": "a76c4aeaf6c2971dd95fb6795dd4f46a6facd6f49e47180b92dd2bc4f0495b3e",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/agents/openai.yaml": {
@@ -27,7 +27,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/references/publication-execution.md": {
-      "sha256": "634180bcde3c87db776b3921713e0a1b19c92e8984d50a2da371a7452270ae1c",
+      "sha256": "c0141b3bd19ca619c035bba2af2122c10fe4f29f17f66d51115082912ab7e476",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/references/terminal-cleanup.md": {
@@ -51,11 +51,11 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/git_publication/adapter.py": {
-      "sha256": "94faaf09e8f45b046e1f9459c73b58a966cdf4dd9da7ffe1c34837f489a78ed0",
+      "sha256": "b26d89006390487753f0c6fd3fcb929c776f77a3cd6d20f0ee4b9115680c8971",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/git_publication/core.py": {
-      "sha256": "86c80c555d78755f40f5e3af7074965cdf3e00959f1592aa0246d709f85ce7d4",
+      "sha256": "73a8b36221276fe569db9a1fb69be1ce40836848810f3e805d93c5379fa62d88",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/git_publication/deletion.py": {
@@ -63,7 +63,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/git_publication/execution.py": {
-      "sha256": "dbbc3fa3b46f8de8b333eb38affbeda9113675c071d116ff0ee0efb05dd0b30c",
+      "sha256": "2fcd07d058460a4bf1dc110b569128dfa22f21b59e6c6e8c2c81a0ca77dced99",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/plan_git_publication.py": {

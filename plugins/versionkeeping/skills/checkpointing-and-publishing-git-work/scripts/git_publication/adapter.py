@@ -71,6 +71,8 @@ MACOS_SYSTEM_CREDENTIAL_HELPERS = (
     Path("/usr/libexec/git-core") / MACOS_CREDENTIAL_HELPER,
 )
 LINUX_CREDENTIAL_HELPER = "git-credential-cache"
+GIT_CONFIG_PROFILE_ENV = "VERSIONKEEPING_GIT_CONFIG_PROFILE"
+GIT_CONFIG_PROFILES = frozenset(("host-compatible", "hardened"))
 WINDOWS_GCM_HELPERS = (
     Path("mingw64/bin/git-credential-manager.exe"),
     Path("mingw64/bin/git-credential-manager-core.exe"),
@@ -986,9 +988,25 @@ def parse_request(raw: Any) -> PublicationRequest:
 
 
 class GitRepository:
-    def __init__(self, path: Path, timeout_seconds: int = DEFAULT_GIT_TIMEOUT_SECONDS):
+    def __init__(
+        self,
+        path: Path,
+        timeout_seconds: int = DEFAULT_GIT_TIMEOUT_SECONDS,
+        config_profile: str | None = None,
+    ):
         self.path = Path(path)
         self.timeout_seconds = timeout_seconds
+        self.config_profile = (
+            config_profile
+            if config_profile is not None
+            else os.environ.get(GIT_CONFIG_PROFILE_ENV, "host-compatible")
+        )
+        if self.config_profile not in GIT_CONFIG_PROFILES:
+            raise PolicyGate(
+                "GIT_CONFIG_PROFILE_UNSUPPORTED",
+                profile=self.config_profile,
+                supported_profiles=sorted(GIT_CONFIG_PROFILES),
+            )
         runtime = _trusted_git_runtime()
         self.git_executable = runtime.git_executable
         self._windows_git_root = runtime.windows_root
@@ -1033,16 +1051,11 @@ class GitRepository:
         self.env.update(
             {
                 "GIT_ASKPASS": askpass,
-                "GIT_ATTR_NOSYSTEM": "1",
-                "GIT_CONFIG_GLOBAL": os.devnull,
-                "GIT_CONFIG_NOSYSTEM": "1",
-                "GIT_CONFIG_SYSTEM": os.devnull,
                 "GIT_EDITOR": "true",
                 "GIT_NO_LAZY_FETCH": "1",
                 "GIT_NO_REPLACE_OBJECTS": "1",
                 "GIT_OPTIONAL_LOCKS": "0",
                 "GIT_PAGER": "cat",
-                "GIT_PROTOCOL_FROM_USER": "0",
                 "GIT_SEQUENCE_EDITOR": "true",
                 "GIT_SSH_COMMAND": (
                     f"{ssh_command} -oBatchMode=yes -oConnectionAttempts=1 "
@@ -1053,11 +1066,23 @@ class GitRepository:
                 "GCM_INTERACTIVE": "never",
                 "LANG": "C",
                 "LC_ALL": "C",
-                "PATH": runtime.command_path,
+                "PATH": runtime.command_path
+                if self.config_profile == "hardened"
+                else os.environ.get("PATH", runtime.command_path),
                 "SHELL": runtime.shell,
                 "SSH_ASKPASS_REQUIRE": "never",
             }
         )
+        if self.config_profile == "hardened":
+            self.env.update(
+                {
+                    "GIT_ATTR_NOSYSTEM": "1",
+                    "GIT_CONFIG_GLOBAL": os.devnull,
+                    "GIT_CONFIG_NOSYSTEM": "1",
+                    "GIT_CONFIG_SYSTEM": os.devnull,
+                    "GIT_PROTOCOL_FROM_USER": "0",
+                }
+            )
         closed_config = (
             ("core.hooksPath", str(self.hooks_path)),
             ("core.fsmonitor", "false"),
@@ -1074,10 +1099,11 @@ class GitRepository:
             ("gc.auto", "0"),
             ("maintenance.auto", "false"),
         )
-        self.env["GIT_CONFIG_COUNT"] = str(len(closed_config))
-        for index, (key, value) in enumerate(closed_config):
-            self.env[f"GIT_CONFIG_KEY_{index}"] = key
-            self.env[f"GIT_CONFIG_VALUE_{index}"] = value
+        if self.config_profile == "hardened":
+            self.env["GIT_CONFIG_COUNT"] = str(len(closed_config))
+            for index, (key, value) in enumerate(closed_config):
+                self.env[f"GIT_CONFIG_KEY_{index}"] = key
+                self.env[f"GIT_CONFIG_VALUE_{index}"] = value
 
     def _append_command_config(self, key: str, value: str) -> None:
         index = int(self.env["GIT_CONFIG_COUNT"])
@@ -1106,6 +1132,20 @@ class GitRepository:
         if urllib.parse.urlsplit(endpoint).scheme.lower() != "https":
             return
         if self._https_credentials_enabled:
+            if self.config_profile == "host-compatible":
+                self._reject_configured_classes(
+                    _unsafe_https_git_config_class,
+                    scopes={"local", "worktree"},
+                )
+            else:
+                self._reject_configured_classes(_unsafe_https_git_config_class)
+            return
+        if self.config_profile == "host-compatible":
+            self._reject_configured_classes(
+                _unsafe_https_git_config_class,
+                scopes={"local", "worktree"},
+            )
+            self._https_credentials_enabled = True
             return
         self._reject_configured_classes(_unsafe_https_git_config_class)
         exec_path = Path(self.output(["--exec-path"]))
@@ -1135,6 +1175,40 @@ class GitRepository:
             )
         self._append_command_config("credential.helper", helper_config)
         self._https_credentials_enabled = True
+
+    def ensure_https_credentials(self, endpoint: str) -> None:
+        """Check the selected provider before any push actuation."""
+        if urllib.parse.urlsplit(endpoint).scheme.lower() != "https":
+            return
+        self.enable_https_credentials(endpoint)
+        parsed = urllib.parse.urlsplit(endpoint)
+        query = (
+            f"protocol={parsed.scheme}\n"
+            f"host={parsed.netloc}\n"
+            f"path={parsed.path.lstrip('/')}\n\n"
+        )
+        try:
+            result = subprocess.run(
+                [self.git_executable, "credential", "fill"],
+                cwd=str(self.path),
+                env=self.env,
+                input=query,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=self.timeout_seconds,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise PolicyGate(
+                "HTTPS_CREDENTIALS_UNAVAILABLE",
+                profile=self.config_profile,
+            ) from error
+        if result.returncode != 0 or not result.stdout.strip():
+            raise PolicyGate(
+                "HTTPS_CREDENTIALS_UNAVAILABLE",
+                profile=self.config_profile,
+            )
 
     def __enter__(self) -> "GitRepository":
         return self
@@ -1220,6 +1294,8 @@ class GitRepository:
             config_class
             for scope, _origin, key in without_includes
             if scope != "command"
+            if self.config_profile == "hardened"
+            or scope in {"local", "worktree"}
             if (config_class := _unsafe_git_config_class(key))
             == "include*.path"
         }
@@ -1228,25 +1304,31 @@ class GitRepository:
                 "UNSAFE_GIT_CONFIGURATION",
                 config_classes=sorted(include_classes),
             )
-        self._reject_configured_classes(_unsafe_git_config_class)
+        self._reject_configured_classes(
+            _unsafe_git_config_class,
+            scopes=None if self.config_profile == "hardened" else {"local", "worktree"},
+        )
         self._policy_established = True
 
     def _configured_classes(
         self,
         classifier: Callable[[str], str | None],
+        scopes: set[str] | None = None,
     ) -> set[str]:
         return {
             config_class
             for scope, _origin, key in self._config_key_inventory(includes=True)
             if scope != "command"
+            if scopes is None or scope in scopes
             if (config_class := classifier(key)) is not None
         }
 
     def _reject_configured_classes(
         self,
         classifier: Callable[[str], str | None],
+        scopes: set[str] | None = None,
     ) -> None:
-        unsafe_classes = self._configured_classes(classifier)
+        unsafe_classes = self._configured_classes(classifier, scopes=scopes)
         if unsafe_classes:
             raise PolicyGate(
                 "UNSAFE_GIT_CONFIGURATION",
@@ -1954,6 +2036,7 @@ def _snapshot(
         default_branch_ref = _probe_default_branch(repo, endpoint, object_format)
         selection = dict(selection)
         selection["default_branch_ref"] = default_branch_ref
+        selection["config_profile"] = repo.config_profile
         digest = _config_digest(selection, fingerprint)
         context["destination"].update(
             {
@@ -2026,6 +2109,7 @@ def _snapshot(
             default_branch_ref=default_branch_ref,
             target=target,
             start_is_ancestor=start_is_ancestor,
+            config_profile=repo.config_profile,
         )
     except PolicyGate as gate:
         gate.retain_context(context)
