@@ -27,6 +27,11 @@ class GraphiteTransportTests(unittest.TestCase):
     head_oid = "b" * 40
 
     def setUp(self) -> None:
+        profile = mock.patch.dict(
+            os.environ, {GRAPHITE.GIT_CONFIG_PROFILE_ENV: "hardened"}
+        )
+        profile.start()
+        self.addCleanup(profile.stop)
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name) / "repo"
@@ -120,6 +125,107 @@ class GraphiteTransportTests(unittest.TestCase):
         self.assertEqual(closed["push.gpgSign"], "false")
         self.assertEqual(closed["commit.gpgSign"], "false")
         self.assertEqual(closed["tag.gpgSign"], "false")
+
+    def test_host_compatible_environment_preserves_host_git_configuration(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                GRAPHITE.GIT_CONFIG_PROFILE_ENV: "host-compatible",
+                "PATH": "/custom/bin",
+            },
+        ):
+            environment = GRAPHITE._environment()
+        self.assertEqual(environment["PATH"], "/custom/bin")
+        self.assertNotIn("GIT_CONFIG_GLOBAL", environment)
+        self.assertNotIn("GIT_CONFIG_SYSTEM", environment)
+        self.assertNotIn("GIT_CONFIG_COUNT", environment)
+        self.assertNotIn("GIT_PROTOCOL_FROM_USER", environment)
+
+    def test_empty_profile_is_rejected(self) -> None:
+        with mock.patch.dict(
+            os.environ, {GRAPHITE.GIT_CONFIG_PROFILE_ENV: ""}
+        ):
+            with self.assertRaises(GRAPHITE.GraphiteTransportError):
+                GRAPHITE._environment()
+
+    def test_host_profile_accepts_global_but_rejects_repository_executable_config(self) -> None:
+        inventories = {
+            False: [("global", "file:/home/user/.gitconfig", "credential.helper")],
+            True: [
+                ("global", "file:/home/user/.gitconfig", "credential.helper"),
+                ("local", "file:.git/config", "credential.helper"),
+            ],
+        }
+        with (
+            mock.patch.dict(
+                os.environ,
+                {GRAPHITE.GIT_CONFIG_PROFILE_ENV: "host-compatible"},
+            ),
+            mock.patch.object(
+                GRAPHITE,
+                "_config_key_inventory",
+                side_effect=lambda _root, includes: inventories[includes],
+            ),
+            mock.patch.object(GRAPHITE, "_validate_repository_remotes"),
+            mock.patch.object(
+                GRAPHITE,
+                "_effective_config_sha256",
+                return_value="a" * 64,
+            ),
+        ):
+            with self.assertRaisesRegex(
+                GRAPHITE.GraphiteTransportError,
+                "unsafe repository Git configuration",
+            ):
+                GRAPHITE._establish_inert_git_policy(self.root)
+
+        inventories[True] = [
+            ("global", "file:/home/user/.gitconfig", "credential.helper")
+        ]
+        with (
+            mock.patch.dict(
+                os.environ,
+                {GRAPHITE.GIT_CONFIG_PROFILE_ENV: "host-compatible"},
+            ),
+            mock.patch.object(
+                GRAPHITE,
+                "_config_key_inventory",
+                side_effect=lambda _root, includes: inventories[includes],
+            ),
+            mock.patch.object(GRAPHITE, "_validate_repository_remotes"),
+            mock.patch.object(
+                GRAPHITE,
+                "_effective_config_sha256",
+                return_value="a" * 64,
+            ),
+        ):
+            self.assertEqual(
+                GRAPHITE._establish_inert_git_policy(self.root), "a" * 64
+            )
+
+    def test_host_profile_reads_the_host_global_git_config(self) -> None:
+        subprocess.run(
+            ["/usr/bin/git", "init", "--quiet", str(self.root)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        config_home = Path(self.temporary.name) / "xdg"
+        config_path = config_home / "git" / "config"
+        config_path.parent.mkdir(parents=True)
+        config_path.write_text("[user]\n\tname = host-global\n", encoding="utf-8")
+        with mock.patch.dict(
+            os.environ,
+            {
+                GRAPHITE.GIT_CONFIG_PROFILE_ENV: "host-compatible",
+                "XDG_CONFIG_HOME": str(config_home),
+                "HOME": self.temporary.name,
+            },
+        ):
+            result = GRAPHITE._run(
+                ["git", "config", "--get", "user.name"], cwd=self.root
+            )
+        self.assertEqual(result.stdout, "host-global\n")
 
     def test_submission_never_executes_candidate_path_git_gt_or_ssh(self) -> None:
         self.initialize_git_repository()

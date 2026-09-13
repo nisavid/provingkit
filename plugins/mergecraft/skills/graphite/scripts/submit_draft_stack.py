@@ -70,6 +70,8 @@ TRUSTED_SYSTEM_EXECUTABLES = {
     "ssh": Path("/usr/bin/ssh"),
 }
 TRUSTED_GRAPHITE_EXECUTABLE_ENV = "MERGECRAFT_TRUSTED_GT_EXECUTABLE"
+GIT_CONFIG_PROFILE_ENV = "MERGECRAFT_GIT_CONFIG_PROFILE"
+GIT_CONFIG_PROFILES = frozenset(("host-compatible", "hardened"))
 SUBPROCESS_ENV_ALLOWLIST = {
     "ALL_PROXY",
     "COMSPEC",
@@ -307,7 +309,17 @@ def _bind_executable(arguments: list[str], root: Path) -> list[str]:
     return [bound, *arguments[1:]]
 
 
-def _environment() -> dict[str, str]:
+def _git_config_profile() -> str:
+    profile = os.environ.get(GIT_CONFIG_PROFILE_ENV, "host-compatible")
+    if profile not in GIT_CONFIG_PROFILES:
+        raise GraphiteTransportError(
+            f"unsupported Git configuration profile: {profile}"
+        )
+    return profile
+
+
+def _environment(profile: str | None = None) -> dict[str, str]:
+    profile = _git_config_profile() if profile is None else profile
     environment = {
         key: value for key, value in os.environ.items() if key in SUBPROCESS_ENV_ALLOWLIST
     }
@@ -316,15 +328,10 @@ def _environment() -> dict[str, str]:
     environment.update(
         {
             "GIT_ASKPASS": "false",
-            "GIT_ATTR_NOSYSTEM": "1",
-            "GIT_CONFIG_GLOBAL": os.devnull,
-            "GIT_CONFIG_NOSYSTEM": "1",
-            "GIT_CONFIG_SYSTEM": os.devnull,
             "GIT_EDITOR": "true",
             "GIT_NO_LAZY_FETCH": "1",
             "GIT_NO_REPLACE_OBJECTS": "1",
             "GIT_PAGER": "cat",
-            "GIT_PROTOCOL_FROM_USER": "0",
             "GIT_SEQUENCE_EDITOR": "true",
             "GIT_SSH_COMMAND": (
                 f"{_trusted_system_executable('ssh')} "
@@ -336,7 +343,11 @@ def _environment() -> dict[str, str]:
             "GCM_INTERACTIVE": "never",
             "LANG": "C",
             "LC_ALL": "C",
-            "PATH": TRUSTED_COMMAND_PATH,
+            "PATH": (
+                TRUSTED_COMMAND_PATH
+                if profile == "hardened"
+                else os.environ.get("PATH", TRUSTED_COMMAND_PATH)
+            ),
             "PYTHONDONTWRITEBYTECODE": "1",
             "SHELL": "/bin/sh",
             "SSH_ASKPASS_REQUIRE": "never",
@@ -358,10 +369,20 @@ def _environment() -> dict[str, str]:
         ("gc.auto", "0"),
         ("maintenance.auto", "false"),
     )
-    environment["GIT_CONFIG_COUNT"] = str(len(closed_config))
-    for index, (key, value) in enumerate(closed_config):
-        environment[f"GIT_CONFIG_KEY_{index}"] = key
-        environment[f"GIT_CONFIG_VALUE_{index}"] = value
+    if profile == "hardened":
+        environment.update(
+            {
+                "GIT_ATTR_NOSYSTEM": "1",
+                "GIT_CONFIG_GLOBAL": os.devnull,
+                "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_CONFIG_SYSTEM": os.devnull,
+                "GIT_CONFIG_COUNT": str(len(closed_config)),
+                "GIT_PROTOCOL_FROM_USER": "0",
+            }
+        )
+        for index, (key, value) in enumerate(closed_config):
+            environment[f"GIT_CONFIG_KEY_{index}"] = key
+            environment[f"GIT_CONFIG_VALUE_{index}"] = value
     return environment
 
 
@@ -465,7 +486,8 @@ def _config_key_inventory(root: Path, *, includes: bool) -> list[tuple[str, str,
     ]
 
 
-def _effective_config_sha256(root: Path) -> str:
+def _effective_config_sha256(root: Path, profile: str | None = None) -> str:
+    profile = profile or _git_config_profile()
     result = _run_raw(
         [
             "git",
@@ -493,6 +515,7 @@ def _effective_config_sha256(root: Path) -> str:
             inventory.append(
                 {"scope": scope, "origin": origin, "key": key, "value": value}
             )
+    inventory.insert(0, {"config_profile": profile})
     return _sha_bytes(_canonical(inventory))
 
 
@@ -667,11 +690,15 @@ def _validate_repository_remotes(root: Path) -> None:
 
 
 def _establish_inert_git_policy(root: Path) -> str:
+    profile = _git_config_profile()
+    scopes = {"local", "worktree"} if profile == "host-compatible" else None
     without_includes = _config_key_inventory(root, includes=False)
     include_classes = {
         config_class
         for scope, _origin, key in without_includes
-        if scope != "command"
+        if (scopes is None and scope != "command") or (
+            scopes is not None and scope in scopes
+        )
         if (config_class := _unsafe_git_config_class(key)) == "include*.path"
     }
     if include_classes:
@@ -683,7 +710,9 @@ def _establish_inert_git_policy(root: Path) -> str:
     unsafe_classes = {
         config_class
         for scope, _origin, key in inventory
-        if scope != "command"
+        if (scopes is None and scope != "command") or (
+            scopes is not None and scope in scopes
+        )
         if (config_class := _unsafe_git_config_class(key)) is not None
     }
     if unsafe_classes:
@@ -692,7 +721,7 @@ def _establish_inert_git_policy(root: Path) -> str:
             + ",".join(sorted(unsafe_classes))
         )
     _validate_repository_remotes(root)
-    return _effective_config_sha256(root)
+    return _effective_config_sha256(root, profile)
 
 
 def _run(
@@ -1316,6 +1345,7 @@ def _git_graphite_snapshot(root: Path, current_branch: str) -> dict[str, Any]:
         "current_branch": branch,
         "clean_status_sha256": _sha_text(status),
         "git_config_sha256": config_sha256,
+        "config_profile": _git_config_profile(),
         "gt_log_short_sha256": _sha_text(log_short),
         "gt_trunk_sha256": _sha_text(trunk),
     }
