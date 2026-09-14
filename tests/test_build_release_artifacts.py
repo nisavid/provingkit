@@ -1,7 +1,7 @@
 import json
+import subprocess
 import tempfile
 import unittest
-from unittest import mock
 from pathlib import Path
 
 from scripts.build_release_artifacts import build
@@ -66,11 +66,12 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
                         build(source, destination, "agent-plugins", ["proseweaving"], "preview", True)
             self.assertEqual(marker.read_text(), "preserve this")
 
-    def test_dirty_source_is_rejected_before_projection(self):
+    def test_projection_uses_head_snapshot_when_source_is_dirty(self):
         with tempfile.TemporaryDirectory() as tmp:
             source = Path(tmp) / "source"
             source.mkdir()
             (source / "release").mkdir()
+            (source / "plugins/proseweaving").mkdir(parents=True)
             (source / "release/artifact-projection-policy-v1.json").write_text(
                 json.dumps(
                     {
@@ -78,7 +79,7 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
                         "source_root": "plugins",
                         "targets": {
                             "agent-plugins": {
-                                "include": [],
+                                "include": ["plugin.json"],
                                 "exclude": [],
                                 "plugin_root": "plugins",
                                 "catalog": ".agents/plugins/marketplace.json",
@@ -87,19 +88,17 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
                     }
                 )
             )
-            with mock.patch(
-                "scripts.build_release_artifacts.git",
-                return_value=" M plugins/proseweaving/SKILL.md",
-            ):
-                with self.assertRaisesRegex(ValueError, "source checkout must be clean"):
-                    build(
-                        source,
-                        Path(tmp) / "output",
-                        "agent-plugins",
-                        ["proseweaving"],
-                        "preview",
-                        False,
-                    )
+            plugin = source / "plugins/proseweaving/plugin.json"
+            plugin.write_text(json.dumps({"name": "proseweaving", "version": "1"}))
+            subprocess.run(["git", "init", "-q"], cwd=source, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=source, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=source, check=True)
+            subprocess.run(["git", "add", "."], cwd=source, check=True)
+            subprocess.run(["git", "commit", "-qm", "test: fixture"], cwd=source, check=True)
+            plugin.write_text(json.dumps({"name": "proseweaving", "version": "dirty"}))
+            with tempfile.TemporaryDirectory() as output_dir:
+                output = Path(build(source, Path(output_dir) / "artifact", "agent-plugins", ["proseweaving"], "preview", False))
+                self.assertEqual(json.loads((output.parent / "plugins/proseweaving/plugin.json").read_text())["version"], "1")
 
 
 if __name__ == "__main__":

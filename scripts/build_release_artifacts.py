@@ -11,9 +11,13 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import hashlib
+import io
 import json
 import shutil
 import subprocess
+import tarfile
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -98,18 +102,46 @@ def validate_non_overlapping_paths(source: Path, output: Path) -> None:
         )
 
 
-def validate_clean_source(source: Path) -> None:
-    status = git("status", "--porcelain=v1", "--untracked-files=all", cwd=source)
-    if status:
-        raise ValueError(
-            "source checkout must be clean before projecting a commit-bound artifact"
+@contextmanager
+def source_snapshot(source: Path, commit: str):
+    with tempfile.TemporaryDirectory() as temporary:
+        archive = subprocess.check_output(
+            ["git", "archive", "--format=tar", commit], cwd=source
         )
+        with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
+            tar.extractall(temporary)
+        yield Path(temporary)
 
 
-def build(source: Path, output: Path, target: str, slate: list[str], channel: str, force: bool) -> Path:
+def build(
+    source: Path,
+    output: Path,
+    target: str,
+    slate: list[str],
+    channel: str,
+    force: bool,
+) -> Path:
     source = source.resolve()
     output = output.resolve()
     validate_non_overlapping_paths(source, output)
+    source_commit = git("rev-parse", "HEAD", cwd=source)
+    short_commit = git("rev-parse", "--short=12", "HEAD", cwd=source)
+    with source_snapshot(source, source_commit) as snapshot:
+        return _build_snapshot(
+            snapshot, output, target, slate, channel, force, source_commit, short_commit
+        )
+
+
+def _build_snapshot(
+    source: Path,
+    output: Path,
+    target: str,
+    slate: list[str],
+    channel: str,
+    force: bool,
+    source_commit: str,
+    short_commit: str,
+) -> Path:
     policy = json.loads((source / POLICY_PATH).read_text())
     if target not in policy["targets"]:
         raise ValueError(f"unsupported target: {target}")
@@ -124,9 +156,6 @@ def build(source: Path, output: Path, target: str, slate: list[str], channel: st
     if len(set(slate)) != len(slate):
         raise ValueError("plugin slate contains duplicates")
 
-    validate_clean_source(source)
-    source_commit = git("rev-parse", "HEAD", cwd=source)
-    short_commit = git("rev-parse", "--short=12", "HEAD", cwd=source)
     policy_digest = sha256_bytes(canonical_json(policy))
     if output.exists():
         if not force:
