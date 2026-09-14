@@ -1,6 +1,6 @@
 ---
 name: getting-prs-merged
-description: Use when the operator explicitly requests a GitHub branch or PR merge outcome, and only for that terminal outcome. Do not use for description, review, status, check, comment, readiness, draft, or publication work without merge.
+description: Use when the operator explicitly requests a GitHub branch or PR merge outcome. A merge closeout may invoke the readiness owner as a guarded continuation when repository policy permits; use the readiness skill directly for readiness-only requests. Do not use for description, review, status, check, comment, draft, or publication work without merge.
 ---
 
 # Getting PRs Merged
@@ -32,11 +32,16 @@ mutation and reports findings or missing evidence before PR status.
    repository/owner, draft, and target. Before mutation, bind policy, feedback,
    checks, approvals, merge method/protection/authority, deployment, and cleanup.
    Use `merge-inspection` only for this read-only merge-state acquisition.
-2. If no PR exists, return a terminal `readiness-handoff` naming
-   [getting-prs-ready-for-review](../getting-prs-ready-for-review/SKILL.md), the
-   bound repository/base/head target, and the missing PR state. The caller
-   invokes readiness separately. After readiness succeeds, start a fresh
-   merge invocation from live state; this coordinator never calls readiness.
+2. If no PR exists, bind the missing-PR state and repository policy. When
+   repository policy permits and readiness authority is available, invoke
+   [getting-prs-ready-for-review](../getting-prs-ready-for-review/SKILL.md)
+   through its `readiness-outcome` operation as the next operation. It owns
+   checkpoint, publication, and guarded ready
+   actuation; this coordinator does not perform those writes. Consume only its
+   `ready`, `blocked`, or `ambiguous` result, then start a fresh merge
+   invocation from live state after `ready`. If readiness authority is absent
+   or the operation cannot be invoked safely, return the terminal
+   `readiness-handoff` naming the bound target and gate.
 3. Acquire a complete head-bound feedback snapshot through the read-only
    `feedback-acquisition` capability implemented by
    `addressing-pr-review-feedback/scripts/review_feedback_state.py`. Do not call
@@ -53,11 +58,15 @@ mutation and reports findings or missing evidence before PR status.
    `tricritical:loop`. A bare `clean` terminal permits a fresh merge-closeout
    invocation, which rereads all live state. Every other terminal remains
    blocked; `clean / degraded` never satisfies a required bare `clean`.
-5. If the PR is absent, draft, or otherwise not review-ready, return the same
-   terminal `readiness-handoff`; never continue merge closeout in this
-   invocation. Use `check-inspection` for the read-only required-Actions state;
-   route failed required Actions through `focused-ci` only after a fresh merge
-   invocation observes a review-ready PR.
+5. If the PR is draft or otherwise not review-ready, refresh policy and
+   readiness authority. When policy permits, invoke the `readiness-outcome`
+   operation as the next operation and consume only its `ready`, `blocked`, or
+   `ambiguous` result. After `ready`, start a fresh merge invocation that
+   rereads live state; readiness still owns `pr-readiness-write` and its
+   publication audit. If readiness cannot be invoked safely, return the
+   terminal `readiness-handoff`. Use `check-inspection` for the read-only
+   required-Actions state; route failed required Actions through `focused-ci`
+   only after a fresh merge invocation observes a review-ready PR.
 6. When canonical publication evidence applies, call
    [publishing-reviewable-prs](../publishing-reviewable-prs/SKILL.md) for a
    read-only audit and require the authoritative latest receipt to match live

@@ -409,6 +409,7 @@
       "calls": [
         "operation:publication-audit",
         "operation:feedback-acquisition",
+        "operation:readiness-outcome",
         "operation:check-inspection",
         "operation:focused-ci",
         "operation:merge-inspection",
@@ -749,7 +750,7 @@
       "import": null,
       "access": "coordinate",
       "authority": "readiness-only coordination and separately authorized ready mutation",
-      "callers": ["getting-prs-ready-for-review"],
+      "callers": ["getting-prs-merged", "getting-prs-ready-for-review"],
       "disposition": "public-skill"
     },
     {

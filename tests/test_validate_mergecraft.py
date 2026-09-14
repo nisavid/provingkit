@@ -1083,7 +1083,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         self.write_json("topology.json", value)
         self.assert_rejected("terminal handoff drift")
 
-    def test_absent_pr_is_terminal_readiness_handoff_not_nested_coordination(
+    def test_absent_pr_continues_through_readiness_operation_before_merge(
         self,
     ) -> None:
         topology = json.loads((self.plugin / "topology.json").read_text())
@@ -1092,7 +1092,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             for component in topology["skills"]
             if component["name"] == "getting-prs-merged"
         )
-        self.assertNotIn("getting-prs-ready-for-review", merge["calls"])
+        self.assertIn("operation:readiness-outcome", merge["calls"])
         self.assertIn("readiness-handoff", merge["contract"]["terminal_statuses"])
         handoff = next(
             item
@@ -1105,9 +1105,9 @@ class ValidateMergecraftTests(unittest.TestCase):
             / EVAL_ROOT
             / "skills/getting-prs-merged/fixtures/new-branch-publish-and-closeout.md"
         ).read_text()
-        self.assertIn("returns one terminal `readiness-handoff`", fixture)
-        self.assertIn("calls each required leaf once", fixture)
-        self.assertIn("No lifecycle coordinator calls another", fixture)
+        self.assertIn("invokes `readiness-outcome`", fixture)
+        self.assertIn("readiness coordinator owns", fixture)
+        self.assertIn("fresh `getting-prs-merged`", fixture)
 
     def test_outcome_coordinators_terminate_with_one_owner_handoff(self) -> None:
         topology = json.loads((self.plugin / "topology.json").read_text())
@@ -1120,7 +1120,22 @@ class ValidateMergecraftTests(unittest.TestCase):
         }
         for name in outcome_coordinators:
             with self.subTest(name=name):
-                self.assertFalse(set(skills[name]["calls"]) & outcome_coordinators)
+                called = {
+                    next(
+                        operation["owner"]
+                        for operation in topology["operations"]
+                        if operation["semantic_id"]
+                        == call.removeprefix("operation:")
+                    )
+                    for call in skills[name]["calls"]
+                    if call.startswith("operation:")
+                }
+                allowed = (
+                    {"getting-prs-ready-for-review"}
+                    if name == "getting-prs-merged"
+                    else set()
+                )
+                self.assertTrue((called & outcome_coordinators) <= allowed)
 
         resume = skills["resuming-reviewed-prs"]
         self.assertEqual(
@@ -1135,6 +1150,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         merge = skills["getting-prs-merged"]
         self.assertIn("operation:feedback-acquisition", merge["calls"])
+        self.assertIn("operation:readiness-outcome", merge["calls"])
         self.assertIn(
             "addressing-pr-review-feedback",
             {item["owner"] for item in merge["contract"]["terminal_handoffs"]},

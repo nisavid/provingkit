@@ -3,13 +3,13 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "e713145cb3088ce26ecb342757bb543b7c20fb7616a31fbbe60f3ec6237d05a6",
-    "README.md": "379aaaf00d0178863754b79cdb9a70811387ddc1d8a5e70dea6c40a1f73abe5e",
+    "README.md": "4bc3f21fdad8662d5b19322162209168f470da652956b303500687d096de167a",
     "plugin.json": "870c6b0fe9d8b3b57d22e7ac8729418cd871d0af2f4ef0bb9f899869f7de3ab2",
     "skills/addressing-pr-review-feedback/SKILL.md": "b69eb8f91c0bfc89a5af2b716bedf12178a1e87a934a3665b7278634e9f7e13f",
     "skills/addressing-pr-review-feedback/agents/openai.yaml": "2496f90c970648152cda7b94f40047baab0426c19b47954b87aa6baac563c39c",
     "skills/addressing-pr-review-feedback/references/feedback-flow.md": "9aa210a8b71f0ea2048ebff6447db5922f242894b19b37f19894ff90ed3e7f24",
     "skills/addressing-pr-review-feedback/scripts/review_feedback_state.py": "21bb17e2935627e0a7488e14e37ee934967fc68acf4e62432753653142dbcc7f",
-    "skills/getting-prs-merged/SKILL.md": "10c6a5628110a4b385b1944955cc87b5c05248f1d43844e00f7abc587f6344ff",
+    "skills/getting-prs-merged/SKILL.md": "81b99ee2dabfa16c6f8cc31e091628d06a50062d6590a628af329566ad0ebb64",
     "skills/getting-prs-merged/agents/openai.yaml": "50ee890aeefc987b7a7f7e823d5e7a58bbd019ef89767f9bd839482c1b9766c9",
     "skills/getting-prs-merged/references/gh-fix-ci-adapter.md": "18d47225b110317293710d4b6ef79415f1277568f0abc10a3b53133bb46edb8c",
     "skills/getting-prs-merged/references/github-markdown-authoring.md": "3e477f3d7607a594eb9f2850fa8a49f61552fc26be5844de49124bc17a486577",
@@ -92,6 +92,6 @@
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/types.py": "5a8a32bbaf5c0a29b97afd9280c366e149383712628a55155eda0acd6aa4ee81",
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py": "ca1fd7b3210320967e47ed5696dc3fb12d1005f3cbbbd4214845247b5a895bf6",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py": "e4e8b796b02e469050a9b29e2bf13e8385edace1c3fd00fa180e8a112b1c1411",
-    "topology.json": "fcb3fdbc2b418bb3f09f2d32448d9653bb6dd3b87e64550cae626248e8de26da"
+    "topology.json": "e97cdf8baef87a9202e3e2cce80e845c2f021cf913c41aec8c17bef495ba00be"
   }
 }

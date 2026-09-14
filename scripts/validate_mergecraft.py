@@ -1833,6 +1833,9 @@ def validate_topology(root: Path) -> None:
         for component in skills
         if any(operation.endswith("-outcome") for operation in component["operations"])
     } | {"resuming-reviewed-prs"}
+    allowed_continuations = {
+        ("getting-prs-merged", "getting-prs-ready-for-review")
+    }
     for coordinator in outcome_coordinators:
         called_coordinators = {
             operation_by_id[call.removeprefix("operation:")]["owner"]
@@ -1841,7 +1844,10 @@ def validate_topology(root: Path) -> None:
             in outcome_coordinators
         }
         require(
-            not called_coordinators,
+            all(
+                (coordinator, called) in allowed_continuations
+                for called in called_coordinators
+            ),
             f"outcome coordinator call edge: {coordinator}",
         )
     resume_handoffs = skills_by_name["resuming-reviewed-prs"]["contract"][
