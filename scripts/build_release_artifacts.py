@@ -98,6 +98,14 @@ def validate_non_overlapping_paths(source: Path, output: Path) -> None:
         )
 
 
+def validate_clean_source(source: Path) -> None:
+    status = git("status", "--porcelain=v1", "--untracked-files=all", cwd=source)
+    if status:
+        raise ValueError(
+            "source checkout must be clean before projecting a commit-bound artifact"
+        )
+
+
 def build(source: Path, output: Path, target: str, slate: list[str], channel: str, force: bool) -> Path:
     source = source.resolve()
     output = output.resolve()
@@ -116,6 +124,7 @@ def build(source: Path, output: Path, target: str, slate: list[str], channel: st
     if len(set(slate)) != len(slate):
         raise ValueError("plugin slate contains duplicates")
 
+    validate_clean_source(source)
     source_commit = git("rev-parse", "HEAD", cwd=source)
     short_commit = git("rev-parse", "--short=12", "HEAD", cwd=source)
     policy_digest = sha256_bytes(canonical_json(policy))

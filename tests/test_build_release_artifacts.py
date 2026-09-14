@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from scripts.build_release_artifacts import build
@@ -64,6 +65,41 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, "source and output paths must not overlap"):
                         build(source, destination, "agent-plugins", ["proseweaving"], "preview", True)
             self.assertEqual(marker.read_text(), "preserve this")
+
+    def test_dirty_source_is_rejected_before_projection(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source"
+            source.mkdir()
+            (source / "release").mkdir()
+            (source / "release/artifact-projection-policy-v1.json").write_text(
+                json.dumps(
+                    {
+                        "slate": ["proseweaving"],
+                        "source_root": "plugins",
+                        "targets": {
+                            "agent-plugins": {
+                                "include": [],
+                                "exclude": [],
+                                "plugin_root": "plugins",
+                                "catalog": ".agents/plugins/marketplace.json",
+                            }
+                        },
+                    }
+                )
+            )
+            with mock.patch(
+                "scripts.build_release_artifacts.git",
+                return_value=" M plugins/proseweaving/SKILL.md",
+            ):
+                with self.assertRaisesRegex(ValueError, "source checkout must be clean"):
+                    build(
+                        source,
+                        Path(tmp) / "output",
+                        "agent-plugins",
+                        ["proseweaving"],
+                        "preview",
+                        False,
+                    )
 
 
 if __name__ == "__main__":
