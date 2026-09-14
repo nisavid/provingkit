@@ -44,6 +44,11 @@ runtime qualification. The root
 [`marketplace.json`](.claude-plugin/marketplace.json) is a source projection of
 the six Agent Plugins; its presence is not marketplace publication.
 
+Installable target projections are staged by the CI-only
+[`release-artifact-projection`](docs/release-artifact-projection.md) process.
+It excludes development material and emits a receipt bound to the source
+commit, target, slate, inventory, and deterministic artifact digest.
+
 The retained Linux and macOS Task Witness material under
 [`qualification/historical/`](qualification/historical/) is historical input.
 It is not current qualification evidence and does not make Task Witness
@@ -62,6 +67,8 @@ remain disabled until that rescout.
   local manifest identity.
 - `evals/` and `tests/` contain member behavior corpora and contract tests.
 - `scripts/` contains source validators and controlled derived-artifact writers.
+- `release/artifact-projection-policy-v1.json` defines the allowlisted runtime
+  files for each supported marketplace target.
 - `release/provingkit/` defines Kit membership and the future immutable
   release-manifest boundary.
 - `release/plugin-content-locks/` contains generated content locks owned by
