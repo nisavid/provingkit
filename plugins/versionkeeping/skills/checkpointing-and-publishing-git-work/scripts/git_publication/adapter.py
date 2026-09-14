@@ -146,6 +146,7 @@ GIT_SUBPROCESS_ENV_ALLOWLIST = {
     "TMP",
     "TMPDIR",
     "USER",
+    "XDG_CONFIG_HOME",
     "all_proxy",
     "https_proxy",
     "http_proxy",
