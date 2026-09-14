@@ -62,6 +62,7 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             marker.write_text("preserve this")
             for source, destination in (
                 (ROOT, ROOT),
+                (ROOT, output),
                 (ROOT, output / "nested"),
                 (ROOT / "plugins", ROOT),
                 (ROOT / "plugins", ROOT / "release"),
