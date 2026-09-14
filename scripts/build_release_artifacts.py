@@ -121,7 +121,7 @@ def build(
     channel: str,
     force: bool,
 ) -> Path:
-    source = source.resolve()
+    source = Path(git("rev-parse", "--show-toplevel", cwd=source)).resolve()
     output = output.resolve()
     validate_non_overlapping_paths(source, output)
     source_commit = git("rev-parse", "HEAD", cwd=source)

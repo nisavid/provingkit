@@ -60,6 +60,7 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
                 (ROOT, ROOT),
                 (ROOT, output / "nested"),
                 (ROOT / "plugins", ROOT),
+                (ROOT / "plugins", ROOT / "release"),
             ):
                 with self.subTest(source=source, output=destination):
                     with self.assertRaisesRegex(ValueError, "source and output paths must not overlap"):
