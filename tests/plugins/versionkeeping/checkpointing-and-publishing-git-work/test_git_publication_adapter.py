@@ -452,7 +452,7 @@ class RepositoryPlanningTests(unittest.TestCase):
 
     def test_host_compatible_profile_reads_global_git_config(self):
         home = self.root / "host-home"
-        config_home = home / ".config" / "git"
+        config_home = self.root / "host-config" / "git"
         config_home.mkdir(parents=True)
         (config_home / "config").write_text(
             "[user]\n\tname = Host Config User\n",
@@ -462,7 +462,7 @@ class RepositoryPlanningTests(unittest.TestCase):
             os.environ,
             {
                 "HOME": str(home),
-                "XDG_CONFIG_HOME": str(home / ".config"),
+                "XDG_CONFIG_HOME": str(config_home.parent),
                 adapter.GIT_CONFIG_PROFILE_ENV: "host-compatible",
             },
             clear=False,
@@ -471,6 +471,10 @@ class RepositoryPlanningTests(unittest.TestCase):
                 self.assertEqual(
                     repository.output(["config", "--get", "user.name"]),
                     "Host Config User",
+                )
+                self.assertEqual(
+                    repository.env["XDG_CONFIG_HOME"],
+                    str(config_home.parent),
                 )
                 self.assertNotIn("GIT_CONFIG_GLOBAL", repository.env)
                 self.assertNotIn("GIT_CONFIG_NOSYSTEM", repository.env)
