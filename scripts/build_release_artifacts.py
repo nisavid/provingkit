@@ -87,11 +87,12 @@ def tree_digest(root: Path) -> tuple[str, list[dict[str, str]]]:
     return sha256_bytes(bytes(framed)), inventory
 
 
-def manifest_for_cursor(canonical: dict) -> dict:
+def manifest_for_cursor(canonical: dict, *, has_agents: bool) -> dict:
     result = dict(canonical)
     result.pop("extensions", None)
     result["skills"] = "./skills/"
-    result["agents"] = "./agents/"
+    if has_agents:
+        result["agents"] = "./agents/"
     return result
 
 
@@ -168,12 +169,17 @@ def _build_snapshot(
         if not src.is_dir():
             raise FileNotFoundError(src)
         dst = output / target_spec["plugin_root"] / plugin_id
-        for path in selected_files(src, target_spec):
+        selected = selected_files(src, target_spec)
+        for path in selected:
             rel = path.relative_to(src)
             copy_file(path, dst / rel)
         if target == "cursor":
             canonical = json.loads((src / "plugin.json").read_text())
-            write_json(dst / ".cursor-plugin/plugin.json", manifest_for_cursor(canonical))
+            has_agents = any(path.relative_to(src).parts[:1] == ("agents",) for path in selected)
+            write_json(
+                dst / ".cursor-plugin/plugin.json",
+                manifest_for_cursor(canonical, has_agents=has_agents),
+            )
 
     entries = []
     for plugin_id in slate:

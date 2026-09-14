@@ -35,6 +35,10 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             manifest = json.loads((output / "plugins/proseweaving/.cursor-plugin/plugin.json").read_text())
             self.assertEqual(manifest["skills"], "./skills/")
             self.assertEqual(manifest["agents"], "./agents/")
+        for output, _ in self.stage("cursor", ["rolecasting"]):
+            manifest = json.loads((output / "plugins/rolecasting/.cursor-plugin/plugin.json").read_text())
+            self.assertEqual(manifest["skills"], "./skills/")
+            self.assertNotIn("agents", manifest)
 
     def test_staging_is_deterministic(self):
         with tempfile.TemporaryDirectory() as tmp:
