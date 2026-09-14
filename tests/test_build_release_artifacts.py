@@ -49,6 +49,22 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 build(ROOT, Path(tmp) / "bad", "agent-plugins", ["task-witness"], "preview", False)
 
+    def test_source_and_output_paths_must_not_overlap(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
+            output = Path(tmp) / "output"
+            output.mkdir()
+            marker = output / "marker"
+            marker.write_text("preserve this")
+            for source, destination in (
+                (ROOT, ROOT),
+                (ROOT, output / "nested"),
+                (ROOT / "plugins", ROOT),
+            ):
+                with self.subTest(source=source, output=destination):
+                    with self.assertRaisesRegex(ValueError, "source and output paths must not overlap"):
+                        build(source, destination, "agent-plugins", ["proseweaving"], "preview", True)
+            self.assertEqual(marker.read_text(), "preserve this")
+
 
 if __name__ == "__main__":
     unittest.main()

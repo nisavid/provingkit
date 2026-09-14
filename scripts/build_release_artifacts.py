@@ -91,7 +91,17 @@ def manifest_for_cursor(canonical: dict) -> dict:
     return result
 
 
+def validate_non_overlapping_paths(source: Path, output: Path) -> None:
+    if source == output or source in output.parents or output in source.parents:
+        raise ValueError(
+            f"source and output paths must not overlap: source={source}, output={output}"
+        )
+
+
 def build(source: Path, output: Path, target: str, slate: list[str], channel: str, force: bool) -> Path:
+    source = source.resolve()
+    output = output.resolve()
+    validate_non_overlapping_paths(source, output)
     policy = json.loads((source / POLICY_PATH).read_text())
     if target not in policy["targets"]:
         raise ValueError(f"unsupported target: {target}")
