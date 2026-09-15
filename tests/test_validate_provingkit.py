@@ -162,10 +162,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "release/plugin-content-locks/artifact-customs.json",
             ),
             (
-                    "code-only",
-                "source-shape-review",
-                ),
-            (
                 "proseweaving",
                 "agent-plugin",
                 "plugin-content-lock",
@@ -2554,7 +2550,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 6),
+            ("maxItems", 7),
             ("items", {}),
         )
         for key, value in mutations:

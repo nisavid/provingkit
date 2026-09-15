@@ -11,11 +11,11 @@ Its `schema_version` versions Mergecraft's local topology shape, not a
 repository-wide interchange schema.
 
 Canonical PR publication requires every caller to select `required` or explicit
-`not-required` review. Ordinary publication can proceed with `not-required`, or
-with a qualified Tricritical or harness-native review route. Task Witness is
-optional future equipment for routes that explicitly require its stronger
-cross-harness evidence contract; those routes report witnessed publication as
-unavailable when it is not installed.
+`not-required` review. Ordinary publication can proceed with `not-required`;
+`required` publication is reserved for a future authenticated Task Witness
+integration. Task Witness is optional future equipment for callers that need
+its stronger cross-harness evidence contract, and that route reports witnessed
+publication as unavailable when it is not installed.
 
 ## Public skills
 
