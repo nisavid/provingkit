@@ -8,6 +8,8 @@ through Task Witness's registered-validator capability.
 from __future__ import annotations
 
 import hashlib
+import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -71,11 +73,143 @@ SEAM_CHOICES = {
 }
 
 
+class _LocalEvidenceError(ValueError):
+    """A review-evidence bundle fails Tricritical's local structure contract."""
+
+
+class _LocalWitness:
+    """Pure evidence primitives used without the optional Task Witness adapter.
+
+    The local fallback validates syntax, schema, and content identity. It does
+    not manufacture producer or issuer authority, and therefore refuses the
+    optional registered-validator execution path.
+    """
+
+    EvidenceError = _LocalEvidenceError
+    _TOKEN = re.compile(r"[a-z][a-z0-9-]{0,63}\Z")
+    _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
+
+    @staticmethod
+    def canonical_bytes(value: object) -> bytes:
+        try:
+            return json.dumps(
+                value,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+        except (TypeError, ValueError, RecursionError) as error:
+            raise _LocalEvidenceError("value is not canonical JSON") from error
+
+    @classmethod
+    def digest(cls, value: object) -> str:
+        return hashlib.sha256(cls.canonical_bytes(value)).hexdigest()
+
+    @classmethod
+    def exact(cls, value: Any, keys: set[str], label: str) -> dict[str, Any]:
+        if not isinstance(value, dict) or set(value) != keys:
+            raise cls.EvidenceError(f"{label} schema drift")
+        return value
+
+    @classmethod
+    def text(cls, value: Any, label: str) -> str:
+        if not isinstance(value, str) or not value:
+            raise cls.EvidenceError(f"{label} must be a non-empty string")
+        return value
+
+    @classmethod
+    def token(cls, value: Any, label: str) -> str:
+        value = cls.text(value, label)
+        if cls._TOKEN.fullmatch(value) is None:
+            raise cls.EvidenceError(f"{label} is not a closed token")
+        return value
+
+    @classmethod
+    def sha(cls, value: Any, label: str) -> str:
+        value = cls.text(value, label)
+        if cls._SHA256.fullmatch(value) is None:
+            raise cls.EvidenceError(f"{label} must be a SHA-256 digest")
+        return value
+
+    @classmethod
+    def identity(
+        cls, value: Any, label: str, *, absent: bool = False
+    ) -> dict[str, Any]:
+        if absent and value == {"kind": "absent"}:
+            return value
+        value = cls.exact(value, {"kind", "value", "content_sha256"}, label)
+        cls.text(value["kind"], f"{label}.kind")
+        cls.text(value["value"], f"{label}.value")
+        cls.sha(value["content_sha256"], f"{label}.content_sha256")
+        return value
+
+    @classmethod
+    def document(
+        cls, value: Any, keys: set[str], label: str, contract: str
+    ) -> dict[str, Any]:
+        value = cls.exact(
+            value,
+            keys | {"schema_version", "contract", "content_sha256"},
+            label,
+        )
+        if (
+            type(value["schema_version"]) is not int
+            or value["schema_version"] != 1
+            or value["contract"] != contract
+        ):
+            raise cls.EvidenceError(f"{label} contract mismatch")
+        unsigned = {
+            key: item for key, item in value.items() if key != "content_sha256"
+        }
+        if cls.sha(value["content_sha256"], f"{label}.content_sha256") != cls.digest(
+            unsigned
+        ):
+            raise cls.EvidenceError(f"{label} content digest mismatch")
+        return value
+
+    @classmethod
+    def producer(cls, value: Any, _snapshot: Any, label: str) -> dict[str, Any]:
+        value = cls.exact(
+            value, {"producer_id", "contract", "implementation_sha256"}, label
+        )
+        cls.token(value["producer_id"], f"{label}.producer_id")
+        cls.text(value["contract"], f"{label}.contract")
+        cls.sha(value["implementation_sha256"], f"{label}.implementation_sha256")
+        return value
+
+    @classmethod
+    def issuer(
+        cls, value: Any, _snapshot: Any, label: str, _capability: str
+    ) -> dict[str, Any]:
+        value = cls.exact(
+            value, {"issuer_id", "contract", "implementation_sha256"}, label
+        )
+        cls.token(value["issuer_id"], f"{label}.issuer_id")
+        cls.text(value["contract"], f"{label}.contract")
+        cls.sha(value["implementation_sha256"], f"{label}.implementation_sha256")
+        return value
+
+    @classmethod
+    def absolute(cls, path: Path, label: str) -> Path:
+        if not path.is_absolute() or ".." in path.parts:
+            raise cls.EvidenceError(f"{label} must be absolute and traversal-free")
+        return path
+
+    @classmethod
+    def invoke_registered_validator(cls, _path: Path, _snapshot: Any) -> dict[str, Any]:
+        raise cls.EvidenceError(
+            "Task Witness integration is unavailable; use a harness-native "
+            "evidence route or inject the optional witness adapter"
+        )
+
+
 def _witness() -> Any:
     witness = globals().get("_TASK_WITNESS")
-    if witness is None:
-        raise RuntimeError("Tricritical review evidence requires Task Witness")
-    return witness
+    return _LOCAL_WITNESS if witness is None else witness
+
+
+_LOCAL_WITNESS = _LocalWitness()
 
 
 def _raw_sha(raw: bytes) -> str:
