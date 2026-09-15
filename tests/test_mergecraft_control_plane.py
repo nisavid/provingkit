@@ -58,7 +58,7 @@ def review_input(
     head_oid: str | None = None,
 ) -> dict[str, object]:
     if GIT_REPOSITORY is None:
-        raise RuntimeError("Amberbridge Git fixture is not initialized")
+        raise RuntimeError("Mergecraft Git fixture is not initialized")
     head_oid = head_oid or HEAD_OID
     git_diff = CONTROL.observe_git_diff(
         GIT_REPOSITORY, base_oid=BASE_OID, head_oid=head_oid
@@ -166,7 +166,7 @@ def stored(
     }
 
 
-class AmberbridgeControlPlaneTests(unittest.TestCase):
+class MergecraftControlPlaneTests(unittest.TestCase):
     def setUp(self) -> None:
         global BASE_OID, DRIFT_HEAD_OID, HEAD_OID, GIT_REPOSITORY
         self.temporary = tempfile.TemporaryDirectory()
