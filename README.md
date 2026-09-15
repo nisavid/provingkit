@@ -132,6 +132,12 @@ signing-key custody and anti-replay state; and independent provider authority
 bound to the exact candidate, policy, runtime, and endpoint. Until those gates
 close, optional Task Witness equipment remains unavailable.
 
+## Amberbridge
+
+[Amberbridge](docs/amberbridge.md) is the release-evidence bridge between the
+public Kit and its private deployment context. Its contracts and tests are
+present; live release routes remain unavailable in this source stage.
+
 ## Generated locks and review evidence
 
 Do not hand-edit member content locks or generated projections. Change the
