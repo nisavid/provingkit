@@ -67,12 +67,6 @@ SKILL_REFERENCES = {
     },
 }
 OUTWARD_PLUGINS = ("rolecasting", "tricritical", "versionkeeping", "mergecraft")
-PHASE7_CONTROL_PROJECTION = (
-    "rolecasting",
-    "versionkeeping",
-    "mergecraft",
-    "tricritical",
-)
 EXPECTED_SKILL_TOPOLOGY = {
     "assessing-third-party-components": {
         "role": "clearance",
@@ -285,7 +279,7 @@ EXPECTED_SCHEDULER_ADAPTERS = {
 }
 PORTABILITY_MARKERS = ("/Users/", "\\\\Users\\\\", "file://", "~/.")
 FORBIDDEN_PARTS = {"evals", "tests", "fixtures", "release"}
-FORBIDDEN_TERMS = ("tomlkit", "phase7", "private-evidence")
+FORBIDDEN_TERMS = ("tomlkit", "amberbridge", "private-evidence")
 FORBIDDEN_SUFFIXES = (".whl", ".tar", ".tar.gz")
 SHA256 = re.compile(r"[0-9a-f]{64}$")
 
@@ -493,7 +487,6 @@ def validate_topology(root: Path) -> None:
             "outward_plugins",
             "reverse_edges_forbidden",
             "terminal_status_vocabulary",
-            "phase7_control_projection",
         }
         and topology["schema_version"] == 1
         and topology["plugin"] == "artifact-customs",
@@ -535,10 +528,6 @@ def validate_topology(root: Path) -> None:
         and tuple(outward) == OUTWARD_PLUGINS
         and topology["reverse_edges_forbidden"] is True,
         "outward composition drift",
-    )
-    require(
-        topology["phase7_control_projection"] == list(PHASE7_CONTROL_PROJECTION),
-        "Phase 7 control projection drift",
     )
     require(
         topology["terminal_status_vocabulary"] == EXPECTED_TERMINAL_STATUS_VOCABULARY,

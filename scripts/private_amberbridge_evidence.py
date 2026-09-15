@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify public-safe Phase 7 v2 replay evidence."""
+"""Verify public-safe Amberbridge v2 replay evidence."""
 
 from __future__ import annotations
 
@@ -20,12 +20,12 @@ from evidence_transport import (
     json_file_bytes,
     strict_json_bytes,
 )
-from phase7_compatibility_projection import compatibility_bytes
+from amberbridge_compatibility_projection import compatibility_bytes
 
-PUBLIC_REPLAY_SUMMARY_CONTRACT = "phase7-private-replay-public-summary-v2"
+PUBLIC_REPLAY_SUMMARY_CONTRACT = "amberbridge-private-replay-public-summary-v2"
 PUBLIC_REPLAY_SUMMARY_SCHEMA_VERSION = 2
-COMPLETE_TREE_WITNESS_CONTRACT = "phase7-private-complete-tree-witness-v1"
-PRODUCER_REGISTRY_CONTRACT = "phase7-private-producer-registry-v2"
+COMPLETE_TREE_WITNESS_CONTRACT = "amberbridge-private-complete-tree-witness-v1"
+PRODUCER_REGISTRY_CONTRACT = "amberbridge-private-producer-registry-v2"
 MAX_PUBLIC_SUMMARY_BYTES = 1024 * 1024
 MAX_COMPATIBILITY_BYTES = 512 * 1024
 MAX_REGISTRY_BYTES = 2 * 1024 * 1024
@@ -574,7 +574,7 @@ def _validate_registry(
             "private producer role selector",
         )
         _require(
-            selector == {"role": role, "selector": "phase7-private-evidence-v4"},
+            selector == {"role": role, "selector": "amberbridge-private-evidence-v4"},
             "private producer role selector drift",
         )
     _require(
@@ -584,8 +584,8 @@ def _validate_registry(
             "private producer compatibility module",
         )
         == {
-            "path": "scripts/phase7_compatibility_projection.py",
-            "expected_projection_sha256": "sha256:a62f152451781b7018180cb4e5ae0bb13071f3dd1364d4a93dbadbe2bb985f58",
+            "path": "scripts/amberbridge_compatibility_projection.py",
+            "expected_projection_sha256": "sha256:24b62e0b7f514f508e503875a90c89f84c32d7b90374431831521d963368ba18",
         },
         "private producer compatibility module drift",
     )
@@ -869,7 +869,7 @@ def _frozen_identity_sha256(
 ) -> str:
     frozen = {
         "schema_version": 4,
-        "contract": "phase7-coordinator-frozen-identity-v4",
+        "contract": "amberbridge-coordinator-frozen-identity-v4",
         "commit_oid": commit_oid,
         "producer_package_sha256": producer_package_sha256,
         "private_candidate_identity": private_candidate_identity,
@@ -1112,7 +1112,7 @@ def verify_public_release_evidence(
     _require(
         type(composed_receipt["schema_version"]) is int
         and composed_receipt["schema_version"] == 7
-        and composed_receipt["contract"] == "phase7-composed-evidence-v7"
+        and composed_receipt["contract"] == "amberbridge-composed-evidence-v7"
         and composed_receipt["claim"]
         == (
             "provider-free public composition with replay-payload-bound "

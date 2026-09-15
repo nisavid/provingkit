@@ -106,7 +106,7 @@ def test_candidate_identity_binds_missing_tracked_blob(tmp_path: Path) -> None:
     ) != transport.candidate_content_identity(second, error_factory=RuntimeError)
 
 
-def test_phase7_candidate_identity_never_executes_repository_fsmonitor(
+def test_amberbridge_candidate_identity_never_executes_repository_fsmonitor(
     tmp_path: Path,
 ) -> None:
     repository = tmp_path / "repository"
@@ -155,7 +155,7 @@ def test_phase7_candidate_identity_never_executes_repository_fsmonitor(
     completed = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts/phase7_compatibility_projection.py"),
+            str(ROOT / "scripts/amberbridge_compatibility_projection.py"),
             "--public-root",
             str(repository),
             "--expected-public-candidate-sha256",
@@ -237,7 +237,7 @@ def test_candidate_identity_closes_fsmonitor_without_config_environment_support(
     assert marker.exists() is False
 
 
-def test_phase7_candidate_identity_never_searches_candidate_for_git(
+def test_amberbridge_candidate_identity_never_searches_candidate_for_git(
     tmp_path: Path,
 ) -> None:
     trusted_git = shutil.which("git", path="/usr/bin:/bin")
@@ -277,7 +277,7 @@ def test_phase7_candidate_identity_never_searches_candidate_for_git(
     completed = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts/phase7_compatibility_projection.py"),
+            str(ROOT / "scripts/amberbridge_compatibility_projection.py"),
             "--public-root",
             str(repository),
             "--expected-public-candidate-sha256",

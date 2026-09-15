@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Strictly combine the three independently produced Phase 7 target proofs."""
+"""Strictly combine the three independently produced Amberbridge target proofs."""
 
 from __future__ import annotations
 
@@ -77,7 +77,7 @@ def validate_proof(content: bytes, *, target: str, binary: str) -> dict[str, Any
     require(
         set(proof) == PROOF_FIELDS
         and proof.get("schema_version") == 2
-        and proof.get("contract") == "phase7-public-terminal-direct-proof-v2"
+        and proof.get("contract") == "amberbridge-public-terminal-direct-proof-v2"
         and proof.get("target") == target
         and proof.get("binary") == binary
         and isinstance(proof.get("version"), str)
@@ -139,7 +139,7 @@ def combine(paths: list[Path], output: Path) -> dict[str, Any]:
         )
     document = {
         "schema_version": 2,
-        "contract": "phase7-public-backend-release-evidence-v2",
+        "contract": "amberbridge-public-backend-release-evidence-v2",
         "public_candidate_identity": candidate,
         "targets": proofs,
     }

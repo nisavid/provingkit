@@ -27,7 +27,9 @@
       "mutates_directly": false,
       "can_cause_mutation": true,
       "requires_matching_mutation_authority": true,
-      "calls": ["assessing-third-party-components"],
+      "calls": [
+        "assessing-third-party-components"
+      ],
       "external_calls": [
         "rolecasting:delegating-cross-agent-work",
         "tricritical:loop",
@@ -35,7 +37,12 @@
         "mergecraft:publishing-reviewable-prs",
         "mergecraft:getting-prs-merged"
       ],
-      "terminal_statuses": ["adopted", "no-go", "operator-decision", "blocked"]
+      "terminal_statuses": [
+        "adopted",
+        "no-go",
+        "operator-decision",
+        "blocked"
+      ]
     },
     "maintaining-third-party-components": {
       "role": "maintenance",
@@ -43,7 +50,9 @@
       "mutates_directly": false,
       "can_cause_mutation": true,
       "requires_matching_mutation_authority": true,
-      "calls": ["assessing-third-party-components"],
+      "calls": [
+        "assessing-third-party-components"
+      ],
       "external_calls": [
         "rolecasting:delegating-cross-agent-work",
         "tricritical:loop",
@@ -83,11 +92,5 @@
     "adopted": "adopted",
     "blocked": "blocked",
     "maintained": "maintained"
-  },
-  "phase7_control_projection": [
-    "rolecasting",
-    "versionkeeping",
-    "mergecraft",
-    "tricritical"
-  ]
+  }
 }

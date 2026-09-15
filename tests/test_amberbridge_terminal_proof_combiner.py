@@ -10,7 +10,7 @@ REPO_ROOT = Path(__file__).parents[1]
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import combine_phase7_terminal_proofs as combiner
+import combine_amberbridge_terminal_proofs as combiner
 from evidence_transport import canonical_bytes, json_file_bytes
 
 
@@ -21,7 +21,7 @@ def digest(value: str) -> str:
 def proof(target: str, binary: str) -> dict:
     result = {
         "schema_version": 2,
-        "contract": "phase7-public-terminal-direct-proof-v2",
+        "contract": "amberbridge-public-terminal-direct-proof-v2",
         "target": target,
         "binary": binary,
         "version": f"{target}-v1",
@@ -56,7 +56,7 @@ class CombineTerminalProofsTests(unittest.TestCase):
             ]
             result = combiner.combine(paths, root / "combined.json")
             self.assertEqual(
-                result["contract"], "phase7-public-backend-release-evidence-v2"
+                result["contract"], "amberbridge-public-backend-release-evidence-v2"
             )
             self.assertEqual(result, combiner.combine(paths, root / "combined.json"))
             altered = proof(*combiner.TARGETS[0])

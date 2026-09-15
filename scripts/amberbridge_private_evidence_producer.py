@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Private Phase 7 conformance inventory construction."""
+"""Private Amberbridge conformance inventory construction."""
 
 from __future__ import annotations
 

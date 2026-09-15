@@ -9,7 +9,7 @@ import tarfile
 from pathlib import Path
 from typing import Any
 
-SUMMARY_CONTRACT = "phase7-private-replay-public-summary-v2"
+SUMMARY_CONTRACT = "amberbridge-private-replay-public-summary-v2"
 CHECK_ORDER = (
     "agent-topology",
     "global-agents-policy",
@@ -33,13 +33,13 @@ DIGEST_B = "sha256:" + "b" * 64
 DIGEST_C = "sha256:" + "c" * 64
 COMMIT_OID = "1" * 40
 FIXTURE_ROOT = Path(__file__).parent / "fixtures"
-FROZEN_REGISTRY_PATH = FIXTURE_ROOT / "phase7-v4-private-registry.json"
-FROZEN_WITNESS_PATH = FIXTURE_ROOT / "phase7-v4-private-witness.tar"
-FROZEN_BINDING_PATH = FIXTURE_ROOT / "phase7-v4-private-conformance-binding.json"
+FROZEN_REGISTRY_PATH = FIXTURE_ROOT / "amberbridge-v4-private-registry.json"
+FROZEN_WITNESS_PATH = FIXTURE_ROOT / "amberbridge-v4-private-witness.tar"
+FROZEN_BINDING_PATH = FIXTURE_ROOT / "amberbridge-v4-private-conformance-binding.json"
 BACKEND_CONTRACTS_PATH = (
     Path(__file__).parents[1]
     / "scripts"
-    / "phase7_private_evidence_backend_contracts.json"
+    / "amberbridge_private_evidence_backend_contracts.json"
 )
 
 
@@ -60,7 +60,7 @@ def digest_bytes(content: bytes) -> str:
 def frozen_identity_sha256(summary: dict[str, Any]) -> str:
     frozen = {
         "schema_version": 4,
-        "contract": "phase7-coordinator-frozen-identity-v4",
+        "contract": "amberbridge-coordinator-frozen-identity-v4",
         "commit_oid": summary["private_commit_oid"],
         "producer_package_sha256": summary["producer_package_sha256"],
         "private_candidate_identity": summary["private_candidate_identity"],
@@ -202,7 +202,7 @@ def frozen_private_sample() -> dict[str, Any]:
     binding = _strict_fixture_json(binding_bytes, "frozen private binding")
     if (
         binding.get("schema_version") != 1
-        or binding.get("contract") != "phase7-private-public-conformance-sample-v1"
+        or binding.get("contract") != "amberbridge-private-public-conformance-sample-v1"
         or binding.get("claim")
         != (
             "frozen builder-produced conformance sample; "
@@ -252,7 +252,7 @@ def frozen_private_sample() -> dict[str, Any]:
     checks = registry.get("checks")
     if (
         registry.get("schema_version") != 1
-        or registry.get("contract") != "phase7-private-producer-registry-v1"
+        or registry.get("contract") != "amberbridge-private-producer-registry-v1"
         or registry.get("roles") != list(ROLE_ORDER)
         or not isinstance(package_members, list)
         or not isinstance(checks, list)
@@ -291,12 +291,12 @@ def build_public_verifier_fixture(
         not isinstance(backend_contracts, dict)
         or set(backend_contracts) != {"schema_version", "contract", "targets"}
         or backend_contracts["schema_version"] != 2
-        or backend_contracts["contract"] != "phase7-private-isolation-backends-v2"
+        or backend_contracts["contract"] != "amberbridge-private-isolation-backends-v2"
         or not isinstance(backend_contracts["targets"], list)
     ):
         raise AssertionError("current private backend contract drift")
     registry["schema_version"] = 2
-    registry["contract"] = "phase7-private-producer-registry-v2"
+    registry["contract"] = "amberbridge-private-producer-registry-v2"
     registry["backend_contracts"] = backend_contracts["targets"]
     registry_path = root / "private-producer-registry.json"
     registry_content = json_file_bytes(registry)

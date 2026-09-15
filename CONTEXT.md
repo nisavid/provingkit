@@ -65,7 +65,7 @@ _Avoid_: Writer, generic GitHub client
 ### Kit and release
 
 **Provingkit**:
-The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, Task Witness, and Proseweaving. *The Kit* is its shorthand. Task Witness is the code-only member: a manifest-only plugin whose control plane ships through its own deployment route.
+The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. *The Kit* is its shorthand. Task Witness is optional future equipment, outside the current Slate; any resurrection must define a fresh contract and adapter.
 _Avoid_: Suite, bundle, the six
 
 **Release**:

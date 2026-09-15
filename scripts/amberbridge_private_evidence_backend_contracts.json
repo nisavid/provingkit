@@ -1,5 +1,5 @@
 {
-  "contract": "phase7-private-isolation-backends-v2",
+  "contract": "amberbridge-private-isolation-backends-v2",
   "schema_version": 2,
   "targets": [
         {

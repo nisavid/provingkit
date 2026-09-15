@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the complete Phase 7 private-to-production integration gate."""
+"""Run the complete Amberbridge private-to-production integration gate."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ if __name__ == "__main__" and (
     or not sys.flags.dont_write_bytecode
 ):
     raise SystemExit(
-        "run_phase7_production_integration.py must run with CPython 3.13+ and "
+        "run_amberbridge_production_integration.py must run with CPython 3.13+ and "
         "Python -I -B; the proof boundary begins at isolated interpreter startup"
     )
 
@@ -35,20 +35,20 @@ from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "41af6ee3609294bb54709c63f4b8f83e4c3bfa4456f3062a878c5a79c7c7a59e"
+SOURCE_SHA256 = "922fc9c665627f4471f64c15e743808049a4f2ab9c710ccbad971d8216770965"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/provingkit"
-PHASE7_SUPPORT_SOURCES = (
+AMBERBRIDGE_SUPPORT_SOURCES = (
     ("evidence_transport", "scripts/evidence_transport.py"),
-    ("phase7_compatibility_projection", "scripts/phase7_compatibility_projection.py"),
+    ("amberbridge_compatibility_projection", "scripts/amberbridge_compatibility_projection.py"),
     (
-        "phase7_private_evidence_isolation",
-        "scripts/phase7_private_evidence_isolation.py",
+        "amberbridge_private_evidence_isolation",
+        "scripts/amberbridge_private_evidence_isolation.py",
     ),
-    ("private_phase7_evidence", "scripts/private_phase7_evidence.py"),
+    ("private_amberbridge_evidence", "scripts/private_amberbridge_evidence.py"),
     ("validate_public_release", "scripts/validate_public_release.py"),
-    ("run_phase7_composed_matrix", "scripts/run_phase7_composed_matrix.py"),
+    ("run_amberbridge_composed_matrix", "scripts/run_amberbridge_composed_matrix.py"),
 )
 
 
@@ -122,7 +122,7 @@ def parse_public_candidate_sha256(value: str) -> str:
 def _normalized_source_generation_sha256(source: bytes) -> str:
     pattern = re.compile(rb'^SOURCE_SHA256 = "[0-9a-f]{64}"$', re.MULTILINE)
     if len(pattern.findall(source)) != 1:
-        raise SystemExit("Phase 7 coordinator source generation is malformed")
+        raise SystemExit("Amberbridge coordinator source generation is malformed")
     normalized = pattern.sub(b'SOURCE_SHA256 = "' + (b"0" * 64) + b'"', source)
     return hashlib.sha256(normalized).hexdigest()
 
@@ -160,13 +160,13 @@ def _read_pinned_source(path: Path, label: str) -> bytes:
 def _bind_loaded_coordinator_source() -> dict[str, object]:
     path = Path(os.path.abspath(__file__))
     try:
-        source = _read_pinned_source(path, "Phase 7 coordinator")
+        source = _read_pinned_source(path, "Amberbridge coordinator")
         require(
             _normalized_source_generation_sha256(source) == SOURCE_SHA256,
-            "Phase 7 coordinator source generation mismatch",
+            "Amberbridge coordinator source generation mismatch",
         )
     except (IntegrationError, OSError) as error:
-        raise SystemExit("Phase 7 coordinator source generation mismatch") from error
+        raise SystemExit("Amberbridge coordinator source generation mismatch") from error
     return {
         "path": path,
         "source": source,
@@ -179,12 +179,12 @@ _LOADED_COORDINATOR_SOURCE = _bind_loaded_coordinator_source()
 
 def require_loaded_coordinator_generation(snapshot: Path) -> None:
     source = _read_pinned_source(
-        snapshot / "scripts/run_phase7_production_integration.py",
-        "frozen Phase 7 coordinator",
+        snapshot / "scripts/run_amberbridge_production_integration.py",
+        "frozen Amberbridge coordinator",
     )
     require(
         source == _LOADED_COORDINATOR_SOURCE["source"],
-        "loaded Phase 7 coordinator differs from the frozen candidate",
+        "loaded Amberbridge coordinator differs from the frozen candidate",
     )
 
 
@@ -194,7 +194,7 @@ def require_prepared_supervisor_generation(
     require(
         isinstance(expected_source_sha256, str)
         and re.fullmatch(r"sha256:[0-9a-f]{64}", expected_source_sha256) is not None,
-        "Phase 7 production requires its prepared supervisor source identity",
+        "Amberbridge production requires its prepared supervisor source identity",
     )
     source = _read_pinned_source(
         snapshot / "scripts/supervise_prepared_release_validation.py",
@@ -211,10 +211,10 @@ def _compile_frozen_module(
 ) -> ModuleType:
     require(
         module_name not in sys.modules,
-        f"Phase 7 support loaded before candidate freeze: {module_name}",
+        f"Amberbridge support loaded before candidate freeze: {module_name}",
     )
     path = snapshot / relative_path
-    source = _read_pinned_source(path, f"frozen Phase 7 support {module_name}")
+    source = _read_pinned_source(path, f"frozen Amberbridge support {module_name}")
     module = ModuleType(module_name)
     module.__file__ = str(path)
     module.__package__ = ""
@@ -227,10 +227,10 @@ def _compile_frozen_module(
     return module
 
 
-def _install_frozen_phase7_support(snapshot: Path) -> None:
+def _install_frozen_amberbridge_support(snapshot: Path) -> None:
     loaded: dict[str, ModuleType] = {}
     try:
-        for module_name, relative_path in PHASE7_SUPPORT_SOURCES:
+        for module_name, relative_path in AMBERBRIDGE_SUPPORT_SOURCES:
             loaded[module_name] = _compile_frozen_module(
                 snapshot, module_name, relative_path
             )
@@ -240,11 +240,11 @@ def _install_frozen_phase7_support(snapshot: Path) -> None:
         if isinstance(error, IntegrationError):
             raise
         raise IntegrationError(
-            f"frozen Phase 7 support cannot be loaded: {error}"
+            f"frozen Amberbridge support cannot be loaded: {error}"
         ) from error
 
     transport = loaded["evidence_transport"]
-    private = loaded["private_phase7_evidence"]
+    private = loaded["private_amberbridge_evidence"]
     globals().update(
         {
             "canonical_bytes": transport.canonical_bytes,
@@ -252,33 +252,33 @@ def _install_frozen_phase7_support(snapshot: Path) -> None:
             "strict_json_bytes": transport.strict_json_bytes,
             "verify_private_evidence": private.verify_private_evidence,
             "validate_public_release": loaded["validate_public_release"],
-            "run_phase7_composed_matrix": loaded["run_phase7_composed_matrix"],
+            "run_amberbridge_composed_matrix": loaded["run_amberbridge_composed_matrix"],
         }
     )
 
 
 if _RUNNING_AS_ENTRYPOINT:
-    _PHASE7_SUPPORT_BOUND = False
+    _AMBERBRIDGE_SUPPORT_BOUND = False
 else:
     if str(SCRIPT_DIR) not in sys.path:
         sys.path.insert(0, str(SCRIPT_DIR))
-    import run_phase7_composed_matrix
+    import run_amberbridge_composed_matrix
     import validate_public_release
     from evidence_transport import (
         candidate_content_identity,
         canonical_bytes,
         strict_json_bytes,
     )
-    from private_phase7_evidence import verify_private_evidence
+    from private_amberbridge_evidence import verify_private_evidence
 
-    _PHASE7_SUPPORT_BOUND = True
+    _AMBERBRIDGE_SUPPORT_BOUND = True
 
 
-def ensure_frozen_phase7_support(snapshot: Path) -> None:
-    global _PHASE7_SUPPORT_BOUND
-    if not _PHASE7_SUPPORT_BOUND:
-        _install_frozen_phase7_support(snapshot)
-        _PHASE7_SUPPORT_BOUND = True
+def ensure_frozen_amberbridge_support(snapshot: Path) -> None:
+    global _AMBERBRIDGE_SUPPORT_BOUND
+    if not _AMBERBRIDGE_SUPPORT_BOUND:
+        _install_frozen_amberbridge_support(snapshot)
+        _AMBERBRIDGE_SUPPORT_BOUND = True
 
 
 def lexical_public_repository(path: Path) -> Path:
@@ -406,12 +406,12 @@ def frozen_public_execution(
     repository: Path, prepared_supervisor_source_sha256: str | None
 ) -> Iterator[PreparedPublicCandidate]:
     require(
-        not _PHASE7_SUPPORT_BOUND,
-        "frozen Phase 7 execution must begin before candidate support is loaded",
+        not _AMBERBRIDGE_SUPPORT_BOUND,
+        "frozen Amberbridge execution must begin before candidate support is loaded",
     )
     temporary_parent = Path(tempfile.gettempdir()).resolve()
     with tempfile.TemporaryDirectory(
-        prefix="phase7-public-candidate-", dir=temporary_parent
+        prefix="amberbridge-public-candidate-", dir=temporary_parent
     ) as temporary:
         snapshot = Path(temporary) / "repository"
         expected_candidate = materialize_frozen_public_candidate(repository, snapshot)
@@ -419,7 +419,7 @@ def frozen_public_execution(
         require_prepared_supervisor_generation(
             snapshot, prepared_supervisor_source_sha256
         )
-        ensure_frozen_phase7_support(snapshot)
+        ensure_frozen_amberbridge_support(snapshot)
         validate_public_release.require_loaded_validator_generation(snapshot)
         validate_public_release.require_prepared_supervisor_generation(
             snapshot, prepared_supervisor_source_sha256
@@ -428,7 +428,7 @@ def frozen_public_execution(
         require(
             validate_public_release.git_candidate_identity(repository)
             == expected_candidate.as_dict(),
-            "public candidate changed before frozen Phase 7 execution",
+            "public candidate changed before frozen Amberbridge execution",
         )
         assert isinstance(prepared_supervisor_source_sha256, str)
         yield PreparedPublicCandidate(
@@ -521,12 +521,12 @@ def launch_private_builder(
         "production integration paths are unsafe",
     )
     with tempfile.TemporaryDirectory(
-        prefix="phase7-private-commit-",
+        prefix="amberbridge-private-commit-",
         dir=private_output.parent,
     ) as temporary:
         export = Path(temporary) / "export"
         export_commit(private_repository, private_commit_oid, export)
-        builder = export / "scripts/build_phase7_private_evidence.py"
+        builder = export / "scripts/build_amberbridge_private_evidence.py"
         require(
             builder.is_file() and not builder.is_symlink(),
             "committed private builder is unavailable",
@@ -611,7 +611,7 @@ def require_canonical_capability_manifest(path: Path) -> None:
     content = path.read_bytes()
     document = strict_json_bytes(
         content,
-        label="canonical Phase 7 capability manifest",
+        label="canonical Amberbridge capability manifest",
         error_factory=IntegrationError,
     )
     require(
@@ -622,7 +622,7 @@ def require_canonical_capability_manifest(path: Path) -> None:
         isinstance(document, dict)
         and set(document) == {"schema_version", "contract", "roots", "expected_backend"}
         and document["schema_version"] == 2
-        and document["contract"] == "phase7-readonly-capabilities-v2",
+        and document["contract"] == "amberbridge-readonly-capabilities-v2",
         "capability manifest is not the canonical v2 transport schema",
     )
 
@@ -678,7 +678,7 @@ def coordinate(
         expected_commit_oid=private_commit_oid,
         expected_producer_package_sha256=producer_package_sha256,
     )
-    run_phase7_composed_matrix.run(
+    run_amberbridge_composed_matrix.run(
         replay_summary_path=private_summary_output,
         producer_witness_path=witness_path,
         producer_registry_path=registry_path,
@@ -695,7 +695,7 @@ def coordinate(
         plugin_eval_executable=plugin_eval_executable,
         node_executable=node_executable,
         receipt_output=release_receipt_output,
-        composed_receipt=composed_output / "phase7-composed-matrix.json",
+        composed_receipt=composed_output / "amberbridge-composed-matrix.json",
         private_producer_witness=witness_path,
         private_producer_registry=registry_path,
         expected_frozen_private_identity_sha256=frozen_identity_sha256,
@@ -786,7 +786,7 @@ def entrypoint_main() -> int:
     if sys.argv[1:] in (["-h"], ["--help"]):
         return main()
     print(
-        "ERROR: Phase 7 production runtime is unavailable in this source-stage release",
+        "ERROR: Amberbridge production runtime is unavailable in this source-stage release",
         file=sys.stderr,
     )
     return 1

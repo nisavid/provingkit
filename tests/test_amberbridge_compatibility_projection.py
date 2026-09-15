@@ -16,27 +16,25 @@ SCRIPT_DIR = REPO_ROOT / "scripts"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import phase7_compatibility_projection as projection  # noqa: E402
+import amberbridge_compatibility_projection as projection  # noqa: E402
 
 
 SOURCE_PATHS = (
     Path("plugins/rolecasting/topology.json"),
-    Path("plugins/rolecasting/task-witness-provider.json"),
     Path("plugins/versionkeeping/topology.json"),
     Path("plugins/tricritical/topology.json"),
-    Path("plugins/tricritical/task-witness-provider.json"),
     Path(
         "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/"
         "references/review-atlas-extension.json"
     ),
     Path("release/mergecraft/review-atlas-contract.json"),
 )
-V4_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/phase7-v4-compatibility.json"
-V5_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/phase7-v5-compatibility.json"
-SCRIPT_PATH = REPO_ROOT / "scripts/phase7_compatibility_projection.py"
+V4_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v4-compatibility.json"
+V5_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v1-compatibility.json"
+SCRIPT_PATH = REPO_ROOT / "scripts/amberbridge_compatibility_projection.py"
 
 
-class Phase7CompatibilityProjectionTests(unittest.TestCase):
+class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
     def candidate_copy(self, root: Path) -> Path:
         subprocess.run(["git", "init", "--quiet", str(root)], check=True)
         for relative in SOURCE_PATHS:
@@ -64,13 +62,13 @@ class Phase7CompatibilityProjectionTests(unittest.TestCase):
     def test_retained_v4_fixture_is_immutable_historical_evidence(self) -> None:
         self.assertEqual(
             "sha256:" + hashlib.sha256(V4_FIXTURE_PATH.read_bytes()).hexdigest(),
-            "sha256:a62f152451781b7018180cb4e5ae0bb13071f3dd1364d4a93dbadbe2bb985f58",
+            "sha256:06928e6b070742ed45f1dac7ac4517191af0c3118e9ffda46a5aa732736c5251",
         )
 
-    def test_v5_exposes_assurance_and_validator_only_provider_authority(self) -> None:
+    def test_compatibility_exposes_assurance_contract(self) -> None:
         document = projection.compatibility_document(REPO_ROOT)
 
-        self.assertEqual(document["schema_version"], 5)
+        self.assertEqual(document["schema_version"], 1)
         self.assertEqual(
             document["rolecasting"]["assurance_contract"],
             {
@@ -94,20 +92,8 @@ class Phase7CompatibilityProjectionTests(unittest.TestCase):
                 "implicit_promotion": "forbidden",
             },
         )
-        rolecasting_provider = document["rolecasting"]["task_witness_provider"]
-        self.assertEqual(rolecasting_provider["producers"], [])
-        self.assertEqual(rolecasting_provider["issuers"], [])
-        self.assertEqual(
-            rolecasting_provider["validators"][0]["contract"],
-            "rolecasting-dispatch-evidence-v2",
-        )
-        tricritical_provider = document["tricritical"]["task_witness_provider"]
-        self.assertEqual(tricritical_provider["producers"], [])
-        self.assertEqual(tricritical_provider["issuers"], [])
-        self.assertEqual(
-            tricritical_provider["validators"][0]["contract"],
-            "tricritical-terminal-review-evidence-v2",
-        )
+        self.assertNotIn("task_witness_provider", document["rolecasting"])
+        self.assertNotIn("task_witness_provider", document["tricritical"])
 
     def test_isolated_cli_emits_only_exact_compatibility_bytes(self) -> None:
         result = subprocess.run(
@@ -189,15 +175,11 @@ class Phase7CompatibilityProjectionTests(unittest.TestCase):
             rolecasting["unconsumed_addition"] = {"value": "neutral"}
             self.write(root, SOURCE_PATHS[0], rolecasting)
 
-            rolecasting_provider = self.load(root, SOURCE_PATHS[1])
-            rolecasting_provider["unconsumed_addition"] = "neutral"
-            self.write(root, SOURCE_PATHS[1], rolecasting_provider)
-
-            versionkeeping = self.load(root, SOURCE_PATHS[2])
+            versionkeeping = self.load(root, SOURCE_PATHS[1])
             versionkeeping["ownership"] = {"changed": "neutral"}
-            self.write(root, SOURCE_PATHS[2], versionkeeping)
+            self.write(root, SOURCE_PATHS[1], versionkeeping)
 
-            tricritical = self.load(root, SOURCE_PATHS[3])
+            tricritical = self.load(root, SOURCE_PATHS[2])
             tricritical["skills"]["review"]["role"] = "neutral-role"
             tricritical["skills"]["new-skill"] = {
                 "calls": ["review"],
@@ -206,22 +188,18 @@ class Phase7CompatibilityProjectionTests(unittest.TestCase):
                 "requires_original_mutation_authority": True,
                 "requires": ["neutral"],
             }
-            self.write(root, SOURCE_PATHS[3], tricritical)
+            self.write(root, SOURCE_PATHS[2], tricritical)
 
-            tricritical_provider = self.load(root, SOURCE_PATHS[4])
-            tricritical_provider["unconsumed_addition"] = "neutral"
-            self.write(root, SOURCE_PATHS[4], tricritical_provider)
-
-            extension = self.load(root, SOURCE_PATHS[5])
+            extension = self.load(root, SOURCE_PATHS[3])
             extension["default_overlay_path"] = "/neutral/path"
             extension["absence"] = "neutral-absence"
             extension["file_requirement"] = "neutral-requirement"
-            self.write(root, SOURCE_PATHS[5], extension)
+            self.write(root, SOURCE_PATHS[3], extension)
 
-            atlas = self.load(root, SOURCE_PATHS[6])
+            atlas = self.load(root, SOURCE_PATHS[4])
             atlas["prose_sha256"] = {"neutral": "neutral"}
             atlas["visual_budgets"] = {"neutral": "neutral"}
-            self.write(root, SOURCE_PATHS[6], atlas)
+            self.write(root, SOURCE_PATHS[4], atlas)
 
             (root / "README.md").write_text("neutral prose\n", encoding="utf-8")
             (root / "evals").mkdir()
@@ -241,56 +219,44 @@ class Phase7CompatibilityProjectionTests(unittest.TestCase):
                     "owner", "changed-owner"
                 ),
             ),
-            "rolecasting provider authority": (
-                SOURCE_PATHS[1],
-                lambda document: document.__setitem__(
-                    "issuers", [{"issuer_id": "untrusted"}]
-                ),
-            ),
             "versionkeeping operation ownership": (
-                SOURCE_PATHS[2],
+                SOURCE_PATHS[1],
                 lambda document: document["operation_owners"].__setitem__(
                     "git-ref-push", "changed-owner"
                 ),
             ),
             "versionkeeping terminal handoff": (
-                SOURCE_PATHS[2],
+                SOURCE_PATHS[1],
                 lambda document: document["terminal_handoff"].__setitem__(
                     "target", "changed-target"
                 ),
             ),
             "tricritical call edge": (
-                SOURCE_PATHS[3],
+                SOURCE_PATHS[2],
                 lambda document: document["skills"]["review"].__setitem__(
                     "calls", ["runtime"]
                 ),
             ),
             "tricritical mutation authority": (
-                SOURCE_PATHS[3],
+                SOURCE_PATHS[2],
                 lambda document: document["skills"]["revise"].__setitem__(
                     "mutates_directly", False
                 ),
             ),
             "tricritical receipt requirement": (
-                SOURCE_PATHS[3],
+                SOURCE_PATHS[2],
                 lambda document: document["skills"]["review"].__setitem__(
                     "requires", []
                 ),
             ),
-            "tricritical provider contract": (
-                SOURCE_PATHS[4],
-                lambda document: document["validators"][0].__setitem__(
-                    "contract", "changed-contract"
-                ),
-            ),
             "review atlas overlay authority": (
-                SOURCE_PATHS[5],
+                SOURCE_PATHS[3],
                 lambda document: document.__setitem__(
                     "precedence", "changed-precedence"
                 ),
             ),
             "review atlas release/runtime ownership": (
-                SOURCE_PATHS[6],
+                SOURCE_PATHS[4],
                 lambda document: document["firewall"].__setitem__(
                     "atlas_implementation", "changed-location"
                 ),

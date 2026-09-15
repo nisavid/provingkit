@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNNER_PATH = ROOT / "scripts/phase7_control_plane.py"
+RUNNER_PATH = ROOT / "scripts/mergecraft_control_plane.py"
 PUBLISHER = (
     ROOT
     / "plugins/mergecraft/skills/publishing-reviewable-prs/scripts/update_reviewable_pr.py"
@@ -29,7 +29,7 @@ STATE_HELPER = (
     ROOT
     / "plugins/mergecraft/skills/publishing-reviewable-prs/scripts/reviewable_pr_state.py"
 )
-SPEC = importlib.util.spec_from_file_location("phase7_control_plane", RUNNER_PATH)
+SPEC = importlib.util.spec_from_file_location("mergecraft_control_plane", RUNNER_PATH)
 assert SPEC and SPEC.loader
 CONTROL = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = CONTROL
@@ -58,7 +58,7 @@ def review_input(
     head_oid: str | None = None,
 ) -> dict[str, object]:
     if GIT_REPOSITORY is None:
-        raise RuntimeError("Phase 7 Git fixture is not initialized")
+        raise RuntimeError("Amberbridge Git fixture is not initialized")
     head_oid = head_oid or HEAD_OID
     git_diff = CONTROL.observe_git_diff(
         GIT_REPOSITORY, base_oid=BASE_OID, head_oid=head_oid
@@ -105,7 +105,7 @@ def review_input(
                     "sha256": sha(baseline_body),
                     "disposition": "replace" if baseline_body != body else "retain",
                     "replacement": body if baseline_body != body else None,
-                    "reason": "Phase 7 fixture body refresh"
+                    "reason": "fixture body refresh"
                     if baseline_body != body
                     else None,
                 }
@@ -166,7 +166,7 @@ def stored(
     }
 
 
-class Phase7ControlPlaneTests(unittest.TestCase):
+class AmberbridgeControlPlaneTests(unittest.TestCase):
     def setUp(self) -> None:
         global BASE_OID, DRIFT_HEAD_OID, HEAD_OID, GIT_REPOSITORY
         self.temporary = tempfile.TemporaryDirectory()
@@ -332,7 +332,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
                 "--body-file",
                 str(body_path),
             ]
-        environment = {"PHASE7_GITHUB_STATE": str(self.github)}
+        environment = {"MERGECRAFT_GITHUB_STATE": str(self.github)}
         return (
             CONTROL.run_command(
                 arguments,
@@ -400,7 +400,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
             CONTROL.run_command(
                 list(capture.arguments),
                 home=self.home,
-                environment={"PHASE7_GITHUB_STATE": str(self.github)},
+                environment={"MERGECRAFT_GITHUB_STATE": str(self.github)},
                 allowed_scripts=(CREATOR,),
                 cwd=self.git_repository,
             ),
@@ -666,7 +666,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
                 "create this draft", "mergecraft:publishing-reviewable-prs", "write"
             ),
             candidate_inputs=(
-                ROOT / "scripts/phase7_control_plane.py",
+                ROOT / "scripts/mergecraft_control_plane.py",
                 CREATOR,
                 STATE_HELPER,
                 *CONTROL.writer_validator_inputs(VALIDATOR),
@@ -885,7 +885,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
         result = CONTROL.run_command(
             [str(self.bin / "gt"), "log", "short"],
             home=self.home,
-            environment={"PHASE7_GRAPHITE_STATE": str(self.graphite)},
+            environment={"MERGECRAFT_GRAPHITE_STATE": str(self.graphite)},
         )
         self.assertEqual(result.returncode, 0)
         self.state(stored(title="feat: widget", body=BODY))
@@ -930,7 +930,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
         submit = CONTROL.run_command(
             [str(self.bin / "gt"), "submit", "--stack", "--draft"],
             home=self.home,
-            environment={"PHASE7_GRAPHITE_STATE": str(self.graphite)},
+            environment={"MERGECRAFT_GRAPHITE_STATE": str(self.graphite)},
         )
         self.assertEqual(submit.returncode, 0, submit.stderr)
         first, first_input, first_body = self.command(
@@ -1184,7 +1184,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
                 result = CONTROL.run_command(
                     [str(self.bin / "gh"), "api", "--hostname", "github.com", *suffix],
                     home=self.home,
-                    environment={"PHASE7_GITHUB_STATE": str(self.github)},
+                    environment={"MERGECRAFT_GITHUB_STATE": str(self.github)},
                 )
                 self.assertEqual(result.returncode, 0)
                 report = CONTROL.evidence(
@@ -1272,7 +1272,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
                 result = CONTROL.run_command(
                     [str(self.bin / "gh"), "api", "graphql", "--input", "-"],
                     home=self.home,
-                    environment={"PHASE7_GITHUB_STATE": str(self.github)},
+                    environment={"MERGECRAFT_GITHUB_STATE": str(self.github)},
                     stdin=stdin,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
@@ -1297,7 +1297,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
                 result = CONTROL.run_command(
                     [str(self.bin / "gh"), "api", "graphql", "--input", "-"],
                     home=self.home,
-                    environment={"PHASE7_GITHUB_STATE": str(self.github)},
+                    environment={"MERGECRAFT_GITHUB_STATE": str(self.github)},
                     stdin=stdin,
                 )
                 state = json.loads(self.github.read_text())
@@ -1407,7 +1407,7 @@ class Phase7ControlPlaneTests(unittest.TestCase):
                 result = CONTROL.run_command(
                     [str(self.bin / "gh"), "api", *suffix],
                     home=self.home,
-                    environment={"PHASE7_GITHUB_STATE": str(self.github)},
+                    environment={"MERGECRAFT_GITHUB_STATE": str(self.github)},
                     stdin=stdin,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)

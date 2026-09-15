@@ -7,17 +7,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests import phase7_v4_fixture as fixture
+from tests import amberbridge_v4_fixture as fixture
 
 REPO_ROOT = Path(__file__).parents[1]
 SCRIPT_DIR = REPO_ROOT / "scripts"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import private_phase7_evidence as evidence
+import private_amberbridge_evidence as evidence
 
 COMPATIBILITY_BYTES = (
-    REPO_ROOT / "tests/fixtures/phase7-v4-compatibility.json"
+    REPO_ROOT / "tests/fixtures/amberbridge-v4-compatibility.json"
 ).read_bytes()
 
 
@@ -80,7 +80,7 @@ class PublicReplaySummaryTests(unittest.TestCase):
                     )
         legacy = opaque_replay_summary(COMPATIBILITY_BYTES)
         legacy["schema_version"] = 3
-        legacy["contract"] = "phase7-private-family-evidence-v3"
+        legacy["contract"] = "amberbridge-private-family-evidence-v3"
         with self.assertRaises(evidence.PrivateEvidenceError):
             evidence.validate_public_replay_summary(fixture.json_file_bytes(legacy))
 
@@ -329,11 +329,11 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
         self,
     ) -> None:
         expected_sources = {
-            "scripts/build_phase7_private_evidence.py",
-            "scripts/phase7_private_evidence_isolation.py",
-            "scripts/phase7_private_evidence_producer.py",
-            "scripts/phase7_private_evidence_registry.py",
-            "scripts/phase7_private_evidence_test_launcher.py",
+            "scripts/build_amberbridge_private_evidence.py",
+            "scripts/amberbridge_private_evidence_isolation.py",
+            "scripts/amberbridge_private_evidence_producer.py",
+            "scripts/amberbridge_private_evidence_registry.py",
+            "scripts/amberbridge_private_evidence_test_launcher.py",
             "tests/agent_plugin_pin_fixtures.py",
             "tests/test_agent_topology.py",
             "tests/test_modify_private_config.py",

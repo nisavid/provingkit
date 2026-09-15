@@ -112,16 +112,16 @@ def test_task_witness_later_release_modes_reject_before_path_conversion(monkeypa
 @pytest.mark.parametrize(
     ("relative", "name", "arguments"),
     (
-        ("scripts/run_phase7_composed_matrix.py", "composed_containment", None),
-        ("scripts/run_phase7_terminal_proof.py", "terminal_containment", []),
+        ("scripts/run_amberbridge_composed_matrix.py", "composed_containment", None),
+        ("scripts/run_amberbridge_terminal_proof.py", "terminal_containment", []),
         (
-            "scripts/run_phase7_production_integration.py",
+            "scripts/run_amberbridge_production_integration.py",
             "production_containment",
             [],
         ),
     ),
 )
-def test_phase7_native_entrypoints_fail_before_argument_parsing(
+def test_amberbridge_native_entrypoints_fail_before_argument_parsing(
     monkeypatch, relative, name, arguments
 ):
     module = load(relative, name)
@@ -265,7 +265,7 @@ def test_supervisor_rejects_later_release_modes_before_repository_or_launch(monk
         == 2
     )
     assert (
-        supervisor.entrypoint_main(["phase7-production", str(ROOT)])
+        supervisor.entrypoint_main(["amberbridge-production", str(ROOT)])
         == 2
     )
 
@@ -281,7 +281,7 @@ def test_supervisor_child_bypass_rejects_before_exec(monkeypatch):
         sys.executable,
         "-I",
         "-B",
-        str(ROOT / "scripts/run_phase7_terminal_proof.py"),
+        str(ROOT / "scripts/run_amberbridge_terminal_proof.py"),
         str(ROOT),
         "--private-evidence",
         private_sentinel,
@@ -324,7 +324,7 @@ def test_shell_wrapper_rejects_later_release_before_starting_prepared_python(
         [
             "/bin/sh",
             str(wrapper),
-            "phase7-production",
+            "amberbridge-production",
             str(prepared_python),
             str(ROOT),
             "--private-repository",

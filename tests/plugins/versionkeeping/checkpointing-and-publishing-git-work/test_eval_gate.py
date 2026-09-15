@@ -154,9 +154,9 @@ class EvalGateV2Tests(unittest.TestCase):
         return {
             "schema_version": 2,
             "evaluation_id": (
-                "focused-test:mergecraft-phase-7"
+                "focused-test:mergecraft-amberbridge"
                 if invalidation_event_policy == "allow_empty_for_focused_test"
-                else "mergecraft-phase-7"
+                else "mergecraft-amberbridge"
             ),
             "expected_scenario_count": scenario_count,
             "invalidation_event_policy": invalidation_event_policy,
@@ -645,7 +645,7 @@ class EvalGateV2Tests(unittest.TestCase):
             )
         )
         self.assertFalse(
-            gate.requires_bound_provider_contract("focused-test:mergecraft-phase-7")
+            gate.requires_bound_provider_contract("focused-test:mergecraft-amberbridge")
         )
 
     def test_bundle_request_represents_binary_members_losslessly(self) -> None:

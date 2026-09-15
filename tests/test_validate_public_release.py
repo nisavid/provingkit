@@ -23,7 +23,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tests import phase7_v4_fixture as fixture
+from tests import amberbridge_v4_fixture as fixture
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY / "scripts" / "validate_public_release.py"
@@ -652,12 +652,12 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         backend_evidence = {
             "schema_version": 2,
-            "contract": "phase7-public-backend-release-evidence-v2",
+            "contract": "amberbridge-public-backend-release-evidence-v2",
             "public_candidate_identity": public_candidate_identity,
             "targets": [
                 {
                     "schema_version": 2,
-                    "contract": "phase7-public-terminal-direct-proof-v2",
+                    "contract": "amberbridge-public-terminal-direct-proof-v2",
                     "target": "macos-seatbelt",
                     "binary": "sandbox-exec",
                     "version": "macos-seatbelt-v1",
@@ -681,7 +681,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 },
                 {
                     "schema_version": 2,
-                    "contract": "phase7-public-terminal-direct-proof-v2",
+                    "contract": "amberbridge-public-terminal-direct-proof-v2",
                     "target": "linux-bubblewrap",
                     "binary": "bwrap",
                     "version": "bubblewrap-v1",
@@ -699,7 +699,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 },
                 {
                     "schema_version": 2,
-                    "contract": "phase7-public-terminal-direct-proof-v2",
+                    "contract": "amberbridge-public-terminal-direct-proof-v2",
                     "target": "wsl2-bubblewrap",
                     "binary": "bwrap",
                     "version": "bubblewrap-wsl2-v1",
@@ -783,7 +783,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             "passed": True,
         }
         self.composed_receipt = self.composed_artifact.with_name(
-            "phase7-composed-matrix.json"
+            "amberbridge-composed-matrix.json"
         )
         self.composed_receipt.write_bytes(
             self.module.canonical_document(
@@ -2017,7 +2017,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
         with self.assertRaisesRegex(
             self.module.ReleaseError,
-            "Git candidate differs from the prepared Phase 7 candidate",
+            "Git candidate differs from the prepared Amberbridge candidate",
         ):
             self.module.validate_release(
                 self.repository,
@@ -3713,7 +3713,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     "later-release prepared validation is unavailable",
                 ),
                 (
-                    "phase7-production",
+                    "amberbridge-production",
                     sys.executable,
                     str(repository),
                     (),
@@ -3843,7 +3843,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             self.assertIn(f"validate_{member}.py", readme)
         self.assertIn("currently an unreleased source stage", normalized_readme)
         self.assertIn("validate public source contracts", normalized_readme)
-        self.assertNotIn("phase7-production", readme)
+        self.assertNotIn("amberbridge-production", readme)
         self.assertNotIn("--private-producer-witness", readme)
         self.assertNotIn("uv --no-config run", readme)
         self.assertNotIn("uv run --with PyYAML --with pytest", readme)
@@ -3868,7 +3868,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             self.module.COMMON_SUPPORT_PATHS,
         )
         self.assertIn(
-            "tests/fixtures/phase7-v5-compatibility.json",
+            "tests/fixtures/amberbridge-v1-compatibility.json",
             self.module.COMMON_SUPPORT_PATHS,
         )
 
@@ -4493,7 +4493,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 after[plugin]["composite_sha256"],
             )
 
-    def test_generic_identity_includes_artifact_customs_without_changing_phase7_projection(
+    def test_generic_identity_includes_artifact_customs_without_changing_amberbridge_projection(
         self,
     ) -> None:
         before = self.module.candidate_identities(self.repository)

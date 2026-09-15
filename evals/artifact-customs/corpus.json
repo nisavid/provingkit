@@ -13,7 +13,11 @@
       "found_or_suspected": "offer-best-effort-integration-or-alignment-from-available-evidence",
       "uncertain_suitability": "also-offer-context-sensitive-standalone-cadence",
       "none_found": "recommend-context-sensitive-cadence",
-      "operator_selects": ["activation", "cadence", "autonomyMode"]
+      "operator_selects": [
+        "activation",
+        "cadence",
+        "autonomyMode"
+      ]
     },
     "autonomy_modes": [
       "report-only",
@@ -30,8 +34,12 @@
       "maintain": "named-existing-policy-not-expanded-by-autonomy"
     },
     "lifecycle_actions": {
-      "assess": ["clearance"],
-      "adopt": ["adopt"],
+      "assess": [
+        "clearance"
+      ],
+      "adopt": [
+        "adopt"
+      ],
       "maintain": [
         "update",
         "advisory",
@@ -41,7 +49,10 @@
         "pull-request"
       ]
     },
-    "adapters": ["codex-chatgpt", "claude-desktop"],
+    "adapters": [
+      "codex-chatgpt",
+      "claude-desktop"
+    ],
     "foreign_harness": "simulation-required",
     "preferred_scheduler": null,
     "preferred_cadence": null
@@ -53,13 +64,7 @@
       "versionkeeping",
       "mergecraft"
     ],
-    "reverse_edges_forbidden": true,
-    "phase7_control_projection": [
-      "rolecasting",
-      "versionkeeping",
-      "mergecraft",
-      "tricritical"
-    ]
+    "reverse_edges_forbidden": true
   },
   "scenarios": [
     {
@@ -68,7 +73,11 @@
       "fixture_path": "fixtures/nonexistent-release-before-mutation.md",
       "prompt": "Assess this requested dependency release before any mutation.",
       "required_outcome": "no-go",
-      "expectations": ["before_mutation", "nonexistent_release", "no_write"]
+      "expectations": [
+        "before_mutation",
+        "nonexistent_release",
+        "no_write"
+      ]
     },
     {
       "id": "absent-attestation-policy-acceptance",
@@ -91,7 +100,11 @@
       "fixture_path": "fixtures/absent-attestation-without-policy.md",
       "prompt": "Assess the release whose attestation is absent and no acceptance policy exists.",
       "required_outcome": "no-go",
-      "expectations": ["recorded_absence", "policy_explicit", "no_write"]
+      "expectations": [
+        "recorded_absence",
+        "policy_explicit",
+        "no_write"
+      ]
     },
     {
       "id": "source-artifact-mismatch",
@@ -99,7 +112,10 @@
       "fixture_path": "fixtures/source-artifact-mismatch.md",
       "prompt": "Assess a candidate whose canonical source and artifact differ.",
       "required_outcome": "no-go",
-      "expectations": ["source_artifact_equivalence", "no_write"]
+      "expectations": [
+        "source_artifact_equivalence",
+        "no_write"
+      ]
     },
     {
       "id": "malware-detection",
@@ -107,7 +123,10 @@
       "fixture_path": "fixtures/malware-detection.md",
       "prompt": "Assess a candidate with a malware finding.",
       "required_outcome": "no-go",
-      "expectations": ["malware", "no_write"]
+      "expectations": [
+        "malware",
+        "no_write"
+      ]
     },
     {
       "id": "incompatible-license",
@@ -115,7 +134,10 @@
       "fixture_path": "fixtures/incompatible-license.md",
       "prompt": "Assess a candidate with a license incompatible with policy.",
       "required_outcome": "no-go",
-      "expectations": ["license_compatibility", "no_write"]
+      "expectations": [
+        "license_compatibility",
+        "no_write"
+      ]
     },
     {
       "id": "unresolved-regression",
@@ -123,7 +145,10 @@
       "fixture_path": "fixtures/unresolved-regression.md",
       "prompt": "Assess a candidate with an unresolved conformance regression.",
       "required_outcome": "no-go",
-      "expectations": ["regression_resolution", "no_write"]
+      "expectations": [
+        "regression_resolution",
+        "no_write"
+      ]
     },
     {
       "id": "incomplete-evidence-investigates",
@@ -167,7 +192,10 @@
       "fixture_path": "fixtures/new-trust-boundary-escalation.md",
       "prompt": "Adopt a component that expands trust, legal, and runtime authority beyond the request.",
       "required_outcome": "escalation",
-      "expectations": ["undelegated_trust_legal_runtime_expansion", "no_write"]
+      "expectations": [
+        "undelegated_trust_legal_runtime_expansion",
+        "no_write"
+      ]
     },
     {
       "id": "critical-fix-deadlock-escalation",
@@ -175,7 +203,10 @@
       "fixture_path": "fixtures/critical-fix-deadlock-escalation.md",
       "prompt": "Maintain a critical component when every compliant fix path is blocked.",
       "required_outcome": "escalation",
-      "expectations": ["critical_fix_deadlock", "full_investigation_complete"]
+      "expectations": [
+        "critical_fix_deadlock",
+        "full_investigation_complete"
+      ]
     },
     {
       "id": "irreducible-ambiguity-escalation",
@@ -371,7 +402,9 @@
       "fixture_path": "fixtures/out-of-scope-model-dataset.md",
       "prompt": "Choose a model and dataset for training.",
       "required_outcome": "no-artifact-customs-route",
-      "expectations": ["models_and_datasets_excluded"]
+      "expectations": [
+        "models_and_datasets_excluded"
+      ]
     },
     {
       "id": "out-of-scope-credentials-saas",
@@ -379,7 +412,9 @@
       "fixture_path": "fixtures/out-of-scope-credentials-saas.md",
       "prompt": "Rotate a credential and govern a SaaS vendor.",
       "required_outcome": "no-artifact-customs-route",
-      "expectations": ["credentials_and_saas_excluded"]
+      "expectations": [
+        "credentials_and_saas_excluded"
+      ]
     },
     {
       "id": "out-of-scope-release",
@@ -387,7 +422,9 @@
       "fixture_path": "fixtures/out-of-scope-release.md",
       "prompt": "Build and publish this first-party release.",
       "required_outcome": "no-artifact-customs-route",
-      "expectations": ["outbound_release_excluded"]
+      "expectations": [
+        "outbound_release_excluded"
+      ]
     },
     {
       "id": "out-of-scope-generic-pr",
@@ -395,7 +432,9 @@
       "fixture_path": "fixtures/out-of-scope-generic-pr.md",
       "prompt": "Update and merge this ordinary pull request.",
       "required_outcome": "no-artifact-customs-route",
-      "expectations": ["generic_git_pr_review_excluded"]
+      "expectations": [
+        "generic_git_pr_review_excluded"
+      ]
     },
     {
       "id": "policy-revoked-before-write",
@@ -496,7 +535,10 @@
       "fixture_path": "fixtures/ungoverned-read-only-clearance-cold-start.md",
       "prompt": "Clear this ungoverned exact artifact without making changes.",
       "required_outcome": "assessment-direct",
-      "expectations": ["ungoverned_read_only_routes_to_assessment", "no_write"]
+      "expectations": [
+        "ungoverned_read_only_routes_to_assessment",
+        "no_write"
+      ]
     }
   ]
 }

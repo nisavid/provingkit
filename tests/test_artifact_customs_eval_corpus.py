@@ -397,10 +397,6 @@ class ArtifactCustomsEvalCorpusTests(unittest.TestCase):
             len(composition["outward_plugins"]), len(OUTWARD_COMPOSITION_ALLOWLIST)
         )
         self.assertTrue(composition["reverse_edges_forbidden"])
-        self.assertEqual(
-            composition["phase7_control_projection"],
-            ["rolecasting", "versionkeeping", "mergecraft", "tricritical"],
-        )
 
 
 if __name__ == "__main__":

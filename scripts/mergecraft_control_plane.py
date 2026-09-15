@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic, disposable operational fixtures for Phase 7.
+"""Deterministic, disposable Mergecraft operational fixtures.
 
 The harness drives real local publisher and validator scripts against fake
 executables.  It proves only those local process paths; it does not claim
@@ -29,7 +29,7 @@ from change_navigation.git_observer import observe_git_diff  # noqa: E402
 
 
 class ControlPlaneError(RuntimeError):
-    """A deterministic Phase 7 fixture did not reach its declared state."""
+    """A deterministic Mergecraft fixture did not reach its declared state."""
 
 
 @dataclass(frozen=True)
@@ -326,7 +326,7 @@ import re
 import sys
 from pathlib import Path
 
-state_path = Path(os.environ["PHASE7_GITHUB_STATE"])
+state_path = Path(os.environ["MERGECRAFT_GITHUB_STATE"])
 state = json.loads(state_path.read_text(encoding="utf-8"))
 arguments = sys.argv[1:]
 state.setdefault("calls", []).append(arguments)
@@ -672,7 +672,7 @@ import os
 import sys
 from pathlib import Path
 
-state_path = Path(os.environ["PHASE7_GRAPHITE_STATE"])
+state_path = Path(os.environ["MERGECRAFT_GRAPHITE_STATE"])
 state = json.loads(state_path.read_text(encoding="utf-8"))
 arguments = sys.argv[1:]
 state.setdefault("calls", []).append(arguments)

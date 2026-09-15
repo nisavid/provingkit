@@ -175,7 +175,7 @@ class ArtifactCustomsExactContractTests(unittest.TestCase):
             any(
                 relative.endswith((".whl", ".tar", ".tar.gz"))
                 or "tomlkit" in relative.lower()
-                or "phase7" in relative.lower()
+                or "amberbridge" in relative.lower()
                 or "private-evidence" in relative.lower()
                 for relative in files
             )
@@ -298,10 +298,6 @@ class ArtifactCustomsExactContractTests(unittest.TestCase):
             )
         self.assertEqual(set(topology["outward_plugins"]), OUTWARD_PLUGINS)
         self.assertTrue(topology["reverse_edges_forbidden"])
-        self.assertEqual(
-            topology["phase7_control_projection"],
-            ["rolecasting", "versionkeeping", "mergecraft", "tricritical"],
-        )
         vocabulary = topology["terminal_status_vocabulary"]
         machine_statuses = {
             status
@@ -607,7 +603,7 @@ class ArtifactCustomsExactContractTests(unittest.TestCase):
     def test_validator_rejects_development_or_private_artifact_in_runtime_root(
         self,
     ) -> None:
-        private = self.plugin / "evals" / "tomlkit-private-phase7.json"
+        private = self.plugin / "evals" / "tomlkit-private-amberbridge.json"
         private.parent.mkdir()
         private.write_text("{}\n", encoding="utf-8")
         self.assert_rejected("runtime root", source_stage=True)
