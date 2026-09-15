@@ -62,12 +62,9 @@ bundle and returns `rolecasting-dispatch-projection-v2`. Its pure renderer
 cannot authenticate a selected executor, and no authenticated owning harness
 integration is currently bound into the issuer identity. The registered
 provider therefore declares empty producer and issuer inventories and retains
-only the active validator plus its exact renderer module. Task Witness remains
-the only front door, and current publication attempts fail closed:
-
-```text
-task-witness validate --bundle <absolute-bundle>
-```
+only the active validator plus its exact renderer module. Task Witness is optional future equipment for callers that require a stronger
+cross-harness evidence contract. Without it, the pure validator can check
+structure and identity, while issuer or producer authority remains unavailable.
 
 The owner interface is documented in the delegating skill's
 `dispatch-evidence.md` reference. Rolecasting exposes no trust-path or runtime-

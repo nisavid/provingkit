@@ -8,8 +8,6 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from tests.plugins.task_witness_client import test_launcher as task_witness_launcher
-from tests.plugins.task_witness_deployment._support import load_deployment_module
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 BUNDLE_CONTRACT = "rolecasting-dispatch-evidence-v2"
@@ -1004,98 +1002,18 @@ class RolecastingDispatchEvidenceTests(unittest.TestCase):
             "documentation-auditor",
         )
 
-    def test_test_owned_bootstrap_trust_cannot_authorize_new_publication(self) -> None:
-        bundle, expected = self.make_bundle()
-        task_witness = task_witness_launcher.TaskWitnessLauncherTests()
-        task_witness.setUp()
-        self.addCleanup(task_witness.tearDown)
-        for child in task_witness.bundle.iterdir():
-            child.unlink()
-        for name, raw in bundle.files.items():
-            target = task_witness.bundle / name
-            target.write_bytes(raw)
-            target.chmod(0o600)
-        task_witness.validator.write_bytes(VALIDATOR.read_bytes())
-        task_witness.validator.chmod(0o600)
-        validator_sha = sha(task_witness.validator.read_bytes())
-        validator_implementation = task_witness_launcher.validator_identity(
-            BUNDLE_CONTRACT,
-            VALIDATOR_ID,
-            [(VALIDATOR_ID, validator_sha)],
-        )
-        publication_blocked = {
-            "state": "active",
-            "usable_for_new_publication": False,
-        }
-        validator_lifecycle = {
-            "state": "active",
-            "usable_for_new_publication": True,
-        }
-        trust = task_witness_launcher.document(
-            {
-                "schema_version": 1,
-                "contract": "task-witness-trust-context-v2",
-                "producers": [
-                    {
-                        **self.producer,
-                        "validator_id": VALIDATOR_ID,
-                        "validator_contract": BUNDLE_CONTRACT,
-                        "validator_implementation_sha256": validator_implementation,
-                        **publication_blocked,
-                    }
-                ],
-                "issuers": [
-                    {
-                        **self.issuer,
-                        "capabilities": ["execution-result", "model"],
-                        **publication_blocked,
-                    }
-                ],
-                "validators": [
-                    {
-                        "validator_id": VALIDATOR_ID,
-                        "contract": BUNDLE_CONTRACT,
-                        "implementation_sha256": validator_implementation,
-                        "entrypoint": VALIDATOR_ID,
-                        "modules": [
-                            {
-                                "name": VALIDATOR_ID,
-                                "path": str(task_witness.validator),
-                                "sha256": validator_sha,
-                            }
-                        ],
-                        **validator_lifecycle,
-                    }
-                ],
-            }
-        )
-        task_witness.trust.write_bytes(task_witness_launcher.canonical(trust))
-        task_witness.trust.chmod(0o600)
 
-        live = task_witness.launch()
-        historical = task_witness.launch(historical=True)
 
-        self.assertNotEqual(live.returncode, 0)
-        self.assertEqual(live.stdout, "")
-        self.assertEqual(historical.returncode, 0, historical.stderr)
-        envelope = json.loads(historical.stdout)
-        self.assertEqual(envelope["contract"], "task-witness-launch-envelope-v1")
-        self.assertEqual(envelope["witness"]["projection"], expected)
 
-    def test_current_task_witness_keeps_bootstrap_authority_empty(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            retained_trust = Path(temporary).resolve() / "retained-trust"
+    def test_unwitnessed_bundle_cannot_emit_authenticated_projection(self) -> None:
+        bundle, _ = self.make_bundle()
+        validator = load_validator()
+        del validator._TASK_WITNESS
 
-            provider = load_deployment_module().materialize_provider(
-                REPOSITORY / "plugins" / "rolecasting",
-                retained_trust,
-            )
-
-        self.assertIsNotNone(provider)
-        assert provider is not None
-        self.assertEqual(provider.plugin_id, "rolecasting")
-        self.assertEqual(provider.producers, ())
-        self.assertEqual(provider.issuers, ())
+        with self.assertRaisesRegex(
+            ValueError, "authentication requires the optional Task Witness integration"
+        ):
+            validator._validate_bundle(bundle, trust_snapshot=self.trust)
 
 
 if __name__ == "__main__":

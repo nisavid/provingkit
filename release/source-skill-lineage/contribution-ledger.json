@@ -1,5 +1,5 @@
 {
-  "content_sha256": "sha256:be87506167432e84d9446ac088b12c81abbb44e05b46f3fbfc303aadb4c2b433",
+  "content_sha256": "sha256:f1dad4938b5ff3317cf277c43db99361f10a771858cf87a967ca44c4efaf8fea",
   "contract": "coordinated-source-skill-contribution-ledger-v1",
   "contributions": [
     {
@@ -44,7 +44,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -67,7 +66,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -90,7 +88,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -113,7 +110,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -136,7 +132,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -159,7 +154,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -220,7 +214,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -401,7 +394,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -418,25 +410,6 @@
         "summary": "Installed and current source drift is observable, but its candidate contribution relationship is not bound."
       },
       "source_id": "superpowers-skill-set"
-    },
-    {
-      "behavior": "Task Witness code-only probe and qualification runtime",
-      "destination": {
-        "distribution_id": "task-witness",
-        "evidence_paths": [
-          "plugins/task-witness/plugin.json",
-          "plugins/task-witness/runtime/task_witness.py"
-        ],
-        "owner_id": "task-witness"
-      },
-      "historical_relationship": "candidate-authored",
-      "id": "task-witness-package-lineage",
-      "mapping_status": "mapped",
-      "semantic_drift": {
-        "status": "changed",
-        "summary": "The candidate runtime adds migration, qualification, and deployment authority to the initial Task Witness implementation."
-      },
-      "source_id": "ivan-task-witness"
     },
     {
       "behavior": "Tricritical package behavior and its separate intent, structure, runtime, adjudication, revision, and loop workflows",
@@ -463,7 +436,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -486,7 +458,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "tricritical",
         "versionkeeping"
       ],
@@ -620,6 +591,6 @@
   "schema_version": 1,
   "source_manifest": {
     "path": "release/source-skill-lineage/source-manifest.json",
-    "sha256": "sha256:d11961ed2d46231f74087e8ce50f96b5087bb3f84d39010f154d4ab475b83670"
+    "sha256": "sha256:838b6ef68103f2139ebc9728b7ad93ddc5db52dd90e92ac2293cde2a47d55896"
   }
 }

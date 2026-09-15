@@ -11,25 +11,11 @@ Its `schema_version` versions Mergecraft's local topology shape, not a
 repository-wide interchange schema.
 
 Canonical PR publication requires every caller to select `required` or explicit
-`not-required` review. Required mode fail-closes through the authenticated
-installed Task Witness front door and accepts only a current, trust-anchored,
-bare-clean Tricritical terminal projection bound to the exact publication
-candidate. Receipts retain only redacted digests and distinguish witnessed
-required publication, explicit not-required publication, legacy v2 records,
-and unwitnessed reconciliation.
-This release proves required-review success only with repository fixtures; its
-new-publication Tricritical producer chain is not live-reachable. Required live
-publication remains intentionally unavailable until that chain is installed and
-registered.
-
-Process containment is cooperative. The authenticated Task Witness client's
-exact `task-witness-process-profile-v2` owns its launcher group, pipes,
-deadline, and reap, and registered validators are operator-trusted code within
-that launcher.
-Mergecraft bounds the client invocation and performs identity-safe best-effort
-cleanup within the same-EUID install boundary. Its module-private
-closed call capability is not a security boundary, and ordinary successful
-completion does not prove that arbitrary descendants are quiescent.
+`not-required` review. Ordinary publication can proceed with `not-required`, or
+with a qualified Tricritical or harness-native review route. Task Witness is
+optional future equipment for routes that explicitly require its stronger
+cross-harness evidence contract; those routes report witnessed publication as
+unavailable when it is not installed.
 
 ## Public skills
 

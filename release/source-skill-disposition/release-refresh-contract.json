@@ -28,14 +28,6 @@
         "plugin_root": "plugins/rolecasting"
       },
       {
-        "id": "task-witness",
-        "identity_artifact_paths": [
-          "release/task-witness/source-shape-review.json",
-          "release/task-witness/tw4-suite-inventory.json"
-        ],
-        "plugin_root": "plugins/task-witness"
-      },
-      {
         "id": "proseweaving",
         "identity_artifact_paths": [
           "plugins/proseweaving/content-lock.json"
@@ -79,11 +71,11 @@
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   },
-  "content_sha256": "sha256:d091d5416983063a8e94946305e0f0277665c0c791a240937be1df5774cc2ce4",
+  "content_sha256": "sha256:b2da23f8b3b238de1b1b89bfee0ea1d94908bbd2b461c367f9ffb1a32c74d20d",
   "contract": "coordinated-source-skill-release-refresh-v1",
   "disposition_ledger": {
     "path": "release/source-skill-disposition/disposition-ledger.json",
-    "sha256": "sha256:5e1337a8b6b6dfc1f962d2c397bc768ba28acab9d5eb3abf8c1b2bbc2d2c7307"
+    "sha256": "sha256:4dd68df9d420d40065fd705a00e6c24357dc649c85fd944deece39864f991d38"
   },
   "final_rescout_artifact": {
     "contract": "coordinated-final-installed-library-rescout-v1",
@@ -159,7 +151,6 @@
         "artifact-customs",
         "mergecraft",
         "rolecasting",
-        "task-witness",
         "proseweaving",
         "tricritical",
         "versionkeeping"
@@ -205,12 +196,6 @@
           {
             "consumer": "mergecraft",
             "evidence_path": "plugins/mergecraft/topology.json",
-            "provider": "task-witness",
-            "relationship": "authenticated-process-profile"
-          },
-          {
-            "consumer": "mergecraft",
-            "evidence_path": "plugins/mergecraft/topology.json",
             "provider": "tricritical",
             "relationship": "imported-operation"
           },
@@ -243,11 +228,6 @@
             "mergecraft",
             "rolecasting",
             "tricritical"
-          ],
-          "task-witness": [
-            "artifact-customs",
-            "mergecraft",
-            "task-witness"
           ],
           "tricritical": [
             "artifact-customs",
@@ -342,37 +322,6 @@
           ],
           "validation_entrypoints": [
             "scripts/validate_rolecasting.py"
-          ]
-        },
-        {
-          "documentation_paths": [
-            "plugins/task-witness/README.md"
-          ],
-          "evaluation_paths": [
-            "release/task-witness/tw4-suite-inventory.json",
-            "tests/test_task_witness_qualification.py"
-          ],
-          "id": "task-witness",
-          "identity_artifact_paths": [
-            "release/task-witness/source-shape-review.json",
-            "release/task-witness/tw4-suite-inventory.json"
-          ],
-          "manifest_path": "plugins/task-witness/plugin.json",
-          "package_root": "plugins/task-witness",
-          "test_paths": [
-            "tests/plugins/task_witness_client",
-            "tests/plugins/task_witness_deployment",
-            "tests/test_task_witness_package.py",
-            "tests/test_task_witness_qualification.py"
-          ],
-          "topology_and_owner_paths": [
-            "plugins/task-witness/controller/policy.json",
-            "release/task-witness/public-release-registration.json"
-          ],
-          "validation_entrypoints": [
-            "scripts/run_task_witness_qualification.py",
-            "scripts/run_task_witness_qualification_suite.py",
-            "scripts/validate_task_witness.py"
           ]
         },
         {
@@ -660,18 +609,6 @@
         "id": "rolecasting",
         "regenerate_paths": [
           "plugins/rolecasting/content-lock.json"
-        ]
-      },
-      {
-        "conditional_regenerate_paths": [
-          {
-            "condition": "owning-set-or-count-change",
-            "path": "release/task-witness/tw4-suite-inventory.json"
-          }
-        ],
-        "id": "task-witness",
-        "regenerate_paths": [
-          "release/task-witness/source-shape-review.json"
         ]
       },
       {

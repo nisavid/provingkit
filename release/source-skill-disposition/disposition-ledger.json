@@ -4,7 +4,7 @@
     "managed_source_mutation": "not-granted",
     "release_eligibility": "not-asserted"
   },
-  "content_sha256": "sha256:d4b99ea99c842e7f9acdf46c1d4d6ae503e0d47ef12e2801171afb151fdadd62",
+  "content_sha256": "sha256:541e0d8b3610f84a7602b025c23db6dd2928a588cd1b2cdf501bfb605472b5b0",
   "contract": "coordinated-source-skill-disposition-ledger-v1",
   "dispositions": [
     {
@@ -671,26 +671,6 @@
         "managed_source_mutation": "not-granted",
         "release_eligibility": "not-asserted"
       },
-      "contribution_id": "task-witness-package-lineage",
-      "disposition": "equivalent-or-stronger",
-      "durable_owners": [
-        "task-witness"
-      ],
-      "evidence_paths": [
-        "plugins/task-witness/plugin.json",
-        "plugins/task-witness/runtime/task_witness.py"
-      ],
-      "follow_up_issues": [],
-      "rationale": "The coordinated package is the continuing source lineage for the code-only probe and qualification runtime.",
-      "skill_dispositions": [],
-      "source_id": "ivan-task-witness"
-    },
-    {
-      "authority": {
-        "host_removal": "not-granted",
-        "managed_source_mutation": "not-granted",
-        "release_eligibility": "not-asserted"
-      },
       "contribution_id": "tricritical-package-lineage",
       "disposition": "equivalent-or-stronger",
       "durable_owners": [
@@ -866,11 +846,11 @@
   "evidence_bindings": {
     "contribution_ledger": {
       "path": "release/source-skill-lineage/contribution-ledger.json",
-      "sha256": "sha256:6c91e9d8e1656c873f89e2377db8824e8c120788b66f97b65c5520af0b9dddd5"
+      "sha256": "sha256:4097db0e029048af081a253142300434875abc268a184a6fcc33045426e989be"
     },
     "source_manifest": {
       "path": "release/source-skill-lineage/source-manifest.json",
-      "sha256": "sha256:d11961ed2d46231f74087e8ce50f96b5087bb3f84d39010f154d4ab475b83670"
+      "sha256": "sha256:838b6ef68103f2139ebc9728b7ad93ddc5db52dd90e92ac2293cde2a47d55896"
     }
   },
   "limitations": "This ledger settles source contribution intent only. It does not mutate managed sources, authorize host installation or removal, assert release eligibility, or replace the final refresh and qualification owned by Provingkit issue #3.",

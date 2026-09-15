@@ -91,7 +91,7 @@ WORKFLOW_STEPS = [
     "capture-final-refresh-and-qualification-receipts",
 ]
 DISPOSITION_INVENTORY_SHA256 = (
-    "sha256:d1196c5e88a8a2dad16381d9b799bc00634631ee5b4f9fde78983559f6ee59a1"
+    "sha256:d74ca0ae418381289c8a54dc97648aba8592a7cf954d7a8a172d261b8f816496"
 )
 FRESHNESS = {
     "maximum_age_seconds": 86400,
@@ -137,14 +137,6 @@ DISTRIBUTION_IDENTITIES = [
         "id": "rolecasting",
         "identity_artifact_paths": ["plugins/rolecasting/content-lock.json"],
         "plugin_root": "plugins/rolecasting",
-    },
-    {
-        "id": "task-witness",
-        "identity_artifact_paths": [
-            "release/task-witness/source-shape-review.json",
-            "release/task-witness/tw4-suite-inventory.json",
-        ],
-        "plugin_root": "plugins/task-witness",
     },
     {
         "id": "proseweaving",
@@ -264,12 +256,6 @@ DEPENDENCY_EDGES = [
     {
         "consumer": "mergecraft",
         "evidence_path": "plugins/mergecraft/topology.json",
-        "provider": "task-witness",
-        "relationship": "authenticated-process-profile",
-    },
-    {
-        "consumer": "mergecraft",
-        "evidence_path": "plugins/mergecraft/topology.json",
         "provider": "tricritical",
         "relationship": "imported-operation",
     },
@@ -287,7 +273,7 @@ DEPENDENCY_EDGES = [
     },
 ]
 DISTRIBUTION_CLOSURE_SHA256 = (
-    "sha256:2c3ef70541cfde42b661040984c4ab126e3687e4c9f923c8efcaf1142acecd12"
+    "sha256:f1965ac4ae8dba705e6aea937a2df6e5d5a8b8fcb6f43e759a33a9cb0ee98f61"
 )
 TRIGGER_CHANGE_CLASSES = {
     "candidate-identity-artifact": ["identity-artifact-change"],
@@ -402,16 +388,6 @@ DISTRIBUTION_REGENERATION = [
         "conditional_regenerate_paths": [],
         "id": "rolecasting",
         "regenerate_paths": ["plugins/rolecasting/content-lock.json"],
-    },
-    {
-        "conditional_regenerate_paths": [
-            {
-                "condition": "owning-set-or-count-change",
-                "path": "release/task-witness/tw4-suite-inventory.json",
-            }
-        ],
-        "id": "task-witness",
-        "regenerate_paths": ["release/task-witness/source-shape-review.json"],
     },
     {
         "conditional_regenerate_paths": [],
@@ -1308,7 +1284,7 @@ def validate_refresh_contract(
     )
     require(
         import_providers == {"tricritical", "versionkeeping"}
-        and task_witness_profile_required,
+        and not task_witness_profile_required,
         "Mergecraft dependency evidence drift",
     )
     tricritical_topology = read_json_object(

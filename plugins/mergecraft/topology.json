@@ -144,7 +144,6 @@
           "expected-preimage",
           "explicit-publication-review-mode",
           "frozen-publication-candidate",
-          "authenticated-task-witness-process-profile",
           "publication-authority"
         ],
         "outputs": [

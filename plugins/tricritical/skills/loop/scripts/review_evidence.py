@@ -170,25 +170,17 @@ class _LocalWitness:
 
     @classmethod
     def producer(cls, value: Any, _snapshot: Any, label: str) -> dict[str, Any]:
-        value = cls.exact(
-            value, {"producer_id", "contract", "implementation_sha256"}, label
+        raise cls.EvidenceError(
+            f"{label} authentication requires the optional Task Witness integration"
         )
-        cls.token(value["producer_id"], f"{label}.producer_id")
-        cls.text(value["contract"], f"{label}.contract")
-        cls.sha(value["implementation_sha256"], f"{label}.implementation_sha256")
-        return value
 
     @classmethod
     def issuer(
         cls, value: Any, _snapshot: Any, label: str, _capability: str
     ) -> dict[str, Any]:
-        value = cls.exact(
-            value, {"issuer_id", "contract", "implementation_sha256"}, label
+        raise cls.EvidenceError(
+            f"{label} authentication requires the optional Task Witness integration"
         )
-        cls.token(value["issuer_id"], f"{label}.issuer_id")
-        cls.text(value["contract"], f"{label}.contract")
-        cls.sha(value["implementation_sha256"], f"{label}.implementation_sha256")
-        return value
 
     @classmethod
     def absolute(cls, path: Path, label: str) -> Path:

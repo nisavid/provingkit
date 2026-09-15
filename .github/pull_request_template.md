@@ -24,11 +24,10 @@
 - [ ] The Provingkit definition and repository exclusions pass.
 - [ ] Every affected member's focused tests and source validator pass.
 - [ ] Supported derived locks regenerate without a diff.
-- [ ] Task Witness source-shape changes, if any, carry the required independent review.
 
 ## Review checklist
 
-- [ ] The seven source members remain independently identified: the six Agent Plugins, including Proseweaving, and the code-only Task Witness package.
+- [ ] The six Agent Plugin members remain independently identified, including Proseweaving.
 - [ ] Member manifests keep independent identities and versions.
 - [ ] Historical Linux or macOS inputs are not presented as current qualification.
 - [ ] This change creates no Provingkit release, tag, release-manifest instance, marketplace publication, or live installation.

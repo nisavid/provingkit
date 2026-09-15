@@ -56,26 +56,6 @@
         "version": "1.0.0"
       },
       {
-        "entry_count": 13,
-        "git_tree_sha1": "4ce4650fe524dfa817e715715bd7528639e0de04",
-        "id": "task-witness",
-        "identity_artifacts": [
-          {
-            "path": "release/task-witness/source-shape-review.json",
-            "sha256": "sha256:e9c62bf269301c610ef115c0c09136fc7553be8f663818632e1bae018952cb76"
-          },
-          {
-            "path": "release/task-witness/tw4-suite-inventory.json",
-            "sha256": "sha256:985e316e7b3d75f07f91a7bd766414f092340ee1006d57081a887026b1da37cd"
-          }
-        ],
-        "package_tree_sha256": "sha256:17b468cc4ca71075f20f40f334d342171ad7564e604df48d48b271ce932d6d85",
-        "plugin_manifest_sha256": "sha256:5be0a7bd385a4abe6cdfc5d0b3f945bc1a59394637e84c9f5f2e6b310aa95213",
-        "plugin_root": "plugins/task-witness",
-        "total_bytes": 1335867,
-        "version": "1.0.0"
-      },
-      {
         "entry_count": 113,
         "git_tree_sha1": "db58756a31a98fc8be81a226230a1eb9cef02df6",
         "id": "tricritical",
@@ -112,7 +92,7 @@
     "refreshed_at_utc": "2026-08-21T13:22:47Z",
     "repository_id": "nisavid/agents"
   },
-  "content_sha256": "sha256:963c86c5b289c78fd2c8ff39aadd65426e39fb887d6af695afa1c2dfc566f6ee",
+  "content_sha256": "sha256:abd04c54811e7a7aea708a8ab33c24c6532ecac313f1b43361cb66087fa1aeea",
   "contract": "coordinated-source-skill-manifest-v1",
   "research_observed_at_utc": "2026-08-18T06:07:48Z",
   "schema_version": 1,
@@ -121,7 +101,6 @@
       "artifact-customs",
       "mergecraft",
       "rolecasting",
-      "task-witness",
       "tricritical",
       "versionkeeping"
     ],
@@ -578,8 +557,7 @@
       "authority": {
         "kind": "git",
         "refresh_ref": "8ec465ea915c6759a3693ac8515f0ee3901b8a4f",
-        "repository_url": "https://github.com/nisavid/agents",
-        "skill_root": "plugins/task-witness"
+        "repository_url": "https://github.com/nisavid/agents"
       },
       "baseline": {
         "commit_sha1": "fcae93729ede8e21e1bdc1c774ff3e1d1e31e40b",

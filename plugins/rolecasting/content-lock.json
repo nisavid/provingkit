@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "78b7e3b2d2bfbed403ca0db1c6edea8139ac3fcaff1dadc784da7d8975cfea3d",
-    "README.md": "15bf4073562b9b4dc2c83e27ec9633095fd15d0f16985c43a2c0c28f7f0d79a5",
+    "README.md": "d23ff0e73a6eae3fa4b72c90eb12f336eb542290975a66f188a4cee32ab165da",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
     "plugin.json": "d1833e0a8d23bac7c7c32bcf67880faf28af99e459d7fe57b9eaf33b7a95de29",
     "skills/choosing-agent-models/SKILL.md": "7ae9344b4adb0f260490fb6734539e08914a3a89d9d7ee3b85f333a72a20974f",
@@ -48,9 +48,9 @@
     "skills/delegating-cross-agent-work/references/native-codex-subagents.md": "bfb971790460fe6edaf52ca12f7b218d97fd2bcc661fe4af4d8ff95a5b9d1d6c",
     "skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "5be6b94721527c9f34fae389ade4028f3c6c95e9d95f1feacd0f0ded60289560",
     "skills/delegating-cross-agent-work/scripts/dispatch_adapter.py": "dbf7199ce070cd0c8bd3df84c934a5b4eb58c0d3bbe0346389794808f21ae736",
-    "skills/delegating-cross-agent-work/scripts/dispatch_evidence.py": "72de96e122b73a645e5e41d793724733db1766cebf23e12578a95364d8f5e4a4",
+    "skills/delegating-cross-agent-work/scripts/dispatch_evidence.py": "fa10b5feb5847755b8d44dcdd8c1514a0c862f8bb5aa0d7766ceaaab4e52e27d",
     "skills/delegating-cross-agent-work/scripts/native_codex.py": "ee1b54ae187f3c5ef8f086668802079d72519e0ffeac31b82619e82e8d062e65",
-    "task-witness-provider.json": "d2d7a2a64fa7c7b097e6646607fa2055a9569b2f2b1b007477a22fa986348d50",
+    "task-witness-provider.json": "cfc5bf01814ffacc82bccaa83f02dcd03ee8c2c9dc3a498eab805182f4b8670b",
     "topology.json": "bdc48f2f19bd997fb997908446322f85a815c5e9f6b5710c18925e3f05ccf997"
   }
 }
