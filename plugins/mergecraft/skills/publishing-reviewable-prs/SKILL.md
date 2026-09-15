@@ -51,29 +51,17 @@ race and the reread cannot prevent an intervening lost update.
 
 Every create, text, and ready API/CLI call must supply `--review-mode` and
 `--selected-specialists` as a JSON array, including `[]`. There is no default or
-downgrade. Required mode invokes only the effective user's authenticated
-`~/.local/libexec/task-witness/task-witness` front door while holding the
-publication lease. It consumes the generic canonical Task Witness wrapper and
-then enforces Mergecraft's exact candidate, profile, and terminal rules; it
-never reopens a trust root, copies an upstream schema, imports an owner
-validator, or falls back to self-attestation. If the installed front door,
-current evidence, or registered Tricritical producer chain is unavailable, stop
-before mutation.
+downgrade. Required mode is an optional witnessed route. When selected, it invokes the
+authenticated Task Witness front door and requires its current evidence and the
+registered Tricritical producer chain; if those are unavailable, stop before
+mutation. The ordinary `not-required` route does not depend on Task Witness.
 
-This release has fixture-level required-review success coverage but no reachable
-new-publication Tricritical producer chain. Required live publication is
-therefore intentionally unavailable; do not infer a production reachability
-claim from the fixtures.
+Fixture-level witnessed-review coverage does not establish live publication
+reachability. Do not infer a production claim from fixtures.
 
-The authenticated Task Witness client owns bounded launcher supervision under
-its exact `task-witness-process-profile-v2`; its registered validators are
-operator-trusted, cooperative code in that launcher. Mergecraft's outer
-supervisor has a closed internal call shape, accepts only the authenticated
-front door plus the absolute bundle root, requires canonical envelope framing
-on successful exit, and performs identity-safe best-effort cleanup within the
-same-EUID install boundary. Its module-private capability is not a security
-boundary. Do not claim arbitrary descendant containment or descendant-free
-ordinary success.
+When the optional witnessed route is used, Task Witness remains a cooperative
+validator integration. Harness sandbox and approval controls remain the
+ordinary execution authority; Mergecraft makes no descendant-containment claim.
 
 ## Create
 

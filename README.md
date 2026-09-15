@@ -1,13 +1,12 @@
 # Provingkit
 
-Provingkit is the public source repository for seven source members. Each
-member keeps its own identity and version, and the current source-stage
-definition requires the complete seven-member set.
+Provingkit is the public source repository for six coordinated Agent Plugins.
+Each plugin keeps its own identity and version, and the current source-stage
+definition requires the complete six-plugin set.
 
 ## Members
 
-Six of the seven current source members are independently releasable Agent
-Plugins:
+The current source members are independently releasable Agent Plugins:
 
 - [`plugins/rolecasting/`](plugins/rolecasting/) contains **Rolecasting**, which
   plans model selection and delegation topology.
@@ -26,10 +25,8 @@ Plugins:
 - [`plugins/proseweaving/`](plugins/proseweaving/) contains **Proseweaving**, which holds
   portable standards and verification for agent-authored human-facing prose.
 
-**Task Witness** is the seventh member. It is a code-only validation package with
-a manifest identity, not a portable Agent Plugin surface. Its current source
-state is production-ineligible and supports source-stage validation only. See
-the [Task Witness package reference](plugins/task-witness/README.md).
+Task Witness is deferred optional equipment. It is not part of the preview
+slate or a dependency of the ordinary plugins; see [issue #61](https://github.com/nisavid/provingkit/issues/61).
 
 ## Source and release boundary
 
@@ -61,10 +58,8 @@ remain disabled until that rescout.
 
 ## Repository layout
 
-- `plugins/` contains the seven canonical member source trees and identity
+- `plugins/` contains the six canonical plugin source trees and identity
   manifests.
-- `plugins/task-witness/` contains the code-only Task Witness package and its
-  local manifest identity.
 - `evals/` and `tests/` contain member behavior corpora and contract tests.
 - `scripts/` contains source validators and controlled derived-artifact writers.
 - `release/artifact-projection-policy-v1.json` defines the allowlisted runtime
@@ -108,9 +103,6 @@ python scripts/validate_artifact_customs.py . --source-stage
 python -m unittest tests.test_validate_proseweaving
 python scripts/validate_proseweaving.py .
 
-repository="$(pwd -P)"
-python -m unittest tests.test_task_witness_package
-python scripts/validate_task_witness.py "$repository" --source-stage
 ```
 
 These commands validate public source contracts. They do not grant release,
@@ -131,14 +123,14 @@ executable and an absolute public candidate checkout:
 ```
 
 An exit status of `0` confirms only the prepared source checks. Native
-`public-release` and Task Witness qualification or final-release routes remain
+`public-release` and optional Task Witness qualification routes remain
 unavailable. A later release must supply controls that this repository does
 not own: an installed, host-owned, content-pinned, network-denied OS sandbox;
 review authorization bound to the candidate bytes; opaque inherited handles
 for private evidence; authenticated host and evaluation evidence with managed
 signing-key custody and anti-replay state; and independent provider authority
 bound to the exact candidate, policy, runtime, and endpoint. Until those gates
-close, Task Witness remains `production_eligible: false`.
+close, optional Task Witness equipment remains unavailable.
 
 ## Generated locks and review evidence
 
@@ -146,10 +138,6 @@ Do not hand-edit member content locks or generated projections. Change the
 canonical source, run the owning validator's `--write-content-lock` mode where
 one exists, inspect every generated change, and rerun the ordinary validator.
 CI regenerates supported derived locks and requires a clean diff.
-
-Task Witness is stricter: source-shape drift requires the independent review
-named by its checked-in review contract. Its source-shape evidence has no
-general-purpose writer and must not be rehashed as a mechanical lock update.
 
 Preserve provenance when moving or deriving source. A reviewable change should
 identify the source revision, explain retained historical or compatibility

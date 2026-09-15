@@ -139,15 +139,6 @@ EXPECTED_MEMBERS = (
         "release/plugin-content-locks/artifact-customs.json",
     ),
     (
-        "task-witness",
-        "Task Witness",
-        "code-only",
-        "plugins/task-witness/plugin.json",
-        "plugins/task-witness/.claude-plugin/plugin.json",
-        "source-shape-review",
-        "release/task-witness/source-shape-review.json",
-    ),
-    (
         "proseweaving",
         "Proseweaving",
         "agent-plugin",
@@ -163,7 +154,6 @@ EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "versionkeeping": "1.0.0",
     "mergecraft": "1.0.0",
     "artifact-customs": "1.0.0",
-    "task-witness": "1.0.0",
     "proseweaving": "1.0.0",
 }
 EXPECTED_EXCLUDED_SOURCE = {
@@ -1566,7 +1556,7 @@ def _validate_historical_identities(repository: Path) -> None:
         or allowlist["schema_version"] != 1
         or allowlist.get("matching") != "exact-relative-path-and-whole-file-sha256"
         or not isinstance(allowlist.get("entries"), list)
-        or len(allowlist["entries"]) != 39
+        or len(allowlist["entries"]) != 30
     ):
         raise ValidationError("historical identity allowlist drift")
 

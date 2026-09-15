@@ -68,7 +68,7 @@ identity of the validated snapshot.
 ## Terminal evidence owner
 
 The closed owner contract is documented in
-`skills/loop/references/review-evidence.md`. Task Witness registers the
+`skills/loop/references/review-evidence.md`. Task Witness may register the
 Tricritical terminal-evidence validator, but this package intentionally
 registers no producer or issuer. The v2 projection preserves Rolecasting's
 target, topology, authority, execution result, and assurance evidence as

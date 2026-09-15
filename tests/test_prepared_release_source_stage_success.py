@@ -15,7 +15,6 @@ EXPECTED_MEMBER_IDENTITIES = {
     "artifact-customs",
     "mergecraft",
     "rolecasting",
-    "task-witness",
     "proseweaving",
     "tricritical",
     "versionkeeping",

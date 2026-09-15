@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:915d7871aac07d622401873871d6ac161e01aa5ea2a400e73c52034da0fbc452"
+          "sha256": "sha256:c778a7cf5990e9aa6486d7d097c8105c671f1d66bc121a3d060c3114e5bc8f06"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -37,7 +37,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/tricritical/content-lock.json",
-          "sha256": "sha256:7b9520994cf4c6bbce7fe56c922a972f0233225e7aa7a9ae875f98e8d36d4fbd"
+          "sha256": "sha256:dce241eab544be8cdb21a2717592532c29ecfa6f3bec5a8e5d5f57b21aa753bc"
         },
         "display_name": "Tricritical",
         "distribution_kind": "agent-plugin",
@@ -67,7 +67,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/mergecraft.json",
-          "sha256": "sha256:8d5fdbc4d28b6ad6d5afda9031475be8212bba0b0c84593ee824ec659c99543e"
+          "sha256": "sha256:214b7471519bb924590694a49cc7365b480ef23970161dfafc577d57ef858863"
         },
         "display_name": "Mergecraft",
         "distribution_kind": "agent-plugin",
@@ -90,21 +90,6 @@
         "identity_manifests": {
           "canonical": "plugins/artifact-customs/plugin.json",
           "claude": "plugins/artifact-customs/.claude-plugin/plugin.json"
-        },
-        "version": "1.0.0"
-      },
-      {
-        "content_identity": {
-          "kind": "source-shape-review",
-          "path": "release/task-witness/source-shape-review.json",
-          "sha256": "sha256:8a9f36ea7586e31cedcf4af2d99a70c5d2046c033d5c107faf76063e57d3cf58"
-        },
-        "display_name": "Task Witness",
-        "distribution_kind": "code-only",
-        "id": "task-witness",
-        "identity_manifests": {
-          "canonical": "plugins/task-witness/plugin.json",
-          "claude": "plugins/task-witness/.claude-plugin/plugin.json"
         },
         "version": "1.0.0"
       },

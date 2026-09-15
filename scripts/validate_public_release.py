@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "5683f9fc9e061756f5f1cd1d38d9cef53e2b9ddba8d5e76b0c363bff57f85d32"
+SOURCE_SHA256 = "37c248d7eef2957c62b23684dcc94260dbdccc059f649d0df20b17146686f7a3"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -501,7 +501,7 @@ PUBLIC_RELEASE_NAME = re.compile(r"[a-z][a-z0-9-]*\Z")
 PUBLIC_RELEASE_PATH_PREFIXES = ("docs", "plugins", "release", "scripts", "tests")
 PUBLIC_RELEASE_PACKAGE_KIND = "runtime-package"
 PUBLIC_RELEASE_SKILL_PLUGIN_KIND = "skill-plugin"
-REQUIRED_SOURCE_STAGE_RUNTIME_PACKAGES = ("task-witness",)
+REQUIRED_SOURCE_STAGE_RUNTIME_PACKAGES = ()
 
 
 def canonical_public_release_validator_path(name: str) -> str:
@@ -844,7 +844,7 @@ def validate_public_release_registration_inventory(repository: Path) -> None:
     registered_skill_plugins = load_public_release_registered_skill_plugins(repository)
     require(
         set(REQUIRED_SOURCE_STAGE_RUNTIME_PACKAGES) <= set(runtime_packages),
-        "required source-stage runtime package is missing: task-witness",
+        "required source-stage runtime package is missing",
     )
     require(
         runtime_packages == PUBLIC_RELEASE_RUNTIME_PACKAGES,

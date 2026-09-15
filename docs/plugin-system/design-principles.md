@@ -2,7 +2,7 @@
 
 This repository develops six coordinated distributions for frontier agents:
 Rolecasting, Versionkeeping, Tricritical, Mergecraft, Artifact Customs, and
-Task Witness. They form one equipment system, not a catalog of unrelated
+Proseweaving. They form one equipment system, not a catalog of unrelated
 skills. The system should contain the smallest set of durable contracts that
 materially improves agent behavior across supported harnesses.
 
@@ -43,7 +43,6 @@ Each distribution owns a distinct part of the workflow:
 | Tricritical | Own general change review, finding adjudication, authorized revision, and fixed-point review loops. |
 | Mergecraft | Own reviewer-facing pull-request content and the pull-request lifecycle. |
 | Artifact Customs | Govern third-party components from assessment through adoption, maintenance, and retirement. |
-| Task Witness | Define the code-only evidence-validation boundary. Its package reference owns which integrations are currently eligible and their limitations. |
 
 One semantic capability or mutable surface has one owner. Outcome coordinators
 sequence those owners; they do not copy their procedures. Capability owners do
@@ -75,11 +74,11 @@ artifact invalidates its review and the dependent evidence that relied on it.
 A fresh candidate needs fresh verification and, where required, fresh
 independent review.
 
-Task Witness is the designed validation boundary for evidence that must cross
-harness or release stages. Its mere presence grants no authority. A route may
-rely on Task Witness only when the relevant producer, issuer, validator,
-runtime, and external trust controls are qualified for that exact use. Other
-states fail closed and remain truthful about their limitations.
+Task Witness is deferred optional equipment for evidence that may need to cross
+harness or release stages. Ordinary plugin workflows trust the host harness and
+do not depend on it. A future witnessed route must qualify its producer, issuer,
+validator, runtime, and trust controls for the exact use and report evidence as
+unavailable when those controls are absent.
 
 ## Review through asymmetric falsification
 

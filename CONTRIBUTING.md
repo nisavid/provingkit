@@ -5,10 +5,10 @@ consistent, and explicit about what their validation proves.
 
 ## Scope
 
-Current changes stay within the seven source members: the six Agent Plugins
-Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and
-Proseweaving, plus the code-only Task Witness package. Keep changes within those
-members, their shared validation, and the Kit's repository contracts.
+Current changes stay within the six Agent Plugins: Rolecasting, Tricritical,
+Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. Task Witness is
+shelved optional equipment; its historical records remain available for future
+reassessment.
 Hindsight, Base Loadout, personal tools, and unrelated experiments belong
 elsewhere.
 
@@ -36,11 +36,6 @@ The member validators own their content locks and generated projections. When
 an owning validator supports `--write-content-lock`, run that mode after the
 authored source is stable, review its complete diff, then run the ordinary
 validator. Never edit a digest merely to make validation green.
-
-Task Witness source-shape evidence is not an ordinary generated lock. Any
-source-shape change must satisfy the independent review requirement recorded in
-`release/task-witness/source-shape-review.json`; there is no mechanical
-rebaseline command.
 
 ## Pull requests
 

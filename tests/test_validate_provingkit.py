@@ -83,10 +83,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/provingkit/release-manifest-v1.schema.json",
             "release/plugin-content-locks/mergecraft.json",
             "release/plugin-content-locks/versionkeeping.json",
+            "plugins/tricritical/content-lock.json",
+            "release/source-skill-lineage/source-manifest.json",
             "release/source-skill-disposition/disposition-ledger.json",
             "release/source-skill-disposition/release-refresh-contract.json",
-            "release/task-witness/source-shape-review.json",
-            "tests/test_task_witness_package.py",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
         expected_members = {
@@ -94,7 +94,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "mergecraft",
             "proseweaving",
             "rolecasting",
-            "task-witness",
             "tricritical",
             "versionkeeping",
         }
@@ -107,6 +106,18 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 destination / "plugins" / member,
                 dirs_exist_ok=True,
             )
+        for relative in (
+            "scripts/run_task_witness_qualification.py",
+            "scripts/validate_task_witness.py",
+            "tests/plugins/task_witness_client/test_retained_state.py",
+            "tests/plugins/task_witness_deployment/_freeze5_upgrade_recovery_support.py",
+            "tests/plugins/task_witness_deployment/test_bridge_transition_activation.py",
+            "tests/plugins/task_witness_deployment/test_routine_transactions.py",
+            "tests/test_task_witness_package.py",
+        ):
+            path = destination / relative
+            if path.exists():
+                path.unlink()
 
     def assert_identity_fixture(
         self,
@@ -163,12 +174,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "agent-plugin",
                 "plugin-content-lock",
                 "release/plugin-content-locks/artifact-customs.json",
-            ),
-            (
-                "task-witness",
-                "code-only",
-                "source-shape-review",
-                "release/task-witness/source-shape-review.json",
             ),
             (
                 "proseweaving",
@@ -362,19 +367,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             (REPOSITORY / "README.md").read_text(encoding="utf-8"),
         )
 
-    def test_task_witness_source_job_runs_the_qualification_selector_guard(self) -> None:
-        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
-        commands = {
-            line.strip()
-            for step in workflow["jobs"]["task-witness"]["steps"]
-            for line in step.get("run", "").splitlines()
-            if line.strip()
-        }
-
-        self.assertIn(
-            "python -m unittest tests.test_task_witness_qualification.TaskWitnessQualificationTests.test_deployment_common_selector_table_is_closed_and_exact",
-            commands,
-        )
 
     def test_proseweaving_source_job_and_derived_lock_are_covered(self) -> None:
         workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
@@ -398,21 +390,19 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             lock_commands,
         )
 
-    def test_human_docs_state_the_current_seven_member_source_set(self) -> None:
-        for relative in (
-            "README.md",
-            "CONTRIBUTING.md",
-            ".github/pull_request_template.md",
-        ):
+    def test_human_docs_state_the_current_six_plugin_source_set(self) -> None:
+        expected = {
+            "README.md": "six coordinated Agent Plugins",
+            "CONTRIBUTING.md": "six Agent Plugins",
+            ".github/pull_request_template.md": "six Agent Plugin members",
+        }
+        for relative, phrase in expected.items():
             with self.subTest(relative=relative):
                 content = (REPOSITORY / relative).read_text(encoding="utf-8")
                 normalized = " ".join(content.split())
-                self.assertIn("seven source members", normalized)
-                self.assertIn("six Agent Plugins", normalized)
+                self.assertIn(phrase, normalized)
                 self.assertIn("Proseweaving", normalized)
-                self.assertIn("Task Witness", normalized)
-                self.assertNotIn("six source members carried by this cutover", normalized)
-                self.assertNotIn("issue #25 after pull request #11", normalized)
+                self.assertNotIn("seven source members", normalized)
 
     def test_agent_guidance_describes_member_specific_content_identity_writers(
         self,
@@ -608,15 +598,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "plugins/artifact-customs/.claude-plugin/plugin.json",
                     "plugin-content-lock",
                     "release/plugin-content-locks/artifact-customs.json",
-                ),
-                (
-                    "task-witness",
-                    "code-only",
-                    "1.0.0",
-                    "plugins/task-witness/plugin.json",
-                    "plugins/task-witness/.claude-plugin/plugin.json",
-                    "source-shape-review",
-                    "release/task-witness/source-shape-review.json",
                 ),
                 (
                     "proseweaving",
@@ -1372,7 +1353,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 / "release/provingkit/historical-identity-allowlist-v1.json"
             ).read_text(encoding="utf-8")
         )
-        self.assertEqual(len(allowlist["entries"]), 39)
+        self.assertEqual(len(allowlist["entries"]), 30)
         self.assertIn(
             {
                 "disposition": (
@@ -2583,7 +2564,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 6),
+            ("maxItems", 7),
             ("items", {}),
         )
         for key, value in mutations:
