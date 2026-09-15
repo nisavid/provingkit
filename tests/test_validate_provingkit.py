@@ -83,6 +83,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/provingkit/release-manifest-v1.schema.json",
             "release/plugin-content-locks/mergecraft.json",
             "release/plugin-content-locks/versionkeeping.json",
+            "plugins/tricritical/content-lock.json",
+            "release/source-skill-lineage/source-manifest.json",
             "release/source-skill-disposition/disposition-ledger.json",
             "release/source-skill-disposition/release-refresh-contract.json",
         ):
@@ -104,6 +106,18 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 destination / "plugins" / member,
                 dirs_exist_ok=True,
             )
+        for relative in (
+            "scripts/run_task_witness_qualification.py",
+            "scripts/validate_task_witness.py",
+            "tests/plugins/task_witness_client/test_retained_state.py",
+            "tests/plugins/task_witness_deployment/_freeze5_upgrade_recovery_support.py",
+            "tests/plugins/task_witness_deployment/test_bridge_transition_activation.py",
+            "tests/plugins/task_witness_deployment/test_routine_transactions.py",
+            "tests/test_task_witness_package.py",
+        ):
+            path = destination / relative
+            if path.exists():
+                path.unlink()
 
     def assert_identity_fixture(
         self,
