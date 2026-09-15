@@ -43,8 +43,8 @@ validator accepts no Task Witness final-evidence operands.
 
 The private complete-tree witness is an Amberbridge evidence artifact. Its name
 does not imply the removed Task Witness implementation or a Task Witness
-runtime. Optional plugin-local provider declarations remain adapter inputs for
-future work; they grant no current witnessed-route capability. A future Task
+runtime. Plugin-local provider declarations are retained inert inputs for future
+reassessment; they grant no current witnessed-route capability. A future Task
 Witness integration must define and qualify a fresh adapter and evidence
 contract.
 
