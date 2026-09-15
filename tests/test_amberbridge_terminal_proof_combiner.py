@@ -47,7 +47,7 @@ class CombineTerminalProofsTests(unittest.TestCase):
         return path
 
     def test_requires_exact_target_order_and_unique_terminal_identities(self) -> None:
-        with tempfile.TemporaryDirectory(dir="/private/tmp") as directory:
+        with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             root.chmod(0o700)
             paths = [
