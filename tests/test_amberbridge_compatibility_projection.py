@@ -30,7 +30,7 @@ SOURCE_PATHS = (
     Path("release/mergecraft/review-atlas-contract.json"),
 )
 V4_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v4-compatibility.json"
-V5_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v1-compatibility.json"
+V1_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v1-compatibility.json"
 SCRIPT_PATH = REPO_ROOT / "scripts/amberbridge_compatibility_projection.py"
 
 
@@ -53,10 +53,10 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
             json.dumps(document, indent=2) + "\n", encoding="utf-8"
         )
 
-    def test_projection_is_byte_identical_to_frozen_v5_fixture(self) -> None:
+    def test_projection_is_byte_identical_to_frozen_v1_fixture(self) -> None:
         self.assertEqual(
             projection.compatibility_bytes(REPO_ROOT),
-            V5_FIXTURE_PATH.read_bytes(),
+            V1_FIXTURE_PATH.read_bytes(),
         )
 
     def test_retained_v4_fixture_is_immutable_historical_evidence(self) -> None:
@@ -115,7 +115,7 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, V5_FIXTURE_PATH.read_bytes())
+        self.assertEqual(result.stdout, V1_FIXTURE_PATH.read_bytes())
         self.assertEqual(result.stderr, b"")
 
     def test_isolated_cli_fails_closed_when_a_source_is_absent(self) -> None:

@@ -357,7 +357,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "python -m unittest "
             "tests.test_amberbridge_compatibility_projection."
             "AmberbridgeCompatibilityProjectionTests."
-            "test_projection_is_byte_identical_to_frozen_v5_fixture"
+            "test_projection_is_byte_identical_to_frozen_v1_fixture"
         )
 
         self.assertIn(expected_tricritical, tricritical_commands)

@@ -576,7 +576,7 @@ class AmberbridgeProductionIntegrationTests(unittest.TestCase):
                 coordinator.PRIVATE_ARTIFACTS,
             )
 
-    def test_coordinator_rejects_retained_v4_private_evidence_for_live_v5_projection(
+    def test_coordinator_rejects_retained_v4_private_evidence_for_live_v1_projection(
         self,
     ) -> None:
         coordinator = load_coordinator()
