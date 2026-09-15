@@ -25,6 +25,7 @@ CHANGE_NAVIGATION_SCRIPTS = (
 )
 if str(CHANGE_NAVIGATION_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(CHANGE_NAVIGATION_SCRIPTS))
+from change_navigation.bot_body import BotBodyError, authored_body  # noqa: E402
 from change_navigation.git_observer import observe_git_diff  # noqa: E402
 
 
@@ -837,8 +838,16 @@ def evidence(
                 supplied = unsigned.pop("content_sha256")
                 identity = receipt["identity"]
                 final = receipt["final_state"]
+                schema_version = receipt.get("schema_version")
+                expected_body = expected["body"]
+                if schema_version == 4:
+                    expected_body = authored_body(
+                        expected_body, expected_sha256=final["body_sha256"]
+                    )
                 receipt_matches = receipt_matches and (
-                    raw == canonical_bytes(receipt) + b"\n"
+                    type(schema_version) is int
+                    and schema_version in {2, 3, 4}
+                    and raw == canonical_bytes(receipt) + b"\n"
                     and supplied
                     == hashlib.sha256(canonical_bytes(unsigned)).hexdigest()
                     and receipt.get("provenance") == "canonical"
@@ -856,7 +865,7 @@ def evidence(
                     and final.get("title_sha256")
                     == hashlib.sha256(expected["title"].encode()).hexdigest()
                     and final.get("body_sha256")
-                    == hashlib.sha256(expected["body"].encode()).hexdigest()
+                    == hashlib.sha256(expected_body.encode()).hexdigest()
                     and final.get("is_draft") is expected["isDraft"]
                     and final.get("state") == "OPEN"
                 )
@@ -871,7 +880,7 @@ def evidence(
                         )
                     }
                 )
-            except (OSError, KeyError, TypeError, json.JSONDecodeError):
+            except (OSError, KeyError, TypeError, json.JSONDecodeError, BotBodyError):
                 receipt_matches = False
     inferred_type = "read-only" if route.mode == "read-only" else "component-write"
     receipt_type = inferred_type if receipt_type is None else receipt_type

@@ -130,7 +130,12 @@ rollout notes.
 
 For an existing body, isolate the strict leading Stack/Diff prefix at its
 mandatory empty-line boundary and treat the remaining suffix as opaque bytes.
-Baseline fragments must exhaustively partition the stored body. Their ordered
+Recognized trailing hosted-bot blocks are a separate preserved tail, detected
+by `change_navigation.bot_body`. Baseline and candidate digests exclude that
+tail. When a baseline digest is already sealed, use it to select the exact
+authored boundary across separator newlines; do not normalize authored bytes.
+Incomplete or unrecognized marker blocks remain authored content.
+Baseline fragments must exhaustively partition the authored stored body. Their ordered
 retain, replace, and remove dispositions must derive the candidate exactly;
 retain the suffix byte-for-byte, including line endings and final-newline state,
 unless an authorized disposition explicitly changes it. Navigation validation
@@ -175,7 +180,7 @@ atlas route in `SKILL.md` only after static views fail this test.
 - State observed verification and unresolved work precisely.
 - The body must be proportional, scannable, preservation-safe, and faithful to
   the stored pushed state.
-- Existing-body fragments must exhaustively partition the live preimage and
+- Existing-body fragments must exhaustively partition the authored live preimage and
   derive the candidate in exact order; an opaque retained suffix is unchanged
   byte-for-byte.
 - Links must be useful; required disclosures must validate; stacked navigation

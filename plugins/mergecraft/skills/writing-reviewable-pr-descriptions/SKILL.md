@@ -57,14 +57,18 @@ Generated forge text is no substitute.
    is unavailable.
 5. Create their versioned content-addressed review-input manifest, binding
    identity, pushed refs/OIDs, title/body digest, Diff rows, stack, and all
-   baseline-fragment dispositions. For an existing body, make the fragments an
-   exhaustive ordered partition of the live preimage and retain any opaque
-   suffix byte-for-byte unless its change is explicitly authorized. Use the
+   baseline-fragment dispositions. For an existing body, use the shared
+   `change_navigation.bot_body` helper to separate recognized trailing bot
+   blocks. Seal and exhaustively partition only the authored live prefix;
+   derive the candidate from those fragments. The publisher retains the latest
+   live bot tail separately. Keep opaque authored content after the navigation
+   prefix byte-for-byte unless its change is explicitly authorized. Use the
    publisher PR-number token for create.
    For diffs over 100 files, additionally bind the first 100 deterministic local
    Git target paths, omitted count, and immutable comparison URL; render only
    those rows plus the canonical omission record. Smaller bodies remain complete
-   and every body stays at or below 65,536 characters.
+   and every published body, including its retained bot tail, stays at or below
+   65,536 characters.
 6. Validate the complete pair and prove the candidate is the exact ordered
    derivation of its sealed baseline fragments. This local proof does not show
    that the claimed baseline is the current live PR; the publisher separately

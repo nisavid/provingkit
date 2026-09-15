@@ -23,6 +23,11 @@ from change_navigation.review_input import (  # noqa: E402
     bind_review_input,
     load_review_input,
 )
+from change_navigation.bot_body import (  # noqa: E402
+    BotBodyError,
+    authored_body,
+    merge_bot_tail,
+)
 from change_navigation.sensitive_content import suspected_secret_error  # noqa: E402
 from publication_receipts import (  # noqa: E402
     LedgerLease,
@@ -30,10 +35,12 @@ from publication_receipts import (  # noqa: E402
     prepare_receipt_ledger,
     prepare_receipt_store,
     receipt_ledger_lock,
+    receipt_matches_live,
     record_verified_publication,
     resolve_receipt_root,
     verified_transition,
 )
+from publication_receipts import SCHEMA_VERSION as RECEIPT_SCHEMA_VERSION  # noqa: E402
 from publication_support import (  # noqa: E402
     expected_identity as _expected_identity,
 )
@@ -59,7 +66,6 @@ from reviewable_pr_state import (  # noqa: E402
     PublicationError,
     github_repository,
     identity_matches,
-    state_matches,
 )
 from reviewable_pr_state import (  # noqa: E402
     run_mutation as _run_mutation,
@@ -69,10 +75,50 @@ from reviewable_pr_state import (  # noqa: E402
 )
 
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
+MAX_PR_BODY_CHARACTERS = 65536
 
 
 def _digest(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _validate_published_body_size(body: str) -> None:
+    if len(body) > MAX_PR_BODY_CHARACTERS:
+        raise PublicationError(
+            "published PR body exceeds GitHub's 65536-character limit after "
+            "retaining the live bot suffix"
+        )
+
+
+def _sealed_body(body: str, expected_sha256: str) -> str:
+    try:
+        return authored_body(body, expected_sha256=expected_sha256)
+    except BotBodyError as error:
+        raise PublicationError(
+            "PR title/body/draft preimage changed before mutation"
+        ) from error
+
+
+def _state_matches_owned_body(
+    stored: dict[str, Any],
+    expected: ExpectedIdentity,
+    *,
+    title: str,
+    body: str,
+    is_draft: bool,
+) -> bool:
+    try:
+        observed_body = _sealed_body(str(stored.get("body", "")), _digest(body))
+    except PublicationError:
+        return False
+    return (
+        identity_matches(stored, expected)
+        and stored.get("title") == title
+        and isinstance(stored.get("body"), str)
+        and observed_body == body
+        and stored.get("isDraft") is is_draft
+        and stored.get("state") == "OPEN"
+    )
 
 
 def _read_body(path: Path) -> tuple[str, bytes]:
@@ -136,9 +182,9 @@ def _preflight(
     if not isinstance(title, str) or not isinstance(body, str):
         raise PublicationError("PR title/body preimage is unreadable")
     _reject_secret_text(title, body)
+    _sealed_body(body, expected_body_sha256)
     if (
         _digest(title) != expected_title_sha256
-        or _digest(body) != expected_body_sha256
         or (
             expected_draft is not None
             and stored.get("isDraft") is not expected_draft
@@ -288,8 +334,9 @@ def _require_creation_receipt(
     review_mode: str,
     selected_specialists: list[str],
     receipt_root: Path,
+    verified_ready_body: str | None = None,
 ) -> None:
-    """Bind a token transition to the one canonical create receipt."""
+    """Bind creation bytes, using a verified v4 ready body for historical proof."""
 
     receipts = load_receipts(receipt_root, expected)
     if not receipts or receipts[0].operation != "create":
@@ -298,6 +345,13 @@ def _require_creation_receipt(
             "this PR"
         )
     creation = receipts[0]
+    creation_body = (
+        str(before["body"])
+        if verified_ready_body is None
+        else verified_ready_body
+    )
+    if creation.schema_version >= RECEIPT_SCHEMA_VERSION:
+        creation_body = _sealed_body(creation_body, creation.final_state.body_sha256)
     if (
         creation.provenance != "canonical"
         or creation.review is None
@@ -305,7 +359,7 @@ def _require_creation_receipt(
         or creation.review_input_schema_version != review_input_schema_version
         or creation.review_input_sha256 != review_input_sha256
         or creation.final_state.title_sha256 != _digest(str(before["title"]))
-        or creation.final_state.body_sha256 != _digest(str(before["body"]))
+        or creation.final_state.body_sha256 != _digest(creation_body)
         or creation.final_state.is_draft is not True
     ):
         raise PublicationError(
@@ -358,6 +412,7 @@ def _return_idempotent_ready(
     *,
     expected: ExpectedIdentity,
     before: dict[str, Any],
+    expected_body_sha256: str,
     review_input_path: Path,
     template: str | None,
     review_mode: str,
@@ -367,7 +422,7 @@ def _return_idempotent_ready(
     """Return a previously verified ready state without writing again."""
 
     title = str(before["title"])
-    body = str(before["body"])
+    body = _sealed_body(str(before["body"]), expected_body_sha256)
     review_input_schema_version, review_input_sha256 = _bind_review_input(
         review_input_path,
         expected,
@@ -377,18 +432,6 @@ def _return_idempotent_ready(
         body,
         template,
     )
-    if template is not None:
-        _require_creation_receipt(
-            expected=expected,
-            before=before,
-            template=template,
-            review_input_path=review_input_path,
-            review_input_schema_version=review_input_schema_version,
-            review_input_sha256=review_input_sha256,
-            review_mode=review_mode,
-            selected_specialists=selected_specialists,
-            receipt_root=receipt_root,
-        )
     candidate = _build_ready_candidate(
         expected=expected,
         title=title,
@@ -418,13 +461,26 @@ def _return_idempotent_ready(
         or receipt.review.publication_candidate_sha256 != candidate.content_sha256
         or receipt.review_input_schema_version != review_input_schema_version
         or receipt.review_input_sha256 != review_input_sha256
-        or receipt.final_state.title_sha256 != _digest(title)
-        or receipt.final_state.body_sha256 != _digest(body)
-        or receipt.final_state.is_draft is not False
+        or not receipt_matches_live(receipt, before)
     ):
         raise PublicationError(
             "PR is already ready but its canonical readiness receipt does not "
             "match the supplied identity, body, or review inputs"
+        )
+    if template is not None:
+        _require_creation_receipt(
+            expected=expected,
+            before=before,
+            template=template,
+            review_input_path=review_input_path,
+            review_input_schema_version=review_input_schema_version,
+            review_input_sha256=review_input_sha256,
+            review_mode=review_mode,
+            selected_specialists=selected_specialists,
+            receipt_root=receipt_root,
+            verified_ready_body=(
+                body if receipt.schema_version >= RECEIPT_SCHEMA_VERSION else None
+            ),
         )
     return before
 
@@ -442,7 +498,8 @@ def _update_text_locked(
     text_scope: str,
     receipt_root: Path,
     lease: LedgerLease,
-    candidate: PublicationCandidate,
+    body_source_raw: bytes,
+    body_source_kind: str,
     review_mode: str,
     review_bundle_root: Path | None,
     selected_specialists: list[str],
@@ -459,17 +516,43 @@ def _update_text_locked(
         )
     if text_scope == "body-only" and title != before["title"]:
         raise PublicationError("body-only edit changed the live title")
-    if text_scope == "title-only" and body != before["body"]:
+    if text_scope == "title-only" and body != _sealed_body(
+        str(before["body"]), expected_body_sha256
+    ):
         raise PublicationError("title-only edit changed the live body")
-    if title == before["title"] and body == before["body"]:
+    published_body = merge_bot_tail(
+        body, str(before["body"]), expected_live_sha256=expected_body_sha256
+    )
+    _validate_published_body_size(published_body)
+    if title == before["title"] and body == _sealed_body(
+        str(before["body"]), expected_body_sha256
+    ):
         raise PublicationError("text publication is a no-op; no mutation was attempted")
+    candidate = _build_candidate(
+        operation="update-text",
+        repository=expected.repository,
+        pr_number=expected.pr_number,
+        base=expected.base,
+        base_oid=expected.base_oid,
+        head=expected.head,
+        head_oid=expected.head_oid,
+        head_owner=expected.head_owner,
+        head_repository=expected.head_repository,
+        title=title,
+        body_source_kind=body_source_kind,
+        body_source_raw=body_source_raw,
+        published_body=body,
+        review_input_path=review_input_path,
+        review_mode=review_mode,
+        selected_specialists=selected_specialists,
+    )
     review_input_schema_version, review_input_sha256 = _bind_review_input(
         review_input_path,
         expected,
         title,
         body,
         str(before["title"]),
-        str(before["body"]),
+        _sealed_body(str(before["body"]), expected_body_sha256),
         template_body,
     )
     validate_review_input_binding(
@@ -483,22 +566,29 @@ def _update_text_locked(
         review_bundle_root=review_bundle_root,
         candidate=candidate,
     )
-    final_before = before
-    if review.mode == "required":
-        final_before = _preflight(
-            expected=expected,
-            expected_title_sha256=expected_title_sha256,
-            expected_body_sha256=expected_body_sha256,
-            expected_draft=expected_draft,
-        )
-    if final_before != before:
-        raise PublicationError("PR state changed during required-review validation")
+    final_before = _preflight(
+        expected=expected,
+        expected_title_sha256=expected_title_sha256,
+        expected_body_sha256=expected_body_sha256,
+        expected_draft=expected_draft,
+    )
+    if (
+        final_before["title"] != before["title"]
+        or _sealed_body(str(final_before["body"]), expected_body_sha256)
+        != _sealed_body(str(before["body"]), expected_body_sha256)
+        or final_before["isDraft"] is not before["isDraft"]
+    ):
+        raise PublicationError("PR state changed during publication validation")
     before = final_before
+    published_body = merge_bot_tail(
+        body, str(before["body"]), expected_live_sha256=expected_body_sha256
+    )
+    _validate_published_body_size(published_body)
     command_error: PublicationError | None = None
     body_context = (
         nullcontext(None)
         if text_scope == "title-only"
-        else _write_temporary_body(body)
+        else _write_temporary_body(published_body)
     )
     with body_context as body_file:
         command = [
@@ -530,7 +620,7 @@ def _update_text_locked(
             "PR text command failed; a matching reread cannot prove causality, "
             "so canonical provenance was not minted"
         ) from command_error
-    if state_matches(
+    if _state_matches_owned_body(
         after,
         expected,
         title=title,
@@ -546,6 +636,9 @@ def _update_text_locked(
             review_input_sha256=review_input_sha256,
             review=review,
             candidate=candidate,
+            final_body=str(after["body"]),
+            preimage_body_sha256=expected_body_sha256,
+            final_body_sha256=_digest(body),
         )
         record_verified_publication(
             root=receipt_root, transition=transition, lease=lease
@@ -584,6 +677,7 @@ def _mark_ready_locked(
         return _return_idempotent_ready(
             expected=expected,
             before=before,
+            expected_body_sha256=expected_body_sha256,
             review_input_path=review_input_path,
             template=template,
             review_mode=review_mode,
@@ -591,14 +685,14 @@ def _mark_ready_locked(
             receipt_root=receipt_root,
         )
     title = str(before["title"])
-    body = str(before["body"])
+    body = _sealed_body(str(before["body"]), expected_body_sha256)
     review_input_schema_version, review_input_sha256 = _bind_review_input(
         review_input_path,
         expected,
         title,
         body,
         str(before["title"]),
-        str(before["body"]),
+        _sealed_body(str(before["body"]), expected_body_sha256),
         template,
     )
     if template is not None:
@@ -632,16 +726,19 @@ def _mark_ready_locked(
         review_bundle_root=review_bundle_root,
         candidate=candidate,
     )
-    final_before = before
-    if review.mode == "required":
-        final_before = _preflight(
-            expected=expected,
-            expected_title_sha256=expected_title_sha256,
-            expected_body_sha256=expected_body_sha256,
-            expected_draft=True,
-        )
-    if final_before != before:
-        raise PublicationError("PR state changed during required-review validation")
+    final_before = _preflight(
+        expected=expected,
+        expected_title_sha256=expected_title_sha256,
+        expected_body_sha256=expected_body_sha256,
+        expected_draft=True,
+    )
+    if (
+        final_before["title"] != before["title"]
+        or _sealed_body(str(final_before["body"]), expected_body_sha256)
+        != _sealed_body(str(before["body"]), expected_body_sha256)
+        or final_before["isDraft"] is not before["isDraft"]
+    ):
+        raise PublicationError("PR state changed during publication validation")
     before = final_before
     command_error: PublicationError | None = None
     try:
@@ -668,7 +765,9 @@ def _mark_ready_locked(
             "ready command failed; a matching reread cannot prove causality, "
             "so canonical provenance was not minted"
         ) from command_error
-    if state_matches(after, expected, title=title, body=body, is_draft=False):
+    if _state_matches_owned_body(
+        after, expected, title=title, body=body, is_draft=False
+    ):
         transition = verified_transition(
             expected=expected,
             operation="mark-ready",
@@ -678,6 +777,9 @@ def _mark_ready_locked(
             review_input_sha256=review_input_sha256,
             review=review,
             candidate=candidate,
+            final_body=str(after["body"]),
+            preimage_body_sha256=expected_body_sha256,
+            final_body_sha256=_digest(body),
         )
         record_verified_publication(
             root=receipt_root, transition=transition, lease=lease
@@ -714,24 +816,6 @@ def update_text(
         pr_number=expected.pr_number,
     )
     _reject_secret_text(title, body)
-    candidate = _build_candidate(
-        operation="update-text",
-        repository=expected.repository,
-        pr_number=expected.pr_number,
-        base=expected.base,
-        base_oid=expected.base_oid,
-        head=expected.head,
-        head_oid=expected.head_oid,
-        head_owner=expected.head_owner,
-        head_repository=expected.head_repository,
-        title=title,
-        body_source_kind=body_source_kind,
-        body_source_raw=body_source_raw,
-        published_body=body,
-        review_input_path=review_input_path,
-        review_mode=review_mode,
-        selected_specialists=selected_specialists,
-    )
     validation_arguments = (
         body,
         expected.repository,
@@ -755,9 +839,13 @@ def update_text(
         )
     if text_scope == "body-only" and title != early["title"]:
         raise PublicationError("body-only edit changed the live title")
-    if text_scope == "title-only" and body != early["body"]:
+    if text_scope == "title-only" and body != _sealed_body(
+        str(early["body"]), expected_body_sha256
+    ):
         raise PublicationError("title-only edit changed the live body")
-    if title == early["title"] and body == early["body"]:
+    if title == early["title"] and body == _sealed_body(
+        str(early["body"]), expected_body_sha256
+    ):
         raise PublicationError("text publication is a no-op; no mutation was attempted")
     receipt_root = prepare_receipt_store(receipt_directory)
     prepare_receipt_ledger(receipt_root, expected)
@@ -774,7 +862,8 @@ def update_text(
             text_scope=text_scope,
             receipt_root=receipt_root,
             lease=lease,
-            candidate=candidate,
+            body_source_raw=body_source_raw,
+            body_source_kind=body_source_kind,
             review_mode=review_mode,
             review_bundle_root=review_bundle_root,
             selected_specialists=selected_specialists,
@@ -803,7 +892,7 @@ def mark_ready(
     if type(is_draft) is not bool:
         raise PublicationError("PR draft state is unreadable")
     title = str(validated["title"])
-    body = str(validated["body"])
+    body = _sealed_body(str(validated["body"]), expected_body_sha256)
     template = _resolve_ready_template(
         review_input_path=review_input_path,
         expected=expected,

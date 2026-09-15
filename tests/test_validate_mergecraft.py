@@ -1178,6 +1178,28 @@ class ValidateMergecraftTests(unittest.TestCase):
                 self.assertIn("exactly one terminal handoff", expected)
                 self.assertIn("stops", expected)
 
+    def test_rejects_other_operations_owned_by_readiness_coordinator(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        skills = {item["name"]: item for item in topology["skills"]}
+        other_operation = copy.deepcopy(next(
+            item for item in topology["operations"]
+            if item["semantic_id"] == "readiness-outcome"
+        ))
+        other_operation["semantic_id"] = "other-readiness-outcome"
+        topology["operations"].append(other_operation)
+        skills["getting-prs-ready-for-review"]["operations"].append(
+            "other-readiness-outcome"
+        )
+        skills["getting-prs-merged"]["calls"].append(
+            "operation:other-readiness-outcome"
+        )
+        self.write_json("topology.json", topology)
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "outcome coordinator call edge",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
     def test_rejects_outcome_coordinator_call_edge_and_feedback_handoff_drift(
         self,
     ) -> None:
@@ -1743,7 +1765,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "078c2229f7f26e2af1fba8022cca12c1540d11d03a153bd44bed92089531917a"
+                "dd65cabbc64521a308ed21e9b41a70efa12b6076ceefdd0b79ef4853690c344d"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"

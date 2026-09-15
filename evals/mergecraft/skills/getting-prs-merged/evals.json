@@ -5,7 +5,7 @@
       "id": 0,
       "name": "new-branch-publish-and-closeout",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Get this branch merged. There are local changes, no PR yet, and I want you to keep going unless you hit a real blocker.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
-      "expected_output": "The first merge invocation returns one terminal readiness handoff and ends. The caller invokes the standalone readiness coordinator separately, then starts a fresh merge invocation from live state. Each leaf runs once in its owning invocation; cleanup is routed through Versionkeeping, exact remote-ref deletion stops when its separate authorization is absent, and no deployment is invented.",
+      "expected_output": "The first merge invocation invokes the standalone readiness coordinator when policy and authority permit, while retaining one terminal readiness handoff when it cannot invoke readiness safely. After readiness succeeds, the caller starts a fresh merge invocation from live state. Each leaf runs once in its owning invocation; cleanup is routed through Versionkeeping, exact remote-ref deletion stops when its separate authorization is absent, and no deployment is invented.",
       "files": [
         "getting-prs-merged/fixtures/new-branch-publish-and-closeout.md"
       ],
