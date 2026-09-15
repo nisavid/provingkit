@@ -2358,6 +2358,257 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                 )
         run.assert_not_called()
 
+    def test_ready_rebinds_token_manifest_to_numbered_pr(self) -> None:
+        before = self.stored()
+        after = self.stored(is_draft=False)
+        token_manifest = SimpleNamespace(
+            raw={
+                "pr_number": CREATE.PR_NUMBER_TOKEN,
+                "candidate": {"body_sha256": UPDATE._digest(self.template)},
+            }
+        )
+        with (
+            mock.patch.object(UPDATE, "_token_review_input", return_value=token_manifest),
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_require_creation_receipt"
+            ) as require_creation,
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, before, after]
+            ),
+            mock.patch.object(
+                UPDATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ) as mutate,
+        ):
+            result = UPDATE.mark_ready(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+            )
+
+        self.assertEqual(result, after)
+        require_creation.assert_called_once()
+        self.assertEqual(require_creation.call_args.kwargs["template"], self.template)
+        mutate.assert_called_once()
+
+    def test_ready_rejects_token_body_drift_before_mutation(self) -> None:
+        bad_template = Path(self.temporary_directory.name) / "bad-template.md"
+        bad_template.write_text(self.template + "drift\n", encoding="utf-8")
+        token_manifest = SimpleNamespace(
+            raw={
+                "pr_number": CREATE.PR_NUMBER_TOKEN,
+                "candidate": {"body_sha256": UPDATE._digest(self.template)},
+            }
+        )
+        with (
+            mock.patch.object(UPDATE, "_token_review_input", return_value=token_manifest),
+            mock.patch.object(UPDATE, "_stored_pr", return_value=self.stored()),
+            mock.patch.object(UPDATE, "_run_mutation") as mutate,
+        ):
+            with self.assertRaisesRegex(UPDATE.PublicationError, "does not match"):
+                UPDATE.mark_ready(
+                    expected=self.expected,
+                    expected_title_sha256=self.digest(self.title),
+                    expected_body_sha256=self.digest(self.body),
+                    review_input_path=self.template_path,
+                    review_mode="not-required",
+                    review_bundle_root=None,
+                    selected_specialists=[],
+                    body_template_path=bad_template,
+                    receipt_directory=self.receipt_directory,
+                )
+        mutate.assert_not_called()
+
+    def test_ready_rejects_identity_drift_before_token_rebind(self) -> None:
+        drifted = self.stored(headRefOid="c" * 40)
+        with (
+            mock.patch.object(UPDATE, "_stored_pr", return_value=drifted),
+            mock.patch.object(UPDATE, "_token_review_input") as token_manifest,
+            mock.patch.object(UPDATE, "_run_mutation") as mutate,
+        ):
+            with self.assertRaisesRegex(UPDATE.PublicationError, "identity"):
+                UPDATE.mark_ready(
+                    expected=self.expected,
+                    expected_title_sha256=self.digest(self.title),
+                    expected_body_sha256=self.digest(self.body),
+                    review_input_path=self.template_path,
+                    review_mode="not-required",
+                    review_bundle_root=None,
+                    selected_specialists=[],
+                    receipt_directory=self.receipt_directory,
+                )
+        token_manifest.assert_not_called()
+        mutate.assert_not_called()
+
+    def test_repeating_ready_rebind_is_receipt_backed_noop(self) -> None:
+        ready = self.stored(is_draft=False)
+        token_manifest = SimpleNamespace(
+            raw={
+                "pr_number": CREATE.PR_NUMBER_TOKEN,
+                "candidate": {"body_sha256": UPDATE._digest(self.template)},
+            }
+        )
+        candidate = UPDATE._build_ready_candidate(
+            expected=self.expected,
+            title=self.title,
+            body=self.body,
+            review_input_path=self.template_path,
+            review_mode="not-required",
+            selected_specialists=[],
+        )
+        receipt = SimpleNamespace(
+            operation="mark-ready",
+            provenance="canonical",
+            review=SimpleNamespace(
+                mode="not-required",
+                publication_candidate_sha256=candidate.content_sha256,
+            ),
+            review_input_schema_version=self.review_input_schema_version,
+            review_input_sha256=self.review_input_sha256,
+            final_state=SimpleNamespace(
+                title_sha256=self.digest(self.title),
+                body_sha256=self.digest(self.body),
+                is_draft=False,
+            ),
+        )
+        with (
+            mock.patch.object(UPDATE, "_token_review_input", return_value=token_manifest),
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(UPDATE, "_require_creation_receipt"),
+            mock.patch.object(UPDATE, "_stored_pr", return_value=ready),
+            mock.patch.object(UPDATE, "load_receipts", return_value=[receipt]),
+            mock.patch.object(UPDATE, "_run_mutation") as mutate,
+        ):
+            result = UPDATE.mark_ready(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                body_template_path=self.template_path,
+                receipt_directory=self.receipt_directory,
+            )
+
+        self.assertEqual(result, ready)
+        mutate.assert_not_called()
+
+    def test_token_rebind_requires_matching_creation_receipt(self) -> None:
+        before = self.stored()
+        creation_candidate = UPDATE._build_candidate(
+            operation="create",
+            repository=self.repository,
+            pr_number=CREATE.PR_NUMBER_TOKEN,
+            base=self.base,
+            base_oid=self.base_oid,
+            head=self.head,
+            head_oid=self.head_oid,
+            head_owner=self.head_owner,
+            head_repository=self.head_repository,
+            title=self.title,
+            body_source_kind="template",
+            body_source_raw=self.template.encode("utf-8"),
+            published_body=self.template,
+            review_input_path=self.template_path,
+            review_mode="not-required",
+            selected_specialists=[],
+        )
+        creation_receipt = SimpleNamespace(
+            operation="create",
+            provenance="canonical",
+            expected=self.expected,
+            review=SimpleNamespace(
+                mode="not-required",
+                publication_candidate_sha256=creation_candidate.content_sha256,
+            ),
+            review_input_schema_version=self.review_input_schema_version,
+            review_input_sha256=self.review_input_sha256,
+            final_state=SimpleNamespace(
+                title_sha256=self.digest(self.title),
+                body_sha256=self.digest(self.body),
+                is_draft=True,
+            ),
+        )
+        with mock.patch.object(UPDATE, "load_receipts", return_value=[creation_receipt]):
+            UPDATE._require_creation_receipt(
+                expected=self.expected,
+                before=before,
+                template=self.template,
+                review_input_path=self.template_path,
+                review_input_schema_version=self.review_input_schema_version,
+                review_input_sha256=self.review_input_sha256,
+                review_mode="not-required",
+                selected_specialists=[],
+                receipt_root=self.receipt_directory,
+            )
+
+    def test_token_rebind_rejects_creation_receipt_identity_drift(self) -> None:
+        before = self.stored()
+        creation_candidate = UPDATE._build_candidate(
+            operation="create",
+            repository=self.repository,
+            pr_number=CREATE.PR_NUMBER_TOKEN,
+            base=self.base,
+            base_oid=self.base_oid,
+            head=self.head,
+            head_oid=self.head_oid,
+            head_owner=self.head_owner,
+            head_repository=self.head_repository,
+            title=self.title,
+            body_source_kind="template",
+            body_source_raw=self.template.encode("utf-8"),
+            published_body=self.template,
+            review_input_path=self.template_path,
+            review_mode="not-required",
+            selected_specialists=[],
+        )
+        drifted = SimpleNamespace(
+            operation="create",
+            provenance="canonical",
+            expected=self.expected.__class__(
+                repository=self.repository,
+                pr_number=self.pr_number,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid="c" * 40,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+            ),
+            review=SimpleNamespace(
+                mode="not-required",
+                publication_candidate_sha256=creation_candidate.content_sha256,
+            ),
+            review_input_schema_version=self.review_input_schema_version,
+            review_input_sha256=self.review_input_sha256,
+            final_state=SimpleNamespace(
+                title_sha256=self.digest(self.title),
+                body_sha256=self.digest(self.body),
+                is_draft=True,
+            ),
+        )
+        with mock.patch.object(UPDATE, "load_receipts", return_value=[drifted]):
+            with self.assertRaisesRegex(UPDATE.PublicationError, "does not match"):
+                UPDATE._require_creation_receipt(
+                    expected=self.expected,
+                    before=before,
+                    template=self.template,
+                    review_input_path=self.template_path,
+                    review_input_schema_version=self.review_input_schema_version,
+                    review_input_sha256=self.review_input_sha256,
+                    review_mode="not-required",
+                    selected_specialists=[],
+                    receipt_root=self.receipt_directory,
+                )
+
 
 class PublicationReceiptTests(ReviewablePrFixture):
     def setUp(self) -> None:
