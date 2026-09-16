@@ -43,18 +43,6 @@
       "sha256": "df50d1877cb61311eb6dc431ef54d08806625d7fdf707dd57bd6de64eb496b73"
     },
     {
-      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/three-review-comments-one-pr.md",
-      "sha256": "e983ff4fdd0edcd71da9e973ced7dc8b49832e2191b0be3c267490982db75b37"
-    },
-    {
-      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/status-message-with-unverified-outcomes.md",
-      "sha256": "e9f381e3fba66ee17f092caa59580a26ac3e67d90309e9529eb6daf2811ecfa0"
-    },
-    {
-      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/under-grounded-release-note.md",
-      "sha256": "da712244d918c75b5ece33dd0e36b76637de5baa34ef8f48aad491936c06b634"
-    },
-    {
       "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/edit-pass-on-finished-draft.md",
       "sha256": "a8e529c86318395f532865620ad5319de5c3f398f6dcb4ff4249f68d3978fa12"
     },
@@ -65,6 +53,10 @@
     {
       "path": "evals/skill-routing-matrix.json",
       "sha256": "1905e7a11a060ae1fa7d5b40339f79d5a9aa29a2aaf7aa77ef9a796c5b0adeb5"
+    },
+    {
+      "path": "evals/README.md",
+      "sha256": "1625a7f86184c2b2ae743b394809c8eafc071bc96f5ba3368af5f0591c487041"
     }
   ],
   "cases": [
@@ -88,39 +80,6 @@
         "opens-with-finding-on-symbol",
         "agrees-and-acts-briefly",
         "no-unchosen-threshold"
-      ]
-    },
-    {
-      "id": 3,
-      "name": "three-review-comments-one-pr",
-      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/three-review-comments-one-pr.md",
-      "prompt_sha256": "4683645d190ec1b057d2b882dc272b698ec8cdef66e8ccb67e8a99bcba30da7c",
-      "expectation_ids": [
-        "each-opens-with-finding",
-        "shapes-differ-across-batch",
-        "one-ask-graded-to-severity"
-      ]
-    },
-    {
-      "id": 4,
-      "name": "status-message-with-unverified-outcomes",
-      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/status-message-with-unverified-outcomes.md",
-      "prompt_sha256": "204ec346ac6e0706fa0148d745016e0f8d42f11dbeb51770a1978f7f863cd6d8",
-      "expectation_ids": [
-        "no-unrun-outcomes-stated",
-        "observation-not-story",
-        "leads-with-state-no-inventory"
-      ]
-    },
-    {
-      "id": 5,
-      "name": "under-grounded-release-note",
-      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/under-grounded-release-note.md",
-      "prompt_sha256": "e81640e36c6973f0af6e385f442c33296868dd11c71e8303c4ef6eb4905b8699",
-      "expectation_ids": [
-        "no-invented-rationale",
-        "names-the-specific-gap",
-        "grounded-entry-delivered"
       ]
     },
     {
@@ -148,8 +107,7 @@
   ],
   "repetitions": [
     1,
-    2,
-    3
+    2
   ],
   "conditions": [
     "disabled",
@@ -203,7 +161,7 @@
   "example_case_priority": [
     7,
     2,
-    4
+    6
   ],
   "example_limit": 3,
   "routing_cases": [
@@ -231,8 +189,6 @@
   "routing_source_path": "evals/skill-routing-matrix.json",
   "routing_disabled_expected_target_selected": false,
   "routing_repetitions": [
-    1,
-    2,
-    3
+    1
   ]
 }
