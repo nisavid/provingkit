@@ -195,6 +195,7 @@ def _strict_fixture_json(content: bytes, label: str) -> dict[str, Any]:
 
 
 def frozen_private_sample() -> dict[str, Any]:
+    """Load synthetic verifier inputs, not evidence from a private checkout."""
     registry_bytes = FROZEN_REGISTRY_PATH.read_bytes()
     witness_bytes = FROZEN_WITNESS_PATH.read_bytes()
     binding_bytes = FROZEN_BINDING_PATH.read_bytes()
@@ -202,11 +203,10 @@ def frozen_private_sample() -> dict[str, Any]:
     binding = _strict_fixture_json(binding_bytes, "frozen private binding")
     if (
         binding.get("schema_version") != 1
-        or binding.get("contract") != "amberbridge-private-public-conformance-sample-v1"
+        or binding.get("contract") != "amberbridge-synthetic-conformance-fixture-v1"
         or binding.get("claim")
         != (
-            "frozen builder-produced conformance sample; "
-            "not final private-candidate evidence"
+            "synthetic verifier input; not private-source or runtime evidence"
         )
         or binding.get("producer_registry_sha256") != digest_bytes(registry_bytes)
         or binding.get("producer_witness_sha256") != digest_bytes(witness_bytes)
@@ -268,16 +268,6 @@ def frozen_private_sample() -> dict[str, Any]:
         "witness_bytes": witness_bytes,
         "witness_members": witness_members,
     }
-
-
-FROZEN_PRIVATE_SAMPLE = frozen_private_sample()
-PRIVATE_SOURCE_PATHS = tuple(
-    member["path"] for member in FROZEN_PRIVATE_SAMPLE["registry"]["package_members"]
-)
-PRIVATE_CHECKS = tuple(
-    (check["id"], tuple(check["tests"]))
-    for check in FROZEN_PRIVATE_SAMPLE["registry"]["checks"]
-)
 
 
 def build_public_verifier_fixture(
@@ -343,7 +333,6 @@ def build_public_verifier_fixture(
         "registry": registry,
         "registry_path": registry_path,
         "witness_manifest": witness_manifest,
-        "witness_package_paths": PRIVATE_SOURCE_PATHS,
         "witness_path": witness_path,
         "summary": summary,
         "summary_path": summary_path,

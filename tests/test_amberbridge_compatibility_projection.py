@@ -30,6 +30,7 @@ SOURCE_PATHS = (
     Path("release/mergecraft/review-atlas-contract.json"),
 )
 V4_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v4-compatibility.json"
+HISTORICAL_V4_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/phase7-v4-compatibility.json"
 V1_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v1-compatibility.json"
 SCRIPT_PATH = REPO_ROOT / "scripts/amberbridge_compatibility_projection.py"
 
@@ -60,6 +61,13 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
         )
 
     def test_retained_v4_fixture_is_immutable_historical_evidence(self) -> None:
+        self.assertEqual(
+            "sha256:"
+            + hashlib.sha256(HISTORICAL_V4_FIXTURE_PATH.read_bytes()).hexdigest(),
+            "sha256:a62f152451781b7018180cb4e5ae0bb13071f3dd1364d4a93dbadbe2bb985f58",
+        )
+
+    def test_renamed_v4_fixture_matches_its_frozen_identity(self) -> None:
         self.assertEqual(
             "sha256:" + hashlib.sha256(V4_FIXTURE_PATH.read_bytes()).hexdigest(),
             "sha256:06928e6b070742ed45f1dac7ac4517191af0c3118e9ffda46a5aa732736c5251",

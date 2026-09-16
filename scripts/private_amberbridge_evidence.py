@@ -585,7 +585,7 @@ def _validate_registry(
         )
         == {
             "path": "scripts/amberbridge_compatibility_projection.py",
-            "expected_projection_sha256": "sha256:24b62e0b7f514f508e503875a90c89f84c32d7b90374431831521d963368ba18",
+            "expected_projection_sha256": "sha256:c563c56fe02130ad9e9727884822f480b36ff67e9bb6bce38febea3b9f44d47f",
         },
         "private producer compatibility module drift",
     )

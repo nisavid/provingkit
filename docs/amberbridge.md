@@ -53,8 +53,15 @@ contract.
 Edit canonical source first, then verify the affected contract tests and the
 public source validator. Rebind normalized source digests when changing a
 pinned entry point, and regenerate member locks only through their owning
-validator. Preserve historical evidence bytes: renamed active fixtures are
-separate from their retained provenance inputs.
+validator. The private verifier pins the serialized compatibility document,
+including its final newline; this digest is distinct from a Python source digest.
+
+Preserve historical evidence bytes and their original Git identities. The active
+Amberbridge private registry, witness, and binding fixtures contain a separate
+synthetic Git commit with one inert producer file. Their check names and runtime
+fields are test inputs, not observations from a private checkout or host. The
+verifier tests accept this internally consistent sample and then reject altered
+compatibility bytes and package paths after the outer digests are recomputed.
 
 The deterministic Mergecraft publication fixture lives in
 `scripts/mergecraft_control_plane.py`. It is test equipment for Mergecraft and
