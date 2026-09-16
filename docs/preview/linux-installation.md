@@ -1,0 +1,120 @@
+# Prepare and reverse a Linux preview installation
+
+Use this procedure to inventory a Linux x86_64 host before a Provingkit preview rollout, then prepare recoverable installation and cleanup steps. The rollout owner loads the reviewed revision of this document through `capturing-agent-procedures` and records that revision alongside the published candidate's receipt. [Issue #74](https://github.com/nisavid/provingkit/issues/74) owns preparation; [issue #70](https://github.com/nisavid/provingkit/issues/70) owns installation, enablement, runtime verification, and cleanup under the [preview orchestration contract](https://github.com/nisavid/provingkit/issues/66#issuecomment-5690388354).
+
+Preparation uses read-only host access. This document supports the six-plugin slate: Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. Task Witness is outside this preview. The dated observations below establish inventory, not successful installation or runtime qualification.
+
+## Inputs and stop conditions
+
+Before preparing a rollout, obtain:
+
+- The active issue claim, permitted host and project scope, and sole installation owner.
+- This procedure's reviewed commit and its private inventory handoff. If the temporary evidence has expired, repeat the inventory.
+- For mutation, the accepted publication handoff from [issue #69](https://github.com/nisavid/provingkit/issues/69): immutable candidate, target-specific artifacts and receipts, digests, and tested client commands. Preparation can proceed while those inputs are pending.
+- The client versions, discovery roots, registration scope, and pre-change metadata described below.
+
+Pause dependent changes if the candidate or host differs from its accepted evidence, another owner is changing the same configuration, a replacement's behavior is unaccounted for, or a required control surface is unavailable. Continue independent inventory. A cache, catalog entry, enabled flag, or equal version string alone does not prove runtime activation or identical bytes.
+
+Canonical `plugins/` directories are development source. Install the allowlisted target projection and its receipt from the publication handoff, following [the artifact projection contract](../release-artifact-projection.md). The generated catalogs are artifact-relative:
+
+| Client target | Catalog in its artifact |
+| --- | --- |
+| Agent Plugins / Codex | `.agents/plugins/marketplace.json` |
+| Claude Code | `.claude-plugin/marketplace.json` |
+| Cursor | `.cursor-plugin/marketplace.json` |
+
+Resolve every catalog member inside its accepted artifact. A later documentation commit does not change the tested candidate identity.
+
+## Dated Linux inventory
+
+Observed on **2026-09-16 UTC**, against source commit [`925626e467a3382b0171c89035d56c5a373bc117`](https://github.com/nisavid/provingkit/commit/925626e467a3382b0171c89035d56c5a373bc117). The host reports Linux x86_64. The project inspection covered the primary Provingkit checkout and the assigned preparation checkout; other projects were not inventoried.
+
+| Client | Observed version | Installation evidence and limits |
+| --- | --- | --- |
+| Codex CLI | `0.154.0` | `plugin list --json` reports Versionkeeping and Mergecraft `1.0.0`, installed and enabled. `plugin marketplace list --json` resolves `provingkit` to a local source worktree at `422d2ed0d3d63816a417beb875b4397104034957`. These are existing personal registrations, not the pending preview. |
+| Claude Code | `2.1.270` | `plugin list --json`, installed-plugin metadata, and known marketplaces contain no Provingkit registration. User skill aliases remain separately discoverable; eleven aliases have missing targets. |
+| Cursor Agent CLI | `2026.09.10-fd3934a` | Both `agent` and `cursor-agent` report this version. Marketplace listing reports a user-scoped `provingkit` registration at `a8b9e962fe61d1b2e61878a575cc30b81d14cc35`. The corresponding local checkout contains a Claude marketplace catalog. |
+| Cursor IDE | `3.15.19`, build `de07bee81cefe43461ebf4f40c3d2d78d15052a0`, x64 | Binary presence and version verified. IDE Settings, Agents Customize, reciprocal visibility, and runtime loading remain untested. |
+
+Cursor's inspected plugin cache has no Provingkit member, and its local-plugin directory is empty. Neither observation establishes account-wide absence or CLI/GUI parity. Codex has cached Versionkeeping and Mergecraft trees, but the app's independently displayed marketplace record and fresh-session behavior still need verification.
+
+The private handoff retains exact paths, hashes, symlink targets, selected registration metadata, and observation times. Public evidence contains only the summary here. Recorded configuration and instruction-file hashes matched between 01:07 and 01:10 UTC. A 01:19 UTC recheck found a changed Codex configuration digest; the scoped Provingkit marketplace and enabled-plugin fields still matched. The cause was not determined, and this task issued no configuration writes. The rollout owner must establish a fresh baseline immediately before mutation.
+
+## Discovery and recovery targets
+
+Paths in this table are relative to the selected user's home unless marked **project** or **artifact**. Resolve client configuration overrides before using these defaults. Keep expanded paths and host-specific metadata in the private inventory.
+
+| Surface | Targets to record | Observation / recovery concern |
+| --- | --- | --- |
+| Codex registration | `.codex/config.toml`; effective marketplace root and catalog; `.codex/plugins/cache/provingkit/` | Two enabled plugin entries and one local marketplace source. Preserve the source worktree and exact enabled states until rollback is no longer needed. Inspect the app record separately. |
+| Codex skills and instructions | `.codex/skills/`, `.agents/skills/`, `.codex/AGENTS.md`; applicable parent/project `AGENTS.md` and `.codex/` configuration | User instructions exist. Record metadata without copying instruction text into public evidence. Name collisions and instructions that invoke retired skills require separate decisions. |
+| Claude registration | `.claude/plugins/installed_plugins.json`, `.claude/plugins/known_marketplaces.json`, `.claude/settings.json`, `.claude/settings.local.json` when present | Record user/project scope, plugin version, path, and enabled state. Preserve unrelated marketplace and settings entries. |
+| Claude discovery | `.claude/skills/`, `.claude/rules/`, `.claude/CLAUDE.md` when present; **project** `.claude/`, `CLAUDE.md` and applicable ancestors | Many skill entries are aliases into `.agents/skills/`. User `CLAUDE.md` was absent; a Context7 rule exists. Preserve both the alias and its target as distinct objects. |
+| Cursor discovery | `.cursor/plugins/{local,cache,marketplaces}/`, `.cursor/skills/`, `.cursor/skills-cursor/`, `.cursor/rules/`; **project** `.cursor/`, `.cursorrules`, `AGENTS.md` | Local plugin directory empty; cached older marketplace registration; two standalone user skills and a Context7 rule. UI-managed rules and scope still require inspection through the owning UI. |
+| Cursor configuration | `.cursor/settings.json` when present; effective CLI configuration; `.config/Cursor/User/settings.json`; plugin records exposed by each UI | The first path was absent. The IDE settings file exists. Treat UI state as client-owned; record it through supported controls rather than editing private databases. |
+| Standalone skill managers | `.agents/.skill-lock.json`, `.local/state/skills/.skill-lock.json`; owning dotfiles source and generated aliases | Both lockfiles exist and contain Superpowers records. The active Rolecasting-name skills and their Claude aliases resolve to chezmoi-managed sources. Changing installed copies alone can be undone by a later manager run. |
+| Existing recovery copies | `.agents/retired-provingkit/2026-09-14/` | Eleven retired directories exist. Inventory them as prior recovery material; do not reuse or overwrite that directory for this rollout. |
+| Candidate | **artifact** catalogs, `plugins/` members, and `RECEIPT.json` | Record all six identities and digests per target. Keep candidate evidence separate from installed paths and session observations. |
+
+In the inspected Provingkit projects, root `AGENTS.md` exists. No project-local skill directories or client settings were found at the enumerated defaults. Root source catalogs are publishing inputs, not evidence of project-local installation. Repeat the scan in each actual rollout test project and along its applicable instruction ancestry.
+
+## Proposed supersession decisions
+
+Use the candidate's skill roster and current contribution dispositions to decide each item. A matching name or historical supersession statement identifies a candidate for inspection; it does not authorize removing its active provider. Use `extending-managed-skills` to establish source ownership before any later cleanup.
+
+| Material | Observed state | Proposed treatment and evidence required before mutation |
+| --- | --- | --- |
+| Existing Codex Versionkeeping and Mergecraft | Enabled personal `1.0.0` registrations from a local source worktree | Replace through the published target route after saving registration, old source, and cache identities. Prove all replacement skills load in a fresh Codex session before retiring an old discovery route. |
+| Standalone `choosing-agent-models` and `delegating-cross-agent-work` | Active in `.agents/skills/`, with Claude aliases; both differ byte-for-byte from the pinned source | Retain pending a current semantic disposition of the differences. The rollout owner must preserve accepted local behavior, source ownership, and every affected client before selecting removal or coexistence. |
+| Four retired Versionkeeping and seven retired Mergecraft standalone skills | Absent from active shared skill root; retained recovery copies; eleven dangling Claude aliases | Preserve backups. Once replacements work in Claude, retire only the confirmed obsolete alias entries or repair them through their owner if standalone discovery remains required. Removing an alias must not follow it into a shared target. |
+| Superpowers skills | All fourteen historical supersession candidates remain in the shared skill root; managed copies and plugin providers may expose the same behaviors separately | Reconcile the [source disposition report](../superpowers/research/2026-08-23-source-skill-disposition-and-release-refresh.md#superpowers-closure) with current managers, global instructions, and the published slate. Confirm successor coverage per behavior and all client discovery paths before scoped disablement or quarantine. |
+| `pr-review-orchestration`, `ralph-review-until-clean`, `reviewing-before-finalizing`, and `reviewing-others-prs` | Standalone review routes remain present | Preserve until their current behavior is mapped to the accepted candidate. The [review-writing reconciliation](../superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md) is historical evidence. The pinned Mergecraft roster has no `reviewing-others-prs` skill; a planned successor is not proof of available coverage. |
+| `writing-clearly-and-concisely`, `code-review`, `tdd`, `diagnosing-bugs`, and other independently managed skills | Separate owners and discovery paths | Keep independently owned behavior. Matt's `code-review` and Tricritical have an explicit coexistence disposition. Proseweaving's `writing-for-people` does not by name alone supersede every prose tool or global instruction. |
+| Global instructions, client rules, and unrelated plugins | Shared policy and separately managed components | Preserve. Any instruction replacement needs an exact span, its maintained source, current disposition, and invocation evidence. Metadata-only preparation does not establish that an instruction is superseded. |
+| Cursor's older Provingkit marketplace registration | User scope, pinned older source catalog | Preserve its exact URL/ref/scope for recovery. Determine through live target tests whether to replace or coexist with a distinct preview registration; do not assume the older catalog is the accepted Cursor projection. |
+
+The eleven retired names are `checkpointing-and-publishing-git-work`, `resolving-merge-conflicts`, `using-persistent-git-worktrees`, `syncing-forks-with-upstream`, `writing-reviewable-pr-descriptions`, `publishing-reviewable-prs`, `graphite`, `resuming-reviewed-prs`, `getting-prs-ready-for-review`, `getting-prs-merged`, and `stacking-pr-fixups`.
+
+## Re-inventory immediately before rollout
+
+1. Verify the live claim and obtain the installation owner's exclusive change window. Record UTC time, host architecture, client versions, effective user/project configuration roots, and the procedure commit. Stop if the target or permitted project scope differs.
+2. Re-read the published candidate and each target receipt. Match all six members, source revision, target, and digests to the accepted publication evidence. Record the staged artifact, published reference, and installed identities in separate fields. Resolve candidate drift through the orchestrator before installation.
+3. Use local help to confirm read-only listing syntax, then collect `codex plugin list --json`, `codex plugin marketplace list --json`, `claude plugin list --json`, `claude plugin marketplace list --json`, and `agent plugin marketplace list --format json`. Retain only scoped metadata. An error is an unknown state, not an empty installation. Avoid listing flags that refresh or install content.
+4. Enumerate the relevant discovery roots and applicable project/ancestor instructions. Record each entry's existence, file type, mode, timestamp, digest where readable, symlink target, manager, registration scope, and enabled state. Record missing and dangling entries explicitly. Hash instruction files locally without publishing their text. Keep credentials, full settings, private rules, account identifiers, and environment values out of reports.
+5. Compare the fresh inventory with this snapshot and the proposed per-item decisions. Reconcile every change that affects replacement or recovery. If no change is needed, record the verified no-op and retain existing providers. If ownership or behavior is uncertain, leave that item active and return the question to its owner; continue unaffected items only when their verification is independent.
+6. Before the first mutation, create a new private, durable recovery directory outside all client discovery roots. Record its path only in the private handoff. Save the exact affected configuration records, complete task-owned skill trees, symlinks without dereferencing them, modes, and old artifact/source identities. Record absence as well as presence. Keep secret-bearing configuration backups local and access-restricted. Copy and hash-check before moving anything; prove the prior artifact is retained or recoverable at its immutable identity.
+7. Freeze a per-item change record: original path/scope, original digest or absence, owning manager, proposed operation, replacement and runtime check, recovery path, and expected post-change state. Ensure recovery names do not collide and required backup space is available. A valid backup and accepted per-item decision are prerequisites for installation or cleanup, not follow-up tasks.
+
+Preparation is complete when every relevant discovered source has metadata, every proposed supersession has a decision or explicit hold, recovery targets are identified, and the rollout owner can load the reviewed procedure and private evidence. No active installation changes are needed to satisfy preparation.
+
+## Cursor control surfaces and later verification
+
+The installed CLI advertises marketplace `add`, `list`, `remove`, and `update`; top-level help exposes `--plugin-dir`. It does not advertise a noninteractive installed-plugin listing command. Its marketplace list is account-visible metadata, not a complete enabled-plugin inventory.
+
+Current public documentation describes [plugin management](https://cursor.com/docs/plugins) through Customize with user/project installation scope, [Customize](https://cursor.com/docs/customize-cursor) with user/team/workspace filtering, and [CLI `/plugins`](https://cursor.com/docs/cli/changelog) in the TUI. Those descriptions do not qualify the installed build's behavior.
+
+| Surface | Preparation evidence | Work for the rollout owner |
+| --- | --- | --- |
+| Agent CLI | Version, help, marketplace listing, cached catalog identity | Confirm the accepted preview registration and available scope; record command results. Use only supported commands. |
+| Agent TUI | `/plugins` documented; live screen unobserved | Open a fresh TUI in the selected test project; inspect installed/enabled members, available scope, refresh behavior, and invocation. |
+| IDE Settings | IDE binary/version verified; plugin pane unobserved | Open Settings in that build, locate its plugin controls, or record that the surface is absent. Preserve the distinction from Agents Customize. |
+| Agents Customize | Current docs describe controls and scope filters; live screen unobserved | Inspect all six members and exact selected scope; verify enablement, refresh, and a bounded invocation independently. |
+
+This preparation task had shell/API access and no native desktop-control tool. A later task with desktop access can perform the GUI work. Otherwise operator assistance is needed to open Settings and Agents Customize, select the test project and scope, and return a scoped observation or capture of versions, names, enabled states, and refresh results. Keep private settings and account details outside captures.
+
+For reciprocal tests, record the initial state, change one approved preview item through CLI/TUI, refresh each GUI surface, and verify that the same identity and scope are visible. Then make the reversible change through the GUI and verify it from a fresh CLI/TUI session. Test user scope in two test projects and project scope inside and outside the selected project where those options are offered. Restore each test change before the next arm. Record unsupported scope or an unavailable surface explicitly; a missing observation cannot count as a parity pass. The rollout owner binds these tests to the frozen candidate and keeps unrelated plugins and shared configuration stable.
+
+## Installation, cleanup, and rollback sequence
+
+These steps begin only in the authorized rollout task after publication and preparation are accepted.
+
+1. Save and verify the per-item recovery records above. Install through the publication handoff's tested commands, one target at a time. Record command outcomes and reread the client-owned registration. If state is ambiguous, inspect before retrying.
+2. Start a fresh runtime for that target. Verify the artifact/catalog it resolves, six plugin identities, enabled state, skill discovery, and bounded invocation. Check the Codex app marketplace record separately; execute Cursor's surface matrix above. Keep pre-existing discovery paths until replacement coverage is demonstrated.
+3. For each accepted supersession, change it through its owning manager or narrowly scoped supported client control. Move obsolete task-owned standalone trees into the new recovery directory; preserve symlink entries without traversing shared targets. Retain unrelated files and the earlier retirement backup. If a source-managed change is outside the rollout task's authority, hold that item for its owner.
+4. Reopen a fresh runtime after cleanup. Verify replacement discovery, absence of the specific retired route, and preservation of unrelated providers. If duplicates remain, identify the provider and precedence before further cleanup. An unresolved duplicate or missing invocation is a failed item, even if installation returned success.
+5. On failure, stop dependent rollout and preserve the observed post-change state and error. Compare each affected entry with the recorded expected post-change state. If another actor has changed it, stop restoration of that entry and reconcile ownership instead of overwriting their work.
+6. Reverse only this rollout's operations, in reverse order. Disable/remove a newly created registration through its client at the recorded scope; restore pre-existing entries to their exact source/ref/enabled state. Restore retained old artifacts and caches only where required by that client. Move displaced task-owned objects aside and restore recorded files, modes, and symlinks from verified backups. Restore absence for entries created by this rollout. Do not replace an entire shared configuration when an entry-level restore preserves unrelated changes.
+7. Verify restored hashes, links, registration scope, and old source identities. Start fresh sessions and repeat the recorded baseline probes. Report pre-existing defects, such as the dangling Claude aliases, as baseline limitations rather than silently repairing them during rollback. Failed restoration remains an open rollout problem.
+8. Keep recovery material until the orchestrator accepts installation, cleanup, and rollback evidence. Destructive deletion of recovery copies requires separate authorization. Return a `handoff` with the procedure revision, candidate and installed identities, tests, holds, and exact private recovery location; the orchestrator owns acceptance and successor dispatch.
+
+A successful rollout records replacement behavior and recovery verification separately. A read-only plan or a rehearsal with constructed files demonstrates procedure behavior only; it cannot establish live installation or rollback success.
