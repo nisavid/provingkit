@@ -1,4 +1,0 @@
-interface:
-  display_name: "Tricritical Loop"
-  short_description: "Review and revise to a terminal state."
-  default_prompt: "Use $tricritical:loop to review and revise to a terminal state."
