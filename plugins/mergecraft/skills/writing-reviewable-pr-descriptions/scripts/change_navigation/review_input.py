@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .git_observer import GitObservationError, observe_git_diff
+from .bot_body import BotBodyError, authored_body
 from .parsing import extract_leading_details, source_lines
 
 
@@ -635,19 +636,23 @@ def bind_review_input(  # noqa: C901
             raise ReviewInputError(
                 "existing-PR review input requires both live baseline title/body"
             )
-        source_body = "".join(
-            fragment["text"] for fragment in baseline["fragments"]
-        )
+        source_body = "".join(fragment["text"] for fragment in baseline["fragments"])
         if stored_title is not None and stored_body is not None:
+            try:
+                stored_authored_body = authored_body(
+                    stored_body, expected_sha256=baseline["body_sha256"]
+                )
+            except BotBodyError as error:
+                raise ReviewInputError("review input live baseline drifted") from error
             if (
                 digest(stored_title) != baseline["title_sha256"]
-                or digest(stored_body) != baseline["body_sha256"]
+                or digest(stored_authored_body) != baseline["body_sha256"]
             ):
                 raise ReviewInputError("review input live baseline drifted")
-            if source_body != stored_body:
+            if source_body != stored_authored_body:
                 raise ReviewInputError(
                     "existing-PR baseline fragments must exhaustively partition "
-                    "the stored body"
+                    "the authored stored body"
                 )
         elif digest(source_body) != baseline["body_sha256"]:
             raise ReviewInputError(

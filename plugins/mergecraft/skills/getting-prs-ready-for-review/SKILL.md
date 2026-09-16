@@ -1,6 +1,6 @@
 ---
 name: getting-prs-ready-for-review
-description: Use when the operator explicitly asks only to make a pull request ready for review end to end. Do not use for review-only, text-only, publish-only, merge, ship, or closeout requests, including composite requests that also mention readiness; getting-prs-merged owns those terminal outcomes.
+description: Use when the operator explicitly asks only to make a pull request ready for review end to end. A merge-owned readiness invocation may call this skill as its delegated readiness leaf; direct callers must still keep readiness separate from review-only, text-only, publish-only, merge, ship, or closeout outcomes.
 ---
 
 # Getting PRs Ready For Review

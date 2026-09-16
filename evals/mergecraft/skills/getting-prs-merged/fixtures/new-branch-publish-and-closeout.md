@@ -28,14 +28,16 @@ Mock GitHub state after publish:
 
 Required lifecycle trace:
 
-1. The first `getting-prs-merged` invocation binds the absent-PR target once,
-   returns one terminal `readiness-handoff`, and ends without invoking any
-   readiness leaf.
-2. The caller invokes `getting-prs-ready-for-review` separately. That invocation
+1. The first `getting-prs-merged` invocation binds the absent-PR target once and,
+   when policy permits, invokes `readiness-outcome` as the next operation.
+   The readiness coordinator owns checkpoint, publication, and guarded ready
+   actuation; the merge coordinator performs none of those writes.
+2. If readiness authority is unavailable, the merge invocation returns one
+   terminal `readiness-handoff` naming the exact gate. Otherwise, readiness
    calls each required leaf once: `git-ref-push`,
    `writing-reviewable-pr-descriptions`, and `publishing-reviewable-prs`.
 3. After readiness succeeds, the caller starts a fresh `getting-prs-merged`
    invocation from live state. It calls feedback acquisition, publication audit,
    and `merge-actuation` once each, then returns the cleanup handoff.
-4. No lifecycle coordinator calls another lifecycle coordinator, and no leaf is
-   credited to more than one invocation.
+4. The readiness and merge coordinators retain distinct ownership, and no leaf
+   is credited to more than one invocation.

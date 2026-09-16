@@ -69,6 +69,7 @@
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/metrics.py",
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/model.py",
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/parsing.py",
+        "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/bot_body.py",
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/review_input.py",
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/sensitive_content.py",
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/stack.py",
@@ -409,6 +410,7 @@
       "calls": [
         "operation:publication-audit",
         "operation:feedback-acquisition",
+        "operation:readiness-outcome",
         "operation:check-inspection",
         "operation:focused-ci",
         "operation:merge-inspection",
@@ -749,7 +751,7 @@
       "import": null,
       "access": "coordinate",
       "authority": "readiness-only coordination and separately authorized ready mutation",
-      "callers": ["getting-prs-ready-for-review"],
+      "callers": ["getting-prs-merged", "getting-prs-ready-for-review"],
       "disposition": "public-skill"
     },
     {

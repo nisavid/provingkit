@@ -30,6 +30,7 @@ from change_navigation.review_input import (  # noqa: E402
     ReviewInputError,
     parse_review_input,
 )
+from change_navigation.bot_body import BotBodyError, authored_body  # noqa: E402
 from reviewable_pr_state import ExpectedIdentity, PublicationError  # noqa: E402
 
 CANDIDATE_CONTRACT = "mergecraft-publication-candidate-v1"
@@ -472,6 +473,7 @@ def validate_transition_candidate(
     final_title_sha256: str,
     final_body_sha256: str,
     review: PublicationReview,
+    final_body: str | None = None,
 ) -> None:
     """Revalidate the full frozen candidate against one canonical transition."""
 
@@ -589,11 +591,19 @@ def validate_transition_candidate(
         published_body = published_body.replace(
             PR_NUMBER_TOKEN, str(expected.pr_number)
         )
-    if (
-        _sha(str(value["title"]).encode("utf-8")) != final_title_sha256
-        or _sha(published_body.encode("utf-8")) != final_body_sha256
-    ):
+    if _sha(str(value["title"]).encode("utf-8")) != final_title_sha256:
         raise PublicationError("publication candidate final publication drift")
+    if _sha(published_body.encode("utf-8")) != final_body_sha256:
+        raise PublicationError("publication candidate final publication drift")
+    if final_body is not None:
+        try:
+            observed = authored_body(final_body, expected_sha256=final_body_sha256)
+        except BotBodyError as error:
+            raise PublicationError(
+                "publication candidate final publication drift"
+            ) from error
+        if observed != published_body:
+            raise PublicationError("publication candidate final publication drift")
 
 
 def _task_witness_front_door() -> Path:

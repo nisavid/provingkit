@@ -260,7 +260,7 @@
     {
       "id": "mergecraft:getting-prs-merged",
       "entrypoint": "plugins/mergecraft/skills/getting-prs-merged/SKILL.md",
-      "companions": ["mergecraft:publishing-reviewable-prs"],
+      "companions": ["mergecraft:getting-prs-ready-for-review", "mergecraft:publishing-reviewable-prs"],
       "scenario": {
         "id": "merge-explicit-review-loop",
         "kind": "skill-evals",

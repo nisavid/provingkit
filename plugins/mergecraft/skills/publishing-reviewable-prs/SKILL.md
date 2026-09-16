@@ -84,7 +84,9 @@ receipt preimage.
 
 ## Update Existing PR Text
 
-Capture live title/body SHA-256, then run `scripts/update_reviewable_pr.py text`
+Capture the live title SHA-256 and the SHA-256 of the authored body prefix,
+using the shared `change_navigation.bot_body` helper and any already sealed
+baseline digest to preserve the exact boundary, then run `scripts/update_reviewable_pr.py text`
 with exact identity/OIDs, state, absolute body/manifest paths, and authorized
 `body-only`, `title-only`, or `title-body`. Never default broad. It privately
 snapshots validated bytes, proves unauthorized fields unchanged, and publishes
@@ -96,8 +98,13 @@ no-op that reaches it. Preserve current custom content, exact-reread, and write
 a canonical receipt. For a new PR created through
 Graphite transport, pass the original token-bearing `--body-template`; the
 publisher performs the sole token substitution after Graphite assigns the PR.
-In required mode, reread the exact live preimage after review and block the
-write if any field changed.
+In either review mode, reread the exact live preimage after validation and block the
+write if the authored portion changed. Hosted review integrations may append
+recognized bot-owned blocks to the body after review-ready publication. Treat
+those blocks as opaque retained content: compare the authored prefix, reread
+the latest live suffix immediately before mutation, and publish the new
+authored prefix followed by that suffix. A bot-only suffix change is not
+publication drift; an unrecognized or authored change remains a drift gate.
 
 ## Mark Existing Draft Ready
 
@@ -111,7 +118,7 @@ receipt.
 The ready operation can consume the token-bearing review-input manifest produced
 for a new PR. Pass the original token-bearing body template with
 `--body-template` when the numbered body cannot be derived uniquely. The publisher
-checks that the rendered live body and manifest digest match the template, binds
+checks that the rendered authored body and manifest digest match the template, binds
 the transition to the canonical creation receipt for the same repository, base,
 head, title, review mode, and specialist set, and then records only the numbered
 ready transition. Repeating a verified ready transition is a receipt-backed
@@ -120,8 +127,9 @@ canonical ready transition, the creation manifest cannot authorize another
 transition; use fresh numbered review input. Select the transition from a fresh
 live preflight under the receipt lock so a concurrent publisher or draft change
 cannot reuse stale readiness state.
-In required mode, reread the exact live draft after review and before the ready
-mutation; the reread must equal the reviewed preimage.
+In either review mode, reread the exact live draft after validation and before
+the ready mutation; identity, title, authored body, and draft state must remain
+unchanged. Retain the latest recognized bot tail.
 
 ## Receipts, Audit, And Reconciliation
 
@@ -132,13 +140,17 @@ versioned schema binds sequence and predecessor/content hashes, the exact
 last validated preflight observation and final reread, identity/OIDs, title/body
 and review-input SHA-256 digests, state, publisher/policy/schema versions,
 operation, timestamp, and provenance—never title/body bytes or credentials.
+Schema-v4 body digests cover the authored portion of the resulting body;
+historical schema-v2/v3 receipts retain complete-body digest semantics.
+Author-drift checks compare only that authored prefix, while the final
+transition check retains the latest recognized bot suffix in the stored body.
 Because GitHub provides no conditional write, a receipt does not prove the
-server-side mutation preimage or exclude a lost-update race. Canonical v3 receipts
+server-side mutation preimage or exclude a lost-update race. Canonical v4 receipts
 record either explicit `not-required` or `required`; required also binds the
 canonical publication-candidate digest, Task Witness launch-envelope digest,
 anchor generation/active record/trust/bundle, and Tricritical manifest/projection
-digests. V2-only ledgers remain `legacy-unrecorded`; once v3 appears, a later v2
-receipt invalidates the ledger. Reconciliation records
+digests. V2-only ledgers remain `legacy-unrecorded`; any decrease in receipt
+schema version invalidates the ledger. Reconciliation records
 `unwitnessed-reconciliation` and never mints review provenance.
 Write them atomically only after the helper's exact final reread. A storage
 failure after a verified mutation is not a reason to retry the mutation: inspect,
@@ -163,7 +175,8 @@ authoritative latest receipt and returns `verified`, `drift`, or `unavailable`.
 
 Use `scripts/audit_reviewable_pr.py reconcile` only after independently
 confirming exact live identity/state and supplying the bound `--review-input`.
-It validates the first read, requires an identical second live reread, and
+It validates the first read, requires the second live reread to preserve
+identity, title, authored body, and draft state, retains its latest bot tail, and
 refuses when the authoritative latest receipt already matches. Otherwise it may
 append one permanent `reconciled-unreceipted` receipt even when older canonical
 receipts exist. It performs no forge mutation and can never upgrade that
