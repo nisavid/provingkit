@@ -495,6 +495,52 @@ class Phase7ControlPlaneTests(unittest.TestCase):
         self.assertFalse(state["prs"][0]["isDraft"])
         self.assertEqual(state["prs"][0]["body"], BODY)
 
+    def test_creation_manifest_cannot_publish_ready_again_after_external_redraft(
+        self,
+    ) -> None:
+        self.state()
+        created, _, manifest, template, _ = self.create_command(title="feat: widget")
+        self.assertEqual(created.returncode, 0, created.stderr)
+        ready = self.ready_created_pr(manifest, template)
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        receipts = self.publication_receipt_bytes()
+        state = json.loads(self.github.read_text())
+        state["prs"][0]["isDraft"] = True
+        self.github.write_text(json.dumps(state), encoding="utf-8")
+
+        retry = self.ready_created_pr(manifest, template)
+
+        self.assertNotEqual(retry.returncode, 0)
+        self.assertIn("fresh numbered review input", retry.stderr)
+        self.assertEqual(self.publication_receipt_bytes(), receipts)
+        state = json.loads(self.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+        self.assertTrue(state["prs"][0]["isDraft"])
+
+    def test_creation_manifest_cannot_repeat_prior_numbered_ready_transition(
+        self,
+    ) -> None:
+        self.state()
+        created, _, manifest, template, _ = self.create_command(title="feat: widget")
+        self.assertEqual(created.returncode, 0, created.stderr)
+        ready, _, _ = self.command(
+            title="feat: widget", body=BODY, expected_body=BODY, operation="ready"
+        )
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        receipts = self.publication_receipt_bytes()
+        state = json.loads(self.github.read_text())
+        state["prs"][0]["isDraft"] = True
+        self.github.write_text(json.dumps(state), encoding="utf-8")
+
+        retry = self.ready_created_pr(manifest, template)
+
+        self.assertNotEqual(retry.returncode, 0)
+        self.assertIn("fresh numbered review input", retry.stderr)
+        self.assertEqual(self.publication_receipt_bytes(), receipts)
+        state = json.loads(self.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+        self.assertTrue(state["prs"][0]["isDraft"])
+
     def test_ready_retry_accepts_completed_transition_after_initial_draft_read(self) -> None:
         self.state()
         created, _, manifest, template, _ = self.create_command(title="feat: widget")

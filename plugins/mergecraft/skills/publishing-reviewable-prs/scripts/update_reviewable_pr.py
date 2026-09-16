@@ -343,6 +343,15 @@ def _require_creation_receipt(
         raise PublicationError(
             "canonical creation receipt review mode or selected specialists drifted"
         )
+    if before.get("isDraft") is True and any(
+        receipt.operation == "mark-ready" and receipt.provenance == "canonical"
+        for receipt in receipts
+    ):
+        raise PublicationError(
+            "this PR already has a canonical ready transition; token-based "
+            "readiness cannot publish it again after redraft; use fresh numbered "
+            "review input"
+        )
 
 
 def _return_idempotent_ready(
