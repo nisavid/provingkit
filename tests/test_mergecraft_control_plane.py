@@ -629,6 +629,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             [
                 ["pr", "view"],
                 ["pr", "view"],
+                ["pr", "view"],
                 ["pr", "edit"],
                 ["pr", "view"],
             ],
@@ -646,7 +647,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
                 "body": BODY,
                 "isDraft": True,
             },
-            required_operations=("view", "view", "edit", "view"),
+            required_operations=("view", "view", "view", "edit", "view"),
         )
         self.assertEqual(report["terminal"], "component-verified")
         self.assertIn("candidate_inputs", report)
@@ -665,6 +666,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
         self.assertEqual(
             [call[2:4] for call in calls],
             [
+                ["pr", "view"],
                 ["pr", "view"],
                 ["pr", "view"],
                 ["pr", "edit"],
@@ -776,7 +778,13 @@ class MergecraftControlPlaneTests(unittest.TestCase):
         self.assertFalse(state["prs"][0]["isDraft"])
         self.assertEqual(
             [call[2:4] for call in state["calls"]],
-            [["pr", "view"], ["pr", "view"], ["pr", "ready"], ["pr", "view"]],
+            [
+                ["pr", "view"],
+                ["pr", "view"],
+                ["pr", "view"],
+                ["pr", "ready"],
+                ["pr", "view"],
+            ],
         )
         receipt_root = self.home / ".local/state/mergecraft/pr-publication-receipts"
         self.assertFalse(list(receipt_root.rglob("*.json")))
@@ -838,6 +846,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             [
                 ["pr", "view"],
                 ["pr", "view"],
+                ["pr", "view"],
                 ["pr", "edit"],
                 ["pr", "view"],
             ],
@@ -855,6 +864,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
         self.assertEqual(
             [call[2:4] for call in calls],
             [
+                ["pr", "view"],
                 ["pr", "view"],
                 ["pr", "view"],
                 ["pr", "edit"],
@@ -893,6 +903,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
         self.assertEqual(
             [call[2:4] for call in calls],
             [
+                ["pr", "view"],
                 ["pr", "view"],
                 ["pr", "view"],
                 ["pr", "view"],
@@ -1017,6 +1028,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             [
                 ["pr", "view"],
                 ["pr", "view"],
+                ["pr", "view"],
                 ["pr", "edit"],
                 ["pr", "view"],
             ]
@@ -1062,7 +1074,9 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             required_operations=(
                 "view",
                 "view",
+                "view",
                 "edit",
+                "view",
                 "view",
                 "view",
                 "view",
@@ -1140,6 +1154,131 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             integrated(expected_final=drifted_expected)["terminal"],
             "failed-or-ambiguous",
         )
+
+    def test_integrated_receipt_applies_versioned_body_seals(self) -> None:
+        self.state()
+        result, _, review_input_path, template, validator = self.create_command(
+            title="feat: widget"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        receipts = tuple(
+            (self.home / ".local/state/mergecraft/pr-publication-receipts").rglob(
+                "*.json"
+            )
+        )
+        self.assertEqual(len(receipts), 1)
+        receipt = json.loads(receipts[0].read_bytes())
+        self.assertEqual(receipt["schema_version"], 4)
+        authored = CONTROL.render_writer_fixture(2)
+        tail = (
+            "\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n"
+            "Bot release notes.\n"
+            "<!-- end of auto-generated comment: release notes by coderabbit.ai -->\n"
+        )
+
+        def integrated(body, receipt_path=receipts[0]):
+            state = json.loads(self.github.read_bytes())
+            state["prs"][0]["body"] = body
+            self.github.write_text(json.dumps(state), encoding="utf-8")
+            return CONTROL.evidence(
+                route=self.route(
+                    "create this draft", "mergecraft:publisher", "write"
+                ),
+                candidate_inputs=(CREATOR, PUBLISHER, review_input_path, template),
+                github_state=self.github,
+                processes=(result,),
+                expected_final={
+                    "number": 2,
+                    "title": "feat: widget",
+                    "body": body,
+                    "isDraft": True,
+                    "baseRefOid": BASE_OID,
+                    "headRefOid": HEAD_OID,
+                },
+                validator_result=validator,
+                receipt_type="integrated-write",
+                publication_receipts=(receipt_path,),
+            )["terminal"]
+
+        self.assertEqual(integrated(authored + tail), "verified")
+        self.assertEqual(
+            integrated(authored + tail.replace("Bot release notes.", "Updated notes.")),
+            "verified",
+        )
+        self.assertEqual(
+            integrated(authored + "Authored addition.\n" + tail),
+            "failed-or-ambiguous",
+        )
+        self.assertEqual(
+            integrated(authored + "\n<!-- unknown bot -->\nAdded text.\n"),
+            "failed-or-ambiguous",
+        )
+
+        def receipt_fixture(value):
+            value = dict(value)
+            value.pop("content_sha256", None)
+            value["content_sha256"] = hashlib.sha256(
+                CONTROL.canonical_bytes(value)
+            ).hexdigest()
+            path = self.root / "receipt-fixture.json"
+            path.write_bytes(CONTROL.canonical_bytes(value) + b"\n")
+            return path
+
+        for version in (2, 3):
+            with self.subTest(legacy_schema=version):
+                legacy = {**receipt, "schema_version": version}
+                if version == 2:
+                    legacy.pop("review")
+                path = receipt_fixture(legacy)
+                self.assertEqual(integrated(authored, path), "verified")
+                self.assertEqual(
+                    integrated(authored + tail, path), "failed-or-ambiguous"
+                )
+                legacy["final_state"] = {
+                    **legacy["final_state"],
+                    "body_sha256": sha(authored + tail),
+                }
+                path = receipt_fixture(legacy)
+                self.assertEqual(integrated(authored + tail, path), "verified")
+                self.assertEqual(integrated(authored, path), "failed-or-ambiguous")
+
+        for version in (1, 5, None, True, 4.0):
+            with self.subTest(unsupported_schema=version):
+                path = receipt_fixture({**receipt, "schema_version": version})
+                self.assertEqual(integrated(authored, path), "failed-or-ambiguous")
+
+        corrupted = {
+            **receipt,
+            "final_state": {**receipt["final_state"], "body_sha256": "0" * 64},
+        }
+        self.assertEqual(
+            integrated(authored + tail, receipt_fixture(corrupted)),
+            "failed-or-ambiguous",
+        )
+
+        # Publish exact authored endings before observing an appended separator.
+        self.assertEqual(integrated(authored), "verified")
+        for ending in ("", "\n\n\n"):
+            with self.subTest(authored_ending=repr(ending)):
+                updated = authored.rstrip("\n") + ending
+                result, review_input_path, template = self.command(
+                    title="feat: widget", body=updated, expected_body=authored
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                authored = updated
+                latest = max(
+                    (self.home / ".local/state/mergecraft/pr-publication-receipts").rglob(
+                        "*.json"
+                    ),
+                    key=lambda path: json.loads(path.read_bytes())["sequence"],
+                )
+                self.assertEqual(integrated(authored + tail, latest), "verified")
+                if ending:
+                    missing_newlines = authored.rstrip("\n") + "\n" + tail.lstrip("\n")
+                    self.assertEqual(
+                        integrated(missing_newlines, latest),
+                        "failed-or-ambiguous",
+                    )
 
     def test_read_only_proof_uses_normalized_actuator_effects_and_fails_closed(
         self,

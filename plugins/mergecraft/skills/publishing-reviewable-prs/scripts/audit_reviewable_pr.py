@@ -35,6 +35,7 @@ from change_navigation.review_input import (  # noqa: E402
     bind_review_input,
     load_review_input,
 )
+from change_navigation.bot_body import BotBodyError, authored_body  # noqa: E402
 from change_navigation.sensitive_content import suspected_secret_error  # noqa: E402
 
 
@@ -65,9 +66,11 @@ def audit(
 
 def _validate_live_state(
     *, expected: ExpectedIdentity, title: str, body: str, review_input_path: Path
-) -> tuple[int, str]:
+) -> tuple[int, str, str]:
     try:
         manifest = load_review_input(review_input_path)
+        body_sha256 = str(manifest.raw["candidate"]["body_sha256"])
+        authored = authored_body(body, expected_sha256=body_sha256)
         bind_review_input(
             manifest,
             repository=expected.repository,
@@ -79,21 +82,21 @@ def _validate_live_state(
             head_owner=expected.head_owner,
             head_repository=expected.head_repository,
             title=title,
-            body=body,
+            body=authored,
             git_repository=Path.cwd(),
         )
         review_input_version = int(manifest.raw["version"])
         review_input_sha256 = manifest.content_sha256
-    except ReviewInputError as error:
+    except (ReviewInputError, BotBodyError) as error:
         raise PublicationError(f"review input drift: {error}") from error
     validate_pr_content(
-        body,
+        authored,
         expected.repository,
         expected.pr_number,
         title,
         review_input_path,
     )
-    return review_input_version, review_input_sha256
+    return review_input_version, review_input_sha256, body_sha256
 
 
 def reconcile(
@@ -120,14 +123,38 @@ def reconcile(
                 "secret; reconciliation is blocked pending authorized removal and "
                 "rotation"
             )
-        review_input_schema_version, review_input_sha256 = _validate_live_state(
-            expected=expected,
-            title=title,
-            body=body,
-            review_input_path=review_input_path,
+        review_input_schema_version, review_input_sha256, body_sha256 = (
+            _validate_live_state(
+                expected=expected,
+                title=title,
+                body=body,
+                review_input_path=review_input_path,
+            )
         )
         second = stored_pr(expected.repository, expected.pr_number)
-        if second != first:
+        second_body = second.get("body")
+        if not isinstance(second_body, str):
+            raise PublicationError("PR body is unreadable")
+        if suspected_secret_error(second_body) is not None:
+            raise PublicationError(
+                "existing PR publication text contains a suspected credential or "
+                "secret; reconciliation is blocked pending authorized removal and "
+                "rotation"
+            )
+        try:
+            first_owned = {
+                **first,
+                "body": authored_body(body, expected_sha256=body_sha256),
+            }
+            second_owned = {
+                **second,
+                "body": authored_body(second_body, expected_sha256=body_sha256),
+            }
+        except BotBodyError as error:
+            raise PublicationError(
+                "live PR state changed during reconciliation; no receipt was written"
+            ) from error
+        if second_owned != first_owned:
             raise PublicationError(
                 "live PR state changed during reconciliation; no receipt was written"
             )
@@ -140,6 +167,8 @@ def reconcile(
             review_input_sha256=review_input_sha256,
             review=None,
             candidate=None,
+            preimage_body_sha256=body_sha256,
+            final_body_sha256=body_sha256,
         )
         return record_reconciliation(
             root=receipt_root, transition=transition, lease=lease

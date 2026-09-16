@@ -5,15 +5,15 @@
       "id": 0,
       "name": "new-branch-publish-and-closeout",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Get this branch merged. There are local changes, no PR yet, and I want you to keep going unless you hit a real blocker.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
-      "expected_output": "The first merge invocation returns one terminal readiness handoff and ends. The caller invokes the standalone readiness coordinator separately, then starts a fresh merge invocation from live state. Each leaf runs once in its owning invocation; cleanup is routed through Versionkeeping, exact remote-ref deletion stops when its separate authorization is absent, and no deployment is invented.",
+      "expected_output": "The first merge invocation invokes the standalone readiness coordinator when policy and authority permit, while retaining one terminal readiness handoff when it cannot invoke readiness safely. After readiness succeeds, the caller starts a fresh merge invocation from live state. Each leaf runs once in its owning invocation; cleanup is routed through Versionkeeping, exact remote-ref deletion stops when its separate authorization is absent, and no deployment is invented.",
       "files": [
         "getting-prs-merged/fixtures/new-branch-publish-and-closeout.md"
       ],
       "expectations": [
         "The response starts from discovered repo and branch state instead of asking broad scope questions.",
         "The agent discovers local policy before staging, committing, pushing, marking ready, resolving threads, or merging.",
-        "The absent-PR merge invocation returns a terminal readiness-handoff and ends without calling another lifecycle coordinator.",
-        "The caller invokes getting-prs-ready-for-review separately; it uses each Git publication, writer, and publisher leaf once and marks the PR ready only after current evidence passes.",
+        "The absent-PR merge invocation invokes readiness-outcome when policy and authority permit, while retaining a readiness-handoff fallback when it cannot invoke readiness safely.",
+        "The readiness coordinator uses each Git publication, writer, and publisher leaf once and marks the PR ready only after current evidence passes.",
         "After readiness succeeds, the caller starts a fresh getting-prs-merged invocation that rereads live state and credits each merge leaf once.",
         "The agent stops rather than merging if required checks, approvals, ownership, or branch protection block merge.",
         "After a verified merge, the agent routes cleanup through Versionkeeping, treats missing exact remote-ref deletion authorization as a cleanup gate rather than inventing it, and does not actuate deployment without a named repository owner."
@@ -23,12 +23,12 @@
       "id": 1,
       "name": "draft-pr-resume",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"PR #42 is already open as a draft. Mark it review-ready and drive it to merge.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
-      "expected_output": "The merge invocation returns a terminal readiness handoff for the draft PR and ends. The caller invokes standalone readiness, then starts a fresh merge invocation from live state.",
+      "expected_output": "The merge invocation invokes readiness-outcome when policy and authority permit, or returns a terminal readiness handoff naming the gate when it cannot invoke readiness safely. After a ready result, it starts a fresh merge invocation from live state.",
       "files": ["getting-prs-merged/fixtures/draft-pr-resume.md"],
       "expectations": [
         "The agent does not create a duplicate PR or replay completed publish work.",
-        "The first merge invocation returns a terminal readiness-handoff and does not call readiness itself.",
-        "A separate readiness invocation uses publishing-reviewable-prs with writing-reviewable-pr-descriptions before publishing readiness claims.",
+        "The first merge invocation invokes readiness-outcome when policy and authority permit, without performing readiness writes itself.",
+        "The readiness invocation uses publishing-reviewable-prs with writing-reviewable-pr-descriptions before publishing readiness claims.",
         "A fresh merge invocation uses complete feedback state and the canonical publisher audit for merge decisions.",
         "The agent applies repo-local guidance before marking ready or merging.",
         "The agent reports the next blocker if merge cannot proceed."

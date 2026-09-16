@@ -23,6 +23,7 @@ sys.path.insert(0, str(SCRIPTS))
 STATE = importlib.import_module("reviewable_pr_state")
 RECEIPTS = importlib.import_module("publication_receipts")
 PUBLICATION_SUPPORT = importlib.import_module("publication_support")
+PUBLICATION_SUPPORT_BOT = importlib.import_module("change_navigation.bot_body")
 
 
 def load(name: str, filename: str):
@@ -1665,6 +1666,409 @@ class CreateReviewablePrTests(ReviewablePrFixture):
 
 
 class UpdateReviewablePrTests(ReviewablePrFixture):
+    BOT_TAIL = (
+        "\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n"
+        "## Summary by CodeRabbit\n"
+        "- Generated notes\n"
+        "<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+    )
+
+    def test_publication_and_audit_preserve_sealed_terminal_newlines(self) -> None:
+        for index, ending in enumerate(("", "\n", "\n\n", "\r\n", "\r\n\r\n")):
+            with self.subTest(ending=repr(ending)):
+                baseline = self.body.rstrip("\r\n") + ending
+                desired = self.body.rstrip("\r\n") + "\n\nUpdated" + ending
+                path = Path(self.temporary_directory.name) / f"body-{index}.md"
+                path.write_bytes(desired.encode("utf-8"))
+                tail = "\n\n" + self.BOT_TAIL.lstrip("\n")
+                live = self.stored(body=baseline + tail)
+                submitted = []
+
+                def mutate(arguments: list[str], **_: object):
+                    body_file = Path(arguments[arguments.index("--body-file") + 1])
+                    live["body"] = body_file.read_bytes().decode("utf-8")
+                    submitted.append(live["body"])
+                    return subprocess.CompletedProcess([], 0, "", "")
+
+                root = Path(self.temporary_directory.name) / f"receipts-{index}"
+                with (
+                    mock.patch.object(UPDATE, "_validate_body"),
+                    mock.patch.object(
+                        UPDATE, "_stored_pr", side_effect=lambda *_: dict(live)
+                    ),
+                    mock.patch.object(UPDATE, "_run_mutation", side_effect=mutate),
+                ):
+                    UPDATE.update_text(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(baseline),
+                        expected_draft=True,
+                        title=self.title,
+                        body_path=path,
+                        review_input_path=self.template_path,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        receipt_directory=root,
+                        text_scope="body-only",
+                    )
+                self.assertEqual(submitted, [desired + tail])
+                receipt = RECEIPTS.load_receipts(root, self.expected)[-1]
+                self.assertEqual(receipt.preimage.body_sha256, self.digest(baseline))
+                self.assertEqual(receipt.final_state.body_sha256, self.digest(desired))
+                live["body"] = desired + tail.replace("Generated notes", "Fresh notes")
+                self.assertEqual(
+                    RECEIPTS.audit_publication(
+                        root=root, expected=self.expected, read_live=lambda: live
+                    ).status,
+                    "verified",
+                )
+
+    def test_not_required_publication_refreshes_bot_append_after_binding(self) -> None:
+        desired = self.body + "Updated\n"
+        path = self.desired_body_path()
+        path.write_bytes(desired.encode())
+        live = self.stored()
+        tail = self.BOT_TAIL
+        submitted = []
+
+        def bind(*_: object):
+            live["body"] = self.body + tail
+            return self.review_input_schema_version, self.review_input_sha256
+
+        def mutate(arguments: list[str], **_: object):
+            body_file = Path(arguments[arguments.index("--body-file") + 1])
+            live["body"] = body_file.read_bytes().decode()
+            submitted.append(live["body"])
+            return subprocess.CompletedProcess([], 0, "", "")
+
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(UPDATE, "_bind_review_input", side_effect=bind),
+            mock.patch.object(UPDATE, "_stored_pr", side_effect=lambda *_: dict(live)),
+            mock.patch.object(UPDATE, "_run_mutation", side_effect=mutate),
+        ):
+            UPDATE.update_text(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                expected_draft=True,
+                title=self.title,
+                body_path=path,
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+                text_scope="body-only",
+            )
+        self.assertEqual(submitted, [desired + tail])
+
+    def test_publication_preserves_marker_after_lone_carriage_returns(self) -> None:
+        baseline = self.body + "\n"
+        desired = self.body.rstrip("\r\n") + "\r\r"
+        tail = self.BOT_TAIL.lstrip("\n")
+        live = self.stored(body=baseline + tail)
+        path = self.desired_body_path()
+        path.write_bytes(desired.encode())
+
+        def mutate(arguments: list[str], **_: object):
+            body_file = Path(arguments[arguments.index("--body-file") + 1])
+            live["body"] = body_file.read_bytes().decode()
+            return subprocess.CompletedProcess([], 0, "", "")
+
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(UPDATE, "_stored_pr", side_effect=lambda *_: dict(live)),
+            mock.patch.object(UPDATE, "_run_mutation", side_effect=mutate),
+        ):
+            UPDATE.update_text(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(baseline),
+                expected_draft=True,
+                title=self.title,
+                body_path=path,
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+                text_scope="body-only",
+            )
+        self.assertEqual(live["body"], desired + tail)
+        self.assertEqual(
+            RECEIPTS.audit_publication(
+                root=self.receipt_directory,
+                expected=self.expected,
+                read_live=lambda: live,
+            ).status,
+            "verified",
+        )
+
+    def test_ready_audit_accepts_fresh_append_with_exact_terminal_newlines(
+        self,
+    ) -> None:
+        for index, ending in enumerate(("", "\n", "\n\n", "\r\n", "\r\n\r\n")):
+            with self.subTest(ending=repr(ending)):
+                body = self.body.rstrip("\r\n") + ending
+                live = self.stored(body=body)
+                root = Path(self.temporary_directory.name) / f"ready-{index}"
+
+                def mutate(*_: object):
+                    live["isDraft"] = False
+                    live["body"] = body + "\n\n" + self.BOT_TAIL.lstrip("\n")
+                    return subprocess.CompletedProcess([], 0, "", "")
+
+                with (
+                    mock.patch.object(UPDATE, "_validate_body") as validate,
+                    mock.patch.object(
+                        UPDATE, "_stored_pr", side_effect=lambda *_: dict(live)
+                    ),
+                    mock.patch.object(UPDATE, "_run_mutation", side_effect=mutate),
+                ):
+                    UPDATE.mark_ready(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(body),
+                        review_input_path=self.template_path,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        receipt_directory=root,
+                    )
+                self.assertEqual(validate.call_args.args[0], body)
+                self.assertEqual(
+                    RECEIPTS.audit_publication(
+                        root=root, expected=self.expected, read_live=lambda: live
+                    ).status,
+                    "verified",
+                )
+                live["body"] = body + "Changed authored content\n\n" + self.BOT_TAIL
+                self.assertEqual(
+                    RECEIPTS.audit_publication(
+                        root=root, expected=self.expected, read_live=lambda: live
+                    ).status,
+                    "drift",
+                )
+
+    def test_complete_body_seal_preserves_intentionally_authored_markers(self) -> None:
+        authored = self.body + self.BOT_TAIL
+        self.assertEqual(
+            PUBLICATION_SUPPORT_BOT.split_bot_tail(
+                authored, expected_sha256=self.digest(authored)
+            ),
+            (authored, ""),
+        )
+        latest_tail = "\n\n" + self.BOT_TAIL.lstrip("\n").replace(
+            "Generated notes", "Latest notes"
+        )
+        self.assertEqual(
+            PUBLICATION_SUPPORT_BOT.split_bot_tail(
+                authored + latest_tail, expected_sha256=self.digest(authored)
+            ),
+            (authored, latest_tail),
+        )
+
+    def test_real_manifest_binding_preserves_sealed_authored_newlines(self) -> None:
+        fixtures = importlib.import_module(
+            "tests.plugins.mergecraft.writing-reviewable-pr-descriptions.test_review_input"
+        )
+        for ending in ("", "\n", "\n\n", "\r\n", "\r\n\r\n"):
+            with self.subTest(ending=repr(ending)):
+                body = fixtures.DIFF.rstrip("\r\n") + ending
+                raw = fixtures.manifest(body)
+                path = Path(self.temporary_directory.name) / "review-input.json"
+                path.write_text(json.dumps(raw), encoding="utf-8")
+                manifest = UPDATE.load_review_input(path)
+                arguments = dict(
+                    repository="acme/app",
+                    pr_number=2,
+                    base="main",
+                    base_oid="a" * 40,
+                    head="acme:widget",
+                    head_oid="b" * 40,
+                    head_owner="acme",
+                    head_repository="acme/app-fork",
+                    title="feat: widget",
+                    body=body,
+                    stored_title="feat: widget",
+                )
+                UPDATE.bind_review_input(
+                    manifest,
+                    **arguments,
+                    stored_body=body + "\n\n" + self.BOT_TAIL.lstrip("\n"),
+                )
+                with self.assertRaisesRegex(
+                    UPDATE.ReviewInputError, "baseline drifted"
+                ):
+                    UPDATE.bind_review_input(
+                        manifest,
+                        **arguments,
+                        stored_body=body + "Authored drift\n\n" + self.BOT_TAIL,
+                    )
+
+    def test_bot_tail_split_preserves_authored_terminal_newline(self) -> None:
+        authored, tail = PUBLICATION_SUPPORT_BOT.split_bot_tail(
+            self.body + "\n" + self.BOT_TAIL.lstrip("\n")
+        )
+        self.assertEqual(authored, self.body)
+        self.assertEqual(tail, self.BOT_TAIL)
+
+    def test_bot_tail_split_handles_coderabbit_multi_block_suffix(self) -> None:
+        tail = (
+            "\n<!-- review_stack_entry_start -->\n"
+            "stack entry\n"
+            "<!-- review_stack_entry_end -->\n"
+            "<!-- This is an auto-generated comment: review in progress by coderabbit.ai -->\n"
+            "processing\n"
+            "<!-- end of auto-generated comment: review in progress by coderabbit.ai -->\n"
+            "<!-- tips_start -->\n"
+            "tips\n"
+            "<!-- tips_end -->"
+        )
+        authored, observed_tail = PUBLICATION_SUPPORT_BOT.split_bot_tail(
+            self.body + tail
+        )
+        self.assertEqual(authored, self.body)
+        self.assertEqual(observed_tail, tail)
+
+    def test_incomplete_trusted_marker_remains_authored(self) -> None:
+        body = (
+            self.body
+            + "\n<!-- This is an auto-generated comment: summarize by coderabbit.ai -->\n"
+            + "editor-controlled text"
+        )
+        authored, tail = PUBLICATION_SUPPORT_BOT.split_bot_tail(body)
+        self.assertEqual(authored, body)
+        self.assertEqual(tail, "")
+
+    def test_initial_discovery_preserves_incomplete_matching_opener(self) -> None:
+        for opener, closer in (
+            ("<!-- tips_start -->", "<!-- tips_end -->"),
+            (
+                "<!-- This is an auto-generated comment: release notes by coderabbit.ai -->",
+                "<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+            ),
+        ):
+            with self.subTest(opener=opener):
+                authored = self.body + "\n" + opener + "\nHuman authored text.\n"
+                tail = "\n" + opener + "\nGenerated notes.\n" + closer
+                discovered, observed_tail = PUBLICATION_SUPPORT_BOT.split_bot_tail(
+                    authored + tail
+                )
+                self.assertEqual(discovered, authored)
+                self.assertEqual(observed_tail, tail)
+                with self.assertRaises(PUBLICATION_SUPPORT_BOT.BotBodyError):
+                    PUBLICATION_SUPPORT_BOT.split_bot_tail(
+                        authored.replace("Human authored text.", "Changed authored text.")
+                        + tail,
+                        expected_sha256=self.digest(discovered),
+                    )
+
+    def test_arbitrary_dynamic_marker_remains_authored(self) -> None:
+        for name in ("authored by Ivan", "handwritten review by coderabbit.ai"):
+            with self.subTest(name=name):
+                body = (
+                    self.body
+                    + f"\n<!-- This is an auto-generated comment: {name} -->\n"
+                    + "editor-controlled text\n"
+                    + f"<!-- end of auto-generated comment: {name} -->"
+                )
+                authored, tail = PUBLICATION_SUPPORT_BOT.split_bot_tail(body)
+                self.assertEqual(authored, body)
+                self.assertEqual(tail, "")
+
+    def test_multiline_dynamic_marker_remains_authored(self) -> None:
+        body = (
+            self.body
+            + "\n<!-- This is an auto-generated comment:\nrelease notes by coderabbit.ai -->\n"
+            + "editor-controlled text\n"
+            + "<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+        )
+        self.assertEqual(PUBLICATION_SUPPORT_BOT.split_bot_tail(body), (body, ""))
+
+    def test_merge_bot_tail_drops_submitted_tail_when_live_body_has_none(self) -> None:
+        submitted = self.body + self.BOT_TAIL
+        self.assertEqual(
+            PUBLICATION_SUPPORT_BOT.merge_bot_tail(submitted, self.body),
+            self.body,
+        )
+
+    def test_text_update_preserves_latest_bot_tail_and_receipts_hash_authored_body(
+        self,
+    ) -> None:
+        desired = self.body + "updated\n"
+        desired_path = Path(self.temporary_directory.name) / "desired-with-tail.md"
+        desired_path.write_text(desired, encoding="utf-8")
+        first_tail = self.BOT_TAIL
+        latest_tail = self.BOT_TAIL.replace("Generated notes", "Latest notes")
+        before = self.stored(body=self.body + first_tail)
+        latest = self.stored(body=self.body + latest_tail)
+        after = self.stored(body=desired + latest_tail)
+        sent_body: list[str] = []
+
+        def mutate(arguments: list[str], **_: object):
+            body_file = Path(arguments[arguments.index("--body-file") + 1])
+            sent_body.append(body_file.read_text(encoding="utf-8"))
+            return subprocess.CompletedProcess([], 0, "", "")
+
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, latest, latest, after]
+            ),
+            mock.patch.object(UPDATE, "_run_mutation", side_effect=mutate) as run,
+        ):
+            result = UPDATE.update_text(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                expected_draft=True,
+                title=self.title,
+                body_path=desired_path,
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+                text_scope="body-only",
+            )
+        self.assertEqual(result, after)
+        self.assertEqual(sent_body, [desired + latest_tail])
+        receipt = RECEIPTS.load_receipts(self.receipt_directory, self.expected)[-1]
+        self.assertEqual(receipt.final_state.body_sha256, self.digest(desired))
+
+    def test_ready_transition_preserves_bot_tail_in_complete_receipt(self) -> None:
+        latest_tail = self.BOT_TAIL.replace("Generated notes", "Latest notes")
+        before = self.stored(body=self.body + self.BOT_TAIL)
+        latest = self.stored(body=self.body + latest_tail)
+        after = self.stored(body=self.body + latest_tail, is_draft=False)
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, latest, latest, after]
+            ),
+            mock.patch.object(
+                UPDATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ),
+        ):
+            result = UPDATE.mark_ready(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+            )
+        self.assertEqual(result, after)
+        receipt = RECEIPTS.load_receipts(self.receipt_directory, self.expected)[-1]
+        self.assertEqual(receipt.final_state.body_sha256, self.digest(self.body))
+
     def test_existing_secret_blocks_before_mutation_without_echoing_value(self) -> None:
         secret = "ghp_123456789012345678901234567890"
         stored = self.stored(body=f"Credential: {secret}")
@@ -1762,7 +2166,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ) as reads,
             mock.patch.object(
                 UPDATE,
@@ -1785,7 +2189,78 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             )
         self.assertEqual(result, after)
         self.assertEqual(run.call_count, 1)
-        self.assertEqual(reads.call_count, 3)
+        self.assertEqual(reads.call_count, 4)
+
+    def test_text_update_preserves_latest_bot_tail(self) -> None:
+        bot_tail = (
+            "\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n"
+            "\n## Summary by CodeRabbit\n\n- Generated notes\n"
+            "\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+        )
+        live = self.stored(body=self.body + bot_tail)
+        desired_path = self.desired_body_path()
+        desired = desired_path.read_text(encoding="utf-8")
+        after = self.stored(body=desired + bot_tail)
+
+        def inspect_mutation(arguments: list[str], **_: object):
+            body_file = Path(arguments[arguments.index("--body-file") + 1])
+            self.assertEqual(body_file.read_text(encoding="utf-8"), desired + bot_tail)
+            return subprocess.CompletedProcess([], 0, "", "")
+
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[live, live, live, after]
+            ),
+            mock.patch.object(UPDATE, "_run_mutation", side_effect=inspect_mutation),
+        ):
+            result = UPDATE.update_text(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                expected_draft=True,
+                title=self.title,
+                body_path=desired_path,
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+                text_scope="body-only",
+            )
+
+        self.assertEqual(result, after)
+
+    def test_mark_ready_accepts_bot_tail_without_replacing_it(self) -> None:
+        bot_tail = (
+            "\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n"
+            "bot notes\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+        )
+        before = self.stored(body=self.body + bot_tail)
+        after = self.stored(body=self.body + bot_tail, is_draft=False)
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, before, before, after]
+            ),
+            mock.patch.object(
+                UPDATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ),
+        ):
+            result = UPDATE.mark_ready(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+            )
+
+        self.assertEqual(result, after)
 
     def test_text_update_renders_new_pr_template_for_graphite_repair(self) -> None:
         after = self.stored()
@@ -1794,7 +2269,12 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.transport(), self.transport(), after],
+                side_effect=[
+                    self.transport(),
+                    self.transport(),
+                    self.transport(),
+                    after,
+                ],
             ),
             mock.patch.object(
                 UPDATE,
@@ -1862,6 +2342,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                 side_effect=[
                     self.stored(body=legacy_body),
                     self.stored(body=legacy_body),
+                    self.stored(body=legacy_body),
                     after,
                 ],
             ),
@@ -1910,7 +2391,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ),
             mock.patch.object(
                 UPDATE, "_run_mutation", side_effect=mutate_source_after_snapshot
@@ -2012,7 +2493,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ),
             mock.patch.object(
                 UPDATE,
@@ -2048,7 +2529,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ),
             mock.patch.object(
                 UPDATE,
@@ -2083,7 +2564,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ),
             mock.patch.object(
                 UPDATE,
@@ -2122,7 +2603,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ),
             mock.patch.object(
                 UPDATE,
@@ -2156,7 +2637,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         with (
             mock.patch.object(UPDATE, "_validate_body"),
             mock.patch.object(
-                UPDATE, "_stored_pr", side_effect=[before, before, before]
+                UPDATE, "_stored_pr", side_effect=[before, before, before, before]
             ),
             mock.patch.object(
                 UPDATE,
@@ -2188,7 +2669,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), concurrent],
+                side_effect=[self.stored(), self.stored(), self.stored(), concurrent],
             ),
             mock.patch.object(
                 UPDATE,
@@ -2221,6 +2702,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                 UPDATE,
                 "_stored_pr",
                 side_effect=[
+                    self.stored(),
                     self.stored(),
                     self.stored(),
                     self.stored(is_draft=False),
@@ -2258,7 +2740,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         with (
             mock.patch.object(UPDATE, "_validate_body"),
             mock.patch.object(
-                UPDATE, "_stored_pr", side_effect=[before, before, after]
+                UPDATE, "_stored_pr", side_effect=[before, before, before, after]
             ),
             mock.patch.object(
                 UPDATE,
@@ -2288,7 +2770,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         with (
             mock.patch.object(UPDATE, "_validate_body"),
             mock.patch.object(
-                UPDATE, "_stored_pr", side_effect=[before, before, before]
+                UPDATE, "_stored_pr", side_effect=[before, before, before, before]
             ),
             mock.patch.object(
                 UPDATE,
@@ -2374,7 +2856,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                 UPDATE, "_require_creation_receipt"
             ) as require_creation,
             mock.patch.object(
-                UPDATE, "_stored_pr", side_effect=[before, before, after]
+                UPDATE, "_stored_pr", side_effect=[before, before, before, after]
             ),
             mock.patch.object(
                 UPDATE,
@@ -2465,6 +2947,8 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         )
         receipt = SimpleNamespace(
             operation="mark-ready",
+            schema_version=4,
+            expected=self.expected,
             provenance="canonical",
             review=SimpleNamespace(
                 mode="not-required",
@@ -2472,10 +2956,11 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             ),
             review_input_schema_version=self.review_input_schema_version,
             review_input_sha256=self.review_input_sha256,
-            final_state=SimpleNamespace(
+            final_state=RECEIPTS.StateSnapshot(
                 title_sha256=self.digest(self.title),
                 body_sha256=self.digest(self.body),
                 is_draft=False,
+                state="OPEN",
             ),
         )
         with (
@@ -2523,6 +3008,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         )
         creation_receipt = SimpleNamespace(
             operation="create",
+            schema_version=4,
             provenance="canonical",
             expected=self.expected,
             review=SimpleNamespace(
@@ -2572,6 +3058,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         )
         drifted = SimpleNamespace(
             operation="create",
+            schema_version=4,
             provenance="canonical",
             expected=self.expected.__class__(
                 repository=self.repository,
@@ -2608,6 +3095,292 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                     selected_specialists=[],
                     receipt_root=self.receipt_directory,
                 )
+
+
+class TokenReadinessBotTailIntegrationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        fixtures = importlib.import_module("tests.test_mergecraft_control_plane")
+        self.fixture = fixtures.MergecraftControlPlaneTests()
+        self.addCleanup(self.fixture.doCleanups)
+        self.fixture.setUp()
+        self.fixture.state()
+        created, _, self.manifest, self.template, validator = (
+            self.fixture.create_command(title="feat: widget")
+        )
+        self.assertEqual(validator.returncode, 0, validator.stderr)
+        self.assertEqual(created.returncode, 0, created.stderr)
+        self.authored_body = fixtures.BODY
+
+    def replace_live_body(self, body: str) -> None:
+        state = json.loads(self.fixture.github.read_text())
+        state["prs"][0]["body"] = body
+        self.fixture.github.write_text(json.dumps(state), encoding="utf-8")
+
+    @staticmethod
+    def bot_tail(notes: str) -> str:
+        return (
+            "\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n"
+            f"{notes}\n"
+            "<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+        )
+
+    def test_creation_manifest_ready_and_retry_preserve_bot_tail(self) -> None:
+        manifest_bytes = self.manifest.read_bytes()
+        creation_receipts = self.fixture.publication_receipt_bytes()
+        self.replace_live_body(self.authored_body + self.bot_tail("Initial notes"))
+        before_ready_body = self.authored_body + self.bot_tail("Latest draft notes")
+        self.fixture.change_pr_after_next_read({"body": before_ready_body})
+
+        ready = self.fixture.ready_created_pr(self.manifest, self.template)
+
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        receipts = self.fixture.publication_receipt_bytes()
+        self.assertEqual(len(receipts), 2)
+        for path, raw in creation_receipts.items():
+            self.assertEqual(receipts[path], raw)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(state["prs"][0]["body"], before_ready_body)
+        latest_body = self.authored_body + self.bot_tail("Ready review notes")
+        self.replace_live_body(latest_body)
+
+        retried = self.fixture.ready_created_pr(self.manifest, self.template)
+
+        self.assertEqual(retried.returncode, 0, retried.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), receipts)
+        self.assertEqual(self.manifest.read_bytes(), manifest_bytes)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+        self.assertFalse(state["prs"][0]["isDraft"])
+        self.assertEqual(state["prs"][0]["body"], latest_body)
+
+    def test_creation_manifest_blocks_authored_drift_before_ready_and_retry(
+        self,
+    ) -> None:
+        creation_receipts = self.fixture.publication_receipt_bytes()
+        self.replace_live_body(
+            self.authored_body + "Authored change" + self.bot_tail("Bot notes")
+        )
+
+        ready = self.fixture.ready_created_pr(self.manifest, self.template)
+
+        self.assertNotEqual(ready.returncode, 0)
+        self.assertIn("preimage changed", ready.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), creation_receipts)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 0)
+        self.replace_live_body(self.authored_body + self.bot_tail("Bot notes"))
+        ready = self.fixture.ready_created_pr(self.manifest, self.template)
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        receipts = self.fixture.publication_receipt_bytes()
+        self.replace_live_body(
+            self.authored_body + "Later authored change" + self.bot_tail("New notes")
+        )
+
+        retry = self.fixture.ready_created_pr(self.manifest, self.template)
+
+        self.assertNotEqual(retry.returncode, 0)
+        self.assertIn("preimage changed", retry.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), receipts)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+
+    def test_legacy_creation_receipt_keeps_complete_body_semantics(self) -> None:
+        receipt_root = (
+            self.fixture.home / ".local/state/mergecraft/pr-publication-receipts"
+        )
+        path = next(receipt_root.rglob("*.json"))
+        payload = json.loads(path.read_bytes())
+        payload["schema_version"] = 3
+        PublicationReceiptTests.rewrite_receipt(self, path, payload)
+        receipts = self.fixture.publication_receipt_bytes()
+        self.replace_live_body(self.authored_body + self.bot_tail("New notes"))
+
+        ready = self.fixture.ready_created_pr(self.manifest, self.template)
+
+        self.assertNotEqual(ready.returncode, 0)
+        self.assertIn("creation receipt does not match", ready.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), receipts)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 0)
+
+        self.replace_live_body(self.authored_body)
+        ready = self.fixture.ready_created_pr(self.manifest, self.template)
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+
+        ready_receipts = self.fixture.publication_receipt_bytes()
+        for notes in ("First ready notes", "Refreshed ready notes"):
+            with self.subTest(notes=notes):
+                latest_body = self.authored_body + self.bot_tail(notes)
+                self.replace_live_body(latest_body)
+                retry = self.fixture.ready_created_pr(self.manifest, self.template)
+                self.assertEqual(retry.returncode, 0, retry.stderr)
+                self.assertEqual(
+                    self.fixture.publication_receipt_bytes(), ready_receipts
+                )
+                state = json.loads(self.fixture.github.read_text())
+                self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+                self.assertEqual(state["prs"][0]["body"], latest_body)
+        self.replace_live_body(
+            self.authored_body + "Authored drift" + self.bot_tail("Later notes")
+        )
+        retry = self.fixture.ready_created_pr(self.manifest, self.template)
+        self.assertNotEqual(retry.returncode, 0)
+        self.assertIn("preimage changed", retry.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), ready_receipts)
+
+    def test_legacy_ready_retry_still_requires_unchanged_complete_body(self) -> None:
+        receipt_root = (
+            self.fixture.home / ".local/state/mergecraft/pr-publication-receipts"
+        )
+        creation_path = next(receipt_root.rglob("*.json"))
+        creation = json.loads(creation_path.read_bytes())
+        creation["schema_version"] = 3
+        PublicationReceiptTests.rewrite_receipt(self, creation_path, creation)
+        ready = self.fixture.ready_created_pr(self.manifest, self.template)
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        ready_path = sorted(receipt_root.rglob("*.json"))[-1]
+        ready_receipt = json.loads(ready_path.read_bytes())
+        ready_receipt["schema_version"] = 3
+        PublicationReceiptTests.rewrite_receipt(self, ready_path, ready_receipt)
+        receipts = self.fixture.publication_receipt_bytes()
+
+        unchanged = self.fixture.ready_created_pr(self.manifest, self.template)
+        self.assertEqual(unchanged.returncode, 0, unchanged.stderr)
+        self.replace_live_body(self.authored_body + self.bot_tail("New notes"))
+        changed = self.fixture.ready_created_pr(self.manifest, self.template)
+
+        self.assertNotEqual(changed.returncode, 0)
+        self.assertIn("readiness receipt does not match", changed.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), receipts)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+
+
+class PublicationReconciliationIntegrationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.lifecycle = importlib.import_module("tests.test_mergecraft_control_plane")
+        self.fixture = self.lifecycle.MergecraftControlPlaneTests()
+        self.addCleanup(self.fixture.doCleanups)
+        self.fixture.setUp()
+        self.fixture.state()
+        created, _, _, _, validator = self.fixture.create_command(title="feat: widget")
+        self.assertEqual(validator.returncode, 0, validator.stderr)
+        self.assertEqual(created.returncode, 0, created.stderr)
+        self.manifest = self.fixture.root / "reconciliation-input.json"
+        self.manifest.write_text(
+            json.dumps(self.lifecycle.review_input(
+                "feat: widget", self.lifecycle.BODY,
+                baseline_body=self.lifecycle.BODY,
+            )),
+            encoding="utf-8",
+        )
+
+    def audit_command(self, operation: str):
+        auditor = SCRIPTS / "audit_reviewable_pr.py"
+        arguments = [
+            sys.executable, str(auditor), operation,
+            "--repository", "acme/app", "--pr", "2",
+            "--base", "main", "--base-oid", self.lifecycle.BASE_OID,
+            "--head", "acme:widget", "--head-oid", self.lifecycle.HEAD_OID,
+            "--head-owner", "acme", "--head-repository", "acme/app-fork",
+        ]
+        if operation == "reconcile":
+            arguments.extend(["--review-input", str(self.manifest)])
+        return self.lifecycle.CONTROL.run_command(
+            arguments,
+            home=self.fixture.home,
+            environment={"MERGECRAFT_GITHUB_STATE": str(self.fixture.github)},
+            allowed_scripts=(auditor,),
+            cwd=self.fixture.git_repository,
+        )
+
+    def legacy_creation_receipt(self, version: int) -> None:
+        root = self.fixture.home / ".local/state/mergecraft/pr-publication-receipts"
+        path = next(root.rglob("*.json"))
+        payload = json.loads(path.read_bytes())
+        payload["schema_version"] = version
+        if version == 2:
+            del payload["review"]
+        PublicationReceiptTests.rewrite_receipt(self, path, payload)
+
+    def append_bot_tail(self, notes: str) -> None:
+        state = json.loads(self.fixture.github.read_text())
+        state["prs"][0]["body"] = (
+            self.lifecycle.BODY + TokenReadinessBotTailIntegrationTests.bot_tail(notes)
+        )
+        self.fixture.github.write_text(json.dumps(state), encoding="utf-8")
+
+    def assert_legacy_bot_tail_migrates(self, version: int) -> None:
+        self.legacy_creation_receipt(version)
+        historical_receipts = self.fixture.publication_receipt_bytes()
+        self.append_bot_tail("Appended review notes")
+        drifted = self.audit_command("audit")
+        self.assertEqual(json.loads(drifted.stdout)["status"], "drift")
+
+        reconciled = self.audit_command("reconcile")
+
+        self.assertEqual(reconciled.returncode, 0, reconciled.stderr)
+        result = json.loads(reconciled.stdout)
+        self.assertEqual(result["provenance"], "reconciled-unreceipted")
+        self.assertEqual(result["review"], {"state": "unwitnessed-reconciliation"})
+        receipts = self.fixture.publication_receipt_bytes()
+        self.assertEqual(len(receipts), 2)
+        for path, raw in historical_receipts.items():
+            self.assertEqual(receipts[path], raw)
+        self.append_bot_tail("Refreshed review notes")
+        audited = self.audit_command("audit")
+        self.assertEqual(audited.returncode, 0, audited.stderr)
+        self.assertEqual(json.loads(audited.stdout)["status"], "verified")
+        self.assertEqual(
+            json.loads(audited.stdout)["review"],
+            {"state": "unwitnessed-reconciliation"},
+        )
+        repeated = self.audit_command("reconcile")
+        self.assertNotEqual(repeated.returncode, 0)
+        self.assertIn("already matches", repeated.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), receipts)
+
+    def test_reconciliation_migrates_v2_bot_tail_drift(self) -> None:
+        self.assert_legacy_bot_tail_migrates(2)
+
+    def test_reconciliation_migrates_v3_bot_tail_drift(self) -> None:
+        self.assert_legacy_bot_tail_migrates(3)
+
+    def assert_matching_legacy_receipt_rejects_reconciliation(self, version: int) -> None:
+        self.legacy_creation_receipt(version)
+        receipts = self.fixture.publication_receipt_bytes()
+        audited = self.audit_command("audit")
+        self.assertEqual(audited.returncode, 0, audited.stderr)
+        self.assertEqual(json.loads(audited.stdout)["status"], "verified")
+        if version == 2:
+            self.assertEqual(
+                json.loads(audited.stdout)["review"], {"state": "legacy-unrecorded"}
+            )
+
+        reconciled = self.audit_command("reconcile")
+
+        self.assertNotEqual(reconciled.returncode, 0)
+        self.assertIn("already matches", reconciled.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), receipts)
+
+    def test_reconciliation_preserves_matching_v2_receipt(self) -> None:
+        self.assert_matching_legacy_receipt_rejects_reconciliation(2)
+
+    def test_reconciliation_preserves_matching_v3_receipt(self) -> None:
+        self.assert_matching_legacy_receipt_rejects_reconciliation(3)
+
+    def test_reconciliation_rejects_v4_duplicate_after_bot_refresh(self) -> None:
+        receipts = self.fixture.publication_receipt_bytes()
+        self.append_bot_tail("Fresh review notes")
+        audited = self.audit_command("audit")
+        self.assertEqual(audited.returncode, 0, audited.stderr)
+        self.assertEqual(json.loads(audited.stdout)["status"], "verified")
+
+        reconciled = self.audit_command("reconcile")
+
+        self.assertNotEqual(reconciled.returncode, 0)
+        self.assertIn("already matches", reconciled.stderr)
+        self.assertEqual(self.fixture.publication_receipt_bytes(), receipts)
 
 
 class PublicationReceiptTests(ReviewablePrFixture):
@@ -2830,7 +3603,7 @@ class PublicationReceiptTests(ReviewablePrFixture):
             root=required_root,
             review=transition_review("required", "8" * 64, observation),
         )
-        self.assertEqual(required.schema_version, 3)
+        self.assertEqual(required.schema_version, 4)
         self.assertEqual(required.summary("verified")["review"]["mode"], "required")
         self.assertEqual(
             required.summary("verified")["review"]["observation"][
@@ -2877,27 +3650,183 @@ class PublicationReceiptTests(ReviewablePrFixture):
             {"state": "legacy-unrecorded"},
         )
 
-    def test_receipt_ledger_rejects_v2_after_first_v3(self) -> None:
+    def test_receipt_audit_accepts_bot_blocks_quoting_their_closing_marker(self) -> None:
+        self.canonical_receipt()
+        markers = (
+            ("<!-- tips_start -->", "<!-- tips_end -->"),
+            (
+                "<!-- This is an auto-generated comment: release notes by coderabbit.ai -->",
+                "<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+            ),
+        )
+        for opener, closer in markers:
+            for newline in ("\n", "\r", "\r\n"):
+                for quoted in (
+                    f"Quoted `{closer}` in prose.",
+                    f"Example:\n`{closer}`\nMore notes.",
+                ):
+                    with self.subTest(
+                        opener=opener, newline=repr(newline), quoted=quoted
+                    ):
+                        tail = "\n".join(
+                            (
+                                "",
+                                opener,
+                                quoted,
+                                closer,
+                                "<!-- review_stack_entry_start -->",
+                                "Another complete block.",
+                                "<!-- review_stack_entry_end -->",
+                            )
+                        ).replace("\n", newline)
+                        live = self.stored(body=self.body + tail)
+                        result = RECEIPTS.audit_publication(
+                            root=self.receipt_directory,
+                            expected=self.expected,
+                            read_live=lambda: live,
+                        )
+                        self.assertEqual(result.status, "verified")
+
+    def test_receipt_audit_preserves_authored_gaps_between_bot_blocks(self) -> None:
+        self.canonical_receipt()
+        first = "\n<!-- tips_start -->\nBot notes.\n<!-- tips_end -->"
+        gap = "\nHuman text between bot blocks.\n"
+        for last in (
+            "<!-- tips_start -->\nMore bot notes.\n<!-- tips_end -->",
+            "<!-- walkthrough_start -->\nMore bot notes.\n<!-- walkthrough_end -->",
+            "<!-- tips_end -->",
+        ):
+            with self.subTest(last=last):
+                body = self.body + first + gap + last
+                self.assertIn(
+                    "Human text between bot blocks.",
+                    PUBLICATION_SUPPORT_BOT.authored_body(body),
+                )
+                result = RECEIPTS.audit_publication(
+                    root=self.receipt_directory,
+                    expected=self.expected,
+                    read_live=lambda: self.stored(body=body),
+                )
+                self.assertEqual(result.status, "drift")
+
+    def test_receipt_audit_rejects_authored_text_before_repeated_opener(self) -> None:
+        self.canonical_receipt()
+        tail = (
+            "\n<!-- tips_start -->\nHuman authored text.\n"
+            "<!-- tips_start -->\nGenerated notes.\n<!-- tips_end -->"
+        )
+        result = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=lambda: self.stored(body=self.body + tail),
+        )
+        self.assertEqual(result.status, "drift")
+
+    def test_receipt_audit_accepts_different_nested_bot_markers(self) -> None:
+        self.canonical_receipt()
+        tail = (
+            "\n<!-- review_stack_entry_start -->\nStack notes.\n"
+            "<!-- tips_start -->\nGenerated notes.\n<!-- tips_end -->\n"
+            "<!-- review_stack_entry_end -->"
+        )
+        result = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=lambda: self.stored(body=self.body + tail),
+        )
+        self.assertEqual(result.status, "verified")
+
+    def test_receipt_audit_rejects_inline_only_closing_markers(self) -> None:
+        self.canonical_receipt()
+        for tail in (
+            "\n<!-- tips_start -->\nInline closer <!-- tips_end -->",
+            "\n<!-- tips_start -->\n<!-- tips_end -->\nUnclosed following prose.",
+        ):
+            with self.subTest(tail=tail):
+                result = RECEIPTS.audit_publication(
+                    root=self.receipt_directory,
+                    expected=self.expected,
+                    read_live=lambda: self.stored(body=self.body + tail),
+                )
+                self.assertEqual(result.status, "drift")
+
+    def test_v2_audit_uses_raw_body_hash_for_legacy_receipts(self) -> None:
+        bot_tail = (
+            "\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n"
+            "notes\n"
+            "<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+        )
+        before = self.stored()
+        after = self.stored(body=self.body + "changed\n")
+        live = self.stored(body=after["body"] + bot_tail)
+        receipt = self.canonical_receipt(
+            operation="update-text", before=before, after=after
+        )
+        path = next(self.receipt_directory.rglob("*.json"))
+        payload = receipt.as_json()
+        payload["schema_version"] = 2
+        del payload["review"]
+        payload["preimage"]["body_sha256"] = hashlib.sha256(
+            self.body.encode("utf-8")
+        ).hexdigest()
+        payload["final_state"]["body_sha256"] = hashlib.sha256(
+            live["body"].encode("utf-8")
+        ).hexdigest()
+        self.rewrite_receipt(path, payload)
+
+        result = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=lambda: live,
+        )
+        self.assertEqual(result.status, "verified")
+
+    def test_v3_audit_uses_raw_body_hash_for_historical_receipts(self) -> None:
+        bot_tail = (
+            "\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n"
+            "notes\n"
+            "<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+        )
+        before = self.stored()
+        after = self.stored(body=self.body + "changed\n")
+        live = self.stored(body=after["body"] + bot_tail)
+        receipt = self.canonical_receipt(
+            operation="update-text", before=before, after=after
+        )
+        path = next(self.receipt_directory.rglob("*.json"))
+        payload = receipt.as_json()
+        payload["schema_version"] = 3
+        payload["preimage"]["body_sha256"] = hashlib.sha256(
+            self.body.encode("utf-8")
+        ).hexdigest()
+        payload["final_state"]["body_sha256"] = hashlib.sha256(
+            live["body"].encode("utf-8")
+        ).hexdigest()
+        self.rewrite_receipt(path, payload)
+
+        result = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=lambda: live,
+        )
+        self.assertEqual(result.status, "verified")
+
+    def test_receipt_ledger_rejects_every_schema_rollback(self) -> None:
         state_a = self.stored(title="state A")
         self.canonical_receipt(after=state_a)
         state_b = self.stored(title="state B")
-        self.canonical_receipt(
-            operation="update-text",
-            before=state_a,
-            after=state_b,
-        )
-        for path in self.receipt_directory.rglob("*.json"):
-            payload = json.loads(path.read_text(encoding="utf-8"))
-            if payload["sequence"] == 2:
-                payload["schema_version"] = 2
-                del payload["review"]
-                self.rewrite_receipt(path, payload)
-                break
-        else:
-            self.fail("second receipt is absent")
-
-        with self.assertRaisesRegex(RECEIPTS.ReceiptError, "moved backward"):
-            RECEIPTS.load_receipts(self.receipt_directory, self.expected)
+        self.canonical_receipt(operation="update-text", before=state_a, after=state_b)
+        path = sorted(self.receipt_directory.rglob("*.json"))[1]
+        original = json.loads(path.read_text(encoding="utf-8"))
+        for version in (2, 3):
+            with self.subTest(version=version):
+                payload = dict(original)
+                payload["schema_version"] = version
+                if version == 2:
+                    del payload["review"]
+                path = self.rewrite_receipt(path, payload)
+                with self.assertRaisesRegex(RECEIPTS.ReceiptError, "moved backward"):
+                    RECEIPTS.load_receipts(self.receipt_directory, self.expected)
 
     def test_review_from_candidate_a_cannot_mint_candidate_b_provenance(
         self,
@@ -2961,7 +3890,7 @@ class PublicationReceiptTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ),
             mock.patch.object(
                 UPDATE,
@@ -3005,7 +3934,7 @@ class PublicationReceiptTests(ReviewablePrFixture):
             mock.patch.object(
                 UPDATE,
                 "_stored_pr",
-                side_effect=[self.stored(), self.stored(), after],
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
             ),
             mock.patch.object(
                 UPDATE,
@@ -3187,6 +4116,7 @@ class PublicationReceiptTests(ReviewablePrFixture):
                 return_value=(
                     self.review_input_schema_version,
                     self.review_input_sha256,
+                    hashlib.sha256(self.body.encode()).hexdigest(),
                 ),
             ) as validate,
         ):
@@ -3202,6 +4132,32 @@ class PublicationReceiptTests(ReviewablePrFixture):
             body=self.body,
             review_input_path=self.template_path,
         )
+
+    def test_reconciliation_accepts_a_fresh_bot_append(self) -> None:
+        body = self.body.rstrip("\r\n")
+        tail = "\n\n" + UpdateReviewablePrTests.BOT_TAIL.lstrip("\n")
+        before = self.stored(body=body)
+        after = self.stored(body=body + tail)
+        digest = hashlib.sha256(body.encode()).hexdigest()
+        with (
+            mock.patch.object(AUDIT, "stored_pr", side_effect=[before, after]),
+            mock.patch.object(
+                AUDIT,
+                "_validate_live_state",
+                return_value=(
+                    self.review_input_schema_version,
+                    self.review_input_sha256,
+                    digest,
+                ),
+            ),
+        ):
+            receipt = AUDIT.reconcile(
+                expected=self.expected,
+                receipt_directory=self.receipt_directory,
+                review_input_path=self.template_path,
+            )
+        self.assertEqual(receipt.final_state.body_sha256, digest)
+        self.assertTrue(RECEIPTS.receipt_matches_live(receipt, after))
 
     def test_audit_uses_only_authoritative_latest_receipt(self) -> None:
         state_a = self.stored(title="state A")
@@ -3699,6 +4655,7 @@ with receipt_ledger_lock(root, expected) as lease:
                 return_value=(
                     self.review_input_schema_version,
                     self.review_input_sha256,
+                    hashlib.sha256(self.body.encode()).hexdigest(),
                 ),
             ),
             mock.patch.object(AUDIT, "record_reconciliation") as record,

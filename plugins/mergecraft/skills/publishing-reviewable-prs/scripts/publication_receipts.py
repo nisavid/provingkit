@@ -8,12 +8,18 @@ import json
 import os
 import re
 import stat
+import sys
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterator, Literal, Mapping
+
+_WRITER_SCRIPTS = Path(__file__).parents[2] / "writing-reviewable-pr-descriptions/scripts"
+if str(_WRITER_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_WRITER_SCRIPTS))
+from change_navigation.bot_body import BotBodyError, authored_body  # noqa: E402
 
 from required_review import (
     PublicationCandidate,
@@ -28,8 +34,9 @@ from reviewable_pr_state import (
     validate_identity_inputs,
 )
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 LEGACY_SCHEMA_VERSION = 2
+PREVIOUS_SCHEMA_VERSION = 3
 PUBLISHER_NAME = "publishing-reviewable-prs"
 PUBLISHER_VERSION = 1
 POLICY_VERSION = 1
@@ -87,10 +94,12 @@ class _VerifiedTransition:
     operation: Literal["create", "update-text", "mark-ready", "reconcile"]
     preimage: StateSnapshot
     final_state: StateSnapshot
+    final_raw_state: StateSnapshot
     review_input_schema_version: int
     review_input_sha256: str
     review: PublicationReview | None
     candidate: PublicationCandidate | None
+    final_body: str | None = None
 
 
 @dataclass(frozen=True)
@@ -139,7 +148,7 @@ class PublicationReceipt:
             "preimage": self.preimage.as_json(),
             "final_state": self.final_state.as_json(),
         }
-        if self.schema_version >= SCHEMA_VERSION:
+        if self.schema_version >= PREVIOUS_SCHEMA_VERSION:
             value["review"] = self.review.as_json() if self.review is not None else None
         return value
 
@@ -440,7 +449,12 @@ def _ledger_directory(root: Path, expected: ExpectedIdentity, *, create: bool) -
     return _private_directory(directory, create=create, parent=root)
 
 
-def _snapshot(stored: dict[str, Any], expected: ExpectedIdentity) -> StateSnapshot:
+def _snapshot(
+    stored: dict[str, Any],
+    expected: ExpectedIdentity,
+    *,
+    body_sha256: str | None = None,
+) -> StateSnapshot:
     title = stored.get("title")
     body = stored.get("body")
     is_draft = stored.get("isDraft")
@@ -453,6 +467,13 @@ def _snapshot(stored: dict[str, Any], expected: ExpectedIdentity) -> StateSnapsh
         or state != "OPEN"
     ):
         raise ReceiptError("cannot bind an invalid or unverified PR state")
+    if body_sha256 is not None:
+        try:
+            body = authored_body(body, expected_sha256=body_sha256)
+        except BotBodyError as error:
+            raise ReceiptError(
+                "live authored body differs from its sealed digest"
+            ) from error
     return StateSnapshot(
         title_sha256=_digest(title),
         body_sha256=_digest(body),
@@ -502,6 +523,9 @@ def verified_transition(
     review_input_sha256: str,
     review: PublicationReview | None,
     candidate: PublicationCandidate | None,
+    final_body: str | None = None,
+    preimage_body_sha256: str | None = None,
+    final_body_sha256: str | None = None,
 ) -> _VerifiedTransition:
     """Bind exact before/after evidence before it can receive provenance."""
 
@@ -514,8 +538,9 @@ def verified_transition(
         or HEX_64_RE.fullmatch(review_input_sha256) is None
     ):
         raise ReceiptError("review-input evidence is invalid")
-    before = _snapshot(preimage, expected)
-    after = _snapshot(final_reread, expected)
+    before = _snapshot(preimage, expected, body_sha256=preimage_body_sha256)
+    after = _snapshot(final_reread, expected, body_sha256=final_body_sha256)
+    raw_after = _snapshot(final_reread, expected)
     _validate_transition_shape(operation, before, after)
     if operation in CANONICAL_OPERATIONS and not isinstance(review, PublicationReview):
         raise ReceiptError("canonical publication review choice is absent")
@@ -538,6 +563,7 @@ def verified_transition(
                 final_title_sha256=after.title_sha256,
                 final_body_sha256=after.body_sha256,
                 review=review,
+                final_body=final_body,
             )
         except PublicationError as error:
             raise ReceiptError("publication candidate evidence is invalid") from error
@@ -546,10 +572,12 @@ def verified_transition(
         operation=operation,
         preimage=before,
         final_state=after,
+        final_raw_state=raw_after,
         review_input_schema_version=review_input_schema_version,
         review_input_sha256=review_input_sha256,
         review=review,
         candidate=candidate,
+        final_body=final_body,
     )
 
 
@@ -611,6 +639,7 @@ def _parse_receipt(
     schema_version = value.get("schema_version")
     if type(schema_version) is not int or schema_version not in {
         LEGACY_SCHEMA_VERSION,
+        PREVIOUS_SCHEMA_VERSION,
         SCHEMA_VERSION,
     }:
         raise ReceiptError("receipt has an unsupported schema version")
@@ -630,7 +659,7 @@ def _parse_receipt(
         "preimage",
         "final_state",
     }
-    if schema_version == SCHEMA_VERSION:
+    if schema_version >= PREVIOUS_SCHEMA_VERSION:
         root_keys.add("review")
     _exact_keys(
         value,
@@ -748,7 +777,7 @@ def _parse_receipt(
     ):
         raise ReceiptError("receipt provenance does not match its operation")
     review: PublicationReview | None = None
-    if schema_version == SCHEMA_VERSION:
+    if schema_version >= PREVIOUS_SCHEMA_VERSION:
         if value["provenance"] == PROVENANCE_CANONICAL:
             try:
                 review = parse_publication_review(value["review"])
@@ -865,11 +894,7 @@ def load_receipts(
             raise ReceiptError("receipt ledger predecessor chain is invalid")
         if index > 1 and receipt.created_at <= receipts[index - 2].created_at:
             raise ReceiptError("receipt ledger timestamps are not strictly ordered")
-        if (
-            index > 1
-            and receipts[index - 2].schema_version == SCHEMA_VERSION
-            and receipt.schema_version == LEGACY_SCHEMA_VERSION
-        ):
+        if index > 1 and receipts[index - 2].schema_version > receipt.schema_version:
             raise ReceiptError("receipt ledger schema version moved backward")
     return receipts
 
@@ -973,6 +998,7 @@ def record_verified_publication(
             final_title_sha256=transition.final_state.title_sha256,
             final_body_sha256=transition.final_state.body_sha256,
             review=transition.review,
+            final_body=transition.final_body,
         )
     except PublicationError as error:
         raise ReceiptError("publication candidate evidence is invalid") from error
@@ -995,7 +1021,11 @@ def record_reconciliation(
     if (
         receipts
         and receipts[-1].expected == transition.expected
-        and receipts[-1].final_state == transition.final_state
+        and receipts[-1].final_state == (
+            transition.final_state
+            if receipts[-1].schema_version >= SCHEMA_VERSION
+            else transition.final_raw_state
+        )
     ):
         raise ReceiptError("authoritative latest receipt already matches live state")
     return _append_receipt(
@@ -1008,7 +1038,18 @@ def record_reconciliation(
 
 def receipt_matches_live(receipt: PublicationReceipt, stored: dict[str, Any]) -> bool:
     try:
-        return _snapshot(stored, receipt.expected) == receipt.final_state
+        return (
+            _snapshot(
+                stored,
+                receipt.expected,
+                body_sha256=(
+                    receipt.final_state.body_sha256
+                    if receipt.schema_version >= SCHEMA_VERSION
+                    else None
+                ),
+            )
+            == receipt.final_state
+        )
     except ReceiptError:
         return False
 

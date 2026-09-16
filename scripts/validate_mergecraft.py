@@ -89,6 +89,7 @@ ROOT_FILES = {
 }
 WRITER_MODULE_NAMES = (
     "__init__",
+    "bot_body",
     "badge_colors",
     "badge_links",
     "badge_presentation",
@@ -611,8 +612,8 @@ ATLAS_EXTENSION_CONTRACT = {
 }
 EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
-    "writer": "03d2888242dc2a5b8c86edb61340c163250e458281a13b09df9f4a11a142c945",
-    "body": "d327115c7165f6ed961587f968e1cc8f264fb6cbe8b9d8d41af5ee020e47e806",
+    "writer": "0e6ee2c1377b8b571bda4773a124944361424bd2e251824d0f92ac30405cb2b9",
+    "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
 }
 RELEASE_VERSION = "1.0.0"
@@ -1833,15 +1834,21 @@ def validate_topology(root: Path) -> None:
         for component in skills
         if any(operation.endswith("-outcome") for operation in component["operations"])
     } | {"resuming-reviewed-prs"}
+    allowed_continuations = {
+        ("getting-prs-merged", "readiness-outcome")
+    }
     for coordinator in outcome_coordinators:
-        called_coordinators = {
-            operation_by_id[call.removeprefix("operation:")]["owner"]
+        called_operations = {
+            call.removeprefix("operation:")
             for call in skills_by_name[coordinator]["calls"]
             if operation_by_id[call.removeprefix("operation:")]["owner"]
             in outcome_coordinators
         }
         require(
-            not called_coordinators,
+            all(
+                (coordinator, called) in allowed_continuations
+                for called in called_operations
+            ),
             f"outcome coordinator call edge: {coordinator}",
         )
     resume_handoffs = skills_by_name["resuming-reviewed-prs"]["contract"][
