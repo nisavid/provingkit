@@ -472,6 +472,14 @@ def plugin_eval_report(
 
 
 class ValidatePublicReleaseTests(unittest.TestCase):
+    def test_repository_projection_requires_complete_plugin_readme_link(self) -> None:
+        readme = self.repository / "README.md"
+        plugin = next(iter(self.module.MARKETPLACE_PLUGINS))
+        readme.write_text(f"](plugins/{plugin}/README.md)\n", encoding="utf-8")
+        with mock.patch.object(self.module, "MARKETPLACE_PLUGINS", (plugin,)):
+            with self.assertRaisesRegex(self.module.ReleaseError, "omits public plugin"):
+                self.module.validate_repository_projection(self.repository)
+
     def setUp(self) -> None:
         self.module = load_validator_module()
         self.temporary_directory = tempfile.TemporaryDirectory()
