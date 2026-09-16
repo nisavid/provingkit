@@ -644,8 +644,10 @@ else:
         item = pr(int(arguments[arguments.index("edit") + 1]))
         if state.get("fault") == "concurrent-body-before-write":
             state.setdefault("limitations", []).append("body drift before gh edit is overwritten; GitHub PR text has no CAS")
-        item["title"] = value("--title")
-        item["body"] = Path(value("--body-file")).read_text(encoding="utf-8")
+        if "--title" in arguments:
+            item["title"] = value("--title")
+        if "--body-file" in arguments:
+            item["body"] = Path(value("--body-file")).read_text(encoding="utf-8")
         state["edit_done"] = True
         if state.get("fault") == "edit-then-timeout":
             write(); raise SystemExit(124)

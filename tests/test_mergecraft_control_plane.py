@@ -428,7 +428,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
         return CONTROL.run_command(
             arguments,
             home=self.home,
-            environment={"PHASE7_GITHUB_STATE": str(self.github)},
+            environment={"MERGECRAFT_GITHUB_STATE": str(self.github)},
             allowed_scripts=(PUBLISHER,),
             cwd=self.git_repository,
         )
@@ -442,7 +442,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             "import json, os, runpy, sys\n"
             "from pathlib import Path\n"
             f"runpy.run_path({str(transport)!r}, run_name='__main__')\n"
-            "path = Path(os.environ['PHASE7_GITHUB_STATE'])\n"
+            "path = Path(os.environ['MERGECRAFT_GITHUB_STATE'])\n"
             "state = json.loads(path.read_text())\n"
             "if 'view' in sys.argv and not state.get('interleaved_update'):\n"
             f"    state['prs'][0].update({changes!r})\n"
@@ -594,6 +594,9 @@ class MergecraftControlPlaneTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         state = json.loads(self.github.read_text())
         self.assertEqual(state["prs"][0]["body"], BODY)
+        self.assertEqual(state["prs"][0]["title"], "feat: widget")
+        edit = next(call for call in state["calls"] if "edit" in call)
+        self.assertNotIn("--title", edit)
         self.assertEqual(
             [call[2:4] for call in state["calls"]],
             [
