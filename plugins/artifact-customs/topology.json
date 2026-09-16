@@ -83,11 +83,5 @@
     "adopted": "adopted",
     "blocked": "blocked",
     "maintained": "maintained"
-  },
-  "phase7_control_projection": [
-    "rolecasting",
-    "versionkeeping",
-    "mergecraft",
-    "tricritical"
-  ]
+  }
 }

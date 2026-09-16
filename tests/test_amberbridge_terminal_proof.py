@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).parents[1]
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import run_phase7_terminal_proof as proof
+import run_amberbridge_terminal_proof as proof
 
 
 def digest(value: str) -> str:
@@ -19,8 +19,8 @@ def digest(value: str) -> str:
 class TargetProofTests(unittest.TestCase):
     def receipt(self) -> dict:
         return {
-            "schema_version": proof.run_phase7_composed_matrix.COMPOSED_SCHEMA_VERSION,
-            "contract": proof.run_phase7_composed_matrix.COMPOSED_CONTRACT,
+            "schema_version": proof.run_amberbridge_composed_matrix.COMPOSED_SCHEMA_VERSION,
+            "contract": proof.run_amberbridge_composed_matrix.COMPOSED_CONTRACT,
             "passed": True,
             "public_candidate_identity": "a" * 64,
             "runtime_isolation": {

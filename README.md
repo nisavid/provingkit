@@ -122,7 +122,8 @@ executable and an absolute public candidate checkout:
   /absolute/path/to/public-provingkit
 ```
 
-An exit status of `0` confirms only the prepared source checks. Native
+When the prepared source checks pass, the wrapper prints the validated candidate
+identities and exits with status `0`. It does not create a release receipt. Native
 `public-release` and optional Task Witness qualification routes remain
 unavailable. A later release must supply controls that this repository does
 not own: an installed, host-owned, content-pinned, network-denied OS sandbox;
@@ -131,6 +132,12 @@ for private evidence; authenticated host and evaluation evidence with managed
 signing-key custody and anti-replay state; and independent provider authority
 bound to the exact candidate, policy, runtime, and endpoint. Until those gates
 close, optional Task Witness equipment remains unavailable.
+
+## Amberbridge
+
+[Amberbridge](docs/amberbridge.md) is the release-evidence bridge between the
+public Kit and its private deployment context. Its contracts and tests are
+present; live release routes remain unavailable in this source stage.
 
 ## Generated locks and review evidence
 

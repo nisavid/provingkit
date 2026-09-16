@@ -81,6 +81,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/provingkit/final-main-import-map-v1.tsv",
             "release/provingkit/historical-identity-allowlist-v1.json",
             "release/provingkit/release-manifest-v1.schema.json",
+            "release/plugin-content-locks/artifact-customs.json",
             "release/plugin-content-locks/mergecraft.json",
             "release/plugin-content-locks/versionkeeping.json",
             "plugins/tricritical/content-lock.json",
@@ -355,9 +356,9 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         )
         expected_projection = (
             "python -m unittest "
-            "tests.test_phase7_compatibility_projection."
-            "Phase7CompatibilityProjectionTests."
-            "test_projection_is_byte_identical_to_frozen_v5_fixture"
+            "tests.test_amberbridge_compatibility_projection."
+            "AmberbridgeCompatibilityProjectionTests."
+            "test_projection_is_byte_identical_to_frozen_v1_fixture"
         )
 
         self.assertIn(expected_tricritical, tricritical_commands)

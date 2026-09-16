@@ -15,12 +15,12 @@ SCRIPT_DIR = REPO_ROOT / "scripts"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import phase7_private_evidence_isolation as isolation
-import phase7_private_evidence_producer as producer
-import private_phase7_evidence as public_evidence
-import run_phase7_production_integration as coordinator
+import amberbridge_private_evidence_isolation as isolation
+import amberbridge_private_evidence_producer as producer
+import private_amberbridge_evidence as public_evidence
+import run_amberbridge_production_integration as coordinator
 
-from tests import phase7_v4_fixture as fixture
+from tests import amberbridge_v4_fixture as fixture
 
 
 def opaque_replay_summary() -> dict[str, object]:
@@ -50,7 +50,7 @@ def backend_release_evidence() -> dict[str, object]:
     targets = [
         {
             "schema_version": 2,
-            "contract": "phase7-public-terminal-direct-proof-v2",
+            "contract": "amberbridge-public-terminal-direct-proof-v2",
             "target": "macos-seatbelt",
             "binary": "sandbox-exec",
             "version": "macos-seatbelt-v1",
@@ -65,7 +65,7 @@ def backend_release_evidence() -> dict[str, object]:
         },
         {
             "schema_version": 2,
-            "contract": "phase7-public-terminal-direct-proof-v2",
+            "contract": "amberbridge-public-terminal-direct-proof-v2",
             "target": "linux-bubblewrap",
             "binary": "bwrap",
             "version": "bubblewrap-v1",
@@ -80,7 +80,7 @@ def backend_release_evidence() -> dict[str, object]:
         },
         {
             "schema_version": 2,
-            "contract": "phase7-public-terminal-direct-proof-v2",
+            "contract": "amberbridge-public-terminal-direct-proof-v2",
             "target": "wsl2-bubblewrap",
             "binary": "bwrap",
             "version": "bubblewrap-wsl2-v1",
@@ -100,7 +100,7 @@ def backend_release_evidence() -> dict[str, object]:
         )
     return {
         "schema_version": 2,
-        "contract": "phase7-public-backend-release-evidence-v2",
+        "contract": "amberbridge-public-backend-release-evidence-v2",
         "public_candidate_identity": "a" * 64,
         "targets": targets,
     }
@@ -317,7 +317,7 @@ class ConformanceInventoryTests(unittest.TestCase):
             temporary = Path(directory).resolve()
             manifest = temporary / "capability.json"
             manifest.write_bytes(
-                b'{"contract":"phase7-readonly-capabilities-v2","expected_backend":{"backend":"seatbelt","binary_sha256":"sha256:'
+                b'{"contract":"amberbridge-readonly-capabilities-v2","expected_backend":{"backend":"seatbelt","binary_sha256":"sha256:'
                 + b"a" * 64
                 + b'","version_sha256":"sha256:'
                 + b"b" * 64
@@ -329,7 +329,7 @@ class ConformanceInventoryTests(unittest.TestCase):
 class BackendAndPublishContractTests(unittest.TestCase):
     def test_independent_backend_contract_covers_all_release_targets(self) -> None:
         contracts = isolation.load_backend_contracts(
-            REPO_ROOT / "scripts/phase7_private_evidence_backend_contracts.json"
+            REPO_ROOT / "scripts/amberbridge_private_evidence_backend_contracts.json"
         )
         self.assertEqual(
             tuple(contract["target"] for contract in contracts),
@@ -353,7 +353,7 @@ class BackendAndPublishContractTests(unittest.TestCase):
         self,
     ) -> None:
         contract_path = (
-            REPO_ROOT / "scripts/phase7_private_evidence_backend_contracts.json"
+            REPO_ROOT / "scripts/amberbridge_private_evidence_backend_contracts.json"
         )
         document = json.loads(contract_path.read_text(encoding="utf-8"))
         document["targets"][0]["binary"] = "bwrap"
@@ -373,7 +373,7 @@ class BackendAndPublishContractTests(unittest.TestCase):
 
     def test_private_registry_backend_schema_is_target_sensitive(self) -> None:
         contracts = isolation.load_backend_contracts(
-            REPO_ROOT / "scripts/phase7_private_evidence_backend_contracts.json"
+            REPO_ROOT / "scripts/amberbridge_private_evidence_backend_contracts.json"
         )
         public_evidence._validate_backend_contracts(contracts)
         self.assertIn("sha256", contracts[0])
@@ -404,7 +404,7 @@ class BackendAndPublishContractTests(unittest.TestCase):
         self,
     ) -> None:
         contracts = isolation.load_backend_contracts(
-            REPO_ROOT / "scripts/phase7_private_evidence_backend_contracts.json"
+            REPO_ROOT / "scripts/amberbridge_private_evidence_backend_contracts.json"
         )
         summary = opaque_replay_summary()
         registry_checks = []

@@ -11,22 +11,22 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tests import phase7_v4_fixture as fixture
+from tests import amberbridge_v4_fixture as fixture
 
 REPO_ROOT = Path(__file__).parents[1]
 SCRIPT_DIR = REPO_ROOT / "scripts"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import private_phase7_evidence as public_evidence
-import run_phase7_composed_matrix as runner
+import private_amberbridge_evidence as public_evidence
+import run_amberbridge_composed_matrix as runner
 import validate_public_release as release_validator
 
 COMPATIBILITY_BYTES = runner.compatibility_bytes(REPO_ROOT)
 PUBLIC_IDENTITY = runner.candidate_identity(REPO_ROOT)
 
 
-class Phase7ComposedMatrixTests(unittest.TestCase):
+class AmberbridgeComposedMatrixTests(unittest.TestCase):
     def replay_summary(self, target: str = "macos-seatbelt") -> dict[str, object]:
         summary = fixture.replay_summary(COMPATIBILITY_BYTES)
         transient = summary["conformance"]
@@ -129,7 +129,7 @@ class Phase7ComposedMatrixTests(unittest.TestCase):
         help_result = subprocess.run(
             [
                 sys.executable,
-                str(REPO_ROOT / "scripts/run_phase7_composed_matrix.py"),
+                str(REPO_ROOT / "scripts/run_amberbridge_composed_matrix.py"),
                 "--help",
             ],
             cwd=REPO_ROOT,
@@ -168,7 +168,7 @@ class Phase7ComposedMatrixTests(unittest.TestCase):
             receipt = self.run_composition(output, summary=replay)
 
         self.assertEqual(receipt["schema_version"], 7)
-        self.assertEqual(receipt["contract"], "phase7-composed-evidence-v7")
+        self.assertEqual(receipt["contract"], "amberbridge-composed-evidence-v7")
         self.assertTrue(receipt["passed"])
         self.assertEqual(
             receipt["compatibility_sha256"],
@@ -207,7 +207,7 @@ class Phase7ComposedMatrixTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory).resolve() / "output"
             receipt = self.run_composition(output)
-            stored = output / "phase7-composed-matrix.json"
+            stored = output / "amberbridge-composed-matrix.json"
 
             self.assertEqual(stored.read_bytes(), fixture.json_file_bytes(receipt))
             self.assertEqual(
@@ -235,7 +235,7 @@ class Phase7ComposedMatrixTests(unittest.TestCase):
             backend = runtime["backend"]
             proof = {
                 "schema_version": 2,
-                "contract": "phase7-public-terminal-direct-proof-v2",
+                "contract": "amberbridge-public-terminal-direct-proof-v2",
                 "target": target,
                 "binary": backend["binary"],
                 "version": backend["version"],
@@ -261,7 +261,7 @@ class Phase7ComposedMatrixTests(unittest.TestCase):
             )
         backend_evidence = {
             "schema_version": 2,
-            "contract": "phase7-public-backend-release-evidence-v2",
+            "contract": "amberbridge-public-backend-release-evidence-v2",
             "public_candidate_identity": PUBLIC_IDENTITY,
             "targets": proofs,
         }
@@ -289,7 +289,7 @@ class Phase7ComposedMatrixTests(unittest.TestCase):
 
                     self.assertEqual(
                         release_validator.validate_composed_receipt(
-                            REPO_ROOT, output / "phase7-composed-matrix.json"
+                            REPO_ROOT, output / "amberbridge-composed-matrix.json"
                         ),
                         receipt,
                     )
@@ -331,7 +331,7 @@ class Phase7ComposedMatrixTests(unittest.TestCase):
             receipt["receipt_sha256"] = fixture.digest_bytes(
                 fixture.canonical_bytes(unsigned)
             )
-            stored = output / "phase7-composed-matrix.json"
+            stored = output / "amberbridge-composed-matrix.json"
             stored.write_bytes(fixture.json_file_bytes(receipt))
 
             with self.assertRaisesRegex(

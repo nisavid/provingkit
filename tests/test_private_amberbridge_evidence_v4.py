@@ -3,21 +3,22 @@ from __future__ import annotations
 import base64
 import copy
 import sys
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
 
-from tests import phase7_v4_fixture as fixture
+from tests import amberbridge_v4_fixture as fixture
 
 REPO_ROOT = Path(__file__).parents[1]
 SCRIPT_DIR = REPO_ROOT / "scripts"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import private_phase7_evidence as evidence
+import private_amberbridge_evidence as evidence
 
 COMPATIBILITY_BYTES = (
-    REPO_ROOT / "tests/fixtures/phase7-v4-compatibility.json"
+    REPO_ROOT / "tests/fixtures/amberbridge-v1-compatibility.json"
 ).read_bytes()
 
 
@@ -80,7 +81,7 @@ class PublicReplaySummaryTests(unittest.TestCase):
                     )
         legacy = opaque_replay_summary(COMPATIBILITY_BYTES)
         legacy["schema_version"] = 3
-        legacy["contract"] = "phase7-private-family-evidence-v3"
+        legacy["contract"] = "amberbridge-private-family-evidence-v3"
         with self.assertRaises(evidence.PrivateEvidenceError):
             evidence.validate_public_replay_summary(fixture.json_file_bytes(legacy))
 
@@ -139,7 +140,7 @@ class PublicReplaySummaryTests(unittest.TestCase):
 
 
 class PublicVerifierBoundaryTests(unittest.TestCase):
-    def retained_v1_evidence(self, root: Path) -> dict[str, object]:
+    def previous_registry_evidence(self, root: Path) -> dict[str, object]:
         root.mkdir(mode=0o700)
         sample = fixture.frozen_private_sample()
         registry_path = root / "private-producer-registry.json"
@@ -196,9 +197,9 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
         ):
             summary[field] = copy.deepcopy(original[field])
         backend = built["registry"]["backend_contracts"][0]
-        summary["runtime_isolation"]["backend"] = {
-            key: backend[key] for key in ("target", "binary", "version", "sha256")
-        }
+        summary["runtime_isolation"]["backend"].update(
+            {key: backend[key] for key in ("target", "binary", "version", "sha256")}
+        )
         summary["frozen_identity_sha256"] = fixture.frozen_identity_sha256(summary)
         summary["summary_sha256"] = fixture.digest_bytes(
             fixture.canonical_bytes(
@@ -244,30 +245,50 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
             expected_producer_package_sha256=built["producer_package_sha256"],
         )
 
-    def test_retained_v4_registry_and_witness_are_explicitly_invalidated(self) -> None:
+    def test_previous_registry_schema_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            built = self.retained_v1_evidence(Path(directory).resolve() / "evidence")
+            built = self.previous_registry_evidence(
+                Path(directory).resolve() / "evidence"
+            )
             with self.assertRaisesRegex(
                 evidence.PrivateEvidenceError,
                 "private producer registry schema drift",
             ):
                 self.verify(built)
 
+    def test_current_compatibility_and_synthetic_witness_bindings_are_accepted(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            built = self.build(Path(directory).resolve() / "evidence")
+
+            verified = self.verify(built)
+
+        self.assertEqual(verified, built["summary"])
+        self.assertEqual(
+            base64.b64decode(verified["compatibility_bytes_base64"]),
+            evidence.compatibility_bytes(REPO_ROOT),
+        )
+
     def test_rejects_digest_rebound_non_witness_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            built = self.retained_v1_evidence(Path(directory).resolve() / "evidence")
+            built = self.build(Path(directory).resolve() / "evidence")
+            self.verify(built)
             fixture.write_private(built["witness_path"], b"not a witness tar")
             self.resign_summary(
                 built,
                 field="producer_witness_sha256",
                 digest=fixture.digest_bytes(b"not a witness tar"),
             )
-            with self.assertRaises(evidence.PrivateEvidenceError):
+            with self.assertRaisesRegex(
+                evidence.PrivateEvidenceError, "not a valid USTAR archive"
+            ):
                 self.verify(built)
 
     def test_rejects_digest_rebound_incomplete_registry(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             built = self.build(Path(directory).resolve() / "evidence")
+            self.verify(built)
             registry = copy.deepcopy(built["registry"])
             registry.pop("roles")
             content = fixture.json_file_bytes(registry)
@@ -277,14 +298,17 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
                 field="producer_registry_sha256",
                 digest=fixture.digest_bytes(content),
             )
-            with self.assertRaises(evidence.PrivateEvidenceError):
+            with self.assertRaisesRegex(
+                evidence.PrivateEvidenceError, "private producer registry schema drift"
+            ):
                 self.verify(built)
 
     def test_rejects_summary_resigned_after_frozen_runtime_field_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             built = self.build(Path(directory).resolve() / "evidence")
+            self.verify(built)
             summary = built["summary"]
-            summary["runtime_isolation"]["conformance_sha256"] = "sha256:" + "f" * 64
+            summary["runtime_isolation"]["policy_sha256"] = "sha256:" + "f" * 64
             unsigned = {
                 key: value for key, value in summary.items() if key != "summary_sha256"
             }
@@ -294,14 +318,18 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
             fixture.write_private(
                 built["summary_path"], fixture.json_file_bytes(summary)
             )
-            with self.assertRaises(evidence.PrivateEvidenceError):
+            with self.assertRaisesRegex(
+                evidence.PrivateEvidenceError,
+                "coordinator-frozen identity reconstruction mismatch",
+            ):
                 self.verify(built)
 
-    def test_retained_v4_projection_mutation_stays_invalidated_at_registry_boundary(
+    def test_rejects_rebound_compatibility_document(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            built = self.retained_v1_evidence(Path(directory).resolve() / "evidence")
+            built = self.build(Path(directory).resolve() / "evidence")
+            self.verify(built)
             summary = built["summary"]
             changed = b'{"contract":"changed-projection"}\n'
             summary["compatibility_bytes_base64"] = base64.b64encode(changed).decode(
@@ -321,43 +349,63 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
 
             with self.assertRaisesRegex(
                 evidence.PrivateEvidenceError,
-                "private producer registry schema drift",
+                "private compatibility projection digest mismatch",
             ):
                 self.verify(built)
 
-    def test_fixture_registry_and_witness_cover_real_private_source_inventory(
+    def test_rejects_rebound_package_path_absent_from_witness_tree(
         self,
     ) -> None:
-        expected_sources = {
-            "scripts/build_phase7_private_evidence.py",
-            "scripts/phase7_private_evidence_isolation.py",
-            "scripts/phase7_private_evidence_producer.py",
-            "scripts/phase7_private_evidence_registry.py",
-            "scripts/phase7_private_evidence_test_launcher.py",
-            "tests/agent_plugin_pin_fixtures.py",
-            "tests/test_agent_topology.py",
-            "tests/test_modify_private_config.py",
-            "tests/test_claude_settings_modifier.py",
-            "tests/test_agent_control_plane_hook.py",
-            "tests/test_plugin_deployment.py",
-            "tests/test_review_atlas_overlay.py",
-        }
         with tempfile.TemporaryDirectory() as directory:
             built = self.build(Path(directory).resolve() / "evidence")
+            self.verify(built)
+            registry = built["registry"]
+            registry["package_members"][0]["path"] = "scripts/absent_producer.py"
+            package_digest = fixture.digest_bytes(
+                fixture.canonical_bytes(registry["package_members"])
+            )
+            registry_content = fixture.json_file_bytes(registry)
+            registry_digest = fixture.digest_bytes(registry_content)
+            fixture.write_private(built["registry_path"], registry_content)
 
-        registry_paths = {
-            member["path"] for member in built["registry"]["package_members"]
-        }
-        witness_paths = set(built["witness_package_paths"])
-        self.assertEqual(registry_paths, expected_sources)
-        self.assertEqual(witness_paths, expected_sources)
-        self.assertEqual(
-            [
-                (check["id"], tuple(check["tests"]))
-                for check in built["registry"]["checks"]
-            ],
-            list(fixture.PRIVATE_CHECKS),
-        )
+            with tarfile.open(built["witness_path"], mode="r:") as archive:
+                objects = [
+                    (member.name, archive.extractfile(member).read())
+                    for member in archive.getmembers()
+                    if member.name != "manifest.json"
+                ]
+            manifest = built["witness_manifest"]
+            manifest["registry_sha256"] = registry_digest
+            manifest["producer_package_sha256"] = package_digest
+            witness_content = fixture.deterministic_tar(
+                [("manifest.json", fixture.json_file_bytes(manifest)), *objects]
+            )
+            fixture.write_private(built["witness_path"], witness_content)
+
+            summary = built["summary"]
+            summary["producer_registry_sha256"] = registry_digest
+            summary["producer_witness_sha256"] = fixture.digest_bytes(witness_content)
+            summary["producer_package_sha256"] = package_digest
+            built["producer_package_sha256"] = package_digest
+            summary["frozen_identity_sha256"] = fixture.frozen_identity_sha256(summary)
+            summary["summary_sha256"] = fixture.digest_bytes(
+                fixture.canonical_bytes(
+                    {
+                        key: value
+                        for key, value in summary.items()
+                        if key != "summary_sha256"
+                    }
+                )
+            )
+            fixture.write_private(
+                built["summary_path"], fixture.json_file_bytes(summary)
+            )
+
+            with self.assertRaisesRegex(
+                evidence.PrivateEvidenceError,
+                "complete-tree witness producer-package path binding drift",
+            ):
+                self.verify(built)
 
 
 if __name__ == "__main__":

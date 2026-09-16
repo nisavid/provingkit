@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compose public Phase 7 evidence with a public-safe private replay summary."""
+"""Compose public Amberbridge evidence with a public-safe private replay summary."""
 
 from __future__ import annotations
 
@@ -30,15 +30,15 @@ from evidence_transport import (
     prepare_private_directory,
     private_atomic_write,
 )
-from phase7_compatibility_projection import compatibility_bytes
-from private_phase7_evidence import (
+from amberbridge_compatibility_projection import compatibility_bytes
+from private_amberbridge_evidence import (
     PrivateEvidenceError,
     replay_payload_sha256,
     verify_private_evidence,
 )
 
 COMPOSED_SCHEMA_VERSION = 7
-COMPOSED_CONTRACT = "phase7-composed-evidence-v7"
+COMPOSED_CONTRACT = "amberbridge-composed-evidence-v7"
 COMPOSED_CLAIM = (
     "provider-free public composition with replay-payload-bound frozen private evidence"
 )
@@ -90,7 +90,7 @@ def _immutable_candidate_snapshot(
 ) -> Iterator[tuple[Path, str]]:
     """Capture the exact candidate bytes once and execute only that snapshot."""
 
-    temporary = tempfile.TemporaryDirectory(prefix="phase7-public-snapshot-")
+    temporary = tempfile.TemporaryDirectory(prefix="amberbridge-public-snapshot-")
     snapshot = Path(temporary.name).resolve() / "candidate"
     snapshot.mkdir(mode=0o700)
     captured_files: list[Path] = []
@@ -262,6 +262,37 @@ def _public_conformance(private: dict[str, Any]) -> dict[str, Any]:
     return copy.deepcopy(conformance)
 
 
+def _private_receipt_fields(
+    private: dict[str, Any],
+    *,
+    compatibility_sha256: str,
+    conformance: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the shared private portion of a composed receipt.
+
+    Keeping this projection in one place prevents ``run`` and
+    ``receipt_is_current`` from drifting as the private contract evolves.
+    """
+    return {
+        "private_commit_oid": private["private_commit_oid"],
+        "private_candidate_identity": private["private_candidate_identity"],
+        "producer_package_sha256": private["producer_package_sha256"],
+        "producer_registry_sha256": private["producer_registry_sha256"],
+        "producer_witness_sha256": private["producer_witness_sha256"],
+        "private_receipt_sha256": private["private_receipt_sha256"],
+        "private_trust_anchor_sha256": private["private_trust_anchor_sha256"],
+        "frozen_identity_sha256": private["frozen_identity_sha256"],
+        "private_evidence_bundle_sha256": private["private_evidence_bundle_sha256"],
+        "private_replay_payload_sha256": replay_payload_sha256(private),
+        "private_replay_summary_sha256": private["summary_sha256"],
+        "compatibility_sha256": compatibility_sha256,
+        "checks": copy.deepcopy(private["checks"]),
+        "role_payloads": copy.deepcopy(private["role_payloads"]),
+        "runtime_isolation": copy.deepcopy(private["runtime_isolation"]),
+        "conformance": copy.deepcopy(conformance),
+    }
+
+
 def run(
     *,
     replay_summary_path: Path,
@@ -336,22 +367,11 @@ def run(
             "contract": COMPOSED_CONTRACT,
             "claim": COMPOSED_CLAIM,
             "public_candidate_identity": public_identity,
-            "private_commit_oid": private["private_commit_oid"],
-            "private_candidate_identity": private["private_candidate_identity"],
-            "producer_package_sha256": private["producer_package_sha256"],
-            "producer_registry_sha256": private["producer_registry_sha256"],
-            "producer_witness_sha256": private["producer_witness_sha256"],
-            "private_receipt_sha256": private["private_receipt_sha256"],
-            "private_trust_anchor_sha256": private["private_trust_anchor_sha256"],
-            "frozen_identity_sha256": private["frozen_identity_sha256"],
-            "private_evidence_bundle_sha256": private["private_evidence_bundle_sha256"],
-            "private_replay_payload_sha256": replay_payload_sha256(private),
-            "private_replay_summary_sha256": private["summary_sha256"],
-            "compatibility_sha256": compatibility_sha256,
-            "checks": copy.deepcopy(private["checks"]),
-            "role_payloads": copy.deepcopy(private["role_payloads"]),
-            "runtime_isolation": copy.deepcopy(private["runtime_isolation"]),
-            "conformance": conformance,
+            **_private_receipt_fields(
+                private,
+                compatibility_sha256=compatibility_sha256,
+                conformance=conformance,
+            ),
             "records": records,
             "passed": all(record["returncode"] == 0 for record in records),
         }
@@ -360,7 +380,7 @@ def run(
             "receipt_sha256": digest_bytes(canonical_bytes(unsigned)),
         }
         private_atomic_write(
-            output / "phase7-composed-matrix.json",
+            output / "amberbridge-composed-matrix.json",
             json_file_bytes(receipt),
             error_factory=ComposedEvidenceError,
         )
@@ -405,24 +425,11 @@ def receipt_is_current(
             public_root=public_root,
         )
         conformance = _public_conformance(private)
-        expected_private_fields = {
-            "private_commit_oid": private["private_commit_oid"],
-            "private_candidate_identity": private["private_candidate_identity"],
-            "producer_package_sha256": private["producer_package_sha256"],
-            "producer_registry_sha256": private["producer_registry_sha256"],
-            "producer_witness_sha256": private["producer_witness_sha256"],
-            "private_receipt_sha256": private["private_receipt_sha256"],
-            "private_trust_anchor_sha256": private["private_trust_anchor_sha256"],
-            "frozen_identity_sha256": private["frozen_identity_sha256"],
-            "private_evidence_bundle_sha256": private["private_evidence_bundle_sha256"],
-            "private_replay_payload_sha256": replay_payload_sha256(private),
-            "private_replay_summary_sha256": private["summary_sha256"],
-            "compatibility_sha256": compatibility_sha256,
-            "checks": private["checks"],
-            "role_payloads": private["role_payloads"],
-            "runtime_isolation": private["runtime_isolation"],
-            "conformance": conformance,
-        }
+        expected_private_fields = _private_receipt_fields(
+            private,
+            compatibility_sha256=compatibility_sha256,
+            conformance=conformance,
+        )
         if (
             candidate_identity(public_root) != public_identity
             or receipt["public_candidate_identity"] != public_identity
@@ -516,7 +523,7 @@ def entrypoint_main() -> int:
     if sys.argv[1:] in (["-h"], ["--help"]):
         return main()
     print(
-        "ERROR: Phase 7 composed runtime is unavailable in this source-stage release",
+        "ERROR: Amberbridge composed runtime is unavailable in this source-stage release",
         file=sys.stderr,
     )
     return 1

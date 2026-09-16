@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Derive one immutable public-safe Phase 7 terminal proof.
+"""Derive one immutable public-safe Amberbridge terminal proof.
 
 This is deliberately a proof-only route.  It neither runs final release
 validation nor publishes a private artifact: the only newly emitted datum is a
@@ -20,15 +20,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import run_phase7_composed_matrix
-import run_phase7_production_integration as coordinator
+import run_amberbridge_composed_matrix
+import run_amberbridge_production_integration as coordinator
 from evidence_transport import (
     candidate_content_identity,
     canonical_bytes,
     frozen_no_replace_write,
     json_file_bytes,
 )
-from private_phase7_evidence import verify_private_evidence
+from private_amberbridge_evidence import verify_private_evidence
 
 
 TARGETS = (
@@ -64,8 +64,8 @@ def derive_target_proof(
 
     require(
         receipt.get("schema_version")
-        == run_phase7_composed_matrix.COMPOSED_SCHEMA_VERSION
-        and receipt.get("contract") == run_phase7_composed_matrix.COMPOSED_CONTRACT
+        == run_amberbridge_composed_matrix.COMPOSED_SCHEMA_VERSION
+        and receipt.get("contract") == run_amberbridge_composed_matrix.COMPOSED_CONTRACT
         and receipt.get("passed") is True,
         "composed receipt did not pass",
     )
@@ -105,7 +105,7 @@ def derive_target_proof(
     )
     unsigned = {
         "schema_version": 2,
-        "contract": "phase7-public-terminal-direct-proof-v2",
+        "contract": "amberbridge-public-terminal-direct-proof-v2",
         "target": expected_target,
         "binary": expected_binary,
         "version": backend["version"],
@@ -227,7 +227,7 @@ def run(
         expected_commit_oid=private_commit_oid,
         expected_producer_package_sha256=package_sha256,
     )
-    receipt = run_phase7_composed_matrix.run(
+    receipt = run_amberbridge_composed_matrix.run(
         replay_summary_path=private_summary_output,
         producer_witness_path=witness_path,
         producer_registry_path=registry_path,
@@ -302,7 +302,7 @@ def entrypoint_main() -> int:
     if sys.argv[1:] in (["-h"], ["--help"]):
         return main()
     print(
-        "ERROR: Phase 7 terminal runtime is unavailable in this source-stage release",
+        "ERROR: Amberbridge terminal runtime is unavailable in this source-stage release",
         file=sys.stderr,
     )
     return 1

@@ -295,7 +295,7 @@ def load_backend_contracts(path: Path) -> list[dict[str, Any]]:
         isinstance(document, dict)
         and set(document) == {"schema_version", "contract", "targets"}
         and document["schema_version"] == 2
-        and document["contract"] == "phase7-private-isolation-backends-v2"
+        and document["contract"] == "amberbridge-private-isolation-backends-v2"
         and isinstance(document["targets"], list),
         "backend contract fixture drift",
     )
@@ -365,7 +365,7 @@ def validate_public_release_backend_evidence(
         and set(document)
         == {"schema_version", "contract", "public_candidate_identity", "targets"}
         and document["schema_version"] == 2
-        and document["contract"] == "phase7-public-backend-release-evidence-v2"
+        and document["contract"] == "amberbridge-public-backend-release-evidence-v2"
         and _candidate_identity(document["public_candidate_identity"])
         and isinstance(document["targets"], list),
         "backend release evidence drift",
@@ -397,7 +397,7 @@ def validate_public_release_backend_evidence(
             isinstance(record, dict)
             and set(record) == fields
             and record["schema_version"] == 2
-            and record["contract"] == "phase7-public-terminal-direct-proof-v2"
+            and record["contract"] == "amberbridge-public-terminal-direct-proof-v2"
             and record["target"] == target
             and record["binary"] == binary
             and isinstance(record["version"], str)

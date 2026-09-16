@@ -53,13 +53,7 @@
       "versionkeeping",
       "mergecraft"
     ],
-    "reverse_edges_forbidden": true,
-    "phase7_control_projection": [
-      "rolecasting",
-      "versionkeeping",
-      "mergecraft",
-      "tricritical"
-    ]
+    "reverse_edges_forbidden": true
   },
   "scenarios": [
     {

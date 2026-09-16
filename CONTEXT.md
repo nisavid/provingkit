@@ -65,8 +65,12 @@ _Avoid_: Writer, generic GitHub client
 ### Kit and release
 
 **Provingkit**:
-The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, Task Witness, and Proseweaving. *The Kit* is its shorthand. Task Witness is the code-only member: a manifest-only plugin whose control plane ships through its own deployment route.
+The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. *The Kit* is its shorthand. Task Witness is optional future equipment, outside the current Slate; any resurrection must define a fresh contract and adapter.
 _Avoid_: Suite, bundle, the six
+
+**Amberbridge**:
+The release-evidence bridge that binds a public candidate to verified private deployment evidence and public checks. Its contracts are present in the source stage; live release routes remain unavailable. See `docs/amberbridge.md`.
+_Avoid_: Release stage number, plugin, agent
 
 **Release**:
 An immutable whole-Kit compatibility claim over exact, independently releasable member identities. A partial selection is not Provingkit.

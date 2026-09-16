@@ -39,7 +39,7 @@ TERMINATION_GRACE_SECONDS = 0.25
 TERMINAL_WAIT_OPTIONS = os.WEXITED | os.WNOHANG | os.WNOWAIT
 VALIDATION_CHILD_MODE = "--validation-child"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
-SOURCE_SHA256 = "a18cdc976d9ba892b31b783dcf8b4e78763d8dbc43f8478256503ffe1db6d4bb"
+SOURCE_SHA256 = "53e9d2b2ab17ce26e44267d5193586df8f61bc3ea09947686cefa44efdb456ec"
 MAX_SUPERVISOR_SOURCE_BYTES = 1024 * 1024
 SignalHandler = int | Callable[[int, FrameType | None], None]
 
@@ -252,15 +252,15 @@ def validation_command(
             PREPARED_SUPERVISOR_SOURCE_OPTION,
             str(_LOADED_SUPERVISOR_SOURCE["source_sha256"]),
         ]
-    elif mode == "phase7-production":
+    elif mode == "amberbridge-production":
         if any(
             argument == "--public-root" or argument.startswith("--public-root=")
             for argument in arguments
         ):
             raise ValueError(
-                "phase7-production receives --public-root from the entrypoint"
+                "amberbridge-production receives --public-root from the entrypoint"
             )
-        entrypoint = repository / "scripts" / "run_phase7_production_integration.py"
+        entrypoint = repository / "scripts" / "run_amberbridge_production_integration.py"
         entrypoint_arguments = [
             "--public-root",
             str(repository),
@@ -270,7 +270,7 @@ def validation_command(
         ]
     else:
         raise ValueError(
-            "mode must be source-stage, public-release, or phase7-production"
+            "mode must be source-stage, public-release, or amberbridge-production"
         )
 
     if not entrypoint.is_file():

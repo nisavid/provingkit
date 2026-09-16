@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate one immutable public release snapshot and its Phase 7 projection."""
+"""Validate one immutable public release snapshot and its Amberbridge projection."""
 
 from __future__ import annotations
 
@@ -37,17 +37,17 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "37c248d7eef2957c62b23684dcc94260dbdccc059f649d0df20b17146686f7a3"
+SOURCE_SHA256 = "c173a784280949463d6280db6b15815b10e5521900997aabc435bc7124ae50a0"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
     ("evidence_transport", "scripts/evidence_transport.py"),
-    ("phase7_compatibility_projection", "scripts/phase7_compatibility_projection.py"),
+    ("amberbridge_compatibility_projection", "scripts/amberbridge_compatibility_projection.py"),
     (
-        "phase7_private_evidence_isolation",
-        "scripts/phase7_private_evidence_isolation.py",
+        "amberbridge_private_evidence_isolation",
+        "scripts/amberbridge_private_evidence_isolation.py",
     ),
-    ("private_phase7_evidence", "scripts/private_phase7_evidence.py"),
+    ("private_amberbridge_evidence", "scripts/private_amberbridge_evidence.py"),
 )
 
 CONTROL_PLUGINS = ("rolecasting", "versionkeeping", "mergecraft", "tricritical")
@@ -68,30 +68,32 @@ COMMON_SUPPORT_PATHS = {
     "evals/skill-routing-matrix.json",
     "scripts/run_control_plane_eval.py",
     "scripts/evidence_transport.py",
-    "scripts/phase7_control_plane.py",
-    "scripts/phase7_compatibility_projection.py",
-    "scripts/phase7_private_evidence_backend_contracts.json",
-    "scripts/phase7_private_evidence_isolation.py",
-    "scripts/phase7_private_evidence_producer.py",
-    "scripts/private_phase7_evidence.py",
-    "scripts/run_phase7_terminal_proof.py",
-    "scripts/combine_phase7_terminal_proofs.py",
-    "scripts/run_phase7_composed_matrix.py",
-    "scripts/run_phase7_production_integration.py",
+    "scripts/amberbridge_compatibility_projection.py",
+    "scripts/amberbridge_private_evidence_backend_contracts.json",
+    "scripts/amberbridge_private_evidence_isolation.py",
+    "scripts/amberbridge_private_evidence_producer.py",
+    "scripts/private_amberbridge_evidence.py",
+    "scripts/run_amberbridge_terminal_proof.py",
+    "scripts/combine_amberbridge_terminal_proofs.py",
+    "scripts/run_amberbridge_composed_matrix.py",
+    "scripts/run_amberbridge_production_integration.py",
     "scripts/run_skill_routing_eval.py",
     "scripts/agent_plugins_standard.py",
     "tests/test_evidence_transport.py",
     "tests/test_later_release_security_containment.py",
-    "tests/test_phase7_control_plane.py",
-    "tests/test_phase7_compatibility_projection.py",
-    "tests/test_phase7_composed_matrix.py",
-    "tests/test_phase7_production_integration.py",
-    "tests/test_phase7_terminal_proof.py",
-    "tests/test_phase7_terminal_proof_combiner.py",
-    "tests/test_private_phase7_evidence_v4.py",
-    "tests/phase7_v4_fixture.py",
+    "tests/test_amberbridge_compatibility_projection.py",
+    "tests/test_amberbridge_composed_matrix.py",
+    "tests/test_amberbridge_production_integration.py",
+    "tests/test_amberbridge_terminal_proof.py",
+    "tests/test_amberbridge_terminal_proof_combiner.py",
+    "tests/test_private_amberbridge_evidence_v4.py",
+    "tests/amberbridge_v4_fixture.py",
+    "tests/fixtures/amberbridge-v4-compatibility.json",
+    "tests/fixtures/amberbridge-v1-compatibility.json",
+    "tests/fixtures/amberbridge-v4-private-registry.json",
+    "tests/fixtures/amberbridge-v4-private-witness.tar",
+    "tests/fixtures/amberbridge-v4-private-conformance-binding.json",
     "tests/fixtures/phase7-v4-compatibility.json",
-    "tests/fixtures/phase7-v5-compatibility.json",
     "tests/test_control_plane_behavior_eval.py",
     "tests/test_skill_routing_eval.py",
     "tests/test_agent_plugins_standard.py",
@@ -172,16 +174,6 @@ BASE_SOURCE_STAGE_VALIDATOR_FLAGS = {
     "tricritical": (),
     "artifact-customs": ("--source-stage",),
 }
-TASK_WITNESS_FINAL_EVIDENCE_OPTIONS = (
-    ("--task-witness-candidate-root", "--candidate-root"),
-    ("--task-witness-release-manifest", "--release-manifest"),
-    ("--task-witness-macos-receipt", "--macos-receipt"),
-    ("--task-witness-linux-receipt", "--linux-receipt"),
-    ("--task-witness-review-evidence", "--review-evidence"),
-)
-TASK_WITNESS_FINAL_VALIDATOR_OPTIONS = tuple(
-    validator_option for _, validator_option in TASK_WITNESS_FINAL_EVIDENCE_OPTIONS
-)
 SHA256 = re.compile(r"sha256:[0-9a-f]{64}$")
 GIT_OID = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 NODE_SEMVER = re.compile(
@@ -196,7 +188,7 @@ COMPOSED_CLAIM = (
     "provider-free public composition with replay-payload-bound frozen private evidence"
 )
 COMPOSED_SCHEMA_VERSION = 7
-COMPOSED_CONTRACT = "phase7-composed-evidence-v7"
+COMPOSED_CONTRACT = "amberbridge-composed-evidence-v7"
 
 
 class ReleaseError(ValueError):
@@ -206,39 +198,6 @@ class ReleaseError(ValueError):
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise ReleaseError(message)
-
-
-def parse_task_witness_final_evidence(
-    raw_arguments: list[str], parsed_values: tuple[str | None, ...]
-) -> tuple[str, ...] | None:
-    """Bind the exact ordered generic Task Witness evidence grammar."""
-
-    public_options = tuple(
-        public_option for public_option, _ in TASK_WITNESS_FINAL_EVIDENCE_OPTIONS
-    )
-    require(
-        not any(
-            argument.startswith(f"{public_option}=")
-            for argument in raw_arguments
-            for public_option in public_options
-        ),
-        "Task Witness final evidence options require separate operands",
-    )
-    observed_options = tuple(
-        argument for argument in raw_arguments if argument in public_options
-    )
-    if not observed_options:
-        require(
-            all(value is None for value in parsed_values),
-            "Task Witness final evidence grammar drift",
-        )
-        return None
-    require(
-        observed_options == public_options
-        and all(value is not None for value in parsed_values),
-        "Task Witness final evidence options must occur exactly once in order",
-    )
-    return tuple(str(value) for value in parsed_values)
 
 
 def parse_public_candidate_sha256(value: str) -> str:
@@ -398,9 +357,9 @@ def _install_frozen_release_support(snapshot: Path) -> None:
         ) from error
 
     transport = loaded["evidence_transport"]
-    compatibility = loaded["phase7_compatibility_projection"]
-    isolation = loaded["phase7_private_evidence_isolation"]
-    private = loaded["private_phase7_evidence"]
+    compatibility = loaded["amberbridge_compatibility_projection"]
+    isolation = loaded["amberbridge_private_evidence_isolation"]
+    private = loaded["private_amberbridge_evidence"]
     globals().update(
         {
             "candidate_content_identity": transport.candidate_content_identity,
@@ -423,13 +382,13 @@ else:
     if str(SCRIPT_DIR) not in sys.path:
         sys.path.insert(0, str(SCRIPT_DIR))
     from evidence_transport import candidate_content_identity
-    from phase7_compatibility_projection import compatibility_bytes
-    from phase7_private_evidence_isolation import (
+    from amberbridge_compatibility_projection import compatibility_bytes
+    from amberbridge_private_evidence_isolation import (
         IsolationError,
         validate_public_release_backend_evidence,
         validate_runtime_backend_release_evidence,
     )
-    from private_phase7_evidence import (
+    from private_amberbridge_evidence import (
         CHECK_ORDER,
         ROLE_ORDER,
         PrivateEvidenceError,
@@ -1966,7 +1925,7 @@ def scope_support_paths(plugins: tuple[str, ...]) -> set[str]:
     return paths
 
 
-def release_test_paths(
+def release_test_support_paths(
     plugins: tuple[str, ...] = PRODUCTION_VALIDATED_PLUGINS,
 ) -> tuple[str, ...]:
     return tuple(
@@ -1978,6 +1937,16 @@ def release_test_paths(
                 if Path(relative).parts[:1] == ("tests",)
             }
         )
+    )
+
+
+def release_test_paths(
+    plugins: tuple[str, ...] = PRODUCTION_VALIDATED_PLUGINS,
+) -> tuple[str, ...]:
+    return tuple(
+        relative
+        for relative in release_test_support_paths(plugins)
+        if Path(relative).suffix in {"", ".py"}
     )
 
 
@@ -2141,7 +2110,7 @@ def release_contract_identity(
         )
     )
     support_modules = RELEASE_CONTRACT_SUPPORT_MODULES
-    tests = release_test_paths(plugins)
+    tests = release_test_support_paths(plugins)
     return {
         "sha256": digest_selected_paths(
             snapshot,
@@ -2813,21 +2782,7 @@ def validate_expected_identities(
 def run_contract_validators(
     snapshot: Path,
     plugin_eval_executable: Path | None = None,
-    *,
-    task_witness_final_evidence: tuple[str, ...] | None = None,
 ) -> dict:
-    task_witness_is_production = "task-witness" in PRODUCTION_VALIDATED_PLUGINS
-    require(
-        (task_witness_final_evidence is not None) == task_witness_is_production,
-        "Task Witness final evidence must match production eligibility",
-    )
-    if task_witness_final_evidence is not None:
-        require(
-            len(task_witness_final_evidence)
-            == len(TASK_WITNESS_FINAL_VALIDATOR_OPTIONS)
-            and all(isinstance(value, str) for value in task_witness_final_evidence),
-            "Task Witness final evidence shape drift",
-        )
     identity = release_contract_identity(snapshot, PRODUCTION_VALIDATED_PLUGINS)
     with tempfile.TemporaryDirectory(prefix="public-release-python-") as temporary:
         environment = private_python_child_environment(
@@ -2849,15 +2804,6 @@ def run_contract_validators(
                 str(snapshot / VALIDATOR_PATHS[plugin]),
                 str(snapshot),
             ]
-            if plugin == "task-witness":
-                assert task_witness_final_evidence is not None
-                validator_arguments.extend(["--final-release"])
-                for option, value in zip(
-                    TASK_WITNESS_FINAL_VALIDATOR_OPTIONS,
-                    task_witness_final_evidence,
-                    strict=True,
-                ):
-                    validator_arguments.extend([option, value])
             result = run_private_python_child(
                 snapshot,
                 validator_arguments,
@@ -3103,7 +3049,6 @@ def validate_release(
     expected_backend_release_evidence_sha256: str | None = None,
     prepared_supervisor_source_sha256: str | None = None,
     expected_git_candidate: dict[str, str] | None = None,
-    task_witness_final_evidence: tuple[str, ...] | None = None,
     after_snapshot: Callable[[], None] | None = None,
     source_stage_validator: Callable[[Path], None] | None = None,
 ) -> dict:
@@ -3121,11 +3066,6 @@ def validate_release(
     evidence_root: Path | None = None
     composed_summary: dict | None = None
     if run_contracts:
-        require(
-            (task_witness_final_evidence is not None)
-            == ("task-witness" in PRODUCTION_VALIDATED_PLUGINS),
-            "Task Witness final evidence must match production eligibility",
-        )
         require(
             routing_evidence is not None,
             "production release validation requires external skill-routing evidence",
@@ -3166,10 +3106,6 @@ def validate_release(
         )
     else:
         require(
-            task_witness_final_evidence is None,
-            "source-stage validation does not accept Task Witness final evidence",
-        )
-        require(
             expected_git_candidate is None,
             "source-stage validation does not accept a Git candidate constraint",
         )
@@ -3208,7 +3144,7 @@ def validate_release(
         if expected_git_candidate is not None:
             require(
                 expected_candidate == expected_git_candidate,
-                "Git candidate differs from the prepared Phase 7 candidate",
+                "Git candidate differs from the prepared Amberbridge candidate",
             )
     temporary_parent = Path(tempfile.gettempdir()).resolve()
     receipt_context = (
@@ -3305,17 +3241,9 @@ def validate_release(
                 raise ReleaseError(
                     f"private provenance validation failed: {error}"
                 ) from error
-            contract_arguments = (
-                {}
-                if task_witness_final_evidence is None
-                else {
-                    "task_witness_final_evidence": task_witness_final_evidence,
-                }
-            )
             contract_identity = run_contract_validators(
                 snapshot,
                 plugin_eval_executable,
-                **contract_arguments,
             )
             if contract_identity is None:
                 contract_identity = release_contract_identity(
@@ -3516,8 +3444,6 @@ def main() -> int:
     )
     parser.add_argument("--backend-release-evidence", type=Path)
     parser.add_argument("--expected-backend-release-evidence-sha256")
-    for public_option, _ in TASK_WITNESS_FINAL_EVIDENCE_OPTIONS:
-        parser.add_argument(public_option)
     parser.add_argument(
         PREPARED_SUPERVISOR_SOURCE_OPTION,
         dest="prepared_supervisor_source_sha256",
@@ -3526,14 +3452,6 @@ def main() -> int:
     parser.add_argument("--source-stage", action="store_true")
     arguments = parser.parse_args(raw_arguments)
     try:
-        task_witness_final_evidence_values = tuple(
-            getattr(arguments, public_option.removeprefix("--").replace("-", "_"))
-            for public_option, _ in TASK_WITNESS_FINAL_EVIDENCE_OPTIONS
-        )
-        task_witness_final_evidence = parse_task_witness_final_evidence(
-            raw_arguments,
-            task_witness_final_evidence_values,
-        )
         if _RUNNING_AS_ENTRYPOINT:
             require(
                 loaded_validator_belongs_to(arguments.repository),
@@ -3545,10 +3463,6 @@ def main() -> int:
             )
         expected = None
         if arguments.source_stage:
-            require(
-                task_witness_final_evidence is None,
-                "source-stage validation does not accept Task Witness final evidence",
-            )
             require(
                 arguments.expected_identities is None
                 and arguments.plugin_eval is None
@@ -3586,11 +3500,6 @@ def main() -> int:
             )
             print(json.dumps(identities, indent=2, sort_keys=True))
             return 0
-        require(
-            (task_witness_final_evidence is not None)
-            == ("task-witness" in PRODUCTION_VALIDATED_PLUGINS),
-            "Task Witness final evidence must match production eligibility",
-        )
         require(
             arguments.routing_evidence is not None,
             "production release validation requires --routing-evidence",
@@ -3642,7 +3551,6 @@ def main() -> int:
             expected_backend_release_evidence_sha256=(
                 arguments.expected_backend_release_evidence_sha256
             ),
-            task_witness_final_evidence=task_witness_final_evidence,
             prepared_supervisor_source_sha256=(
                 arguments.prepared_supervisor_source_sha256
             ),

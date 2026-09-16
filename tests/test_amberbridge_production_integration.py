@@ -10,15 +10,15 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tests import phase7_v4_fixture as fixture
+from tests import amberbridge_v4_fixture as fixture
 
 REPO_ROOT = Path(__file__).parents[1]
-COORDINATOR = REPO_ROOT / "scripts/run_phase7_production_integration.py"
+COORDINATOR = REPO_ROOT / "scripts/run_amberbridge_production_integration.py"
 
 
 def load_coordinator():
     specification = importlib.util.spec_from_file_location(
-        "phase7_production_integration",
+        "amberbridge_production_integration",
         COORDINATOR,
     )
     assert specification and specification.loader
@@ -63,7 +63,7 @@ def install_clean_public_candidate(source: Path, destination: Path) -> None:
         subprocess.run(command, check=True, capture_output=True)
 
 
-class Phase7ProductionIntegrationTests(unittest.TestCase):
+class AmberbridgeProductionIntegrationTests(unittest.TestCase):
     def test_readme_documents_source_stage_containment(self) -> None:
         readme = " ".join(
             (REPO_ROOT / "README.md").read_text(encoding="utf-8").split()
@@ -77,13 +77,14 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
             "network-denied OS sandbox",
             "opaque inherited handles",
             "managed signing-key custody",
-            "production_eligible: false",
+            "validated candidate identities",
+            "does not create a release receipt",
         ):
             self.assertIn(required, readme)
         self.assertEqual(readme.count("run_prepared_release_validation.sh"), 1)
-        self.assertNotIn("phase7-production", readme)
+        self.assertNotIn("amberbridge-production", readme)
         self.assertNotIn("--node-executable", readme)
-        self.assertNotIn("scripts/run_phase7_production_integration.py", readme)
+        self.assertNotIn("scripts/run_amberbridge_production_integration.py", readme)
         self.assertNotIn("uv --no-config run", readme)
         self.assertNotIn("uv run --with PyYAML --with pytest", readme)
 
@@ -125,12 +126,12 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
     ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            coordinator = root / "run_phase7_production_integration.py"
+            coordinator = root / "run_amberbridge_production_integration.py"
             coordinator.write_text(
                 COORDINATOR.read_text(encoding="utf-8"), encoding="utf-8"
             )
             marker = root / "imported"
-            (root / "run_phase7_composed_matrix.py").write_text(
+            (root / "run_amberbridge_composed_matrix.py").write_text(
                 f"from pathlib import Path\nPath({str(marker)!r}).touch()\n",
                 encoding="utf-8",
             )
@@ -158,10 +159,10 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
     def test_supported_cli_help_does_not_import_candidate_modules(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            coordinator = root / "run_phase7_production_integration.py"
+            coordinator = root / "run_amberbridge_production_integration.py"
             coordinator.write_bytes(COORDINATOR.read_bytes())
             marker = root / "candidate-module-imported"
-            (root / "run_phase7_composed_matrix.py").write_text(
+            (root / "run_amberbridge_composed_matrix.py").write_text(
                 f"from pathlib import Path\nPath({str(marker)!r}).touch()\n",
                 encoding="utf-8",
             )
@@ -180,21 +181,21 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
         coordinator = load_coordinator()
         with tempfile.TemporaryDirectory() as directory:
             snapshot = Path(directory).resolve()
-            frozen = snapshot / "scripts/run_phase7_production_integration.py"
+            frozen = snapshot / "scripts/run_amberbridge_production_integration.py"
             frozen.parent.mkdir(parents=True)
             shutil.copy2(COORDINATOR, frozen)
             coordinator.require_loaded_coordinator_generation(snapshot)
             frozen.write_bytes(
                 frozen.read_bytes().replace(
-                    b"Run the complete Phase 7 private-to-production integration gate",
-                    b"Run a different Phase 7 private-to-production integration gate",
+                    b"Run the complete Amberbridge private-to-production integration gate",
+                    b"Run a different Amberbridge private-to-production integration gate",
                     1,
                 )
             )
 
             with self.assertRaisesRegex(
                 coordinator.IntegrationError,
-                "loaded Phase 7 coordinator differs from the frozen candidate",
+                "loaded Amberbridge coordinator differs from the frozen candidate",
             ):
                 coordinator.require_loaded_coordinator_generation(snapshot)
 
@@ -207,13 +208,13 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
             shutil.copy2(COORDINATOR, loaded_coordinator)
             repository = root / "candidate"
             frozen_coordinator = (
-                repository / "scripts/run_phase7_production_integration.py"
+                repository / "scripts/run_amberbridge_production_integration.py"
             )
             frozen_coordinator.parent.mkdir(parents=True)
             frozen_coordinator.write_bytes(
                 COORDINATOR.read_bytes().replace(
-                    b"Run the complete Phase 7 private-to-production integration gate",
-                    b"Run a different Phase 7 private-to-production integration gate",
+                    b"Run the complete Amberbridge private-to-production integration gate",
+                    b"Run a different Amberbridge private-to-production integration gate",
                     1,
                 )
             )
@@ -302,7 +303,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 1, completed.stderr)
             self.assertFalse(receipt.exists())
 
-    def test_phase7_support_loader_uses_only_frozen_source_paths(self) -> None:
+    def test_amberbridge_support_loader_uses_only_frozen_source_paths(self) -> None:
         probe = subprocess.run(
             [
                 sys.executable,
@@ -311,15 +312,15 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                 "-c",
                 "import importlib.util, pathlib, sys; "
                 f"coordinator_path = {str(COORDINATOR)!r}; "
-                "spec = importlib.util.spec_from_file_location('phase7_probe', coordinator_path); "
+                "spec = importlib.util.spec_from_file_location('amberbridge_probe', coordinator_path); "
                 "coordinator = importlib.util.module_from_spec(spec); "
                 "sys.modules[spec.name] = coordinator; "
                 "spec.loader.exec_module(coordinator); "
-                "[sys.modules.pop(name, None) for name, _ in coordinator.PHASE7_SUPPORT_SOURCES]; "
+                "[sys.modules.pop(name, None) for name, _ in coordinator.AMBERBRIDGE_SUPPORT_SOURCES]; "
                 f"snapshot = pathlib.Path({str(REPO_ROOT)!r}); "
-                "coordinator._install_frozen_phase7_support(snapshot); "
+                "coordinator._install_frozen_amberbridge_support(snapshot); "
                 "assert all(pathlib.Path(sys.modules[name].__file__).is_relative_to(snapshot) "
-                "for name, _ in coordinator.PHASE7_SUPPORT_SOURCES)",
+                "for name, _ in coordinator.AMBERBRIDGE_SUPPORT_SOURCES)",
             ],
             capture_output=True,
             text=True,
@@ -423,7 +424,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                     verify,
                 ),
                 mock.patch.object(
-                    coordinator.run_phase7_composed_matrix,
+                    coordinator.run_amberbridge_composed_matrix,
                     "run",
                     compose,
                 ),
@@ -474,7 +475,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                     private_summary,
                     witness_path,
                     registry_path,
-                    composed_output / "phase7-composed-matrix.json",
+                    composed_output / "amberbridge-composed-matrix.json",
                     witness_path,
                     registry_path,
                 ),
@@ -517,7 +518,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
             repository = root / "private"
-            builder = repository / "scripts/build_phase7_private_evidence.py"
+            builder = repository / "scripts/build_amberbridge_private_evidence.py"
             builder.parent.mkdir(parents=True)
             builder.write_text(
                 "import os,pathlib,sys\n"
@@ -576,12 +577,12 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                 coordinator.PRIVATE_ARTIFACTS,
             )
 
-    def test_coordinator_rejects_retained_v4_private_evidence_for_live_v5_projection(
+    def test_coordinator_rejects_retained_v4_private_evidence_for_live_v1_projection(
         self,
     ) -> None:
         coordinator = load_coordinator()
         compatibility = (
-            REPO_ROOT / "tests/fixtures/phase7-v4-compatibility.json"
+            REPO_ROOT / "tests/fixtures/amberbridge-v4-compatibility.json"
         ).read_bytes()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
@@ -678,7 +679,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                     ),
                 ),
                 mock.patch.object(
-                    coordinator.run_phase7_composed_matrix,
+                    coordinator.run_amberbridge_composed_matrix,
                     "_run_public_family",
                     return_value=(0, b"", b""),
                 ),
@@ -688,7 +689,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                     return_value=built["summary"],
                 ),
                 mock.patch.object(
-                    coordinator.run_phase7_composed_matrix,
+                    coordinator.run_amberbridge_composed_matrix,
                     "verify_private_evidence",
                     return_value=built["summary"],
                 ),
@@ -699,7 +700,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                 ) as release,
             ):
                 with self.assertRaisesRegex(
-                    coordinator.run_phase7_composed_matrix.ComposedEvidenceError,
+                    coordinator.run_amberbridge_composed_matrix.ComposedEvidenceError,
                     "private and public compatibility bytes do not match exactly",
                 ):
                     coordinator.coordinate(
@@ -721,7 +722,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
 
             release.assert_not_called()
             self.assertFalse(
-                (composed_output / "phase7-composed-matrix.json").exists()
+                (composed_output / "amberbridge-composed-matrix.json").exists()
             )
             self.assertFalse(release_receipt.exists())
 
@@ -853,9 +854,9 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                 )
                 observed_candidates.append(public_candidate)
 
-            for module_name, _relative_path in coordinator.PHASE7_SUPPORT_SOURCES:
+            for module_name, _relative_path in coordinator.AMBERBRIDGE_SUPPORT_SOURCES:
                 sys.modules.pop(module_name, None)
-            coordinator._PHASE7_SUPPORT_BOUND = False
+            coordinator._AMBERBRIDGE_SUPPORT_BOUND = False
             try:
                 with mock.patch.object(
                     coordinator, "coordinate", side_effect=observe_coordinate
@@ -893,7 +894,7 @@ class Phase7ProductionIntegrationTests(unittest.TestCase):
                         ]
                     )
             finally:
-                for module_name, _relative_path in coordinator.PHASE7_SUPPORT_SOURCES:
+                for module_name, _relative_path in coordinator.AMBERBRIDGE_SUPPORT_SOURCES:
                     sys.modules.pop(module_name, None)
 
             self.assertEqual(result, 0)
