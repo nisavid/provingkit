@@ -38,7 +38,7 @@ Observed on **2026-09-16 UTC**, against source commit [`925626e467a3382b0171c890
 
 Cursor's inspected plugin cache has no Provingkit member, and its local-plugin directory is empty. Neither observation establishes account-wide absence or CLI/GUI parity. Codex has cached Versionkeeping and Mergecraft trees, but the app's independently displayed marketplace record and fresh-session behavior still need verification.
 
-The private handoff retains exact paths, hashes, symlink targets, selected registration metadata, and observation times. Public evidence contains only the summary here. Inventory probes left the recorded configuration and instruction-file bytes unchanged; this is not a claim that every file on the host was monitored.
+The private handoff retains exact paths, hashes, symlink targets, selected registration metadata, and observation times. Public evidence contains only the summary here. Recorded configuration and instruction-file hashes matched between 01:07 and 01:10 UTC. A 01:19 UTC recheck found a changed Codex configuration digest; the scoped Provingkit marketplace and enabled-plugin fields still matched. The cause was not determined, and this task issued no configuration writes. The rollout owner must establish a fresh baseline immediately before mutation.
 
 ## Discovery and recovery targets
 
