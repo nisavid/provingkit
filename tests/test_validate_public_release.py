@@ -3870,7 +3870,11 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             "proseweaving",
         ):
             self.assertIn(f"validate_{member}.py", readme)
-        self.assertIn("currently an unreleased source stage", normalized_readme)
+        self.assertIn("pinned unsigned preview", normalized_readme)
+        self.assertIn(
+            "Stable release and live host qualification remain separate gates.",
+            normalized_readme,
+        )
         self.assertIn("validate public source contracts", normalized_readme)
         self.assertNotIn("amberbridge-production", readme)
         self.assertNotIn("--private-producer-witness", readme)
@@ -4576,8 +4580,11 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(parser_options))
         self.assertTrue(required.isdisjoint(documented))
-        self.assertIn("currently an unreleased source stage", normalized_readme)
-        self.assertIn("does not establish", normalized_readme)
+        self.assertIn("pinned unsigned preview", normalized_readme)
+        self.assertIn(
+            "Stable release and live host qualification remain separate gates.",
+            normalized_readme,
+        )
         self.assertFalse(
             {
                 "--private-receipt",

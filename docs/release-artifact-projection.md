@@ -44,3 +44,23 @@ Publish the candidate tree or archive and its receipt together. Harness update,
 install, cache, and cleanup behavior remains the harness's concern. A pinned
 preview is the reproducibility default. A `main` candidate is intentionally
 moving: each resolved source commit produces a new receipt and artifact digest.
+
+## Receipt and mode preservation
+
+Qualification, publication, and rollout transfer the complete root
+`RECEIPT.json` as exact bytes and retain its lowercase SHA-256; they do not
+parse and reserialize the receipt. Each stage verifies the root path with
+`lstat`, without following symbolic links, and requires a regular file. This
+is not a link-count check and does not prohibit hard links.
+
+`provingkit-tree-v1` excludes only the root `RECEIPT.json` and binds each
+sorted relative path and file bytes. It does not bind mode bits. Publication
+therefore ships the reviewed target mode manifest with the candidate and
+preserves those modes in the archive. After publication, read back the
+candidate, complete receipt bytes, and mode manifest; verify the receipt hash,
+inventory, and tree digest; and compare every published file byte and mode
+with the qualified inputs before rollout.
+
+These receipts provide unsigned integrity evidence. They do not authenticate
+custody or the builder, create a signed release, grant Task Witness authority,
+or qualify an installed client or live host.

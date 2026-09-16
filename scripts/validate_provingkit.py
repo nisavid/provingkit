@@ -166,6 +166,12 @@ EXPECTED_EXCLUDED_SOURCE = {
     ],
 }
 EXPECTED_SOURCE_ISSUES = (43, 44, 45, 52, 53, 56, 59, 65, 79, 80)
+AUTHORIZED_SOURCE_TAGS = frozenset(
+    {
+        "refs/tags/preview-8acd0e2af1f4 commit "
+        "8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3"
+    }
+)
 EXPECTED_HISTORY_RELOCATIONS = (
     (
         ".github/workflows/task-witness-linux-qualification.yml",
@@ -2290,13 +2296,15 @@ def _validate_history(repository: Path) -> None:
         if retained_in_ref.returncode != 1:
             raise ValidationError("Git history attestation unavailable")
 
-    tags = _require_git_output(
-        repository,
-        "for-each-ref",
-        "--format=%(refname)",
-        "refs/tags",
+    tags = set(
+        _require_git_output(
+            repository,
+            "for-each-ref",
+            "--format=%(refname) %(objecttype) %(objectname) %(symref)",
+            "refs/tags",
+        ).splitlines()
     )
-    if tags:
+    if not tags.issubset(AUTHORIZED_SOURCE_TAGS):
         raise ValidationError("source-stage repository contains an unauthorized tag")
 
     history_paths = _require_git_output(

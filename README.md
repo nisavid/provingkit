@@ -35,9 +35,10 @@ is the versioned definition of the Kit. It names the exact member set and binds
 each member to its own manifest. The repository contains a schema for a future
 immutable release manifest, but it contains no release-manifest instance.
 
-This repository is currently an unreleased source stage. It does not establish
-a Provingkit version, tag, release, marketplace publication, installation, or
-runtime qualification. The root
+This repository maintains Provingkit source and the pinned unsigned preview.
+Stable release and live host qualification remain separate gates.
+
+The root
 [`marketplace.json`](.claude-plugin/marketplace.json) is a source projection of
 the six Agent Plugins; its presence is not marketplace publication.
 
@@ -45,6 +46,9 @@ Installable target projections are staged by the CI-only
 [`release-artifact-projection`](docs/release-artifact-projection.md) process.
 It excludes development material and emits a receipt bound to the source
 commit, target, slate, inventory, and deterministic artifact digest.
+
+Install the pinned unsigned preview through the
+[install, update, and rollback guide](docs/preview/install-and-update.md).
 
 The retained Linux and macOS Task Witness material under
 [`qualification/historical/`](qualification/historical/) is historical input.
