@@ -16,7 +16,7 @@ Amberbridge's contracts and deterministic tests are present in the source
 stage. Its composed, production-integration, and terminal-proof entry points
 remain unavailable. Passing source checks does not qualify a host, authorize a
 release, or establish live runtime behavior. The prepared wrapper exposes only
-`source-stage` validation; see the [human entrypoint](../README.md#prepared-source-stage-containment).
+`source-stage` validation; see the [contributor guide](../CONTRIBUTING.md#prepared-source-stage-containment).
 
 ## What the bridge binds
 

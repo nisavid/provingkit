@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "c173a784280949463d6280db6b15815b10e5521900997aabc435bc7124ae50a0"
+SOURCE_SHA256 = "08fc05d36cfb43ca6a8bd2141f76bfdbc6420ee297f9622b9f0d191c8e2857d4"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -63,6 +63,8 @@ SKILL_PLUGINS = (
 COMMON_SUPPORT_PATHS = {
     ".claude-plugin/marketplace.json",
     "README.md",
+    "CONTRIBUTING.md",
+    "docs/release-boundary.md",
     "evals/README.md",
     "evals/control-plane-matrix.json",
     "evals/skill-routing-matrix.json",
@@ -2709,7 +2711,8 @@ def validate_repository_projection(repository: Path) -> None:
     readme = (repository / "README.md").read_text(encoding="utf-8")
     for plugin in MARKETPLACE_PLUGINS:
         require(
-            f"`plugins/{plugin}/`" in readme,
+            f"`plugins/{plugin}/`" in readme
+            or f"](plugins/{plugin}/README.md)" in readme,
             f"repository README omits public plugin: {plugin}",
         )
 

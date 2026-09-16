@@ -23,19 +23,87 @@ authority exist.
 2. Update canonical source before any derived lock or projection.
 3. Preserve each member's manifest identity and independent version boundary.
 4. Use Conventional Commits for commit messages.
-5. Run the focused commands in the README and report the checks that actually
-   ran.
+5. Run the focused commands under [Validate a source checkout](#validate-a-source-checkout)
+   and report the checks that actually ran.
 
 Do not present historical qualification inputs as current evidence. Files
 under `qualification/historical/` are retained for provenance and design
 review only.
+
+## Validate a source checkout
+
+Use CPython 3.13 or newer. Install the validation-only dependencies, then run
+the Kit contract and each member's focused source-stage checks:
+
+```sh
+python -m pip install idna==3.18 jsonschema==4.26.0 PyYAML==6.0.3
+
+python -m unittest tests.test_validate_provingkit
+python scripts/validate_provingkit.py .
+
+python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus
+python scripts/validate_rolecasting.py .
+
+python -m unittest tests.test_validate_tricritical tests.test_tricritical_eval_corpus tests.plugins.test_tricritical_review_evidence
+python scripts/validate_tricritical.py .
+
+python -m unittest tests.test_validate_versionkeeping
+python scripts/validate_versionkeeping.py .
+
+python -m unittest tests.test_validate_mergecraft
+python scripts/validate_mergecraft.py . --source-stage
+
+python -m unittest tests.test_validate_artifact_customs tests.test_artifact_customs_eval_corpus
+python scripts/validate_artifact_customs.py . --source-stage
+
+python -m unittest tests.test_validate_proseweaving
+python scripts/validate_proseweaving.py .
+```
+
+These commands validate public source contracts. They do not grant release,
+installation, runtime, or host-mutation authority.
+
+### Prepared source-stage containment
+
+The prepared wrapper exposes only `source-stage` validation. Invoke it from a
+clean outer environment with an absolute, operator-qualified CPython 3.13+
+executable and an absolute public candidate checkout:
+
+```sh
+/usr/bin/env -i LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin TZ=UTC /bin/sh \
+  /absolute/path/to/public-provingkit/scripts/run_prepared_release_validation.sh \
+  source-stage \
+  /absolute/path/to/qualified/cpython \
+  /absolute/path/to/public-provingkit
+```
+
+When the prepared source checks pass, the wrapper prints the validated candidate
+identities and exits with status `0`. It does not create a release receipt.
+The [release boundary](docs/release-boundary.md#source-checks-and-release-evidence)
+explains the additional controls required for release and live qualification.
+
+## Repository layout
+
+- `plugins/` contains the six canonical plugin source trees and identity
+  manifests.
+- `evals/` and `tests/` contain member behavior corpora and contract tests.
+- `scripts/` contains source validators and controlled derived-artifact writers.
+- `release/artifact-projection-policy-v1.json` defines the allowlisted runtime
+  files for each supported marketplace target.
+- `release/provingkit/` defines Kit membership and the future immutable
+  release-manifest boundary.
+- `release/plugin-content-locks/` contains generated content locks owned by
+  member validators.
+- `qualification/historical/` retains explicitly stale host-qualification
+  inputs outside active CI discovery.
 
 ## Generated artifacts
 
 The member validators own their content locks and generated projections. When
 an owning validator supports `--write-content-lock`, run that mode after the
 authored source is stable, review its complete diff, then run the ordinary
-validator. Never edit a digest merely to make validation green.
+validator. Never edit a digest merely to make validation green. CI regenerates
+supported derived locks and requires a clean diff.
 
 ## Pull requests
 

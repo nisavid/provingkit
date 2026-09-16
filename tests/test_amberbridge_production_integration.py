@@ -64,29 +64,39 @@ def install_clean_public_candidate(source: Path, destination: Path) -> None:
 
 
 class AmberbridgeProductionIntegrationTests(unittest.TestCase):
-    def test_readme_documents_source_stage_containment(self) -> None:
+    def test_human_docs_document_source_stage_containment(self) -> None:
+        contributing = " ".join(
+            (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8").split()
+        )
+        release_boundary = " ".join(
+            (REPO_ROOT / "docs/release-boundary.md").read_text(encoding="utf-8").split()
+        )
         readme = " ".join(
             (REPO_ROOT / "README.md").read_text(encoding="utf-8").split()
         )
+        human_docs = "\n".join((readme, contributing, release_boundary))
 
         for required in (
             "scripts/run_prepared_release_validation.sh",
-            "public-release",
             "source-stage",
             "/absolute/path/to/qualified/cpython",
-            "network-denied OS sandbox",
-            "opaque inherited handles",
-            "managed signing-key custody",
             "validated candidate identities",
             "does not create a release receipt",
         ):
-            self.assertIn(required, readme)
-        self.assertEqual(readme.count("run_prepared_release_validation.sh"), 1)
-        self.assertNotIn("amberbridge-production", readme)
-        self.assertNotIn("--node-executable", readme)
-        self.assertNotIn("scripts/run_amberbridge_production_integration.py", readme)
-        self.assertNotIn("uv --no-config run", readme)
-        self.assertNotIn("uv run --with PyYAML --with pytest", readme)
+            self.assertIn(required, contributing)
+        for required in (
+            "public-release",
+            "network-denied OS sandbox",
+            "opaque inherited handles",
+            "managed signing-key custody",
+        ):
+            self.assertIn(required, release_boundary)
+        self.assertEqual(human_docs.count("run_prepared_release_validation.sh"), 1)
+        self.assertNotIn("amberbridge-production", human_docs)
+        self.assertNotIn("--node-executable", human_docs)
+        self.assertNotIn("scripts/run_amberbridge_production_integration.py", human_docs)
+        self.assertNotIn("uv --no-config run", human_docs)
+        self.assertNotIn("uv run --with PyYAML --with pytest", human_docs)
 
     def test_public_candidate_identity_uses_bare_lowercase_sha256(self) -> None:
         coordinator = load_coordinator()

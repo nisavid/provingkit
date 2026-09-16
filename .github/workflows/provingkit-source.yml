@@ -48,7 +48,7 @@ jobs:
       - name: Validate cutover lineage and prepared source-stage guards
         run: |
           python -m unittest \
-            tests.test_validate_public_release.ValidatePublicReleaseTests.test_readme_documents_only_the_source_stage_entrypoint \
+            tests.test_validate_public_release.ValidatePublicReleaseTests.test_human_docs_document_only_the_source_stage_entrypoint \
             tests.test_prepared_release_source_stage_success.PreparedReleaseSourceStageSuccessTests.test_checked_out_candidate_completes_prepared_source_stage_validation \
             tests.test_validate_public_release.ValidatePublicReleaseTests.test_prepared_release_entrypoint_rejects_invalid_inputs
 
