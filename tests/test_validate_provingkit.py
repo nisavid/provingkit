@@ -18,6 +18,8 @@ REPOSITORY = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY / "scripts" / "validate_provingkit.py"
 SOURCE_WORKFLOW = REPOSITORY / ".github/workflows/provingkit-source.yml"
 LEGACY_REPOSITORY_ID = "nisavid" + "/agents"
+PREVIEW_TAG = "preview-8acd0e2af1f4"
+PREVIEW_SOURCE = "8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3"
 
 
 class ProvingkitRepositoryContractTests(unittest.TestCase):
@@ -70,6 +72,46 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 check=True,
             )
         self.overlay_current_final_main_contract(destination)
+
+    @staticmethod
+    def set_tag(
+        repository: Path,
+        name: str,
+        target: str,
+        *,
+        annotated: bool = False,
+    ) -> None:
+        if annotated:
+            arguments = [
+                "git",
+                "-c",
+                "user.name=Provingkit Test",
+                "-c",
+                "user.email=provingkit-test@example.invalid",
+                "tag",
+                "--annotate",
+                "--force",
+                "--message=annotated replacement",
+                name,
+                target,
+            ]
+        else:
+            arguments = ["git", "update-ref", f"refs/tags/{name}", target]
+        subprocess.run(
+            arguments,
+            cwd=repository,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+
+    def assert_unauthorized_tag(self, repository: Path) -> None:
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "source-stage repository contains an unauthorized tag", result.stderr
+        )
 
     @staticmethod
     def overlay_current_final_main_contract(destination: Path) -> None:
@@ -276,6 +318,74 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_source_stage_validator_accepts_a_repository_without_tags(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            tags = subprocess.run(
+                ["git", "tag", "--list"],
+                cwd=repository,
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.splitlines()
+            for tag in tags:
+                subprocess.run(
+                    ["git", "tag", "--delete", tag],
+                    cwd=repository,
+                    text=True,
+                    capture_output=True,
+                    check=True,
+                )
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_source_stage_validator_accepts_the_published_preview_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, PREVIEW_TAG, PREVIEW_SOURCE)
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_source_stage_validator_rejects_the_preview_tag_at_another_source(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, PREVIEW_TAG, "HEAD")
+
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_an_additional_preview_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, PREVIEW_TAG, PREVIEW_SOURCE)
+            self.set_tag(repository, "preview-unreviewed", PREVIEW_SOURCE)
+
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_an_annotated_preview_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(
+                repository,
+                PREVIEW_TAG,
+                PREVIEW_SOURCE,
+                annotated=True,
+            )
+
+            self.assert_unauthorized_tag(repository)
 
     def test_provingkit_source_job_pins_identity_validation_dependency(self) -> None:
         workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
@@ -2400,7 +2510,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("retained history-import ref attestation drift", result.stderr)
 
-    def test_attested_history_preserves_the_unreleased_cutover_boundary(self) -> None:
+    def test_attested_history_preserves_the_source_stage_boundary(self) -> None:
         retained = "8edaf590736621352262457752d087bad835555d"
         retained_ancestry = subprocess.run(
             ["git", "merge-base", "--is-ancestor", retained, "HEAD"],
@@ -2410,13 +2520,24 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertEqual(retained_ancestry.returncode, 1)
 
         tags = subprocess.run(
-            ["git", "tag", "--list"],
+            [
+                "git",
+                "for-each-ref",
+                "--format=%(refname) %(objecttype) %(objectname) %(symref)",
+                "refs/tags",
+            ],
             cwd=REPOSITORY,
             text=True,
             capture_output=True,
             check=True,
-        ).stdout
-        self.assertEqual(tags, "")
+        ).stdout.strip().splitlines()
+        self.assertIn(
+            tags,
+            [
+                [],
+                [f"refs/tags/{PREVIEW_TAG} commit {PREVIEW_SOURCE}"],
+            ],
+        )
 
         history_paths = subprocess.run(
             [
