@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "6873271fe91d9a78a1f7887777b9be1dfc2b3aced5a041bc4362468b55e43179"
+SOURCE_SHA256 = "c173a784280949463d6280db6b15815b10e5521900997aabc435bc7124ae50a0"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -90,6 +90,10 @@ COMMON_SUPPORT_PATHS = {
     "tests/amberbridge_v4_fixture.py",
     "tests/fixtures/amberbridge-v4-compatibility.json",
     "tests/fixtures/amberbridge-v1-compatibility.json",
+    "tests/fixtures/amberbridge-v4-private-registry.json",
+    "tests/fixtures/amberbridge-v4-private-witness.tar",
+    "tests/fixtures/amberbridge-v4-private-conformance-binding.json",
+    "tests/fixtures/phase7-v4-compatibility.json",
     "tests/test_control_plane_behavior_eval.py",
     "tests/test_skill_routing_eval.py",
     "tests/test_agent_plugins_standard.py",
@@ -1921,7 +1925,7 @@ def scope_support_paths(plugins: tuple[str, ...]) -> set[str]:
     return paths
 
 
-def release_test_paths(
+def release_test_support_paths(
     plugins: tuple[str, ...] = PRODUCTION_VALIDATED_PLUGINS,
 ) -> tuple[str, ...]:
     return tuple(
@@ -1933,6 +1937,16 @@ def release_test_paths(
                 if Path(relative).parts[:1] == ("tests",)
             }
         )
+    )
+
+
+def release_test_paths(
+    plugins: tuple[str, ...] = PRODUCTION_VALIDATED_PLUGINS,
+) -> tuple[str, ...]:
+    return tuple(
+        relative
+        for relative in release_test_support_paths(plugins)
+        if Path(relative).suffix in {"", ".py"}
     )
 
 
@@ -2096,7 +2110,7 @@ def release_contract_identity(
         )
     )
     support_modules = RELEASE_CONTRACT_SUPPORT_MODULES
-    tests = release_test_paths(plugins)
+    tests = release_test_support_paths(plugins)
     return {
         "sha256": digest_selected_paths(
             snapshot,

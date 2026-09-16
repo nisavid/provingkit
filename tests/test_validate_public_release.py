@@ -2434,6 +2434,35 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 },
             )
 
+    def test_release_scope_binds_amberbridge_fixture_inputs(self) -> None:
+        plugins = self.module.PRODUCTION_VALIDATED_PLUGINS
+        snapshot = Path(self.temporary_directory.name).resolve() / "fixture-snapshot"
+        self.module.copy_release_scope(self.repository, snapshot, plugins)
+        original_identity = self.module.release_contract_identity(snapshot, plugins)
+
+        for name in (
+            "phase7-v4-compatibility.json",
+            "amberbridge-v1-compatibility.json",
+            "amberbridge-v4-compatibility.json",
+            "amberbridge-v4-private-registry.json",
+            "amberbridge-v4-private-witness.tar",
+            "amberbridge-v4-private-conformance-binding.json",
+        ):
+            with self.subTest(fixture=name):
+                relative = Path("tests/fixtures") / name
+                self.assertNotIn(
+                    relative.as_posix(), self.module.release_test_paths(plugins)
+                )
+                content = (REPOSITORY / relative).read_bytes()
+                target = snapshot / relative
+                self.assertEqual(target.read_bytes(), content)
+                target.write_bytes(content + b"\n")
+                self.assertNotEqual(
+                    self.module.release_contract_identity(snapshot, plugins),
+                    original_identity,
+                )
+                target.write_bytes(content)
+
     def test_source_stage_scope_snapshots_root_license_evidence(self) -> None:
         relative = "LICENSE"
         self.assertIn(relative, self.module.SOURCE_STAGE_COMMON_SUPPORT_PATHS)

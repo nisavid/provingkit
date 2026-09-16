@@ -122,8 +122,8 @@ executable and an absolute public candidate checkout:
   /absolute/path/to/public-provingkit
 ```
 
-An exit status of `0` confirms only the prepared source checks. The
-source-stage receipt records `production_eligible: false`. Native
+When the prepared source checks pass, the wrapper prints the validated candidate
+identities and exits with status `0`. It does not create a release receipt. Native
 `public-release` and optional Task Witness qualification routes remain
 unavailable. A later release must supply controls that this repository does
 not own: an installed, host-owned, content-pinned, network-denied OS sandbox;

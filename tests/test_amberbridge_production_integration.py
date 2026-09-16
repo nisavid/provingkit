@@ -77,7 +77,8 @@ class AmberbridgeProductionIntegrationTests(unittest.TestCase):
             "network-denied OS sandbox",
             "opaque inherited handles",
             "managed signing-key custody",
-            "production_eligible: false",
+            "validated candidate identities",
+            "does not create a release receipt",
         ):
             self.assertIn(required, readme)
         self.assertEqual(readme.count("run_prepared_release_validation.sh"), 1)
