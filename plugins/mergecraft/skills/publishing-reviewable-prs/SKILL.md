@@ -107,6 +107,19 @@ and manifest. It validates then immediately preflights. Error plus exact intende
 state remains causally ambiguous and receives no canonical receipt; do not retry.
 Only a zero-exit mutation followed by an exact final reread receives a canonical
 receipt.
+
+The ready operation can consume the token-bearing review-input manifest produced
+for a new PR. Pass the original token-bearing body template with
+`--body-template` when the numbered body cannot be derived uniquely. The publisher
+checks that the rendered live body and manifest digest match the template, binds
+the transition to the canonical creation receipt for the same repository, base,
+head, title, review mode, and specialist set, and then records only the numbered
+ready transition. Repeating a verified ready transition is a receipt-backed
+no-op; it never sends a second ready command. If the PR is draft again after a
+canonical ready transition, the creation manifest cannot authorize another
+transition; use fresh numbered review input. Select the transition from a fresh
+live preflight under the receipt lock so a concurrent publisher or draft change
+cannot reuse stale readiness state.
 In required mode, reread the exact live draft after review and before the ready
 mutation; the reread must equal the reviewed preimage.
 

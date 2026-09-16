@@ -8,9 +8,9 @@ import hashlib
 import json
 import re
 import sys
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 WRITER_SCRIPTS = (
     Path(__file__).parents[2] / "writing-reviewable-pr-descriptions/scripts"
@@ -120,7 +120,7 @@ def _preflight(
     expected: ExpectedIdentity,
     expected_title_sha256: str,
     expected_body_sha256: str,
-    expected_draft: bool,
+    expected_draft: bool | None,
 ) -> dict[str, Any]:
     if SHA256_RE.fullmatch(expected_title_sha256) is None:
         raise PublicationError("expected title SHA-256 must be 64 lowercase hex digits")
@@ -139,7 +139,10 @@ def _preflight(
     if (
         _digest(title) != expected_title_sha256
         or _digest(body) != expected_body_sha256
-        or stored.get("isDraft") is not expected_draft
+        or (
+            expected_draft is not None
+            and stored.get("isDraft") is not expected_draft
+        )
     ):
         raise PublicationError("PR title/body/draft preimage changed before mutation")
     return stored
@@ -176,6 +179,254 @@ def _bind_review_input(
         return int(manifest.raw["version"]), manifest.content_sha256
     except ReviewInputError as error:
         raise PublicationError(f"review input drift: {error}") from error
+
+
+def _token_review_input(review_input_path: Path) -> Any | None:
+    """Return a token-bearing manifest, leaving malformed input to the binder."""
+
+    try:
+        manifest = load_review_input(review_input_path)
+    except ReviewInputError:
+        return None
+    if manifest.raw["pr_number"] != PR_NUMBER_TOKEN:
+        return None
+    return manifest
+
+
+def _resolve_ready_template(
+    *,
+    review_input_path: Path,
+    expected: ExpectedIdentity,
+    body: str,
+    body_template_path: Path | None,
+) -> str | None:
+    """Resolve the source bytes needed to rebind a new-PR manifest."""
+
+    manifest = _token_review_input(review_input_path)
+    if manifest is None:
+        return None
+    if body_template_path is not None:
+        template, _ = _read_body(body_template_path)
+    else:
+        rendered_number = str(expected.pr_number)
+        template = body.replace(rendered_number, PR_NUMBER_TOKEN)
+        if template == body or PR_NUMBER_TOKEN not in template:
+            raise PublicationError(
+                "token-based review input needs the original body template; "
+                "pass --body-template to prove its rendering"
+            )
+    candidate = manifest.raw.get("candidate")
+    if (
+        not isinstance(candidate, dict)
+        or candidate.get("body_sha256") != _digest(template)
+    ):
+        raise PublicationError(
+            "token-based review input does not match the supplied or derived "
+            "body template"
+        )
+    if template.replace(PR_NUMBER_TOKEN, str(expected.pr_number)) != body:
+        raise PublicationError(
+            "token-based review input renders a different live PR body"
+        )
+    return template
+
+
+@contextmanager
+def _ready_template_file(
+    template: str | None, body_template_path: Path | None
+) -> Iterator[Path | None]:
+    """Expose a verified token template to the navigation validator."""
+
+    if template is None:
+        yield None
+        return
+    if body_template_path is not None:
+        yield body_template_path
+        return
+    with _write_temporary_body(template) as body_file:
+        yield Path(body_file.name)
+
+
+def _build_ready_candidate(
+    *,
+    expected: ExpectedIdentity,
+    title: str,
+    body: str,
+    review_input_path: Path,
+    review_mode: str,
+    selected_specialists: list[str],
+) -> PublicationCandidate:
+    candidate = _build_candidate(
+        operation="mark-ready",
+        repository=expected.repository,
+        pr_number=expected.pr_number,
+        base=expected.base,
+        base_oid=expected.base_oid,
+        head=expected.head,
+        head_oid=expected.head_oid,
+        head_owner=expected.head_owner,
+        head_repository=expected.head_repository,
+        title=title,
+        body_source_kind="stored-body",
+        body_source_raw=body.encode("utf-8"),
+        published_body=body,
+        review_input_path=review_input_path,
+        review_mode=review_mode,
+        selected_specialists=selected_specialists,
+    )
+    return candidate
+
+
+def _require_creation_receipt(
+    *,
+    expected: ExpectedIdentity,
+    before: dict[str, Any],
+    template: str,
+    review_input_path: Path,
+    review_input_schema_version: int,
+    review_input_sha256: str,
+    review_mode: str,
+    selected_specialists: list[str],
+    receipt_root: Path,
+) -> None:
+    """Bind a token transition to the one canonical create receipt."""
+
+    receipts = load_receipts(receipt_root, expected)
+    if not receipts or receipts[0].operation != "create":
+        raise PublicationError(
+            "token-based readiness requires the canonical creation receipt for "
+            "this PR"
+        )
+    creation = receipts[0]
+    if (
+        creation.provenance != "canonical"
+        or creation.review is None
+        or creation.expected != expected
+        or creation.review_input_schema_version != review_input_schema_version
+        or creation.review_input_sha256 != review_input_sha256
+        or creation.final_state.title_sha256 != _digest(str(before["title"]))
+        or creation.final_state.body_sha256 != _digest(str(before["body"]))
+        or creation.final_state.is_draft is not True
+    ):
+        raise PublicationError(
+            "canonical creation receipt does not match the current PR or "
+            "token-based review input"
+        )
+    candidate = _build_candidate(
+        operation="create",
+        repository=expected.repository,
+        pr_number=PR_NUMBER_TOKEN,
+        base=expected.base,
+        base_oid=expected.base_oid,
+        head=expected.head,
+        head_oid=expected.head_oid,
+        head_owner=expected.head_owner,
+        head_repository=expected.head_repository,
+        title=str(before["title"]),
+        body_source_kind="template",
+        body_source_raw=template.encode("utf-8"),
+        published_body=template,
+        review_input_path=review_input_path,
+        review_mode=review_mode,
+        selected_specialists=selected_specialists,
+    )
+    validate_review_input_binding(
+        candidate,
+        review_input_schema_version,
+        review_input_sha256,
+        review_input_path,
+    )
+    if (
+        creation.review.mode != review_mode
+        or creation.review.publication_candidate_sha256 != candidate.content_sha256
+    ):
+        raise PublicationError(
+            "canonical creation receipt review mode or selected specialists drifted"
+        )
+    if before.get("isDraft") is True and any(
+        receipt.operation == "mark-ready" and receipt.provenance == "canonical"
+        for receipt in receipts
+    ):
+        raise PublicationError(
+            "this PR already has a canonical ready transition; token-based "
+            "readiness cannot publish it again after redraft; use fresh numbered "
+            "review input"
+        )
+
+
+def _return_idempotent_ready(
+    *,
+    expected: ExpectedIdentity,
+    before: dict[str, Any],
+    review_input_path: Path,
+    template: str | None,
+    review_mode: str,
+    selected_specialists: list[str],
+    receipt_root: Path,
+) -> dict[str, Any]:
+    """Return a previously verified ready state without writing again."""
+
+    title = str(before["title"])
+    body = str(before["body"])
+    review_input_schema_version, review_input_sha256 = _bind_review_input(
+        review_input_path,
+        expected,
+        title,
+        body,
+        title,
+        body,
+        template,
+    )
+    if template is not None:
+        _require_creation_receipt(
+            expected=expected,
+            before=before,
+            template=template,
+            review_input_path=review_input_path,
+            review_input_schema_version=review_input_schema_version,
+            review_input_sha256=review_input_sha256,
+            review_mode=review_mode,
+            selected_specialists=selected_specialists,
+            receipt_root=receipt_root,
+        )
+    candidate = _build_ready_candidate(
+        expected=expected,
+        title=title,
+        body=body,
+        review_input_path=review_input_path,
+        review_mode=review_mode,
+        selected_specialists=selected_specialists,
+    )
+    validate_review_input_binding(
+        candidate,
+        review_input_schema_version,
+        review_input_sha256,
+        review_input_path,
+    )
+    receipts = load_receipts(receipt_root, expected)
+    if not receipts:
+        raise PublicationError(
+            "PR is already ready but has no canonical readiness receipt; "
+            "no mutation was attempted"
+        )
+    receipt = receipts[-1]
+    if (
+        receipt.operation != "mark-ready"
+        or receipt.provenance != "canonical"
+        or receipt.review is None
+        or receipt.review.mode != review_mode
+        or receipt.review.publication_candidate_sha256 != candidate.content_sha256
+        or receipt.review_input_schema_version != review_input_schema_version
+        or receipt.review_input_sha256 != review_input_sha256
+        or receipt.final_state.title_sha256 != _digest(title)
+        or receipt.final_state.body_sha256 != _digest(body)
+        or receipt.final_state.is_draft is not False
+    ):
+        raise PublicationError(
+            "PR is already ready but its canonical readiness receipt does not "
+            "match the supplied identity, body, or review inputs"
+        )
+    return before
 
 
 def _update_text_locked(
@@ -318,13 +569,27 @@ def _mark_ready_locked(
     review_mode: str,
     review_bundle_root: Path | None,
     selected_specialists: list[str],
+    template: str | None = None,
 ) -> dict[str, Any]:
     before = _preflight(
         expected=expected,
         expected_title_sha256=expected_title_sha256,
         expected_body_sha256=expected_body_sha256,
-        expected_draft=True,
+        expected_draft=None,
     )
+    is_draft = before.get("isDraft")
+    if type(is_draft) is not bool:
+        raise PublicationError("PR draft state is unreadable")
+    if is_draft is False:
+        return _return_idempotent_ready(
+            expected=expected,
+            before=before,
+            review_input_path=review_input_path,
+            template=template,
+            review_mode=review_mode,
+            selected_specialists=selected_specialists,
+            receipt_root=receipt_root,
+        )
     title = str(before["title"])
     body = str(before["body"])
     review_input_schema_version, review_input_sha256 = _bind_review_input(
@@ -334,21 +599,24 @@ def _mark_ready_locked(
         body,
         str(before["title"]),
         str(before["body"]),
+        template,
     )
-    candidate = _build_candidate(
-        operation="mark-ready",
-        repository=expected.repository,
-        pr_number=expected.pr_number,
-        base=expected.base,
-        base_oid=expected.base_oid,
-        head=expected.head,
-        head_oid=expected.head_oid,
-        head_owner=expected.head_owner,
-        head_repository=expected.head_repository,
+    if template is not None:
+        _require_creation_receipt(
+            expected=expected,
+            before=before,
+            template=template,
+            review_input_path=review_input_path,
+            review_input_schema_version=review_input_schema_version,
+            review_input_sha256=review_input_sha256,
+            review_mode=review_mode,
+            selected_specialists=selected_specialists,
+            receipt_root=receipt_root,
+        )
+    candidate = _build_ready_candidate(
+        expected=expected,
         title=title,
-        body_source_kind="stored-body",
-        body_source_raw=body.encode("utf-8"),
-        published_body=body,
+        body=body,
         review_input_path=review_input_path,
         review_mode=review_mode,
         selected_specialists=selected_specialists,
@@ -522,19 +790,35 @@ def mark_ready(
     review_mode: str,
     review_bundle_root: Path | None,
     selected_specialists: list[str],
+    body_template_path: Path | None = None,
     receipt_directory: Path | None = None,
 ) -> dict[str, Any]:
     validated = _preflight(
         expected=expected,
         expected_title_sha256=expected_title_sha256,
         expected_body_sha256=expected_body_sha256,
-        expected_draft=True,
+        expected_draft=None,
     )
+    is_draft = validated.get("isDraft")
+    if type(is_draft) is not bool:
+        raise PublicationError("PR draft state is unreadable")
     title = str(validated["title"])
     body = str(validated["body"])
-    _validate_body(
-        body, expected.repository, expected.pr_number, title, review_input_path
+    template = _resolve_ready_template(
+        review_input_path=review_input_path,
+        expected=expected,
+        body=body,
+        body_template_path=body_template_path,
     )
+    with _ready_template_file(template, body_template_path) as validator_template:
+        _validate_body(
+            body,
+            expected.repository,
+            expected.pr_number,
+            title,
+            review_input_path,
+            validator_template,
+        )
     receipt_root = prepare_receipt_store(receipt_directory)
     prepare_receipt_ledger(receipt_root, expected)
     with receipt_ledger_lock(receipt_root, expected) as lease:
@@ -548,6 +832,7 @@ def mark_ready(
             review_mode=review_mode,
             review_bundle_root=review_bundle_root,
             selected_specialists=selected_specialists,
+            template=template,
         )
 
 
@@ -606,6 +891,11 @@ def main() -> int:
     body_source.add_argument("--body-template", type=Path)
     ready_parser = subparsers.add_parser("ready")
     _add_common(ready_parser)
+    ready_parser.add_argument(
+        "--body-template",
+        type=Path,
+        help="original token-bearing create body template when reusing a new-PR manifest",
+    )
     args = parser.parse_args()
     try:
         try:
@@ -640,6 +930,7 @@ def main() -> int:
                 review_mode=args.review_mode,
                 review_bundle_root=args.review_bundle,
                 selected_specialists=selected_specialists,
+                body_template_path=args.body_template,
                 receipt_directory=None,
             )
     except PublicationError as error:
