@@ -4,7 +4,9 @@ Freeze this rubric before generating any panel output. It combines the pinned co
 
 ## Validity and hard failures
 
-First classify the attempt. Missing raw bytes, an unverified model/route, changed inputs, leaked rubric, contaminated baseline, executor tool use, or an unverified session boundary makes it invalid comparison evidence. Retain it with a failure tag and explanation; do not turn missing or invalid data into a low writing score.
+First classify the attempt. Missing raw bytes, missing selector or exact harness evidence, model drift, an unverified writing route, changed inputs, leaked rubric, contaminated baseline, executor tool use, or an unverified session boundary makes it invalid comparison evidence. Retain it with a failure tag and explanation; do not turn missing or invalid data into a low writing score.
+
+If the provider explicitly does not expose an immutable returned model identity, record that limitation together with the requested selector, exact harness/version and settings, and any returned identity it does expose. This disclosed limitation alone does not invalidate an otherwise verified attempt. It does not waive selector/harness evidence, drift checks, or writing-route verification.
 
 For each valid response, check every factual claim against the fixture. A single unsupported fact, actor, cause, date, threshold, observed outcome, or commitment is a hard failure. The rule applies even to cases whose source expectations have only `quality` severity. Contradicting a stated fact or turning an unrun test into a successful test is also a hard failure. Honest conditional reasoning or a pointed question about an explicitly missing decision is permitted; it must remain visibly conditional or a question.
 
