@@ -410,6 +410,130 @@ class Phase7ControlPlaneTests(unittest.TestCase):
             validator,
         )
 
+    def ready_created_pr(self, review_input_path: Path, template: Path):
+        arguments = CONTROL.build_updater_argv(
+            updater=PUBLISHER, review_input=review_input_path
+        )
+        for flag, value in (
+            ("--base-oid", BASE_OID),
+            ("--head-oid", HEAD_OID),
+            ("--expected-title-sha256", sha("feat: widget")),
+            ("--expected-body-sha256", sha(BODY)),
+        ):
+            arguments[arguments.index(flag) + 1] = value
+        arguments.extend(
+            ["--body-template", str(template), "--review-mode", "not-required",
+             "--selected-specialists", "[]"]
+        )
+        return CONTROL.run_command(
+            arguments,
+            home=self.home,
+            environment={"PHASE7_GITHUB_STATE": str(self.github)},
+            allowed_scripts=(PUBLISHER,),
+            cwd=self.git_repository,
+        )
+
+    def change_pr_after_next_read(self, changes: dict[str, object]) -> None:
+        """Simulate an external update just after the next gh view response."""
+        transport = self.bin / "gh-transport.py"
+        transport.write_bytes((self.bin / "gh").read_bytes())
+        (self.bin / "gh").write_text(
+            f"#!{sys.executable}\n"
+            "import json, os, runpy, sys\n"
+            "from pathlib import Path\n"
+            f"runpy.run_path({str(transport)!r}, run_name='__main__')\n"
+            "path = Path(os.environ['PHASE7_GITHUB_STATE'])\n"
+            "state = json.loads(path.read_text())\n"
+            "if 'view' in sys.argv and not state.get('interleaved_update'):\n"
+            f"    state['prs'][0].update({changes!r})\n"
+            "    state['interleaved_update'] = True\n"
+            "    path.write_text(json.dumps(state))\n",
+            encoding="utf-8",
+        )
+
+    def publication_receipt_bytes(self) -> dict[str, bytes]:
+        root = self.home / ".local/state/mergecraft/pr-publication-receipts"
+        return {
+            str(path.relative_to(root)): path.read_bytes()
+            for path in sorted(root.rglob("*.json"))
+        }
+
+    def test_creation_manifest_ready_retry_preserves_publication_receipts(self) -> None:
+        self.state()
+        created, _, manifest, template, validator = self.create_command(
+            title="feat: widget"
+        )
+        self.assertEqual(validator.returncode, 0, validator.stderr)
+        self.assertEqual(created.returncode, 0, created.stderr)
+        manifest_bytes = manifest.read_bytes()
+        creation_receipts = self.publication_receipt_bytes()
+        self.assertEqual(len(creation_receipts), 1)
+
+        ready = self.ready_created_pr(manifest, template)
+
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        receipts = self.publication_receipt_bytes()
+        self.assertEqual(len(receipts), 2)
+        for path, raw in creation_receipts.items():
+            self.assertEqual(receipts[path], raw)
+        records = sorted(
+            (json.loads(raw) for raw in receipts.values()),
+            key=lambda receipt: receipt["sequence"],
+        )
+        self.assertEqual([item["operation"] for item in records], ["create", "mark-ready"])
+        self.assertEqual(records[1]["predecessor_sha256"], records[0]["content_sha256"])
+        self.assertEqual(records[1]["identity"]["pr_number"], 2)
+        self.assertEqual(records[1]["review_input"], records[0]["review_input"])
+
+        retry = self.ready_created_pr(manifest, template)
+
+        self.assertEqual(retry.returncode, 0, retry.stderr)
+        self.assertEqual(self.publication_receipt_bytes(), receipts)
+        self.assertEqual(manifest.read_bytes(), manifest_bytes)
+        state = json.loads(self.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+        self.assertFalse(state["prs"][0]["isDraft"])
+        self.assertEqual(state["prs"][0]["body"], BODY)
+
+    def test_ready_retry_accepts_completed_transition_after_initial_draft_read(self) -> None:
+        self.state()
+        created, _, manifest, template, _ = self.create_command(title="feat: widget")
+        self.assertEqual(created.returncode, 0, created.stderr)
+        ready = self.ready_created_pr(manifest, template)
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        receipts = self.publication_receipt_bytes()
+        # Replay the observable interleaving: an earlier read sees draft, then
+        # another publisher's already-receipted transition becomes visible.
+        state = json.loads(self.github.read_text())
+        state["prs"][0]["isDraft"] = True
+        self.github.write_text(json.dumps(state), encoding="utf-8")
+        self.change_pr_after_next_read({"isDraft": False})
+
+        retry = self.ready_created_pr(manifest, template)
+
+        self.assertEqual(retry.returncode, 0, retry.stderr)
+        self.assertEqual(self.publication_receipt_bytes(), receipts)
+        state = json.loads(self.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+
+    def test_ready_retry_rejects_identity_drift_after_initial_read(self) -> None:
+        self.state()
+        created, _, manifest, template, validator = self.create_command(
+            title="feat: widget"
+        )
+        self.assertEqual(validator.returncode, 0, validator.stderr)
+        self.assertEqual(created.returncode, 0, created.stderr)
+        ready = self.ready_created_pr(manifest, template)
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        self.change_pr_after_next_read({"headRefOid": DRIFT_HEAD_OID})
+
+        retry = self.ready_created_pr(manifest, template)
+
+        self.assertNotEqual(retry.returncode, 0)
+        self.assertIn("identity", retry.stderr)
+        state = json.loads(self.github.read_text())
+        self.assertEqual(sum("ready" in call for call in state["calls"]), 1)
+
     def route(self, intent: str, owner: str, mode: str):
         return CONTROL.resolve_contract_route(
             intent, (CONTROL.ContractRoute(intent, owner, mode),)

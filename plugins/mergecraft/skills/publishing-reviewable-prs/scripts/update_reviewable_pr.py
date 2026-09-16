@@ -566,8 +566,21 @@ def _mark_ready_locked(
         expected=expected,
         expected_title_sha256=expected_title_sha256,
         expected_body_sha256=expected_body_sha256,
-        expected_draft=True,
+        expected_draft=None,
     )
+    is_draft = before.get("isDraft")
+    if type(is_draft) is not bool:
+        raise PublicationError("PR draft state is unreadable")
+    if is_draft is False:
+        return _return_idempotent_ready(
+            expected=expected,
+            before=before,
+            review_input_path=review_input_path,
+            template=template,
+            review_mode=review_mode,
+            selected_specialists=selected_specialists,
+            receipt_root=receipt_root,
+        )
     title = str(before["title"])
     body = str(before["body"])
     review_input_schema_version, review_input_sha256 = _bind_review_input(
@@ -800,16 +813,6 @@ def mark_ready(
     receipt_root = prepare_receipt_store(receipt_directory)
     prepare_receipt_ledger(receipt_root, expected)
     with receipt_ledger_lock(receipt_root, expected) as lease:
-        if is_draft is False:
-            return _return_idempotent_ready(
-                expected=expected,
-                before=validated,
-                review_input_path=review_input_path,
-                template=template,
-                review_mode=review_mode,
-                selected_specialists=selected_specialists,
-                receipt_root=receipt_root,
-            )
         return _mark_ready_locked(
             expected=expected,
             expected_title_sha256=expected_title_sha256,
