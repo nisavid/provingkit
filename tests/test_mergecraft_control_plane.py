@@ -585,6 +585,33 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             intent, (CONTROL.ContractRoute(intent, owner, mode),)
         )
 
+    def test_edit_without_fields_cannot_produce_write_evidence(self) -> None:
+        initial = stored(title="feat: widget", body=BODY)
+        self.state(initial)
+
+        result = CONTROL.run_command(
+            [str(self.bin / "gh"), "pr", "edit", "2"],
+            home=self.home,
+            environment={"MERGECRAFT_GITHUB_STATE": str(self.github)},
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        state = json.loads(self.github.read_text())
+        self.assertEqual(state["prs"], [initial])
+        self.assertFalse(state.get("edit_done", False))
+        self.assertEqual(state["effects"], [])
+        report = CONTROL.evidence(
+            route=self.route(
+                "update this draft", "mergecraft:publishing-reviewable-prs", "write"
+            ),
+            candidate_inputs=(self.bin / "gh",),
+            github_state=self.github,
+            processes=(result,),
+            expected_final=initial,
+            required_operations=("edit",),
+        )
+        self.assertEqual(report["terminal"], "failed-or-ambiguous")
+
     def test_existing_draft_update_runs_actual_publisher_against_fake_gh(self) -> None:
         old_body = BODY.replace("9 additions", "8 additions")
         self.state(stored(title="feat: widget", body=old_body))

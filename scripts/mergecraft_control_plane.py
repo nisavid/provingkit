@@ -598,6 +598,13 @@ def normalized_effect():
             return {{"classification": "write", "operation": "pr-" + operation}}
     return {{"classification": "unknown", "operation": "github-command-unknown"}}
 
+if (
+    "pr" in arguments
+    and arguments[arguments.index("pr") + 1] == "edit"
+    and not {{"--title", "--body-file"}}.intersection(arguments)
+):
+    write(); raise SystemExit("fake pr edit requires --title or --body-file")
+
 state["effects"].append(normalized_effect())
 
 if "api" in arguments:
