@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "protocol": "protocol.md",
+  "preparation_issue": "https://github.com/nisavid/provingkit/issues/75",
+  "execution_issue": "https://github.com/nisavid/provingkit/issues/71",
+  "source_revision": "925626e467a3382b0171c89035d56c5a373bc117",
+  "corpus_path": "plugins/proseweaving/skills/writing-for-people/evals/evals.json",
+  "source_files": [
+    {
+      "path": "CONTEXT.md",
+      "sha256": "ffe8e4ebbdf354b718596f1817ceab2107d1454f5397c8753000719b3526cd50"
+    },
+    {
+      "path": "plugins/proseweaving/README.md",
+      "sha256": "8ad2fe22e8546fc649719a1e8d33905ff1663270ba92dbb3e7c6c35fc2989659"
+    },
+    {
+      "path": "plugins/proseweaving/evals/delivery.json",
+      "sha256": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "sha256": "5abfa704566abeccbeb0c3414f8178f65a8a7fc21d3b24e8601740cead0836a5"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "sha256": "c59d898b26d1fa9cc8db72cb290e5d6af6a834f68bec6a42a5699892c1b2e7da"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+      "sha256": "93268aa6cfda549339e780b6ebe7aefa602a7ed9ea50858d976a7808cbfc0066"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/evals.json",
+      "sha256": "7f8b753bd82ae0195896fa3b5780d4e2f0824ff2c07ee5f90b2371011cec83c9"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/stopping-point-report-partial-migration.md",
+      "sha256": "3348d72591b08696da333f2de89fa555106433a06417a14fe524f5f0be5b2510"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/review-reply-reviewer-partly-right.md",
+      "sha256": "df50d1877cb61311eb6dc431ef54d08806625d7fdf707dd57bd6de64eb496b73"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/three-review-comments-one-pr.md",
+      "sha256": "e983ff4fdd0edcd71da9e973ced7dc8b49832e2191b0be3c267490982db75b37"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/status-message-with-unverified-outcomes.md",
+      "sha256": "e9f381e3fba66ee17f092caa59580a26ac3e67d90309e9529eb6daf2811ecfa0"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/under-grounded-release-note.md",
+      "sha256": "da712244d918c75b5ece33dd0e36b76637de5baa34ef8f48aad491936c06b634"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/edit-pass-on-finished-draft.md",
+      "sha256": "a8e529c86318395f532865620ad5319de5c3f398f6dcb4ff4249f68d3978fa12"
+    },
+    {
+      "path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/export-delay-for-non-expert.md",
+      "sha256": "85146056f254233cf15b9b9729f4f179a2920d12f3edf61a6d80cc8e8cea2568"
+    },
+    {
+      "path": "evals/skill-routing-matrix.json",
+      "sha256": "1905e7a11a060ae1fa7d5b40339f79d5a9aa29a2aaf7aa77ef9a796c5b0adeb5"
+    }
+  ],
+  "cases": [
+    {
+      "id": 1,
+      "name": "stopping-point-report-partial-migration",
+      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/stopping-point-report-partial-migration.md",
+      "prompt_sha256": "e9c0314162dd5298cec1aa7534c4d8893a12b5b4037bbbe56cfd68f17e95089e",
+      "expectation_ids": [
+        "opens-with-outcome",
+        "names-authorization-edge-and-next-decision",
+        "no-unrun-test-claims"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "review-reply-reviewer-partly-right",
+      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/review-reply-reviewer-partly-right.md",
+      "prompt_sha256": "51c102ff7ffb9c3ac48c07962eb7d99facecf0eaab9ff4fd4e3693384ce88a7d",
+      "expectation_ids": [
+        "opens-with-finding-on-symbol",
+        "agrees-and-acts-briefly",
+        "no-unchosen-threshold"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "three-review-comments-one-pr",
+      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/three-review-comments-one-pr.md",
+      "prompt_sha256": "4683645d190ec1b057d2b882dc272b698ec8cdef66e8ccb67e8a99bcba30da7c",
+      "expectation_ids": [
+        "each-opens-with-finding",
+        "shapes-differ-across-batch",
+        "one-ask-graded-to-severity"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "status-message-with-unverified-outcomes",
+      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/status-message-with-unverified-outcomes.md",
+      "prompt_sha256": "204ec346ac6e0706fa0148d745016e0f8d42f11dbeb51770a1978f7f863cd6d8",
+      "expectation_ids": [
+        "no-unrun-outcomes-stated",
+        "observation-not-story",
+        "leads-with-state-no-inventory"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "under-grounded-release-note",
+      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/under-grounded-release-note.md",
+      "prompt_sha256": "e81640e36c6973f0af6e385f442c33296868dd11c71e8303c4ef6eb4905b8699",
+      "expectation_ids": [
+        "no-invented-rationale",
+        "names-the-specific-gap",
+        "grounded-entry-delivered"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "edit-pass-on-finished-draft",
+      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/edit-pass-on-finished-draft.md",
+      "prompt_sha256": "98485384bcc7e3831324e5fd817fdcbc12b27774407ae482e28783eff2daf29b",
+      "expectation_ids": [
+        "dashes-resolved",
+        "tells-struck-and-closer-fixed",
+        "meaning-preserved"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "export-delay-for-non-expert",
+      "fixture_path": "plugins/proseweaving/skills/writing-for-people/evals/fixtures/export-delay-for-non-expert.md",
+      "prompt_sha256": "7625738a98584eb13f8180db5f48d118d0c65596a7a8169ea681d6702ce2f471",
+      "expectation_ids": [
+        "leads-with-what-reader-needs",
+        "common-ground-not-jargon",
+        "no-invented-cause-or-date"
+      ]
+    }
+  ],
+  "repetitions": [
+    1,
+    2,
+    3
+  ],
+  "conditions": [
+    "disabled",
+    "enabled"
+  ],
+  "routes": [
+    "explicit-bundle"
+  ],
+  "model_panel": {
+    "status": "selected-metadata-verified",
+    "decision_url": "https://github.com/nisavid/provingkit/issues/75#issuecomment-5690487627",
+    "entries": [
+      {
+        "id": "opus5-cursor-high",
+        "subject": "Claude Opus 5",
+        "harness": "Cursor Agent",
+        "selector": "claude-opus-5-thinking-high",
+        "reasoning_effort": "high",
+        "thinking": true,
+        "fast": false
+      },
+      {
+        "id": "fable51-cursor-high",
+        "subject": "Claude Fable 5.1",
+        "harness": "Cursor Agent",
+        "selector": "claude-fable-5-1-thinking-high",
+        "reasoning_effort": "high",
+        "thinking": true,
+        "fast": false
+      },
+      {
+        "id": "sol56-codex-high",
+        "subject": "GPT 5.6 Sol",
+        "harness": "Codex CLI",
+        "selector": "gpt-5.6-sol",
+        "reasoning_effort": "high",
+        "thinking": "harness-default",
+        "fast": false
+      },
+      {
+        "id": "astra6-codex-high",
+        "subject": "GPT 6 Astra",
+        "harness": "Codex CLI",
+        "selector": "gpt-6-astra",
+        "reasoning_effort": "high",
+        "thinking": "harness-default",
+        "fast": false
+      }
+    ]
+  },
+  "example_case_priority": [
+    7,
+    2,
+    4
+  ],
+  "example_limit": 3,
+  "routing_cases": [
+    {
+      "id": "cold-start",
+      "prompt": "Write this operator-facing stopping-point report so its evidence and next decision are clear.",
+      "enabled_expected_target_selected": true
+    },
+    {
+      "id": "explicit",
+      "prompt": "Use $writing-for-people to write this operator-facing stopping-point report.",
+      "enabled_expected_target_selected": true
+    },
+    {
+      "id": "automatic-positive",
+      "prompt": "Rewrite this technical status note for its operator, opening with the outcome and separating verified facts from the pending decision.",
+      "enabled_expected_target_selected": true
+    },
+    {
+      "id": "automatic-negative",
+      "prompt": "Review this frozen candidate for runtime failure paths; return findings without rewriting its human-facing prose.",
+      "enabled_expected_target_selected": false
+    }
+  ],
+  "routing_source_path": "evals/skill-routing-matrix.json",
+  "routing_disabled_expected_target_selected": false,
+  "routing_repetitions": [
+    1,
+    2,
+    3
+  ]
+}
