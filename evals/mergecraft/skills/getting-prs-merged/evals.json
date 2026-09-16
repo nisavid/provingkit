@@ -16,7 +16,7 @@
         "The readiness coordinator uses each Git publication, writer, and publisher leaf once and marks the PR ready only after current evidence passes.",
         "After readiness succeeds, the caller starts a fresh getting-prs-merged invocation that rereads live state and credits each merge leaf once.",
         "The agent stops rather than merging if required checks, approvals, ownership, or branch protection block merge.",
-        "After a verified merge, the agent routes cleanup through Versionkeeping, treats missing exact remote-ref deletion authorization as a cleanup gate rather than inventing it, and does not actuate deployment without a named repository owner."
+        "After a verified merge, the caller invokes the authorized exact remote-ref deletion through Versionkeeping and verifies its result without another user instruction; absent cleanup authority would gate cleanup only, and deployment requires its separate owner and authority."
       ]
     },
     {
@@ -38,13 +38,13 @@
       "id": 2,
       "name": "review-comments-to-merge",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Address the unresolved review comments on this PR, rerun the review loop, and merge once it is clean.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
-      "expected_output": "The merge invocation acquires one complete read-only feedback snapshot, returns a terminal handoff to addressing-pr-review-feedback, and stops. The separate feedback invocation fixes and publishes independently safe work, stops at the maintainer-owned decision, and leaves the requested Tricritical loop and merge for later fresh invocations.",
+      "expected_output": "The merge invocation acquires complete feedback and invokes the authorized feedback-outcome owner in author-outcome mode. The feedback owner fixes and publishes independently safe work, then returns blocked for the maintainer-owned decision. Merge closeout returns the bound feedback gate and leaves the requested Tricritical loop and merge pending.",
       "files": ["getting-prs-merged/fixtures/review-comments-to-merge.md"],
       "expectations": [
-        "The merge invocation uses only the read-only feedback-acquisition leaf, returns exactly one addressing-pr-review-feedback handoff for actionable work, and stops.",
-        "The caller starts addressing-pr-review-feedback separately; no outcome coordinator calls another outcome coordinator.",
+        "The merge invocation uses read-only feedback-acquisition and invokes feedback-outcome in author-outcome mode under the existing source and feedback authority without asking for another instruction.",
+        "The addressing-pr-review-feedback owner performs adjudication, revision, publication, and authorized interactions; merge coordination does not acquire those write capabilities.",
         "The feedback invocation classifies comments, publishes independently safe fixes, refreshes state, and preserves ambiguous or human-owned decisions.",
-        "The feedback invocation does not start the requested fresh loop while a maintainer-owned product decision remains unresolved, and records the loop as still required before eventual merge.",
+        "The feedback invocation returns blocked for the maintainer-owned product decision, does not start the requested fresh loop, and records the loop as still required before eventual merge.",
         "Any later merge invocation rereads live state; the agent does not resolve threads when repo-local policy reserves resolution for another owner."
       ]
     },
@@ -132,12 +132,12 @@
       "id": 9,
       "name": "explicit-review-loop-before-merge",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Run a fresh review-and-revise cycle on this clean PR and merge it only after that cycle is clean.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
-      "expected_output": "The merge-closeout invocation terminally hands the explicit fresh review-and-revise request to tricritical:loop and ends. After a bare clean result, a fresh merge-closeout invocation rereads live state and merges only after every gate passes.",
+      "expected_output": "The merge-closeout invocation terminally hands the explicit fresh review-and-revise request to tricritical:loop and ends its invocation. The caller immediately invokes the authorized sole loop without another user instruction; after bare clean, it starts a fresh merge invocation in the same task and merges only after every renewed gate passes.",
       "files": [
         "getting-prs-merged/fixtures/explicit-review-loop-before-merge.md"
       ],
       "expectations": [
-        "The merge-closeout invocation terminally hands the explicit fresh cycle to tricritical:loop and ends.",
+        "The merge-closeout invocation returns the review-loop handoff; the caller invokes tricritical:loop as the sole authorized loop and continues the same task without another user instruction.",
         "The agent does not start the loop from addressing-pr-review-feedback, wrap Tricritical, or keep two loops active.",
         "The agent stops on every non-clean terminal, including clean / degraded, because this request permits merge only after a bare clean cycle.",
         "After a clean terminal, a fresh merge-closeout invocation rereads feedback, checks, approvals, base/head identity, and mergeability before merge actuation.",
@@ -170,6 +170,51 @@
         "The response treats only sequence 8 as authoritative and explicitly rejects matching sequence 7 as merge evidence.",
         "The response treats publication drift as a merge blocker even though checks, approvals, feedback, mergeability, and authority otherwise pass.",
         "The response performs no merge, publication replay, ready mutation, retry, rollback, or reconciliation."
+      ]
+    },
+    {
+      "id": 12,
+      "name": "owned-feedback-continuation",
+      "prompt": "Using the provided scenario fixture, respond as the agent handling the authorized closeout. Do not use live Git or forge tools; give the ordered owner invocations, result handling, renewed gates, and final status.",
+      "expected_output": "The merge coordinator invokes feedback-outcome in author-outcome mode within the existing scope, consumes addressed, and continues the same authorized task with a fresh merge invocation. It reacquires the new head and every merge gate before one merge actuation, without treating addressed as clean-review evidence or stopping at the ownership boundary.",
+      "files": ["getting-prs-merged/fixtures/owned-feedback-continuation.md"],
+      "expectations": [
+        "The response invokes addressing-pr-review-feedback through feedback-outcome in author-outcome mode with the original scope and separate source, publication, and interaction authorities.",
+        "The feedback owner performs adjudication and its authorized revision, publication, and response handoffs; the merge coordinator does not perform those writes directly.",
+        "The response consumes addressed and starts a fresh merge invocation in the same authorized task without requesting another user instruction.",
+        "The caller routes changed PR-body facts to the writer and body-only publisher before merge audit, preserving the title and ready state; the feedback and merge coordinators do not publish text themselves.",
+        "The fresh invocation reacquires the complete feedback snapshot, new head, checks, approvals, mergeability, and current publication audit; addressed alone never authorizes merge.",
+        "The response merges only after every renewed gate passes, invokes no fresh review loop, and leaves remote-ref deletion and deployment outside the supplied authority."
+      ]
+    },
+    {
+      "id": 13,
+      "name": "feedback-continuation-gates",
+      "prompt": "Using the provided independent cases, state the next allowed action and stopping status for each. Do not use live Git or forge tools.",
+      "expected_output": "The merge coordinator preserves each independent authority and outcome gate: absent source authority prevents the feedback author invocation; snapshot is read-only and cannot satisfy it; blocked with an unknown write prevents retry and merge; addressed followed by a new live finding and failed checks leaves those fresh gates unresolved.",
+      "files": ["getting-prs-merged/fixtures/feedback-continuation-gates.md"],
+      "expectations": [
+        "For case A, merge authority does not grant source, publication, or interaction authority; the response returns a feedback-handoff naming the missing authority before author-side work.",
+        "For case B, snapshot does not become addressed, authorize edits, or satisfy merge readiness; the response keeps the author-outcome continuation gated.",
+        "For case C, blocked preserves the unknown response effect and evidence, with no repeated provider write and no merge.",
+        "For case D, the response reacquires live feedback and failed checks after addressed, treats both as current blockers, and performs no merge from the old successful state.",
+        "For case E, the response names the missing publication or reconciliation authority as the gate, keeps merge blocked, and does not reuse the old-head receipt or issue a no-op text update.",
+        "No case starts a nested review loop or treats an ownership handoff alone as an operator decision."
+      ]
+    },
+    {
+      "id": 14,
+      "name": "persistent-request-changes-after-addressed",
+      "prompt": "Using the independent fresh acquisitions in the provided fixture, give the next owner or gate for each case after the feedback owner returned addressed. Do not use live Git or forge tools. Describe what evidence is reused, revalidated, or no longer applicable and whether author work or merge can proceed.",
+      "expected_output": "The merge caller revalidates the feedback owner's existing dispositions, source/head bindings, and receipts against fresh complete acquisition. Unchanged reviewer-owned approval or resolution state remains a merge gate without another feedback-outcome invocation or repeated reply. New or changed feedback and stale or uncertain disposition coverage return to the feedback owner under the existing scope; the merge coordinator does not adjudicate them or merge from a prior addressed result.",
+      "files": ["getting-prs-merged/fixtures/persistent-request-changes-after-addressed.md"],
+      "expectations": [
+        "For A and B, the response carries forward and freshly validates the existing owner dispositions and receipts against the exact current source identities, revisions, and head; a matching orientation summary alone is insufficient.",
+        "For A, unchanged CHANGES_REQUESTED and review_not_approved remain a reviewer approval gate; the response does not invoke feedback-outcome again, repeat a fix or reply, or merge.",
+        "For B, the unchanged reviewer-owned unresolved thread is a resolution gate after verified author completion; the response neither repeats author work nor resolves another owner's thread or merges.",
+        "For C, the response routes the new source and edited finding to addressing-pr-review-feedback under the existing scope, with no merge-side classification or adjudication and no automatic coverage from the earlier addressed result.",
+        "For D, the changed head and unavailable completion proof make the old disposition applicability uncertain; the response routes revalidation and any adjudication to the feedback owner without reusing stale completion or blindly replaying a provider write.",
+        "For E, complete acquisition contains no source feedback to adjudicate; the empty requested-changes review remains an approval gate rather than author work, and merge remains blocked."
       ]
     }
   ]

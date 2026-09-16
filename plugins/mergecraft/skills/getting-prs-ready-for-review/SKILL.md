@@ -8,6 +8,10 @@ description: Use when the operator explicitly asks only to make a pull request r
 Coordinate one review-readiness outcome. Read repository/operator policy first;
 it defines who may publish commits and mark a draft ready.
 
+When invoked within PR closeout, read
+[caller continuation](../getting-prs-merged/references/caller-continuation.md)
+and return readiness to that caller so it can continue from live state.
+
 1. Resolve the exact repository, branch, pushed base/head, exact head repository,
    and existing PR.
 2. Stop on unresolved valid blockers, operator decisions, or overlapping source

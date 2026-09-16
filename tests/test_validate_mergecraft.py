@@ -1099,7 +1099,10 @@ class ValidateMergecraftTests(unittest.TestCase):
             for item in merge["contract"]["terminal_handoffs"]
             if item["owner"] == "getting-prs-ready-for-review"
         )
-        self.assertEqual(handoff["trigger"], "pr-absent-or-not-review-ready")
+        self.assertEqual(
+            handoff["trigger"],
+            "readiness-authority-unavailable-or-outcome-blocked-ambiguous-or-unsafe",
+        )
         fixture = (
             self.repo
             / EVAL_ROOT
@@ -1109,7 +1112,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         self.assertIn("readiness coordinator owns", fixture)
         self.assertIn("fresh `getting-prs-merged`", fixture)
 
-    def test_outcome_coordinators_terminate_with_one_owner_handoff(self) -> None:
+    def test_coordinator_handoffs_preserve_authorized_caller_continuation(self) -> None:
         topology = json.loads((self.plugin / "topology.json").read_text())
         skills = {item["name"]: item for item in topology["skills"]}
         outcome_coordinators = {
@@ -1131,7 +1134,7 @@ class ValidateMergecraftTests(unittest.TestCase):
                     if call.startswith("operation:")
                 }
                 allowed = (
-                    {"getting-prs-ready-for-review"}
+                    {"getting-prs-ready-for-review", "addressing-pr-review-feedback"}
                     if name == "getting-prs-merged"
                     else set()
                 )
@@ -1176,7 +1179,233 @@ class ValidateMergecraftTests(unittest.TestCase):
             with self.subTest(eval=name):
                 expected = by_name[name]["expected_output"]
                 self.assertIn("exactly one terminal handoff", expected)
-                self.assertIn("stops", expected)
+                self.assertIn("ends its invocation", expected)
+                self.assertIn("continues the authorized task", expected)
+
+    def test_rejects_missing_merge_feedback_continuation(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        merge = next(
+            item for item in topology["skills"] if item["name"] == "getting-prs-merged"
+        )
+        feedback = next(
+            item for item in topology["operations"]
+            if item["semantic_id"] == "feedback-outcome"
+        )
+        merge["calls"].remove("operation:feedback-outcome")
+        feedback["callers"].remove("getting-prs-merged")
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "merge feedback continuation drift",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_unconditional_readiness_handoff(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        merge = next(
+            item for item in topology["skills"] if item["name"] == "getting-prs-merged"
+        )
+        handoff = next(
+            item for item in merge["contract"]["terminal_handoffs"]
+            if item["owner"] == "getting-prs-ready-for-review"
+        )
+        handoff["trigger"] = "pr-absent-or-not-review-ready"
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "merge readiness terminal handoff drift",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_handoff_consumers_require_the_shared_continuation_reference(self) -> None:
+        readers = {
+            "getting-prs-merged/SKILL.md": "references/caller-continuation.md",
+            "addressing-pr-review-feedback/SKILL.md": "../getting-prs-merged/references/caller-continuation.md",
+            "resuming-reviewed-prs/SKILL.md": "../getting-prs-merged/references/caller-continuation.md",
+            "getting-prs-ready-for-review/SKILL.md": "../getting-prs-merged/references/caller-continuation.md",
+            "getting-prs-merged/references/gh-fix-ci-adapter.md": "caller-continuation.md",
+        }
+        for relative, target in readers.items():
+            with self.subTest(reader=relative):
+                path = self.plugin / "skills" / relative
+                original = path.read_text()
+                path.write_text(original.replace(
+                    f"[caller continuation]({target})", "caller continuation"
+                ))
+                try:
+                    with self.assertRaisesRegex(
+                        VALIDATE_MERGECRAFT.ContractError,
+                        "caller continuation pointer drift",
+                    ):
+                        VALIDATE_MERGECRAFT.validate_links_and_call_projection(self.plugin)
+                finally:
+                    path.write_text(original)
+
+    def test_merge_feedback_continuation_keeps_only_a_gated_terminal_handoff(
+        self,
+    ) -> None:
+        VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        skills = {item["name"]: item for item in topology["skills"]}
+        merge = skills["getting-prs-merged"]
+        self.assertIn("operation:feedback-outcome", merge["calls"])
+        self.assertEqual(
+            skills["addressing-pr-review-feedback"]["contract"]["terminal_statuses"],
+            ["snapshot", "addressed", "blocked"],
+        )
+
+        self.assertEqual(
+            [
+                item for item in merge["contract"]["terminal_handoffs"]
+                if item["owner"] == "addressing-pr-review-feedback"
+            ],
+            [{
+                "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked",
+                "owner": "addressing-pr-review-feedback",
+                "resume": "fresh-getting-prs-merged-invocation-after-feedback-gate-clears",
+            }],
+        )
+
+    def test_merge_accepts_prior_feedback_outcome_for_revalidation(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        skills = {item["name"]: item for item in topology["skills"]}
+        self.assertIn(
+            "verified-feedback-outcome",
+            skills["addressing-pr-review-feedback"]["contract"]["outputs"],
+        )
+        self.assertIn(
+            "prior-feedback-outcome-or-explicit-absence",
+            skills["getting-prs-merged"]["contract"]["inputs"],
+        )
+
+    def test_rejects_missing_prior_feedback_outcome_input(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        merge = next(
+            item for item in topology["skills"] if item["name"] == "getting-prs-merged"
+        )
+        merge["contract"]["inputs"].remove("prior-feedback-outcome-or-explicit-absence")
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "merge prior feedback outcome input drift",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_merge_owned_feedback_adjudication_or_revision(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for semantic_id in ("finding-adjudication", "source-revision"):
+            with self.subTest(operation=semantic_id):
+                topology = copy.deepcopy(original)
+                merge = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "getting-prs-merged"
+                )
+                merge["calls"].append(f"operation:{semantic_id}")
+                operation = next(
+                    item for item in topology["operations"]
+                    if item["semantic_id"] == semantic_id
+                )
+                operation["callers"] = sorted([*operation["callers"], merge["name"]])
+                self.write_json("topology.json", topology)
+
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "merge feedback adjudication ownership drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_feedback_continuation_owner_or_authority_drift(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for drift in ("owner", "operation-authority", "contract-authority"):
+            with self.subTest(drift=drift):
+                topology = copy.deepcopy(original)
+                skills = {item["name"]: item for item in topology["skills"]}
+                feedback = skills["addressing-pr-review-feedback"]
+                operation = next(
+                    item for item in topology["operations"]
+                    if item["semantic_id"] == "feedback-outcome"
+                )
+                if drift == "owner":
+                    owner = skills["getting-prs-ready-for-review"]
+                    feedback["operations"].remove("feedback-outcome")
+                    owner["operations"].append("feedback-outcome")
+                    operation["owner"] = owner["name"]
+                    operation["implementation"] = owner["entrypoint"]
+                    operation["callers"] = ["getting-prs-merged", owner["name"]]
+                elif drift == "operation-authority":
+                    operation["authority"] = "merge authority authorizes source edits"
+                else:
+                    feedback["contract"]["authority"] = "merge authority authorizes source edits"
+                self.write_json("topology.json", topology)
+
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "feedback outcome ownership or authority drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_feedback_continuation_result_or_mode_drift(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for field, value in (
+            ("terminal_statuses", ["snapshot", "clean", "blocked"]),
+            ("terminal_statuses", ["addressed", "blocked"]),
+            ("modes", ["address"]),
+        ):
+            with self.subTest(field=field, value=value):
+                topology = copy.deepcopy(original)
+                feedback = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "addressing-pr-review-feedback"
+                )
+                feedback["contract"][field] = value
+                self.write_json("topology.json", topology)
+
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "feedback outcome mode or result drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_unconditional_feedback_handoff(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        merge = next(
+            item for item in topology["skills"] if item["name"] == "getting-prs-merged"
+        )
+        handoff = next(
+            item for item in merge["contract"]["terminal_handoffs"]
+            if item["owner"] == "addressing-pr-review-feedback"
+        )
+        handoff["trigger"] = "current-actionable-feedback-or-requested-changes"
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "merge feedback terminal handoff drift",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_feedback_reverse_call_into_merge(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        feedback = next(
+            item for item in topology["skills"]
+            if item["name"] == "addressing-pr-review-feedback"
+        )
+        feedback["calls"].append("operation:merge-outcome")
+        operation = next(
+            item for item in topology["operations"]
+            if item["semantic_id"] == "merge-outcome"
+        )
+        operation["callers"].insert(0, feedback["name"])
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "outcome coordinator call edge",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
 
     def test_rejects_other_operations_owned_by_readiness_coordinator(self) -> None:
         topology = json.loads((self.plugin / "topology.json").read_text())

@@ -9,6 +9,7 @@ Mock state:
 - The authoritative latest publication receipt matches live title, body, and draft state
 - Complete current feedback has no actionable finding or requested change
 - The PR remains a draft
+- Existing task authority permits the readiness owner's required publication and mark-ready operations
 - No readiness or other forge mutation has run in this invocation
 
 State the safe resume outcome and the boundary for later work.

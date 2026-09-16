@@ -11,6 +11,11 @@ read-only: return the bound current-state report with terminal status
 `reported`, then stop without selecting an owner or acquiring mutation or merge
 authority.
 
+For an actionable request, read
+[caller continuation](../getting-prs-merged/references/caller-continuation.md)
+before selecting the next owner. The terminal handoff ends this invocation;
+the caller continues the authorized task without another user instruction.
+
 1. Resolve the exact repository and PR from the supplied URL, number, branch,
    or checkout. Stop when inputs identify different targets.
 2. Record local checkout, current branch and SHA, dirty state, unpublished work,

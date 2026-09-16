@@ -399,6 +399,7 @@
       "entrypoint": "skills/getting-prs-merged/SKILL.md",
       "interface": "skills/getting-prs-merged/agents/openai.yaml",
       "references": [
+        "skills/getting-prs-merged/references/caller-continuation.md",
         "skills/getting-prs-merged/references/gh-fix-ci-adapter.md",
         "skills/getting-prs-merged/references/github-markdown-authoring.md",
         "skills/getting-prs-merged/references/merge-actuator.md"
@@ -410,6 +411,7 @@
       "calls": [
         "operation:publication-audit",
         "operation:feedback-acquisition",
+        "operation:feedback-outcome",
         "operation:readiness-outcome",
         "operation:check-inspection",
         "operation:focused-ci",
@@ -427,6 +429,7 @@
           "bound-repository-pr-base-head",
           "repository-policy",
           "complete-feedback",
+          "prior-feedback-outcome-or-explicit-absence",
           "checks-approvals-mergeability",
           "merge-method-authority"
         ],
@@ -440,14 +443,14 @@
         "loop_owner": null,
         "terminal_handoffs": [
           {
-            "trigger": "pr-absent-or-not-review-ready",
+            "trigger": "readiness-authority-unavailable-or-outcome-blocked-ambiguous-or-unsafe",
             "owner": "getting-prs-ready-for-review",
             "resume": "fresh-getting-prs-merged-invocation-after-readiness"
           },
           {
-            "trigger": "current-actionable-feedback-or-requested-changes",
+            "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked",
             "owner": "addressing-pr-review-feedback",
-            "resume": "fresh-getting-prs-merged-invocation-after-feedback-outcome"
+            "resume": "fresh-getting-prs-merged-invocation-after-feedback-gate-clears"
           },
           {
             "trigger": "operator-or-policy-required-fresh-review-and-revise",
@@ -700,7 +703,7 @@
       "import": null,
       "access": "coordinate",
       "authority": "read-only snapshot or separately authorized finding revisions and interactions",
-      "callers": ["addressing-pr-review-feedback"],
+      "callers": ["addressing-pr-review-feedback", "getting-prs-merged"],
       "disposition": "public-skill"
     },
     {

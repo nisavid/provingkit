@@ -67,7 +67,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/mergecraft.json",
-          "sha256": "sha256:f98ccdbb0be7e65823f8e136c042a726826052a4bc71d328bf580ceb60b5763a"
+          "sha256": "sha256:bdd79f2e7207c27d83bf604618e052da970a36352e6af221423897519c8a404a"
         },
         "display_name": "Mergecraft",
         "distribution_kind": "agent-plugin",
