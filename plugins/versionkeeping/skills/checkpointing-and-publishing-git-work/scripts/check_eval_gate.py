@@ -40,6 +40,7 @@ CANONICAL_SKILL_IDS = (
     "versionkeeping:syncing-forks-with-upstream",
     "versionkeeping:using-persistent-git-worktrees",
     "mergecraft:writing-github-issue-and-pr-markdown",
+    "mergecraft:maintaining-issue-pr-relations",
     "mergecraft:writing-reviewable-pr-descriptions",
     "mergecraft:publishing-reviewable-prs",
     "mergecraft:graphite",
@@ -65,6 +66,7 @@ CANONICAL_SCENARIO_IDS = (
     "non-default-fork-sync",
     "persistent-worktree-containment",
     "markdown-authoring-recursive-issue-body",
+    "relation-direct-implementation",
     "writer-owns-content",
     "publisher-owns-actuation",
     "graphite-transport-boundary",
@@ -101,14 +103,22 @@ CANONICAL_DIRECT_CALLS = {
     "versionkeeping:using-persistent-git-worktrees": (
         "versionkeeping:checkpointing-and-publishing-git-work",
     ),
-    "mergecraft:writing-github-issue-and-pr-markdown": (),
-    "mergecraft:writing-reviewable-pr-descriptions": ("tricritical:loop",),
+    "mergecraft:maintaining-issue-pr-relations": (),
+    "mergecraft:writing-github-issue-and-pr-markdown": (
+        "mergecraft:maintaining-issue-pr-relations",
+    ),
+    "mergecraft:writing-reviewable-pr-descriptions": (
+        "tricritical:loop",
+        "mergecraft:maintaining-issue-pr-relations",
+    ),
     "mergecraft:publishing-reviewable-prs": (
         "mergecraft:writing-reviewable-pr-descriptions",
+        "mergecraft:maintaining-issue-pr-relations",
     ),
     "mergecraft:graphite": (
         "mergecraft:publishing-reviewable-prs",
         "versionkeeping:checkpointing-and-publishing-git-work",
+        "mergecraft:maintaining-issue-pr-relations",
     ),
     "mergecraft:addressing-pr-review-feedback": (
         "mergecraft:interacting-with-pr-review-feedback",
@@ -116,19 +126,28 @@ CANONICAL_DIRECT_CALLS = {
         "tricritical:revise",
         "versionkeeping:checkpointing-and-publishing-git-work",
     ),
-    "mergecraft:interacting-with-pr-review-feedback": (),
+    "mergecraft:interacting-with-pr-review-feedback": (
+        "mergecraft:writing-github-issue-and-pr-markdown",
+    ),
     "mergecraft:resuming-reviewed-prs": ("mergecraft:publishing-reviewable-prs",),
     "mergecraft:getting-prs-ready-for-review": (
+        "versionkeeping:checkpointing-and-publishing-git-work",
         "mergecraft:writing-reviewable-pr-descriptions",
         "mergecraft:publishing-reviewable-prs",
-        "versionkeeping:checkpointing-and-publishing-git-work",
+        "mergecraft:maintaining-issue-pr-relations",
     ),
-    "mergecraft:getting-prs-merged": ("mergecraft:publishing-reviewable-prs",),
+    "mergecraft:getting-prs-merged": (
+        "mergecraft:addressing-pr-review-feedback",
+        "mergecraft:getting-prs-ready-for-review",
+        "mergecraft:publishing-reviewable-prs",
+        "mergecraft:maintaining-issue-pr-relations",
+    ),
     "mergecraft:stacking-pr-fixups": (
         "mergecraft:writing-reviewable-pr-descriptions",
         "mergecraft:publishing-reviewable-prs",
         "mergecraft:graphite",
         "versionkeeping:checkpointing-and-publishing-git-work",
+        "mergecraft:maintaining-issue-pr-relations",
     ),
     "proseweaving:writing-for-people": (),
 }
@@ -2162,7 +2181,10 @@ def validate_evidence(
             skill_inventory == list(CANONICAL_SKILL_IDS),
             "production ordered skill inventory drift",
         )
-        require(len(scenarios) == 23, "production scenario inventory drift")
+        require(
+            len(scenarios) == len(CANONICAL_SKILL_IDS),
+            "production scenario inventory drift",
+        )
         canonical_scenarios_by_skill = {
             scenario["skill_id"]: scenario for scenario in scenarios.values()
         }

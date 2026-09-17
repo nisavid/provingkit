@@ -45,6 +45,16 @@ branch can be tracked without moving or deleting the worktree.
 
 ## Submit Or Update PRs
 
+For new Issue-contributing PRs or material contribution/completion scope
+changes, use
+[Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+before preparing canonical pairs. Share the stable task ID and observations
+across the stack; retain every member's own contribution roles. Carry planned
+ledger content through the existing writer and publisher. After draft transport
+and immediate canonical repair finish, resume pending relation reconciliation
+with the verified PR identities and publication results. An ancestry-only
+restack or unchanged resubmission does not reacquire relations or settings.
+
 1. Verify root/base and checks; ensure each remote head will equal the recorded
    local commit, then prepare every canonical pair and bound review-input file.
 2. Build a schema-v2 absolute-path JSON request for the exact bottom-to-top stack

@@ -95,7 +95,17 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    terminal `readiness-handoff`. Use `check-inspection` for the read-only
    required-Actions state; route failed required Actions through `focused-ci`
    only after a fresh merge invocation observes a review-ready PR.
-6. When canonical publication evidence applies, call
+6. When changed contribution intent or the planned merge has unresolved Issue
+   closure consequences, use
+   [Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+   with this task's existing observations and plan. Account for native links
+   and relevant closing keywords; a link alone is not completion evidence.
+   Resolve applicable relation/closure gates before merge, consuming any
+   returned publication handoff through its existing owner before the audit
+   below. A relation-publication receipt does not replace canonical publication
+   evidence. Reuse a verified unchanged result; do not rediscover pairs or
+   refresh settings just because readiness returned or merge inspection restarted.
+   When canonical publication evidence applies, call
    [publishing-reviewable-prs](../publishing-reviewable-prs/SKILL.md) for a
    read-only audit and require the authoritative latest receipt to match live
    state before merge actuation. Do not substitute an older matching receipt.
@@ -104,6 +114,18 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    with the exact repository, PR, base, head SHA, and selected method. Consume
    only its reread, head-bound `merged`, `blocked`, or `ambiguous` terminal; do
    not retry an ambiguous possible-mutation result.
+   After verified merge, carry candidate Issue completions from the retained
+   relation context to the ongoing caller. When Issue completion is within its
+   authorized task, the caller uses the repository's Issue workflow to read
+   each candidate Issue's current contract and state, including candidates with
+   unfinished gates. A cached setting and a verified merge establish neither
+   post-merge Issue state nor what caused a closure. Reuse the setting without
+   another lookup; report Issue state only from the new Issue observation.
+   Explicitly close an open Issue only when every current gate is evidenced,
+   then independently verify its state. Leave open Issues with partial work or
+   remaining deployment or acceptance gates open. Report an unexpected closed
+   state for its owner's decision; do not reopen without authority. A Development
+   link or merged PR alone is not completion evidence.
 8. When remote-ref deletion is authorized, return one terminal cleanup handoff
    to `operation:remote-ref-deletion` and stop. It requires verified merge plus
    separate repository/operator authorization bound to exact remote, full ref,

@@ -12,6 +12,14 @@ When invoked within PR closeout, read
 [caller continuation](../getting-prs-merged/references/caller-continuation.md)
 and return readiness to that caller so it can continue from live state.
 
+For creation with Issue contributions or a material contribution/completion
+scope change, use
+[Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+before authoring. Carry its ledger intent into the writer/publisher handoff,
+then resume pending reconciliation with the assigned PR identity and verified
+publication result. Reuse the caller's stable task ID, observations, and plan;
+unchanged ready-only work does not reacquire relations or repository settings.
+
 1. Resolve the exact repository, branch, pushed base/head, exact head repository,
    and existing PR.
 2. Stop on unresolved valid blockers, operator decisions, or overlapping source

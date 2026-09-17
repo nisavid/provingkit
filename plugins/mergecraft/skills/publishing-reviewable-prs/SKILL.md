@@ -1,6 +1,6 @@
 ---
 name: publishing-reviewable-prs
-description: Use when standalone GitHub PR creation, canonical title/body/draft-ready publication, publication-evidence audit, or evidence reconciliation is required, including fork-sync and fixup PRs. Do not use for generic PR inspection, comments, checks, threads, or merge actuation.
+description: Use when standalone GitHub PR creation, canonical title/body/draft-ready publication, an authorized relation-ledger edit on an existing or historical PR, publication-evidence audit, or evidence reconciliation is required, including fork-sync and fixup PRs. Do not use for generic PR inspection, comments, checks, threads, or merge actuation.
 ---
 
 # Publishing Reviewable PRs
@@ -25,9 +25,43 @@ race and the reread cannot prevent an intervening lost update.
   writer for the complete validated pair and manifest.
 - Ready-only work uses this publisher with the current writer-owned pair and
   manifest; it never rewrites text as part of readiness.
+- Existing relation-ledger-only edits use `pr-relation-ledger-write` below.
+  New PR ledgers travel through normal creation. When canonical publication is
+  already required, include the ledger there instead of publishing twice.
 - Generic read-only inspection, comments, checks, labels, base changes, and
   merge-only work use their own owners. Publication audit is the publisher's
   narrow read-only exception.
+
+Before new or materially changed contributions are frozen, use
+[Maintaining Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+unless a qualified plan already accompanies the request. Carry that plan to the
+writer, publish once through the selected mode, and return the verified result
+to the caller. After canonical creation or update, the caller observes the
+published PR and builds a fresh relation plan with its already-correct ledger
+unchanged. Only a ledger-publication receipt resumes a pending ledger handoff;
+canonical receipts stay in the lifecycle context. Unchanged relation intent
+and unrelated edits need no relation reads. Never restart relation planning
+inside a received publication handoff.
+
+## Publish An Existing Relation Ledger
+
+The `pr-relation-ledger-write` operation invokes the PR writer's
+[bounded ledger mode](../writing-reviewable-pr-descriptions/references/relation-ledger.md)
+for an existing OPEN, CLOSED, or MERGED PR. Use
+`scripts/publish_relation_ledger.py` with its exact manifest, title file, body
+file, explicit review mode, and sorted specialist inventory. Bind stable
+repository and PR IDs, exact live title/body/state, and one authorized UTF-8
+span. It changes only the body, preserves every other byte and state, and uses
+the existing private publication lease. It needs no surviving Git branch.
+
+The helper checks preimage drift, publishes once, and verifies the complete
+postimage. Unchanged content is a verified no-op. Failure after a possible
+write returns unknown and requires observation before any further attempt.
+It stores separate relation-publication receipts; they cannot satisfy or amend
+canonical navigation, readiness, or merge audit evidence. Reestablish canonical
+publication through its normal owner when the continuing lifecycle requires it.
+Required witnessed review remains a gate until this mode has a supported
+authenticated witness route; never downgrade it to `not-required`.
 
 ## Workflow
 

@@ -1,0 +1,265 @@
+{
+  "skill_name": "maintaining-issue-pr-relations",
+  "evals": [
+    {
+      "id": 0,
+      "name": "absent-pr-creation",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Qualify the Linux work as a partial contribution using the supplied acceptance contract. Pass the initial Issue ledger intent through the existing PR writer and normal creation owner before invoking the relation helper. Bind the assigned PR identity after creation before helper observation, planning, Issue-body mutation, or native mutation. Do not fabricate a PR ID or claim that one backend completes the Issue.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/absent-pr-creation.md"
+      ],
+      "expectations": [
+        "Qualify the Linux work as a partial contribution using the supplied acceptance contract.",
+        "Pass the initial Issue ledger intent through the existing PR writer and normal creation owner before invoking the relation helper.",
+        "Bind the assigned PR identity after creation before helper observation, planning, Issue-body mutation, or native mutation.",
+        "Do not fabricate a PR ID or claim that one backend completes the Issue."
+      ],
+      "caller": "getting-prs-ready-for-review"
+    },
+    {
+      "id": 1,
+      "name": "direct-implementation",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Use concrete implementation evidence against the Issue contract rather than title similarity. Record a partial implementation in both bodies with stable qualified links and a useful role. Permit the partial native addition only under the supplied usable disabled observation and bound authority. Keep Issue state and unrelated body/native content unchanged.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/direct-implementation.md"
+      ],
+      "expectations": [
+        "Use concrete implementation evidence against the Issue contract rather than title similarity.",
+        "Record a partial implementation in both bodies with stable qualified links and a useful role.",
+        "Permit the partial native addition only under the supplied usable disabled observation and bound authority.",
+        "Keep Issue state and unrelated body/native content unchanged."
+      ],
+      "caller": "maintaining-issue-pr-relations"
+    },
+    {
+      "id": 2,
+      "name": "dependency-only",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Do not inherit the base PR\u2019s Issue association automatically. Treat the dependency as a reference rather than a contribution to #17. Skip relation and repository-setting acquisition for this noncontribution.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/dependency-only.md"
+      ],
+      "expectations": [
+        "Do not inherit the base PR\u2019s Issue association automatically.",
+        "Treat the dependency as a reference rather than a contribution to #17.",
+        "Skip relation and repository-setting acquisition for this noncontribution."
+      ],
+      "caller": "stacking-pr-fixups"
+    },
+    {
+      "id": 3,
+      "name": "incidental-mention",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Do not turn the incidental Issue mention into a contribution. Skip relation maintenance and setting acquisition. Keep the ordinary body edit with its existing writer and publisher.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/incidental-mention.md"
+      ],
+      "expectations": [
+        "Do not turn the incidental Issue mention into a contribution.",
+        "Skip relation maintenance and setting acquisition.",
+        "Keep the ordinary body edit with its existing writer and publisher."
+      ],
+      "caller": "maintaining-issue-pr-relations"
+    },
+    {
+      "id": 4,
+      "name": "formatting-skip",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Treat this as a formatting edit with unchanged relation intent. Perform no relation or setting reads. Keep exact-body authoring separate from forge mutation.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/formatting-skip.md"
+      ],
+      "expectations": [
+        "Treat this as a formatting edit with unchanged relation intent.",
+        "Perform no relation or setting reads.",
+        "Keep exact-body authoring separate from forge mutation."
+      ],
+      "caller": "writing-github-issue-and-pr-markdown"
+    },
+    {
+      "id": 5,
+      "name": "status-only-resume",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Return read-only reported status without choosing a mutating lifecycle owner. Do not reconcile relations or refresh repository settings. Preserve retained task context without treating age alone as authority to act.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/status-only-resume.md"
+      ],
+      "expectations": [
+        "Return read-only reported status without choosing a mutating lifecycle owner.",
+        "Do not reconcile relations or refresh repository settings.",
+        "Preserve retained task context without treating age alone as authority to act."
+      ],
+      "caller": "resuming-reviewed-prs"
+    },
+    {
+      "id": 6,
+      "name": "unchanged-readiness",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Reuse the verified unchanged relation result. Perform zero additional relation-discovery or repository-setting reads solely for the ready transition. Use the existing guarded readiness and publication-audit owners.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/unchanged-readiness.md"
+      ],
+      "expectations": [
+        "Reuse the verified unchanged relation result.",
+        "Perform zero additional relation-discovery or repository-setting reads solely for the ready transition.",
+        "Use the existing guarded readiness and publication-audit owners."
+      ],
+      "caller": "getting-prs-ready-for-review"
+    },
+    {
+      "id": 7,
+      "name": "resume-past-ttl",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Reuse the task-selected disabled observation despite cross-task TTL expiry. Describe it as last observed and preserve its original timestamp rather than renew its age. Require affected preimage revalidation without repeating setting acquisition or arbitrary pair discovery.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/resume-past-ttl.md"
+      ],
+      "expectations": [
+        "Reuse the task-selected disabled observation despite cross-task TTL expiry.",
+        "Describe it as last observed and preserve its original timestamp rather than renew its age.",
+        "Require affected preimage revalidation without repeating setting acquisition or arbitrary pair discovery."
+      ],
+      "caller": "maintaining-issue-pr-relations"
+    },
+    {
+      "id": 8,
+      "name": "historical-repair",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Preserve the evidenced earlier-contract contribution and annotate its historical role without claiming current completion. Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation. Keep the caller responsible for publication and resume reconciliation from its verified result. Do not close or reopen the Issue.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/historical-repair.md"
+      ],
+      "expectations": [
+        "Preserve the evidenced earlier-contract contribution and annotate its historical role without claiming current completion.",
+        "Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation.",
+        "Keep the caller responsible for publication and resume reconciliation from its verified result.",
+        "Do not close or reopen the Issue."
+      ],
+      "caller": "maintaining-issue-pr-relations"
+    },
+    {
+      "id": 9,
+      "name": "settled-plan-no-recursion",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, author the requested exact body without tools or forge actuation. Return only a JSON string whose decoded value is the complete exact body.",
+      "expected_output": "Return only one JSON string whose decoded body equals the retained prefix plus the exact authorized ledger entry. Do not rediscover pairs, refresh settings, invoke relation maintenance recursively, or append explanatory metadata. Do not perform or claim any forge mutation.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/settled-plan-no-recursion.md"
+      ],
+      "expectations": [
+        "Return only one JSON string whose decoded body equals the retained prefix plus the exact authorized ledger entry.",
+        "Do not rediscover pairs, refresh settings, invoke relation maintenance recursively, or append explanatory metadata.",
+        "Do not perform or claim any forge mutation."
+      ],
+      "caller": "writing-github-issue-and-pr-markdown"
+    },
+    {
+      "id": 10,
+      "name": "cross-repository-merge",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Use the Issue repository setting rather than the PR repository setting for closure consequences. Recognize commit-keyword closure risk despite the missing native Development edge. Do not treat the partial contribution as satisfying completion gates; return the unresolved merge consequence to its owner. Retain the contribution ledgers and do not claim manual-native removal fixes the commit keyword.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/cross-repository-merge.md"
+      ],
+      "expectations": [
+        "Use the Issue repository setting rather than the PR repository setting for closure consequences.",
+        "Recognize commit-keyword closure risk despite the missing native Development edge.",
+        "Do not treat the partial contribution as satisfying completion gates; return the unresolved merge consequence to its owner.",
+        "Retain the contribution ledgers and do not claim manual-native removal fixes the commit keyword."
+      ],
+      "caller": "getting-prs-merged"
+    },
+    {
+      "id": 11,
+      "name": "ancestry-only-restack",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Keep normal Graphite ancestry/navigation work with its existing owners. Skip relation rediscovery and repository-setting refresh for unchanged intent. Preserve the existing immediate canonical-repair ordering after draft transport.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/ancestry-only-restack.md"
+      ],
+      "expectations": [
+        "Keep normal Graphite ancestry/navigation work with its existing owners.",
+        "Skip relation rediscovery and repository-setting refresh for unchanged intent.",
+        "Preserve the existing immediate canonical-repair ordering after draft transport."
+      ],
+      "caller": "graphite"
+    },
+    {
+      "id": 12,
+      "name": "fixup-own-contribution",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Qualify the fixup\u2019s direct partial contribution to #20 independently from its base PR. Do not copy unrelated base-PR associations. Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/fixup-own-contribution.md"
+      ],
+      "expectations": [
+        "Qualify the fixup\u2019s direct partial contribution to #20 independently from its base PR.",
+        "Do not copy unrelated base-PR associations.",
+        "Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists."
+      ],
+      "caller": "stacking-pr-fixups"
+    },
+    {
+      "id": 13,
+      "name": "manual-capacity",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Retain all eleven supported pairs in both body ledgers. Respect the observed ten-manual-Issues-per-PR cap and request explicit selection rather than choose an arbitrary ten. Report native omissions or the selection gate without dropping history or claiming a universal PRs-per-Issue cap.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/manual-capacity.md"
+      ],
+      "expectations": [
+        "Retain all eleven supported pairs in both body ledgers.",
+        "Respect the observed ten-manual-Issues-per-PR cap and request explicit selection rather than choose an arbitrary ten.",
+        "Report native omissions or the selection gate without dropping history or claiming a universal PRs-per-Issue cap."
+      ],
+      "caller": "maintaining-issue-pr-relations"
+    },
+    {
+      "id": 14,
+      "name": "unlink-preserves-history",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Remove only the authorized manual closing intent after normal bound verification. Retain both evidenced contribution ledger entries. Do not turn superseded or historical status into withdrawal evidence.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/unlink-preserves-history.md"
+      ],
+      "expectations": [
+        "Remove only the authorized manual closing intent after normal bound verification.",
+        "Retain both evidenced contribution ledger entries.",
+        "Do not turn superseded or historical status into withdrawal evidence."
+      ],
+      "caller": "maintaining-issue-pr-relations"
+    },
+    {
+      "id": 15,
+      "name": "explicit-setting-invalidation",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Invalidate the affected cached observation and dependent plan rather than pin the contradicted value indefinitely. Use enabled-mode limits and retain the bilateral contribution ledgers. Do not add an unsafe partial native link, alter the setting, renew the old timestamp, or start polling.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/explicit-setting-invalidation.md"
+      ],
+      "expectations": [
+        "Invalidate the affected cached observation and dependent plan rather than pin the contradicted value indefinitely.",
+        "Use enabled-mode limits and retain the bilateral contribution ledgers.",
+        "Do not add an unsafe partial native link, alter the setting, renew the old timestamp, or start polling."
+      ],
+      "caller": "maintaining-issue-pr-relations"
+    },
+    {
+      "id": 16,
+      "name": "post-merge-selective-completion",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
+      "expected_output": "Carry both candidate Issue completions from the retained relation context to the ongoing caller and repository Issue workflow after the verified merge. Use the existing task authority to check current Issue contracts and state, explicitly close only Issue #20 if its supplied completed gates remain current, and independently verify its state. Keep Issue #21 open because deployment and operator acceptance remain unevidenced; do not treat the merged PR or native link as completion. Keep Issue closure outside the relation helper, reuse unchanged relation and setting observations, and do not assume auto-close or change the setting.",
+      "files": [
+        "maintaining-issue-pr-relations/fixtures/post-merge-selective-completion.md"
+      ],
+      "expectations": [
+        "Carry both candidate Issue completions from the retained relation context to the ongoing caller and repository Issue workflow after the verified merge.",
+        "Use the existing task authority to check current Issue contracts and state, explicitly close only Issue #20 if its supplied completed gates remain current, and independently verify its state.",
+        "Keep Issue #21 open because deployment and operator acceptance remain unevidenced; do not treat the merged PR or native link as completion.",
+        "Keep Issue closure outside the relation helper, reuse unchanged relation and setting observations, and do not assume auto-close or change the setting."
+      ],
+      "caller": "getting-prs-merged"
+    }
+  ]
+}

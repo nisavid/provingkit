@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "repetitions": 3,
+  "behavior_acceptance": "Every expectation must pass in all three observed repetitions.",
+  "trigger_acceptance": "Every discovery case must select or skip correctly.",
+  "delivery": {
+    "executor_inputs": [
+      "prompt",
+      "fixture",
+      "candidate_bundle"
+    ],
+    "expectations_hidden_from_executor": true,
+    "grader_distinct_from_executor": true
+  },
+  "claim_boundary": "Prospective corpus only until actual executor responses and independent grades are retained. Simulated decisions do not establish live forge effects or native harness discovery."
+}

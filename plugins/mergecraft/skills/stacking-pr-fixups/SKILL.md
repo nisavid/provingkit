@@ -8,6 +8,15 @@ description: Use when preparing a narrow stacked PR fixup or follow-up patch who
 A fixup branch is a narrow patch stacked on the reviewed PR's head. Branch
 prefixes come from repository/operator policy; never infer a personal prefix.
 
+When the fixup contributes to an Issue or changes the stack's contribution or
+completion scope, use
+[Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+before authoring. Qualify the fixup's own role; its base PR's associations are
+evidence to inspect, not inherited contributions. Pass planned ledger content
+to the existing writer/publisher, then resume pending reconciliation with the
+assigned PR identity and verified publication result. Reuse the task's
+observations and plan. No-fix branch preparation performs no relation reads.
+
 ## Workflow
 
 1. Resolve the base PR by exact repository, number, open state, head ref/OID,

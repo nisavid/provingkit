@@ -180,6 +180,87 @@ class ValidateMergecraftTests(unittest.TestCase):
                 result = self.run_validator("--skill", skill)
                 self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_publication_rejects_missing_relation_evaluation_evidence(self) -> None:
+        evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
+        (evidence / "experiment.json").unlink(missing_ok=True)
+        result = self.run_validator("--source-stage")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("relation evaluation evidence", result.stderr)
+
+    def test_publication_rejects_malformed_relation_evaluation_without_traceback(self) -> None:
+        evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
+        (evidence / "experiment.json").write_text("[]\n", encoding="utf-8")
+        (evidence / "grading.json").write_text("{}\n", encoding="utf-8")
+        result = self.run_validator("--source-stage")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("relation evaluation evidence", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_publication_rejects_rebound_hashes_with_stale_relation_executor_inputs(self) -> None:
+        relative = "plugins/mergecraft/skills/maintaining-issue-pr-relations/references/command.md"
+        source = self.repo / relative
+        source.write_text(source.read_text() + "\nAdditional current instruction.\n")
+        evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/experiment.json"
+        experiment = json.loads(evidence.read_bytes())
+        experiment["current_source_sha256"][relative] = hashlib.sha256(source.read_bytes()).hexdigest()
+        evidence.write_text(json.dumps(experiment), encoding="utf-8")
+        result = self.run_validator("--source-stage")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("selected executor inputs", result.stderr)
+
+    def test_publication_requires_isolated_relation_runs_and_bound_passing_grades(self) -> None:
+        folder = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
+        original_experiment = json.loads((folder / "experiment.json").read_bytes())
+        original_grading = json.loads((folder / "grading.json").read_bytes())
+        selected = original_experiment["selection"]["behavior_by_case"]["0"]
+        selected_id = f"{selected}/case-00-with-skill-1"
+        for change in ("tools exposed", "parse error", "permission denial", "failed expectation", "missing grade", "wrong response", "failed trigger"):
+            with self.subTest(change=change):
+                experiment = copy.deepcopy(original_experiment)
+                grading = copy.deepcopy(original_grading)
+                run = next(row for row in experiment["behavior_runs"] if row["id"] == selected_id)
+                grade = next(row for row in grading["runs"] if row["run_id"] == selected_id)
+                if change == "tools exposed":
+                    run["init"]["tools"] = ["Bash"]
+                elif change == "parse error":
+                    run["parse_errors"] = ["Malformed stream event"]
+                elif change == "permission denial":
+                    run["permission_denials"] = [{"tool_name": "Bash"}]
+                elif change == "failed expectation":
+                    grade["expectations"][0]["passed"] = False
+                elif change == "missing grade":
+                    grading["runs"].remove(grade)
+                elif change == "wrong response":
+                    grade["response_sha256"] = "0" * 64
+                else:
+                    grading["trigger_runs"][0]["passed"] = False
+                (folder / "experiment.json").write_text(json.dumps(experiment), encoding="utf-8")
+                (folder / "grading.json").write_text(json.dumps(grading), encoding="utf-8")
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("relation evaluation evidence", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_publication_requires_relation_thresholds_to_match_selected_grades(self) -> None:
+        path = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/grading.json"
+        original = json.loads(path.read_bytes())
+        for change in ("false summary", "missing summary", "duplicate summary", "weakened requirement"):
+            with self.subTest(change=change):
+                grading = copy.deepcopy(original)
+                if change == "false summary":
+                    grading["thresholds"][0].update(passes=0, met=False)
+                elif change == "missing summary":
+                    grading["thresholds"].pop()
+                elif change == "duplicate summary":
+                    grading["thresholds"].append(grading["thresholds"][0])
+                else:
+                    grading["thresholds"][0]["required"] = 1
+                path.write_text(json.dumps(grading), encoding="utf-8")
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("relation evaluation evidence", result.stderr)
+                self.assertIn("threshold", result.stderr)
+
     def test_uses_canonical_agent_plugins_v1_manifest_and_discovery(self) -> None:
         canonical = json.loads((self.plugin / "plugin.json").read_text())
         topology = json.loads((self.plugin / "topology.json").read_text())
@@ -587,8 +668,11 @@ class ValidateMergecraftTests(unittest.TestCase):
     def test_validator_accepts_a_consistently_recorded_markdown_failure(self) -> None:
         relative = f"skills/{MARKDOWN_AUTHORING_SKILL}/evals/grading.json"
         grading = json.loads((self.plugin / relative).read_bytes())
-        threshold = grading["selected_thresholds"][0]
-        self.assertEqual((threshold["severity"], threshold["passes"]), ("safety", 3))
+        threshold = next(
+            row for row in grading["selected_thresholds"]
+            if row["variant"] == "with-skill" and row["severity"] == "safety"
+            and row["passes"] == 3
+        )
         run_id = (
             f"{threshold['experiment']}/case-{threshold['case_id']:02d}"
             f"-{threshold['variant']}-1"
@@ -1145,6 +1229,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             {item["owner"] for item in resume["contract"]["terminal_handoffs"]},
             {
                 "addressing-pr-review-feedback",
+                "maintaining-issue-pr-relations",
                 "getting-prs-ready-for-review",
                 "getting-prs-merged",
                 "operation:focused-ci",
@@ -1541,7 +1626,7 @@ class ValidateMergecraftTests(unittest.TestCase):
                 "for every merge request.",
             )
         )
-        self.assert_rejected("semantic content lock mismatch")
+        self.assert_rejected("relation evaluation evidence: current source binding")
 
     def test_invalid_write_candidate_preserves_existing_content_lock_bytes(
         self,
@@ -1633,9 +1718,9 @@ class ValidateMergecraftTests(unittest.TestCase):
     ) -> None:
         lock_path = self.repo / CONTENT_LOCK
         original_lock = lock_path.read_bytes()
-        skill = self.plugin / "skills/getting-prs-merged/SKILL.md"
-        skill.write_text(
-            skill.read_text(encoding="utf-8") + "\nValid semantic change.\n",
+        document = self.plugin / "README.md"
+        document.write_text(
+            document.read_text(encoding="utf-8") + "\nValid semantic change.\n",
             encoding="utf-8",
         )
         real_replace = os.replace
@@ -1647,8 +1732,8 @@ class ValidateMergecraftTests(unittest.TestCase):
         ) -> None:
             real_replace(source, destination, **kwargs)
             if Path(destination).name == lock_path.name:
-                skill.write_text(
-                    skill.read_text(encoding="utf-8")
+                document.write_text(
+                    document.read_text(encoding="utf-8")
                     + "\nConcurrent semantic change.\n",
                     encoding="utf-8",
                 )
@@ -1690,6 +1775,10 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         required = {
             "pr-create",
+            "issue-pr-relation-read",
+            "issue-body-write",
+            "issue-pr-development-write",
+            "pr-relation-ledger-write",
             "repository-orientation",
             "pr-orientation",
             "issue-orientation",
@@ -1727,6 +1816,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         for alias in (
             "pr-text-read",
+            "issue-pr-relation-read",
             "pr-readiness-read",
             "check-inspection",
             "merge-inspection",
@@ -1734,6 +1824,9 @@ class ValidateMergecraftTests(unittest.TestCase):
             self.assertEqual(operations[alias][0], "read")
         for alias in (
             "pr-text-write",
+            "issue-body-write",
+            "issue-pr-development-write",
+            "pr-relation-ledger-write",
             "pr-readiness-write",
             "check-rerun",
             "feedback-conversation-response-write",
@@ -2001,7 +2094,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "dd65cabbc64521a308ed21e9b41a70efa12b6076ceefdd0b79ef4853690c344d"
+                "1b7be802d7af74f9d86e95e4c01ee8c4356f064cd577f8ef0346294b3a014183"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"
@@ -2467,7 +2560,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             timeout=30,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('"skills": 16', result.stdout)
+        self.assertIn('"skills": 17', result.stdout)
 
     def test_rejects_retirement_destination_owner_missing_from_bundle(self) -> None:
         definition_path = self.repo / EVAL_ROOT / "retirement-control-plane.json"

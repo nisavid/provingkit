@@ -22,12 +22,42 @@ Generated forge text is no substitute.
 - For an unpublished title/body proposal in chat, use this writer only.
 - For PR creation or stored title/body mutation, the publisher invokes this
   writer and then owns forge actuation.
+- For an existing PR's isolated relation-ledger edit, use the bounded mode below,
+  including historical PRs. Normal creation and canonical publication retain
+  the navigation workflow.
 - For a ready-only request, the lifecycle caller routes to the publisher. The
   publisher consumes the current writer-owned validated pair and manifest but
   sends no text mutation.
 - Read-only inspection, comments, checks, base changes, labels, and merge-only
   work use their own owners; neither this writer nor the publisher is a generic
   PR router.
+
+## Relation Applicability
+
+Before freezing new or materially changed Issue contributions, use
+[Maintaining Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md).
+Reuse a supplied qualified plan and include its ledger intent in this candidate;
+do not restart discovery or publication. Unchanged intent, incidental mentions,
+and unrelated text edits need no relation reads. Return pending bilateral or
+native work to the caller after the candidate is published.
+
+## Existing Relation Ledger
+
+Use this mode only for an authorized Issue–PR ledger span in an existing PR.
+Read [the ledger contract](references/relation-ledger.md) and the
+[GitHub Markdown authoring contract](references/github-markdown-authoring.md).
+Bind stable repository/PR identity, exact live title/body/state, one UTF-8 span,
+and its authorized replacement. Return the complete title/body pair and ledger
+manifest; preserve title and every body byte outside that span. The validator
+proves this derivation and checks sensitive content. It does not infer semantic
+relations or authorize the edit.
+
+This mode requires no surviving branch or reconstructed Diff navigation and
+establishes no readiness claim. For normal creation or canonical publication,
+include the ledger in the workflow below. A lifecycle caller that needs
+canonical publication evidence must use that route after any isolated edit;
+a ledger receipt cannot satisfy its audit. A detected closing reference outside
+the authorized span needs a separately scoped content request.
 
 ## Workflow
 
