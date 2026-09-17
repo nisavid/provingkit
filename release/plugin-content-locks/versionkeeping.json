@@ -7,7 +7,7 @@
       "mode": 420
     },
     "README.md": {
-      "sha256": "54b6abf81db1d9cd16cddf18166f5fe3859a12601a21eb08f818c5468875178e",
+      "sha256": "a00f636a3d7ead47a10fb0eb65398ff34763dff25ef715fd3418ae51eee9062d",
       "mode": 420
     },
     "plugin.json": {
@@ -15,11 +15,15 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/SKILL.md": {
-      "sha256": "a76c4aeaf6c2971dd95fb6795dd4f46a6facd6f49e47180b92dd2bc4f0495b3e",
+      "sha256": "9a2df150a566135fe5e3d1f9031e302030ac72b44fa9cf48c5d99381b9c0228f",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/agents/openai.yaml": {
       "sha256": "acab93293ed09334a85c7db73a5dc241f08735b9346372bb15213e3b6b243f7c",
+      "mode": 420
+    },
+    "skills/checkpointing-and-publishing-git-work/references/commit-policy.md": {
+      "sha256": "e83f7d48f7db06cffda58428d2f36f7dabf287061b672fca0161383c5d8b5017",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/references/evaluation-integrity.md": {
@@ -103,7 +107,7 @@
       "mode": 420
     },
     "topology.json": {
-      "sha256": "e05f091acd83e0e684b4fadc8fa7f0ed5a910b728157144dd77eb091b1031048",
+      "sha256": "bbb34ba2de48794bc60e9daddf08bd77f0f63f0a7ddb8853d509b7c8b72fd723",
       "mode": 420
     }
   }

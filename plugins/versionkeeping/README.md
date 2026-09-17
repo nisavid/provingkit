@@ -10,6 +10,11 @@ terminal remote-ref deletion. It deliberately does not own Graphite operations;
 review or pull-request creation, text, readiness, resolution, or merge
 actuation; or model and delegation policy.
 
+Checkpointing establishes the destination's contribution policy before the
+first commit. Required DCO sign-offs use the authorized contributor identity;
+concrete ownership or provenance uncertainty needs evidence or escalation.
+Repositories without a DCO requirement keep their ordinary commit process.
+
 ## Skills
 
 | Public name                                             | Responsibility                                                                                                                   |
