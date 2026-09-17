@@ -472,6 +472,14 @@ def plugin_eval_report(
 
 
 class ValidatePublicReleaseTests(unittest.TestCase):
+    def test_repository_projection_requires_complete_plugin_readme_link(self) -> None:
+        readme = self.repository / "README.md"
+        plugin = next(iter(self.module.MARKETPLACE_PLUGINS))
+        readme.write_text(f"](plugins/{plugin}/README.md)\n", encoding="utf-8")
+        with mock.patch.object(self.module, "MARKETPLACE_PLUGINS", (plugin,)):
+            with self.assertRaisesRegex(self.module.ReleaseError, "omits public plugin"):
+                self.module.validate_repository_projection(self.repository)
+
     def setUp(self) -> None:
         self.module = load_validator_module()
         self.temporary_directory = tempfile.TemporaryDirectory()
@@ -3855,12 +3863,97 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     )
                     self.assertFalse(marker.exists())
 
-    def test_readme_documents_only_the_source_stage_entrypoint(self) -> None:
-        readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
-        normalized_readme = " ".join(readme.split())
+    def test_repository_projection_accepts_linked_member_readmes(self) -> None:
+        (self.repository / "README.md").write_text(
+            "\n".join(
+                f"[{plugin}](plugins/{plugin}/README.md)"
+                for plugin in self.module.MARKETPLACE_PLUGINS
+            ),
+            encoding="utf-8",
+        )
 
-        self.assertEqual(readme.count("run_prepared_release_validation.sh"), 1)
-        self.assertIn("python scripts/validate_provingkit.py .", readme)
+        self.module.validate_repository_projection(self.repository)
+
+    def test_repository_projection_rejects_images_as_member_links(self) -> None:
+        for missing in self.module.MARKETPLACE_PLUGINS:
+            with self.subTest(missing=missing):
+                (self.repository / "README.md").write_text(
+                    "\n".join(
+                        ("!" if plugin == missing else "")
+                        + f"[{plugin}](plugins/{plugin}/README.md)"
+                        for plugin in self.module.MARKETPLACE_PLUGINS
+                    ),
+                    encoding="utf-8",
+                )
+
+                with self.assertRaisesRegex(
+                    self.module.ReleaseError,
+                    f"repository README omits public plugin: {missing}",
+                ):
+                    self.module.validate_repository_projection(self.repository)
+
+    def test_repository_projection_keeps_directory_reference_support(self) -> None:
+        (self.repository / "README.md").write_text(
+            "\n".join(
+                f"`plugins/{plugin}/`"
+                for plugin in self.module.MARKETPLACE_PLUGINS
+            ),
+            encoding="utf-8",
+        )
+
+        self.module.validate_repository_projection(self.repository)
+
+    def test_repository_projection_rejects_missing_member_link(self) -> None:
+        for missing in self.module.MARKETPLACE_PLUGINS:
+            with self.subTest(missing=missing):
+                (self.repository / "README.md").write_text(
+                    "\n".join(
+                        f"[{plugin}](plugins/{plugin}/README.md)"
+                        for plugin in self.module.MARKETPLACE_PLUGINS
+                        if plugin != missing
+                    ),
+                    encoding="utf-8",
+                )
+
+                with self.assertRaisesRegex(
+                    self.module.ReleaseError,
+                    f"repository README omits public plugin: {missing}",
+                ):
+                    self.module.validate_repository_projection(self.repository)
+
+    def test_release_scope_retains_human_documentation_inputs(self) -> None:
+        for name, plugins in (
+            ("production", self.module.PRODUCTION_VALIDATED_PLUGINS),
+            ("source-stage", self.module.SOURCE_STAGE_VALIDATED_PLUGINS),
+        ):
+            with self.subTest(scope=name):
+                snapshot = Path(self.temporary_directory.name) / f"docs-{name}"
+                self.module.copy_release_scope(self.repository, snapshot, plugins)
+                original_identities = self.module.candidate_identities(snapshot, plugins)
+                for relative in ("CONTRIBUTING.md", "docs/release-boundary.md"):
+                    with self.subTest(document=relative):
+                        expected = (REPOSITORY / relative).read_bytes()
+                        retained = snapshot / relative
+                        self.assertEqual(retained.read_bytes(), expected)
+                        retained.write_bytes(expected + b"\nChanged documentation input.\n")
+                        self.assertNotEqual(
+                            self.module.candidate_identities(snapshot, plugins),
+                            original_identities,
+                        )
+                        retained.write_bytes(expected)
+
+    def test_human_docs_document_only_the_source_stage_entrypoint(self) -> None:
+        readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
+        contributing = (REPOSITORY / "CONTRIBUTING.md").read_text(encoding="utf-8")
+        release_boundary = (REPOSITORY / "docs/release-boundary.md").read_text(
+            encoding="utf-8"
+        )
+        human_docs = "\n".join((readme, contributing, release_boundary))
+        normalized_readme = " ".join(readme.split())
+        normalized_contributing = " ".join(contributing.split())
+
+        self.assertEqual(human_docs.count("run_prepared_release_validation.sh"), 1)
+        self.assertIn("python scripts/validate_provingkit.py .", contributing)
         for member in (
             "rolecasting",
             "tricritical",
@@ -3869,17 +3962,17 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             "artifact_customs",
             "proseweaving",
         ):
-            self.assertIn(f"validate_{member}.py", readme)
+            self.assertIn(f"validate_{member}.py", contributing)
         self.assertIn("pinned unsigned preview", normalized_readme)
         self.assertIn(
             "Stable release and live host qualification remain separate gates.",
             normalized_readme,
         )
-        self.assertIn("validate public source contracts", normalized_readme)
-        self.assertNotIn("amberbridge-production", readme)
-        self.assertNotIn("--private-producer-witness", readme)
-        self.assertNotIn("uv --no-config run", readme)
-        self.assertNotIn("uv run --with PyYAML --with pytest", readme)
+        self.assertIn("validate public source contracts", normalized_contributing)
+        self.assertNotIn("amberbridge-production", human_docs)
+        self.assertNotIn("--private-producer-witness", human_docs)
+        self.assertNotIn("uv --no-config run", human_docs)
+        self.assertNotIn("uv run --with PyYAML --with pytest", human_docs)
         self.assertIn(
             "scripts/run_prepared_release_validation.sh",
             self.module.COMMON_SUPPORT_PATHS,

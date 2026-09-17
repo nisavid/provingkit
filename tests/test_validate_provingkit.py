@@ -402,7 +402,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertIn(
             "python -m pip install idna==3.18 jsonschema==4.26.0 "
             "PyYAML==6.0.3",
-            (REPOSITORY / "README.md").read_text(encoding="utf-8"),
+            (REPOSITORY / "CONTRIBUTING.md").read_text(encoding="utf-8"),
         )
 
     def test_provingkit_source_job_checks_the_trigger_base_to_head_range(self) -> None:
@@ -475,7 +475,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertIn(expected_projection, provingkit_commands)
         self.assertIn(
             expected_tricritical,
-            (REPOSITORY / "README.md").read_text(encoding="utf-8"),
+            (REPOSITORY / "CONTRIBUTING.md").read_text(encoding="utf-8"),
         )
 
 
