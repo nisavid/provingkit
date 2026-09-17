@@ -267,8 +267,8 @@
       "entrypoint": "plugins/mergecraft/skills/getting-prs-merged/SKILL.md",
       "companions": [
         "mergecraft:addressing-pr-review-feedback",
-        "mergecraft:publishing-reviewable-prs",
-        "versionkeeping:checkpointing-and-publishing-git-work"
+        "mergecraft:getting-prs-ready-for-review",
+        "mergecraft:publishing-reviewable-prs"
       ],
       "scenario": {
         "id": "merge-explicit-review-loop",

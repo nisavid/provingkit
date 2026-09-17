@@ -18,6 +18,7 @@ Mock local policy:
 - `AGENTS.md`: mark ready only after the PR body records exact verification evidence.
 - `AGENTS.md`: merge actuation is agent-owned after required checks and approvals pass.
 - `AGENTS.md`: use squash merge and delete the remote branch after merge.
+- The cleanup authorization binds remote `origin`, full ref `refs/heads/codex/widget-timeout-fix`, and its observed merged head OID; the supplied Versionkeeping deletion result is verified.
 
 Mock GitHub state after publish:
 

@@ -1,5 +1,9 @@
 # Internal `gh-fix-ci` Adapter
 
+Read [caller continuation](caller-continuation.md) when this operation is part
+of recovery or merge closeout, including the caller's separately authorized
+checkpoint and push after a verified source fix.
+
 This internal seam delegates to the independently updateable upstream
 `github:gh-fix-ci` skill for GitHub Actions only. Its `check-inspection`
 operation is read-only: it may inspect Actions runs, logs, jobs, annotations,
@@ -22,6 +26,7 @@ When reached through PR recovery, this internal operation is a terminal
 handoff. Bind the exact repository, PR, head OID, required GitHub Actions run or
 job, and inspection or separately authorized repair scope. Return a bounded
 diagnosis, verified repair outcome, blocked status, or ambiguous status, then
-stop. It never invokes the resume coordinator. The caller starts a fresh
-`resuming-reviewed-prs` invocation from newly read live state after the
-terminal outcome.
+stop this invocation. It never invokes a lifecycle coordinator. The caller
+completes any separately authorized checkpoint and publication handoffs, then
+starts a fresh `resuming-reviewed-prs` or `getting-prs-merged` invocation,
+according to the original caller, from newly read live state.

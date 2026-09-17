@@ -218,7 +218,7 @@
         "replay completed work",
         "blind mutation",
         "parallel lifecycle owners",
-        "outcome coordinator calls outcome coordinator"
+        "resume coordinator invokes another outcome coordinator"
       ]
     },
     {
@@ -270,8 +270,8 @@
       "prompt": "Address current review feedback, rerun a fresh review-and-revise cycle, and merge only once clean.",
       "must_include": [
         "read-only feedback-acquisition",
-        "terminal handoff to addressing-pr-review-feedback",
-        "fresh merge-closeout invocation",
+        "authorized feedback-outcome in author-outcome mode",
+        "addressed followed by fresh merge-closeout invocation",
         "terminal handoff to tricritical:loop",
         "fresh merge-closeout invocation",
         "stop on non-clean",

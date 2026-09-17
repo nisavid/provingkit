@@ -140,6 +140,9 @@ MERGE_EVAL_FIXTURES = (
     "pure-merge-current-state.md",
     "review-comments-to-merge.md",
     "review-only-near-miss.md",
+    "owned-feedback-continuation.md",
+    "feedback-continuation-gates.md",
+    "persistent-request-changes-after-addressed.md",
 )
 RAW_SKILL_EVAL_FIXTURES = {
     "writing-reviewable-pr-descriptions": (
@@ -338,6 +341,7 @@ EXPECTED_SKILL_FILES = {
     "getting-prs-ready-for-review": COMMON_SKILL_FILES,
     "getting-prs-merged": COMMON_SKILL_FILES
     | {
+        "references/caller-continuation.md",
         "references/gh-fix-ci-adapter.md",
         "references/github-markdown-authoring.md",
         "references/merge-actuator.md",
@@ -1835,7 +1839,8 @@ def validate_topology(root: Path) -> None:
         if any(operation.endswith("-outcome") for operation in component["operations"])
     } | {"resuming-reviewed-prs"}
     allowed_continuations = {
-        ("getting-prs-merged", "readiness-outcome")
+        ("getting-prs-merged", "feedback-outcome"),
+        ("getting-prs-merged", "readiness-outcome"),
     }
     for coordinator in outcome_coordinators:
         called_operations = {
@@ -1882,15 +1887,63 @@ def validate_topology(root: Path) -> None:
         "resume read-only status boundary drift",
     )
     merge = skills_by_name["getting-prs-merged"]
+    feedback = skills_by_name["addressing-pr-review-feedback"]
+    feedback_outcome = operation_by_id["feedback-outcome"]
+    feedback_authority = (
+        "read-only snapshot or separately authorized finding revisions and interactions"
+    )
+    require(
+        feedback_outcome["owner"] == feedback["name"]
+        and feedback_outcome["implementation"] == feedback["entrypoint"]
+        and feedback_outcome["access"] == "coordinate"
+        and feedback_outcome["authority"] == feedback_authority
+        and feedback["contract"]["authority"] == feedback_authority,
+        "feedback outcome ownership or authority drift",
+    )
+    require(
+        feedback["contract"]["modes"] == ["snapshot", "address"]
+        and feedback["contract"]["terminal_statuses"]
+        == ["snapshot", "addressed", "blocked"],
+        "feedback outcome mode or result drift",
+    )
+    require(
+        "operation:feedback-outcome" in merge["calls"],
+        "merge feedback continuation drift",
+    )
+    require(
+        "prior-feedback-outcome-or-explicit-absence" in merge["contract"]["inputs"],
+        "merge prior feedback outcome input drift",
+    )
+    require(
+        not {"operation:finding-adjudication", "operation:source-revision"}
+        & set(merge["calls"]),
+        "merge feedback adjudication ownership drift",
+    )
+    require(
+        "operation:readiness-outcome" in merge["calls"]
+        and [
+            handoff
+            for handoff in merge["contract"]["terminal_handoffs"]
+            if handoff["owner"] == "getting-prs-ready-for-review"
+        ] == [{
+            "trigger": "readiness-authority-unavailable-or-outcome-blocked-ambiguous-or-unsafe",
+            "owner": "getting-prs-ready-for-review",
+            "resume": "fresh-getting-prs-merged-invocation-after-readiness",
+        }],
+        "merge readiness terminal handoff drift",
+    )
     require(
         "operation:feedback-acquisition" in merge["calls"]
         and "addressing-pr-review-feedback" not in merge["calls"]
-        and any(
-            handoff["owner"] == "addressing-pr-review-feedback"
-            and handoff["resume"]
-            == "fresh-getting-prs-merged-invocation-after-feedback-outcome"
+        and [
+            handoff
             for handoff in merge["contract"]["terminal_handoffs"]
-        ),
+            if handoff["owner"] == "addressing-pr-review-feedback"
+        ] == [{
+            "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked-or-snapshot",
+            "owner": "addressing-pr-review-feedback",
+            "resume": "fresh-getting-prs-merged-invocation-after-feedback-gate-clears",
+        }],
         "merge feedback terminal handoff drift",
     )
     graphite = skills_by_name["graphite"]
@@ -2194,6 +2247,24 @@ def validate_links_and_call_projection(root: Path) -> None:
         content = path.read_text(encoding="utf-8")
         for target in MARKDOWN_LINK_RE.findall(content):
             _resolve_link(root, path, target)
+    continuation = "getting-prs-merged/references/caller-continuation.md"
+    readers = {
+        "getting-prs-merged/SKILL.md": "references/caller-continuation.md",
+        **{
+            f"{skill}/SKILL.md": f"../{continuation}"
+            for skill in (
+                "addressing-pr-review-feedback",
+                "resuming-reviewed-prs",
+                "getting-prs-ready-for-review",
+            )
+        },
+        "getting-prs-merged/references/gh-fix-ci-adapter.md": "caller-continuation.md",
+    }
+    for relative, target in readers.items():
+        require(
+            target in MARKDOWN_LINK_RE.findall(read(root, f"skills/{relative}")),
+            f"caller continuation pointer drift: {relative}",
+        )
     topology = load_json(root, "topology.json")
     for component in topology["skills"]:
         skill = component["name"]

@@ -28,6 +28,9 @@ mutation and reports findings or missing evidence before PR status.
 
 ## Workflow
 
+Read [caller continuation](references/caller-continuation.md) before the first
+owner handoff. Its invocation boundaries preserve the ongoing authorized task.
+
 1. Bind repository/checkout, PR or intended base/branch, pushed OIDs, head
    repository/owner, draft, and target. Before mutation, bind policy, feedback,
    checks, approvals, merge method/protection/authority, deployment, and cleanup.
@@ -44,13 +47,38 @@ mutation and reports findings or missing evidence before PR status.
    `readiness-handoff` naming the bound target and gate.
 3. Acquire a complete head-bound feedback snapshot through the read-only
    `feedback-acquisition` capability implemented by
-   `addressing-pr-review-feedback/scripts/review_feedback_state.py`. Do not call
-   the feedback outcome coordinator or perform any feedback interaction. When
-   the snapshot contains actionable feedback or requested changes, return one
-   terminal `feedback-handoff` naming
+   `addressing-pr-review-feedback/scripts/review_feedback_state.py`. Retain any
+   prior feedback outcome, dispositions, source/head bindings, and receipts.
+   Revalidate their applicability against the fresh complete acquisition; use
+   `--typed-epoch` when the orientation summary lacks exact source identity or
+   revision evidence. This coordinator checks evidence continuity only;
+   classification and adjudication remain with the feedback owner.
+   For new or changed source feedback, missing disposition coverage, or stale
+   or uncertain completion evidence, invoke
    [addressing-pr-review-feedback](../addressing-pr-review-feedback/SKILL.md)
-   and stop. After its separate outcome invocation completes, start a fresh
-   merge invocation that rereads live state.
+   through its `feedback-outcome` operation in author-outcome mode when the
+   caller has authorized the required source and feedback work. Carry the
+   original scope and separate revision, publication, and interaction authority;
+   merge authority alone grants none of them. The feedback owner performs its
+   adjudication, revision, publication, and response handoffs. Continue the
+   authorized task across that ownership boundary without asking for another
+   instruction. Consume its declared `addressed` or `blocked` result.
+   After `addressed`, start a fresh merge invocation that rereads all live state,
+   including remaining feedback, head, checks, and approvals, and carries the
+   returned dispositions and receipts into the revalidation above. `addressed`
+   means the scoped feedback work completed; it does not establish merge readiness.
+   When complete fresh evidence accounts for all source feedback and only a
+   standing reviewer-owned approval or thread-resolution gate remains, report
+   that actual gate and wait for its owner. Unchanged `CHANGES_REQUESTED`,
+   `review_not_approved`, or unresolved-thread metadata alone never repeats
+   author work, fixes, or replies. Those gates still prevent merge. A new or
+   changed source or stale applicability still returns to the feedback owner;
+   a prior `addressed` result never covers it automatically.
+   A `snapshot` result is read-only and cannot satisfy this continuation.
+   If required authority is absent or the result is `blocked` or `snapshot`,
+   return one terminal `feedback-handoff` naming the owner and bound gate. Operator
+   decisions, ambiguity, unknown effects, and unsupported results keep the
+   affected work gated; never retry a possible mutation to obtain success.
 4. Consume the current complete feedback, checks, approvals, and mergeability
    state for ordinary merge closeout; do not start or wrap `tricritical:loop`.
    If the operator explicitly requests fresh review-and-revise, or policy
@@ -105,9 +133,9 @@ approval only when the repository enables `reviews.request_changes_workflow`.
 
 ## Stop conditions
 
-Stop for valid feedback, unsatisfied loop terminal, missing gate/authority,
-drift, conflicts, ambiguity, or unresolved ownership. Green checks never replace
-complete feedback.
+Route actionable feedback through step 3. Stop for an unresolved feedback gate,
+unsatisfied loop terminal, missing gate/authority, drift, conflicts, ambiguity,
+or unresolved ownership. Green checks never replace complete feedback.
 
 Return PR URL/final head, publication audit evidence, merge receipt or blocker,
 cleanup receipt/gate, and any deployment handoff.

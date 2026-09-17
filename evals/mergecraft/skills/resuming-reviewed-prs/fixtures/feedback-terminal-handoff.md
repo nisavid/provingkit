@@ -9,6 +9,7 @@ Mock state:
 - The authoritative latest publication receipt matches live title, body, and readiness
 - The PR is ready for review
 - A complete current feedback summary reports one actionable unresolved finding on the bound head
+- Existing task authority permits adjudication, the scoped source repair, Git publication, and the required response; no operator decision is pending
 - No feedback disposition, source revision, interaction, readiness, or merge mutation has run in this invocation
 
 State the safe resume outcome and what must happen before any later lifecycle step.

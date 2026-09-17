@@ -8,15 +8,23 @@ description: Use when a caller needs a complete read-only GitHub review-feedback
 Coordinate author-side feedback without becoming a second reviewer, publisher,
 or merge workflow.
 
+Read [caller continuation](../getting-prs-merged/references/caller-continuation.md)
+when a lifecycle caller invokes this skill or must act on its returned PR facts.
+
 The read-only `feedback-acquisition` capability is a leaf that other workflows
-may invoke directly. An actionable snapshot from another outcome coordinator
-arrives here only as a terminal handoff; start this coordinator in a fresh
-invocation, and never return inline into the caller's stale state.
+may invoke directly. `getting-prs-merged` may invoke `feedback-outcome` as an
+authorized continuation in author-outcome mode. Bind the current live state and
+the caller's original scope and authorities before work. Return the declared
+outcome to that merge caller; after `addressed`, it starts a fresh merge
+invocation from live state. A direct feedback-only request finishes its scoped
+feedback outcome without selecting merge or gaining merge authority. Other
+outcome coordinators select this owner through a terminal handoff. This skill
+never invokes a merge or review loop.
 
 Select one mode at invocation:
 
 - **Snapshot/orientation:** acquire and return complete head-bound state, then
-  stop. This mode has no disposition, adjudication, revision, checkpoint,
+  return `snapshot`. This mode has no disposition, adjudication, revision, checkpoint,
   interaction, publication, or other mutation authority.
 - **Author outcome:** continue through the author-side workflow below. Use this
   mode only when the request authorizes addressing feedback or source changes.
@@ -112,7 +120,22 @@ addressed`, `stale`, `duplicate`, `needs operator decision`, `blocked`, or
    group only after its separate independence evidence and complete
    revalidation pass.
 
-In author-outcome mode, finish with the current snapshot, each disposition and
+In author-outcome mode, return `addressed` when the authorized scoped work is
+complete, or `blocked` with a gate that prevents that author work. An operator
+decision, ambiguity, or unknown effect is a blocker, never an `addressed`
+result. `addressed` is not a clean-review or merge-readiness claim: a lifecycle
+caller must freshly acquire any remaining feedback, checks, and approvals. A
+snapshot-only invocation grants no source, feedback, publication, or merge
+authority.
+
+Return the existing dispositions with their exact source/head bindings and
+verification and response receipts so a lifecycle caller can revalidate
+completed work against fresh acquisition. Report any standing reviewer-owned
+approval or thread-resolution gate separately; it does not make completed
+author work pending again. New or changed feedback and stale or uncertain
+disposition applicability return here for classification and adjudication.
+
+Finish with the current snapshot, each disposition and
 evidence, response receipts and append-only Response Outcome Bundle, and any
 remaining owner or authority gate. The bundle preserves write evidence rather
 than current GitHub truth; a later run must acquire a fresh snapshot. Unknown

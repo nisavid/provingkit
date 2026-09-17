@@ -20,12 +20,12 @@
       "id": 1,
       "name": "feedback-terminal-handoff",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request. Do not use live Git or forge tools; give the exact next-owner decision, invocation boundary, and stopping status.",
-      "expected_output": "The resume coordinator returns exactly one terminal handoff to addressing-pr-review-feedback and stops; the caller starts that owner separately, and any later lifecycle coordinator begins from freshly read live state.",
+      "expected_output": "The resume coordinator returns exactly one terminal handoff to addressing-pr-review-feedback and ends its invocation; the caller continues the authorized task by starting that owner separately without another user instruction. Any later lifecycle invocation begins from freshly read live state.",
       "files": ["resuming-reviewed-prs/fixtures/feedback-terminal-handoff.md"],
       "expectations": [
         "The response selects addressing-pr-review-feedback as the only next owner because current actionable feedback outranks readiness.",
         "The resume invocation returns one terminal handoff and does not invoke the feedback coordinator itself.",
-        "The response performs no feedback disposition, source revision, interaction, readiness, or merge action.",
+        "The resume invocation performs no feedback disposition, source revision, interaction, readiness, or merge action; the caller immediately invokes the feedback owner under the existing authority.",
         "The response requires a later coordinator invocation to reread live state instead of resuming from the stale snapshot."
       ]
     },
@@ -33,12 +33,12 @@
       "id": 2,
       "name": "readiness-terminal-handoff",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request. Do not use live Git or forge tools; give the exact next-owner decision, invocation boundary, and stopping status.",
-      "expected_output": "The resume coordinator returns exactly one terminal handoff to getting-prs-ready-for-review and stops; the caller starts readiness separately from live state.",
+      "expected_output": "The resume coordinator returns exactly one terminal handoff to getting-prs-ready-for-review and ends its invocation; the caller continues the authorized task by starting readiness separately from live state without another user instruction.",
       "files": ["resuming-reviewed-prs/fixtures/readiness-terminal-handoff.md"],
       "expectations": [
         "The response selects getting-prs-ready-for-review as the only next owner for the draft with no actionable feedback.",
         "The resume invocation returns one terminal handoff and does not invoke readiness itself.",
-        "The response performs no publication, readiness, feedback, or merge mutation.",
+        "The resume invocation performs no publication, readiness, feedback, or merge mutation; the caller immediately invokes readiness under the existing authority.",
         "The separate readiness invocation must bind current live state again."
       ]
     },
@@ -46,7 +46,7 @@
       "id": 3,
       "name": "active-conflict-terminal-handoff",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request. Do not use live Git or forge tools; give the exact first recovery owner, precedence, invocation boundary, and stopping status.",
-      "expected_output": "The resume coordinator gives the active Git operation precedence and returns one terminal handoff to versionkeeping:resolving-merge-conflicts, without invoking it or acquiring merge authority; later recovery starts in a fresh resume invocation.",
+      "expected_output": "The resume coordinator gives the active Git operation precedence and returns one terminal handoff to versionkeeping:resolving-merge-conflicts without invoking it or acquiring merge authority. The caller continues any separately authorized conflict work without another user instruction, then starts fresh recovery after the Git-mechanics outcome.",
       "files": [
         "resuming-reviewed-prs/fixtures/active-conflict-terminal-handoff.md"
       ],
@@ -61,7 +61,7 @@
       "id": 4,
       "name": "required-actions-terminal-handoff",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request. Do not use live Git or forge tools; give the exact first recovery owner, authority boundary, invocation boundary, and stopping status.",
-      "expected_output": "The resume coordinator returns one terminal handoff to operation:focused-ci for the failed required GitHub Actions, without invoking it or acquiring merge authority; later recovery starts in a fresh resume invocation.",
+      "expected_output": "The resume coordinator returns one terminal handoff to operation:focused-ci for failed required GitHub Actions without invoking it or acquiring merge authority. The caller immediately starts authorized CI work, routes a verified source fix through separately authorized Versionkeeping checkpoint and push when needed, and then starts a fresh resume invocation.",
       "files": [
         "resuming-reviewed-prs/fixtures/required-actions-terminal-handoff.md"
       ],
@@ -69,7 +69,7 @@
         "The response selects operation:focused-ci before the requested merge outcome.",
         "The response preserves the internal Actions-only upstream gh-fix-ci seam and binds source repair separately.",
         "The resume invocation performs no CI diagnosis, rerun, source or workflow edit, publication, or merge action.",
-        "The response requires a fresh resume invocation from live state after the focused-CI outcome."
+        "The caller sends the verified workflow repair to the separately authorized Versionkeeping checkpoint and push operation, then starts a fresh resume invocation from live state; the CI adapter never publishes Git refs."
       ]
     },
     {
