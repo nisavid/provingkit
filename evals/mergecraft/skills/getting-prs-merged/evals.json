@@ -197,7 +197,7 @@
         "For case A, merge authority does not grant source, publication, or interaction authority; the response returns a feedback-handoff naming the missing authority before author-side work.",
         "For case B, snapshot does not become addressed, authorize edits, or satisfy merge readiness; the response keeps the author-outcome continuation gated.",
         "For case C, blocked preserves the unknown response effect and evidence, with no repeated provider write and no merge.",
-        "For case D, the response reacquires live feedback and failed checks after addressed, treats both as current blockers, and performs no merge from the old successful state.",
+        "For case D, the response reacquires live feedback and failed checks after addressed, returns a feedback-handoff naming the missing source authority for the new file, retains the failed required check as a separate merge gate, and performs no merge from the old successful state.",
         "For case E, the response names the missing publication or reconciliation authority as the gate, keeps merge blocked, and does not reuse the old-head receipt or issue a no-op text update.",
         "No case starts a nested review loop or treats an ownership handoff alone as an operator decision."
       ]
@@ -211,7 +211,7 @@
       "expectations": [
         "For A and B, the response carries forward and freshly validates the existing owner dispositions and receipts against the exact current source identities, revisions, and head; a matching orientation summary alone is insufficient.",
         "For A, unchanged CHANGES_REQUESTED and review_not_approved remain a reviewer approval gate; the response does not invoke feedback-outcome again, repeat a fix or reply, or merge.",
-        "For B, the unchanged reviewer-owned unresolved thread is a resolution gate after verified author completion; the response neither repeats author work nor resolves another owner's thread or merges.",
+        "For B, unchanged CHANGES_REQUESTED remains a reviewer approval gate and the unchanged reviewer-owned unresolved thread remains a separate resolution gate after verified author completion; the response neither repeats author work nor resolves another owner's thread or merges.",
         "For C, the response routes the new source and edited finding to addressing-pr-review-feedback under the existing scope, with no merge-side classification or adjudication and no automatic coverage from the earlier addressed result.",
         "For D, the changed head and unavailable completion proof make the old disposition applicability uncertain; the response routes revalidation and any adjudication to the feedback owner without reusing stale completion or blindly replaying a provider write.",
         "For E, complete acquisition contains no source feedback to adjudicate; the empty requested-changes review remains an approval gate rather than author work, and merge remains blocked."

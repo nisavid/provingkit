@@ -448,7 +448,7 @@
             "resume": "fresh-getting-prs-merged-invocation-after-readiness"
           },
           {
-            "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked",
+            "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked-or-snapshot",
             "owner": "addressing-pr-review-feedback",
             "resume": "fresh-getting-prs-merged-invocation-after-feedback-gate-clears"
           },

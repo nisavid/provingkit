@@ -1262,7 +1262,7 @@ class ValidateMergecraftTests(unittest.TestCase):
                 if item["owner"] == "addressing-pr-review-feedback"
             ],
             [{
-                "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked",
+                "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked-or-snapshot",
                 "owner": "addressing-pr-review-feedback",
                 "resume": "fresh-getting-prs-merged-invocation-after-feedback-gate-clears",
             }],
@@ -1369,23 +1369,30 @@ class ValidateMergecraftTests(unittest.TestCase):
                 ):
                     VALIDATE_MERGECRAFT.validate_topology(self.plugin)
 
-    def test_rejects_unconditional_feedback_handoff(self) -> None:
-        topology = json.loads((self.plugin / "topology.json").read_text())
-        merge = next(
-            item for item in topology["skills"] if item["name"] == "getting-prs-merged"
-        )
-        handoff = next(
-            item for item in merge["contract"]["terminal_handoffs"]
-            if item["owner"] == "addressing-pr-review-feedback"
-        )
-        handoff["trigger"] = "current-actionable-feedback-or-requested-changes"
-        self.write_json("topology.json", topology)
-
-        with self.assertRaisesRegex(
-            VALIDATE_MERGECRAFT.ContractError,
-            "merge feedback terminal handoff drift",
+    def test_rejects_unconditional_or_snapshot_omitting_feedback_handoff(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for trigger in (
+            "current-actionable-feedback-or-requested-changes",
+            "feedback-authority-unavailable-or-feedback-outcome-blocked",
         ):
-            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+            with self.subTest(trigger=trigger):
+                topology = copy.deepcopy(original)
+                merge = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "getting-prs-merged"
+                )
+                handoff = next(
+                    item for item in merge["contract"]["terminal_handoffs"]
+                    if item["owner"] == "addressing-pr-review-feedback"
+                )
+                handoff["trigger"] = trigger
+                self.write_json("topology.json", topology)
+
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "merge feedback terminal handoff drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_topology(self.plugin)
 
     def test_rejects_feedback_reverse_call_into_merge(self) -> None:
         topology = json.loads((self.plugin / "topology.json").read_text())

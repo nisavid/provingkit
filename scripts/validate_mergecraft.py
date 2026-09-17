@@ -1940,7 +1940,7 @@ def validate_topology(root: Path) -> None:
             for handoff in merge["contract"]["terminal_handoffs"]
             if handoff["owner"] == "addressing-pr-review-feedback"
         ] == [{
-            "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked",
+            "trigger": "feedback-authority-unavailable-or-feedback-outcome-blocked-or-snapshot",
             "owner": "addressing-pr-review-feedback",
             "resume": "fresh-getting-prs-merged-invocation-after-feedback-gate-clears",
         }],
