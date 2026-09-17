@@ -123,9 +123,25 @@ check readiness and any explicit operator or repository limit, and require
 explicit authority for one top-level comment. Bind PR/base/head and
 head repository/owner, caller-supplied expected
 authenticated login, bytes, and SHA-256. Use the helper once; independently
-verify the active login, then reread ID/URL, PR, head, author, body, and
-timestamp. Possible-mutation timeout is ambiguous: do not retry. It cannot
-edit PR text, feedback, CI, or merge.
+verify the active login, reject expected or observed actor logins that are not
+display-safe before mutation or output, then reread ID/URL, PR, head, author,
+body, and timestamp. Its success acknowledgement contains only the validated
+ID, canonical URL, body SHA-256, author, and timestamp; it never returns body
+bytes or unexpected provider fields. Local comment-body failures use fixed
+classifications for path/permission and UTF-8 admission. Retain the original
+exception only as internal causality, and keep local file guidance separate
+from forge authentication and access checks. After a zero-exit POST, any failed response,
+reread, or identity verification retains the comment stage, zero-exit fact,
+safe failure class, and original internal cause, returns no success
+acknowledgement, and requires inspection without retry. Possible-mutation timeout
+is ambiguous: retain the timeout and comment-stage facts, and do not retry. A
+broad process failure retains the comment stage and leaves process start and
+remote outcome unknown. A local command preparation failure retains the comment
+stage and proves that no target mutation ran. A malformed successful output
+retains the zero-exit fact. A nonzero POST also leaves the remote outcome unknown,
+returns no success acknowledgement, and requires independent inspection with
+existing valid read authority without retry. It cannot edit PR text, feedback,
+CI, or merge.
 When the diff is already clean and CodeRabbit approval is the only remaining
 branch-protection gate, request approval with the documented top-level command
 `@coderabbitai approve` rather than another review; CodeRabbit submits that

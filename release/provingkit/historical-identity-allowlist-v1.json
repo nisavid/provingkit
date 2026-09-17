@@ -144,7 +144,7 @@
     {
       "disposition": "historical-review-input-fixture",
       "path": "tests/plugins/mergecraft/writing-reviewable-pr-descriptions/test_review_input.py",
-      "sha256": "sha256:26417518f9d6f5f693d6b0c27bbdd05d4c40cb5e78c13354c6239a992d7dd131"
+      "sha256": "sha256:7eb8821bb1b3b7a1471c98a69410b228a5f229d8063ba2f6d618603f1aa0d515"
     },
     {
       "disposition": "historical-source-lineage-fixture",

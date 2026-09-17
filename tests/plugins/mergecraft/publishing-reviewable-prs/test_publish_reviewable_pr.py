@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib
 import importlib.util
+import io
 import json
 import os
 import shutil
@@ -12,7 +13,7 @@ import tempfile
 import time
 import unittest
 import uuid
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -24,6 +25,8 @@ STATE = importlib.import_module("reviewable_pr_state")
 RECEIPTS = importlib.import_module("publication_receipts")
 PUBLICATION_SUPPORT = importlib.import_module("publication_support")
 PUBLICATION_SUPPORT_BOT = importlib.import_module("change_navigation.bot_body")
+REVIEW_INPUT = importlib.import_module("change_navigation.review_input")
+ADMIT_REVIEW_INPUT = PUBLICATION_SUPPORT.admit_review_input
 
 
 def load(name: str, filename: str):
@@ -38,6 +41,73 @@ CREATE = load("create_reviewable_pr", "create_reviewable_pr.py")
 UPDATE = load("update_reviewable_pr", "update_reviewable_pr.py")
 AUDIT = load("audit_reviewable_pr", "audit_reviewable_pr.py")
 REQUIRED_REVIEW = importlib.import_module("required_review")
+CREATE_REVIEW_INPUT = CREATE._review_input
+UPDATE_BIND_REVIEW_INPUT = UPDATE._bind_review_input
+
+
+def malformed_review_input_payloads(*, token_bearing: bool = False):
+    token = (
+        f'"pr_number":"{REVIEW_INPUT.PR_NUMBER_TOKEN}",'.encode()
+        if token_bearing
+        else b""
+    )
+    return (
+        ("syntax", b"{" + token + b'"version":'),
+        (
+            "invalid-utf8",
+            b"{" + token + b'"Authorization: arbitrary-secret-value":"\xff"}',
+        ),
+        (
+            "oversized-integer",
+            b"{"
+            + token
+            + b'"version":'
+            + b"9" * (REVIEW_INPUT.MAX_REVIEW_INPUT_NUMBER_DIGITS + 1)
+            + b"}",
+        ),
+        (
+            "excessive-nesting",
+            b"{" + token + b'"value":'
+            + b"[" * (REVIEW_INPUT.MAX_REVIEW_INPUT_DEPTH + 1)
+            + b"0"
+            + b"]" * (REVIEW_INPUT.MAX_REVIEW_INPUT_DEPTH + 1)
+            + b"}",
+        ),
+        ("lone-surrogate", b"{" + token + b'"value":"\\ud800"}'),
+        ("non-finite", b"{" + token + b'"value":1e9999}'),
+    )
+
+
+def post_start_io_failure_popen(events: list[str], error: OSError):
+    class PostStartIoFailure:
+        def __init__(self, arguments, **_kwargs):
+            self.args = arguments
+            self.returncode = None
+            events.append("process-created")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            events.append("process-waited")
+
+        def communicate(self, input=None, timeout=None):
+            events.append("communicate-entered")
+            raise error
+
+        def kill(self):
+            events.append("process-killed")
+
+        def wait(self, timeout=None):
+            self.returncode = -9
+            return self.returncode
+
+    return PostStartIoFailure
+
+
+class UnprintableExceptionData:
+    def __str__(self) -> str:
+        raise AssertionError("exception data was stringified")
 
 
 def transition_review(mode: str, candidate_sha256: str, observation=None):
@@ -59,10 +129,312 @@ class RequiredReviewTests(unittest.TestCase):
             ensure_ascii=False,
         ).encode("utf-8")
 
+    def test_publication_acknowledgement_contains_summary_failures(self) -> None:
+        failure = OSError("Authorization: arbitrary-secret-value\x1b[31m")
+        receipt = mock.Mock()
+        receipt.summary.side_effect = failure
+
+        with self.assertRaisesRegex(
+            STATE.PublicationError, "receipt acknowledgement is unavailable"
+        ) as caught:
+            PUBLICATION_SUPPORT.verified_publication_acknowledgement(
+                load_latest=lambda: [receipt],
+                repository="acme/app",
+                pr_number=42,
+                url="https://github.com/acme/app/pull/42",
+                is_draft=True,
+            )
+
+        self.assertIs(caught.exception.__cause__, failure)
+        diagnostic = str(caught.exception)
+        self.assertIn("independently audit exact state", diagnostic)
+        self.assertIn("do not retry", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+
     def test_temporary_body_preserves_exact_utf8_line_endings(self) -> None:
         body = "first\r\nsecond\nλ"
         with PUBLICATION_SUPPORT.temporary_body(body) as temporary:
             self.assertEqual(Path(temporary.name).read_bytes(), body.encode("utf-8"))
+
+    def test_temporary_body_translates_creation_write_and_flush_failures(self) -> None:
+        class SyntheticTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def __init__(self, failure: str) -> None:
+                self.failure = failure
+                self.closed = False
+
+            def write(self, _value: bytes) -> int:
+                if self.failure == "write":
+                    raise OSError("Authorization: arbitrary-secret-value")
+                if self.failure == "short-write":
+                    return len(_value) - 1
+                return len(_value)
+
+            def flush(self) -> None:
+                if self.failure == "flush":
+                    raise OSError("Authorization: arbitrary-secret-value")
+
+            def close(self) -> None:
+                self.closed = True
+
+        cases = (
+            ("create", OSError("/synthetic/arbitrary-secret-value"), None),
+            ("write", None, SyntheticTemporary("write")),
+            ("flush", None, SyntheticTemporary("flush")),
+            ("short-write", None, SyntheticTemporary("short-write")),
+        )
+        for name, creation_error, temporary in cases:
+            with self.subTest(name=name):
+                patcher = mock.patch.object(
+                    PUBLICATION_SUPPORT.tempfile,
+                    "NamedTemporaryFile",
+                    side_effect=creation_error,
+                    return_value=temporary,
+                )
+                with patcher:
+                    with self.assertRaises(STATE.PublicationError) as caught:
+                        with PUBLICATION_SUPPORT.temporary_body(
+                            "Authorization: sensitive-looking-body"
+                        ):
+                            self.fail("snapshot preparation should fail")
+                diagnostic = str(caught.exception)
+                self.assertEqual(
+                    diagnostic,
+                    "local private body snapshot preparation failed; no mutation "
+                    "was attempted",
+                )
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertIsInstance(caught.exception.__cause__, OSError)
+                if temporary is not None:
+                    self.assertTrue(temporary.closed)
+
+    def test_temporary_body_classifies_cleanup_before_and_after_possible_mutation(
+        self,
+    ) -> None:
+        class SyntheticTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, _value: bytes) -> int:
+                return len(_value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise OSError("Authorization: arbitrary-secret-value")
+
+        for zero_exit, expected in (
+            (
+                False,
+                "local private body snapshot cleanup failed; no mutation was attempted",
+            ),
+            (
+                True,
+                "private body snapshot cleanup failed after the mutation command "
+                "exited zero; independently verify exact state and do not retry",
+            ),
+        ):
+            with self.subTest(zero_exit=zero_exit):
+                with mock.patch.object(
+                    PUBLICATION_SUPPORT.tempfile,
+                    "NamedTemporaryFile",
+                    return_value=SyntheticTemporary(),
+                ):
+                    with self.assertRaises(STATE.PublicationError) as caught:
+                        with PUBLICATION_SUPPORT.temporary_body("body") as snapshot:
+                            if zero_exit:
+                                snapshot.mark_mutation_exited_zero()
+                self.assertEqual(str(caught.exception), expected)
+                self.assertIsInstance(caught.exception.__cause__, OSError)
+                self.assertNotIn("arbitrary-secret-value", str(caught.exception))
+                self.assertNotIn("Authorization", str(caught.exception))
+
+    def test_temporary_body_preserves_active_publication_error_if_cleanup_fails(
+        self,
+    ) -> None:
+        class SyntheticTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, _value: bytes) -> int:
+                return len(_value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise OSError("Authorization: arbitrary-secret-value")
+
+        active = STATE.PublicationError("existing safe publication error")
+        with mock.patch.object(
+            PUBLICATION_SUPPORT.tempfile,
+            "NamedTemporaryFile",
+            return_value=SyntheticTemporary(),
+        ):
+            with self.assertRaises(STATE.PublicationError) as caught:
+                with PUBLICATION_SUPPORT.temporary_body("body"):
+                    raise active
+        self.assertIs(caught.exception, active)
+        self.assertIsInstance(
+            getattr(active, "body_snapshot_cleanup_error", None), OSError
+        )
+
+    def test_create_and_text_clis_translate_snapshot_preparation_failure(self) -> None:
+        create_arguments = [
+            str(CREATE.__file__),
+            "--repository",
+            "acme/app",
+            "--base",
+            "main",
+            "--base-oid",
+            "a" * 40,
+            "--head",
+            "acme:widget",
+            "--head-oid",
+            "b" * 40,
+            "--head-owner",
+            "acme",
+            "--head-repository",
+            "acme/app-fork",
+            "--title",
+            "feat: widget",
+            "--body-template",
+            "/synthetic/body.md",
+            "--review-input",
+            "/synthetic/review.json",
+            "--review-mode",
+            "not-required",
+            "--selected-specialists",
+            "[]",
+        ]
+        text_arguments = [
+            str(UPDATE.__file__),
+            "text",
+            "--repository",
+            "acme/app",
+            "--pr",
+            "42",
+            "--base",
+            "main",
+            "--base-oid",
+            "a" * 40,
+            "--head",
+            "acme:widget",
+            "--head-oid",
+            "b" * 40,
+            "--head-owner",
+            "acme",
+            "--head-repository",
+            "acme/app-fork",
+            "--expected-title-sha256",
+            "c" * 64,
+            "--expected-body-sha256",
+            "d" * 64,
+            "--review-input",
+            "/synthetic/review.json",
+            "--review-mode",
+            "not-required",
+            "--selected-specialists",
+            "[]",
+            "--expected-state",
+            "draft",
+            "--text-scope",
+            "body-only",
+            "--title",
+            "feat: widget",
+            "--body-file",
+            "/synthetic/body.md",
+        ]
+
+        def snapshot_failure(**_kwargs: object) -> None:
+            with PUBLICATION_SUPPORT.temporary_body("sensitive-looking-body"):
+                self.fail("snapshot preparation should fail")
+
+        for module, entrypoint, arguments in (
+            (CREATE, "publish", create_arguments),
+            (UPDATE, "update_text", text_arguments),
+        ):
+            with self.subTest(entrypoint=entrypoint):
+                stderr = io.StringIO()
+                with (
+                    mock.patch.object(sys, "argv", arguments),
+                    mock.patch.object(module, entrypoint, side_effect=snapshot_failure),
+                    mock.patch.object(
+                        PUBLICATION_SUPPORT.tempfile,
+                        "NamedTemporaryFile",
+                        side_effect=OSError(
+                            "/synthetic/private/arbitrary-secret-value/body.md"
+                        ),
+                    ),
+                    mock.patch.object(sys, "stderr", stderr),
+                ):
+                    self.assertEqual(module.main(), 1)
+                diagnostic = stderr.getvalue()
+                self.assertIn("local private body snapshot preparation failed", diagnostic)
+                self.assertIn("no mutation was attempted", diagnostic)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("sensitive-looking-body", diagnostic)
+                self.assertNotIn("Traceback", diagnostic)
+
+    def test_publication_procedure_captures_snapshot_and_audit_failures(self) -> None:
+        procedure = " ".join(
+            (SCRIPTS.parent / "SKILL.md").read_text(encoding="utf-8").split()
+        )
+        self.assertIn("creation, write, or flush failure is local preparation", procedure)
+        self.assertIn("cleanup failure after a zero-exit mutation", procedure)
+        self.assertIn("ordinary audit read, not a post-mutation verification", procedure)
+        self.assertIn(
+            "local command preparation failure proves that no process started and, "
+            "for a mutation, no target mutation ran",
+            procedure,
+        )
+        self.assertIn(
+            "The `subprocess.run` boundary spans process launch and communication, so "
+            "every `OSError` leaves process start unknown and, for a mutation, target "
+            "outcome unknown",
+            procedure,
+        )
+        self.assertNotIn(
+            "Treat a subprocess launch error as a local command-start failure",
+            procedure,
+        )
+        self.assertIn(
+            "zero-exit mutation followed by a nonmatching valid reread retains the "
+            "observed preimage or other-state relationship without assigning causality",
+            procedure,
+        )
+        self.assertIn(
+            "report whether the observed state matches the exact intent, the "
+            "preimage, or another valid state",
+            procedure,
+        )
+        self.assertIn(
+            "admit every retained receipt string and object key as UTF-8 scalar text",
+            procedure,
+        )
+        self.assertIn(
+            "REST recovery normalizes only a null body to empty text", procedure
+        )
+        self.assertIn(
+            "Local body and review-input failures use fixed classifications", procedure
+        )
+        self.assertIn(
+            "empty, nonmatching, multiple-exact, or unavailable", procedure
+        )
+        self.assertIn(
+            "Local preparation failure proves that no process started and no target "
+            "mutation ran",
+            procedure,
+        )
+        self.assertIn(
+            "A broad process failure leaves process start and mutation outcome unknown",
+            procedure,
+        )
+        self.assertIn(
+            "does not prove that the errored command created it", procedure
+        )
 
     def test_publication_review_constructor_is_private(self) -> None:
         with self.assertRaisesRegex(
@@ -879,6 +1251,25 @@ class RequiredReviewTests(unittest.TestCase):
 
 class ReviewablePrStateTests(unittest.TestCase):
     @staticmethod
+    def live_pr(**overrides: object) -> dict[str, object]:
+        value: dict[str, object] = {
+            "number": 42,
+            "url": "https://github.com/acme/app/pull/42",
+            "title": "feat: widget",
+            "body": "body",
+            "baseRefName": "main",
+            "baseRefOid": "a" * 40,
+            "headRefName": "widget",
+            "headRefOid": "b" * 40,
+            "headRepository": {"nameWithOwner": "fork-owner/app-fork"},
+            "headRepositoryOwner": {"login": "fork-owner"},
+            "isDraft": True,
+            "state": "OPEN",
+        }
+        value.update(overrides)
+        return value
+
+    @staticmethod
     def rest_pr(*, owner: str, number: int) -> dict[str, object]:
         return {
             "number": number,
@@ -962,7 +1353,9 @@ class ReviewablePrStateTests(unittest.TestCase):
         completed = subprocess.CompletedProcess([], 0, "[[{}]]", "")
 
         with mock.patch.object(STATE, "run_read", return_value=completed):
-            with self.assertRaisesRegex(STATE.StateReadError, "malformed PR node"):
+            with self.assertRaisesRegex(
+                STATE.MalformedRestPrNodeError, "malformed PR node"
+            ):
                 STATE.open_prs("acme/app", "main", "fork-owner:widget")
 
     def test_open_pr_api_rejects_boolean_pr_number(self) -> None:
@@ -975,26 +1368,590 @@ class ReviewablePrStateTests(unittest.TestCase):
                 STATE.open_prs("acme/app", "main", "fork-owner:widget")
 
     def test_stored_pr_rejects_boolean_pr_number(self) -> None:
-        completed = subprocess.CompletedProcess([], 0, '{"number": true}', "")
+        completed = subprocess.CompletedProcess(
+            [], 0, json.dumps(self.live_pr(number=True)), ""
+        )
 
         with mock.patch.object(STATE, "run_read", return_value=completed):
-            with self.assertRaisesRegex(STATE.StateReadError, "malformed PR identity"):
+            with self.assertRaisesRegex(
+                STATE.StateReadError, "live PR response is malformed"
+            ):
                 STATE.stored_pr("acme/app", 1)
+
+    def test_stored_pr_admits_only_complete_well_typed_live_state(self) -> None:
+        admitted = self.live_pr(providerExtension={"ignored": True})
+        completed = subprocess.CompletedProcess([], 0, json.dumps(admitted), "")
+        with mock.patch.object(STATE, "run_read", return_value=completed):
+            self.assertEqual(STATE.stored_pr("acme/app", 42), admitted)
+
+        for name, response, classification in (
+            (
+                "invalid-json",
+                '{"number": 42, "body": "Authorization: arbitrary-secret-value"',
+                "invalid JSON",
+            ),
+            (
+                "incomplete",
+                json.dumps({"number": 42}),
+                "live PR response is incomplete",
+            ),
+            (
+                "wrong-type",
+                json.dumps(self.live_pr(body=["arbitrary-secret-value"])),
+                "live PR response is malformed",
+            ),
+        ):
+            with self.subTest(name=name):
+                completed = subprocess.CompletedProcess([], 0, response, "")
+                with (
+                    mock.patch.object(STATE, "run_read", return_value=completed),
+                    self.assertRaisesRegex(
+                        STATE.StateReadError, classification
+                    ) as caught,
+                ):
+                    STATE.stored_pr("acme/app", 42)
+                diagnostic = str(caught.exception)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                if name == "invalid-json":
+                    self.assertIsInstance(
+                        caught.exception.__cause__, json.JSONDecodeError
+                    )
+
+    def test_live_pr_admission_bounds_ascii_decimal_url_identifiers(self) -> None:
+        oversized = "9" * 5_000
+        for name, suffix in (
+            ("oversized", oversized),
+            ("non-ascii", "٤٢"),
+        ):
+            with self.subTest(name=name), self.assertRaisesRegex(
+                STATE.LiveStateResponseError, "live PR response is malformed"
+            ) as caught:
+                STATE.validate_live_pr_observation(
+                    self.live_pr(url=f"https://github.com/acme/app/pull/{suffix}")
+                )
+            if name == "oversized":
+                self.assertIsInstance(caught.exception.__cause__, ValueError)
+
+        admitted = STATE.validate_live_pr_observation(self.live_pr())
+        self.assertEqual(admitted["number"], 42)
+        self.assertEqual(admitted["url"], "https://github.com/acme/app/pull/42")
+
+    def test_stored_pr_safely_classifies_oversized_provider_numbers(self) -> None:
+        oversized = "9" * 5_000
+        cases = (
+            (
+                "json-integer",
+                f'{{"number": {oversized}, "Authorization": "secret"}}',
+                "returned invalid JSON",
+                ValueError,
+            ),
+            (
+                "url-identifier",
+                json.dumps(
+                    self.live_pr(
+                        url=f"https://github.com/acme/app/pull/{oversized}",
+                        providerExtension="Authorization: arbitrary-secret-value",
+                    )
+                ),
+                "live PR response is malformed",
+                ValueError,
+            ),
+        )
+        for name, output, classification, cause_type in cases:
+            completed = subprocess.CompletedProcess([], 0, output, "")
+            with (
+                self.subTest(name=name),
+                mock.patch.object(STATE, "run_read", return_value=completed),
+                self.assertRaisesRegex(STATE.StateReadError, classification) as caught,
+            ):
+                STATE.stored_pr("acme/app", 42)
+            diagnostic = str(caught.exception)
+            self.assertNotIn("arbitrary-secret-value", diagnostic)
+            self.assertNotIn("Authorization", diagnostic)
+            self.assertIsInstance(caught.exception.__cause__, cause_type)
+
+    def test_required_observation_strings_are_utf8_scalar_text(self) -> None:
+        for field, value in (
+            ("title", "escaped-high-\ud800"),
+            ("title", "escaped-low-\udc00"),
+            ("body", "escaped-high-\ud800"),
+            ("body", "escaped-low-\udc00"),
+        ):
+            raw = json.dumps(self.live_pr(**{field: value}))
+            parsed = STATE.strict_json(raw, "synthetic provider")
+            with self.subTest(field=field, value=ascii(value)), self.assertRaisesRegex(
+                STATE.LiveStateResponseError, "live PR response is malformed"
+            ) as caught:
+                STATE.validate_live_pr_observation(parsed)
+            self.assertIsInstance(caught.exception.__cause__, UnicodeEncodeError)
+
+        title = "feat: café 😀"
+        body = "exact λ and paired 🚀"
+        raw = json.dumps(self.live_pr(title=title, body=body))
+        admitted = STATE.validate_live_pr_observation(
+            STATE.strict_json(raw, "synthetic provider")
+        )
+        self.assertEqual(admitted["title"], title)
+        self.assertEqual(admitted["body"], body)
+
+    def test_rest_recovery_admits_required_scalar_text(self) -> None:
+        malformed = self.rest_pr(owner="fork-owner", number=42)
+        malformed["body"] = "Authorization: arbitrary-secret-value\ud800"
+        completed = subprocess.CompletedProcess(
+            [], 0, json.dumps([[malformed]]), ""
+        )
+
+        with mock.patch.object(STATE, "run_read", return_value=completed):
+            with self.assertRaisesRegex(
+                STATE.StateReadError, "malformed PR node"
+            ) as caught:
+                STATE.open_prs("acme/app", "main", "fork-owner:widget")
+
+        diagnostic = str(caught.exception)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertIsInstance(
+            caught.exception.__cause__, STATE.LiveStateResponseError
+        )
+
+    def test_rest_recovery_normalizes_only_null_body_and_preserves_text(self) -> None:
+        for name, body in (
+            ("null", None),
+            ("empty", ""),
+            ("non-ascii", "exact café λ 🚀"),
+        ):
+            rest_pr = self.rest_pr(owner="fork-owner", number=42)
+            rest_pr["body"] = body
+            completed = subprocess.CompletedProcess(
+                [], 0, json.dumps([[rest_pr]]), ""
+            )
+            with (
+                self.subTest(case=name),
+                mock.patch.object(STATE, "run_read", return_value=completed),
+            ):
+                recovered = STATE.open_prs(
+                    "acme/app", "main", "fork-owner:widget"
+                )
+
+            self.assertEqual(recovered[0]["body"], "" if body is None else body)
+
+    def test_rest_recovery_rejects_non_string_bodies(self) -> None:
+        for body in (False, 0, [], {}, True, 1, ["body"], {"body": "text"}, 1.5):
+            rest_pr = self.rest_pr(owner="fork-owner", number=42)
+            rest_pr["body"] = body
+            completed = subprocess.CompletedProcess(
+                [], 0, json.dumps([[rest_pr]]), ""
+            )
+            with (
+                self.subTest(body_type=type(body).__name__),
+                mock.patch.object(STATE, "run_read", return_value=completed),
+                self.assertRaisesRegex(
+                    STATE.StateReadError, "malformed PR node"
+                ) as caught,
+            ):
+                STATE.open_prs("acme/app", "main", "fork-owner:widget")
+
+            self.assertIsInstance(caught.exception.__cause__, TypeError)
+            diagnostic = str(caught.exception)
+            self.assertNotIn(repr(body), diagnostic)
+
+    def test_live_pr_admission_captures_required_mutable_fields(self) -> None:
+        source = self.live_pr(providerExtension={"ignored": True})
+        admitted = STATE.validate_live_pr_observation(source)
+
+        source["body"] = ["changed after admission"]
+        source["headRepository"]["nameWithOwner"] = "other/repository"
+        source["headRepositoryOwner"]["login"] = "other-owner"
+
+        self.assertEqual(admitted, self.live_pr(providerExtension={"ignored": True}))
+
+    def test_live_pr_admission_captures_bounded_retained_json(self) -> None:
+        extension = {"nested": [{"value": "retained"}], "ratio": 1.5}
+        source = self.live_pr(providerExtension=extension)
+
+        admitted = STATE.validate_live_pr_observation(source)
+        extension["nested"][0]["value"] = "changed after admission"
+
+        self.assertEqual(
+            admitted["providerExtension"],
+            {"nested": [{"value": "retained"}], "ratio": 1.5},
+        )
+
+    def test_live_pr_admission_rejects_unsafe_retained_json_values(self) -> None:
+        oversized = 10 ** STATE.DECIMAL_IDENTIFIER_DIGIT_LIMIT
+        cases = (
+            ("non-json", {"nested": [object()]}),
+            ("non-finite", {"nested": [float("inf")]}),
+            ("oversized-number", {"nested": [oversized]}),
+        )
+        for name, extension in cases:
+            with self.subTest(name=name), self.assertRaisesRegex(
+                STATE.LiveStateResponseError, "live PR response is malformed"
+            ):
+                STATE.validate_live_pr_observation(
+                    self.live_pr(providerExtension=extension)
+                )
+
+    def test_live_pr_admission_rejects_inconsistent_or_unusable_identity_fields(
+        self,
+    ) -> None:
+        cases = (
+            ("number-url", self.live_pr(number=41)),
+            (
+                "unusable-repository-alternatives",
+                self.live_pr(headRepository={"nameWithOwner": None}),
+            ),
+            ("oversized-direct-number", self.live_pr(number=10 ** 5_000)),
+        )
+        for name, value in cases:
+            with self.subTest(name=name), self.assertRaisesRegex(
+                STATE.LiveStateResponseError, "live PR response is malformed"
+            ):
+                STATE.validate_live_pr_observation(value)
+
+    def test_live_pr_admission_rejects_non_json_string_subclasses(self) -> None:
+        class DeceptiveString(str):
+            def __eq__(self, other: object) -> bool:
+                return True
+
+            __hash__ = str.__hash__
+
+        cases = (
+            self.live_pr(title=DeceptiveString("provider text")),
+            {
+                **self.live_pr(),
+                DeceptiveString("providerExtension"): {"ignored": True},
+            },
+            self.live_pr(
+                headRepository={
+                    "owner": {"login": DeceptiveString("fork-owner")},
+                    "name": "app-fork",
+                }
+            ),
+            self.live_pr(
+                headRepositoryOwner={"login": DeceptiveString("fork-owner")}
+            ),
+        )
+        for value in cases:
+            with self.subTest(value=value), self.assertRaisesRegex(
+                STATE.LiveStateResponseError, "live PR response is malformed"
+            ):
+                STATE.validate_live_pr_observation(value)
 
     def test_read_compatibility_alias_is_not_exposed(self) -> None:
         self.assertFalse(hasattr(STATE, "run"))
 
     def test_strict_forge_json_rejects_duplicate_keys(self) -> None:
-        with self.assertRaisesRegex(STATE.StateReadError, "duplicate JSON key"):
-            STATE._json_object('{"number": 1, "number": 2}', "forge")
+        with self.assertRaisesRegex(STATE.StateReadError, "duplicate JSON object keys"):
+            STATE.strict_json('{"number": 1, "number": 2}', "forge")
+
+    def test_stored_pr_duplicate_key_diagnostic_is_value_free(self) -> None:
+        hostile_key = "Authorization: Bearer synthetic-secret\x1b[31m"
+        output = json.dumps(
+            {
+                "number": 1,
+                hostile_key: "first",
+            }
+        )[:-1] + f', {json.dumps(hostile_key)}: "second"}}'
+        completed = subprocess.CompletedProcess([], 0, output.encode("utf-8"), b"")
+
+        with (
+            mock.patch.object(STATE.subprocess, "run", return_value=completed),
+            self.assertRaisesRegex(
+                STATE.StateReadError, "contains duplicate JSON object keys"
+            ) as raised,
+        ):
+            STATE.stored_pr("acme/app", 1)
+
+        diagnostic = str(raised.exception)
+        self.assertNotIn("synthetic-secret", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
 
     def test_strict_forge_json_rejects_non_finite_values(self) -> None:
-        for constant in ("NaN", "Infinity", "-Infinity"):
+        for constant in ("NaN", "Infinity", "-Infinity", "1e9999", "-1e9999"):
             with self.subTest(constant=constant):
                 with self.assertRaisesRegex(
                     STATE.StateReadError, "non-finite JSON value"
                 ):
-                    STATE._json_object(f'{{"number": {constant}}}', "forge")
+                    STATE.strict_json(f'{{"number": {constant}}}', "forge")
+
+    def test_strict_forge_json_classifies_parser_recursion_limits(self) -> None:
+        hostile = "Authorization: synthetic-secret"
+        payload = "[" * 2_000 + json.dumps(hostile) + "]" * 2_000
+
+        with self.assertRaisesRegex(
+            STATE.JsonReadError, "returned invalid JSON"
+        ) as caught:
+            STATE.strict_json(payload, "synthetic provider")
+
+        self.assertEqual(caught.exception.kind, "invalid")
+        self.assertNotIn(hostile, str(caught.exception))
+        self.assertIsNotNone(caught.exception.__cause__)
+
+    def test_strict_forge_json_classifies_oversized_integers_as_invalid(self) -> None:
+        oversized = "9" * 5_000
+        with self.assertRaises(STATE.JsonReadError) as caught:
+            STATE.strict_json(f'{{"number": {oversized}}}', "synthetic provider")
+
+        self.assertEqual(caught.exception.kind, "invalid")
+        self.assertEqual(
+            str(caught.exception), "synthetic provider returned invalid JSON"
+        )
+        self.assertIsInstance(caught.exception.__cause__, ValueError)
+
+    def test_selected_specialists_use_bounded_exact_json_array_admission(self) -> None:
+        hostile = "Authorization: synthetic-secret"
+        malformed = (
+            "{",
+            '{"not": "an array"}',
+            '["valid", 1]',
+            '["valid", "valid"]',
+            '["later", "earlier"]',
+            "[" * 2_000 + json.dumps(hostile) + "]" * 2_000,
+            "[" + "9" * 5_000 + "]",
+        )
+        for raw in malformed:
+            with self.subTest(raw_length=len(raw)):
+                with self.assertRaisesRegex(
+                    STATE.PublicationError,
+                    "selected review specialists must be a sorted unique JSON array",
+                ) as caught:
+                    STATE.parse_selected_specialists(raw)
+                self.assertNotIn(hostile, str(caught.exception))
+                self.assertNotIn("Traceback", str(caught.exception))
+
+        self.assertEqual(
+            STATE.parse_selected_specialists('["architecture", "security"]'),
+            ["architecture", "security"],
+        )
+
+    def test_publication_clis_safely_reject_oversized_specialist_json(self) -> None:
+        malformed = "[" + "9" * 5_000 + "]"
+        common = [
+            "--repository",
+            "acme/app",
+            "--base",
+            "main",
+            "--base-oid",
+            "a" * 40,
+            "--head",
+            "fork-owner:widget",
+            "--head-oid",
+            "b" * 40,
+            "--head-owner",
+            "fork-owner",
+            "--head-repository",
+            "fork-owner/app-fork",
+        ]
+        cases = (
+            (
+                CREATE,
+                [
+                    *common,
+                    "--title",
+                    "feat: widget",
+                    "--body-template",
+                    "/synthetic/body.md",
+                    "--review-input",
+                    "/synthetic/review-input.json",
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    malformed,
+                ],
+                "publish",
+            ),
+            (
+                UPDATE,
+                [
+                    "ready",
+                    *common[:2],
+                    "--pr",
+                    "42",
+                    *common[2:],
+                    "--expected-title-sha256",
+                    "c" * 64,
+                    "--expected-body-sha256",
+                    "d" * 64,
+                    "--review-input",
+                    "/synthetic/review-input.json",
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    malformed,
+                ],
+                "mark_ready",
+            ),
+        )
+        for module, arguments, mutation_name in cases:
+            with self.subTest(module=module.__name__):
+                with (
+                    mock.patch.object(sys, "argv", [str(module.__file__), *arguments]),
+                    mock.patch.object(module, mutation_name) as mutate,
+                    mock.patch("builtins.print") as output,
+                ):
+                    self.assertEqual(module.main(), 1)
+                mutate.assert_not_called()
+                diagnostic = output.call_args.args[0]
+                self.assertIn("sorted unique JSON array", diagnostic)
+                self.assertNotIn("9999999999", diagnostic)
+                self.assertNotIn("Traceback", diagnostic)
+
+    def test_publication_clis_contain_post_mutation_receipt_reload_failures(
+        self,
+    ) -> None:
+        stored = self.live_pr()
+        common = [
+            "--repository",
+            "acme/app",
+            "--base",
+            "main",
+            "--base-oid",
+            "a" * 40,
+            "--head",
+            "fork-owner:widget",
+            "--head-oid",
+            "b" * 40,
+            "--head-owner",
+            "fork-owner",
+            "--head-repository",
+            "fork-owner/app-fork",
+        ]
+        cases = (
+            (
+                CREATE,
+                [
+                    *common,
+                    "--title",
+                    "feat: widget",
+                    "--body-template",
+                    "/synthetic/body.md",
+                    "--review-input",
+                    "/synthetic/review-input.json",
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+                "publish",
+                RECEIPTS.ReceiptError(
+                    "Authorization: arbitrary-secret-value\x1b[31m"
+                ),
+            ),
+            (
+                UPDATE,
+                [
+                    "ready",
+                    *common[:2],
+                    "--pr",
+                    "42",
+                    *common[2:],
+                    "--expected-title-sha256",
+                    "c" * 64,
+                    "--expected-body-sha256",
+                    "d" * 64,
+                    "--review-input",
+                    "/synthetic/review-input.json",
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+                "mark_ready",
+                [],
+            ),
+        )
+        for module, arguments, mutation_name, reload_result in cases:
+            with self.subTest(module=module.__name__):
+                reload_kwargs = (
+                    {"side_effect": reload_result}
+                    if isinstance(reload_result, BaseException)
+                    else {"return_value": reload_result}
+                )
+                with (
+                    mock.patch.object(sys, "argv", [str(module.__file__), *arguments]),
+                    mock.patch.object(
+                        module, mutation_name, return_value=stored
+                    ) as mutate,
+                    mock.patch.object(module, "load_receipts", **reload_kwargs),
+                    mock.patch("builtins.print") as output,
+                ):
+                    self.assertEqual(module.main(), 1)
+                self.assertEqual(mutate.call_count, 1)
+                diagnostic = output.call_args.args[0]
+                self.assertIn("receipt acknowledgement is unavailable", diagnostic)
+                self.assertIn("independently audit exact state", diagnostic)
+                self.assertIn("do not retry", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Traceback", diagnostic)
+
+    def test_read_diagnostics_share_safe_json_and_schema_classifications(self) -> None:
+        failures: list[tuple[str, STATE.PublicationError]] = []
+        for expected, payload in (
+            ("invalid JSON", "{"),
+            ("JSON with duplicate object keys", '{"x": 1, "x": 2}'),
+            ("JSON with a non-finite value", '{"x": NaN}'),
+        ):
+            with self.assertRaises(STATE.PublicationError) as caught:
+                STATE.strict_json(payload, "synthetic provider")
+            failures.append((expected, caught.exception))
+        failures.extend(
+            (
+                ("an incomplete response", STATE.LiveStateResponseError("incomplete")),
+                ("a malformed response", STATE.LiveStateResponseError("malformed")),
+            )
+        )
+
+        for expected, error in failures:
+            with self.subTest(expected=expected):
+                audit = STATE.classified_read_failure(
+                    error, stage="live PR state read"
+                )
+                recovery = STATE.read_failure_diagnostic(error)
+                self.assertIn(f"returned {expected}", audit)
+                self.assertIn(f"returned {expected}", recovery)
+                self.assertIn(
+                    "existing read authority while it remains valid", recovery
+                )
+
+        unknown = STATE.StateReadError(
+            "Authorization: Bearer arbitrary-secret-value"
+        )
+        diagnostic = STATE.classified_read_failure(
+            unknown, stage="live PR state read"
+        )
+        self.assertIn("unclassified reason", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+
+    def test_state_read_diagnostics_use_only_typed_failure_data(self) -> None:
+        unknown = STATE.StateReadError(UnprintableExceptionData())
+
+        self.assertEqual(
+            STATE.classified_read_failure(unknown, stage="live PR state read"),
+            "live PR state read failed for an unclassified reason; details were "
+            "withheld because they may contain sensitive data",
+        )
+        self.assertEqual(
+            STATE.read_failure_diagnostic(unknown),
+            "post-mutation reread failed for an unclassified reason; details were "
+            "withheld because they may contain sensitive data; reuse existing read "
+            "authority while it remains valid; obtain new authority only if the "
+            "target or action is outside its scope",
+        )
+
+        malformed = STATE.MalformedRestPrNodeError()
+        self.assertIn(
+            "returned a malformed response",
+            STATE.classified_read_failure(malformed, stage="live PR state read"),
+        )
+        self.assertIn(
+            "returned a malformed response",
+            STATE.read_failure_diagnostic(malformed),
+        )
 
     def test_identity_binds_exact_head_repository_full_name(self) -> None:
         expected = STATE.ExpectedIdentity(
@@ -1060,6 +2017,31 @@ class ReviewablePrStateTests(unittest.TestCase):
                         head_repository="fork-owner/app-fork",
                     )
 
+    def test_identity_inputs_reject_control_characters_in_repositories(self) -> None:
+        cases = (
+            ("acme\x1b[31m/app", "fork-owner/app-fork"),
+            ("acme/app", "fork-owner/app-fork\x1b[31m"),
+        )
+        for repository, head_repository in cases:
+            with self.subTest(
+                repository=repository, head_repository=head_repository
+            ):
+                with self.assertRaises(STATE.PublicationError) as raised:
+                    STATE.validate_identity_inputs(
+                        repository=repository,
+                        pr_number=1,
+                        base="main",
+                        base_oid="a" * 40,
+                        head="fork-owner:widget",
+                        head_oid="b" * 40,
+                        head_owner="fork-owner",
+                        head_repository=head_repository,
+                    )
+
+                diagnostic = str(raised.exception)
+                self.assertNotIn("\x1b", diagnostic)
+                self.assertNotIn("[31m", diagnostic)
+
     def test_read_and_possible_mutation_timeouts_are_distinct(self) -> None:
         timeout = subprocess.TimeoutExpired(["gh"], 1)
         with mock.patch.object(subprocess, "run", side_effect=timeout):
@@ -1067,6 +2049,433 @@ class ReviewablePrStateTests(unittest.TestCase):
                 STATE.run_read(["gh", "pr", "view"])
             with self.assertRaises(STATE.MutationAmbiguousError):
                 STATE.run_mutation(["gh", "pr", "edit"])
+
+    def test_broad_os_failures_have_unknown_process_and_mutation_outcomes(self) -> None:
+        cases = (
+            (
+                STATE.run_read,
+                STATE.CommandReadError,
+                "whether the read process started is unknown",
+            ),
+            (
+                STATE.run_mutation,
+                STATE.MutationAmbiguousError,
+                "whether the mutation process started is unknown",
+            ),
+        )
+        for runner, error_type, classification in cases:
+            with self.subTest(classification=classification):
+                process_error = OSError(
+                    "/synthetic/arbitrary-secret-value/gh: Authorization\x1b[31m"
+                )
+                with (
+                    mock.patch.object(
+                        STATE.subprocess, "run", side_effect=process_error
+                    ),
+                    self.assertRaises(error_type) as raised,
+                ):
+                    runner(
+                        [
+                            "gh",
+                            "--header",
+                            "Authorization: Bearer command-input-secret",
+                        ]
+                    )
+
+                diagnostic = str(raised.exception)
+                self.assertIn(classification, diagnostic)
+                self.assertIs(raised.exception.__cause__, process_error)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("command-input-secret", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertNotIn("OSError", diagnostic)
+                self.assertNotIn("\x1b", diagnostic)
+                if runner is STATE.run_mutation:
+                    self.assertTrue(raised.exception.process_outcome_unknown)
+                    self.assertIn("mutation outcome is unknown", diagnostic)
+                    self.assertIn("do not retry", diagnostic)
+                else:
+                    self.assertTrue(raised.exception.process_outcome_unknown)
+
+    def test_post_start_io_failure_is_classified_at_the_shared_process_boundary(
+        self,
+    ) -> None:
+        for runner, error_type in (
+            (STATE.run_read, STATE.CommandReadError),
+            (STATE.run_mutation, STATE.MutationAmbiguousError),
+        ):
+            events: list[str] = []
+            io_error = OSError(
+                "/synthetic/arbitrary-secret-value/gh: Authorization\x1b[31m"
+            )
+
+            with (
+                self.subTest(runner=runner.__name__),
+                mock.patch.object(
+                    STATE.subprocess,
+                    "Popen",
+                    post_start_io_failure_popen(events, io_error),
+                ),
+                self.assertRaises(error_type) as caught,
+            ):
+                runner(["synthetic-forge"])
+
+            diagnostic = str(caught.exception)
+            self.assertEqual(
+                events,
+                [
+                    "process-created",
+                    "communicate-entered",
+                    "process-killed",
+                    "process-waited",
+                ],
+            )
+            self.assertIs(caught.exception.__cause__, io_error)
+            self.assertTrue(caught.exception.process_outcome_unknown)
+            self.assertIn("process started is unknown", diagnostic)
+            self.assertNotIn("arbitrary-secret-value", diagnostic)
+            self.assertNotIn("Authorization", diagnostic)
+            self.assertNotIn("could not start", diagnostic)
+
+    def test_local_command_preparation_failures_are_typed_and_never_start(self) -> None:
+        cases = (
+            (
+                STATE.run_read,
+                STATE.CommandReadError,
+                "read command could not be prepared locally",
+                "no read command started",
+            ),
+            (
+                STATE.run_mutation,
+                STATE.MutationPreparationError,
+                "mutation command could not be prepared locally",
+                "no target mutation ran",
+            ),
+        )
+        for runner, error_type, classification, no_start in cases:
+            for name, arguments, input_text, cause_type in (
+                (
+                    "lone-surrogate-input",
+                    ["gh", "synthetic"],
+                    "secret-\ud800",
+                    UnicodeEncodeError,
+                ),
+                ("nul-argument", ["gh", "secret\x00argument"], None, ValueError),
+            ):
+                with (
+                    self.subTest(runner=runner.__name__, case=name),
+                    mock.patch.object(STATE.subprocess, "run") as run,
+                    self.assertRaises(error_type) as raised,
+                ):
+                    runner(arguments, input_text=input_text)
+
+                diagnostic = str(raised.exception)
+                self.assertIn(classification, diagnostic)
+                self.assertIn(no_start, diagnostic)
+                self.assertIsInstance(raised.exception.__cause__, cause_type)
+                self.assertNotIn("secret", diagnostic)
+                self.assertNotIn("Traceback", diagnostic)
+                run.assert_not_called()
+
+        self.assertFalse(hasattr(STATE, "MutationLaunchError"))
+        self.assertFalse(hasattr(STATE.CommandReadError(), "launch_failed"))
+
+    def test_valid_command_input_preserves_utf8_and_process_result(self) -> None:
+        completed = subprocess.CompletedProcess(
+            ["gh", "synthetic"], 0, "résultat 🚀".encode(), "erreur λ".encode()
+        )
+        for runner in (STATE.run_read, STATE.run_mutation):
+            with (
+                self.subTest(runner=runner.__name__),
+                mock.patch.object(
+                    STATE.subprocess, "run", return_value=completed
+                ) as run,
+            ):
+                result = runner(["gh", "synthetic"], input_text="entrée café")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "résultat 🚀")
+            self.assertEqual(result.stderr, "erreur λ")
+            self.assertEqual(run.call_args.kwargs["input"], "entrée café".encode())
+
+    def test_nonzero_command_output_is_withheld_from_diagnostics(self) -> None:
+        output = (
+            "https://user:arbitrary-secret-value@example.test/?token=secret\n"
+            "Authorization: Bearer arbitrary-secret-value\x00\x1b[31m\n"
+            + "x" * (1024 * 1024)
+        )
+        cases = (
+            (STATE.run_read, STATE.StateReadError, 31, "read command rejected"),
+            (
+                STATE.run_mutation,
+                STATE.PublicationError,
+                32,
+                "mutation command rejected",
+            ),
+        )
+        for runner, error_type, return_code, classification in cases:
+            with self.subTest(classification=classification):
+                completed = subprocess.CompletedProcess([], return_code, output, output)
+                with (
+                    mock.patch.object(subprocess, "run", return_value=completed),
+                    self.assertRaises(error_type) as raised,
+                ):
+                    runner(
+                        [
+                            "gh",
+                            "--header",
+                            "Authorization: Bearer command-input-secret",
+                        ]
+                    )
+
+                diagnostic = str(raised.exception)
+                self.assertIn(classification, diagnostic)
+                self.assertIn(f"return code {return_code}", diagnostic)
+                self.assertIn("command output was withheld", diagnostic)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("command-input-secret", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertNotIn("\x1b", diagnostic)
+
+    def test_invalid_command_output_bytes_reach_safe_diagnostics(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            command = Path(directory) / "invalid-output.py"
+            command.write_text(
+                "import sys\n"
+                "sys.stdout.buffer.write(b'\\xffarbitrary-secret-value')\n"
+                "raise SystemExit(33)\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(STATE.PublicationError) as raised:
+                STATE.run_mutation([sys.executable, str(command)])
+
+        diagnostic = str(raised.exception)
+        self.assertIn("mutation command rejected (return code 33)", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+
+    def test_malformed_successful_output_fails_closed_at_command_boundary(self) -> None:
+        secret = b"arbitrary-secret-value"
+        completed = subprocess.CompletedProcess([], 0, b"\xff" + secret, b"")
+        cases = (
+            (
+                STATE.run_read,
+                STATE.CommandReadError,
+                "read command returned malformed successful output",
+            ),
+            (
+                STATE.run_mutation,
+                STATE.MutationAmbiguousError,
+                "mutation outcome is unknown",
+            ),
+        )
+
+        for runner, error_type, classification in cases:
+            with self.subTest(classification=classification):
+                with (
+                    mock.patch.object(STATE.subprocess, "run", return_value=completed),
+                    self.assertRaises(error_type) as raised,
+                ):
+                    runner(["gh", "synthetic"])
+
+                diagnostic = str(raised.exception)
+                self.assertIn(classification, diagnostic)
+                self.assertIn("strict UTF-8", diagnostic)
+                self.assertNotIn(secret.decode(), diagnostic)
+                self.assertNotIn("codec", diagnostic)
+
+    def test_malformed_nonzero_output_keeps_safe_process_metadata(self) -> None:
+        completed = subprocess.CompletedProcess(
+            [], 47, b"\xffarbitrary-secret-value", b"\xfeAuthorization"
+        )
+        cases = (
+            (STATE.run_read, STATE.CommandReadError, "read command rejected"),
+            (STATE.run_mutation, STATE.CommandRejectedError, "mutation command rejected"),
+        )
+
+        for runner, error_type, classification in cases:
+            with self.subTest(classification=classification):
+                with (
+                    mock.patch.object(STATE.subprocess, "run", return_value=completed),
+                    self.assertRaises(error_type) as raised,
+                ):
+                    runner(["gh", "synthetic"])
+
+                diagnostic = str(raised.exception)
+                self.assertIn(classification, diagnostic)
+                self.assertIn("return code 47", diagnostic)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+
+    def test_recovery_reuses_valid_existing_read_authority(self) -> None:
+        diagnostics = (
+            STATE.read_failure_diagnostic(
+                STATE.CommandReadError(timeout_seconds=STATE.READ_TIMEOUT_SECONDS)
+            ),
+            STATE.read_failure_diagnostic(STATE.PublicationError("synthetic")),
+        )
+        skill = SCRIPTS.parent.joinpath("SKILL.md").read_text(encoding="utf-8")
+
+        for text in (*diagnostics, skill):
+            normalized = " ".join(text.split())
+            with self.subTest(text=normalized[:40]):
+                self.assertIn(
+                    "existing read authority while it remains valid", normalized
+                )
+                self.assertIn(
+                    "new authority only if the target or action is outside",
+                    normalized,
+                )
+                self.assertNotIn("separately authorized read", normalized)
+
+    def test_audit_procedure_requires_validated_observation_before_comparison(
+        self,
+    ) -> None:
+        skill = SCRIPTS.parent.joinpath("SKILL.md").read_text(encoding="utf-8")
+        normalized = " ".join(skill.split())
+
+        self.assertIn(
+            "Only a complete, structurally valid live PR observation reaches receipt "
+            "comparison",
+            normalized,
+        )
+        self.assertIn(
+            "Valid identity, text, and state differences are drift", normalized
+        )
+        self.assertIn(
+            "Invalid JSON, duplicate or non-finite JSON, and incomplete or malformed "
+            "fields are unavailable",
+            normalized,
+        )
+        self.assertIn(
+            "Required observation strings must be exact UTF-8-encodable Unicode "
+            "scalar text before comparison, hashing, or serialization",
+            normalized,
+        )
+        self.assertIn(
+            "Malformed zero-exit create output, including an invalid PR identifier, "
+            "follows that same one-read nonce recovery path",
+            normalized,
+        )
+
+    def test_malformed_recovery_read_keeps_its_safe_classification(self) -> None:
+        diagnostic = STATE.read_failure_diagnostic(
+            STATE.CommandReadError(malformed_output=True)
+        )
+
+        self.assertIn(
+            "post-mutation reread returned malformed successful output", diagnostic
+        )
+        self.assertIn("strict UTF-8", diagnostic)
+        self.assertIn("existing read authority while it remains valid", diagnostic)
+
+    def test_local_validator_failures_have_validation_specific_guidance(self) -> None:
+        hostile = b"\xffAuthorization: Bearer arbitrary-secret-value\x1b[31m"
+        failures = (
+            subprocess.CompletedProcess([], 51, hostile, hostile),
+            subprocess.CompletedProcess([], 0, hostile, hostile),
+            subprocess.TimeoutExpired(
+                ["validator"], STATE.READ_TIMEOUT_SECONDS, output=hostile, stderr=hostile
+            ),
+        )
+
+        for failure in failures:
+            with self.subTest(failure=type(failure).__name__):
+                with (
+                    mock.patch.object(STATE.subprocess, "run", side_effect=[failure]),
+                    self.assertRaisesRegex(
+                        STATE.PublicationError, "candidate validation"
+                    ) as raised,
+                ):
+                    PUBLICATION_SUPPORT.validate_pr_content(
+                        "body",
+                        "acme/app",
+                        1,
+                        "title",
+                        Path("/absolute/review-input.json"),
+                    )
+
+                diagnostic = str(raised.exception)
+                self.assertIn("trusted executable ancestry", diagnostic)
+                self.assertIn("temporary-directory availability", diagnostic)
+                self.assertNotIn("authentication", diagnostic)
+                self.assertNotIn("read access", diagnostic)
+                self.assertNotIn("repository identity", diagnostic)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertNotIn("\x1b", diagnostic)
+
+    def test_missing_local_validator_diagnostic_is_value_free(self) -> None:
+        hidden_path = Path("/synthetic/arbitrary-secret-value/validator.py")
+        with (
+            mock.patch.object(PUBLICATION_SUPPORT, "VALIDATOR", hidden_path),
+            self.assertRaisesRegex(
+                STATE.PublicationError,
+                "candidate validation is unavailable; validator executable is missing",
+            ) as raised,
+        ):
+            PUBLICATION_SUPPORT.validate_pr_content(
+                "body",
+                "acme/app",
+                1,
+                "title",
+                Path("/absolute/review-input.json"),
+            )
+
+        diagnostic = str(raised.exception)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn(str(hidden_path), diagnostic)
+        self.assertNotIn("authentication", diagnostic)
+        self.assertNotIn("read access", diagnostic)
+
+    def test_validator_broad_os_failure_has_unknown_process_outcome(self) -> None:
+        launch_error = OSError("/synthetic/arbitrary-secret-value/validator.py")
+        with (
+            mock.patch.object(STATE.subprocess, "run", side_effect=launch_error),
+            self.assertRaisesRegex(
+                STATE.PublicationError,
+                "candidate validation failed during process launch or communication",
+            ) as raised,
+        ):
+            PUBLICATION_SUPPORT.validate_pr_content(
+                "body",
+                "acme/app",
+                1,
+                "title",
+                Path("/absolute/review-input.json"),
+            )
+
+        diagnostic = str(raised.exception)
+        self.assertIn("validation process started is unknown", diagnostic)
+        self.assertIs(raised.exception.__cause__, launch_error)
+        self.assertIn("trusted executable ancestry", diagnostic)
+        self.assertIn("temporary-directory availability", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("authentication", diagnostic)
+
+        self.assertNotIn("read access", diagnostic)
+
+    def test_validator_local_preparation_failure_never_starts(self) -> None:
+        with (
+            mock.patch.object(STATE.subprocess, "run") as run,
+            self.assertRaisesRegex(
+                STATE.PublicationError,
+                "candidate validation could not be prepared locally",
+            ) as raised,
+        ):
+            PUBLICATION_SUPPORT.validate_pr_content(
+                "secret-\ud800",
+                "acme/app",
+                1,
+                "title",
+                Path("/absolute/review-input.json"),
+            )
+
+        diagnostic = str(raised.exception)
+        self.assertIn("no validation command started", diagnostic)
+        self.assertIsInstance(raised.exception.__cause__, UnicodeEncodeError)
+        self.assertNotIn("secret", diagnostic)
+        self.assertNotIn("Traceback", diagnostic)
+        run.assert_not_called()
 
 
 class ReviewablePrFixture(unittest.TestCase):
@@ -1107,8 +2516,17 @@ class ReviewablePrFixture(unittest.TestCase):
             "_bind_review_input",
             return_value=(self.review_input_schema_version, self.review_input_sha256),
         ).start()
+        admitted_review_input = SimpleNamespace(raw={"pr_number": self.pr_number})
+        self._update_admission = mock.patch.object(
+            UPDATE, "_admit_review_input", return_value=admitted_review_input
+        ).start()
+        self._audit_admission = mock.patch.object(
+            AUDIT, "_admit_review_input", return_value=admitted_review_input
+        ).start()
         self.addCleanup(self._create_review_input.stop)
         self.addCleanup(self._update_review_input.stop)
+        self.addCleanup(self._update_admission.stop)
+        self.addCleanup(self._audit_admission.stop)
         self._create_candidate = mock.patch.object(
             CREATE, "_build_candidate", side_effect=self._fixture_candidate
         ).start()
@@ -1268,6 +2686,117 @@ class ReviewablePrFixture(unittest.TestCase):
             receipt_directory=self.receipt_directory,
         )
 
+    @staticmethod
+    def invoke_cli(module, arguments: list[str]) -> tuple[int, str]:
+        stderr = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", [str(module.__file__), *arguments]),
+            mock.patch.object(sys, "stderr", stderr),
+        ):
+            return module.main(), stderr.getvalue()
+
+    @staticmethod
+    def hostile_command_output() -> tuple[str, str]:
+        secret = "arbitrary-secret-value"
+        stdout = (
+            f"https://user:{secret}@example.test/path?token={secret}\n"
+            f"Authorization: Bearer {secret}\n" + "x" * (1024 * 1024)
+        )
+        stderr = f"X-Api-Key: {secret}\x00\x1b[31m\rforged diagnostic\n"
+        return stdout, stderr
+
+    def write_review_input_bytes(self, name: str, payload: bytes) -> Path:
+        path = Path(self.temporary_directory.name) / f"{name}-review-input.json"
+        path.write_bytes(payload)
+        return path
+
+    def write_valid_review_input(
+        self, name: str, *, body: str, token_bearing: bool = False
+    ) -> Path:
+        pr_number: int | str = (
+            REVIEW_INPUT.PR_NUMBER_TOKEN if token_bearing else self.pr_number
+        )
+        manifest_body = self.template if token_bearing else body
+        baseline = (
+            {
+                "mode": "new",
+                "title_sha256": None,
+                "body_sha256": None,
+                "fragments": [],
+            }
+            if token_bearing
+            else {
+                "mode": "existing",
+                "title_sha256": self.digest(self.title),
+                "body_sha256": self.digest(self.body),
+                "fragments": [
+                    {
+                        "id": "body",
+                        "text": self.body,
+                        "sha256": self.digest(self.body),
+                        "disposition": "retain",
+                        "replacement": None,
+                        "reason": None,
+                    }
+                ],
+            }
+        )
+        value: dict[str, object] = {
+            "version": REVIEW_INPUT.VERSION,
+            "repository": self.repository,
+            "pr_number": pr_number,
+            "base": {"ref": self.base, "oid": self.base_oid},
+            "head": {
+                "ref": self.head,
+                "oid": self.head_oid,
+                "owner": self.head_owner,
+                "repository": self.head_repository,
+            },
+            "candidate": {
+                "title": self.title,
+                "body_sha256": self.digest(manifest_body),
+            },
+            "git_diff": [
+                {
+                    "source_path": None,
+                    "target_path": "src/widget.py",
+                    "operation": "modified",
+                    "additions": 1,
+                    "deletions": 0,
+                    "binary": False,
+                }
+            ],
+            "diff": [
+                {
+                    "category": "IMPL",
+                    "operation": "ATOMIC",
+                    "source_path": None,
+                    "target_path": "src/widget.py",
+                    "additions": 1,
+                    "deletions": 0,
+                }
+            ],
+            "stack": [],
+            "baseline": baseline,
+        }
+        value["content_sha256"] = self.digest(
+            json.dumps(
+                value,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            )
+        )
+        return self.write_review_input_bytes(
+            name,
+            json.dumps(
+                value,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8"),
+        )
+
 
 class CreateReviewablePrTests(ReviewablePrFixture):
     def required_publish(self):
@@ -1287,6 +2816,665 @@ class CreateReviewablePrTests(ReviewablePrFixture):
             selected_specialists=[],
             receipt_directory=self.receipt_directory,
         )
+
+    def test_create_local_input_failures_are_value_free_and_chained(self) -> None:
+        hostile_path = Path("/synthetic/Authorization: arbitrary-secret-value/body.md")
+        read_error = OSError("Authorization: arbitrary-secret-value")
+        with (
+            mock.patch.object(Path, "read_bytes", side_effect=read_error),
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            CREATE._body_template(hostile_path)
+
+        diagnostic = str(caught.exception)
+        self.assertEqual(
+            diagnostic,
+            "cannot read body template; check the local path and read permissions",
+        )
+        self.assertIs(caught.exception.__cause__, read_error)
+        self.assertNotIn(str(hostile_path), diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("authentication", diagnostic)
+
+        decode_error = b"\xffAuthorization: arbitrary-secret-value"
+        with (
+            mock.patch.object(Path, "read_bytes", return_value=decode_error),
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            CREATE._body_template(hostile_path)
+        self.assertEqual(str(caught.exception), "body template must be valid UTF-8")
+        self.assertIsInstance(caught.exception.__cause__, UnicodeDecodeError)
+
+        with (
+            mock.patch.object(Path, "read_bytes", side_effect=read_error),
+            mock.patch.object(CREATE, "_create") as create,
+        ):
+            status, cli_diagnostic = self.invoke_cli(
+                CREATE,
+                [
+                    "--repository",
+                    self.repository,
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--title",
+                    self.title,
+                    "--body-template",
+                    str(hostile_path),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("cannot read body template", cli_diagnostic)
+        self.assertNotIn(str(hostile_path), cli_diagnostic)
+        self.assertNotIn("arbitrary-secret-value", cli_diagnostic)
+        self.assertNotIn("Traceback", cli_diagnostic)
+        create.assert_not_called()
+
+        review_input = Path(self.temporary_directory.name) / "hostile-review.json"
+        hostile_key = "Authorization: arbitrary-secret-value"
+        review_input.write_text(
+            '{"version": 2, "' + hostile_key + '": 1, "' + hostile_key + '": 2}',
+            encoding="utf-8",
+        )
+        with self.assertRaises(CREATE.PublicationError) as caught:
+            CREATE_REVIEW_INPUT(
+                review_input,
+                repository=self.repository,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid=self.head_oid,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+                title=self.title,
+                body=self.body,
+                pr_number=self.pr_number,
+            )
+
+        diagnostic = str(caught.exception)
+        self.assertEqual(
+            diagnostic,
+            "review input could not be admitted; check the local file and regenerate "
+            "it for this exact publication candidate",
+        )
+        self.assertIsInstance(caught.exception.__cause__, CREATE.ReviewInputError)
+        self.assertNotIn(hostile_key, diagnostic)
+        self.assertNotIn("authentication", diagnostic)
+
+        missing_review_input = hostile_path.with_name("review-input.json")
+        with self.assertRaises(CREATE.PublicationError) as caught:
+            CREATE_REVIEW_INPUT(
+                missing_review_input,
+                repository=self.repository,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid=self.head_oid,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+                title=self.title,
+                body=self.body,
+                pr_number=self.pr_number,
+            )
+        diagnostic = str(caught.exception)
+        self.assertIn("review input could not be admitted", diagnostic)
+        self.assertIsInstance(caught.exception.__cause__, CREATE.ReviewInputError)
+        self.assertIsInstance(caught.exception.__cause__.__cause__, OSError)
+        self.assertNotIn(str(missing_review_input), diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+
+    def test_create_cli_duplicate_review_key_is_value_free(self) -> None:
+        hostile_key = "Authorization: arbitrary-secret-value"
+        review_input = Path(self.temporary_directory.name) / "hostile-review.json"
+        review_input.write_text(
+            '{"version": 2, "' + hostile_key + '": 1, "' + hostile_key + '": 2}',
+            encoding="utf-8",
+        )
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(
+                CREATE, "_build_candidate", side_effect=self._fixture_candidate
+            ),
+            mock.patch.object(
+                CREATE,
+                "_validate_required_review",
+                side_effect=self._fixture_review,
+            ),
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(
+                CREATE, "_review_input", side_effect=CREATE_REVIEW_INPUT
+            ),
+            mock.patch.object(
+                CREATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                CREATE, "_create", return_value=(self.pr_number, self.url)
+            ) as create,
+            mock.patch.object(CREATE, "_stored_pr", return_value=self.transport()),
+            mock.patch.object(CREATE, "_install_canonical_draft") as canonical_edit,
+        ):
+            status, diagnostic = self.invoke_cli(
+                CREATE,
+                [
+                    "--repository",
+                    self.repository,
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--title",
+                    self.title,
+                    "--body-template",
+                    str(self.template_path),
+                    "--review-input",
+                    str(review_input),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("review input could not be admitted", diagnostic)
+        self.assertNotIn(hostile_key, diagnostic)
+        self.assertNotIn("Traceback", diagnostic)
+        create.assert_not_called()
+        canonical_edit.assert_not_called()
+
+    def test_create_api_and_cli_bound_real_review_input_admission_failures(
+        self,
+    ) -> None:
+        hostile = "Authorization: arbitrary-secret-value"
+        for name, payload in malformed_review_input_payloads():
+            review_input = self.write_review_input_bytes(name, payload)
+            with (
+                self.subTest(case=name, entrypoint="api"),
+                self.assertRaises(CREATE.PublicationError) as caught,
+            ):
+                CREATE_REVIEW_INPUT(
+                    review_input,
+                    repository=self.repository,
+                    base=self.base,
+                    base_oid=self.base_oid,
+                    head=self.head,
+                    head_oid=self.head_oid,
+                    head_owner=self.head_owner,
+                    head_repository=self.head_repository,
+                    title=self.title,
+                    body=self.body,
+                    pr_number=self.pr_number,
+                )
+            self.assertEqual(
+                str(caught.exception),
+                "review input could not be admitted; check the local file and "
+                "regenerate it for this exact publication candidate",
+            )
+            self.assertIsInstance(caught.exception.__cause__, CREATE.ReviewInputError)
+            self.assertIsNotNone(caught.exception.__cause__.__cause__)
+
+            RECEIPTS.prepare_receipt_store(self.receipt_directory)
+            with (
+                self.subTest(case=name, entrypoint="cli"),
+                mock.patch.object(CREATE, "_validate"),
+                mock.patch.object(CREATE, "_review_input", side_effect=CREATE_REVIEW_INPUT),
+                mock.patch.object(
+                    CREATE,
+                    "prepare_receipt_store",
+                    return_value=self.receipt_directory,
+                ),
+                mock.patch.object(CREATE, "_create") as create,
+            ):
+                status, diagnostic = self.invoke_cli(
+                    CREATE,
+                    [
+                        "--repository",
+                        self.repository,
+                        "--base",
+                        self.base,
+                        "--base-oid",
+                        self.base_oid,
+                        "--head",
+                        self.head,
+                        "--head-oid",
+                        self.head_oid,
+                        "--head-owner",
+                        self.head_owner,
+                        "--head-repository",
+                        self.head_repository,
+                        "--title",
+                        self.title,
+                        "--body-template",
+                        str(self.template_path),
+                        "--review-input",
+                        str(review_input),
+                        "--review-mode",
+                        "not-required",
+                        "--selected-specialists",
+                        "[]",
+                    ],
+                )
+
+            self.assertEqual(status, 1)
+            self.assertIn("review input could not be admitted", diagnostic)
+            self.assertNotIn(hostile, diagnostic)
+            self.assertNotIn(str(review_input), diagnostic)
+            self.assertNotIn("Traceback", diagnostic)
+            create.assert_not_called()
+            self.assertEqual(
+                RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+            )
+
+    def test_initial_create_process_and_recovery_failure_matrix(self) -> None:
+        failures = (
+            (
+                "local-preparation",
+                STATE.MutationPreparationError,
+                "initial create command could not be prepared locally; no process "
+                "started and no target mutation ran",
+            ),
+            (
+                "nonzero",
+                lambda: STATE.CommandRejectedError(31),
+                "initial create command returned nonzero",
+            ),
+            (
+                "timeout",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value",
+                    timeout_seconds=STATE.MUTATION_TIMEOUT_SECONDS,
+                ),
+                "initial create command timed out after a possible mutation",
+            ),
+            (
+                "malformed-zero-exit",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value", malformed_output=True
+                ),
+                "initial create command exited zero with malformed output",
+            ),
+        )
+        recovery_cases = (
+            (
+                "empty",
+                [],
+                "nonce recovery observed no open PR for the exact head/base",
+            ),
+            (
+                "nonmatching",
+                [self.stored(body="different transport body")],
+                "nonce recovery observed open PR state, but none matched the exact "
+                "nonce, identity, title, body, and draft state",
+            ),
+            (
+                "multiple",
+                [
+                    self.transport(),
+                    self.transport(
+                        number=43,
+                        url="https://github.com/acme/app/pull/43",
+                    ),
+                ],
+                "nonce recovery observed multiple exact nonce-tagged drafts",
+            ),
+            (
+                "unavailable",
+                STATE.CommandReadError(return_code=42),
+                "nonce recovery was unavailable",
+            ),
+        )
+        for failure_name, failure_factory, process_fact in failures:
+            for recovery_name, recovery, recovery_fact in recovery_cases:
+                failure = failure_factory()
+                with (
+                    self.subTest(process=failure_name, recovery=recovery_name),
+                    mock.patch.object(
+                        CREATE, "_matching_head_prs", side_effect=[[], recovery]
+                    ) as reads,
+                    mock.patch.object(
+                        CREATE, "_run_mutation", side_effect=failure
+                    ) as mutate,
+                    self.assertRaises(CREATE.PublicationError) as caught,
+                ):
+                    CREATE._create(
+                        repository=self.repository,
+                        base=self.base,
+                        base_oid=self.base_oid,
+                        head=self.head,
+                        head_oid=self.head_oid,
+                        head_owner=self.head_owner,
+                        head_repository=self.head_repository,
+                        title=self.title,
+                        nonce=self.nonce,
+                    )
+
+                diagnostic = str(caught.exception)
+                self.assertIn(process_fact, diagnostic)
+                self.assertIn(recovery_fact, diagnostic)
+                self.assertIn("canonical provenance was not minted", diagnostic)
+                self.assertIn("no canonical receipt was written", diagnostic)
+                self.assertIn(
+                    "no automatic retry or rollback was attempted", diagnostic
+                )
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertIs(caught.exception.__cause__, failure)
+                self.assertEqual(mutate.call_count, 1)
+                self.assertEqual(reads.call_count, 2)
+                if recovery_name == "unavailable":
+                    self.assertIs(caught.exception.reread_error, recovery)
+
+    def test_initial_create_post_start_io_failure_keeps_unknown_outcome(self) -> None:
+        events: list[str] = []
+        io_error = OSError("Authorization: arbitrary-secret-value")
+        with (
+            mock.patch.object(
+                CREATE, "_matching_head_prs", side_effect=[[], []]
+            ) as reads,
+            mock.patch.object(
+                STATE.subprocess,
+                "Popen",
+                post_start_io_failure_popen(events, io_error),
+            ),
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            CREATE._create(
+                repository=self.repository,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid=self.head_oid,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+                title=self.title,
+                nonce=self.nonce,
+            )
+
+        diagnostic = str(caught.exception)
+        self.assertIn("process launch or communication", diagnostic)
+        self.assertIn("process started is unknown", diagnostic)
+        self.assertIn(
+            "nonce recovery observed no open PR for the exact head/base", diagnostic
+        )
+        self.assertIn("canonical provenance was not minted", diagnostic)
+        self.assertIn("no canonical receipt was written", diagnostic)
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertNotIn("no process started", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertIsInstance(caught.exception.__cause__, STATE.MutationAmbiguousError)
+        self.assertIs(caught.exception.__cause__.__cause__, io_error)
+        self.assertEqual(reads.call_count, 2)
+        self.assertEqual(
+            events,
+            [
+                "process-created",
+                "communicate-entered",
+                "process-killed",
+                "process-waited",
+            ],
+        )
+
+    def test_initial_create_local_preparation_failure_proves_no_process_started(
+        self,
+    ) -> None:
+        with (
+            mock.patch.object(
+                CREATE, "_matching_head_prs", side_effect=[[], []]
+            ) as reads,
+            mock.patch.object(STATE.subprocess, "run") as run,
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            CREATE._create(
+                repository=self.repository,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid=self.head_oid,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+                title="Authorization: secret-\ud800",
+                nonce=self.nonce,
+            )
+
+        diagnostic = str(caught.exception)
+        preparation_error = caught.exception.__cause__
+        self.assertIsInstance(preparation_error, STATE.MutationPreparationError)
+        self.assertIsInstance(preparation_error.__cause__, UnicodeEncodeError)
+        self.assertIn("could not be prepared locally", diagnostic)
+        self.assertIn("no process started and no target mutation ran", diagnostic)
+        self.assertIn(
+            "nonce recovery observed no open PR for the exact head/base", diagnostic
+        )
+        self.assertIn("canonical provenance was not minted", diagnostic)
+        self.assertIn("no canonical receipt was written", diagnostic)
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("secret", diagnostic)
+        self.assertEqual(reads.call_count, 2)
+        run.assert_not_called()
+
+    def test_initial_create_unique_recovery_preserves_continuation_and_counts(
+        self,
+    ) -> None:
+        failures = (
+            STATE.MutationPreparationError(),
+            STATE.CommandRejectedError(31),
+            STATE.MutationAmbiguousError(
+                "private timeout", timeout_seconds=STATE.MUTATION_TIMEOUT_SECONDS
+            ),
+            STATE.MutationAmbiguousError("private output", malformed_output=True),
+        )
+        for failure in failures:
+            with (
+                self.subTest(failure=type(failure).__name__),
+                mock.patch.object(
+                    CREATE,
+                    "_matching_head_prs",
+                    side_effect=[[], [self.transport()]],
+                ) as reads,
+                mock.patch.object(
+                    CREATE, "_run_mutation", side_effect=failure
+                ) as mutate,
+            ):
+                recovered = CREATE._create(
+                    repository=self.repository,
+                    base=self.base,
+                    base_oid=self.base_oid,
+                    head=self.head,
+                    head_oid=self.head_oid,
+                    head_owner=self.head_owner,
+                    head_repository=self.head_repository,
+                    title=self.title,
+                    nonce=self.nonce,
+                )
+
+            self.assertEqual(recovered, (self.pr_number, self.url))
+            self.assertEqual(mutate.call_count, 1)
+            self.assertEqual(reads.call_count, 2)
+
+    def test_canonical_create_edit_cleanup_failure_retains_zero_exit_and_reread(
+        self,
+    ) -> None:
+        class CleanupFailingTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, value: bytes) -> int:
+                return len(value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise OSError("Authorization: arbitrary-secret-value")
+
+        with (
+            mock.patch.object(
+                PUBLICATION_SUPPORT.tempfile,
+                "NamedTemporaryFile",
+                return_value=CleanupFailingTemporary(),
+            ),
+            mock.patch.object(
+                CREATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ) as mutate,
+            mock.patch.object(
+                CREATE, "_stored_pr", return_value=self.stored()
+            ) as reread,
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            CREATE._install_canonical_draft(
+                expected=self.expected,
+                title=self.title,
+                transport_body=self.transport_body,
+                body=self.body,
+                before=self.transport(),
+            )
+
+        diagnostic = str(caught.exception)
+        self.assertIn("canonical edit command exited zero", diagnostic)
+        self.assertIn("private body snapshot cleanup failed", diagnostic)
+        self.assertIn("exact intended state was observed", diagnostic)
+        self.assertIn("canonical provenance was not minted", diagnostic)
+        self.assertIn("do not retry", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertEqual(mutate.call_count, 1)
+        self.assertEqual(reread.call_count, 1)
+
+    def test_initial_create_cleanup_failure_recovers_once_without_success(self) -> None:
+        class CleanupFailingTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, value: bytes) -> int:
+                return len(value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise OSError("Authorization: arbitrary-secret-value")
+
+        with (
+            mock.patch.object(CREATE, "_matching_head_prs", return_value=[]),
+            mock.patch.object(
+                CREATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, self.url, ""),
+            ) as mutate,
+            mock.patch.object(
+                CREATE,
+                "_recover_created",
+                return_value=(
+                    (self.pr_number, self.url),
+                    "nonce recovery observed one exact nonce-tagged draft",
+                ),
+            ) as recover,
+            mock.patch.object(
+                PUBLICATION_SUPPORT.tempfile,
+                "NamedTemporaryFile",
+                return_value=CleanupFailingTemporary(),
+            ),
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            CREATE._create(
+                repository=self.repository,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid=self.head_oid,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+                title=self.title,
+                nonce=self.nonce,
+            )
+
+        diagnostic = str(caught.exception)
+        self.assertIn("initial create command exited zero", diagnostic)
+        self.assertIn("one exact nonce-tagged draft was found", diagnostic)
+        self.assertIn("private body snapshot cleanup failed", diagnostic)
+        self.assertIn("no canonical receipt was written", diagnostic)
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertEqual(mutate.call_count, 1)
+        self.assertEqual(recover.call_count, 1)
+
+    def test_initial_create_cleanup_failure_without_recovered_draft_keeps_cause(
+        self,
+    ) -> None:
+        cleanup_error = OSError("Authorization: arbitrary-secret-value")
+
+        class CleanupFailingTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, value: bytes) -> int:
+                return len(value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise cleanup_error
+
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(CREATE, "_matching_head_prs", side_effect=[[], []]) as reads,
+            mock.patch.object(
+                CREATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, self.url, ""),
+            ) as mutate,
+            mock.patch.object(CREATE, "record_verified_publication") as record,
+            mock.patch.object(
+                PUBLICATION_SUPPORT.tempfile,
+                "NamedTemporaryFile",
+                return_value=CleanupFailingTemporary(),
+            ),
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            self.publish()
+
+        diagnostic = str(caught.exception)
+        self.assertIn("initial create command exited zero", diagnostic)
+        self.assertIn("private body snapshot cleanup failed", diagnostic)
+        self.assertIn(
+            "nonce recovery observed no open PR for the exact head/base", diagnostic
+        )
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("OSError", diagnostic)
+        self.assertIsInstance(caught.exception.__cause__, CREATE.BodySnapshotError)
+        self.assertIs(caught.exception.__cause__.__cause__, cleanup_error)
+        self.assertEqual(mutate.call_count, 1)
+        self.assertEqual(reads.call_count, 2)
+        record.assert_not_called()
 
     def test_required_create_remote_drift_after_review_blocks_canonical_edit(
         self,
@@ -1394,6 +3582,82 @@ class CreateReviewablePrTests(ReviewablePrFixture):
                 )
         run.assert_not_called()
 
+    def test_create_cli_never_echoes_existing_pr_url_from_raw_json(self) -> None:
+        hostile_url = (
+            "https://example.test/?token=arbitrary-secret-value\n"
+            "Authorization: Bearer arbitrary-secret-value\x1b[31m"
+        )
+        rest_pr = {
+            "number": self.pr_number,
+            "html_url": hostile_url,
+            "title": self.title,
+            "body": self.body,
+            "draft": True,
+            "state": "open",
+            "base": {
+                "ref": self.base,
+                "sha": self.base_oid,
+                "repo": {"full_name": self.repository},
+            },
+            "head": {
+                "ref": "widget",
+                "sha": self.head_oid,
+                "repo": {
+                    "full_name": self.head_repository,
+                    "owner": {"login": self.head_owner},
+                },
+            },
+        }
+        raw_json = json.dumps([[rest_pr]]).encode("utf-8")
+        completed = subprocess.CompletedProcess([], 0, raw_json, b"")
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(
+                CREATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", return_value=completed
+            ) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                CREATE,
+                [
+                    "--repository",
+                    self.repository,
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--title",
+                    self.title,
+                    "--body-template",
+                    str(self.template_path),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("an open PR already exists for this head/base", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("example.test", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
+        self.assertEqual(run.call_count, 1)
+
     def test_recovers_unique_nonce_draft_after_ambiguous_create_error(self) -> None:
         with (
             mock.patch.object(
@@ -1418,13 +3682,108 @@ class CreateReviewablePrTests(ReviewablePrFixture):
             )
         self.assertEqual(result, (self.pr_number, self.url))
 
+    def test_create_recovery_read_failure_preserves_mutation_causality(self) -> None:
+        mutation_error = STATE.CommandRejectedError(41)
+        recovery_error = STATE.CommandReadError(return_code=42)
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(
+                CREATE, "_matching_head_prs", side_effect=[[], recovery_error]
+            ),
+            mock.patch.object(
+                CREATE, "_run_mutation", side_effect=mutation_error
+            ) as mutate,
+            mock.patch.object(CREATE, "record_verified_publication") as record,
+            self.assertRaises(CREATE.PublicationError) as raised,
+        ):
+            self.publish()
+
+        diagnostic = str(raised.exception)
+        self.assertIn("initial create command returned nonzero", diagnostic)
+        self.assertIn("mutation command rejected (return code 41)", diagnostic)
+        self.assertIn(
+            "post-mutation reread was rejected (return code 42)", diagnostic
+        )
+        self.assertIs(raised.exception.__cause__, mutation_error)
+        self.assertIs(raised.exception.reread_error, recovery_error)
+        self.assertNotIn("separately authorized read", diagnostic)
+        self.assertEqual(mutate.call_count, 1)
+        record.assert_not_called()
+
+    def test_malformed_create_result_and_failed_recovery_are_not_contradictory(
+        self,
+    ) -> None:
+        recovery_error = STATE.CommandReadError(return_code=42)
+        completed = subprocess.CompletedProcess([], 0, "created", "")
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(
+                CREATE, "_matching_head_prs", side_effect=[[], recovery_error]
+            ),
+            mock.patch.object(
+                CREATE, "_run_mutation", return_value=completed
+            ) as mutate,
+            mock.patch.object(CREATE, "record_verified_publication") as record,
+            self.assertRaises(CREATE.PublicationError) as raised,
+        ):
+            self.publish()
+
+        diagnostic = str(raised.exception)
+        self.assertIn(
+            "initial create command exited zero without the expected PR URL",
+            diagnostic,
+        )
+        self.assertNotIn("initial create command failed", diagnostic)
+        self.assertIn(
+            "post-mutation reread was rejected (return code 42)", diagnostic
+        )
+        self.assertEqual(
+            str(raised.exception.__cause__),
+            "gh pr create returned no expected PR URL",
+        )
+        self.assertEqual(mutate.call_count, 1)
+        record.assert_not_called()
+
+    def test_malformed_rest_recovery_cannot_mint_or_repeat_a_mutation(self) -> None:
+        malformed = ReviewablePrStateTests.rest_pr(owner=self.head_owner, number=42)
+        malformed["body"] = False
+        reads = (
+            subprocess.CompletedProcess([], 0, "[[]]", ""),
+            subprocess.CompletedProcess([], 0, json.dumps([[malformed]]), ""),
+        )
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(STATE, "run_read", side_effect=reads),
+            mock.patch.object(
+                CREATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "created", ""),
+            ) as mutate,
+            mock.patch.object(CREATE, "record_verified_publication") as record,
+            self.assertRaises(CREATE.PublicationError) as raised,
+        ):
+            self.publish()
+
+        diagnostic = str(raised.exception)
+        self.assertIn("exited zero without the expected PR URL", diagnostic)
+        self.assertIn("post-mutation reread returned a malformed response", diagnostic)
+        self.assertIn("no additional mutation was attempted", diagnostic)
+        self.assertIn("no canonical receipt was written", diagnostic)
+        self.assertIsInstance(raised.exception.reread_error.__cause__, TypeError)
+        self.assertNotIn("False", diagnostic)
+        self.assertEqual(mutate.call_count, 1)
+        record.assert_not_called()
+
     def test_recovery_rejects_boolean_pr_number(self) -> None:
         with mock.patch.object(
             CREATE,
             "_matching_head_prs",
             return_value=[self.transport(number=True)],
         ):
-            result = CREATE._recover_created(
+            result, recovery_fact = CREATE._recover_created(
                 repository=self.repository,
                 base=self.base,
                 base_oid=self.base_oid,
@@ -1437,6 +3796,7 @@ class CreateReviewablePrTests(ReviewablePrFixture):
             )
 
         self.assertIsNone(result)
+        self.assertIn("none matched", recovery_fact)
 
     def test_rejects_recovery_without_exact_nonce_and_oids(self) -> None:
         wrong = self.transport(headRefOid="c" * 40)
@@ -1448,7 +3808,7 @@ class CreateReviewablePrTests(ReviewablePrFixture):
                 side_effect=CREATE.PublicationError("network lost"),
             ),
         ):
-            with self.assertRaisesRegex(CREATE.PublicationError, "ambiguous"):
+            with self.assertRaisesRegex(CREATE.PublicationError, "none matched"):
                 CREATE._create(
                     repository=self.repository,
                     base=self.base,
@@ -1481,6 +3841,264 @@ class CreateReviewablePrTests(ReviewablePrFixture):
                 nonce=self.nonce,
             )
         self.assertEqual(result, (self.pr_number, self.url))
+
+    def test_oversized_create_identifier_uses_one_nonce_recovery(self) -> None:
+        provider_output = (
+            f"https://github.com/{self.repository}/pull/{'9' * 5_000}\n"
+            "Authorization: Bearer arbitrary-secret-value"
+        )
+        completed = subprocess.CompletedProcess([], 0, provider_output, "")
+        with (
+            mock.patch.object(
+                CREATE, "_matching_head_prs", side_effect=[[], [self.transport()]]
+            ) as recover,
+            mock.patch.object(
+                CREATE, "_run_mutation", return_value=completed
+            ) as mutate,
+        ):
+            result = CREATE._create(
+                repository=self.repository,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid=self.head_oid,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+                title=self.title,
+                nonce=self.nonce,
+            )
+
+        self.assertEqual(result, (self.pr_number, self.url))
+        self.assertEqual(mutate.call_count, 1)
+        self.assertEqual(recover.call_count, 2)
+
+    def test_create_cli_safely_classifies_oversized_identifier_and_failed_recovery(
+        self,
+    ) -> None:
+        provider_output = (
+            f"https://github.com/{self.repository}/pull/{'9' * 5_000}\n"
+            "Authorization: Bearer arbitrary-secret-value"
+        )
+        completed = subprocess.CompletedProcess([], 0, provider_output, "")
+        recovery_error = STATE.CommandReadError(return_code=42)
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(
+                CREATE, "_matching_head_prs", side_effect=[[], recovery_error]
+            ) as recover,
+            mock.patch.object(
+                CREATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                CREATE, "_run_mutation", return_value=completed
+            ) as mutate,
+            mock.patch.object(CREATE, "record_verified_publication") as record,
+        ):
+            status, diagnostic = self.invoke_cli(
+                CREATE,
+                [
+                    "--repository",
+                    self.repository,
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--title",
+                    self.title,
+                    "--body-template",
+                    str(self.template_path),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn(
+            "initial create command exited zero without the expected PR URL",
+            diagnostic,
+        )
+        self.assertIn("post-mutation reread was rejected (return code 42)", diagnostic)
+        self.assertIn("no canonical receipt was written", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("ValueError", diagnostic)
+        self.assertNotIn("Traceback", diagnostic)
+        self.assertEqual(mutate.call_count, 1)
+        self.assertEqual(recover.call_count, 2)
+        record.assert_not_called()
+
+    def test_oversized_create_identifier_retains_conversion_and_recovery_causes(
+        self,
+    ) -> None:
+        provider_output = (
+            f"https://github.com/{self.repository}/pull/{'9' * 5_000}\n"
+            "Authorization: Bearer arbitrary-secret-value"
+        )
+        recovery_error = STATE.CommandReadError(return_code=42)
+        with (
+            mock.patch.object(
+                CREATE, "_matching_head_prs", side_effect=[[], recovery_error]
+            ) as recover,
+            mock.patch.object(
+                CREATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, provider_output, ""),
+            ) as mutate,
+            self.assertRaises(CREATE.PublicationError) as caught,
+        ):
+            CREATE._create(
+                repository=self.repository,
+                base=self.base,
+                base_oid=self.base_oid,
+                head=self.head,
+                head_oid=self.head_oid,
+                head_owner=self.head_owner,
+                head_repository=self.head_repository,
+                title=self.title,
+                nonce=self.nonce,
+            )
+
+        create_error = caught.exception.__cause__
+        self.assertIsInstance(create_error, CREATE.PublicationError)
+        self.assertIsInstance(create_error.__cause__, ValueError)
+        self.assertIs(caught.exception.reread_error, recovery_error)
+        self.assertNotIn("arbitrary-secret-value", str(caught.exception))
+        self.assertNotIn("Authorization", str(caught.exception))
+        self.assertEqual(mutate.call_count, 1)
+        self.assertEqual(recover.call_count, 2)
+
+    def test_create_cli_fails_closed_on_malformed_successful_output(self) -> None:
+        completed = subprocess.CompletedProcess(
+            [], 0, b"\xffarbitrary-secret-value", b"\xfeAuthorization"
+        )
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(CREATE, "_matching_head_prs", side_effect=[[], []]),
+            mock.patch.object(
+                CREATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", return_value=completed
+            ) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                CREATE,
+                [
+                    "--repository",
+                    self.repository,
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--title",
+                    self.title,
+                    "--body-template",
+                    str(self.template_path),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("strict UTF-8", diagnostic)
+        self.assertIn("mutation outcome is unknown", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("UnicodeDecodeError", diagnostic)
+        self.assertNotIn("codec", diagnostic)
+        self.assertEqual(run.call_count, 1)
+        self.assertFalse(self.receipt_directory.joinpath("acme").exists())
+
+    def test_create_cli_safely_reports_broad_os_failure_as_unknown(self) -> None:
+        launch_error = OSError(
+            "/synthetic/arbitrary-secret-value/gh: Authorization\x1b[31m"
+        )
+        empty = subprocess.CompletedProcess([], 0, b"[]", b"")
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(
+                CREATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                STATE.subprocess,
+                "run",
+                side_effect=[empty, launch_error, empty],
+            ) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                CREATE,
+                [
+                    "--repository",
+                    self.repository,
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--title",
+                    self.title,
+                    "--body-template",
+                    str(self.template_path),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("process launch or communication", diagnostic)
+        self.assertIn("process started is unknown", diagnostic)
+        self.assertIn("mutation outcome is unknown", diagnostic)
+        self.assertNotIn("no process started", diagnostic)
+        self.assertIn(
+            "nonce recovery observed no open PR for the exact head/base", diagnostic
+        )
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("OSError", diagnostic)
+        self.assertNotIn("Traceback", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
+        self.assertEqual(run.call_count, 3)
 
     def test_installs_canonical_body_with_one_mutation_and_final_read(self) -> None:
         completed = subprocess.CompletedProcess([], 0, "", "")
@@ -1527,6 +4145,286 @@ class CreateReviewablePrTests(ReviewablePrFixture):
             RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
         )
 
+    def test_canonical_edit_process_failure_matrix_is_value_free(self) -> None:
+        failures = (
+            (
+                "local-preparation",
+                STATE.MutationPreparationError(),
+                "mutation command could not be prepared locally",
+            ),
+            (
+                "nonzero",
+                STATE.CommandRejectedError(31),
+                "mutation command rejected (return code 31)",
+            ),
+            (
+                "timeout",
+                STATE.MutationAmbiguousError(
+                    "private timeout detail",
+                    timeout_seconds=STATE.MUTATION_TIMEOUT_SECONDS,
+                ),
+                "mutation outcome is unknown after a 30-second timeout",
+            ),
+            (
+                "malformed-zero-exit",
+                STATE.MutationAmbiguousError(
+                    "private output detail",
+                    malformed_output=True,
+                ),
+                "mutation command returned malformed successful output",
+            ),
+        )
+        for name, failure, classification in failures:
+            with (
+                self.subTest(outcome=name),
+                mock.patch.object(CREATE, "_validate"),
+                mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+                mock.patch.object(CREATE, "_create", return_value=(42, self.url)),
+                mock.patch.object(
+                    CREATE, "_run_mutation", side_effect=failure
+                ) as mutate,
+                mock.patch.object(
+                    CREATE,
+                    "_stored_pr",
+                    side_effect=[
+                        self.transport(),
+                        self.transport(),
+                        self.transport(),
+                    ],
+                ),
+                self.assertRaises(CREATE.PublicationError) as raised,
+            ):
+                self.publish()
+
+            diagnostic = str(raised.exception)
+            self.assertIn("canonical edit command", diagnostic)
+            self.assertIn(classification, diagnostic)
+            self.assertIn("canonical provenance was not minted", diagnostic)
+            self.assertNotIn("private", diagnostic)
+            self.assertEqual(mutate.call_count, 1)
+            self.assertEqual(
+                RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+            )
+
+    def test_canonical_edit_failure_reread_relationship_cross_product(self) -> None:
+        class CleanupFailingTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, value: bytes) -> int:
+                return len(value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise cleanup_cause
+
+        failure_cases = (
+            (
+                "local-preparation",
+                STATE.MutationPreparationError,
+                "mutation command could not be prepared locally",
+            ),
+            (
+                "nonzero",
+                lambda: STATE.CommandRejectedError(31),
+                "mutation command rejected (return code 31)",
+            ),
+            (
+                "timeout",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value",
+                    timeout_seconds=STATE.MUTATION_TIMEOUT_SECONDS,
+                ),
+                "mutation outcome is unknown after a 30-second timeout",
+            ),
+            (
+                "malformed-zero-exit",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value", malformed_output=True
+                ),
+                "mutation command returned malformed successful output",
+            ),
+            ("cleanup", lambda: None, "private body snapshot cleanup"),
+        )
+        relationship_cases = (
+            (
+                "intended",
+                self.stored(providerExtension={"ignored": "intended"}),
+                "final reread matched the exact intended state",
+            ),
+            (
+                "preimage",
+                self.transport(providerExtension={"ignored": "preimage"}),
+                "final reread matched the pre-mutation state",
+            ),
+            (
+                "other-valid",
+                self.stored(
+                    title="reviewer edit",
+                    body="reviewer body",
+                    providerExtension={"ignored": "other"},
+                ),
+                "final reread differed from both the pre-mutation and intended states",
+            ),
+            (
+                "unavailable",
+                None,
+                "final reread state was unavailable",
+            ),
+        )
+        for failure_name, failure_factory, classification in failure_cases:
+            for relationship_name, after, relationship in relationship_cases:
+                cleanup_cause = OSError("Authorization: arbitrary-secret-value")
+                failure = failure_factory()
+                reread_error = STATE.CommandReadError(return_code=42)
+                final_read = reread_error if after is None else after
+                mutation_result = (
+                    subprocess.CompletedProcess([], 0, "", "")
+                    if failure_name == "cleanup"
+                    else mock.DEFAULT
+                )
+                mutation_effect = None if failure_name == "cleanup" else failure
+                snapshot_patch = (
+                    mock.patch.object(
+                        PUBLICATION_SUPPORT.tempfile,
+                        "NamedTemporaryFile",
+                        return_value=CleanupFailingTemporary(),
+                    )
+                    if failure_name == "cleanup"
+                    else nullcontext()
+                )
+                with (
+                    self.subTest(
+                        process_or_cleanup=failure_name,
+                        reread=relationship_name,
+                    ),
+                    mock.patch.object(CREATE, "_validate"),
+                    mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+                    mock.patch.object(CREATE, "_create", return_value=(42, self.url)),
+                    mock.patch.object(
+                        CREATE,
+                        "_run_mutation",
+                        return_value=mutation_result,
+                        side_effect=mutation_effect,
+                    ) as mutate,
+                    mock.patch.object(
+                        CREATE,
+                        "_stored_pr",
+                        side_effect=[self.transport(), self.transport(), final_read],
+                    ) as reads,
+                    mock.patch.object(CREATE, "record_verified_publication") as record,
+                    snapshot_patch,
+                    self.assertRaises(CREATE.PublicationError) as caught,
+                ):
+                    self.publish()
+
+                diagnostic = str(caught.exception)
+                self.assertIn("canonical edit command", diagnostic)
+                self.assertIn(classification, diagnostic)
+                self.assertIn(relationship, diagnostic)
+                self.assertIn("canonical provenance was not minted", diagnostic)
+                self.assertIn("no canonical receipt was written", diagnostic)
+                self.assertIn(
+                    "no automatic retry or rollback was attempted", diagnostic
+                )
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertEqual(mutate.call_count, 1)
+                self.assertEqual(reads.call_count, 3)
+                record.assert_not_called()
+                self.assertEqual(
+                    RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+                )
+                operation_error = caught.exception.__cause__
+                self.assertIsNotNone(operation_error)
+                if failure_name == "cleanup":
+                    self.assertIsInstance(
+                        operation_error.__cause__, CREATE.BodySnapshotError
+                    )
+                    self.assertIs(operation_error.__cause__.__cause__, cleanup_cause)
+                else:
+                    self.assertIs(operation_error.__cause__, failure)
+                if relationship_name == "unavailable":
+                    self.assertIs(operation_error.reread_error, reread_error)
+
+    def test_zero_exit_canonical_edit_preserves_failed_reread_context(self) -> None:
+        reread_error = STATE.CommandReadError(return_code=42)
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(CREATE, "_create", return_value=(42, self.url)),
+            mock.patch.object(
+                CREATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ) as run,
+            mock.patch.object(
+                CREATE,
+                "_stored_pr",
+                side_effect=[self.transport(), self.transport(), reread_error],
+            ),
+            self.assertRaises(CREATE.PublicationError) as raised,
+        ):
+            self.publish()
+
+        diagnostic = str(raised.exception)
+        inner = raised.exception.__cause__
+        self.assertIsNotNone(inner)
+        self.assertIn("canonical edit command exited zero", diagnostic)
+        self.assertIn("canonical provenance was not minted", diagnostic)
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertIn(
+            "post-mutation reread was rejected (return code 42)", diagnostic
+        )
+        self.assertIs(inner.__cause__, reread_error)
+        self.assertIs(inner.reread_error, reread_error)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_zero_exit_canonical_edit_classifies_every_nonmatching_reread(self) -> None:
+        cases = (
+            ("preimage", self.transport(), "matched the pre-mutation state"),
+            (
+                "other-valid",
+                self.stored(title="reviewer edit", body="reviewer body"),
+                "differed from both the pre-mutation and intended states",
+            ),
+        )
+        for name, after, relationship in cases:
+            with (
+                self.subTest(relationship=name),
+                mock.patch.object(CREATE, "_validate"),
+                mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+                mock.patch.object(CREATE, "_create", return_value=(42, self.url)),
+                mock.patch.object(
+                    CREATE,
+                    "_run_mutation",
+                    return_value=subprocess.CompletedProcess([], 0, "", ""),
+                ) as run,
+                mock.patch.object(
+                    CREATE,
+                    "_stored_pr",
+                    side_effect=[self.transport(), self.transport(), after],
+                ),
+                self.assertRaises(CREATE.PublicationError) as raised,
+            ):
+                self.publish()
+
+            diagnostic = str(raised.exception)
+            self.assertIn("canonical edit command exited zero", diagnostic)
+            self.assertIn(relationship, diagnostic)
+            self.assertIn("causality remains unresolved", diagnostic)
+            self.assertIn("no canonical receipt was written", diagnostic)
+            self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+            self.assertNotIn("was not stored", diagnostic)
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(
+                RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+            )
+
     def test_edit_nonzero_with_matching_state_is_not_canonical(self) -> None:
         with (
             mock.patch.object(CREATE, "_validate"),
@@ -1547,6 +4445,77 @@ class CreateReviewablePrTests(ReviewablePrFixture):
                 CREATE.PublicationError, "canonical provenance was not minted"
             ):
                 self.publish()
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_create_cli_reports_safe_canonical_edit_rejection_diagnostic(
+        self,
+    ) -> None:
+        stdout, stderr = self.hostile_command_output()
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        command_results = [
+            subprocess.CompletedProcess([], 0, self.url, ""),
+            subprocess.CompletedProcess([], 23, stdout, stderr),
+        ]
+        with (
+            mock.patch.object(CREATE, "_validate"),
+            mock.patch.object(CREATE, "_new_nonce", return_value=self.nonce),
+            mock.patch.object(CREATE, "_matching_head_prs", return_value=[]),
+            mock.patch.object(
+                CREATE,
+                "_stored_pr",
+                side_effect=[self.transport(), self.transport(), self.stored()],
+            ),
+            mock.patch.object(
+                CREATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", side_effect=command_results
+            ) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                CREATE,
+                [
+                    "--repository",
+                    self.repository,
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--title",
+                    self.title,
+                    "--body-template",
+                    str(self.template_path),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("canonical edit command failed", diagnostic)
+        self.assertIn("mutation command rejected (return code 23)", diagnostic)
+        self.assertIn("command output was withheld", diagnostic)
+        self.assertIn("rejection cause is unknown", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("forged diagnostic", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
+        self.assertLess(len(diagnostic), 2000)
+        edit_calls = [call for call in run.call_args_list if "edit" in call.args[0]]
+        self.assertEqual(len(edit_calls), 1)
         self.assertEqual(
             RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
         )
@@ -1672,6 +4641,959 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         "- Generated notes\n"
         "<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
     )
+
+    def test_update_and_reconcile_local_inputs_are_value_free_and_chained(
+        self,
+    ) -> None:
+        hostile_path = Path("/synthetic/Authorization: arbitrary-secret-value/body.md")
+        read_error = OSError("Authorization: arbitrary-secret-value")
+        with (
+            mock.patch.object(Path, "read_bytes", side_effect=read_error),
+            self.assertRaises(UPDATE.PublicationError) as caught,
+        ):
+            UPDATE._read_body(hostile_path)
+
+        diagnostic = str(caught.exception)
+        self.assertEqual(
+            diagnostic,
+            "cannot read body file; check the local path and read permissions",
+        )
+        self.assertIs(caught.exception.__cause__, read_error)
+        self.assertNotIn(str(hostile_path), diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("authentication", diagnostic)
+
+        with (
+            mock.patch.object(
+                Path,
+                "read_bytes",
+                return_value=b"\xffAuthorization: arbitrary-secret-value",
+            ),
+            self.assertRaises(UPDATE.PublicationError) as caught,
+        ):
+            UPDATE._read_body(hostile_path, label="body template")
+        self.assertEqual(str(caught.exception), "body template must be valid UTF-8")
+        self.assertIsInstance(caught.exception.__cause__, UnicodeDecodeError)
+
+        with self.assertRaisesRegex(
+            UPDATE.PublicationError, "body template path must be absolute"
+        ):
+            UPDATE._read_body(Path("relative.md"), label="body template")
+
+        with (
+            mock.patch.object(Path, "read_bytes", side_effect=read_error),
+            mock.patch.object(UPDATE, "_run_mutation") as mutate,
+        ):
+            status, cli_diagnostic = self.invoke_cli(
+                UPDATE,
+                [
+                    "text",
+                    "--repository",
+                    self.repository,
+                    "--pr",
+                    str(self.pr_number),
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--expected-title-sha256",
+                    self.digest(self.title),
+                    "--expected-body-sha256",
+                    self.digest(self.body),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                    "--expected-state",
+                    "draft",
+                    "--text-scope",
+                    "body-only",
+                    "--title",
+                    self.title,
+                    "--body-file",
+                    str(hostile_path),
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("cannot read body file", cli_diagnostic)
+        self.assertNotIn(str(hostile_path), cli_diagnostic)
+        self.assertNotIn("arbitrary-secret-value", cli_diagnostic)
+        self.assertNotIn("Traceback", cli_diagnostic)
+        mutate.assert_not_called()
+
+        review_input = Path(self.temporary_directory.name) / "hostile-review.json"
+        hostile_key = "Authorization: arbitrary-secret-value"
+        review_input.write_text(
+            '{"version": 2, "' + hostile_key + '": 1, "' + hostile_key + '": 2}',
+            encoding="utf-8",
+        )
+        consumers = (
+            (
+                "text-ready",
+                lambda: UPDATE_BIND_REVIEW_INPUT(
+                    review_input,
+                    self.expected,
+                    self.title,
+                    self.body,
+                ),
+            ),
+            (
+                "reconcile",
+                lambda: AUDIT._validate_live_state(
+                    expected=self.expected,
+                    title=self.title,
+                    body=self.body,
+                    review_input_path=review_input,
+                ),
+            ),
+        )
+        for name, consume in consumers:
+            with (
+                self.subTest(consumer=name),
+                mock.patch.object(
+                    UPDATE, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                ),
+                mock.patch.object(
+                    AUDIT, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                ),
+                self.assertRaises(STATE.PublicationError) as caught,
+            ):
+                consume()
+
+            diagnostic = str(caught.exception)
+            self.assertEqual(
+                diagnostic,
+                "review input could not be admitted; check the local file and "
+                "regenerate it for this exact publication candidate",
+            )
+            self.assertIsInstance(caught.exception.__cause__, UPDATE.ReviewInputError)
+            self.assertNotIn(hostile_key, diagnostic)
+            self.assertNotIn("authentication", diagnostic)
+
+    def test_text_and_ready_cli_duplicate_review_key_is_value_free(self) -> None:
+        hostile_key = "Authorization: arbitrary-secret-value"
+        review_input = Path(self.temporary_directory.name) / "hostile-review.json"
+        review_input.write_text(
+            '{"version": 2, "' + hostile_key + '": 1, "' + hostile_key + '": 2}',
+            encoding="utf-8",
+        )
+        desired_path = self.desired_body_path()
+        common = [
+            "--repository",
+            self.repository,
+            "--pr",
+            str(self.pr_number),
+            "--base",
+            self.base,
+            "--base-oid",
+            self.base_oid,
+            "--head",
+            self.head,
+            "--head-oid",
+            self.head_oid,
+            "--head-owner",
+            self.head_owner,
+            "--head-repository",
+            self.head_repository,
+            "--expected-title-sha256",
+            self.digest(self.title),
+            "--expected-body-sha256",
+            self.digest(self.body),
+            "--review-input",
+            str(review_input),
+            "--review-mode",
+            "not-required",
+            "--selected-specialists",
+            "[]",
+        ]
+        cases = (
+            (
+                "text",
+                [
+                    "text",
+                    *common,
+                    "--expected-state",
+                    "draft",
+                    "--text-scope",
+                    "body-only",
+                    "--title",
+                    self.title,
+                    "--body-file",
+                    str(desired_path),
+                ],
+            ),
+            ("ready", ["ready", *common]),
+        )
+        for name, arguments in cases:
+            RECEIPTS.prepare_receipt_store(self.receipt_directory)
+            with (
+                self.subTest(consumer=name),
+                mock.patch.object(
+                    UPDATE, "_build_candidate", side_effect=self._fixture_candidate
+                ),
+                mock.patch.object(
+                    UPDATE, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                ),
+                mock.patch.object(UPDATE, "_validate_body"),
+                mock.patch.object(
+                    UPDATE,
+                    "_bind_review_input",
+                    side_effect=UPDATE_BIND_REVIEW_INPUT,
+                ),
+                mock.patch.object(
+                    UPDATE,
+                    "prepare_receipt_store",
+                    return_value=self.receipt_directory,
+                ),
+                mock.patch.object(UPDATE, "_stored_pr", return_value=self.stored()),
+                mock.patch.object(UPDATE, "_run_mutation") as mutate,
+            ):
+                status, diagnostic = self.invoke_cli(UPDATE, arguments)
+
+            self.assertEqual(status, 1)
+            self.assertIn("review input could not be admitted", diagnostic)
+            self.assertNotIn(hostile_key, diagnostic)
+            self.assertNotIn("Traceback", diagnostic)
+            mutate.assert_not_called()
+
+    def test_reconcile_cli_duplicate_review_key_is_value_free(self) -> None:
+        hostile_key = "Authorization: arbitrary-secret-value"
+        review_input = Path(self.temporary_directory.name) / "hostile-review.json"
+        review_input.write_text(
+            '{"version": 2, "' + hostile_key + '": 1, "' + hostile_key + '": 2}',
+            encoding="utf-8",
+        )
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(
+                AUDIT, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+            ),
+            mock.patch.object(
+                AUDIT, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(AUDIT, "stored_pr", return_value=self.stored()),
+            mock.patch.object(AUDIT, "record_reconciliation") as record,
+        ):
+            status, diagnostic = self.invoke_cli(
+                AUDIT,
+                [
+                    "reconcile",
+                    "--repository",
+                    self.repository,
+                    "--pr",
+                    str(self.pr_number),
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--review-input",
+                    str(review_input),
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("review input could not be admitted", diagnostic)
+        self.assertNotIn(hostile_key, diagnostic)
+        self.assertNotIn("Traceback", diagnostic)
+        record.assert_not_called()
+
+    def test_text_ready_and_reconcile_apis_bound_real_review_input_failures(
+        self,
+    ) -> None:
+        hostile = "Authorization: arbitrary-secret-value"
+        for name, payload in malformed_review_input_payloads(token_bearing=True):
+            review_input = self.write_review_input_bytes(name, payload)
+            consumers = (
+                (
+                    "text-ready",
+                    lambda: UPDATE_BIND_REVIEW_INPUT(
+                        review_input,
+                        self.expected,
+                        self.title,
+                        self.body,
+                    ),
+                ),
+                (
+                    "reconcile",
+                    lambda: AUDIT._validate_live_state(
+                        expected=self.expected,
+                        title=self.title,
+                        body=self.body,
+                        review_input_path=review_input,
+                    ),
+                ),
+            )
+            for consumer, consume in consumers:
+                with (
+                    self.subTest(case=name, entrypoint=consumer),
+                    mock.patch.object(
+                        UPDATE, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                    ),
+                    mock.patch.object(
+                        AUDIT, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                    ),
+                    self.assertRaises(STATE.PublicationError) as caught,
+                ):
+                    consume()
+
+                self.assertEqual(
+                    str(caught.exception),
+                    "review input could not be admitted; check the local file and "
+                    "regenerate it for this exact publication candidate",
+                )
+                self.assertIsNotNone(caught.exception.__cause__)
+                self.assertIsNotNone(caught.exception.__cause__.__cause__)
+                self.assertNotIn(hostile, str(caught.exception))
+                self.assertNotIn(str(review_input), str(caught.exception))
+
+    def test_text_ready_token_and_reconcile_clis_bound_real_review_input_failures(
+        self,
+    ) -> None:
+        hostile = "Authorization: arbitrary-secret-value"
+        desired_path = self.desired_body_path()
+        for name, payload in malformed_review_input_payloads(token_bearing=True):
+            review_input = self.write_review_input_bytes(name, payload)
+            common = [
+                "--repository",
+                self.repository,
+                "--pr",
+                str(self.pr_number),
+                "--base",
+                self.base,
+                "--base-oid",
+                self.base_oid,
+                "--head",
+                self.head,
+                "--head-oid",
+                self.head_oid,
+                "--head-owner",
+                self.head_owner,
+                "--head-repository",
+                self.head_repository,
+                "--expected-title-sha256",
+                self.digest(self.title),
+                "--expected-body-sha256",
+                self.digest(self.body),
+                "--review-input",
+                str(review_input),
+                "--review-mode",
+                "not-required",
+                "--selected-specialists",
+                "[]",
+            ]
+            cases = (
+                (
+                    "text",
+                    [
+                        "text",
+                        *common,
+                        "--expected-state",
+                        "draft",
+                        "--text-scope",
+                        "body-only",
+                        "--title",
+                        self.title,
+                        "--body-file",
+                        str(desired_path),
+                    ],
+                    UPDATE,
+                ),
+                (
+                    "ready-token",
+                    ["ready", *common, "--body-template", str(self.template_path)],
+                    UPDATE,
+                ),
+                (
+                    "reconcile",
+                    [
+                        "reconcile",
+                        "--repository",
+                        self.repository,
+                        "--pr",
+                        str(self.pr_number),
+                        "--base",
+                        self.base,
+                        "--base-oid",
+                        self.base_oid,
+                        "--head",
+                        self.head,
+                        "--head-oid",
+                        self.head_oid,
+                        "--head-owner",
+                        self.head_owner,
+                        "--head-repository",
+                        self.head_repository,
+                        "--review-input",
+                        str(review_input),
+                    ],
+                    AUDIT,
+                ),
+            )
+            for consumer, arguments, module in cases:
+                RECEIPTS.prepare_receipt_store(self.receipt_directory)
+                with (
+                    self.subTest(case=name, entrypoint=consumer),
+                    mock.patch.object(
+                        UPDATE, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                    ),
+                    mock.patch.object(
+                        AUDIT, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                    ),
+                    mock.patch.object(UPDATE, "_validate_body"),
+                    mock.patch.object(
+                        UPDATE,
+                        "_bind_review_input",
+                        side_effect=UPDATE_BIND_REVIEW_INPUT,
+                    ),
+                    mock.patch.object(
+                        UPDATE,
+                        "prepare_receipt_store",
+                        return_value=self.receipt_directory,
+                    ),
+                    mock.patch.object(
+                        AUDIT,
+                        "prepare_receipt_store",
+                        return_value=self.receipt_directory,
+                    ),
+                    mock.patch.object(
+                        UPDATE, "_stored_pr", return_value=self.stored()
+                    ),
+                    mock.patch.object(AUDIT, "stored_pr", return_value=self.stored()),
+                    mock.patch.object(UPDATE, "_run_mutation") as mutate,
+                    mock.patch.object(AUDIT, "record_reconciliation") as record,
+                ):
+                    status, diagnostic = self.invoke_cli(module, arguments)
+
+                self.assertEqual(status, 1)
+                self.assertIn("review input could not be admitted", diagnostic)
+                self.assertNotIn(hostile, diagnostic)
+                self.assertNotIn(str(review_input), diagnostic)
+                self.assertNotIn("Traceback", diagnostic)
+                mutate.assert_not_called()
+                record.assert_not_called()
+                self.assertEqual(
+                    RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+                )
+
+    def test_real_routes_admit_malformed_review_input_before_later_boundaries(
+        self,
+    ) -> None:
+        malformed = dict(malformed_review_input_payloads())
+        token_bearing = dict(malformed_review_input_payloads(token_bearing=True))
+        categories = (
+            "invalid-utf8",
+            "syntax",
+            "oversized-integer",
+            "excessive-nesting",
+        )
+        desired_path = self.desired_body_path()
+        cases: list[tuple[str, bytes]] = [
+            ("create-invalid-utf8", malformed["invalid-utf8"])
+        ]
+        cases.extend((f"text-{name}", malformed[name]) for name in categories)
+        cases.extend((f"ready-token-{name}", token_bearing[name]) for name in categories)
+        cases.extend((f"reconcile-{name}", malformed[name]) for name in categories)
+
+        for case, payload in cases:
+            review_input = self.write_review_input_bytes(case, payload)
+
+            def consume() -> object:
+                if case.startswith("create-"):
+                    return CREATE.publish(
+                        repository=self.repository,
+                        base=self.base,
+                        base_oid=self.base_oid,
+                        head=self.head,
+                        head_oid=self.head_oid,
+                        head_owner=self.head_owner,
+                        head_repository=self.head_repository,
+                        title=self.title,
+                        template_path=self.template_path,
+                        review_input_path=review_input,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        receipt_directory=self.receipt_directory,
+                    )
+                if case.startswith("text-"):
+                    return UPDATE.update_text(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        expected_draft=True,
+                        title=self.title,
+                        body_path=desired_path,
+                        review_input_path=review_input,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        text_scope="body-only",
+                        receipt_directory=self.receipt_directory,
+                    )
+                if case.startswith("ready-"):
+                    return UPDATE.mark_ready(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        review_input_path=review_input,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        body_template_path=self.template_path,
+                        receipt_directory=self.receipt_directory,
+                    )
+                return AUDIT.reconcile(
+                    expected=self.expected,
+                    receipt_directory=self.receipt_directory,
+                    review_input_path=review_input,
+                )
+
+            with (
+                self.subTest(case=case),
+                mock.patch.object(
+                    CREATE, "_review_input", side_effect=CREATE_REVIEW_INPUT
+                ),
+                mock.patch.object(
+                    UPDATE, "_bind_review_input", side_effect=UPDATE_BIND_REVIEW_INPUT
+                ),
+                mock.patch.object(
+                    UPDATE, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                ),
+                mock.patch.object(
+                    AUDIT, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+                ),
+                mock.patch.object(
+                    PUBLICATION_SUPPORT,
+                    "run_read",
+                    wraps=PUBLICATION_SUPPORT.run_read,
+                ) as validator_process,
+                mock.patch.object(CREATE, "_create") as create,
+                mock.patch.object(CREATE, "prepare_receipt_store") as create_store,
+                mock.patch.object(
+                    CREATE, "record_verified_publication"
+                ) as create_record,
+                mock.patch.object(
+                    UPDATE, "_stored_pr", return_value=self.stored()
+                ) as update_read,
+                mock.patch.object(UPDATE, "_run_mutation") as update_mutate,
+                mock.patch.object(UPDATE, "prepare_receipt_store") as update_store,
+                mock.patch.object(UPDATE, "prepare_receipt_ledger") as update_ledger,
+                mock.patch.object(UPDATE, "receipt_ledger_lock") as update_lock,
+                mock.patch.object(
+                    AUDIT,
+                    "prepare_receipt_store",
+                    return_value=self.receipt_directory,
+                ) as reconcile_store,
+                mock.patch.object(AUDIT, "prepare_receipt_ledger") as reconcile_ledger,
+                mock.patch.object(
+                    AUDIT,
+                    "receipt_ledger_lock",
+                    return_value=nullcontext(mock.sentinel.lease),
+                ) as reconcile_lock,
+                mock.patch.object(
+                    AUDIT, "stored_pr", return_value=self.stored()
+                ) as reconcile_read,
+                mock.patch.object(AUDIT, "record_reconciliation") as reconcile_record,
+                self.assertRaises(STATE.PublicationError) as caught,
+            ):
+                consume()
+
+            with self.subTest(case=case, evidence="cause-and-order"):
+                self.assertEqual(
+                    str(caught.exception),
+                    "review input could not be admitted; check the local file and "
+                    "regenerate it for this exact publication candidate",
+                )
+                admission_error = caught.exception.__cause__
+                self.assertIsInstance(admission_error, REVIEW_INPUT.ReviewInputError)
+                original = admission_error.__cause__
+                if "invalid-utf8" in case:
+                    self.assertIsInstance(original, UnicodeDecodeError)
+                elif "syntax" in case:
+                    self.assertIsInstance(original, json.JSONDecodeError)
+                else:
+                    self.assertEqual(type(original).__name__, "_ReviewInputAdmissionError")
+                validator_process.assert_not_called()
+                create.assert_not_called()
+                create_store.assert_not_called()
+                create_record.assert_not_called()
+                update_read.assert_not_called()
+                update_mutate.assert_not_called()
+                update_store.assert_not_called()
+                update_ledger.assert_not_called()
+                update_lock.assert_not_called()
+                reconcile_store.assert_not_called()
+                reconcile_ledger.assert_not_called()
+                reconcile_lock.assert_not_called()
+                reconcile_read.assert_not_called()
+                reconcile_record.assert_not_called()
+
+    def test_valid_schema_v3_inputs_continue_in_route_order_to_real_validator(
+        self,
+    ) -> None:
+        desired_path = self.desired_body_path()
+        desired = desired_path.read_text(encoding="utf-8")
+        cases = (
+            (
+                "text",
+                self.write_valid_review_input("valid-text", body=desired),
+                False,
+            ),
+            (
+                "ready-token",
+                self.write_valid_review_input(
+                    "valid-ready-token", body=self.body, token_bearing=True
+                ),
+                True,
+            ),
+        )
+        real_validator_process = PUBLICATION_SUPPORT.run_read
+
+        for case, review_input, token_bearing in cases:
+            events: list[str] = []
+
+            def admit(path: Path):
+                events.append("admit")
+                return ADMIT_REVIEW_INPUT(path)
+
+            def read_state(*_args: object, **_kwargs: object):
+                events.append("state-read")
+                return self.stored()
+
+            def run_validator(*args: object, **kwargs: object):
+                events.append("validator")
+                real_validator_process(*args, **kwargs)
+                raise STATE.PublicationError("stop after real validator continuation")
+
+            with (
+                self.subTest(case=case),
+                mock.patch.object(UPDATE, "_admit_review_input", side_effect=admit),
+                mock.patch.object(UPDATE, "_stored_pr", side_effect=read_state),
+                mock.patch.object(
+                    PUBLICATION_SUPPORT, "run_read", side_effect=run_validator
+                ) as validator_process,
+                mock.patch.object(UPDATE, "prepare_receipt_store") as receipt_store,
+                self.assertRaises(STATE.PublicationError),
+            ):
+                if token_bearing:
+                    UPDATE.mark_ready(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        review_input_path=review_input,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        body_template_path=self.template_path,
+                        receipt_directory=self.receipt_directory,
+                    )
+                else:
+                    UPDATE.update_text(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        expected_draft=True,
+                        title=self.title,
+                        body_path=desired_path,
+                        review_input_path=review_input,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        text_scope="body-only",
+                        receipt_directory=self.receipt_directory,
+                    )
+
+            with self.subTest(case=case, evidence="continuation-order"):
+                expected_events = (
+                    ["admit", "state-read", "validator"]
+                    if token_bearing
+                    else ["admit", "validator"]
+                )
+                self.assertEqual(events, expected_events)
+                validator_process.assert_called_once()
+                receipt_store.assert_not_called()
+
+    def test_token_ready_reads_body_template_before_external_boundaries(self) -> None:
+        review_input = self.write_valid_review_input(
+            "valid-ready-for-invalid-template",
+            body=self.body,
+            token_bearing=True,
+        )
+        invalid_template = Path(self.temporary_directory.name) / "invalid-template.md"
+        invalid_template.write_bytes(b"\xffAuthorization: arbitrary-secret-value")
+
+        with (
+            mock.patch.object(
+                UPDATE, "_admit_review_input", side_effect=ADMIT_REVIEW_INPUT
+            ),
+            mock.patch.object(UPDATE, "_stored_pr", return_value=self.stored()) as read,
+            mock.patch.object(
+                PUBLICATION_SUPPORT,
+                "run_read",
+                wraps=PUBLICATION_SUPPORT.run_read,
+            ) as validator_process,
+            mock.patch.object(UPDATE, "prepare_receipt_store") as receipt_store,
+            self.assertRaises(STATE.PublicationError) as caught,
+        ):
+            UPDATE.mark_ready(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                review_input_path=review_input,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                body_template_path=invalid_template,
+                receipt_directory=self.receipt_directory,
+            )
+
+        self.assertEqual(str(caught.exception), "body template must be valid UTF-8")
+        self.assertIsInstance(caught.exception.__cause__, UnicodeDecodeError)
+        read.assert_not_called()
+        validator_process.assert_not_called()
+        receipt_store.assert_not_called()
+
+    def test_text_cleanup_failure_after_zero_exit_rereads_without_receipt(self) -> None:
+        class CleanupFailingTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, value: bytes) -> int:
+                return len(value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise OSError("Authorization: arbitrary-secret-value")
+
+        desired_path = self.desired_body_path()
+        desired = desired_path.read_text(encoding="utf-8")
+        after = self.stored(body=desired)
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE,
+                "_stored_pr",
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
+            ) as reads,
+            mock.patch.object(
+                UPDATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ) as mutate,
+            mock.patch.object(
+                PUBLICATION_SUPPORT.tempfile,
+                "NamedTemporaryFile",
+                return_value=CleanupFailingTemporary(),
+            ),
+            self.assertRaises(UPDATE.PublicationError) as caught,
+        ):
+            UPDATE.update_text(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                expected_draft=True,
+                title=self.title,
+                body_path=desired_path,
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+                text_scope="body-only",
+            )
+
+        diagnostic = str(caught.exception)
+        self.assertIn("PR text command exited zero", diagnostic)
+        self.assertIn("private body snapshot cleanup failed", diagnostic)
+        self.assertIn("exact intended state was observed", diagnostic)
+        self.assertIn("canonical provenance was not minted", diagnostic)
+        self.assertIn("do not retry", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertEqual(mutate.call_count, 1)
+        self.assertEqual(reads.call_count, 4)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_text_failure_reread_relationship_cross_product(self) -> None:
+        class CleanupFailingTemporary:
+            name = "/synthetic/private/arbitrary-secret-value/body.md"
+
+            def write(self, value: bytes) -> int:
+                return len(value)
+
+            def flush(self) -> None:
+                return None
+
+            def close(self) -> None:
+                raise cleanup_cause
+
+        desired_path = self.desired_body_path()
+        desired = desired_path.read_text(encoding="utf-8")
+        failure_cases = (
+            (
+                "local-preparation",
+                STATE.MutationPreparationError,
+                "mutation command could not be prepared locally",
+            ),
+            (
+                "nonzero",
+                lambda: STATE.CommandRejectedError(31),
+                "mutation command rejected (return code 31)",
+            ),
+            (
+                "timeout",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value",
+                    timeout_seconds=STATE.MUTATION_TIMEOUT_SECONDS,
+                ),
+                "mutation outcome is unknown after a 30-second timeout",
+            ),
+            (
+                "malformed-zero-exit",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value", malformed_output=True
+                ),
+                "mutation command returned malformed successful output",
+            ),
+            ("cleanup", lambda: None, "private body snapshot cleanup"),
+        )
+        relationship_cases = (
+            (
+                "intended",
+                self.stored(
+                    body=desired, providerExtension={"ignored": "intended"}
+                ),
+                "final reread matched the exact intended state",
+            ),
+            (
+                "preimage",
+                self.stored(providerExtension={"ignored": "preimage"}),
+                "final reread matched the pre-mutation state",
+            ),
+            (
+                "other-valid",
+                self.stored(
+                    title="reviewer edit",
+                    body="reviewer body",
+                    providerExtension={"ignored": "other"},
+                ),
+                "final reread differed from both the pre-mutation and intended states",
+            ),
+            (
+                "unavailable",
+                None,
+                "final reread state was unavailable",
+            ),
+        )
+        for failure_name, failure_factory, classification in failure_cases:
+            for relationship_name, after, relationship in relationship_cases:
+                cleanup_cause = OSError("Authorization: arbitrary-secret-value")
+                failure = failure_factory()
+                reread_error = STATE.CommandReadError(return_code=42)
+                final_read = reread_error if after is None else after
+                mutation_result = (
+                    subprocess.CompletedProcess([], 0, "", "")
+                    if failure_name == "cleanup"
+                    else mock.DEFAULT
+                )
+                mutation_effect = None if failure_name == "cleanup" else failure
+                snapshot_patch = (
+                    mock.patch.object(
+                        PUBLICATION_SUPPORT.tempfile,
+                        "NamedTemporaryFile",
+                        return_value=CleanupFailingTemporary(),
+                    )
+                    if failure_name == "cleanup"
+                    else nullcontext()
+                )
+                with (
+                    self.subTest(
+                        process_or_cleanup=failure_name,
+                        reread=relationship_name,
+                    ),
+                    mock.patch.object(UPDATE, "_validate_body"),
+                    mock.patch.object(
+                        UPDATE,
+                        "_stored_pr",
+                        side_effect=[
+                            self.stored(),
+                            self.stored(),
+                            self.stored(),
+                            final_read,
+                        ],
+                    ) as reads,
+                    mock.patch.object(
+                        UPDATE,
+                        "_run_mutation",
+                        return_value=mutation_result,
+                        side_effect=mutation_effect,
+                    ) as mutate,
+                    mock.patch.object(UPDATE, "record_verified_publication") as record,
+                    snapshot_patch,
+                    self.assertRaises(UPDATE.PublicationError) as caught,
+                ):
+                    UPDATE.update_text(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        expected_draft=True,
+                        title=self.title,
+                        body_path=desired_path,
+                        review_input_path=self.template_path,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        receipt_directory=self.receipt_directory,
+                    )
+
+                diagnostic = str(caught.exception)
+                self.assertIn("PR text command", diagnostic)
+                self.assertIn(classification, diagnostic)
+                self.assertIn(relationship, diagnostic)
+                self.assertIn("canonical provenance was not minted", diagnostic)
+                self.assertIn("no canonical receipt was written", diagnostic)
+                self.assertIn(
+                    "no automatic retry or rollback was attempted", diagnostic
+                )
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertEqual(mutate.call_count, 1)
+                self.assertEqual(reads.call_count, 4)
+                record.assert_not_called()
+                self.assertEqual(
+                    RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+                )
+                if failure_name == "cleanup":
+                    self.assertIsInstance(
+                        caught.exception.__cause__, UPDATE.BodySnapshotError
+                    )
+                    self.assertIs(caught.exception.__cause__.__cause__, cleanup_cause)
+                else:
+                    self.assertIs(caught.exception.__cause__, failure)
+                if relationship_name == "unavailable":
+                    self.assertIs(caught.exception.reread_error, reread_error)
 
     def test_publication_and_audit_preserve_sealed_terminal_newlines(self) -> None:
         for index, ending in enumerate(("", "\n", "\n\n", "\r\n", "\r\n\r\n")):
@@ -2096,6 +6018,76 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
         path = Path(self.temporary_directory.name) / "desired.md"
         path.write_text(self.body + "updated\n", encoding="utf-8")
         return path
+
+    def test_text_and_ready_post_start_io_failures_never_retry_or_write_receipts(
+        self,
+    ) -> None:
+        desired_path = self.desired_body_path()
+        for operation in ("text", "ready"):
+            events: list[str] = []
+            io_error = OSError("Authorization: arbitrary-secret-value")
+            before = self.stored()
+            with (
+                self.subTest(operation=operation),
+                mock.patch.object(UPDATE, "_validate_body"),
+                mock.patch.object(
+                    UPDATE,
+                    "_stored_pr",
+                    side_effect=[before, before, before, before],
+                ) as reads,
+                mock.patch.object(
+                    STATE.subprocess,
+                    "Popen",
+                    post_start_io_failure_popen(events, io_error),
+                ),
+                self.assertRaises(STATE.MutationAmbiguousError) as caught,
+            ):
+                if operation == "text":
+                    UPDATE.update_text(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        expected_draft=True,
+                        title=self.title,
+                        body_path=desired_path,
+                        review_input_path=self.template_path,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        receipt_directory=self.receipt_directory,
+                    )
+                else:
+                    UPDATE.mark_ready(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        review_input_path=self.template_path,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        receipt_directory=self.receipt_directory,
+                    )
+
+            diagnostic = str(caught.exception)
+            self.assertIn("mutation outcome is unknown", diagnostic)
+            self.assertIn("mutation process started is unknown", diagnostic)
+            self.assertIn("canonical provenance was not minted", diagnostic)
+            self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+            self.assertNotIn("no process started", diagnostic)
+            self.assertNotIn("Authorization", diagnostic)
+            self.assertEqual(reads.call_count, 4)
+            self.assertEqual(
+                events,
+                [
+                    "process-created",
+                    "communicate-entered",
+                    "process-killed",
+                    "process-waited",
+                ],
+            )
+            self.assertEqual(
+                RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+            )
 
     def test_required_text_remote_drift_after_review_blocks_mutation(self) -> None:
         desired_path = self.desired_body_path()
@@ -2595,6 +6587,161 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
         )
 
+    def test_zero_exit_text_preserves_failed_reread_context(self) -> None:
+        desired_path = self.desired_body_path()
+        reread_error = STATE.CommandReadError(malformed_output=True)
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE,
+                "_stored_pr",
+                side_effect=[
+                    self.stored(),
+                    self.stored(),
+                    self.stored(),
+                    reread_error,
+                ],
+            ),
+            mock.patch.object(
+                UPDATE,
+                "_run_mutation",
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ) as run,
+            self.assertRaises(STATE.PublicationError) as raised,
+        ):
+            UPDATE.update_text(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                expected_draft=True,
+                title=self.title,
+                body_path=desired_path,
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+            )
+
+        diagnostic = str(raised.exception)
+        self.assertIn("PR text command exited zero", diagnostic)
+        self.assertIn("canonical provenance was not minted", diagnostic)
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertIn(
+            "post-mutation reread returned malformed successful output", diagnostic
+        )
+        self.assertIs(raised.exception.__cause__, reread_error)
+        self.assertIs(raised.exception.reread_error, reread_error)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_zero_exit_text_classifies_every_nonmatching_reread(self) -> None:
+        desired_path = self.desired_body_path()
+        cases = (
+            (
+                "preimage",
+                self.stored(providerExtension={"ignored": "preimage"}),
+                "matched the pre-mutation state",
+            ),
+            (
+                "other-valid",
+                self.stored(title="reviewer edit", body="reviewer body"),
+                "differed from both the pre-mutation and intended states",
+            ),
+        )
+        for name, after, relationship in cases:
+            with (
+                self.subTest(relationship=name),
+                mock.patch.object(UPDATE, "_validate_body"),
+                mock.patch.object(
+                    UPDATE,
+                    "_stored_pr",
+                    side_effect=[
+                        self.stored(),
+                        self.stored(),
+                        self.stored(),
+                        after,
+                    ],
+                ),
+                mock.patch.object(
+                    UPDATE,
+                    "_run_mutation",
+                    return_value=subprocess.CompletedProcess([], 0, "", ""),
+                ) as run,
+                self.assertRaises(UPDATE.PublicationError) as raised,
+            ):
+                UPDATE.update_text(
+                    expected=self.expected,
+                    expected_title_sha256=self.digest(self.title),
+                    expected_body_sha256=self.digest(self.body),
+                    expected_draft=True,
+                    title=self.title,
+                    body_path=desired_path,
+                    review_input_path=self.template_path,
+                    review_mode="not-required",
+                    review_bundle_root=None,
+                    selected_specialists=[],
+                    receipt_directory=self.receipt_directory,
+                )
+
+            diagnostic = str(raised.exception)
+            self.assertIn("PR text command exited zero", diagnostic)
+            self.assertIn(relationship, diagnostic)
+            self.assertIn("causality remains unresolved", diagnostic)
+            self.assertIn("no canonical receipt was written", diagnostic)
+            self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+            self.assertNotIn("was not stored", diagnostic)
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(
+                RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+            )
+
+    def test_text_malformed_successful_output_never_mints_provenance(self) -> None:
+        desired_path = self.desired_body_path()
+        after = self.stored(body=desired_path.read_text())
+        completed = subprocess.CompletedProcess(
+            [], 0, b"\xffarbitrary-secret-value", b"\xfeAuthorization"
+        )
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE,
+                "_stored_pr",
+                side_effect=[self.stored(), self.stored(), self.stored(), after],
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", return_value=completed
+            ) as run,
+        ):
+            with self.assertRaisesRegex(
+                STATE.MutationAmbiguousError, "canonical provenance was not minted"
+            ) as raised:
+                UPDATE.update_text(
+                    expected=self.expected,
+                    expected_title_sha256=self.digest(self.title),
+                    expected_body_sha256=self.digest(self.body),
+                    expected_draft=True,
+                    title=self.title,
+                    body_path=desired_path,
+                    review_input_path=self.template_path,
+                    review_mode="not-required",
+                    review_bundle_root=None,
+                    selected_specialists=[],
+                    receipt_directory=self.receipt_directory,
+                )
+
+        diagnostic = str(raised.exception)
+        self.assertIn("mutation outcome is unknown", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("codec", diagnostic)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
     def test_text_nonzero_with_matching_state_is_not_canonical(self) -> None:
         desired_path = self.desired_body_path()
         after = self.stored(body=desired_path.read_text())
@@ -2661,6 +6808,248 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                 )
         self.assertEqual(run.call_count, 1)
 
+    def test_update_cli_keeps_rejection_diagnostic_when_reread_times_out(
+        self,
+    ) -> None:
+        desired_path = self.desired_body_path()
+        stdout, stderr = self.hostile_command_output()
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        read_count = 0
+
+        def stored_pr(*arguments: object) -> dict[str, object]:
+            nonlocal read_count
+            read_count += 1
+            if read_count < 4:
+                return self.stored()
+            return STATE.stored_pr(*arguments)
+
+        command_results = [
+            subprocess.CompletedProcess([], 29, stdout, stderr),
+            subprocess.TimeoutExpired(
+                ["gh", "pr", "view"],
+                STATE.READ_TIMEOUT_SECONDS,
+                output=stdout,
+                stderr=stderr,
+            ),
+        ]
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(UPDATE, "_stored_pr", side_effect=stored_pr),
+            mock.patch.object(
+                UPDATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", side_effect=command_results
+            ) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                UPDATE,
+                [
+                    "text",
+                    "--repository",
+                    self.repository,
+                    "--pr",
+                    str(self.pr_number),
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--expected-title-sha256",
+                    self.digest(self.title),
+                    "--expected-body-sha256",
+                    self.digest(self.body),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                    "--expected-state",
+                    "draft",
+                    "--text-scope",
+                    "body-only",
+                    "--title",
+                    self.title,
+                    "--body-file",
+                    str(desired_path),
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("PR text command failed", diagnostic)
+        self.assertIn("mutation command rejected (return code 29)", diagnostic)
+        self.assertIn("post-mutation reread timed out after 30 seconds", diagnostic)
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("forged diagnostic", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
+        self.assertLess(len(diagnostic), 2000)
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_update_cli_reports_timeout_as_unknown_without_retry(self) -> None:
+        desired_path = self.desired_body_path()
+        stdout, stderr = self.hostile_command_output()
+        before = self.stored()
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        timeout = subprocess.TimeoutExpired(
+            ["gh", "pr", "edit"],
+            STATE.MUTATION_TIMEOUT_SECONDS,
+            output=stdout,
+            stderr=stderr,
+        )
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, before, before, before]
+            ),
+            mock.patch.object(
+                UPDATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(STATE.subprocess, "run", side_effect=timeout) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                UPDATE,
+                [
+                    "text",
+                    "--repository",
+                    self.repository,
+                    "--pr",
+                    str(self.pr_number),
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--expected-title-sha256",
+                    self.digest(self.title),
+                    "--expected-body-sha256",
+                    self.digest(self.body),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                    "--expected-state",
+                    "draft",
+                    "--text-scope",
+                    "body-only",
+                    "--title",
+                    self.title,
+                    "--body-file",
+                    str(desired_path),
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("PR text command was ambiguous", diagnostic)
+        self.assertIn(
+            "mutation outcome is unknown after a 30-second timeout", diagnostic
+        )
+        self.assertIn("do not retry", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("forged diagnostic", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
+        self.assertLess(len(diagnostic), 2000)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_text_cli_safely_reports_broad_os_failure_as_unknown(self) -> None:
+        desired_path = self.desired_body_path()
+        launch_error = OSError(
+            "/synthetic/arbitrary-secret-value/gh: Authorization\x1b[31m"
+        )
+        before = self.stored()
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, before, before, before]
+            ),
+            mock.patch.object(
+                UPDATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", side_effect=launch_error
+            ) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                UPDATE,
+                [
+                    "text",
+                    "--repository",
+                    self.repository,
+                    "--pr",
+                    str(self.pr_number),
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--expected-title-sha256",
+                    self.digest(self.title),
+                    "--expected-body-sha256",
+                    self.digest(self.body),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                    "--expected-state",
+                    "draft",
+                    "--text-scope",
+                    "body-only",
+                    "--title",
+                    self.title,
+                    "--body-file",
+                    str(desired_path),
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("PR text command was ambiguous", diagnostic)
+        self.assertIn("mutation outcome is unknown", diagnostic)
+        self.assertNotIn("no process started", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("OSError", diagnostic)
+        self.assertNotIn("Traceback", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
     def test_text_ambiguous_drift_is_not_retried_or_rolled_back(self) -> None:
         desired_path = self.desired_body_path()
         concurrent = self.stored(title="reviewer edit", body="reviewer body")
@@ -2678,7 +7067,7 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             ) as run,
         ):
             with self.assertRaisesRegex(
-                UPDATE.PublicationError, "no retry or rollback"
+                UPDATE.PublicationError, "no automatic retry or rollback"
             ):
                 UPDATE.update_text(
                     expected=self.expected,
@@ -2734,22 +7123,196 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
             RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
         )
 
-    def test_ready_nonzero_with_matching_state_is_not_canonical(self) -> None:
-        before = self.stored()
-        after = self.stored(is_draft=False)
+    def test_zero_exit_ready_preserves_failed_reread_context(self) -> None:
+        reread_error = STATE.CommandReadError(timeout_seconds=17)
         with (
             mock.patch.object(UPDATE, "_validate_body"),
             mock.patch.object(
-                UPDATE, "_stored_pr", side_effect=[before, before, before, after]
+                UPDATE,
+                "_stored_pr",
+                side_effect=[
+                    self.stored(),
+                    self.stored(),
+                    self.stored(),
+                    reread_error,
+                ],
             ),
             mock.patch.object(
                 UPDATE,
                 "_run_mutation",
-                side_effect=UPDATE.PublicationError("nonzero"),
-            ),
+                return_value=subprocess.CompletedProcess([], 0, "", ""),
+            ) as run,
+            self.assertRaises(STATE.PublicationError) as raised,
         ):
-            with self.assertRaisesRegex(
-                UPDATE.PublicationError, "canonical provenance was not minted"
+            UPDATE.mark_ready(
+                expected=self.expected,
+                expected_title_sha256=self.digest(self.title),
+                expected_body_sha256=self.digest(self.body),
+                review_input_path=self.template_path,
+                review_mode="not-required",
+                review_bundle_root=None,
+                selected_specialists=[],
+                receipt_directory=self.receipt_directory,
+            )
+
+        diagnostic = str(raised.exception)
+        self.assertIn("ready command exited zero", diagnostic)
+        self.assertIn("canonical provenance was not minted", diagnostic)
+        self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+        self.assertIn("post-mutation reread timed out after 17 seconds", diagnostic)
+        self.assertIs(raised.exception.__cause__, reread_error)
+        self.assertIs(raised.exception.reread_error, reread_error)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_ready_failure_reread_relationship_cross_product(self) -> None:
+        failure_cases = (
+            (
+                "local-preparation",
+                STATE.MutationPreparationError,
+                "mutation command could not be prepared locally",
+            ),
+            (
+                "nonzero",
+                lambda: STATE.CommandRejectedError(31),
+                "mutation command rejected (return code 31)",
+            ),
+            (
+                "timeout",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value",
+                    timeout_seconds=STATE.MUTATION_TIMEOUT_SECONDS,
+                ),
+                "mutation outcome is unknown after a 30-second timeout",
+            ),
+            (
+                "malformed-zero-exit",
+                lambda: STATE.MutationAmbiguousError(
+                    "Authorization: arbitrary-secret-value", malformed_output=True
+                ),
+                "mutation command returned malformed successful output",
+            ),
+        )
+        relationship_cases = (
+            (
+                "intended",
+                self.stored(
+                    is_draft=False,
+                    providerExtension={"ignored": "intended"},
+                ),
+                "final reread matched the exact intended state",
+            ),
+            (
+                "preimage",
+                self.stored(providerExtension={"ignored": "preimage"}),
+                "final reread matched the pre-mutation state",
+            ),
+            (
+                "other-valid",
+                self.stored(
+                    title="reviewer edit",
+                    body="reviewer body",
+                    providerExtension={"ignored": "other"},
+                ),
+                "final reread differed from both the pre-mutation and intended states",
+            ),
+            (
+                "unavailable",
+                None,
+                "final reread state was unavailable",
+            ),
+        )
+        for failure_name, failure_factory, classification in failure_cases:
+            for relationship_name, after, relationship in relationship_cases:
+                failure = failure_factory()
+                reread_error = STATE.CommandReadError(return_code=42)
+                final_read = reread_error if after is None else after
+                with (
+                    self.subTest(process=failure_name, reread=relationship_name),
+                    mock.patch.object(UPDATE, "_validate_body"),
+                    mock.patch.object(
+                        UPDATE,
+                        "_stored_pr",
+                        side_effect=[
+                            self.stored(),
+                            self.stored(),
+                            self.stored(),
+                            final_read,
+                        ],
+                    ) as reads,
+                    mock.patch.object(
+                        UPDATE, "_run_mutation", side_effect=failure
+                    ) as mutate,
+                    mock.patch.object(UPDATE, "record_verified_publication") as record,
+                    self.assertRaises(UPDATE.PublicationError) as caught,
+                ):
+                    UPDATE.mark_ready(
+                        expected=self.expected,
+                        expected_title_sha256=self.digest(self.title),
+                        expected_body_sha256=self.digest(self.body),
+                        review_input_path=self.template_path,
+                        review_mode="not-required",
+                        review_bundle_root=None,
+                        selected_specialists=[],
+                        receipt_directory=self.receipt_directory,
+                    )
+
+                diagnostic = str(caught.exception)
+                self.assertIn("ready command", diagnostic)
+                self.assertIn(classification, diagnostic)
+                self.assertIn(relationship, diagnostic)
+                self.assertIn("canonical provenance was not minted", diagnostic)
+                self.assertIn("no canonical receipt was written", diagnostic)
+                self.assertIn(
+                    "no automatic retry or rollback was attempted", diagnostic
+                )
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertEqual(mutate.call_count, 1)
+                self.assertEqual(reads.call_count, 4)
+                record.assert_not_called()
+                self.assertEqual(
+                    RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+                )
+                self.assertIs(caught.exception.__cause__, failure)
+                if relationship_name == "unavailable":
+                    self.assertIs(caught.exception.reread_error, reread_error)
+
+    def test_zero_exit_ready_classifies_every_nonmatching_reread(self) -> None:
+        cases = (
+            (
+                "preimage",
+                self.stored(providerExtension={"ignored": "preimage"}),
+                "matched the pre-mutation state",
+            ),
+            (
+                "other-valid",
+                self.stored(title="reviewer edit", body="reviewer body"),
+                "differed from both the pre-mutation and intended states",
+            ),
+        )
+        for name, after, relationship in cases:
+            with (
+                self.subTest(relationship=name),
+                mock.patch.object(UPDATE, "_validate_body"),
+                mock.patch.object(
+                    UPDATE,
+                    "_stored_pr",
+                    side_effect=[
+                        self.stored(),
+                        self.stored(),
+                        self.stored(),
+                        after,
+                    ],
+                ),
+                mock.patch.object(
+                    UPDATE,
+                    "_run_mutation",
+                    return_value=subprocess.CompletedProcess([], 0, "", ""),
+                ) as run,
+                self.assertRaises(UPDATE.PublicationError) as raised,
             ):
                 UPDATE.mark_ready(
                     expected=self.expected,
@@ -2761,6 +7324,88 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                     selected_specialists=[],
                     receipt_directory=self.receipt_directory,
                 )
+
+            diagnostic = str(raised.exception)
+            self.assertIn("ready command exited zero", diagnostic)
+            self.assertIn(relationship, diagnostic)
+            self.assertIn("causality remains unresolved", diagnostic)
+            self.assertIn("no canonical receipt was written", diagnostic)
+            self.assertIn("no automatic retry or rollback was attempted", diagnostic)
+            self.assertNotIn("remains a verified canonical draft", diagnostic)
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(
+                RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+            )
+
+    def test_ready_malformed_successful_output_never_mints_provenance(self) -> None:
+        before = self.stored()
+        after = self.stored(is_draft=False)
+        completed = subprocess.CompletedProcess(
+            [], 0, b"\xffarbitrary-secret-value", b"\xfeAuthorization"
+        )
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, before, before, after]
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", return_value=completed
+            ) as run,
+        ):
+            with self.assertRaisesRegex(
+                STATE.MutationAmbiguousError, "canonical provenance was not minted"
+            ) as raised:
+                UPDATE.mark_ready(
+                    expected=self.expected,
+                    expected_title_sha256=self.digest(self.title),
+                    expected_body_sha256=self.digest(self.body),
+                    review_input_path=self.template_path,
+                    review_mode="not-required",
+                    review_bundle_root=None,
+                    selected_specialists=[],
+                    receipt_directory=self.receipt_directory,
+                )
+
+        diagnostic = str(raised.exception)
+        self.assertIn("mutation outcome is unknown", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("codec", diagnostic)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
+
+    def test_ready_nonzero_with_matching_state_is_not_canonical(self) -> None:
+        before = self.stored()
+        after = self.stored(is_draft=False)
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, before, before, after]
+            ),
+            mock.patch.object(
+                UPDATE,
+                "_run_mutation",
+                side_effect=STATE.CommandRejectedError(37),
+            ),
+        ):
+            with self.assertRaisesRegex(
+                UPDATE.PublicationError, "canonical provenance was not minted"
+            ) as raised:
+                UPDATE.mark_ready(
+                    expected=self.expected,
+                    expected_title_sha256=self.digest(self.title),
+                    expected_body_sha256=self.digest(self.body),
+                    review_input_path=self.template_path,
+                    review_mode="not-required",
+                    review_bundle_root=None,
+                    selected_specialists=[],
+                    receipt_directory=self.receipt_directory,
+                )
+        self.assertIn(
+            "mutation command rejected (return code 37)", str(raised.exception)
+        )
         self.assertEqual(
             RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
         )
@@ -2790,6 +7435,71 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                     receipt_directory=self.receipt_directory,
                 )
         self.assertEqual(run.call_count, 1)
+
+    def test_ready_cli_safely_reports_broad_os_failure_as_unknown(self) -> None:
+        launch_error = OSError(
+            "/synthetic/arbitrary-secret-value/gh: Authorization\x1b[31m"
+        )
+        before = self.stored()
+        RECEIPTS.prepare_receipt_store(self.receipt_directory)
+        with (
+            mock.patch.object(UPDATE, "_validate_body"),
+            mock.patch.object(
+                UPDATE, "_stored_pr", side_effect=[before, before, before, before]
+            ),
+            mock.patch.object(
+                UPDATE, "prepare_receipt_store", return_value=self.receipt_directory
+            ),
+            mock.patch.object(
+                STATE.subprocess, "run", side_effect=launch_error
+            ) as run,
+        ):
+            status, diagnostic = self.invoke_cli(
+                UPDATE,
+                [
+                    "ready",
+                    "--repository",
+                    self.repository,
+                    "--pr",
+                    str(self.pr_number),
+                    "--base",
+                    self.base,
+                    "--base-oid",
+                    self.base_oid,
+                    "--head",
+                    self.head,
+                    "--head-oid",
+                    self.head_oid,
+                    "--head-owner",
+                    self.head_owner,
+                    "--head-repository",
+                    self.head_repository,
+                    "--expected-title-sha256",
+                    self.digest(self.title),
+                    "--expected-body-sha256",
+                    self.digest(self.body),
+                    "--review-input",
+                    str(self.template_path),
+                    "--review-mode",
+                    "not-required",
+                    "--selected-specialists",
+                    "[]",
+                ],
+            )
+
+        self.assertEqual(status, 1)
+        self.assertIn("ready command was ambiguous", diagnostic)
+        self.assertIn("mutation outcome is unknown", diagnostic)
+        self.assertNotIn("no process started", diagnostic)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+        self.assertNotIn("OSError", diagnostic)
+        self.assertNotIn("Traceback", diagnostic)
+        self.assertNotIn("\x1b", diagnostic)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(
+            RECEIPTS.load_receipts(self.receipt_directory, self.expected), []
+        )
 
     def test_ready_rechecks_exact_preimage_after_body_validation(self) -> None:
         concurrent = self.stored(title="reviewer edit", body="reviewer body")
@@ -3384,10 +8094,642 @@ class PublicationReconciliationIntegrationTests(unittest.TestCase):
 
 
 class PublicationReceiptTests(ReviewablePrFixture):
+    def test_audit_post_start_read_io_failure_is_value_free_and_read_only(
+        self,
+    ) -> None:
+        self.canonical_receipt()
+        receipts_before = {
+            path: path.read_bytes() for path in self.receipt_directory.rglob("*.json")
+        }
+        events: list[str] = []
+        io_error = OSError("Authorization: arbitrary-secret-value")
+        with mock.patch.object(
+            STATE.subprocess,
+            "Popen",
+            post_start_io_failure_popen(events, io_error),
+        ):
+            result = AUDIT.audit(
+                expected=self.expected,
+                receipt_directory=self.receipt_directory,
+            )
+
+        self.assertEqual(result.status, "unavailable")
+        self.assertIsNotNone(result.reason)
+        self.assertIn("read process started is unknown", result.reason)
+        self.assertNotIn("Authorization", result.reason)
+        self.assertNotIn("could not start", result.reason)
+        self.assertEqual(
+            events,
+            [
+                "process-created",
+                "communicate-entered",
+                "process-killed",
+                "process-waited",
+            ],
+        )
+        self.assertEqual(
+            {
+                path: path.read_bytes()
+                for path in self.receipt_directory.rglob("*.json")
+            },
+            receipts_before,
+        )
+
     def setUp(self) -> None:
         super().setUp()
         self.receipt_directory = Path(self.temporary_directory.name) / "receipts"
         RECEIPTS.prepare_receipt_store(self.receipt_directory)
+
+    def test_receipt_json_parser_bounds_numbers_and_nesting(self) -> None:
+        secret = "Authorization: synthetic-secret"
+        cases = (
+            ("non-finite-exponent", b'{"value":1e9999}', "non-finite"),
+            (
+                "oversized-integer",
+                ('{"value":' + "9" * 5_000 + "}").encode(),
+                "invalid JSON",
+            ),
+            (
+                "excessive-nesting",
+                ("[" * 2_000 + json.dumps(secret) + "]" * 2_000).encode(),
+                "invalid JSON",
+            ),
+        )
+        for name, raw, classification in cases:
+            with self.subTest(name=name):
+                with self.assertRaisesRegex(
+                    RECEIPTS.ReceiptError, classification
+                ) as caught:
+                    RECEIPTS._strict_json(raw)
+                self.assertNotIn(secret, str(caught.exception))
+                self.assertIsNotNone(caught.exception.__cause__)
+
+    def test_receipt_parser_rejects_lone_surrogate_values_and_keys(self) -> None:
+        for name, mutate in (
+            (
+                "value",
+                lambda payload: payload["identity"].__setitem__(
+                    "base", "Authorization: arbitrary-secret-value\ud800"
+                ),
+            ),
+            (
+                "key",
+                lambda payload: payload["identity"].__setitem__(
+                    "Authorization: arbitrary-secret-value\ud800", "ignored"
+                ),
+            ),
+        ):
+            root = Path(self.temporary_directory.name) / f"malformed-{name}"
+            RECEIPTS.prepare_receipt_store(root)
+            self.canonical_receipt(root=root)
+            path = next(root.rglob("*.json"))
+            payload = json.loads(path.read_bytes())
+            mutate(payload)
+            path.write_bytes(
+                json.dumps(
+                    payload,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=True,
+                ).encode("utf-8")
+                + b"\n"
+            )
+            ledger_before = {
+                item: item.read_bytes() for item in root.rglob("*.json")
+            }
+
+            with self.subTest(location=name):
+                with self.assertRaisesRegex(
+                    RECEIPTS.ReceiptError, "malformed UTF-8 scalar text"
+                ) as caught:
+                    RECEIPTS.load_receipts(root, self.expected)
+
+                self.assertIsInstance(caught.exception.__cause__, UnicodeEncodeError)
+                diagnostic = str(caught.exception)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                read_live = mock.Mock(return_value=self.stored())
+                audited = RECEIPTS.audit_publication(
+                    root=root,
+                    expected=self.expected,
+                    read_live=read_live,
+                )
+                self.assertEqual(audited.status, "unavailable")
+                self.assertIsNone(audited.receipt)
+                self.assertEqual(
+                    audited.reason, "receipt ledger is unavailable or invalid"
+                )
+                read_live.assert_not_called()
+                self.assertEqual(
+                    {item: item.read_bytes() for item in root.rglob("*.json")},
+                    ledger_before,
+                )
+
+    def test_canonical_receipt_encoding_failure_is_value_free_and_chained(
+        self,
+    ) -> None:
+        with self.assertRaisesRegex(
+            RECEIPTS.ReceiptError, "canonical receipt encoding failed"
+        ) as caught:
+            RECEIPTS._canonical(
+                {"field": "Authorization: arbitrary-secret-value\ud800"}
+            )
+
+        self.assertIsInstance(caught.exception.__cause__, UnicodeEncodeError)
+        diagnostic = str(caught.exception)
+        self.assertNotIn("arbitrary-secret-value", diagnostic)
+        self.assertNotIn("Authorization", diagnostic)
+
+    def test_receipt_parser_and_audit_preserve_valid_unicode_across_v2_v3_v4(
+        self,
+    ) -> None:
+        self.base = "maïn-雪"
+        admitted = RECEIPTS._strict_json(
+            '{"clé-雪":"café-🙂"}'.encode("utf-8")
+        )
+        self.assertEqual(admitted, {"clé-雪": "café-🙂"})
+
+        for schema_version in (2, 3, 4):
+            root = Path(self.temporary_directory.name) / f"unicode-v{schema_version}"
+            RECEIPTS.prepare_receipt_store(root)
+            self.canonical_receipt(root=root)
+            path = next(root.rglob("*.json"))
+            payload = json.loads(path.read_bytes())
+            payload["schema_version"] = schema_version
+            if schema_version == 2:
+                del payload["review"]
+            rewritten = self.rewrite_receipt(path, payload)
+            raw = rewritten.read_bytes()
+            self.assertIn("maïn-雪".encode("utf-8"), raw)
+
+            with self.subTest(schema_version=schema_version):
+                loaded = RECEIPTS.load_receipts(root, self.expected)
+                self.assertEqual(len(loaded), 1)
+                self.assertEqual(loaded[0].schema_version, schema_version)
+                self.assertEqual(loaded[0].expected.base, "maïn-雪")
+                ledger_before = {
+                    item: item.read_bytes() for item in root.rglob("*.json")
+                }
+                read_live = mock.Mock(return_value=self.stored())
+                audited = RECEIPTS.audit_publication(
+                    root=root,
+                    expected=self.expected,
+                    read_live=read_live,
+                )
+                self.assertEqual(audited.status, "verified")
+                self.assertEqual(audited.receipt, loaded[0])
+                read_live.assert_called_once_with()
+                self.assertEqual(
+                    {item: item.read_bytes() for item in root.rglob("*.json")},
+                    ledger_before,
+                )
+
+    def test_audit_malformed_successful_read_is_unavailable(self) -> None:
+        RECEIPTS.prepare_receipt_ledger(self.receipt_directory, self.expected)
+        completed = subprocess.CompletedProcess(
+            [], 0, b"\xffarbitrary-secret-value", b"\xfeAuthorization"
+        )
+        with mock.patch.object(STATE.subprocess, "run", return_value=completed):
+            result = AUDIT.audit(
+                expected=self.expected,
+                receipt_directory=self.receipt_directory,
+            )
+
+        self.assertEqual(result.status, "unavailable")
+        self.assertIn("live PR state read returned malformed successful output", result.reason)
+        self.assertIn("strict UTF-8 was required", result.reason)
+        rendered = json.dumps(result.as_json(), sort_keys=True)
+        self.assertNotIn("arbitrary-secret-value", rendered)
+        self.assertNotIn("Authorization", rendered)
+        self.assertNotIn("UnicodeDecodeError", rendered)
+        self.assertNotIn("codec", rendered)
+
+    def test_audit_direct_reader_admits_live_state_before_comparison(self) -> None:
+        receipt = self.canonical_receipt()
+        receipts_before = {
+            path: path.read_bytes() for path in self.receipt_directory.rglob("*.json")
+        }
+
+        for name, observation, reason in (
+            (
+                "incomplete",
+                {"number": self.pr_number},
+                "live PR state read returned an incomplete response",
+            ),
+            (
+                "wrong-type",
+                self.stored(body=["Authorization: arbitrary-secret-value"]),
+                "live PR state read returned a malformed response",
+            ),
+            (
+                "lone-surrogate",
+                self.stored(title="Authorization: arbitrary-secret-value\ud800"),
+                "live PR state read returned a malformed response",
+            ),
+        ):
+            with self.subTest(name=name):
+                result = RECEIPTS.audit_publication(
+                    root=self.receipt_directory,
+                    expected=self.expected,
+                    read_live=lambda observation=observation: observation,
+                )
+                self.assertEqual(result.status, "unavailable")
+                self.assertEqual(result.reason, reason)
+                rendered = json.dumps(result.as_json(), sort_keys=True)
+                self.assertNotIn("arbitrary-secret-value", rendered)
+                self.assertNotIn("Authorization", rendered)
+                self.assertNotIn("Traceback", rendered)
+
+        for name, observation in (
+            ("text", self.stored(title="changed")),
+            ("identity", self.stored(headRefOid="c" * 40)),
+            ("state", self.stored(state="CLOSED")),
+        ):
+            with self.subTest(name=name):
+                result = RECEIPTS.audit_publication(
+                    root=self.receipt_directory,
+                    expected=self.expected,
+                    read_live=lambda observation=observation: observation,
+                )
+                self.assertEqual(result.status, "drift")
+
+        matched = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=lambda: self.stored(providerExtension={"ignored": True}),
+        )
+        self.assertEqual(matched.status, "verified")
+        self.assertEqual(matched.receipt, receipt)
+        self.assertEqual(
+            {
+                path: path.read_bytes()
+                for path in self.receipt_directory.rglob("*.json")
+            },
+            receipts_before,
+        )
+
+        unicode_match = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=lambda: self.stored(title="feat: café 😀", body="λ 🚀"),
+        )
+        self.assertEqual(unicode_match.status, "drift")
+        self.assertEqual(
+            {
+                path: path.read_bytes()
+                for path in self.receipt_directory.rglob("*.json")
+            },
+            receipts_before,
+        )
+
+    def test_audit_cli_preserves_safe_read_failure_classifications(self) -> None:
+        self.canonical_receipt()
+        original_audit = AUDIT.audit
+        receipts_before = {
+            path: path.read_bytes() for path in self.receipt_directory.rglob("*.json")
+        }
+
+        def local_audit(*, expected: STATE.ExpectedIdentity):
+            return original_audit(
+                expected=expected,
+                receipt_directory=self.receipt_directory,
+            )
+
+        arguments = [
+            str(AUDIT.__file__),
+            "audit",
+            "--repository",
+            self.repository,
+            "--pr",
+            str(self.pr_number),
+            "--base",
+            self.base,
+            "--base-oid",
+            self.base_oid,
+            "--head",
+            self.head,
+            "--head-oid",
+            self.head_oid,
+            "--head-owner",
+            self.head_owner,
+            "--head-repository",
+            self.head_repository,
+        ]
+        wrongly_typed = self.stored()
+        wrongly_typed["body"] = ["Authorization: Bearer arbitrary-secret-value"]
+        cases = (
+            (
+                "broad-os-failure",
+                OSError("/synthetic/arbitrary-secret-value/gh: Authorization\x1b[31m"),
+                "live PR state read failed during process launch or communication; "
+                "whether the read process started is unknown",
+            ),
+            (
+                "timeout",
+                subprocess.TimeoutExpired(
+                    "/synthetic/arbitrary-secret-value/gh",
+                    STATE.READ_TIMEOUT_SECONDS,
+                    output=b"Authorization",
+                ),
+                f"live PR state read timed out after {STATE.READ_TIMEOUT_SECONDS} seconds",
+            ),
+            (
+                "return-code",
+                subprocess.CompletedProcess(
+                    [], 55, b"arbitrary-secret-value", b"Authorization"
+                ),
+                "live PR state read was rejected (return code 55)",
+            ),
+            (
+                "malformed-output",
+                subprocess.CompletedProcess(
+                    [], 0, b"\xffarbitrary-secret-value", b"\xfeAuthorization"
+                ),
+                "live PR state read returned malformed successful output; strict "
+                "UTF-8 was required",
+            ),
+            (
+                "invalid-json",
+                subprocess.CompletedProcess(
+                    [],
+                    0,
+                    b'{"number": 42, "body": "Authorization: arbitrary-secret-value"',
+                    b"X-Api-Key: arbitrary-secret-value",
+                ),
+                "live PR state read returned invalid JSON",
+            ),
+            (
+                "duplicate-json-key",
+                subprocess.CompletedProcess(
+                    [],
+                    0,
+                    (
+                        b'{"number": 42, "number": 43, '
+                        b'"Authorization": "arbitrary-secret-value"}'
+                    ),
+                    b"X-Api-Key: arbitrary-secret-value",
+                ),
+                "live PR state read returned JSON with duplicate object keys",
+            ),
+            (
+                "non-finite-json",
+                subprocess.CompletedProcess(
+                    [],
+                    0,
+                    b'{"number": 42, "Authorization": NaN}',
+                    b"X-Api-Key: arbitrary-secret-value",
+                ),
+                "live PR state read returned JSON with a non-finite value",
+            ),
+            (
+                "incomplete-response",
+                subprocess.CompletedProcess(
+                    [],
+                    0,
+                    b'{"number": 42, "Authorization": "arbitrary-secret-value"}',
+                    b"X-Api-Key: arbitrary-secret-value",
+                ),
+                "live PR state read returned an incomplete response",
+            ),
+            (
+                "malformed-response",
+                subprocess.CompletedProcess(
+                    [],
+                    0,
+                    json.dumps(wrongly_typed).encode("utf-8"),
+                    b"X-Api-Key: arbitrary-secret-value",
+                ),
+                "live PR state read returned a malformed response",
+            ),
+        )
+        for name, subprocess_result, classification in cases:
+            with self.subTest(name=name):
+                stdout = io.StringIO()
+                stderr = io.StringIO()
+                run_kwargs = (
+                    {"side_effect": subprocess_result}
+                    if isinstance(subprocess_result, BaseException)
+                    else {"return_value": subprocess_result}
+                )
+                with (
+                    mock.patch.object(AUDIT, "audit", side_effect=local_audit),
+                    mock.patch.object(STATE.subprocess, "run", **run_kwargs),
+                    mock.patch.object(sys, "argv", arguments),
+                    mock.patch.object(sys, "stdout", stdout),
+                    mock.patch.object(sys, "stderr", stderr),
+                ):
+                    status = AUDIT.main()
+
+                diagnostic = stdout.getvalue() + stderr.getvalue()
+                self.assertEqual(status, 1)
+                self.assertEqual(json.loads(stdout.getvalue())["status"], "unavailable")
+                self.assertIn(classification, diagnostic)
+                self.assertNotIn("post-mutation", diagnostic)
+                self.assertNotIn("arbitrary-secret-value", diagnostic)
+                self.assertNotIn("Authorization", diagnostic)
+                self.assertNotIn("OSError", diagnostic)
+                self.assertNotIn("TimeoutExpired", diagnostic)
+                self.assertEqual(
+                    {
+                        path: path.read_bytes()
+                        for path in self.receipt_directory.rglob("*.json")
+                    },
+                    receipts_before,
+                )
+                self.assertNotIn("Traceback", diagnostic)
+                self.assertNotIn("\x1b", diagnostic)
+
+        for expected_status, expected_exit, observation in (
+            ("verified", 0, self.stored(providerExtension={"ignored": True})),
+            ("drift", 1, self.stored(title="changed")),
+            ("drift", 1, self.stored(state="MERGED")),
+        ):
+            with self.subTest(
+                expected_status=expected_status, state=observation["state"]
+            ):
+                stdout = io.StringIO()
+                stderr = io.StringIO()
+                completed = subprocess.CompletedProcess(
+                    [], 0, json.dumps(observation).encode("utf-8"), b""
+                )
+                with (
+                    mock.patch.object(AUDIT, "audit", side_effect=local_audit),
+                    mock.patch.object(
+                        STATE.subprocess, "run", return_value=completed
+                    ) as read,
+                    mock.patch.object(sys, "argv", arguments),
+                    mock.patch.object(sys, "stdout", stdout),
+                    mock.patch.object(sys, "stderr", stderr),
+                ):
+                    status = AUDIT.main()
+
+                self.assertEqual(status, expected_exit)
+                self.assertEqual(
+                    json.loads(stdout.getvalue())["status"], expected_status
+                )
+                self.assertEqual(stderr.getvalue(), "")
+                self.assertEqual(read.call_count, 1)
+                self.assertIn("view", read.call_args.args[0])
+                self.assertEqual(
+                    {
+                        path: path.read_bytes()
+                        for path in self.receipt_directory.rglob("*.json")
+                    },
+                    receipts_before,
+                )
+
+    def test_audit_cli_process_admits_observations_without_writing_receipts(
+        self,
+    ) -> None:
+        root = Path(self.temporary_directory.name)
+        state_home = root / "state"
+        receipt_root = state_home / "mergecraft/pr-publication-receipts"
+        RECEIPTS.prepare_receipt_store(receipt_root)
+        self.canonical_receipt(root=receipt_root)
+        receipts_before = {
+            path.relative_to(receipt_root): path.read_bytes()
+            for path in receipt_root.rglob("*")
+            if path.is_file()
+        }
+
+        provider_output = root / "provider-output"
+        executable_directory = root / "bin"
+        executable_directory.mkdir()
+        fake_gh = executable_directory / "gh"
+        fake_gh.write_text(
+            f"#!{sys.executable}\n"
+            "import sys\n"
+            "from pathlib import Path\n"
+            f"sys.stdout.buffer.write(Path({str(provider_output)!r}).read_bytes())\n",
+            encoding="utf-8",
+        )
+        fake_gh.chmod(0o700)
+        arguments = [
+            sys.executable,
+            str(AUDIT.__file__),
+            "audit",
+            "--repository",
+            self.repository,
+            "--pr",
+            str(self.pr_number),
+            "--base",
+            self.base,
+            "--base-oid",
+            self.base_oid,
+            "--head",
+            self.head,
+            "--head-oid",
+            self.head_oid,
+            "--head-owner",
+            self.head_owner,
+            "--head-repository",
+            self.head_repository,
+        ]
+        environment = {
+            "HOME": str(root / "home"),
+            "XDG_STATE_HOME": str(state_home),
+            "PATH": str(executable_directory),
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONNOUSERSITE": "1",
+        }
+        malformed = self.stored()
+        malformed["isDraft"] = "Authorization: arbitrary-secret-value"
+        cases = (
+            (
+                "invalid-json",
+                b'{"Authorization": "arbitrary-secret-value"',
+                "unavailable",
+                "live PR state read returned invalid JSON",
+            ),
+            (
+                "oversized-json-integer",
+                (
+                    b'{"number": '
+                    + b"9" * 5_000
+                    + b', "Authorization": "arbitrary-secret-value"}'
+                ),
+                "unavailable",
+                "live PR state read returned invalid JSON",
+            ),
+            (
+                "incomplete",
+                b'{"number": 42, "Authorization": "arbitrary-secret-value"}',
+                "unavailable",
+                "live PR state read returned an incomplete response",
+            ),
+            (
+                "wrong-type",
+                json.dumps(malformed).encode("utf-8"),
+                "unavailable",
+                "live PR state read returned a malformed response",
+            ),
+            (
+                "lone-surrogate",
+                json.dumps(
+                    self.stored(body="Authorization: arbitrary-secret-value\udc00")
+                ).encode("utf-8"),
+                "unavailable",
+                "live PR state read returned a malformed response",
+            ),
+            (
+                "oversized-url-identifier",
+                json.dumps(
+                    self.stored(
+                        url=f"https://github.com/acme/app/pull/{'9' * 5_000}",
+                        providerExtension="Authorization: arbitrary-secret-value",
+                    )
+                ).encode("utf-8"),
+                "unavailable",
+                "live PR state read returned a malformed response",
+            ),
+            (
+                "valid-drift",
+                json.dumps(self.stored(title="changed")).encode("utf-8"),
+                "drift",
+                "live PR state does not match the authoritative latest receipt",
+            ),
+            (
+                "validated-match",
+                json.dumps(self.stored(providerExtension={"ignored": True})).encode(
+                    "utf-8"
+                ),
+                "verified",
+                None,
+            ),
+        )
+        for name, output, expected_status, expected_reason in cases:
+            with self.subTest(name=name):
+                provider_output.write_bytes(output)
+                result = subprocess.run(
+                    arguments,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    cwd=root,
+                    env=environment,
+                )
+
+                rendered = result.stdout + result.stderr
+                payload = json.loads(result.stdout)
+                self.assertEqual(
+                    result.returncode, 0 if expected_status == "verified" else 1
+                )
+                self.assertEqual(payload["status"], expected_status)
+                if expected_reason is not None:
+                    self.assertEqual(payload["reason"], expected_reason)
+                self.assertNotIn("arbitrary-secret-value", rendered)
+                self.assertNotIn("Authorization", rendered)
+                self.assertNotIn("Traceback", rendered)
+                self.assertEqual(
+                    {
+                        path.relative_to(receipt_root): path.read_bytes()
+                        for path in receipt_root.rglob("*")
+                        if path.is_file()
+                    },
+                    receipts_before,
+                )
 
     def transition_candidate(
         self,
@@ -3631,6 +8973,59 @@ class PublicationReceiptTests(ReviewablePrFixture):
         self.assertEqual(
             reconciled.summary("verified")["review"],
             {"state": "unwitnessed-reconciliation"},
+        )
+
+    def test_audit_direct_reader_exception_is_value_free_unavailable(self) -> None:
+        receipt = self.canonical_receipt()
+        receipts_before = {
+            path: path.read_bytes() for path in self.receipt_directory.rglob("*.json")
+        }
+
+        def failed_read() -> dict[str, object]:
+            raise OSError("Authorization: arbitrary-secret-value\x1b[31m")
+
+        result = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=failed_read,
+        )
+
+        self.assertEqual(result.status, "unavailable")
+        self.assertEqual(result.receipt, receipt)
+        self.assertIn("live PR state read failed", result.reason)
+        rendered = json.dumps(result.as_json(), sort_keys=True)
+        self.assertNotIn("Authorization", rendered)
+        self.assertNotIn("arbitrary-secret-value", rendered)
+        self.assertNotIn("OSError", rendered)
+        self.assertNotIn("Traceback", rendered)
+        self.assertEqual(
+            {
+                path: path.read_bytes()
+                for path in self.receipt_directory.rglob("*.json")
+            },
+            receipts_before,
+        )
+
+    def test_audit_direct_state_read_error_does_not_display_exception_data(
+        self,
+    ) -> None:
+        receipt = self.canonical_receipt()
+
+        def failed_read() -> dict[str, object]:
+            raise STATE.StateReadError(UnprintableExceptionData())
+
+        result = RECEIPTS.audit_publication(
+            root=self.receipt_directory,
+            expected=self.expected,
+            read_live=failed_read,
+        )
+
+        self.assertEqual(result.status, "unavailable")
+        self.assertEqual(result.receipt, receipt)
+        self.assertEqual(
+            result.reason,
+            "live PR state read failed for an unclassified reason; details were "
+            "withheld because they may contain sensitive data",
         )
 
     def test_v2_receipt_remains_chained_but_is_only_legacy_unrecorded(self) -> None:
@@ -3970,6 +9365,16 @@ class PublicationReceiptTests(ReviewablePrFixture):
     def test_receipt_rejects_state_that_was_not_exactly_final_reread(self) -> None:
         with self.assertRaisesRegex(RECEIPTS.ReceiptError, "invalid or unverified"):
             self.canonical_receipt(after=self.stored(headRefOid="c" * 40))
+        with self.assertRaisesRegex(
+            RECEIPTS.ReceiptError, "invalid or unverified"
+        ) as caught:
+            self.canonical_receipt(
+                after=self.stored(body="Authorization: arbitrary-secret-value\ud800")
+            )
+        self.assertIsInstance(
+            caught.exception.__cause__, STATE.LiveStateResponseError
+        )
+        self.assertNotIn("arbitrary-secret-value", str(caught.exception))
 
     def test_audit_returns_verified_drift_and_unavailable_without_mutation(
         self,

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -17,11 +18,14 @@ PUBLISHER_SCRIPTS = (
 sys.path.insert(0, str(PUBLISHER_SCRIPTS))
 
 from reviewable_pr_state import (  # noqa: E402
+    CommandRejectedError,
     ExpectedIdentity,
     GITHUB_HOST,
     MutationAmbiguousError,
+    MutationPreparationError,
     PublicationError,
     StateReadError,
+    classified_read_failure,
     identity_matches,
     run_mutation as _run_mutation,
     run_read as _run_read,
@@ -30,9 +34,22 @@ from reviewable_pr_state import (  # noqa: E402
     validate_identity_inputs,
 )
 
+DISPLAY_SAFE_LOGIN_RE = re.compile(r"[A-Za-z0-9_-]+(?:\[bot\])?")
+
 
 def _digest(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _display_safe_login(value: Any) -> str:
+    if (
+        type(value) is not str
+        or DISPLAY_SAFE_LOGIN_RE.fullmatch(value) is None
+    ):
+        raise PublicationError(
+            "actor identity is not a display-safe GitHub.com actor login"
+        )
+    return value
 
 
 def _comment_receipt(
@@ -44,15 +61,17 @@ def _comment_receipt(
     url = value.get("html_url")
     user = value.get("user")
     created_at = value.get("created_at")
-    expected_prefix = f"{expected.url}#issuecomment-"
+    safe_expected_login = _display_safe_login(expected_login)
+    if not isinstance(user, dict):
+        raise PublicationError("comment receipt does not match exact PR/body authority")
+    observed_login = _display_safe_login(user.get("login"))
+    if type(identifier) is not int or identifier <= 0:
+        raise PublicationError("comment receipt does not match exact PR/body authority")
+    expected_url = f"{expected.url}#issuecomment-{identifier}"
     if (
-        type(identifier) is not int
-        or identifier <= 0
-        or not isinstance(url, str)
-        or not url.startswith(expected_prefix)
+        url != expected_url
         or value.get("body") != body
-        or not isinstance(user, dict)
-        or user.get("login") != expected_login
+        or observed_login != safe_expected_login
         or not isinstance(created_at, str)
     ):
         raise PublicationError("comment receipt does not match exact PR/body authority")
@@ -62,7 +81,87 @@ def _comment_receipt(
         raise PublicationError("comment receipt has an invalid created_at") from error
     if parsed.tzinfo is None:
         raise PublicationError("comment receipt has an invalid created_at")
-    return value
+    return {
+        "id": identifier,
+        "html_url": expected_url,
+        "body_sha256": _digest(body),
+        "user": {"login": safe_expected_login},
+        "created_at": created_at,
+    }
+
+
+def _zero_exit_verification_error(
+    classification: str, error: PublicationError
+) -> PublicationError:
+    failure = PublicationError(
+        "comment stage: POST exited zero, but "
+        f"{classification}; comment state is not trustworthy and canonical success "
+        "was not acknowledged; independently inspect the comment and do not retry"
+    )
+    failure.verification_error = error
+    return failure
+
+
+def _nonzero_post_error(error: CommandRejectedError) -> PublicationError:
+    failure = PublicationError(
+        "comment stage: POST exited nonzero "
+        f"(return code {error.return_code}); remote outcome is unknown and canonical "
+        "success was not acknowledged; independently inspect the comment using "
+        "existing valid read authority and do not retry"
+    )
+    failure.mutation_error = error
+    return failure
+
+
+def _post_process_error(error: PublicationError) -> PublicationError:
+    if isinstance(error, CommandRejectedError):
+        return _nonzero_post_error(error)
+    if isinstance(error, MutationAmbiguousError) and error.malformed_output:
+        failure: PublicationError = MutationAmbiguousError(
+            "comment stage: POST exited zero, but successful output was not strict "
+            "UTF-8; remote outcome is unknown and canonical success was not "
+            "acknowledged; independently inspect the comment and do not retry; no "
+            "automatic retry was attempted",
+            malformed_output=True,
+        )
+    elif isinstance(error, MutationAmbiguousError) and error.timeout_seconds is not None:
+        failure = MutationAmbiguousError(
+            "comment stage: POST timed out after "
+            f"{error.timeout_seconds} seconds; remote outcome is unknown and canonical "
+            "success was not acknowledged; independently inspect the comment and do "
+            "not retry; no automatic retry was attempted",
+            timeout_seconds=error.timeout_seconds,
+        )
+    elif isinstance(error, MutationAmbiguousError) and error.process_outcome_unknown:
+        failure = MutationAmbiguousError(
+            "comment stage: POST failed during process launch or communication; "
+            "whether the POST process started is unknown and the remote outcome "
+            "unknown; canonical success was not acknowledged; independently inspect "
+            "the comment and do not retry; no automatic retry was attempted",
+            process_outcome_unknown=True,
+        )
+    elif isinstance(error, MutationAmbiguousError):
+        failure = MutationAmbiguousError(
+            "comment stage: POST timeout or other ambiguous failure left the remote "
+            "outcome unknown and canonical success was not acknowledged; independently "
+            "inspect the comment and do not retry; no automatic retry was attempted"
+        )
+    elif isinstance(error, MutationPreparationError):
+        failure = PublicationError(
+            "comment stage: POST could not be prepared locally; no target mutation "
+            "ran and canonical success was not acknowledged; command inputs and "
+            "preparation details were withheld because they may contain sensitive "
+            "data; correct the local command inputs before any separately authorized "
+            "attempt; no automatic retry was attempted"
+        )
+    else:
+        failure = PublicationError(
+            "comment stage: POST failed for an unclassified reason; remote outcome is "
+            "unknown and canonical success was not acknowledged; independently inspect "
+            "the comment and do not retry; no automatic retry was attempted"
+        )
+    failure.mutation_error = error
+    return failure
 
 
 def _active_login() -> str:
@@ -71,9 +170,7 @@ def _active_login() -> str:
     )
     value = strict_json(result.stdout, "authenticated login response")
     login = value.get("login") if isinstance(value, dict) else None
-    if not isinstance(login, str) or not login:
-        raise PublicationError("active authenticated login is unavailable")
-    return login
+    return _display_safe_login(login)
 
 
 def post_comment(
@@ -87,9 +184,8 @@ def post_comment(
         raise PublicationError("comment body must be non-empty")
     if _digest(body) != body_sha256:
         raise PublicationError("comment body SHA-256 does not match supplied bytes")
-    if not expected_authenticated_login:
-        raise PublicationError("expected authenticated login must be non-empty")
-    if _active_login() != expected_authenticated_login:
+    safe_expected_login = _display_safe_login(expected_authenticated_login)
+    if _display_safe_login(_active_login()) != safe_expected_login:
         raise PublicationError("active authenticated login does not match authority")
     before = _stored_pr(expected.repository, expected.pr_number)
     if not identity_matches(before, expected):
@@ -100,55 +196,78 @@ def post_comment(
         separators=(",", ":"),
         sort_keys=True,
     )
-    result = _run_mutation(
-        [
-            "gh",
-            "api",
-            "--hostname",
-            GITHUB_HOST,
-            "--method",
-            "POST",
-            f"repos/{expected.repository}/issues/{expected.pr_number}/comments",
-            "--input",
-            "-",
-        ],
-        input_text=payload,
-    )
+    try:
+        result = _run_mutation(
+            [
+                "gh",
+                "api",
+                "--hostname",
+                GITHUB_HOST,
+                "--method",
+                "POST",
+                f"repos/{expected.repository}/issues/{expected.pr_number}/comments",
+                "--input",
+                "-",
+            ],
+            input_text=payload,
+        )
+    except PublicationError as error:
+        raise _post_process_error(error) from error
     try:
         created = _comment_receipt(
             strict_json(result.stdout, "comment creation response"),
             expected,
             body,
-            expected_authenticated_login,
+            safe_expected_login,
         )
     except (PublicationError, StateReadError) as error:
-        raise PublicationError(
-            "comment mutation returned no trustworthy identity; state is ambiguous "
-            "and must not be retried"
+        raise _zero_exit_verification_error(
+            "creation response validation failed", error
         ) from error
     identifier = int(created["id"])
-    reread = _run_read(
-        [
-            "gh",
-            "api",
-            "--hostname",
-            GITHUB_HOST,
-            "--method",
-            "GET",
-            f"repos/{expected.repository}/issues/comments/{identifier}",
-        ]
-    )
-    receipt = _comment_receipt(
-        strict_json(reread.stdout, "comment reread response"),
-        expected,
-        body,
-        expected_authenticated_login,
-    )
+    try:
+        reread = _run_read(
+            [
+                "gh",
+                "api",
+                "--hostname",
+                GITHUB_HOST,
+                "--method",
+                "GET",
+                f"repos/{expected.repository}/issues/comments/{identifier}",
+            ]
+        )
+    except PublicationError as error:
+        raise _zero_exit_verification_error(
+            classified_read_failure(error, stage="comment reread"), error
+        ) from error
+    try:
+        receipt = _comment_receipt(
+            strict_json(reread.stdout, "comment reread response"),
+            expected,
+            body,
+            safe_expected_login,
+        )
+    except (PublicationError, StateReadError) as error:
+        raise _zero_exit_verification_error(
+            "comment reread response validation failed", error
+        ) from error
     if any(receipt[key] != created[key] for key in ("id", "html_url", "created_at")):
-        raise PublicationError("comment reread identity differs from creation receipt")
-    after = _stored_pr(expected.repository, expected.pr_number)
+        error = PublicationError("comment reread identity differs from creation receipt")
+        raise _zero_exit_verification_error(
+            "comment identity verification failed", error
+        ) from error
+    try:
+        after = _stored_pr(expected.repository, expected.pr_number)
+    except PublicationError as error:
+        raise _zero_exit_verification_error(
+            classified_read_failure(error, stage="PR identity reread"), error
+        ) from error
     if not identity_matches(after, expected):
-        raise PublicationError("PR identity or pushed head changed after comment")
+        error = PublicationError("PR identity or pushed head changed after comment")
+        raise _zero_exit_verification_error(
+            "PR identity verification failed", error
+        ) from error
     return receipt
 
 
@@ -158,7 +277,9 @@ def _read_body(path: Path) -> str:
     try:
         raw = path.read_bytes()
     except OSError as error:
-        raise PublicationError(f"cannot read comment body: {error}") from error
+        raise PublicationError(
+            "cannot read comment body; check the local path and read permissions"
+        ) from error
     try:
         return raw.decode("utf-8")
     except UnicodeDecodeError as error:

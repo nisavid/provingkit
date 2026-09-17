@@ -50,14 +50,100 @@ race and the reread cannot prevent an intervening lost update.
    live rendering after structured changes.
 
 Every create, text, and ready API/CLI call must supply `--review-mode` and
-`--selected-specialists` as a JSON array, including `[]`. There is no default or
-downgrade. Required mode is an optional witnessed route. When selected, it invokes the
+`--selected-specialists` as a sorted, unique JSON array of nonempty UTF-8
+strings, including `[]`. Parse it through the bounded strict JSON reader before
+publication; malformed input receives one value-free classification. There is
+no default or downgrade. Required mode is an optional witnessed route. When selected, it invokes the
 authenticated Task Witness front door and requires its current evidence and the
 registered Tricritical producer chain; if those are unavailable, stop before
 mutation. The ordinary `not-required` route does not depend on Task Witness.
 
+## Inspect Publication Failures
+
+Treat a nonzero mutation exit as a command rejection and a mutation timeout as
+an unknown outcome. Report only the publication stage, return code or timeout,
+approved classification, and value-free next checks. Command output, command
+inputs, request data, PR title/body bytes, and tracebacks remain private because
+they may contain credentials or other sensitive data. Without separately safe
+evidence, state that the rejection cause is unknown.
+
+The `subprocess.run` boundary spans process launch and communication, so every
+`OSError` leaves process start unknown and, for a mutation, target outcome
+unknown. Report a fixed, value-free read or mutation classification, and retain
+the original exception only as internal causality.
+Validate command arguments and encode input inside the typed process boundary. A
+local command preparation failure proves that no process started and, for a
+mutation, no target mutation ran. Retain its cause without exposing input values.
+
+Accept successful helper output only after strict UTF-8 decoding. Treat
+malformed successful read output as unavailable and malformed successful
+mutation output as an unknown outcome. A nonzero exit remains a process failure;
+retain its return code without decoding or disclosing its output. Candidate
+validation is local: identify the validation stage and give value-free checks
+for candidate structure, review-input binding, local runtime availability,
+trusted executable ancestry, and temporary-directory availability. Do not route
+local validation failures to forge authentication or read-access advice.
+Local body and review-input failures use fixed classifications. For create,
+text, ready, and reconciliation, name the local input class and direct the
+operator to its path, permissions, UTF-8 encoding, or exact-candidate
+regeneration without displaying an exception, key, path, or request value.
+Retain the original exception only as internal causality. Keep this local
+guidance separate from forge authentication and access checks. Admit review
+input and any supplied body before validator execution, forge access, receipt
+store preparation, or receipt writes; later exact candidate and live-state
+binding remains mandatory.
+Parse provider PR URL suffixes as positive, bounded ASCII decimal through the
+shared parser. Its digit bound follows the supported Python runtime's integer
+conversion boundary, not a universal GitHub API limit. Classify an oversized
+JSON integer as invalid JSON and retain the conversion failure as internal cause.
+
+Admit live observations before any comparison, hash, serialization, index, or
+display. Required fields use exact JSON scalar types and valid UTF-8; the PR
+number and canonical URL number must agree. Validate either supported head
+repository shape before indexing it. Retain provider extensions as detached
+JSON values within the shared depth and item boundary; finite JSON numbers and
+ordinary extensions keep their existing meaning, and ignored extensions gain
+none. Classify duplicate keys, non-finite constants or exponents, oversized
+integers, excessive nesting, and non-JSON direct values without their data.
+REST recovery normalizes only a null body to empty text; it preserves strings
+exactly and classifies every other body type as malformed.
+
+After either failure, independently reread the exact PR state once. For an
+admitted reread, report whether the observed state matches the exact intent, the
+preimage, or another valid state. Classify an unavailable reread separately. The
+failed helper and observed relationship mint no canonical receipt. Preserve the
+original safe command diagnostic and reread classification; no automatic retry
+or rollback was attempted. Any later recovery reuses existing read authority
+while it remains valid; obtain new authority only if the target or action is
+outside its scope. A later mutation still requires authority for that mutation
+and cannot upgrade the failed helper write to a causally proven transition.
+
+When a mutation exits zero but its verification reread fails, preserve the
+publication stage, zero-exit fact, safe reread classification, and original
+reread cause. Write no canonical receipt, and do not retry or roll back.
+A zero-exit mutation followed by a nonmatching valid reread retains the observed
+preimage or other-state relationship without assigning causality. The unchanged
+preimage does not prove that the intended state was never stored. Write no
+canonical receipt, and do not retry or roll back.
+
+After a verified mutation, build the CLI acknowledgement from the reloaded
+canonical receipt inside the same failure boundary. A missing receipt or failed
+reload, summary, or serialization leaves publication unacknowledged: report a
+value-free failure, independently audit exact state, and do not retry.
+
+Keep private body snapshots behind the same value-free boundary. A creation,
+write, or flush failure is local preparation and proves that no mutation ran. A
+cleanup failure after a zero-exit mutation triggers the normal exact reread but
+mints no canonical provenance or receipt; inspect state and do not retry. When
+cleanup fails while another publication error is active, retain that publication
+error and keep the cleanup exception only as internal causality.
+
 Fixture-level witnessed-review coverage does not establish live publication
 reachability. Do not infer a production claim from fixtures.
+
+Audit direct readers through the same admission boundary. Translate ordinary
+callback exceptions to `AuditResult(status="unavailable")` without converting
+their values to text; retain the authoritative latest receipt when available.
 
 When the optional witnessed route is used, Task Witness remains a cooperative
 validator integration. Harness sandbox and approval controls remain the
@@ -74,6 +160,22 @@ Preserve original template bytes and perform token-only rendering; never
 reverse-replace an assigned number. It validates sentinel rendering,
 rejects a matching PR, and creates one nonce
 draft. Recover only when one draft matches nonce and all identity/text.
+If the recovery read fails, retain both its safe classification and the original
+create failure as the cause; perform no additional mutation and write no receipt.
+Never display a provider-reported URL in a failure; construct any displayed PR
+identity only from a display-safe validated repository and positive PR number.
+Malformed zero-exit create output, including an invalid PR identifier, follows
+that same one-read nonce recovery path and never mints provenance by itself.
+After local preparation failure, broad process failure, nonzero exit, timeout,
+or malformed zero-exit output, retain the exact process fact and classify the
+one nonce recovery observation as empty, nonmatching, multiple-exact, or
+unavailable. Local preparation failure proves that no process started and no target mutation ran.
+A broad process failure leaves process start and mutation outcome unknown.
+A unique exact match preserves the existing continuation, but
+does not prove that the errored command created it.
+Every terminal failed or unverified transition states that canonical provenance
+was not minted, no canonical receipt was written, and no automatic retry or
+rollback was attempted.
 Validate assigned-number rendering, publish once, exact-reread, write a canonical
 receipt, and leave draft.
 The reviewed candidate remains the token-bearing pre-number candidate. After
@@ -172,6 +274,19 @@ against a hostile process running as the same user.
 Use `scripts/audit_reviewable_pr.py audit` with the same exact identity and
 receipt root before resuming or closing a publication task. It reads only the
 authoritative latest receipt and returns `verified`, `drift`, or `unavailable`.
+At ledger admission, admit every retained receipt string and object key as UTF-8
+scalar text before reconstruction or canonical encoding. Reject escaped lone
+surrogates as a value-free receipt error. When ledger admission fails, audit
+returns `unavailable` before the live reader and leaves receipt storage unchanged.
+Only a complete, structurally valid live PR observation reaches receipt
+comparison. Valid identity, text, and state differences are drift. Invalid JSON,
+duplicate or non-finite JSON, and incomplete or malformed fields are unavailable.
+Required observation strings must be exact UTF-8-encodable Unicode scalar text
+before comparison, hashing, or serialization. Preserve admitted text without
+normalization or replacement; classify a lone surrogate as malformed.
+An unavailable live read retains its safe parse, schema, launch, timeout,
+return-code, UTF-8, or unknown classification in `reason`; it remains an ordinary
+audit read, not a post-mutation verification.
 
 Use `scripts/audit_reviewable_pr.py reconcile` only after independently
 confirming exact live identity/state and supplying the bound `--review-input`.

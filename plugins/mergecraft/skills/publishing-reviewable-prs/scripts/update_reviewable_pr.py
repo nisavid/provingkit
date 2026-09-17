@@ -19,6 +19,7 @@ if str(WRITER_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(WRITER_SCRIPTS))
 from change_navigation.review_input import (  # noqa: E402
     PR_NUMBER_TOKEN,
+    ReviewInput,
     ReviewInputError,
     bind_review_input,
     load_review_input,
@@ -42,7 +43,10 @@ from publication_receipts import (  # noqa: E402
 )
 from publication_receipts import SCHEMA_VERSION as RECEIPT_SCHEMA_VERSION  # noqa: E402
 from publication_support import (  # noqa: E402
+    BodySnapshotError,
+    admit_review_input as _admit_review_input,
     expected_identity as _expected_identity,
+    reread_relationship_diagnostic,
 )
 from publication_support import (  # noqa: E402
     temporary_body as _write_temporary_body,
@@ -50,6 +54,7 @@ from publication_support import (  # noqa: E402
 from publication_support import (  # noqa: E402
     validate_pr_content as _validate_body,
 )
+from publication_support import verified_publication_acknowledgement  # noqa: E402
 from required_review import (  # noqa: E402
     PublicationCandidate,
     validate_review_input_binding,
@@ -66,6 +71,10 @@ from reviewable_pr_state import (  # noqa: E402
     PublicationError,
     github_repository,
     identity_matches,
+    mutation_failure_diagnostic,
+    parse_selected_specialists,
+    read_failure_diagnostic,
+    validate_selected_specialists,
 )
 from reviewable_pr_state import (  # noqa: E402
     run_mutation as _run_mutation,
@@ -121,14 +130,47 @@ def _state_matches_owned_body(
     )
 
 
-def _read_body(path: Path) -> tuple[str, bytes]:
+def _reread_relationship(
+    after: dict[str, Any],
+    before: dict[str, Any],
+    expected: ExpectedIdentity,
+    *,
+    intended_title: str,
+    intended_body: str,
+    intended_draft: bool,
+    preimage_body_sha256: str,
+) -> str:
+    return reread_relationship_diagnostic(
+        matches_intended=_state_matches_owned_body(
+            after,
+            expected,
+            title=intended_title,
+            body=intended_body,
+            is_draft=intended_draft,
+        ),
+        matches_preimage=_state_matches_owned_body(
+            after,
+            expected,
+            title=str(before["title"]),
+            body=_sealed_body(str(before["body"]), preimage_body_sha256),
+            is_draft=bool(before["isDraft"]),
+        ),
+    )
+
+
+def _read_body(path: Path, *, label: str = "body file") -> tuple[str, bytes]:
     if not path.is_absolute():
-        raise PublicationError("body file path must be absolute")
+        raise PublicationError(f"{label} path must be absolute")
     try:
         raw = path.read_bytes()
+    except OSError as error:
+        raise PublicationError(
+            f"cannot read {label}; check the local path and read permissions"
+        ) from error
+    try:
         body = raw.decode("utf-8")
-    except (OSError, UnicodeDecodeError) as error:
-        raise PublicationError(f"cannot read body file: {error}") from error
+    except UnicodeDecodeError as error:
+        raise PublicationError(f"{label} must be valid UTF-8") from error
     if suspected_secret_error(body) is not None:
         raise PublicationError(
             "PR body contains a suspected credential or secret; publication is blocked"
@@ -147,7 +189,7 @@ def _read_body_source(
         body, raw = _read_body(body_path)
         return body, None, raw, "body"
     assert template_path is not None
-    template, raw = _read_body(template_path)
+    template, raw = _read_body(template_path, label="body template")
     if PR_NUMBER_TOKEN not in template:
         raise PublicationError(f"body template must contain {PR_NUMBER_TOKEN}")
     return template.replace(PR_NUMBER_TOKEN, str(pr_number)), template, raw, "template"
@@ -203,8 +245,8 @@ def _bind_review_input(
     stored_body: str | None = None,
     template_body: str | None = None,
 ) -> tuple[int, str]:
+    manifest = _admit_review_input(review_input_path)
     try:
-        manifest = load_review_input(review_input_path)
         bind_review_input(
             manifest,
             repository=expected.repository,
@@ -224,16 +266,15 @@ def _bind_review_input(
         )
         return int(manifest.raw["version"]), manifest.content_sha256
     except ReviewInputError as error:
-        raise PublicationError(f"review input drift: {error}") from error
+        raise PublicationError(
+            "review input could not be admitted; check the local file and regenerate "
+            "it for this exact publication candidate"
+        ) from error
 
 
-def _token_review_input(review_input_path: Path) -> Any | None:
-    """Return a token-bearing manifest, leaving malformed input to the binder."""
+def _token_review_input(manifest: ReviewInput) -> ReviewInput | None:
+    """Return an already admitted token-bearing manifest."""
 
-    try:
-        manifest = load_review_input(review_input_path)
-    except ReviewInputError:
-        return None
     if manifest.raw["pr_number"] != PR_NUMBER_TOKEN:
         return None
     return manifest
@@ -241,18 +282,22 @@ def _token_review_input(review_input_path: Path) -> Any | None:
 
 def _resolve_ready_template(
     *,
-    review_input_path: Path,
+    review_input: ReviewInput,
     expected: ExpectedIdentity,
     body: str,
     body_template_path: Path | None,
+    preloaded_template: str | None = None,
 ) -> str | None:
     """Resolve the source bytes needed to rebind a new-PR manifest."""
 
-    manifest = _token_review_input(review_input_path)
+    manifest = _token_review_input(review_input)
     if manifest is None:
         return None
     if body_template_path is not None:
-        template, _ = _read_body(body_template_path)
+        if preloaded_template is None:
+            template, _ = _read_body(body_template_path, label="body template")
+        else:
+            template = preloaded_template
     else:
         rendered_number = str(expected.pr_number)
         template = body.replace(rendered_number, PR_NUMBER_TOKEN)
@@ -585,40 +630,113 @@ def _update_text_locked(
     )
     _validate_published_body_size(published_body)
     command_error: PublicationError | None = None
+    snapshot_error: BodySnapshotError | None = None
     body_context = (
         nullcontext(None)
         if text_scope == "title-only"
         else _write_temporary_body(published_body)
     )
-    with body_context as body_file:
-        command = [
-            "gh",
-            "-R",
-            github_repository(expected.repository),
-            "pr",
-            "edit",
-            str(expected.pr_number),
-        ]
-        if text_scope in {"title-only", "title-body"}:
-            command.extend(["--title", title])
-        if text_scope in {"body-only", "title-body"}:
-            if body_file is None:
-                raise PublicationError("body-scoped edit lost its body snapshot")
-            command.extend(["--body-file", body_file.name])
-        try:
+    try:
+        with body_context as body_file:
+            command = [
+                "gh",
+                "-R",
+                github_repository(expected.repository),
+                "pr",
+                "edit",
+                str(expected.pr_number),
+            ]
+            if text_scope in {"title-only", "title-body"}:
+                command.extend(["--title", title])
+            if text_scope in {"body-only", "title-body"}:
+                if body_file is None:
+                    raise PublicationError("body-scoped edit lost its body snapshot")
+                command.extend(["--body-file", body_file.name])
             _run_mutation(command)
-        except PublicationError as error:
-            command_error = error
-    after = _stored_pr(expected.repository, expected.pr_number)
-    if command_error is not None:
-        if isinstance(command_error, MutationAmbiguousError):
-            raise MutationAmbiguousError(
-                "PR text command was ambiguous; a matching reread cannot prove "
-                "causality, so canonical provenance was not minted; do not retry"
-            ) from command_error
+            if body_file is not None:
+                body_file.mark_mutation_exited_zero()
+    except BodySnapshotError as error:
+        if not error.after_zero_exit:
+            raise
+        snapshot_error = error
+    except PublicationError as error:
+        command_error = error
+    try:
+        after = _stored_pr(expected.repository, expected.pr_number)
+    except PublicationError as reread_error:
+        if snapshot_error is not None:
+            combined = PublicationError(
+                "PR text command exited zero, but private body snapshot cleanup and "
+                "post-mutation verification failed; the final reread state was "
+                "unavailable; canonical provenance was not minted and no canonical "
+                "receipt was written; no automatic retry or rollback was attempted; "
+                f"{read_failure_diagnostic(reread_error)}"
+            )
+            combined.reread_error = reread_error
+            raise combined from snapshot_error
+        if command_error is None:
+            combined = PublicationError(
+                "PR text command exited zero, but post-mutation verification "
+                "failed; the final reread state was unavailable; canonical provenance "
+                "was not minted and no canonical receipt was written; no automatic "
+                "retry or rollback was attempted; "
+                f"{read_failure_diagnostic(reread_error)}"
+            )
+            combined.reread_error = reread_error
+            raise combined from reread_error
+        diagnostic = (
+            "PR text command was ambiguous"
+            if isinstance(command_error, MutationAmbiguousError)
+            else "PR text command failed"
+        )
+        error_type = (
+            MutationAmbiguousError
+            if isinstance(command_error, MutationAmbiguousError)
+            else PublicationError
+        )
+        combined = error_type(
+            f"{diagnostic}; the final reread state was unavailable; canonical "
+            "provenance was not minted and no canonical receipt was written; no "
+            "automatic retry or rollback was attempted; "
+            f"{mutation_failure_diagnostic(command_error)}; "
+            f"{read_failure_diagnostic(reread_error)}"
+        )
+        combined.reread_error = reread_error
+        raise combined from command_error
+    relationship = _reread_relationship(
+        after,
+        before,
+        expected,
+        intended_title=title,
+        intended_body=body,
+        intended_draft=expected_draft,
+        preimage_body_sha256=expected_body_sha256,
+    )
+    if snapshot_error is not None:
         raise PublicationError(
-            "PR text command failed; a matching reread cannot prove causality, "
-            "so canonical provenance was not minted"
+            "PR text command exited zero, but private body snapshot cleanup failed; "
+            f"{relationship}; that observed relationship does not establish a "
+            "canonical transition, so canonical provenance was not minted and no "
+            "canonical receipt was written; no automatic retry or rollback was "
+            "attempted; independently inspect the PR and do not retry"
+        ) from snapshot_error
+    if command_error is not None:
+        diagnostic = (
+            "PR text command was ambiguous"
+            if isinstance(command_error, MutationAmbiguousError)
+            else "PR text command failed"
+        )
+        error_type = (
+            MutationAmbiguousError
+            if isinstance(command_error, MutationAmbiguousError)
+            else PublicationError
+        )
+        raise error_type(
+            f"{diagnostic}; {relationship}; that observed relationship does not "
+            "establish a canonical transition, so canonical provenance was not minted "
+            "and no canonical receipt was written; no automatic retry or rollback was "
+            "attempted; "
+            f"{mutation_failure_diagnostic(command_error)}"
         ) from command_error
     if _state_matches_owned_body(
         after,
@@ -644,10 +762,26 @@ def _update_text_locked(
             root=receipt_root, transition=transition, lease=lease
         )
         return after
-    if after == before:
-        raise PublicationError("PR text mutation was not stored")
+    if _state_matches_owned_body(
+        after,
+        expected,
+        title=str(before["title"]),
+        body=_sealed_body(str(before["body"]), expected_body_sha256),
+        is_draft=bool(before["isDraft"]),
+    ):
+        raise PublicationError(
+            "PR text command exited zero, but the final reread matched the "
+            "pre-mutation state; an unchanged preimage does not establish whether "
+            "the command stored the intended state before another change, so "
+            "causality remains unresolved; canonical provenance was not minted "
+            "and no canonical receipt was written; no automatic retry or rollback "
+            "was attempted"
+        )
     raise PublicationError(
-        "PR text mutation has an ambiguous result; no retry or rollback was attempted"
+        "PR text command exited zero, but the final reread differed from both the "
+        "pre-mutation and intended states; causality remains unresolved; canonical "
+        "provenance was not minted and no canonical receipt was written; no "
+        "automatic retry or rollback was attempted"
     )
 
 
@@ -754,16 +888,64 @@ def _mark_ready_locked(
         )
     except PublicationError as error:
         command_error = error
-    after = _stored_pr(expected.repository, expected.pr_number)
+    try:
+        after = _stored_pr(expected.repository, expected.pr_number)
+    except PublicationError as reread_error:
+        if command_error is None:
+            combined = PublicationError(
+                "ready command exited zero, but post-mutation verification failed; "
+                "the final reread state was unavailable; canonical provenance was "
+                "not minted and no canonical receipt was written; no automatic retry "
+                "or rollback was attempted; "
+                f"{read_failure_diagnostic(reread_error)}"
+            )
+            combined.reread_error = reread_error
+            raise combined from reread_error
+        diagnostic = (
+            "ready command was ambiguous"
+            if isinstance(command_error, MutationAmbiguousError)
+            else "ready command failed"
+        )
+        error_type = (
+            MutationAmbiguousError
+            if isinstance(command_error, MutationAmbiguousError)
+            else PublicationError
+        )
+        combined = error_type(
+            f"{diagnostic}; the final reread state was unavailable; canonical "
+            "provenance was not minted and no canonical receipt was written; no "
+            "automatic retry or rollback was attempted; "
+            f"{mutation_failure_diagnostic(command_error)}; "
+            f"{read_failure_diagnostic(reread_error)}"
+        )
+        combined.reread_error = reread_error
+        raise combined from command_error
+    relationship = _reread_relationship(
+        after,
+        before,
+        expected,
+        intended_title=title,
+        intended_body=body,
+        intended_draft=False,
+        preimage_body_sha256=expected_body_sha256,
+    )
     if command_error is not None:
-        if isinstance(command_error, MutationAmbiguousError):
-            raise MutationAmbiguousError(
-                "ready command was ambiguous; a matching reread cannot prove "
-                "causality, so canonical provenance was not minted; do not retry"
-            ) from command_error
-        raise PublicationError(
-            "ready command failed; a matching reread cannot prove causality, "
-            "so canonical provenance was not minted"
+        diagnostic = (
+            "ready command was ambiguous"
+            if isinstance(command_error, MutationAmbiguousError)
+            else "ready command failed"
+        )
+        error_type = (
+            MutationAmbiguousError
+            if isinstance(command_error, MutationAmbiguousError)
+            else PublicationError
+        )
+        raise error_type(
+            f"{diagnostic}; {relationship}; that observed relationship does not "
+            "establish a canonical transition, so canonical provenance was not minted "
+            "and no canonical receipt was written; no automatic retry or rollback was "
+            "attempted; "
+            f"{mutation_failure_diagnostic(command_error)}"
         ) from command_error
     if _state_matches_owned_body(
         after, expected, title=title, body=body, is_draft=False
@@ -785,10 +967,26 @@ def _mark_ready_locked(
             root=receipt_root, transition=transition, lease=lease
         )
         return after
-    if after == before:
-        raise PublicationError("PR remains a verified canonical draft")
+    if _state_matches_owned_body(
+        after,
+        expected,
+        title=str(before["title"]),
+        body=_sealed_body(str(before["body"]), expected_body_sha256),
+        is_draft=bool(before["isDraft"]),
+    ):
+        raise PublicationError(
+            "ready command exited zero, but the final reread matched the "
+            "pre-mutation state; an unchanged preimage does not establish whether "
+            "the command stored the intended state before another change, so "
+            "causality remains unresolved; canonical provenance was not minted "
+            "and no canonical receipt was written; no automatic retry or rollback "
+            "was attempted"
+        )
     raise PublicationError(
-        "ready mutation has an ambiguous result; no retry or rollback was attempted"
+        "ready command exited zero, but the final reread differed from both the "
+        "pre-mutation and intended states; causality remains unresolved; canonical "
+        "provenance was not minted and no canonical receipt was written; no "
+        "automatic retry or rollback was attempted"
     )
 
 
@@ -808,6 +1006,7 @@ def update_text(
     text_scope: str = "title-body",
     receipt_directory: Path | None = None,
 ) -> dict[str, Any]:
+    selected_specialists = validate_selected_specialists(selected_specialists)
     if not title.strip():
         raise PublicationError("title must be non-empty")
     body, template_body, body_source_raw, body_source_kind = _read_body_source(
@@ -816,6 +1015,7 @@ def update_text(
         pr_number=expected.pr_number,
     )
     _reject_secret_text(title, body)
+    _admit_review_input(review_input_path)
     validation_arguments = (
         body,
         expected.repository,
@@ -882,6 +1082,16 @@ def mark_ready(
     body_template_path: Path | None = None,
     receipt_directory: Path | None = None,
 ) -> dict[str, Any]:
+    selected_specialists = validate_selected_specialists(selected_specialists)
+    review_input = _admit_review_input(review_input_path)
+    preloaded_template: str | None = None
+    if (
+        review_input.raw["pr_number"] == PR_NUMBER_TOKEN
+        and body_template_path is not None
+    ):
+        preloaded_template, _ = _read_body(
+            body_template_path, label="body template"
+        )
     validated = _preflight(
         expected=expected,
         expected_title_sha256=expected_title_sha256,
@@ -894,10 +1104,11 @@ def mark_ready(
     title = str(validated["title"])
     body = _sealed_body(str(validated["body"]), expected_body_sha256)
     template = _resolve_ready_template(
-        review_input_path=review_input_path,
+        review_input=review_input,
         expected=expected,
         body=body,
         body_template_path=body_template_path,
+        preloaded_template=preloaded_template,
     )
     with _ready_template_file(template, body_template_path) as validator_template:
         _validate_body(
@@ -987,12 +1198,7 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
-        try:
-            selected_specialists = json.loads(args.selected_specialists)
-        except json.JSONDecodeError as error:
-            raise PublicationError(
-                "selected review specialists must be a JSON array"
-            ) from error
+        selected_specialists = parse_selected_specialists(args.selected_specialists)
         expected = _expected(args)
         if args.operation == "text":
             stored = update_text(
@@ -1022,22 +1228,17 @@ def main() -> int:
                 body_template_path=args.body_template,
                 receipt_directory=None,
             )
+        acknowledgement = verified_publication_acknowledgement(
+            load_latest=lambda: load_receipts(resolve_receipt_root(), expected),
+            repository=expected.repository,
+            pr_number=expected.pr_number,
+            url=expected.url,
+            is_draft=stored["isDraft"],
+        )
     except PublicationError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
-    receipt = load_receipts(resolve_receipt_root(), expected)[-1]
-    print(
-        json.dumps(
-            {
-                "repository": expected.repository,
-                "pr": expected.pr_number,
-                "url": expected.url,
-                "is_draft": stored["isDraft"],
-                **receipt.summary("verified"),
-            },
-            sort_keys=True,
-        )
-    )
+    print(acknowledgement)
     return 0
 
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,10 +20,105 @@ VERSION = 3
 PR_NUMBER_TOKEN = "__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__"
 OID_RE = re.compile(r"[0-9a-f]{40}")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
+# These are local reader resource limits, not GitHub or manifest-protocol limits.
+MAX_REVIEW_INPUT_BYTES = 16 * 1024 * 1024
+MAX_REVIEW_INPUT_DEPTH = 64
+MAX_REVIEW_INPUT_ITEMS = 200_000
+MAX_REVIEW_INPUT_NUMBER_DIGITS = 4_096
+REVIEW_INPUT_ADMISSION_ERROR = "review input could not be admitted"
 
 
 class ReviewInputError(ValueError):
     """A review input is incomplete, malformed, or no longer bound."""
+
+
+class _ReviewInputAdmissionError(ValueError):
+    """One fixed internal cause for rejected local JSON bytes."""
+
+
+def _admit_scalar_text(value: str) -> None:
+    try:
+        value.encode("utf-8")
+    except UnicodeEncodeError as error:
+        raise _ReviewInputAdmissionError("invalid scalar text") from error
+
+
+def _check_json_shape(value: str) -> None:
+    depth = 0
+    items = 0
+    in_string = False
+    escaped = False
+    index = 0
+    while index < len(value):
+        character = value[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+                items += 1
+                if items > MAX_REVIEW_INPUT_ITEMS:
+                    raise _ReviewInputAdmissionError("excessive JSON structure")
+            index += 1
+            continue
+        if character == '"':
+            in_string = True
+        elif character in "[{":
+            depth += 1
+            items += 1
+            if depth > MAX_REVIEW_INPUT_DEPTH:
+                raise _ReviewInputAdmissionError("excessive JSON nesting")
+            if items > MAX_REVIEW_INPUT_ITEMS:
+                raise _ReviewInputAdmissionError("excessive JSON structure")
+        elif character in "]}" and depth:
+            depth -= 1
+        elif not character.isspace() and character not in ",:":
+            items += 1
+            if items > MAX_REVIEW_INPUT_ITEMS:
+                raise _ReviewInputAdmissionError("excessive JSON structure")
+            index += 1
+            while (
+                index < len(value)
+                and not value[index].isspace()
+                and value[index] not in ",:[]{}"
+            ):
+                index += 1
+            continue
+        index += 1
+
+
+def _admit_json_value(value: Any) -> None:
+    stack: list[tuple[Any, int]] = [(value, 1)]
+    items = 0
+    while stack:
+        item, depth = stack.pop()
+        items += 1
+        if items > MAX_REVIEW_INPUT_ITEMS:
+            raise _ReviewInputAdmissionError("excessive JSON structure")
+        if type(item) is str:
+            _admit_scalar_text(item)
+        elif item is None or type(item) in {bool, int}:
+            continue
+        elif type(item) is float:
+            if not math.isfinite(item):
+                raise _ReviewInputAdmissionError("non-finite JSON number")
+        elif type(item) is list:
+            if depth > MAX_REVIEW_INPUT_DEPTH:
+                raise _ReviewInputAdmissionError("excessive JSON nesting")
+            stack.extend((child, depth + 1) for child in item)
+        elif type(item) is dict:
+            if depth > MAX_REVIEW_INPUT_DEPTH:
+                raise _ReviewInputAdmissionError("excessive JSON nesting")
+            items += len(item)
+            if items > MAX_REVIEW_INPUT_ITEMS:
+                raise _ReviewInputAdmissionError("excessive JSON structure")
+            for key, child in item.items():
+                _admit_scalar_text(key)
+                stack.append((child, depth + 1))
+        else:
+            raise _ReviewInputAdmissionError("unsupported JSON value")
 
 
 def _canonical(value: Any) -> bytes:
@@ -525,33 +621,64 @@ def load_review_input(path: Path) -> ReviewInput:
     if not path.is_absolute():
         raise ReviewInputError("review input path must be absolute")
     try:
+        with path.open("rb") as source:
+            raw = source.read(MAX_REVIEW_INPUT_BYTES + 1)
+        if len(raw) > MAX_REVIEW_INPUT_BYTES:
+            raise _ReviewInputAdmissionError("review input exceeds byte limit")
+        text = raw.decode("utf-8")
+        _check_json_shape(text)
 
         def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
             result: dict[str, Any] = {}
             for key, item in pairs:
+                _admit_scalar_text(key)
                 if key in result:
-                    raise ReviewInputError(
-                        f"review input contains duplicate key: {key}"
-                    )
+                    raise _ReviewInputAdmissionError("duplicate JSON key")
                 result[key] = item
             return result
 
         def reject_constant(value: str) -> None:
-            raise ReviewInputError(
-                f"review input contains non-finite JSON value: {value}"
-            )
+            raise _ReviewInputAdmissionError("non-finite JSON constant")
 
-        return parse_review_input(
-            json.loads(
-                path.read_text(encoding="utf-8"),
-                object_pairs_hook=unique_object,
-                parse_constant=reject_constant,
-            )
+        def bounded_integer(value: str) -> int:
+            digits = value[1:] if value.startswith("-") else value
+            if len(digits) > MAX_REVIEW_INPUT_NUMBER_DIGITS:
+                raise _ReviewInputAdmissionError("oversized JSON integer")
+            try:
+                return int(value)
+            except ValueError as error:
+                raise _ReviewInputAdmissionError("invalid JSON integer") from error
+
+        def finite_float(value: str) -> float:
+            if sum(character.isdigit() for character in value) > (
+                MAX_REVIEW_INPUT_NUMBER_DIGITS
+            ):
+                raise _ReviewInputAdmissionError("oversized JSON number")
+            try:
+                number = float(value)
+            except (OverflowError, ValueError) as error:
+                raise _ReviewInputAdmissionError("invalid JSON number") from error
+            if not math.isfinite(number):
+                raise _ReviewInputAdmissionError("non-finite JSON number")
+            return number
+
+        value = json.loads(
+            text,
+            object_pairs_hook=unique_object,
+            parse_constant=reject_constant,
+            parse_int=bounded_integer,
+            parse_float=finite_float,
         )
-    except OSError as error:
-        raise ReviewInputError(f"cannot read review input: {error}") from error
-    except json.JSONDecodeError as error:
-        raise ReviewInputError("review input is not JSON") from error
+        _admit_json_value(value)
+    except (
+        OSError,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+        RecursionError,
+        _ReviewInputAdmissionError,
+    ) as error:
+        raise ReviewInputError(REVIEW_INPUT_ADMISSION_ERROR) from error
+    return parse_review_input(value)
 
 
 def bind_review_input(  # noqa: C901

@@ -17,6 +17,7 @@ from publication_receipts import (
     record_reconciliation,
     verified_transition,
 )
+from publication_support import admit_review_input as _admit_review_input
 from publication_support import expected_identity as _expected_identity
 from publication_support import validate_pr_content
 from reviewable_pr_state import (
@@ -33,7 +34,6 @@ if str(WRITER_SCRIPTS) not in sys.path:
 from change_navigation.review_input import (  # noqa: E402
     ReviewInputError,
     bind_review_input,
-    load_review_input,
 )
 from change_navigation.bot_body import BotBodyError, authored_body  # noqa: E402
 from change_navigation.sensitive_content import suspected_secret_error  # noqa: E402
@@ -67,8 +67,8 @@ def audit(
 def _validate_live_state(
     *, expected: ExpectedIdentity, title: str, body: str, review_input_path: Path
 ) -> tuple[int, str, str]:
+    manifest = _admit_review_input(review_input_path)
     try:
-        manifest = load_review_input(review_input_path)
         body_sha256 = str(manifest.raw["candidate"]["body_sha256"])
         authored = authored_body(body, expected_sha256=body_sha256)
         bind_review_input(
@@ -88,7 +88,10 @@ def _validate_live_state(
         review_input_version = int(manifest.raw["version"])
         review_input_sha256 = manifest.content_sha256
     except (ReviewInputError, BotBodyError) as error:
-        raise PublicationError(f"review input drift: {error}") from error
+        raise PublicationError(
+            "review input could not be admitted; check the local file and regenerate "
+            "it for this exact publication candidate"
+        ) from error
     validate_pr_content(
         authored,
         expected.repository,
@@ -107,6 +110,7 @@ def reconcile(
 ):
     """Create an irreversible reconciled-unreceipted receipt for exact live state."""
 
+    _admit_review_input(review_input_path)
     receipt_root = prepare_receipt_store(receipt_directory)
     prepare_receipt_ledger(receipt_root, expected)
     with receipt_ledger_lock(receipt_root, expected) as lease:
