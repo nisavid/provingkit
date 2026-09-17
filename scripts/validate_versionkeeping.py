@@ -113,6 +113,22 @@ REQUIRED_CHECKPOINT_TERMS = (
     "Git does not provide a lease for symbolic `HEAD`",
     "Server-enforced repository policy/protection",
 )
+REQUIRED_COMMIT_POLICY_TERMS = (
+    "before the first commit in a thread",
+    "`CONTRIBUTING.md` or equivalent contribution guidance",
+    "If no DCO requirement exists, continue without DCO deliberation.",
+    "ordinary original work authored or assisted by the agent",
+    "Agent-assisted generation alone is not uncertainty.",
+    "Concrete employer ownership, third-party copying, imported material, generated artifacts with external licensing obligations",
+    "Never add the operator's sign-off as another contributor's attestation.",
+    "If escalation is unavailable, retain the affected work uncommitted",
+    "complete the task through a rights-clear implementation within existing authority",
+    "Verify the resulting commit's sign-off trailer and identity",
+    "cryptographic commit signing",
+    "license compliance",
+    "code review",
+    "release authority",
+)
 REQUIRED_TERMINAL_TERMS = (
     "dirty, directly agent-created worktree has a retention-only route",
     "durable, operator-visible, same-filesystem quarantine",
@@ -166,7 +182,7 @@ FORK_REPROBE_SEMANTIC_SHA256 = (
     "d34a7523dbc317741d1a0a6b83620b5b4e5ec8ce07e3a26e27112f239240a450"
 )
 CHECKPOINT_BEHAVIOR_EVALS_SEMANTIC_SHA256 = (
-    "6aed75cd2f3d592d6d8f41058e3d8e134130b354904c2a5a0bc7124ddfd8e030"
+    "333ab18ac2616c14f44e13f7db3a65d5f0abe29c0b40fe40d3938d32cdfa19f1"
 )
 CHECKPOINT_TRIGGER_EVALS_SEMANTIC_SHA256 = (
     "5365231d841e86057c92b93a5bedd4a979b781b955f8a8f7a4762613554377d3"
@@ -614,11 +630,25 @@ def validate_skills(root: Path, skills: tuple[str, ...]) -> None:
         "skills/checkpointing-and-publishing-git-work/references/"
         "publication-execution.md",
     )
+    commit_policy = read(
+        root,
+        "skills/checkpointing-and-publishing-git-work/references/commit-policy.md",
+    )
     publication_contract = checkpoint + "\n" + publication
     for term in REQUIRED_CHECKPOINT_TERMS:
         require(
             term in publication_contract,
             f"checkpoint safety contract missing: {term}",
+        )
+    require(
+        "[destination commit policy](references/commit-policy.md)" in checkpoint,
+        "checkpoint commit policy reference handoff missing",
+    )
+    normalized_commit_policy = " ".join(commit_policy.split())
+    for term in REQUIRED_COMMIT_POLICY_TERMS:
+        require(
+            term in normalized_commit_policy,
+            f"commit policy contract missing: {term}",
         )
     for term in (
         "--reviewed-plan-sha256",
@@ -884,6 +914,11 @@ def validate_checkpoint_external_evals(repo_root: Path) -> None:
                 ),
                 "behavior eval contract expectation drift",
             )
+    read_repository_file(
+        repo_root,
+        EVAL_RELATIVE
+        / "skills/checkpointing-and-publishing-git-work/fixtures/commit-policy-and-dco.md",
+    )
     evaluation_seven = next(
         (evaluation for evaluation in evals if evaluation["id"] == 7),
         None,

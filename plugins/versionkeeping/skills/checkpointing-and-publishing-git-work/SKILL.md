@@ -61,11 +61,14 @@ permitted.
 ## Follow The Checkpoint Workflow
 
 1. Resolve constraints, capture baseline, and run applicable verification.
-2. Create a literal-path, task-only commit; bind and rerun final verification on
-   that immutable commit.
-3. Run and review the planner. If reconciliation is required, rerun affected
+2. Before the first commit in the thread, establish the
+   [destination commit policy](references/commit-policy.md). Apply its DCO branch
+   only when the destination requires it; recheck changed policy or work.
+3. Create a literal-path, task-only commit under that policy; bind and rerun
+   final verification on that immutable commit.
+4. Run and review the planner. If reconciliation is required, rerun affected
    gates and replace the plan only after it returns `ready` again.
-4. Bind exact reviewed `ready` bytes to a separately retained SHA-256 digest,
+5. Bind exact reviewed `ready` bytes to a separately retained SHA-256 digest,
    execute once, and require terminal `verified` evidence for the captured
    endpoint and full destination ref.
 

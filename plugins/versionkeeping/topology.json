@@ -15,7 +15,8 @@
       "references": [
         "skills/checkpointing-and-publishing-git-work/references/publication-execution.md",
         "skills/checkpointing-and-publishing-git-work/references/terminal-cleanup.md",
-        "skills/checkpointing-and-publishing-git-work/references/evaluation-integrity.md"
+        "skills/checkpointing-and-publishing-git-work/references/evaluation-integrity.md",
+        "skills/checkpointing-and-publishing-git-work/references/commit-policy.md"
       ],
       "scripts": [
         "skills/checkpointing-and-publishing-git-work/scripts/plan_git_publication.py",
