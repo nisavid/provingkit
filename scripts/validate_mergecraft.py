@@ -616,7 +616,7 @@ ATLAS_EXTENSION_CONTRACT = {
 }
 EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
-    "writer": "0e6ee2c1377b8b571bda4773a124944361424bd2e251824d0f92ac30405cb2b9",
+    "writer": "f4f3a36187a4fb7d7bcff351b661a3c800d388b4fe024cebe4eee0e0b96efab0",
     "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
 }
@@ -4536,14 +4536,62 @@ with tempfile.TemporaryDirectory() as raw_directory:
 
     set_states(created)
     comment_body = "@coderabbitai review"
+    comment_body_sha256 = hashlib.sha256(comment_body.encode("utf-8")).hexdigest()
+    for actor_login in (
+        "probe-user",
+        "mona-cat_octo",
+        "octo_admin",
+        "github-actions[bot]",
+    ):
+        assert comments._comment_receipt(
+            {
+                "id": 91,
+                "html_url": f"{expected.url}#issuecomment-91",
+                "body": comment_body,
+                "user": {"login": actor_login},
+                "created_at": "2026-08-20T12:00:00Z",
+            },
+            expected,
+            comment_body,
+            actor_login,
+        )["user"] == {"login": actor_login}
+    for unsafe_login in (
+        "Authorization: Bearer synthetic-secret",
+        "two words",
+        "ansi\x1b[31m",
+        {"login": "nested"},
+        ["nested"],
+        "github-actions[bot][bot]",
+    ):
+        must_reject(
+            lambda unsafe_login=unsafe_login: comments._comment_receipt(
+                {
+                    "id": 91,
+                    "html_url": f"{expected.url}#issuecomment-91",
+                    "body": comment_body,
+                    "user": {"login": unsafe_login},
+                    "created_at": "2026-08-20T12:00:00Z",
+                },
+                expected,
+                comment_body,
+                "probe-user",
+            ),
+            state.PublicationError,
+            failure_message="unsafe nested comment actor login was accepted",
+        )
     comment_receipt = comments.post_comment(
         expected=expected,
         expected_authenticated_login="probe-user",
         body=comment_body,
-        body_sha256=hashlib.sha256(comment_body.encode("utf-8")).hexdigest(),
+        body_sha256=comment_body_sha256,
     )
-    assert comment_receipt["id"] == 91
-    assert comment_receipt["body"] == comment_body
+    assert comment_receipt == {
+        "id": 91,
+        "html_url": f"{expected.url}#issuecomment-91",
+        "body_sha256": comment_body_sha256,
+        "user": {"login": "probe-user"},
+        "created_at": "2026-08-20T12:00:00Z",
+    }
 
     set_states(created)
     request = {

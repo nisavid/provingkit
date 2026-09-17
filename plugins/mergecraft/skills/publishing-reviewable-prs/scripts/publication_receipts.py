@@ -29,9 +29,13 @@ from required_review import (
 )
 from reviewable_pr_state import (
     ExpectedIdentity,
+    JsonReadError,
     PublicationError,
+    classified_read_failure,
     identity_matches,
+    strict_json,
     validate_identity_inputs,
+    validate_live_pr_observation,
 )
 
 SCHEMA_VERSION = 4
@@ -201,9 +205,12 @@ def _digest(value: str) -> str:
 
 
 def _canonical(value: Mapping[str, Any]) -> bytes:
-    return json.dumps(
-        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode("utf-8")
+    try:
+        return json.dumps(
+            value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+    except UnicodeEncodeError as error:
+        raise ReceiptError("canonical receipt encoding failed") from error
 
 
 def _timestamp(now: datetime | None = None) -> str:
@@ -455,6 +462,10 @@ def _snapshot(
     *,
     body_sha256: str | None = None,
 ) -> StateSnapshot:
+    try:
+        stored = validate_live_pr_observation(stored)
+    except PublicationError as error:
+        raise ReceiptError("cannot bind an invalid or unverified PR state") from error
     title = stored.get("title")
     body = stored.get("body")
     is_draft = stored.get("isDraft")
@@ -582,28 +593,40 @@ def verified_transition(
 
 
 def _strict_json(raw: bytes) -> dict[str, Any]:
-    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-        result: dict[str, Any] = {}
-        for key, value in pairs:
-            if key in result:
-                raise ReceiptError("receipt contains a duplicate JSON key")
-            result[key] = value
-        return result
-
-    def reject_constant(_: str) -> None:
-        raise ReceiptError("receipt contains a non-finite JSON value")
-
     try:
-        value = json.loads(
-            raw.decode("utf-8"),
-            object_pairs_hook=unique_object,
-            parse_constant=reject_constant,
-        )
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        decoded = raw.decode("utf-8")
+    except UnicodeDecodeError as error:
         raise ReceiptError("receipt contains invalid JSON") from error
-    if not isinstance(value, dict):
+    try:
+        value = strict_json(decoded, "receipt")
+    except JsonReadError as error:
+        message = {
+            "duplicate-key": "receipt contains a duplicate JSON key",
+            "non-finite": "receipt contains a non-finite JSON value",
+            "invalid": "receipt contains invalid JSON",
+        }[error.kind]
+        raise ReceiptError(message) from error
+    if type(value) is not dict:
         raise ReceiptError("receipt must be a JSON object")
+    try:
+        _require_utf8_scalar_text(value)
+    except UnicodeEncodeError as error:
+        raise ReceiptError("receipt contains malformed UTF-8 scalar text") from error
     return value
+
+
+def _require_utf8_scalar_text(value: Any) -> None:
+    if type(value) is str:
+        value.encode("utf-8")
+        return
+    if type(value) is list:
+        for item in value:
+            _require_utf8_scalar_text(item)
+        return
+    if type(value) is dict:
+        for key, item in value.items():
+            key.encode("utf-8")
+            _require_utf8_scalar_text(item)
 
 
 def _exact_keys(value: dict[str, Any], keys: set[str], label: str) -> None:
@@ -1069,12 +1092,21 @@ def audit_publication(
             reason="receipt ledger is unavailable or invalid",
         )
     try:
-        stored = read_live()
-    except PublicationError:
+        stored = validate_live_pr_observation(read_live())
+    except PublicationError as error:
         return AuditResult(
             status="unavailable",
             receipt=receipts[-1] if receipts else None,
-            reason="live PR state is unavailable",
+            reason=classified_read_failure(error, stage="live PR state read"),
+        )
+    except Exception:
+        return AuditResult(
+            status="unavailable",
+            receipt=receipts[-1] if receipts else None,
+            reason=(
+                "live PR state read failed for an unclassified reason; details were "
+                "withheld because they may contain sensitive data"
+            ),
         )
     if not receipts:
         return AuditResult(

@@ -773,7 +773,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             title="feat: widget", body=BODY, expected_body=BODY, operation="ready"
         )
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("cannot prove causality", result.stderr)
+        self.assertIn("does not establish a canonical transition", result.stderr)
         state = json.loads(self.github.read_text())
         self.assertFalse(state["prs"][0]["isDraft"])
         self.assertEqual(
@@ -859,7 +859,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             title="feat: widget", body=BODY, expected_body=old_body
         )
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("no retry or rollback", result.stderr)
+        self.assertIn("no automatic retry or rollback was attempted", result.stderr)
         calls = json.loads(self.github.read_text())["calls"]
         self.assertEqual(
             [call[2:4] for call in calls],
@@ -882,7 +882,7 @@ class MergecraftControlPlaneTests(unittest.TestCase):
             title="feat: widget", body=BODY, expected_body=old_body
         )
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("no retry or rollback", result.stderr)
+        self.assertIn("no automatic retry or rollback was attempted", result.stderr)
 
     def test_restack_requires_a_fresh_refetch_then_allows_one_new_write(self) -> None:
         old_body = BODY.replace("9 additions", "8 additions")

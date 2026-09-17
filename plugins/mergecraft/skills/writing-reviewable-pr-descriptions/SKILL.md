@@ -64,6 +64,10 @@ Generated forge text is no substitute.
    live bot tail separately. Keep opaque authored content after the navigation
    prefix byte-for-byte unless its change is explicitly authorized. Use the
    publisher PR-number token for create.
+   The local review-input reader admits at most 16 MiB, 64 nested JSON
+   containers, 200,000 total JSON values and object keys, and 4,096 digits per
+   JSON number. It requires finite numbers and UTF-8 scalar text. These are local
+   reader resource limits, not GitHub or manifest-protocol limits.
    For diffs over 100 files, additionally bind the first 100 deterministic local
    Git target paths, omitted count, and immutable comparison URL; render only
    those rows plus the canonical omission record. Smaller bodies remain complete

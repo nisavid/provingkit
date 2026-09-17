@@ -18,7 +18,6 @@ if str(WRITER_SCRIPTS) not in sys.path:
 from change_navigation.review_input import (  # noqa: E402
     ReviewInputError,
     bind_review_input,
-    load_review_input,
 )
 from change_navigation.sensitive_content import suspected_secret_error  # noqa: E402
 from publication_receipts import (  # noqa: E402
@@ -32,7 +31,10 @@ from publication_receipts import (  # noqa: E402
     verified_transition,
 )
 from publication_support import (  # noqa: E402
+    BodySnapshotError,
+    admit_review_input as _admit_review_input,
     expected_identity as _expected_identity,
+    reread_relationship_diagnostic,
 )
 from publication_support import (  # noqa: E402
     temporary_body as _write_temporary_body,
@@ -40,6 +42,7 @@ from publication_support import (  # noqa: E402
 from publication_support import (  # noqa: E402
     validate_pr_content as _validate,
 )
+from publication_support import verified_publication_acknowledgement  # noqa: E402
 from required_review import (  # noqa: E402
     build_candidate as _build_candidate,
 )
@@ -51,14 +54,21 @@ from required_review import (  # noqa: E402
     validate_required_review as _validate_required_review,
 )
 from reviewable_pr_state import (  # noqa: E402
+    CommandRejectedError,
     PR_URL_RE,
     ExpectedIdentity,
     MutationAmbiguousError,
+    MutationPreparationError,
     PublicationError,
     github_repository,
     head_base_matches,
+    mutation_failure_diagnostic,
+    parse_positive_decimal_identifier,
+    parse_selected_specialists,
+    read_failure_diagnostic,
     state_matches,
     validate_identity_inputs,
+    validate_selected_specialists,
 )
 from reviewable_pr_state import (  # noqa: E402
     open_prs as _open_prs,
@@ -90,9 +100,14 @@ def _body_template(path: Path) -> tuple[str, bytes]:
         raise PublicationError("body template path must be absolute")
     try:
         raw = path.read_bytes()
+    except OSError as error:
+        raise PublicationError(
+            "cannot read body template; check the local path and read permissions"
+        ) from error
+    try:
         template = raw.decode("utf-8")
-    except (OSError, UnicodeDecodeError) as error:
-        raise PublicationError(f"cannot read body template: {error}") from error
+    except UnicodeDecodeError as error:
+        raise PublicationError("body template must be valid UTF-8") from error
     if suspected_secret_error(template) is not None:
         raise PublicationError(
             "PR body contains a suspected credential or secret; publication is blocked"
@@ -125,8 +140,8 @@ def _review_input(
     pr_number: int,
     template_body: str | None = None,
 ) -> tuple[int, str]:
+    manifest = _admit_review_input(path)
     try:
-        manifest = load_review_input(path)
         bind_review_input(
             manifest,
             repository=repository,
@@ -144,7 +159,10 @@ def _review_input(
         )
         return int(manifest.raw["version"]), manifest.content_sha256
     except ReviewInputError as error:
-        raise PublicationError(f"review input drift: {error}") from error
+        raise PublicationError(
+            "review input could not be admitted; check the local file and regenerate "
+            "it for this exact publication candidate"
+        ) from error
 
 
 def _matching_head_prs(
@@ -179,15 +197,16 @@ def _recover_created(
     head_repository: str,
     title: str,
     transport_body: str,
-) -> tuple[int, str] | None:
+) -> tuple[tuple[int, str] | None, str]:
     matches: list[dict[str, Any]] = []
-    for stored in _matching_head_prs(
+    candidates = _matching_head_prs(
         repository=repository,
         base=base,
         head=head,
         head_owner=head_owner,
         head_repository=head_repository,
-    ):
+    )
+    for stored in candidates:
         number = stored.get("number")
         if type(number) is not int or number <= 0:
             continue
@@ -209,9 +228,60 @@ def _recover_created(
             is_draft=True,
         ):
             matches.append(stored)
-    if len(matches) != 1:
+    if len(matches) == 1:
+        return (
+            (matches[0]["number"], matches[0]["url"]),
+            "nonce recovery observed one exact nonce-tagged draft",
+        )
+    if len(matches) > 1:
+        return None, "nonce recovery observed multiple exact nonce-tagged drafts"
+    if candidates:
+        return (
+            None,
+            "nonce recovery observed open PR state, but none matched the exact "
+            "nonce, identity, title, body, and draft state",
+        )
+    return None, "nonce recovery observed no open PR for the exact head/base"
+
+
+def _initial_create_process_fact(
+    error: PublicationError, *, zero_exit_without_url: bool
+) -> str:
+    if zero_exit_without_url:
+        return "initial create command exited zero without the expected PR URL"
+    if isinstance(error, MutationPreparationError):
+        return (
+            "initial create command could not be prepared locally; no process "
+            "started and no target mutation ran"
+        )
+    if isinstance(error, CommandRejectedError):
+        return "initial create command returned nonzero"
+    if isinstance(error, MutationAmbiguousError):
+        if error.malformed_output:
+            return "initial create command exited zero with malformed output"
+        if error.timeout_seconds is not None:
+            return "initial create command timed out after a possible mutation"
+        if error.process_outcome_unknown:
+            return (
+                "initial create command failed during process launch or "
+                "communication; whether the process started is unknown and mutation "
+                "outcome is unknown"
+            )
+        return "initial create command ended with an unverified mutation outcome"
+    return "initial create command failed"
+
+
+def _create_output_identity(
+    output: str, repository: str
+) -> tuple[int, str] | None:
+    match = PR_URL_RE.search(output)
+    if match is None or match.group("repository") != repository:
         return None
-    return int(matches[0]["number"]), str(matches[0]["url"])
+    try:
+        pr_number = parse_positive_decimal_identifier(match.group("pr"))
+    except ValueError as error:
+        raise PublicationError("gh pr create returned no expected PR URL") from error
+    return pr_number, f"https://github.com/{repository}/pull/{pr_number}"
 
 
 def _create(
@@ -234,14 +304,14 @@ def _create(
         head_repository=head_repository,
     )
     if existing:
-        urls = ", ".join(str(item.get("url", "unknown URL")) for item in existing)
-        raise PublicationError(f"an open PR already exists for this head/base: {urls}")
+        raise PublicationError("an open PR already exists for this head/base")
 
     transport_body = _transport_body(nonce)
     create_error: PublicationError | None = None
+    snapshot_error: BodySnapshotError | None = None
     result = None
-    with _write_temporary_body(transport_body) as body_file:
-        try:
+    try:
+        with _write_temporary_body(transport_body) as body_file:
             result = _run_mutation(
                 [
                     "gh",
@@ -260,31 +330,101 @@ def _create(
                     "--draft",
                 ]
             )
+            body_file.mark_mutation_exited_zero()
+    except BodySnapshotError as error:
+        if not error.after_zero_exit:
+            raise
+        snapshot_error = error
+    except PublicationError as error:
+        create_error = error
+
+    malformed_success = result is not None and snapshot_error is None
+    if result is not None and snapshot_error is None:
+        try:
+            identity = _create_output_identity(result.stdout, repository)
         except PublicationError as error:
             create_error = error
+        else:
+            if identity is not None:
+                return identity
+            create_error = PublicationError("gh pr create returned no expected PR URL")
 
-    if result is not None:
-        match = PR_URL_RE.search(result.stdout)
-        if match is not None and match.group("repository") == repository:
-            return int(match.group("pr")), match.group(0)
-        create_error = PublicationError("gh pr create returned no expected PR URL")
-
-    recovered = _recover_created(
-        repository=repository,
-        base=base,
-        base_oid=base_oid,
-        head=head,
-        head_oid=head_oid,
-        head_owner=head_owner,
-        head_repository=head_repository,
-        title=title,
-        transport_body=transport_body,
-    )
+    try:
+        recovered, recovery_fact = _recover_created(
+            repository=repository,
+            base=base,
+            base_oid=base_oid,
+            head=head,
+            head_oid=head_oid,
+            head_owner=head_owner,
+            head_repository=head_repository,
+            title=title,
+            transport_body=transport_body,
+        )
+    except PublicationError as reread_error:
+        if snapshot_error is not None:
+            failure = (
+                "initial create command exited zero, but private body snapshot "
+                "cleanup failed"
+            )
+            diagnostic = ""
+        else:
+            if create_error is None:
+                raise AssertionError(
+                    "initial create failure has no retained process error"
+                ) from reread_error
+            failure = _initial_create_process_fact(
+                create_error, zero_exit_without_url=malformed_success
+            )
+            diagnostic = (
+                ""
+                if malformed_success
+                else "; " + mutation_failure_diagnostic(create_error)
+            )
+        original_error = snapshot_error or create_error
+        error_type = (
+            MutationAmbiguousError
+            if isinstance(create_error, MutationAmbiguousError)
+            else PublicationError
+        )
+        combined = error_type(
+            f"{failure}{diagnostic}; nonce recovery was unavailable, so no exact "
+            "nonce-tagged draft could be established; "
+            f"{read_failure_diagnostic(reread_error)}; no additional mutation was "
+            "attempted; canonical provenance was not minted and no canonical receipt "
+            "was written; no automatic retry or rollback was attempted"
+        )
+        combined.reread_error = reread_error
+        raise combined from original_error
     if recovered is not None:
+        if snapshot_error is not None:
+            raise PublicationError(
+                "initial create command exited zero and one exact nonce-tagged draft "
+                "was found, but private body snapshot cleanup failed; no additional "
+                "mutation was attempted; canonical provenance was not minted and no "
+                "canonical receipt was written; no automatic retry or rollback was "
+                "attempted; independently inspect the draft"
+            ) from snapshot_error
         return recovered
+    if snapshot_error is not None:
+        raise PublicationError(
+            "initial create command exited zero, but private body snapshot cleanup "
+            f"failed; {recovery_fact}; no additional mutation was attempted; canonical "
+            "provenance was not minted and no canonical receipt was written; no "
+            "automatic retry or rollback was attempted; independently inspect the draft"
+        ) from snapshot_error
+    if create_error is None:
+        raise AssertionError("initial create failure has no retained process error")
+    process_fact = _initial_create_process_fact(
+        create_error, zero_exit_without_url=malformed_success
+    )
+    diagnostic = (
+        "" if malformed_success else f"; {mutation_failure_diagnostic(create_error)}"
+    )
     raise PublicationError(
-        f"create outcome is ambiguous and no unique nonce-tagged draft was found: "
-        f"{create_error}"
+        f"{process_fact}{diagnostic}; {recovery_fact}; canonical provenance was not "
+        "minted and no canonical receipt was written; no automatic retry or rollback "
+        "was attempted"
     ) from create_error
 
 
@@ -309,8 +449,9 @@ def _install_canonical_draft(
         )
 
     command_error: PublicationError | None = None
-    with _write_temporary_body(body) as body_file:
-        try:
+    snapshot_error: BodySnapshotError | None = None
+    try:
+        with _write_temporary_body(body) as body_file:
             _run_mutation(
                 [
                     "gh",
@@ -325,19 +466,90 @@ def _install_canonical_draft(
                     body_file.name,
                 ]
             )
-        except PublicationError as error:
-            command_error = error
+            body_file.mark_mutation_exited_zero()
+    except BodySnapshotError as error:
+        if not error.after_zero_exit:
+            raise
+        snapshot_error = error
+    except PublicationError as error:
+        command_error = error
 
-    after = _stored_pr(expected.repository, expected.pr_number)
-    if command_error is not None:
-        if isinstance(command_error, MutationAmbiguousError):
-            raise MutationAmbiguousError(
-                "canonical edit command was ambiguous; a matching reread cannot "
-                "prove causality, so canonical provenance was not minted; do not retry"
-            ) from command_error
+    try:
+        after = _stored_pr(expected.repository, expected.pr_number)
+    except PublicationError as reread_error:
+        if snapshot_error is not None:
+            combined = PublicationError(
+                "canonical edit command exited zero, but private body snapshot "
+                "cleanup and post-mutation verification failed; the final reread "
+                "state was unavailable; canonical provenance was not minted and no "
+                "canonical receipt was written; no automatic retry or rollback was "
+                "attempted; "
+                f"{read_failure_diagnostic(reread_error)}"
+            )
+            combined.reread_error = reread_error
+            raise combined from snapshot_error
+        if command_error is None:
+            combined = PublicationError(
+                "canonical edit command exited zero, but post-mutation "
+                "verification failed; the final reread state was unavailable; "
+                "canonical provenance was not minted and no canonical receipt was "
+                "written; no automatic retry or rollback was attempted; "
+                f"{read_failure_diagnostic(reread_error)}"
+            )
+            combined.reread_error = reread_error
+            raise combined from reread_error
+        diagnostic = (
+            "canonical edit command was ambiguous"
+            if isinstance(command_error, MutationAmbiguousError)
+            else "canonical edit command failed"
+        )
+        error_type = (
+            MutationAmbiguousError
+            if isinstance(command_error, MutationAmbiguousError)
+            else PublicationError
+        )
+        combined = error_type(
+            f"{diagnostic}; the final reread state was unavailable; canonical "
+            "provenance was not minted and no canonical receipt was written; no "
+            "automatic retry or rollback was attempted; "
+            f"{mutation_failure_diagnostic(command_error)}; "
+            f"{read_failure_diagnostic(reread_error)}"
+        )
+        combined.reread_error = reread_error
+        raise combined from command_error
+    relationship = reread_relationship_diagnostic(
+        matches_intended=state_matches(
+            after, expected, title=title, body=body, is_draft=True
+        ),
+        matches_preimage=state_matches(
+            after, expected, title=title, body=transport_body, is_draft=True
+        ),
+    )
+    if snapshot_error is not None:
         raise PublicationError(
-            "canonical edit command failed; a matching reread cannot prove "
-            "causality, so canonical provenance was not minted"
+            "canonical edit command exited zero, but private body snapshot cleanup "
+            f"failed; {relationship}; that observed relationship does not establish "
+            "a canonical transition, so canonical provenance was not minted and no "
+            "canonical receipt was written; no automatic retry or rollback was "
+            "attempted; independently inspect the PR and do not retry"
+        ) from snapshot_error
+    if command_error is not None:
+        diagnostic = (
+            "canonical edit command was ambiguous"
+            if isinstance(command_error, MutationAmbiguousError)
+            else "canonical edit command failed"
+        )
+        error_type = (
+            MutationAmbiguousError
+            if isinstance(command_error, MutationAmbiguousError)
+            else PublicationError
+        )
+        raise error_type(
+            f"{diagnostic}; {relationship}; that observed relationship does not "
+            "establish a canonical transition, so canonical provenance was not minted "
+            "and no canonical receipt was written; no automatic retry or rollback was "
+            "attempted; "
+            f"{mutation_failure_diagnostic(command_error)}"
         ) from command_error
     if state_matches(after, expected, title=title, body=body, is_draft=True):
         return before, after
@@ -348,10 +560,20 @@ def _install_canonical_draft(
         body=transport_body,
         is_draft=True,
     ):
-        raise PublicationError("canonical edit was not stored")
+        raise PublicationError(
+            "canonical edit command exited zero, but the final reread matched the "
+            "pre-mutation state; an unchanged preimage does not establish whether "
+            "the command stored the intended state before another change, so "
+            "causality remains unresolved; canonical provenance was not minted "
+            "and no canonical receipt was written; no automatic retry or rollback "
+            "was attempted"
+        )
     raise PublicationError(
-        "canonical edit has an ambiguous result; observed state was preserved and "
-        "requires operator inspection"
+        "canonical edit command exited zero, but the final reread differed from "
+        "both the pre-mutation and intended states; causality remains unresolved; "
+        "canonical provenance was not minted and no canonical receipt was written; "
+        "no automatic retry or rollback was attempted; the observed state requires "
+        "operator inspection"
     )
 
 
@@ -372,6 +594,7 @@ def publish(
     selected_specialists: list[str],
     receipt_directory: Path | None = None,
 ) -> dict[str, Any]:
+    selected_specialists = validate_selected_specialists(selected_specialists)
     validate_identity_inputs(
         repository=repository,
         pr_number=None,
@@ -595,12 +818,7 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
-        try:
-            selected_specialists = json.loads(args.selected_specialists)
-        except json.JSONDecodeError as error:
-            raise PublicationError(
-                "selected review specialists must be a JSON array"
-            ) from error
+        selected_specialists = parse_selected_specialists(args.selected_specialists)
         stored = publish(
             repository=args.repository,
             base=args.base,
@@ -617,32 +835,27 @@ def main() -> int:
             selected_specialists=selected_specialists,
             receipt_directory=None,
         )
+        expected = _expected_identity(
+            repository=args.repository,
+            pr_number=int(stored["number"]),
+            base=args.base,
+            base_oid=args.base_oid,
+            head=args.head,
+            head_oid=args.head_oid,
+            head_owner=args.head_owner,
+            head_repository=args.head_repository,
+        )
+        acknowledgement = verified_publication_acknowledgement(
+            load_latest=lambda: load_receipts(resolve_receipt_root(), expected),
+            repository=args.repository,
+            pr_number=stored["number"],
+            url=stored["url"],
+            is_draft=stored["isDraft"],
+        )
     except PublicationError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
-    expected = _expected_identity(
-        repository=args.repository,
-        pr_number=int(stored["number"]),
-        base=args.base,
-        base_oid=args.base_oid,
-        head=args.head,
-        head_oid=args.head_oid,
-        head_owner=args.head_owner,
-        head_repository=args.head_repository,
-    )
-    receipt = load_receipts(resolve_receipt_root(), expected)[-1]
-    print(
-        json.dumps(
-            {
-                "repository": args.repository,
-                "pr": stored["number"],
-                "url": stored["url"],
-                "is_draft": stored["isDraft"],
-                **receipt.summary("verified"),
-            },
-            sort_keys=True,
-        )
-    )
+    print(acknowledgement)
     return 0
 
 

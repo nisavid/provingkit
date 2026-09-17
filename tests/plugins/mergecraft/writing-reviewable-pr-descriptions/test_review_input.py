@@ -20,7 +20,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from change_navigation.diff_files import manifest_rows  # noqa: E402
 from change_navigation.git_observer import observe_git_diff  # noqa: E402
 from change_navigation.review_input import (  # noqa: E402
+    MAX_REVIEW_INPUT_BYTES,
+    MAX_REVIEW_INPUT_DEPTH,
+    MAX_REVIEW_INPUT_NUMBER_DIGITS,
+    MAX_REVIEW_INPUT_ITEMS,
     PR_NUMBER_TOKEN,
+    REVIEW_INPUT_ADMISSION_ERROR,
     VERSION,
     ReviewInputError,
     bind_review_input,
@@ -292,6 +297,13 @@ class ReviewInputTests(unittest.TestCase):
         self.addCleanup(directory.cleanup)
         path = Path(directory.name) / "review-input.json"
         path.write_text(raw if raw is not None else json.dumps(value), encoding="utf-8")
+        return path
+
+    def write_bytes(self, raw: bytes) -> Path:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        path = Path(directory.name) / "review-input.json"
+        path.write_bytes(raw)
         return path
 
     def bind(
@@ -896,15 +908,85 @@ class ReviewInputTests(unittest.TestCase):
         with self.assertRaisesRegex(ReviewInputError, "CR or LF"):
             load_review_input(self.write(value))
 
-    def test_rejects_duplicate_review_input_keys(self) -> None:
-        with self.assertRaisesRegex(ReviewInputError, "duplicate key"):
-            load_review_input(self.write({}, raw='{"version": 2, "version": 2}'))
+    def test_loader_bounds_and_value_freely_classifies_real_file_admission(self) -> None:
+        hostile = "Authorization: arbitrary-secret-value"
+        cases = (
+            ("syntax", b'{"version":'),
+            ("invalid-utf8", b'{"' + hostile.encode() + b'": "\xff"}'),
+            (
+                "oversized-integer",
+                b'{"version":' + b"9" * (MAX_REVIEW_INPUT_NUMBER_DIGITS + 1) + b"}",
+            ),
+            (
+                "excessive-nesting",
+                b"[" * (MAX_REVIEW_INPUT_DEPTH + 1)
+                + b"0"
+                + b"]" * (MAX_REVIEW_INPUT_DEPTH + 1),
+            ),
+            (
+                "excessive-structural-size",
+                b"[" + b",".join(b"0" for _ in range(MAX_REVIEW_INPUT_ITEMS)) + b"]",
+            ),
+            ("lone-surrogate-key", b'{"\\ud800":0}'),
+            ("lone-surrogate-value", b'{"value":"\\ud800"}'),
+            ("non-finite-constant", b'{"version":NaN}'),
+            ("non-finite-exponent", b'{"version":1e9999}'),
+        )
+        for name, raw in cases:
+            with (
+                self.subTest(case=name),
+                self.assertRaises(ReviewInputError) as caught,
+            ):
+                load_review_input(self.write_bytes(raw))
 
-    def test_rejects_non_finite_review_input_values(self) -> None:
-        for constant in ("NaN", "Infinity", "-Infinity"):
-            with self.subTest(constant=constant):
-                with self.assertRaisesRegex(ReviewInputError, "non-finite JSON value"):
-                    load_review_input(self.write({}, raw=f'{{"version": {constant}}}'))
+            self.assertEqual(str(caught.exception), REVIEW_INPUT_ADMISSION_ERROR)
+            self.assertIsNotNone(caught.exception.__cause__)
+            diagnostic = str(caught.exception)
+            self.assertNotIn(hostile, diagnostic)
+            self.assertNotIn("review-input.json", diagnostic)
+            self.assertNotIn("Traceback", diagnostic)
+
+    def test_loader_size_limit_is_a_local_reader_limit(self) -> None:
+        oversized = b" " * MAX_REVIEW_INPUT_BYTES + b"{}"
+        with self.assertRaises(ReviewInputError) as caught:
+            load_review_input(self.write_bytes(oversized))
+        self.assertEqual(str(caught.exception), REVIEW_INPUT_ADMISSION_ERROR)
+        self.assertIsNotNone(caught.exception.__cause__)
+
+    def test_loader_rejects_nesting_and_structure_before_json_allocation(self) -> None:
+        cases = (
+            (
+                "nesting",
+                b"[" * (MAX_REVIEW_INPUT_DEPTH + 1)
+                + b"0"
+                + b"]" * (MAX_REVIEW_INPUT_DEPTH + 1),
+            ),
+            (
+                "structure",
+                b"["
+                + b",".join(b"0" for _ in range(MAX_REVIEW_INPUT_ITEMS))
+                + b"]",
+            ),
+        )
+        for name, raw in cases:
+            with (
+                self.subTest(case=name),
+                mock.patch("change_navigation.review_input.json.loads") as loads,
+                self.assertRaises(ReviewInputError),
+            ):
+                load_review_input(self.write_bytes(raw))
+            loads.assert_not_called()
+
+    def test_loader_preserves_valid_unicode_and_large_diff_within_limits(self) -> None:
+        value = manifest(bounded_body(), title="feat: café λ 🚀")
+        value["candidate"]["title"] = "feat: café λ 🚀"  # type: ignore[index]
+        loaded = load_review_input(self.write(reseal(value)))
+
+        self.assertEqual(loaded.raw["candidate"]["title"], "feat: café λ 🚀")
+        self.assertLess(
+            len(json.dumps(value, ensure_ascii=False).encode("utf-8")),
+            MAX_REVIEW_INPUT_BYTES,
+        )
 
     def test_rejects_boolean_and_float_review_input_versions(self) -> None:
         for malformed in (True, 2.0):

@@ -141,6 +141,20 @@ class ValidateMergecraftTests(unittest.TestCase):
             timeout=30,
         )
 
+    def run_comment_acknowledgement_probe(self) -> subprocess.CompletedProcess[str]:
+        marker = "    set_states(created)\n    request = {"
+        probe, separator, _remainder = (
+            VALIDATE_MERGECRAFT.CANDIDATE_RUNTIME_PROBE.partition(marker)
+        )
+        self.assertEqual(separator, marker)
+        return subprocess.run(
+            [sys.executable, "-I", "-B", "-c", probe, str(self.plugin)],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+
     def assert_rejected(self, expected: str) -> None:
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0, result.stdout)
@@ -2001,7 +2015,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "dd65cabbc64521a308ed21e9b41a70efa12b6076ceefdd0b79ef4853690c344d"
+                "82f2f6fb9a93bd82e3b7f28666db917f6d888fc4ebaff610a0fbb1c7439f23bd"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"
@@ -2346,6 +2360,49 @@ class ValidateMergecraftTests(unittest.TestCase):
             comment.read_text() + "\npost_comment = lambda **kwargs: {'accepted': True}\n"
         )
         self.assert_rejected("candidate runtime behavior")
+
+    def test_accepts_closed_comment_acknowledgement_runtime_contract(self) -> None:
+        probe = self.run_comment_acknowledgement_probe()
+
+        self.assertEqual(probe.returncode, 0, probe.stderr)
+
+    def test_rejects_comment_acknowledgement_digest_drift(self) -> None:
+        comment = (
+            self.plugin
+            / "skills/getting-prs-merged/scripts/post_coderabbit_comment.py"
+        )
+        comment.write_text(
+            comment.read_text(encoding="utf-8")
+            + "\n_original_post_comment = post_comment\n"
+            + "def post_comment(**kwargs):\n"
+            + "    receipt = _original_post_comment(**kwargs)\n"
+            + "    receipt['body_sha256'] = '0' * 64\n"
+            + "    return receipt\n",
+            encoding="utf-8",
+        )
+
+        probe = self.run_comment_acknowledgement_probe()
+
+        self.assertNotEqual(probe.returncode, 0)
+
+    def test_rejects_comment_acknowledgement_provider_field_disclosure(self) -> None:
+        comment = (
+            self.plugin
+            / "skills/getting-prs-merged/scripts/post_coderabbit_comment.py"
+        )
+        comment.write_text(
+            comment.read_text(encoding="utf-8")
+            + "\n_original_post_comment = post_comment\n"
+            + "def post_comment(**kwargs):\n"
+            + "    receipt = _original_post_comment(**kwargs)\n"
+            + "    receipt['user']['provider_debug'] = 'arbitrary provider field'\n"
+            + "    return receipt\n",
+            encoding="utf-8",
+        )
+
+        probe = self.run_comment_acknowledgement_probe()
+
+        self.assertNotEqual(probe.returncode, 0)
 
     def test_rejects_publisher_exact_identity_behavior_drift(self) -> None:
         state = (
