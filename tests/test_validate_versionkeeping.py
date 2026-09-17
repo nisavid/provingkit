@@ -1049,6 +1049,32 @@ class ValidateVersionkeepingTests(unittest.TestCase):
         path.unlink()
         self.assert_rejected("commit-policy-and-dco.md")
 
+    def test_rejects_changed_destination_commit_policy_fixture(self) -> None:
+        path = self.repo / CHECKPOINT_EVAL_ROOT / "fixtures/commit-policy-and-dco.md"
+        original = path.read_text()
+        replacement_case = original.index("- Repository H")
+        following_case = original.index("- In a second commit", replacement_case)
+        mutations = {
+            "empty": "",
+            "heading_only": "# Raw scenario\n",
+            "missing_replacement_case": (
+                original[:replacement_case] + original[following_case:]
+            ),
+        }
+        lock = self.repo / CONTENT_LOCK
+        original_lock = lock.read_bytes()
+        for name, content in mutations.items():
+            for arguments in ((), ("--write-content-lock",)):
+                with self.subTest(mutation=name, arguments=arguments):
+                    path.write_text(content)
+                    result = self.validate(*arguments)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(
+                        "commit policy fixture semantic contract drift",
+                        result.stderr,
+                    )
+                    self.assertEqual(lock.read_bytes(), original_lock)
+
     def test_requires_destination_commit_policy_invocation(self) -> None:
         path = self.repo / CHECKPOINT_ROOT / "SKILL.md"
         path.write_text(path.read_text().replace(

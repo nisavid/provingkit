@@ -184,6 +184,9 @@ FORK_REPROBE_SEMANTIC_SHA256 = (
 CHECKPOINT_BEHAVIOR_EVALS_SEMANTIC_SHA256 = (
     "333ab18ac2616c14f44e13f7db3a65d5f0abe29c0b40fe40d3938d32cdfa19f1"
 )
+COMMIT_POLICY_FIXTURE_SEMANTIC_SHA256 = (
+    "b25da9eec040a51bf49b95fb3f5a158ae3e6a43de7683150f34fbe1a1792e223"
+)
 CHECKPOINT_TRIGGER_EVALS_SEMANTIC_SHA256 = (
     "5365231d841e86057c92b93a5bedd4a979b781b955f8a8f7a4762613554377d3"
 )
@@ -914,10 +917,15 @@ def validate_checkpoint_external_evals(repo_root: Path) -> None:
                 ),
                 "behavior eval contract expectation drift",
             )
-    read_repository_file(
+    commit_policy_fixture = read_repository_file(
         repo_root,
         EVAL_RELATIVE
         / "skills/checkpointing-and-publishing-git-work/fixtures/commit-policy-and-dco.md",
+    )
+    require(
+        normalized_semantic_sha256(commit_policy_fixture)
+        == COMMIT_POLICY_FIXTURE_SEMANTIC_SHA256,
+        "commit policy fixture semantic contract drift",
     )
     evaluation_seven = next(
         (evaluation for evaluation in evals if evaluation["id"] == 7),
