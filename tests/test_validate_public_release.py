@@ -3874,6 +3874,24 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
         self.module.validate_repository_projection(self.repository)
 
+    def test_repository_projection_rejects_images_as_member_links(self) -> None:
+        for missing in self.module.MARKETPLACE_PLUGINS:
+            with self.subTest(missing=missing):
+                (self.repository / "README.md").write_text(
+                    "\n".join(
+                        ("!" if plugin == missing else "")
+                        + f"[{plugin}](plugins/{plugin}/README.md)"
+                        for plugin in self.module.MARKETPLACE_PLUGINS
+                    ),
+                    encoding="utf-8",
+                )
+
+                with self.assertRaisesRegex(
+                    self.module.ReleaseError,
+                    f"repository README omits public plugin: {missing}",
+                ):
+                    self.module.validate_repository_projection(self.repository)
+
     def test_repository_projection_keeps_directory_reference_support(self) -> None:
         (self.repository / "README.md").write_text(
             "\n".join(

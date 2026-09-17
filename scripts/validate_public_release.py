@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "b3e2a5a6e23939c16f87f0bf2fef5c661c519dc038f7a0d05fbeeda93b07432b"
+SOURCE_SHA256 = "e767db3786b854a44823de065dd2846daec993597d52783d182c1ad4ccf3355e"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -2713,7 +2713,7 @@ def validate_repository_projection(repository: Path) -> None:
         require(
             f"`plugins/{plugin}/`" in readme
             or re.search(
-                rf"\[[^]\n]+\]\(plugins/{re.escape(plugin)}/README\.md(?:#[^)]*)?\)",
+                rf"(?<!!)\[[^]\n]+\]\(plugins/{re.escape(plugin)}/README\.md(?:#[^)]*)?\)",
                 readme,
             )
             is not None,
