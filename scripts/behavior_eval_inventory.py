@@ -396,19 +396,27 @@ def _link_references(source, documents, records, skills, mappings):
                 whole_inputs.setdefault(owner, set()).add(path)
         raw = document.get("raw")
         if document["format"] == "scenario-matrix":
+            runtime_dependencies = {}
+            for owner, paths in raw.get("runtime_dependencies", {}).items():
+                runtime_dependencies.setdefault(owner.replace(":", "/", 1), set()).update(paths)
+            runtime_dependencies = {owner: sorted(paths) for owner, paths in runtime_dependencies.items()}
             if not production_scope:
                 # Compare consumed declarations without narrowing the full
                 # matrix byte binding already recorded in consumed inputs.
                 matrix_path = document["source"]["path"]
-                for owner in set(document_owners) | {
-                        owner.replace(":", "/", 1) for owner in raw.get("runtime_dependencies", {})}:
+                for owner in set(document_owners) | set(runtime_dependencies):
+                    consumed.setdefault(owner, set()).add(matrix_path)
                     matrix_consumption.setdefault(owner, {})[matrix_path] = {
                         "declarations": [record["raw"] for record in document["records"] if owner in record["owners"]],
-                        "runtime_dependencies": raw.get("runtime_dependencies", {}).get(owner.replace("/", ":", 1), []),
+                        "runtime_dependencies": runtime_dependencies.get(owner, []),
                         "companions": {},
                     }
-            for owner, paths in raw.get("runtime_dependencies", {}).items():
-                owner = owner.replace(":", "/", 1)
+            for owner, paths in runtime_dependencies.items():
+                if owner not in skills:
+                    diagnostics.append({"code": "unknown-owner", "source": document["source"],
+                        "owners": [owner], "ordinary_owners": [] if production_scope else [owner],
+                        "scope": "production-release" if production_scope else "ordinary",
+                        "message": "Declared runtime consumer is outside the committed roster."})
                 for path in paths:
                     files = [name for name in source.files if name == path or name.startswith(path + "/")]
                     if not production_scope:
@@ -419,9 +427,12 @@ def _link_references(source, documents, records, skills, mappings):
                             "ordinary_owners": [] if production_scope else [owner],
                             "scope": "production-release" if production_scope else "ordinary",
                             "owners": [owner], "message": "Declared runtime input is unavailable: " + path})
-            declarations = {owner: record["raw"] for record in document["records"] for owner in record["owners"]}
-            for owner, declaration in declarations.items():
-                pending = list(declaration.get("companions", []))
+            declarations = {}
+            for record in document["records"]:
+                for owner in record["owners"]:
+                    declarations.setdefault(owner, []).append(record["raw"])
+            for owner, owner_declarations in declarations.items():
+                pending = [companion for declaration in owner_declarations for companion in declaration.get("companions", [])]
                 visited = {owner}
                 while pending:
                     companion = pending.pop().replace(":", "/", 1)
@@ -429,11 +440,11 @@ def _link_references(source, documents, records, skills, mappings):
                         continue
                     visited.add(companion)
                     if not production_scope:
-                        companion_row = declarations.get(companion)
-                        matrix_consumption[owner][matrix_path]["companions"][companion] = None if companion_row is None else {
-                            "entrypoint": companion_row.get("entrypoint"),
-                            "companions": companion_row.get("companions", []),
-                            "runtime_dependencies": raw.get("runtime_dependencies", {}).get(companion.replace("/", ":", 1), []),
+                        companion_rows = declarations.get(companion)
+                        matrix_consumption[owner][matrix_path]["companions"][companion] = None if companion_rows is None else {
+                            "declarations": [{"entrypoint": row.get("entrypoint"), "companions": row.get("companions", [])}
+                                             for row in companion_rows],
+                            "runtime_dependencies": runtime_dependencies.get(companion, []),
                         }
                     if companion not in declarations or companion not in skills:
                         diagnostics.append({"code": "companion-unresolved", "source": document["source"],
@@ -446,13 +457,13 @@ def _link_references(source, documents, records, skills, mappings):
                     paths = {path for path in source.files if path.startswith(prefix) and _runtime_path(path)}
                     paths.add(companion_skill["entrypoint"])
                     paths.update(_resource_inputs(source, companion_skill, runtime_only=True))
-                    for declared in raw.get("runtime_dependencies", {}).get(companion.replace("/", ":", 1), []):
+                    for declared in runtime_dependencies.get(companion, []):
                         files = {path for path in source.files if (path == declared or path.startswith(declared + "/")) and _runtime_path(path)}
                         paths.update(files or {declared})
                     if not production_scope:
                         consumed.setdefault(owner, set()).update(paths)
                         whole_inputs.setdefault(owner, set()).update(paths)
-                    pending.extend(declarations[companion].get("companions", []))
+                    pending.extend(nested for row in declarations[companion] for nested in row.get("companions", []))
     for owner, paths in whole_inputs.items():
         for path in paths:
             # A reference or runtime input can also consume the complete file.
