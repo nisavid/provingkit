@@ -1,6 +1,6 @@
 {
   "attestation": null,
-  "candidate_revision": "c5044ed25ffe575b4af1dd93bae39d9c63b63957",
+  "candidate_revision": "070f832479b2eda2c6ce5ed07e79fa5302518558",
   "executor_model_id": "gpt-6-astra",
   "grader_model_id": "gpt-6-astra",
   "kind": "evaluation",
@@ -16,7 +16,7 @@
       },
       "release/behavior-eval-receipt-v1.schema.json": {
         "mode": "100644",
-        "sha256": "c76d071b663ac233a896fc701b16e157d64c581bbc07a3f66b214e0221bbcc5e"
+        "sha256": "59775e83b849017064a948388d3106c34cefdc36ccca2ec51bd5cee05e8f79e8"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
@@ -24,14 +24,14 @@
       },
       "scripts/behavior_eval_inventory.py": {
         "mode": "100644",
-        "sha256": "8d5affda4adf6f7bfb4a76429807a6844c2c3ae7933ca377ea58c3363dfb11ce"
+        "sha256": "4a9dccbd378089ae1aceee9dff79fc9d949ba7ae587e0654113227a91846a5f4"
       },
       "scripts/behavior_eval_receipts.py": {
         "mode": "100644",
-        "sha256": "3eaebe7a539204ab6db4b658cd51dc39cc3e54a0040e3b253badec95c36a4f34"
+        "sha256": "b3c833325dfc832880fb53cb41a7428cf35814414e676913b0d9b8d7e04c6835"
       }
     },
-    "revision": "957550119aca20a31a26f4e5f9a3f09a2d6bd148"
+    "revision": "24c2d712a0be6a95958713ec80c7e06a89abdc6c"
   },
   "reconciliation": {
     "runtime_inputs": [
@@ -5107,11 +5107,11 @@
   "runs_per_case": 3,
   "schema_version": 1,
   "snapshot": {
-    "candidate_revision": "c5044ed25ffe575b4af1dd93bae39d9c63b63957",
+    "candidate_revision": "070f832479b2eda2c6ce5ed07e79fa5302518558",
     "inputs": {
       "evals/control-plane-matrix.json": {
         "mode": "100644",
-        "sha256": "d1b4b99f8cf7f923a9414430ff37a26233aa0ecd96212e22489ed7bf07f7c944"
+        "sha256": "036d1df941403af8df0407d9b72dcb7e12e3bbe83a69222d12e5153338d556b5"
       },
       "evals/proseweaving/writing-register/trigger-evals.json": {
         "mode": "100644",
@@ -5119,7 +5119,7 @@
       },
       "plugins/proseweaving/content-lock.json": {
         "mode": "100644",
-        "sha256": "0bb015901c73b1eb3387629ae25400e0cd8b7cc0205cb996288dd5ce85fe1c20"
+        "sha256": "e42b759653d51b0719165d9bc638e36baa685b93312438f59115502d2594223d"
       },
       "plugins/proseweaving/evals/delivery.json": {
         "mode": "100644",
@@ -5199,7 +5199,7 @@
       },
       "plugins/proseweaving/topology.json": {
         "mode": "100644",
-        "sha256": "37b35752e39fde9e4753f0bf59562e0e26207d465b89026e0d58adf2de0543b5"
+        "sha256": "2168bfcb3fd4b273b415730d32481eb9314c17522f5de2f27e40de1aa5a55313"
       },
       "release/behavior-eval-input-map.json": {
         "mode": "100644",
@@ -5207,7 +5207,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "d483e4dde5fb56dc200564e8f80e4bc5964446ca116fc88242c0aa23dfb83509"
+        "sha256": "a3fb38f3cfa6823be88a22c544627af790b53fa34a15083089443357b084d31e"
       }
     },
     "schema_version": 1,
