@@ -185,27 +185,30 @@ class ReceiptWorkflowTests(unittest.TestCase):
         path.write_text(json.dumps(result))
         return path
 
-    def retained_results(self):
+    def retained_results(self, case_runtime_inputs=None):
         """Construct original records without an execution-time receipt snapshot."""
         corpus = json.loads((self.repo / self.spec["evals"]).read_text())
-        case = corpus["evals"][0]
         corpus_hash = hashlib.sha256((self.repo / self.spec["evals"]).read_bytes()).hexdigest()
         runtime = self.prefix + "/SKILL.md"
-        fixture = self.prefix + "/evals/fixtures/case.md"
         original = {"runs": [], "triggers": []}
-        for repetition in (1, 2, 3):
-            original["runs"].append({
-                "revision": self.candidate, "corpus_sha256": corpus_hash,
-                "native_agent": f"constructed-executor-{repetition}",
-                "inputs": {path: (self.repo / path).read_text() for path in (runtime, fixture)},
-                "prompt": case["prompt"], "response": "Constructed retained response.\n",
-                "executor_model": "test-executor-1", "grader_model": "test-grader-1",
-                "original_expectations": case["expectations"],
-                "graded_response": "Constructed retained response.\n",
-                "rubric": case["expectations"], "grades": [
-                    {"id": "facts", "passed": True},
-                    {"id": "useful", "passed": repetition != 3}],
-            })
+        for case in corpus["evals"]:
+            case_id = str(case["id"])
+            paths = (case_runtime_inputs[case_id] if case_runtime_inputs is not None else [runtime])
+            paths = paths + [self.prefix + "/" + path for path in case["fixture_paths"]]
+            for repetition in (1, 2, 3):
+                original["runs"].append({
+                    "case_id": case_id, "repetition": repetition,
+                    "revision": self.candidate, "corpus_sha256": corpus_hash,
+                    "native_agent": f"constructed-executor-{case_id}-{repetition}",
+                    "inputs": {path: (self.repo / path).read_text() for path in paths},
+                    "prompt": case["prompt"], "response": "Constructed retained response.\n",
+                    "executor_model": "test-executor-1", "grader_model": "test-grader-1",
+                    "original_expectations": case["expectations"],
+                    "graded_response": "Constructed retained response.\n",
+                    "rubric": case["expectations"], "grades": [
+                        {"id": "facts", "passed": True},
+                        {"id": "useful", "passed": repetition != 3}],
+                })
         for index, item in enumerate(json.loads((self.repo / self.spec["trigger_evals"]).read_text())):
             original["triggers"].append({
                 "query": item["query"], "entrypoint": (self.repo / runtime).read_text(),
@@ -225,13 +228,13 @@ class ReceiptWorkflowTests(unittest.TestCase):
             return {"representation": "utf8", "value": ref(pointer)}
 
         runs = []
-        for index in range(3):
+        for index, run in enumerate(original["runs"]):
             pointer = f"/runs/{index}"
             runs.append({
-                "case_id": "1", "repetition": index + 1, "execution_record": ref(pointer),
+                "case_id": run["case_id"], "repetition": run["repetition"], "execution_record": ref(pointer),
                 "original_revision": ref(pointer + "/revision"),
                 "original_corpus_sha256": ref(pointer + "/corpus_sha256"),
-                "inputs": {path: binding(pointer + "/inputs/" + path.replace("/", "~1")) for path in (runtime, fixture)},
+                "inputs": {path: binding(pointer + "/inputs/" + path.replace("/", "~1")) for path in run["inputs"]},
                 "prompt": ref(pointer + "/prompt"), "response": ref(pointer + "/response"),
                 "executor_model": {"basis": "configured", "value": ref(pointer + "/executor_model")},
                 "grader_model": {"basis": "configured", "value": ref(pointer + "/grader_model")},
@@ -255,9 +258,295 @@ class ReceiptWorkflowTests(unittest.TestCase):
             "executor_model_id": "test-executor-1", "grader_model_id": "test-grader-1",
             "runtime_inputs": [runtime], "runtime_inputs_complete": True,
             "runs": runs, "triggers": triggers}
+        if case_runtime_inputs is not None:
+            result["runtime_inputs"] = sorted({path for paths in case_runtime_inputs.values() for path in paths})
+            result["case_runtime_inputs"] = [
+                {"case_id": case_id, "runtime_inputs": paths}
+                for case_id, paths in case_runtime_inputs.items()
+            ]
         path = self.private / "reconciliation.json"
         path.write_text(json.dumps(result))
         return path
+
+    def test_reconciliation_schema_accepts_optional_case_runtime_inputs(self):
+        manifest = json.loads(self.retained_results().read_text())
+        manifest["case_runtime_inputs"] = [
+            {"case_id": "1", "runtime_inputs": [self.prefix + "/SKILL.md"]}
+        ]
+        receipts.validate(manifest, "reconciliationResults")
+
+    def heterogeneous_retained_results(self):
+        """Construct two source-coordinate cases with distinct delivered references."""
+        corpus_path = self.spec["evals"]
+        document = json.loads((self.repo / corpus_path).read_text())
+        first = document["evals"][0]
+        first["id"] = 0
+        second = {**copy.deepcopy(first), "id": 1, "prompt": "Write the second answer.",
+                  "fixture_paths": ["evals/fixtures/second.md"]}
+        document["evals"].append(second)
+        self.write(corpus_path, document)
+        self.write(self.prefix + "/evals/fixtures/second.md", "Second answer facts.\n")
+        self.write(self.prefix + "/references/first.md", "Reference for the first case.\n")
+        self.write(self.prefix + "/references/second.md", "Reference for the second case.\n")
+        self.candidate = self.commit("two cases with different runtime references")
+        manifest_path = self.retained_results({
+            "0": [self.prefix + "/SKILL.md", self.prefix + "/references/first.md"],
+            "1": [self.prefix + "/SKILL.md", self.prefix + "/references/second.md"],
+        })
+        manifest = json.loads(manifest_path.read_text())
+        self.spec.update(corpus_format="provingkit-v1", case_selection=[
+            {"source": corpus_path, "pointer": "/evals/0"},
+            {"source": corpus_path, "pointer": "/evals/1"},
+            {"source": self.spec["trigger_evals"], "pointer": "/0"},
+            {"source": self.spec["trigger_evals"], "pointer": "/1"}])
+        for item in manifest["runs"] + manifest["case_runtime_inputs"]:
+            index = int(item["case_id"])
+            item["case_id"] = {"source": corpus_path, "pointer": f"/evals/{index}", "id": index}
+        for index, trigger in enumerate(manifest["triggers"]):
+            trigger["case_id"] = {"source": self.spec["trigger_evals"], "pointer": f"/{index}", "id": None}
+        manifest_path.write_text(json.dumps(manifest))
+        return manifest_path
+
+    def test_reconciliation_accepts_three_runs_for_each_distinct_case_runtime_set(self):
+        path = self.heterogeneous_retained_results()
+        manifest = json.loads(path.read_text())
+        original = (self.private / "retained.json").read_bytes()
+        receipt = receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+        self.assertEqual(receipt["reconciliation"]["case_runtime_inputs"], manifest["case_runtime_inputs"])
+        self.assertEqual((self.private / "retained.json").read_bytes(), original)
+        self.assertEqual(len(receipt["runs"]), 6)
+        for index, run in enumerate(receipt["runs"]):
+            reference = "first" if index < 3 else "second"
+            fixture = "case" if index < 3 else "second"
+            self.assertEqual(set(run["reconciliation"]["inputs"]), {
+                self.prefix + "/SKILL.md", self.prefix + f"/references/{reference}.md",
+                self.prefix + f"/evals/fixtures/{fixture}.md"})
+            binding = manifest["runs"][index]["inputs"][self.prefix + f"/references/{reference}.md"]["value"]
+            self.assertIn({key: binding[key] for key in ("sha256", "format", "pointer")},
+                          run["reconciliation"]["evidence"])
+        self.assertEqual([item["triggered"] for item in receipt["triggers"]], [True, False])
+        self.assertEqual([item["observation_kind"] for item in receipt["triggers"]],
+                         ["recorded-sentinel-body-load", "recorded-sentinel-body-load"])
+        self.assertEqual(receipts.check(self.repo, self.request(), {"example/writing": receipt})["status"], "pass")
+
+    def test_reconciliation_rejects_incomplete_or_ambiguous_case_runtime_coordinates(self):
+        path = self.heterogeneous_retained_results()
+        original = json.loads(path.read_text())
+        for change in ("missing", "duplicate", "unknown", "wrong-pointer", "wrong-id", "id-type", "string-id"):
+            with self.subTest(change=change):
+                manifest = copy.deepcopy(original)
+                table = manifest["case_runtime_inputs"]
+                if change == "missing":
+                    table.pop()
+                elif change == "duplicate":
+                    duplicate = copy.deepcopy(table[0])
+                    duplicate["runtime_inputs"].reverse()
+                    table.append(duplicate)
+                elif change == "unknown":
+                    unknown = copy.deepcopy(table[0])
+                    unknown["case_id"]["pointer"] = "/evals/unknown"
+                    table.append(unknown)
+                elif change == "wrong-pointer":
+                    table[0]["case_id"]["pointer"] = "/evals/1"
+                elif change == "wrong-id":
+                    table[0]["case_id"]["id"] = 1
+                elif change == "id-type":
+                    table[0]["case_id"]["id"] = "0"
+                else:
+                    table[0]["case_id"] = "0"
+                path.write_text(json.dumps(manifest))
+                with self.assertRaisesRegex(receipts.ReceiptError, "case runtime input coverage"):
+                    receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+
+    def test_case_runtime_sets_require_entrypoint_bound_sources_and_exact_union(self):
+        path = self.heterogeneous_retained_results()
+        original = json.loads(path.read_text())
+        entrypoint = self.prefix + "/SKILL.md"
+        first_reference = self.prefix + "/references/first.md"
+        for change in ("missing-entrypoint", "outside-snapshot", "union-missing", "union-extra"):
+            with self.subTest(change=change):
+                manifest = copy.deepcopy(original)
+                paths = manifest["case_runtime_inputs"][0]["runtime_inputs"]
+                if change == "missing-entrypoint":
+                    paths.remove(entrypoint)
+                    for run in manifest["runs"][:3]:
+                        del run["inputs"][entrypoint]
+                elif change == "outside-snapshot":
+                    paths.remove(first_reference)
+                    paths.append("unbound.md")
+                    for run in manifest["runs"][:3]:
+                        run["inputs"]["unbound.md"] = run["inputs"].pop(first_reference)
+                elif change == "union-missing":
+                    manifest["runtime_inputs"].remove(first_reference)
+                else:
+                    manifest["runtime_inputs"].append(self.prefix + "/evals/fixtures/case.md")
+                path.write_text(json.dumps(manifest))
+                message = "runtime input union" if change.startswith("union-") else "declared case runtime inputs"
+                with self.assertRaisesRegex(receipts.ReceiptError, message):
+                    receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+
+    def test_case_runtime_schema_requires_nonempty_unique_paths_and_honest_completeness(self):
+        path = self.heterogeneous_retained_results()
+        manifest = json.loads(path.read_text())
+        receipt = receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+        for public in (False, True):
+            for change in ("empty-table", "empty-paths", "duplicate-path", "unknown-property",
+                           "missing-paths", "absolute-path", "parent-path", "false-completeness"):
+                with self.subTest(public=public, change=change):
+                    document = copy.deepcopy(receipt if public else manifest)
+                    declaration = document["reconciliation"] if public else document
+                    table = declaration["case_runtime_inputs"]
+                    if change == "empty-table":
+                        table.clear()
+                    elif change == "empty-paths":
+                        table[0]["runtime_inputs"].clear()
+                    elif change == "duplicate-path":
+                        table[0]["runtime_inputs"].append(table[0]["runtime_inputs"][0])
+                    elif change == "unknown-property":
+                        table[0]["authenticated"] = True
+                    elif change == "missing-paths":
+                        del table[0]["runtime_inputs"]
+                    elif change == "absolute-path":
+                        table[0]["runtime_inputs"][0] = "/outside.md"
+                    elif change == "parent-path":
+                        table[0]["runtime_inputs"][0] = "../outside.md"
+                    else:
+                        declaration["runtime_inputs_complete"] = False
+                    with self.assertRaisesRegex(receipts.ReceiptError, "schema mismatch"):
+                        receipts.validate(document, None if public else "reconciliationResults")
+
+    def test_absent_case_runtime_table_keeps_uniform_delivery_and_public_shape(self):
+        path = self.retained_results()
+        original = json.loads(path.read_text())
+        receipt = receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+        self.assertEqual(receipt["reconciliation"], {
+            "runtime_inputs": [self.prefix + "/SKILL.md"], "runtime_inputs_complete": True})
+        self.assertEqual(receipts.check(self.repo, self.request(), {"example/writing": receipt})["status"], "pass")
+        for change in ("missing", "extra"):
+            with self.subTest(change=change):
+                manifest = copy.deepcopy(original)
+                inputs = manifest["runs"][1]["inputs"]
+                if change == "missing":
+                    del inputs[self.prefix + "/SKILL.md"]
+                else:
+                    inputs[self.spec["evals"]] = manifest["runs"][1]["graded_response"]
+                path.write_text(json.dumps(manifest))
+                with self.assertRaisesRegex(receipts.ReceiptError, "delivered input coverage"):
+                    receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+                changed = copy.deepcopy(receipt)
+                public_inputs = changed["runs"][1]["reconciliation"]["inputs"]
+                if change == "missing":
+                    del public_inputs[self.prefix + "/SKILL.md"]
+                else:
+                    public_inputs[self.spec["evals"]] = changed["snapshot"]["inputs"][self.spec["evals"]]["sha256"]
+                result = receipts.check(self.repo, self.request(), {"example/writing": changed})
+                self.assertEqual(result["status"], "fail")
+                self.assertIn("delivered input", result["skills"][0]["reason"])
+
+    def test_each_case_repetition_requires_its_declared_inputs_fixtures_and_current_bytes(self):
+        path = self.heterogeneous_retained_results()
+        original = json.loads(path.read_text())
+        first_reference = self.prefix + "/references/first.md"
+        second_reference = self.prefix + "/references/second.md"
+        fixture = self.prefix + "/evals/fixtures/second.md"
+        for change in ("missing-runtime", "missing-fixture", "extra", "wrong-case", "runtime-bytes", "fixture-bytes"):
+            with self.subTest(change=change):
+                manifest = copy.deepcopy(original)
+                run = manifest["runs"][4]
+                inputs = run["inputs"]
+                if change == "missing-runtime":
+                    del inputs[second_reference]
+                elif change == "missing-fixture":
+                    del inputs[fixture]
+                elif change == "extra":
+                    inputs[first_reference] = manifest["runs"][0]["inputs"][first_reference]
+                elif change == "wrong-case":
+                    del inputs[second_reference]
+                    inputs[first_reference] = manifest["runs"][0]["inputs"][first_reference]
+                elif change == "runtime-bytes":
+                    inputs[second_reference] = run["graded_response"]
+                else:
+                    inputs[fixture] = manifest["runs"][0]["inputs"][self.prefix + "/evals/fixtures/case.md"]
+                path.write_text(json.dumps(manifest))
+                message = "historical delivered input" if change.endswith("-bytes") else "delivered input coverage"
+                with self.assertRaisesRegex(receipts.ReceiptError, message):
+                    receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+
+    def test_public_check_rejects_case_declaration_and_delivery_tampering(self):
+        path = self.heterogeneous_retained_results()
+        original = receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+        first_reference = self.prefix + "/references/first.md"
+        second_reference = self.prefix + "/references/second.md"
+        for change in ("missing-case", "duplicate-case", "unknown-case", "missing-entrypoint", "outside-snapshot",
+                       "union", "wrong-case", "dropped-table", "missing-runtime", "missing-fixture", "extra", "changed-bytes"):
+            with self.subTest(change=change):
+                receipt = copy.deepcopy(original)
+                declaration = receipt["reconciliation"]
+                table = declaration["case_runtime_inputs"]
+                inputs = receipt["runs"][4]["reconciliation"]["inputs"]
+                message = "delivered input"
+                if change == "missing-case":
+                    table.pop()
+                    message = "case runtime input coverage"
+                elif change == "duplicate-case":
+                    duplicate = copy.deepcopy(table[0])
+                    duplicate["runtime_inputs"].reverse()
+                    table.append(duplicate)
+                    message = "case runtime input coverage"
+                elif change == "unknown-case":
+                    table[0]["case_id"]["pointer"] = "/evals/unknown"
+                    message = "case runtime input coverage"
+                elif change == "missing-entrypoint":
+                    table[0]["runtime_inputs"].remove(self.prefix + "/SKILL.md")
+                    message = "declared case runtime inputs"
+                elif change == "outside-snapshot":
+                    table[0]["runtime_inputs"].append("unbound.md")
+                    message = "declared case runtime inputs"
+                elif change == "union":
+                    declaration["runtime_inputs"].remove(first_reference)
+                    message = "runtime input union"
+                elif change == "wrong-case":
+                    table[0]["runtime_inputs"], table[1]["runtime_inputs"] = (
+                        table[1]["runtime_inputs"], table[0]["runtime_inputs"])
+                elif change == "dropped-table":
+                    del declaration["case_runtime_inputs"]
+                elif change == "missing-runtime":
+                    del inputs[second_reference]
+                elif change == "missing-fixture":
+                    del inputs[self.prefix + "/evals/fixtures/second.md"]
+                elif change == "extra":
+                    inputs[first_reference] = receipt["snapshot"]["inputs"][first_reference]["sha256"]
+                else:
+                    inputs[second_reference] = "0" * 64
+                result = receipts.check(self.repo, self.request(), {"example/writing": receipt})
+                self.assertEqual(result["status"], "fail")
+                self.assertIn(message, result["skills"][0]["reason"])
+
+    def test_case_delivery_omission_preserves_full_source_byte_and_mode_freshness(self):
+        path = self.heterogeneous_retained_results()
+        receipt = receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+        reference = self.prefix + "/references/first.md"
+        self.assertIn(reference, receipt["snapshot"]["inputs"])
+        self.assertNotIn(reference, receipt["runs"][3]["reconciliation"]["inputs"])
+        original = (self.repo / reference).read_bytes()
+        for change in ("bytes", "mode"):
+            with self.subTest(change=change):
+                (self.repo / reference).write_bytes(original if change == "mode" else b"Changed reference.\n")
+                (self.repo / reference).chmod(0o755 if change == "mode" else 0o644)
+                later = self.commit("changed omitted case dependency " + change)
+                result = receipts.check(self.repo, self.request(later), {"example/writing": receipt})
+                self.assertEqual(result["status"], "fail")
+                self.assertIn("stale evaluated input closure", result["skills"][0]["reason"])
+
+    def test_prepared_producer_rejects_sentinel_body_load_observation_kind(self):
+        snapshot = receipts.prepare(self.repo, self.candidate, self.spec)
+        path = self.results(snapshot)
+        observation_path = self.private / "trigger-1.json"
+        observation = json.loads(observation_path.read_text())
+        observation["observation_kind"] = "recorded-sentinel-body-load"
+        observation_path.write_text(json.dumps(observation))
+        with self.assertRaisesRegex(receipts.ReceiptError, "triggerObservation schema mismatch"):
+            receipts.produce(self.repo, snapshot, path)
 
     def test_reconciliation_keeps_historical_source_separate_from_processor(self):
         processor = self.candidate

@@ -1041,6 +1041,28 @@ def _original_execution(record, response, run):
     return {"basis": basis, "identity_sha256": hashlib.sha256(identity.encode()).hexdigest()}
 
 
+def _case_runtime_inputs(declaration, snapshot, cases):
+    """Resolve the declared delivered runtime set for each application case."""
+    skill = snapshot["skill"]
+    entrypoint = f"plugins/{skill['plugin']}/skills/{skill['skill']}/SKILL.md"
+    runtime = set(declaration["runtime_inputs"])
+    require(entrypoint in runtime and runtime <= set(snapshot["inputs"]),
+            "declared delivered runtime inputs must include the skill and belong to bound source")
+    if "case_runtime_inputs" not in declaration:
+        return {case_id: runtime for case_id in cases}
+    rows = declaration["case_runtime_inputs"]
+    runtime_by_case = {coordinate_key(item["case_id"]): set(item["runtime_inputs"])
+                       for item in rows}
+    require(len(rows) == len(runtime_by_case) and set(runtime_by_case) == set(cases),
+            "case runtime input coverage differs from current application cases")
+    require(all(entrypoint in paths and paths <= set(snapshot["inputs"])
+                for paths in runtime_by_case.values()),
+            "declared case runtime inputs must include the skill and belong to bound source")
+    require(runtime == set().union(*runtime_by_case.values()),
+            "declared runtime input union differs from case runtime inputs")
+    return runtime_by_case
+
+
 def reconcile(repository, candidate_revision, skill, results_path, processing_revision):
     """Reconcile original observations with current source, without backdating a snapshot."""
     processing = processing_snapshot(repository, processing_revision, normalized=bool(skill.get("corpus_format")))
@@ -1053,9 +1075,7 @@ def reconcile(repository, candidate_revision, skill, results_path, processing_re
     check_coordinates(results["runs"], results["triggers"], cases, expected_triggers)
     original_cases, trigger_source = _case_details(repository, snapshot)
     prefix = f"plugins/{skill['plugin']}/skills/{skill['skill']}"
-    runtime = set(results["runtime_inputs"])
-    require(prefix + "/SKILL.md" in runtime and runtime <= set(snapshot["inputs"]),
-            "declared delivered runtime inputs must include the skill and belong to bound source")
+    runtime_by_case = _case_runtime_inputs(results, snapshot, cases)
     runs, executions, identities = [], set(), set()
     for run in results["runs"]:
         evidence = _RetainedEvidence(path.parent)
@@ -1071,7 +1091,7 @@ def reconcile(repository, candidate_revision, skill, results_path, processing_re
         require(isinstance(original_corpus_digest, str) and re.fullmatch(r"[0-9a-f]{64}", original_corpus_digest),
                 "original corpus identity is required")
         case = original_cases[coordinate_key(run["case_id"])]
-        expected_inputs = runtime | set(case["fixtures"])
+        expected_inputs = runtime_by_case[coordinate_key(run["case_id"])] | set(case["fixtures"])
         require(set(run["inputs"]) == expected_inputs, "delivered input coverage differs from current case")
         inputs = {name: evidence.digest(binding) for name, binding in run["inputs"].items()}
         require(all(value == snapshot["inputs"][name]["sha256"] for name, value in inputs.items()),
@@ -1135,6 +1155,8 @@ def reconcile(repository, candidate_revision, skill, results_path, processing_re
         "executor_model_id": results["executor_model_id"], "grader_model_id": results["grader_model_id"],
         "runs_per_case": 3, "runs": runs, "triggers": triggers,
         "private_evidence": {"manifest_sha256": hashlib.sha256(raw).hexdigest()}, "attestation": None}
+    if "case_runtime_inputs" in results:
+        receipt["reconciliation"]["case_runtime_inputs"] = results["case_runtime_inputs"]
     validate(receipt)
     evaluate(repository, receipt)
     return receipt
@@ -1255,11 +1277,9 @@ def _check_reconciled_source(repository, receipt):
     require(snapshot == _freeze(repository, source, spec, bind_processing=False),
             "reconciled source snapshot differs from committed source")
     cases, queries = _case_details(repository, snapshot)
-    runtime = set(receipt["reconciliation"]["runtime_inputs"])
+    runtime_by_case = _case_runtime_inputs(receipt["reconciliation"], snapshot, cases)
     prefix = f"plugins/{spec['plugin']}/skills/{spec['skill']}"
     _, _, fixtures = corpus(repository, snapshot)
-    require(prefix + "/SKILL.md" in runtime and runtime <= set(snapshot["inputs"]),
-            "declared delivered runtime inputs must include the skill and belong to bound source")
     executions, identities = set(), set()
     for run in receipt["runs"]:
         record = run["reconciliation"]
@@ -1270,7 +1290,7 @@ def _check_reconciled_source(repository, receipt):
         require(original_identity not in identities, "one original execution cannot supply two repetitions or cases")
         identities.add(original_identity)
         case = cases[coordinate_key(run["case_id"])]
-        expected_inputs = runtime | set(case["fixtures"])
+        expected_inputs = runtime_by_case[coordinate_key(run["case_id"])] | set(case["fixtures"])
         require(set(record["inputs"]) == expected_inputs
                 and all(value == snapshot["inputs"][name]["sha256"] for name, value in record["inputs"].items()),
                 "reconciled delivered input differs from current source")
