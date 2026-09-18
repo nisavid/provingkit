@@ -69,6 +69,7 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
     "writing-github-issue-and-pr-markdown",
+    "maintaining-issue-pr-relations",
     "writing-reviewable-pr-descriptions",
     "publishing-reviewable-prs",
     "graphite",
@@ -145,6 +146,25 @@ MERGE_EVAL_FIXTURES = (
     "persistent-request-changes-after-addressed.md",
 )
 RAW_SKILL_EVAL_FIXTURES = {
+    "maintaining-issue-pr-relations": (
+        "absent-pr-creation.md",
+        "direct-implementation.md",
+        "dependency-only.md",
+        "incidental-mention.md",
+        "formatting-skip.md",
+        "status-only-resume.md",
+        "unchanged-readiness.md",
+        "resume-past-ttl.md",
+        "historical-repair.md",
+        "settled-plan-no-recursion.md",
+        "cross-repository-merge.md",
+        "ancestry-only-restack.md",
+        "fixup-own-contribution.md",
+        "manual-capacity.md",
+        "unlink-preserves-history.md",
+        "explicit-setting-invalidation.md",
+        "post-merge-selective-completion.md",
+    ),
     "writing-reviewable-pr-descriptions": (
         "documentation-flag-correction.md",
         "preview-server-port-selection.md",
@@ -205,6 +225,10 @@ PUBLISHER_ACTUATION_EVAL_FIXTURES = frozenset(
 TERMINAL_INTERNAL_OPERATIONS = {"focused-ci"}
 TERMINAL_OPERATION_HANDOFFS = {"focused-ci", "remote-ref-deletion"}
 GITHUB_ALIAS_ACCESS = {
+    "issue-pr-relation-read": "read",
+    "issue-body-write": "write",
+    "issue-pr-development-write": "write",
+    "pr-relation-ledger-write": "write",
     "pr-create": "write",
     "repository-orientation": "read",
     "pr-orientation": "read",
@@ -283,6 +307,13 @@ MARKDOWN_AUTHORING_FEATURES = {
     "material-conflict",
 }
 EXPECTED_SKILL_FILES = {
+    "maintaining-issue-pr-relations": COMMON_SKILL_FILES
+    | {
+        "references/relation-contract.md",
+        "references/command.md",
+        "scripts/relation_state.py",
+        "scripts/relation_forge.py",
+    },
     "writing-github-issue-and-pr-markdown": COMMON_SKILL_FILES
     | {
         "references/authoring-contract.md",
@@ -306,6 +337,8 @@ EXPECTED_SKILL_FILES = {
         "references/review-atlas-extension.json",
         "review-atlas-reference-design.md",
         "scripts/validate_change_navigation.py",
+        "scripts/validate_relation_ledger.py",
+        "references/relation-ledger.md",
     }
     | {f"scripts/change_navigation/{name}.py" for name in WRITER_MODULE_NAMES},
     "publishing-reviewable-prs": COMMON_SKILL_FILES
@@ -317,6 +350,8 @@ EXPECTED_SKILL_FILES = {
         "scripts/required_review.py",
         "scripts/reviewable_pr_state.py",
         "scripts/update_reviewable_pr.py",
+        "scripts/publish_relation_ledger.py",
+        "scripts/relation_ledger_receipts.py",
     },
     "graphite": COMMON_SKILL_FILES | {"scripts/submit_draft_stack.py"},
     "addressing-pr-review-feedback": COMMON_SKILL_FILES
@@ -350,6 +385,10 @@ EXPECTED_SKILL_FILES = {
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "maintaining-issue-pr-relations": (
+        "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
+        "Issue–PR contributions."
+    ),
     "writing-github-issue-and-pr-markdown": (
         "Use $mergecraft:writing-github-issue-and-pr-markdown to author the "
         "exact GFM body without GitHub actuation."
@@ -385,6 +424,10 @@ CODEX_PROMPTS = {
     ),
 }
 MANIFEST_PROMPTS = [
+    (
+        "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
+        "Issue–PR contributions."
+    ),
     (
         "Use $mergecraft:writing-github-issue-and-pr-markdown to author the "
         "exact GFM body without GitHub actuation."
@@ -616,7 +659,7 @@ ATLAS_EXTENSION_CONTRACT = {
 }
 EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
-    "writer": "daed5dac392e052657198c1595630b17096756c39ee1b8b2f9792b5df13adaaa",
+    "writer": "7b951fdff8ac45197b856bd3d22f82673281f06523c6729bfef754d150f7a97e",
     "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
 }
@@ -1468,6 +1511,448 @@ def load_repository_json(repo_root: Path, relative: Path) -> Any:
     return strict_json(read_repository_file(repo_root, relative), relative.as_posix())
 
 
+def _validate_relation_evidence(repo: Path) -> None:
+    folder = repo / "evals/mergecraft/skills/maintaining-issue-pr-relations"
+    skill = "plugins/mergecraft/skills/maintaining-issue-pr-relations"
+    generic = "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown"
+    common = [
+        f"{skill}/SKILL.md",
+        f"{skill}/references/relation-contract.md",
+        f"{skill}/references/command.md",
+        "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
+        "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+        f"{generic}/SKILL.md",
+        f"{generic}/references/authoring-contract.md",
+    ]
+
+    def require(condition, message):
+        if not condition:
+            raise ContractError(message)
+
+    def digest(text):
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def hex_digest(value):
+        return (
+            isinstance(value, str) and re.fullmatch("[0-9a-f]{64}", value) is not None
+        )
+
+    def read(relative):
+        path = Path(relative)
+        require(not path.is_absolute() and ".." not in path.parts, "unsafe source path")
+        return read_bytes(repo, path.as_posix()).decode("utf-8")
+
+    corpus = load_repository_json(repo, (folder / "evals.json").relative_to(repo))[
+        "evals"
+    ]
+    triggers = load_repository_json(
+        repo, (folder / "trigger-evals.json").relative_to(repo)
+    )
+    policy = load_repository_json(repo, (folder / "policy.json").relative_to(repo))
+    experiment = load_repository_json(
+        repo, (folder / "experiment.json").relative_to(repo)
+    )
+    grading = load_repository_json(repo, (folder / "grading.json").relative_to(repo))
+    cases = {c["id"]: c for c in corpus}
+    require(set(cases) == set(range(17)) and len(corpus) == 17, "case coverage")
+    require(
+        len(triggers) == 13 and policy["repetitions"] == 3,
+        "repetition/trigger coverage",
+    )
+    paths = set(common)
+    paths.update(f"plugins/mergecraft/skills/{c['caller']}/SKILL.md" for c in corpus)
+    paths.update(f"evals/mergecraft/skills/{p}" for c in corpus for p in c["files"])
+    paths.update(
+        str((folder / p).relative_to(repo))
+        for p in ("evals.json", "policy.json", "trigger-evals.json")
+    )
+    require(
+        experiment["current_source_sha256"] == {p: digest(read(p)) for p in paths},
+        "current source binding",
+    )
+    requests = experiment["requests_by_sha256"]
+    require(
+        all(isinstance(v, str) and digest(v) == k for k, v in requests.items()),
+        "request digest",
+    )
+    all_runs = experiment["behavior_runs"] + experiment["native_and_trigger_runs"]
+    runs = {r["id"]: r for r in all_runs}
+    require(len(runs) == len(all_runs), "duplicate run ID")
+    require(len({r["session_id"] for r in all_runs}) == len(all_runs), "reused session")
+    for run in all_runs:
+        require(
+            run["request_sha256"] in requests
+            and digest(run["response"]) == run["response_sha256"],
+            "run text binding",
+        )
+    grades = {g["run_id"]: g for g in grading["runs"]}
+    trigger_grades = {g["run_id"]: g for g in grading["trigger_runs"]}
+    require(
+        len(grades) == len(grading["runs"])
+        and len(trigger_grades) == len(grading["trigger_runs"]),
+        "duplicate grade",
+    )
+    behavior_by_case = experiment["selection"]["behavior_by_case"]
+    require(
+        set(behavior_by_case) == {str(case_id) for case_id in cases}
+        and all(isinstance(x, str) and x for x in behavior_by_case.values()),
+        "behavior case selection",
+    )
+    selected_trigger = experiment["selection"]["trigger_experiment"]
+    selected_ids = set()
+    expected_thresholds = []
+    for case_id, case in cases.items():
+        selected_behavior = behavior_by_case[str(case_id)]
+        fixture = {p: read(f"evals/mergecraft/skills/{p}") for p in case["files"]}
+        bundle_paths = list(
+            dict.fromkeys(
+                common + [f"plugins/mergecraft/skills/{case['caller']}/SKILL.md"]
+            )
+        )
+        bundle = {p: read(p) for p in bundle_paths}
+        expected = {
+            "prompt": case["prompt"],
+            "fixture": fixture,
+            "candidate_bundle": bundle,
+        }
+        for repetition in range(1, 4):
+            run_id = f"{selected_behavior}/case-{case_id:02d}-with-skill-{repetition}"
+            selected_ids.add(run_id)
+            require(run_id in runs and run_id in grades, "missing selected run/grade")
+            run, grade = runs[run_id], grades[run_id]
+            require(
+                run["case_id"] == case_id
+                and run["repetition"] == repetition
+                and run["variant"] == "with-skill",
+                "selected identity",
+            )
+            require(
+                strict_json(
+                    requests[run["request_sha256"]], "relation executor request"
+                )
+                == expected,
+                "selected executor inputs",
+            )
+            require(
+                run["fixture_sha256"] == {p: digest(t) for p, t in fixture.items()},
+                "fixture digest",
+            )
+            require(
+                run["candidate_sha256"] == {p: digest(t) for p, t in bundle.items()},
+                "candidate digest",
+            )
+            require(
+                run["exit_code"] == 0
+                and not run["timed_out"]
+                and run["result_subtype"] == "success"
+                and run["result_is_error"] is False
+                and not run["parse_errors"]
+                and not run["permission_denials"],
+                "executor failure",
+            )
+            require(
+                run["model_requested"]
+                == run["init"]["model"]
+                == "claude-opus-5"
+                and run["assistant_models"] == ["claude-opus-5"]
+                and run["effort_requested"] == "high",
+                "actual executor identity",
+            )
+            require(
+                all(
+                    run["init"][k] == []
+                    for k in ("tools", "skills", "plugins", "mcp_servers")
+                )
+                and not run["tool_use"],
+                "behavior isolation",
+            )
+            require(
+                grade["response_sha256"] == run["response_sha256"]
+                and grade["grader_task"]
+                and grade["grader_distinct_from_executor"] is True,
+                "independent grade binding",
+            )
+            require(
+                [g["text"] for g in grade["expectations"]] == case["expectations"],
+                "grade expectations",
+            )
+            require(
+                all(
+                    g["passed"] is True
+                    and isinstance(g["evidence"], str)
+                    and g["evidence"]
+                    for g in grade["expectations"]
+                ),
+                "failed behavior expectation",
+            )
+        for index, expectation in enumerate(case["expectations"]):
+            passes = sum(
+                grades[f"{selected_behavior}/case-{case_id:02d}-with-skill-{repetition}"][
+                    "expectations"
+                ][index]["passed"] is True
+                for repetition in range(1, 4)
+            )
+            expected_thresholds.append(
+                {
+                    "case_id": case_id,
+                    "expectation": expectation,
+                    "passes": passes,
+                    "required": 3,
+                    "met": passes == 3,
+                }
+            )
+        require(
+            len(
+                [
+                    r
+                    for r in experiment["behavior_runs"]
+                    if r["id"].split("/")[0] == selected_behavior
+                    and r["case_id"] == case_id
+                ]
+            )
+            == 3,
+            "extra selected case run",
+        )
+    require(len(selected_ids) == 51, "selected behavior coverage")
+    require(grading["thresholds"] == expected_thresholds, "behavior threshold summaries")
+    target = "mergecraft-scope-eval:maintaining-issue-pr-relations"
+    prefix = "Decide which available skill, if any, is needed for this user request. If a skill applies, invoke it using Skill, then stop without carrying out the task. If none applies, return NO_SKILL. Do not invoke any other tool or perform any task action.\n\nUser request: "
+    plugin_paths = [
+        f"{skill}/SKILL.md",
+        f"{skill}/references/relation-contract.md",
+        f"{skill}/references/command.md",
+    ]
+    for index, case in enumerate(triggers):
+        run_id = f"{selected_trigger}/case-{index:02d}"
+        selected_ids.add(run_id)
+        require(
+            run_id in runs and run_id in trigger_grades, "missing trigger run/grade"
+        )
+        run, grade = runs[run_id], trigger_grades[run_id]
+        require(
+            requests[run["request_sha256"]] == prefix + case["query"], "trigger request"
+        )
+        require(
+            run["candidate_sha256"] == {p: digest(read(p)) for p in plugin_paths},
+            "trigger source binding",
+        )
+        require(
+            run["init"]["tools"] == ["Skill"] and run["init"]["mcp_servers"] == [],
+            "trigger tools",
+        )
+        require(
+            run["model_requested"] == run["init"]["model"] == "claude-opus-5"
+            and run["assistant_models"] == ["claude-opus-5"]
+            and run["effort_requested"] == "high",
+            "native model/effort",
+        )
+        require(
+            run["init"]["plugins"]
+            == [
+                {
+                    "name": "mergecraft-scope-eval",
+                    "path": "<CANDIDATE_PLUGIN>",
+                    "source": "mergecraft-scope-eval@inline",
+                    "version": "0.0.0",
+                }
+            ]
+            and target in run["init"]["skills"],
+            "native plugin exclusivity",
+        )
+        argv = run["invocation"]["argv"]
+        require(
+            digest(json.dumps(argv, separators=(",", ":")))
+            == run["invocation"]["retained_argv_sha256"]
+            and run["invocation"]["redactions"]
+            and run["metadata_redactions"],
+            "native invocation/redaction binding",
+        )
+        expected_argv = [
+            "claude",
+            "-p",
+            "--verbose",
+            "--output-format",
+            "stream-json",
+            "--no-session-persistence",
+            "--session-id",
+            run["session_id"],
+            "--model",
+            "claude-opus-5",
+            "--effort",
+            "high",
+            "--permission-mode",
+            "dontAsk",
+            "--setting-sources",
+            "",
+            "--strict-mcp-config",
+            "--mcp-config",
+            '{"mcpServers":{}}',
+            "--no-chrome",
+            "--settings",
+            json.dumps(
+                {
+                    "disableAllHooks": True,
+                    "autoMemoryEnabled": False,
+                    "enabledPlugins": {},
+                    "claudeMdExcludes": ["**"],
+                },
+                separators=(",", ":"),
+            ),
+            "--restricted",
+            "--plugin-dir",
+            "<CANDIDATE_PLUGIN>",
+            "--tools",
+            "Skill",
+            "--allowedTools",
+            "Skill",
+            "--debug-file",
+            "<LOCAL_DEBUG_FILE>",
+        ]
+        require(
+            argv == expected_argv and run["init"]["permissionMode"] == "dontAsk",
+            "native configured controls",
+        )
+        require(
+            all(
+                hex_digest(run[key])
+                for key in ("command_sha256", "stdout_sha256", "stderr_sha256")
+            ),
+            "native raw artifact digests",
+        )
+        require(
+            all(t["name"] == "Skill" for t in run["tool_use"]),
+            "unexpected trigger tool call",
+        )
+        require(
+            run["exit_code"] == 0
+            and not run["timed_out"]
+            and run["result_is_error"] is False
+            and run["result_subtype"] == "success"
+            and not run["parse_errors"]
+            and not run["permission_denials"],
+            "trigger failure",
+        )
+        selected = [t["input"].get("skill") for t in run["tool_use"]]
+        require(
+            (selected == [target]) if case["should_trigger"] else (selected == []),
+            "native trigger decision",
+        )
+        successful = {
+            r["tool_use_id"]
+            for r in run["tool_results"]
+            if r.get("is_error") is not True
+            and r.get("content") == f"Launching skill: {target}"
+        }
+        require(
+            successful == {t["id"] for t in run["tool_use"]}
+            and len(run["tool_results"]) == len(selected),
+            "native Skill launch result",
+        )
+        body = read(f"{skill}/SKILL.md").split("---\n", 2)[2].lstrip("\n")
+        require(
+            len(run["skill_injections"]) == len(selected)
+            and all(
+                x["source_body_sha256"] == digest(body)
+                and x["source_body_exact_match"] is True
+                for x in run["skill_injections"]
+            ),
+            "native injected candidate",
+        )
+        for injection, call in zip(run["skill_injections"], run["tool_use"]):
+            expected_text = (
+                "Base directory for this skill: <CANDIDATE_SKILL_DIR>\n\n" + body
+            )
+            if call["input"].get("args"):
+                expected_text += "\n\nARGUMENTS: " + call["input"]["args"]
+            require(
+                injection["text"] == expected_text
+                and injection["retained_text_sha256"] == digest(expected_text)
+                and hex_digest(injection["original_text_sha256"])
+                and injection["redactions"],
+                "native source injection text",
+            )
+        observed = run["isolation"]
+        require(
+            observed["run_id"] == run_id
+            and observed["command_sha256"] == run["command_sha256"]
+            and hex_digest(observed["debug_sha256"]),
+            "native isolation artifact binding",
+        )
+        require(
+            observed["claudeMdExcludes"] == ["**"]
+            and observed["skill_directory_commands"] == 0
+            and observed["loaded_plugin_names"] == ["mergecraft-scope-eval"]
+            and observed["tools"] == ["Skill"]
+            and observed["mcp_servers"] == []
+            and observed["candidate_plugin_skills"] == 1
+            and observed["bundled_runtime_skill_descriptions_retained"] is True,
+            "native context isolation observations",
+        )
+        require(
+            observed["skill_injections"]
+            == [
+                {
+                    key: x[key]
+                    for key in (
+                        "original_text_sha256",
+                        "source_body_sha256",
+                        "source_body_exact_match",
+                    )
+                }
+                for x in run["skill_injections"]
+            ],
+            "native injection observation binding",
+        )
+        require(
+            grade["response_sha256"] == run["response_sha256"]
+            and grade["grader_task"]
+            and grade["grader_distinct_from_executor"] is True,
+            "trigger grade binding",
+        )
+        require(
+            grade["expected_should_trigger"] == case["should_trigger"]
+            and grade["actual_skill_calls"] == selected
+            and grade["passed"] is True
+            and grade["evidence"],
+            "trigger grade",
+        )
+    require(
+        len(
+            [
+                r
+                for r in experiment["native_and_trigger_runs"]
+                if r["id"].split("/")[0] == selected_trigger
+            ]
+        )
+        == 13,
+        "extra selected trigger run",
+    )
+    require(grading["candidate_passed"] is True, "candidate not passed")
+
+
+def validate_relation_evidence(repo_root: Path) -> None:
+    """Bind selected isolated observations and independent grades to current inputs.
+
+    Retained hashes prove consistency, not provider authenticity or the truth of
+    a locally authored report. Unselected diagnostics cannot qualify a candidate.
+    """
+    try:
+        _validate_relation_evidence(repo_root)
+    except ContractError as error:
+        raise ContractError(f"relation evaluation evidence: {error}") from error
+    except (
+        OSError,
+        KeyError,
+        TypeError,
+        IndexError,
+        AttributeError,
+        UnicodeError,
+        json.JSONDecodeError,
+    ) as error:
+        raise ContractError(
+            "relation evaluation evidence: missing or malformed artifact"
+        ) from error
+
 def validate_external_eval_tree(repo_root: Path) -> None:
     root = repo_root / EVAL_RELATIVE
     require(root.is_dir() and not root.is_symlink(), "external eval root is invalid")
@@ -1863,12 +2348,13 @@ def validate_topology(root: Path) -> None:
         {handoff["owner"] for handoff in resume_handoffs}
         == {
             "addressing-pr-review-feedback",
+            "maintaining-issue-pr-relations",
             "getting-prs-ready-for-review",
             "getting-prs-merged",
             "operation:focused-ci",
             "versionkeeping:resolving-merge-conflicts",
         }
-        and len(resume_handoffs) == 5
+        and len(resume_handoffs) == 6
         and [(handoff["trigger"], handoff["owner"]) for handoff in resume_handoffs[:2]]
         == [
             (
@@ -3214,19 +3700,24 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
             require(
                 isinstance(item, dict)
                 and set(item)
-                == {
+                == ({
                     "id",
                     "name",
                     "prompt",
                     "expected_output",
                     "files",
                     "expectations",
-                }
+                } | ({"caller"} if skill == "maintaining-issue-pr-relations" else set()))
                 and type(item["id"]) is int
                 and item["id"] == position
                 and item["name"] == Path(fixture_name).stem,
                 f"raw eval item schema drift: {skill}",
             )
+            if skill == "maintaining-issue-pr-relations":
+                require(
+                    item["caller"] in PUBLIC_SKILLS,
+                    "relation eval caller is outside the public lifecycle",
+                )
             fixture = f"{skill}/fixtures/{fixture_name}"
             require(
                 item["files"] == [fixture],
@@ -3294,6 +3785,7 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
 def validate_writer_publisher_trigger_evals(repo_root: Path) -> None:
     trigger_maps: dict[str, dict[str, bool]] = {}
     for skill in (
+        "maintaining-issue-pr-relations",
         "writing-reviewable-pr-descriptions",
         "publishing-reviewable-prs",
     ):
@@ -5120,6 +5612,7 @@ def validate(
     check_projections: bool = True,
     check_markdown_evidence: bool = True,
     check_feedback_evidence: bool = True,
+    check_relation_evidence: bool = True,
     emit_success: bool = True,
 ) -> None:
     root = locate_plugin(repo_root)
@@ -5143,6 +5636,8 @@ def validate(
     validate_portability(root)
     validate_atlas_split(repo_root, root)
     validate_external_eval_tree(repo_root)
+    if check_relation_evidence:
+        validate_relation_evidence(repo_root)
     validate_retirement_contribution_ledger(repo_root, root)
     validate_behavior_corpus(repo_root)
     validate_merge_eval_isolation(repo_root)
@@ -5193,6 +5688,7 @@ def main() -> int:
                 check_projections=not args.write_markdown_projections,
                 check_markdown_evidence=not args.write_markdown_projections,
                 check_feedback_evidence=not args.write_markdown_projections,
+                check_relation_evidence=not args.write_markdown_projections,
                 emit_success=False,
             )
             require_content_lock_write_snapshot_unchanged(repository, snapshot)
@@ -5207,6 +5703,7 @@ def main() -> int:
             check_content_lock=False if args.write_markdown_projections else None,
             check_markdown_evidence=not args.write_markdown_projections,
             check_feedback_evidence=not args.write_markdown_projections,
+            check_relation_evidence=not args.write_markdown_projections,
             emit_success=not args.write_markdown_projections,
         )
     except (

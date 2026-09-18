@@ -2,7 +2,7 @@
   "name": "mergecraft",
   "displayName": "Mergecraft",
   "version": "1.0.0",
-  "description": "Mergecraft: pull-request authoring, publication, Graphite transport, feedback, readiness, merge, and stack repair.",
+  "description": "Mergecraft: Issue–PR relations, pull-request authoring, publication, Graphite transport, feedback, readiness, merge, and stack repair.",
   "author": {
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
@@ -16,6 +16,7 @@
     "graphite",
     "feedback",
     "merge",
-    "stack"
+    "stack",
+    "issues"
   ]
 }

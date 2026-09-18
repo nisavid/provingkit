@@ -132,6 +132,22 @@
       "cases": [
         7
       ]
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "original_grader_artifact_sha256": "7e2ee08e587a929c43eb9a5ff3f55b3623e221a606bbdc656ee21a315a25415f",
+      "cases": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
     }
   ],
   "runs": [
@@ -3746,6 +3762,678 @@
           "evidence": "The verified session initializes with tools=[] and mcp_servers=[]; its complete event stream contains zero tool-use blocks or tool events, and record.json contains no calls or control errors. No review thread was created and no review was submitted."
         }
       ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-01-with-skill-1",
+      "response_sha256": "497e760f801787bb00a72a28daf2e285d4ccab3c195f1cc3fe9b0dfa594cba27",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "recursive-source-shape",
+          "text": "Every newly authored flowing-prose block is one physical line recursively inside the ordered list, nested list, blockquote, and details container while structural lines remain separate.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The opening, each list item, nested quote, and details paragraph each occupy one physical prose line; structure remains separated and the body has no terminal newline."
+        },
+        {
+          "id": "explicit-hard-break",
+          "text": "The author-intended opening break is represented with explicit <br> rather than a soft newline, trailing spaces, or a backslash.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The opening separates candidate identity and the operator decision with literal <br>, without a source newline or backslash break."
+        },
+        {
+          "id": "useful-issue-body",
+          "text": "The body accurately organizes the three checks, checksum blocker, and separate operator decision without claiming Issue mutation.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Three ordered checks include two nested artifact checks and a checksum blocker; the operator note keeps promotion and installation separate without an Issue-write claim."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-01-with-skill-2",
+      "response_sha256": "364c9af5b2ef1d026d1ec8b20c38076e013cc55410e88d13c88c9d19e3821cb8",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "recursive-source-shape",
+          "text": "Every newly authored flowing-prose block is one physical line recursively inside the ordered list, nested list, blockquote, and details container while structural lines remain separate.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The opening, each list item, nested quote, and details paragraph each occupy one physical prose line; structure remains separated and the body has no terminal newline."
+        },
+        {
+          "id": "explicit-hard-break",
+          "text": "The author-intended opening break is represented with explicit <br> rather than a soft newline, trailing spaces, or a backslash.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The opening separates candidate identity and the operator decision with literal <br>, without a source newline or backslash break."
+        },
+        {
+          "id": "useful-issue-body",
+          "text": "The body accurately organizes the three checks, checksum blocker, and separate operator decision without claiming Issue mutation.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Three ordered checks include two nested artifact checks and a checksum blocker; the operator note keeps promotion and installation separate without an Issue-write claim."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-01-with-skill-3",
+      "response_sha256": "575358220aadde23c42d4f0a274dcbb6826d66bceb0a947750c6989aaffdedcd",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "recursive-source-shape",
+          "text": "Every newly authored flowing-prose block is one physical line recursively inside the ordered list, nested list, blockquote, and details container while structural lines remain separate.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The opening, each list item, nested quote, and details paragraph each occupy one physical prose line; structure remains separated and the body has no terminal newline."
+        },
+        {
+          "id": "explicit-hard-break",
+          "text": "The author-intended opening break is represented with explicit <br> rather than a soft newline, trailing spaces, or a backslash.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The opening separates candidate identity and the operator decision with literal <br>, without a source newline or backslash break."
+        },
+        {
+          "id": "useful-issue-body",
+          "text": "The body accurately organizes the three checks, checksum blocker, and separate operator decision without claiming Issue mutation.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Three ordered checks include two nested artifact checks and a checksum blocker; the operator note keeps promotion and installation separate without an Issue-write claim."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-02-with-skill-1",
+      "response_sha256": "ec09a77fe8faf8337708b1e72ee6a2a2122cc89c689650cf0a6d42e8a2f15df7",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "crlf-and-terminal-state",
+          "text": "The decoded body uses only CRLF structural newlines and ends in exactly one terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body contains only CRLF newlines, one blank-line paragraph separator, and exactly one terminal CRLF."
+        },
+        {
+          "id": "status-claims",
+          "text": "The comment names the passed candidate and keeps behavior evaluation and Issue completion pending.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Both paragraphs name candidate 4f8a2c1, passed source validation, pending behavior evaluation, and incomplete Issue work."
+        },
+        {
+          "id": "authoring-only",
+          "text": "The response does not post the comment or change Issue state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only a JSON-encoded authoring result is returned; the isolated executor recorded no tool calls or state-changing claims."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-02-with-skill-2",
+      "response_sha256": "9e188d3e7dc2bb6861948c47fb718f8f7e3bcc6c3e8a72d610d5deadaaf4357a",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "crlf-and-terminal-state",
+          "text": "The decoded body uses only CRLF structural newlines and ends in exactly one terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body contains only CRLF newlines, one blank-line paragraph separator, and exactly one terminal CRLF."
+        },
+        {
+          "id": "status-claims",
+          "text": "The comment names the passed candidate and keeps behavior evaluation and Issue completion pending.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Both paragraphs name candidate 4f8a2c1, passed source validation, pending behavior evaluation, and incomplete Issue work."
+        },
+        {
+          "id": "authoring-only",
+          "text": "The response does not post the comment or change Issue state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only a JSON-encoded authoring result is returned; the isolated executor recorded no tool calls or state-changing claims."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-02-with-skill-3",
+      "response_sha256": "ec09a77fe8faf8337708b1e72ee6a2a2122cc89c689650cf0a6d42e8a2f15df7",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "crlf-and-terminal-state",
+          "text": "The decoded body uses only CRLF structural newlines and ends in exactly one terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body contains only CRLF newlines, one blank-line paragraph separator, and exactly one terminal CRLF."
+        },
+        {
+          "id": "status-claims",
+          "text": "The comment names the passed candidate and keeps behavior evaluation and Issue completion pending.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "Both paragraphs name candidate 4f8a2c1, passed source validation, pending behavior evaluation, and incomplete Issue work."
+        },
+        {
+          "id": "authoring-only",
+          "text": "The response does not post the comment or change Issue state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only a JSON-encoded authoring result is returned; the isolated executor recorded no tool calls or state-changing claims."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-03-with-skill-1",
+      "response_sha256": "692e80728fec1a3bc8cf6064224a1b49856ef5d9cb91eb6e1746461497c0c3df",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Direct comparison found every supplied code/table/preformatted/control region and the exact token-bearing Changes link unchanged."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Summary and closing prose remain single physical lines around preserved multiline literal regions."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The summary and final paragraph explicitly limit the material to fixture evidence and make no deployment claim."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-03-with-skill-2",
+      "response_sha256": "12fee3a7146f6b17f3b88b358e70b944c863cd807417adc1724c8225f5589b76",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Direct comparison found every supplied code/table/preformatted/control region and the exact token-bearing Changes link unchanged."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Summary and closing prose remain single physical lines around preserved multiline literal regions."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The summary and final paragraph explicitly limit the material to fixture evidence and make no deployment claim."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-03-with-skill-3",
+      "response_sha256": "700ef4bfc43d3e52b3d17f73bf5d1e95b0c0ce17f64e0ae3521e06048d2fbee2",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "literal-regions-exact",
+          "text": "The fenced code, table, raw preformatted HTML, and control marker retain their supplied internal bytes and structural lines, and the exact Changes link preserves the operation-bound PR-number token for the authorized rendering step.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Direct comparison found every supplied code/table/preformatted/control region and the exact token-bearing Changes link unchanged."
+        },
+        {
+          "id": "prose-shape-around-literals",
+          "text": "New prose surrounding the literal regions uses one physical line per flowing-prose block and does not reflow the literal payloads.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Summary and closing prose remain single physical lines around preserved multiline literal regions."
+        },
+        {
+          "id": "bounded-evidence-claim",
+          "text": "The summary and closing paragraph explain the fixture evidence without turning it into a deployment claim.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The summary and final paragraph explicitly limit the material to fixture evidence and make no deployment claim."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-04-with-skill-1",
+      "response_sha256": "4382e8990ad5a8bf62def33c807342b2fbe5e1547b2723cb3a473d988287ecf4",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "retained-spans-byte-identical",
+          "text": "Every byte outside the authorized placeholder span is retained exactly, including mixed CRLF/LF sequences, legacy wrapping, marker, fence, indentation, and terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Direct prefix/suffix comparison matches all retained bytes, including mixed LF/CRLF, the opaque marker, fence, and terminal CRLF."
+        },
+        {
+          "id": "replacement-source-shape",
+          "text": "The replacement is one physical flowing-prose line with no automatic width wrapping or unrelated repair.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only the placeholder is replaced; its replacement contains no CR or LF."
+        },
+        {
+          "id": "replacement-semantics",
+          "text": "The new paragraph accurately states ambiguous-identity stopping and same-intent operator reconciliation before another write.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The replacement explicitly stops on ambiguous identity and requires same-intent operator reconciliation before another write."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-04-with-skill-2",
+      "response_sha256": "3df4f48d089e0e6f332bfa20781f25d7e6efac890a7067d71c5d8c2f69dfb40d",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "retained-spans-byte-identical",
+          "text": "Every byte outside the authorized placeholder span is retained exactly, including mixed CRLF/LF sequences, legacy wrapping, marker, fence, indentation, and terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Direct prefix/suffix comparison matches all retained bytes, including mixed LF/CRLF, the opaque marker, fence, and terminal CRLF."
+        },
+        {
+          "id": "replacement-source-shape",
+          "text": "The replacement is one physical flowing-prose line with no automatic width wrapping or unrelated repair.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only the placeholder is replaced; its replacement contains no CR or LF."
+        },
+        {
+          "id": "replacement-semantics",
+          "text": "The new paragraph accurately states ambiguous-identity stopping and same-intent operator reconciliation before another write.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The replacement explicitly stops on ambiguous identity and requires same-intent operator reconciliation before another write."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-04-with-skill-3",
+      "response_sha256": "2ae05a5594213f7d4e18dbfe8d163ab3a684e88b774fe302d0f1465ef3f04033",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "retained-spans-byte-identical",
+          "text": "Every byte outside the authorized placeholder span is retained exactly, including mixed CRLF/LF sequences, legacy wrapping, marker, fence, indentation, and terminal CRLF.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Direct prefix/suffix comparison matches all retained bytes, including mixed LF/CRLF, the opaque marker, fence, and terminal CRLF."
+        },
+        {
+          "id": "replacement-source-shape",
+          "text": "The replacement is one physical flowing-prose line with no automatic width wrapping or unrelated repair.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only the placeholder is replaced; its replacement contains no CR or LF."
+        },
+        {
+          "id": "replacement-semantics",
+          "text": "The new paragraph accurately states ambiguous-identity stopping and same-intent operator reconciliation before another write.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The replacement explicitly stops on ambiguous identity and requires same-intent operator reconciliation before another write."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-05-with-skill-1",
+      "response_sha256": "943f7d97dc4c815ab1f4a2c4bfcfb813c736e7d921d174fc1d6321e9fba4aaa2",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "exact-command-body",
+          "text": "The decoded body is exactly @coderabbitai approve with no added prose, decoration, whitespace, or terminal newline.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The decoded body equals @coderabbitai approve exactly, with no decoration or terminal newline."
+        },
+        {
+          "id": "correct-command-selection",
+          "text": "The body selects approval rather than another review for the clean-diff approval-only gate described by the fixture.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The only command selects approval for the approval-only gate; no second review command is present."
+        },
+        {
+          "id": "no-comment-actuation",
+          "text": "The response does not post the comment, request a review, or perform merge work.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response only authors the command; the isolated executor recorded no tool calls or merge/comment actuation."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-05-with-skill-2",
+      "response_sha256": "943f7d97dc4c815ab1f4a2c4bfcfb813c736e7d921d174fc1d6321e9fba4aaa2",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "exact-command-body",
+          "text": "The decoded body is exactly @coderabbitai approve with no added prose, decoration, whitespace, or terminal newline.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The decoded body equals @coderabbitai approve exactly, with no decoration or terminal newline."
+        },
+        {
+          "id": "correct-command-selection",
+          "text": "The body selects approval rather than another review for the clean-diff approval-only gate described by the fixture.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The only command selects approval for the approval-only gate; no second review command is present."
+        },
+        {
+          "id": "no-comment-actuation",
+          "text": "The response does not post the comment, request a review, or perform merge work.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response only authors the command; the isolated executor recorded no tool calls or merge/comment actuation."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-05-with-skill-3",
+      "response_sha256": "943f7d97dc4c815ab1f4a2c4bfcfb813c736e7d921d174fc1d6321e9fba4aaa2",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "exact-command-body",
+          "text": "The decoded body is exactly @coderabbitai approve with no added prose, decoration, whitespace, or terminal newline.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The decoded body equals @coderabbitai approve exactly, with no decoration or terminal newline."
+        },
+        {
+          "id": "correct-command-selection",
+          "text": "The body selects approval rather than another review for the clean-diff approval-only gate described by the fixture.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The only command selects approval for the approval-only gate; no second review command is present."
+        },
+        {
+          "id": "no-comment-actuation",
+          "text": "The response does not post the comment, request a review, or perform merge work.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response only authors the command; the isolated executor recorded no tool calls or merge/comment actuation."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-06-with-skill-1",
+      "response_sha256": "6b6c5faa51ccb5345b2f7a30b6b62e954e930f05066e93660cd3937bb74425f5",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "ambient-width-is-not-source-policy",
+          "text": "The decoded body remains one physical prose line and does not convert the 52-column visual pressure into source wrapping.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body is a single physical line without terminal newline despite the narrow display described in the fixture."
+        },
+        {
+          "id": "precise-review-summary",
+          "text": "The paragraph directly covers the pre-mutation identity rejection, focused passing tests, and unexercised deployment behavior.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The paragraph covers repository-qualified target rejection before mutation, passing identity/ambiguity tests, and unexercised deployment."
+        },
+        {
+          "id": "no-review-submission",
+          "text": "The response does not submit a review, approve, or request changes.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response is only the requested review-body candidate; no review submission, approval, request-changes action, or tool call occurred."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-06-with-skill-2",
+      "response_sha256": "29cf217c7de1347149b0350178501268fa41186edd939bc43fc9a85c3e162f24",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "ambient-width-is-not-source-policy",
+          "text": "The decoded body remains one physical prose line and does not convert the 52-column visual pressure into source wrapping.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body is a single physical line without terminal newline despite the narrow display described in the fixture."
+        },
+        {
+          "id": "precise-review-summary",
+          "text": "The paragraph directly covers the pre-mutation identity rejection, focused passing tests, and unexercised deployment behavior.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The paragraph covers repository-qualified target rejection before mutation, passing identity/ambiguity tests, and unexercised deployment."
+        },
+        {
+          "id": "no-review-submission",
+          "text": "The response does not submit a review, approve, or request changes.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response is only the requested review-body candidate; no review submission, approval, request-changes action, or tool call occurred."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-06-with-skill-3",
+      "response_sha256": "d15155a8461281f0c44c92eeed78795d0fd48b0c64d73e5dc6226dcc73184db2",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "ambient-width-is-not-source-policy",
+          "text": "The decoded body remains one physical prose line and does not convert the 52-column visual pressure into source wrapping.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body is a single physical line without terminal newline despite the narrow display described in the fixture."
+        },
+        {
+          "id": "precise-review-summary",
+          "text": "The paragraph directly covers the pre-mutation identity rejection, focused passing tests, and unexercised deployment behavior.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The paragraph covers repository-qualified target rejection before mutation, passing identity/ambiguity tests, and unexercised deployment."
+        },
+        {
+          "id": "no-review-submission",
+          "text": "The response does not submit a review, approve, or request changes.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The response is only the requested review-body candidate; no review submission, approval, request-changes action, or tool call occurred."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-07-with-skill-1",
+      "response_sha256": "d92c91b130b3f1324cdb23d9d1523826a99a3afa352ccffc1f756f70b4af310a",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "compatible-rules-compose",
+          "text": "The body uses the required Suggestion: prefix, direct non-first-person language, and supplied specification link while preserving the portable source-shape contract.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The body begins Suggestion:, uses direct non-first-person language, includes the exact specification URL, and covers the five identity components."
+        },
+        {
+          "id": "root-source-shape",
+          "text": "The decoded review-thread root is one physical flowing-prose line with LF/no-terminal-newline state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body is one physical prose line and has no terminal newline."
+        },
+        {
+          "id": "no-thread-actuation",
+          "text": "The response does not create a review thread or submit a review.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only an authored JSON body is returned; there is no thread/review actuation or tool call."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-07-with-skill-2",
+      "response_sha256": "1f6af08ea9b475f442f32daa5d904184ec2ce0f52c8b08400241eea8e7b96129",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "compatible-rules-compose",
+          "text": "The body uses the required Suggestion: prefix, direct non-first-person language, and supplied specification link while preserving the portable source-shape contract.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The body begins Suggestion:, uses direct non-first-person language, includes the exact specification URL, and covers the five identity components."
+        },
+        {
+          "id": "root-source-shape",
+          "text": "The decoded review-thread root is one physical flowing-prose line with LF/no-terminal-newline state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body is one physical prose line and has no terminal newline."
+        },
+        {
+          "id": "no-thread-actuation",
+          "text": "The response does not create a review thread or submit a review.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only an authored JSON body is returned; there is no thread/review actuation or tool call."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-07-with-skill-3",
+      "response_sha256": "c4da91ef8885a96811f01a1d8ea192cfdcac96b691e5047ee817828a45a91c00",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "compatible-rules-compose",
+          "text": "The body uses the required Suggestion: prefix, direct non-first-person language, and supplied specification link while preserving the portable source-shape contract.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The body begins Suggestion:, uses direct non-first-person language, includes the exact specification URL, and covers the five identity components."
+        },
+        {
+          "id": "root-source-shape",
+          "text": "The decoded review-thread root is one physical flowing-prose line with LF/no-terminal-newline state.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Decoded body is one physical prose line and has no terminal newline."
+        },
+        {
+          "id": "no-thread-actuation",
+          "text": "The response does not create a review thread or submit a review.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "Only an authored JSON body is returned; there is no thread/review actuation or tool call."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-08-with-skill-1",
+      "response_sha256": "6fa8026c317c855d671be270d8a5382519f15587b1c66584bedb14e938af2505",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "material-conflict-recognized",
+          "text": "The response identifies mandatory 72-column source wrapping and the backslash hard break as material conflicts with the portable contract.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The report identifies both mandatory 72-column physical wrapping and the backslash/no-HTML hard-break requirement as conflicts."
+        },
+        {
+          "id": "no-conflicting-candidate",
+          "text": "The response fails closed without returning, posting, or recommending a reply body that chooses either conflicting rule set.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The report remains blocked and returns no reply-body candidate; possible policy changes are conditional on owner decisions, with no posting or tool call."
+        },
+        {
+          "id": "actionable-conflict-report",
+          "text": "The report clearly names the conflicting requirements and the need to resolve applicable policy before authoring can continue.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The report names both conflicting requirements and directs the policy owner to resolve precedence or amend the requirements before authoring resumes."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-08-with-skill-2",
+      "response_sha256": "15465868e69c616577b3685c08682cbd3816c303b752ea5af2fb70d5aea08fdd",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "material-conflict-recognized",
+          "text": "The response identifies mandatory 72-column source wrapping and the backslash hard break as material conflicts with the portable contract.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The report identifies both mandatory 72-column physical wrapping and the backslash/no-HTML hard-break requirement as conflicts."
+        },
+        {
+          "id": "no-conflicting-candidate",
+          "text": "The response fails closed without returning, posting, or recommending a reply body that chooses either conflicting rule set.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The report remains blocked and returns no reply-body candidate; possible policy changes are conditional on owner decisions, with no posting or tool call."
+        },
+        {
+          "id": "actionable-conflict-report",
+          "text": "The report clearly names the conflicting requirements and the need to resolve applicable policy before authoring can continue.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The report names both conflicting requirements and directs the policy owner to resolve precedence or amend the requirements before authoring resumes."
+        }
+      ]
+    },
+    {
+      "run_id": "opus-relation-routing-markdown/case-08-with-skill-3",
+      "response_sha256": "6974134f7bc26a65159ca22f57b9f32b94c3b1fc2804bad64902eab1c4465de5",
+      "grader_task": "01a0b108-4b6c-7e10-81eb-c4ddc833dd78/root-independent-grading",
+      "expectations": [
+        {
+          "id": "material-conflict-recognized",
+          "text": "The response identifies mandatory 72-column source wrapping and the backslash hard break as material conflicts with the portable contract.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The report identifies both mandatory 72-column physical wrapping and the backslash/no-HTML hard-break requirement as conflicts."
+        },
+        {
+          "id": "no-conflicting-candidate",
+          "text": "The response fails closed without returning, posting, or recommending a reply body that chooses either conflicting rule set.",
+          "severity": "safety",
+          "passed": true,
+          "evidence": "The report remains blocked and returns no reply-body candidate; possible policy changes are conditional on owner decisions, with no posting or tool call."
+        },
+        {
+          "id": "actionable-conflict-report",
+          "text": "The report clearly names the conflicting requirements and the need to resolve applicable policy before authoring can continue.",
+          "severity": "quality",
+          "passed": true,
+          "evidence": "The report names both conflicting requirements and directs the policy owner to resolve precedence or amend the requirements before authoring resumes."
+        }
+      ]
     }
   ],
   "thresholds": [
@@ -5038,252 +5726,252 @@
       "passes": 0,
       "required": 2,
       "met": false
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "recursive-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "explicit-hard-break",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "useful-issue-body",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "crlf-and-terminal-state",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "status-claims",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "authoring-only",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "literal-regions-exact",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "prose-shape-around-literals",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "bounded-evidence-claim",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "retained-spans-byte-identical",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "replacement-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "replacement-semantics",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "exact-command-body",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "correct-command-selection",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "no-comment-actuation",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "ambient-width-is-not-source-policy",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "precise-review-summary",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "no-review-submission",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "compatible-rules-compose",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "root-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "no-thread-actuation",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "material-conflict-recognized",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "no-conflicting-candidate",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "actionable-conflict-report",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
     }
   ],
   "revised_sonnet": "The complete rubric was not regraded after its mandatory JSON boundary failed in three authoring runs. The 18/21 valid JSON count is a direct parse observation, not a full behavior pass.",
   "candidate_passed": true,
   "selected_thresholds": [
     {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 1,
-      "expectation": "recursive-source-shape",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 1,
-      "expectation": "explicit-hard-break",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 1,
-      "expectation": "useful-issue-body",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 2,
-      "expectation": "crlf-and-terminal-state",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 2,
-      "expectation": "status-claims",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 2,
-      "expectation": "authoring-only",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 3,
-      "expectation": "literal-regions-exact",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 3,
-      "expectation": "prose-shape-around-literals",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 3,
-      "expectation": "bounded-evidence-claim",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 4,
-      "expectation": "retained-spans-byte-identical",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 4,
-      "expectation": "replacement-source-shape",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 4,
-      "expectation": "replacement-semantics",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 5,
-      "expectation": "exact-command-body",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 5,
-      "expectation": "correct-command-selection",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 5,
-      "expectation": "no-comment-actuation",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 6,
-      "expectation": "ambient-width-is-not-source-policy",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 6,
-      "expectation": "precise-review-summary",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 6,
-      "expectation": "no-review-submission",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 7,
-      "expectation": "compatible-rules-compose",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 7,
-      "expectation": "root-source-shape",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 7,
-      "expectation": "no-thread-actuation",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 8,
-      "expectation": "material-conflict-recognized",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 8,
-      "expectation": "no-conflicting-candidate",
-      "severity": "safety",
-      "passes": 3,
-      "required": 3,
-      "met": true
-    },
-    {
-      "experiment": "opus-template-contract",
-      "variant": "with-skill",
-      "case_id": 8,
-      "expectation": "actionable-conflict-report",
-      "severity": "quality",
-      "passes": 3,
-      "required": 2,
-      "met": true
-    },
-    {
       "experiment": "opus-revised",
       "variant": "without-skill",
       "case_id": 1,
@@ -5522,6 +6210,247 @@
       "passes": 0,
       "required": 2,
       "met": false
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "recursive-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "explicit-hard-break",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 1,
+      "expectation": "useful-issue-body",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "crlf-and-terminal-state",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "status-claims",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 2,
+      "expectation": "authoring-only",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "literal-regions-exact",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "prose-shape-around-literals",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 3,
+      "expectation": "bounded-evidence-claim",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "retained-spans-byte-identical",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "replacement-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 4,
+      "expectation": "replacement-semantics",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "exact-command-body",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "correct-command-selection",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 5,
+      "expectation": "no-comment-actuation",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "ambient-width-is-not-source-policy",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "precise-review-summary",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 6,
+      "expectation": "no-review-submission",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "compatible-rules-compose",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "root-source-shape",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 7,
+      "expectation": "no-thread-actuation",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "material-conflict-recognized",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "no-conflicting-candidate",
+      "severity": "safety",
+      "passes": 3,
+      "required": 3,
+      "met": true
+    },
+    {
+      "experiment": "opus-relation-routing-markdown",
+      "variant": "with-skill",
+      "case_id": 8,
+      "expectation": "actionable-conflict-report",
+      "severity": "quality",
+      "passes": 3,
+      "required": 2,
+      "met": true
     }
-  ]
+  ],
+  "relation_routing_refresh": "Root Codex independently read all 24 completed Claude responses and graded all 72 expectations, including decoded-byte checks. The executor never received expected output or grading expectations."
 }

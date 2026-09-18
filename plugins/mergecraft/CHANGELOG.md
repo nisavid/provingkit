@@ -2,6 +2,11 @@
 
 ## 1.0.0
 
+- Maintain evidenced Issue–PR contribution ledgers and Development links through
+  the existing lifecycle, with task-wide setting reuse, bounded cross-task
+  caching, explicit completion gates, and reconciled partial outcomes.
+- Add guarded historical PR ledger edits that preserve title, state, and
+  unrelated content without requiring a surviving branch.
 - Add the portable seven-field GitHub Markdown authoring skill, generated
   writer-local projections, conflict-safe exact-body ownership, and raw behavior
   and routing corpora.

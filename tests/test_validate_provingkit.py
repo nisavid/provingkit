@@ -118,6 +118,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         for relative in (
             ".claude-plugin/marketplace.json",
             "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
+            "docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md",
             "release/provingkit/cutover-provenance-v1.json",
             "release/provingkit/definition-v1.json",
             "release/provingkit/final-main-import-map-v1.tsv",
@@ -1470,7 +1471,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 / "release/provingkit/historical-identity-allowlist-v1.json"
             ).read_text(encoding="utf-8")
         )
-        self.assertEqual(len(allowlist["entries"]), 30)
+        self.assertEqual(len(allowlist["entries"]), 31)
         self.assertIn(
             {
                 "disposition": (

@@ -81,12 +81,12 @@ def test_routing_definition_has_the_complete_inventory():
     runner = load_runner()
     bundle = runner.load_definition(ROOT)
     cases = bundle.cases
-    assert len(cases) == 121
+    assert len(cases) == 125
     assert runner.case_counts(cases) == {
-        "cold_start": 23,
-        "explicit_invocation": 23,
-        "trigger": 75,
-        "total": 121,
+        "cold_start": 24,
+        "explicit_invocation": 24,
+        "trigger": 77,
+        "total": 125,
     }
     assert (
         sum(
@@ -94,7 +94,7 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 39
+        == 40
     )
     assert (
         sum(
@@ -102,7 +102,7 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 36
+        == 37
     )
     assert {
         "versionkeeping:using-persistent-git-worktrees",
@@ -391,7 +391,7 @@ def test_evidence_validation_compares_the_declared_candidate_repository(
 
 def test_fixture_mode_rejects_a_full_or_empty_matrix(tmp_path: Path):
     repository, revision = frozen_copy(tmp_path)
-    for limit in (None, "121", "0"):
+    for limit in (None, "125", "0"):
         command = [
             sys.executable,
             str(SCRIPT),

@@ -1,0 +1,4 @@
+interface:
+  display_name: Maintain Issue–PR Relations
+  short_description: Keep contribution ledgers and safe native links aligned.
+  default_prompt: Use $mergecraft:maintaining-issue-pr-relations to reconcile these Issue–PR contributions.
