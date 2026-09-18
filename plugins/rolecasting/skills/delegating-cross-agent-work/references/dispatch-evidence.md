@@ -14,7 +14,7 @@ issuer inventories. The retained validator closure includes the validator and
 the bootstrap renderer, but a validator alone grants no producer or issuer
 authority. Task Witness therefore has no current Rolecasting producer or
 issuer to place in a new-publication trust snapshot, so no current Rolecasting
-bundle can be accepted for publication.
+bundle can be accepted for explicitly witnessed publication.
 
 The renderer uses `rolecasting-bootstrap-dispatch-v2` as its bootstrap producer
 identity and `rolecasting-bootstrap-adapter-v2` as its bootstrap issuer ID and
@@ -22,8 +22,8 @@ contract. Those identities are not registered Task Witness authorities. Task
 Witness owns bundle descriptors, canonical JSON parsing, trust selection,
 retained validator bytes, and the complete bundle digest.
 
-The sole canonical front door remains Task Witness. A current publication
-attempt therefore fails closed:
+The authenticated bundle front door remains Task Witness. An explicitly
+witnessed publication attempt therefore fails closed:
 
 ```text
 task-witness validate --bundle <absolute-bundle>
@@ -31,7 +31,7 @@ task-witness validate --bundle <absolute-bundle>
 
 Tests may construct private, test-owned bootstrap trust fixtures to exercise
 the historical parser. No Rolecasting historical trust has been installed or
-retained, and those fixtures are never production or publication evidence.
+retained, and those fixtures are never authenticated publication evidence.
 Rolecasting exposes no runtime-path, trust-path, discovery, or fallback CLI.
 
 ## Support, issuance, and assurance
@@ -57,11 +57,19 @@ Consumers freeze an exact minimum for every assurance dimension before
 dispatch. The validator rejects any observed tier below its corresponding
 minimum. Ordinary consumers require at least `controller-observed` for every
 fact they rely on. Self-reported dimensions are diagnostic and non-gating; a
-route is usable only when those facts are not gate inputs. Canonical
+route is usable only when those facts are not gate inputs. Explicitly witnessed
 publication requires a product-attested ChatGPT Codex child with
 product-attested evidence for every assurance dimension.
 The generic Rolecasting validator preserves every accepted assurance level and
 does not silently promote one level to another.
+
+An ordinary invocation plan and live model-selection record establish the
+selected request, available capability, and granted or requested authority.
+These are different claims from actual model execution and product enforcement;
+they do not raise the assurance of either dimension. Ordinary review and its
+separately authorized publication handoff do not require authenticated bundles
+unless the consumer explicitly selects the witnessed contract. Their owning
+workflows retain every authority, review, verification, and publication gate.
 
 The separate skill-mediated native Codex binding can freeze and record
 same-leader operational dispatches on ChatGPT Codex and Codex CLI/TUI. Current
@@ -80,9 +88,9 @@ The bootstrap adapter exposes a pure deterministic renderer for one closed
 binds its exact source bytes. It does not launch a worker, choose a model, or
 authenticate facts outside its process. No owning harness integration currently
 authenticates those observations as portable evidence or binds its bytes into
-a registered issuer closure. Canonical new-publication evidence remains
-unreachable until such an integration exists. Merely adding provider roles
-cannot satisfy that boundary.
+a registered issuer closure. Explicitly witnessed new-publication evidence
+remains unreachable until such an integration exists. Merely adding provider
+roles cannot satisfy that boundary.
 
 ## Closed bundle
 
@@ -128,5 +136,5 @@ Successful validation emits the self-addressed
 and plan identities, opaque subject, producer, and an execution map with exact
 dispatch, model, and result digests; target, topology, observed assurance,
 assurance minimum, authority, user authority, and isolation; model choice and issuer identities; typed
-returned evidence; and exact `usable` status. Consumers use this projection and
-do not parse or reproduce Rolecasting's stored schemas.
+returned evidence; and exact `usable` status. Witnessed consumers use this
+projection and do not parse or reproduce Rolecasting's stored schemas.

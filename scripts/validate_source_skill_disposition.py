@@ -1294,8 +1294,15 @@ def validate_refresh_contract(
     require(
         type(tricritical_skills) is dict
         and type(tricritical_skills.get("review")) is dict
-        and "adapter:rolecasting-invocation-topology-receipt"
-        in tricritical_skills["review"].get("requires", []),
+        and tricritical_skills["review"].get("requires") == [
+            "adapter:model-selection-record", "adapter:rolecasting-invocation-plan"
+        ]
+        and tricritical_skills["review"].get("conditional_requires") == {
+            "witnessed": [
+                "adapter:model-selection-receipt",
+                "adapter:rolecasting-invocation-topology-receipt",
+            ]
+        },
         "Tricritical dependency evidence drift",
     )
     closure = derivation["distribution_closure"]

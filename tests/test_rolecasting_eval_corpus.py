@@ -345,6 +345,13 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             "product-attested ChatGPT Codex child",
             sources["dispatch_evidence"],
         )
+        self.assertIn("Explicitly witnessed", sources["dispatch_evidence"])
+        self.assertIn("adapter:rolecasting-invocation-plan", sources["delegating"])
+        self.assertIn("adapter:model-selection-record", sources["choosing"])
+        self.assertIn(
+            "Neither requires Task Witness or authenticated receipt issuance",
+            sources["topology_receipt"],
+        )
         self.assertIn("ChatGPT Codex", sources["foreign_peers"])
         self.assertIn("Codex CLI/TUI", sources["foreign_peers"])
         self.assertIn("Claude Code", sources["foreign_peers"])

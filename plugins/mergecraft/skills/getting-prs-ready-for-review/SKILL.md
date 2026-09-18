@@ -20,12 +20,21 @@ and return readiness to that caller so it can continue from live state.
 3. When scoped changes need a checkpoint or push, call
    the imported `git-ref-push` operation
    (`versionkeeping:checkpointing-and-publishing-git-work`).
-4. Give the exact pushed change to the `pr-content` operation owned by
+4. Select the publisher's explicit `required` or `not-required` mode and sorted
+   specialist inventory before invoking `pr-content` or freezing its candidate.
+   Preserve an existing selection; changing it requires fresh applicable review.
+   Give that selection and the exact pushed change to the `pr-content` operation
+   owned by
    [Write Reviewable PR Descriptions](../writing-reviewable-pr-descriptions/SKILL.md).
+   Where its independent review gate applies, require the verified bare `clean`
+   hand-back for the current candidate, review input, requirements, scopes, and
+   evidence dependencies. `not-required` records no witnessed provenance and
+   does not waive that review. An unavailable witnessed route blocks `required`.
 5. Give the complete validated title/body to the operation-specific publisher
    surface in [Publish Reviewable PRs](../publishing-reviewable-prs/SKILL.md):
    use `pr-creation` for an absent PR or `pr-text-write` for an existing matching
-   draft. Create every new PR as a draft; never create a duplicate.
+   draft. Carry the same mode and specialist inventory through each publisher
+   operation. Create every new PR as a draft; never create a duplicate.
 6. Inspect the stored and rendered canonical body. If all readiness gates pass
    and actuation is authorized, refresh the exact identity/preimage and use the
    publisher's guarded `pr-readiness-write` operation.

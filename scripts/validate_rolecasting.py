@@ -34,6 +34,15 @@ MAX_INVOCATION_WORD_BUDGETS = {
     DELEGATING_SKILL: 500,
 }
 INVOCATION_TOPOLOGY_RECEIPT = "adapter:rolecasting-invocation-topology-receipt"
+INVOCATION_PLAN = "adapter:rolecasting-invocation-plan"
+MODEL_SELECTION_RECORD = "adapter:model-selection-record"
+EXPECTED_OPERATIONAL_CONTRACT = {
+    "plan": INVOCATION_PLAN,
+    "plan_owner": DELEGATING_SKILL,
+    "selection_record": MODEL_SELECTION_RECORD,
+    "selection_owner": CHOOSING_SKILL,
+    "scope": "same-leader",
+}
 INVOCATION_TOPOLOGY_REFERENCE = (
     "skills/delegating-cross-agent-work/references/invocation-topology-receipt.md"
 )
@@ -296,17 +305,22 @@ def load_skill_frontmatter(content: str, skill: str) -> dict:
 def validate_topology(root: Path) -> dict:
     topology = load_json(root, "topology.json", "Rolecasting topology")
     require(
+        topology.get("operational_contract") == EXPECTED_OPERATIONAL_CONTRACT,
+        "operational handoff metadata drift",
+    )
+    require(
         "receipt_contract" in topology,
         "invocation topology receipt metadata drift",
     )
     require(
-        set(topology) == {"schema_version", "receipt_contract", "skills"},
+        set(topology)
+        == {"schema_version", "operational_contract", "receipt_contract", "skills"},
         "topology keys drift",
     )
     require_integer(
         topology["schema_version"], "topology schema_version must be an integer"
     )
-    require(topology["schema_version"] == 3, "topology schema_version drift")
+    require(topology["schema_version"] == 4, "topology schema_version drift")
     require(
         topology["receipt_contract"] == EXPECTED_RECEIPT_CONTRACT,
         "invocation topology receipt metadata drift",
@@ -366,6 +380,11 @@ def validate_topology(root: Path) -> dict:
     require(
         skills[CHOOSING_SKILL]["may_call"] == [],
         "model selection must not define a reverse call edge",
+    )
+    require(
+        owner_to_skill.get("invocation-plan") == DELEGATING_SKILL
+        and owner_to_skill.get("model-selection-record") == CHOOSING_SKILL,
+        "operational handoff ownership drift",
     )
     require(
         "invocation-topology-receipt" in skills[DELEGATING_SKILL]["owns"]
@@ -483,6 +502,15 @@ def validate_skills(root: Path, topology: dict) -> tuple[dict, dict, set[str]]:
     receipt = read(root, INVOCATION_TOPOLOGY_REFERENCE)
     receipt_words = " ".join(receipt.split())
     receipt_contract = topology["receipt_contract"]
+    require(
+        INVOCATION_PLAN in delegating
+        and MODEL_SELECTION_RECORD in bodies[CHOOSING_SKILL]
+        and INVOCATION_PLAN in receipt
+        and MODEL_SELECTION_RECORD in receipt
+        and "Neither requires Task Witness or authenticated receipt issuance"
+        in receipt_words,
+        "ordinary plan and selection handoff drift",
+    )
     require(
         "[invocation-topology-receipt.md](references/invocation-topology-receipt.md)"
         in delegating
@@ -796,7 +824,7 @@ def validate_task_witness_provider(root: Path) -> set[str]:
         "Rolecasting exposes no runtime-path, trust-path, discovery, or fallback CLI",
         "empty producer and issuer inventories",
         "No owning harness integration currently authenticates",
-        "Canonical new-publication evidence",
+        "Explicitly witnessed new-publication evidence",
         "`usable: false` is valid evidence",
         "exact `usable` status",
     ):

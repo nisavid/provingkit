@@ -9,7 +9,7 @@ surface, version, executor, transport, and assurance source.
 
 | Order | Product surfaces | Qualification state |
 | --- | --- | --- |
-| Initial | ChatGPT Codex; Codex CLI/TUI | Supported separately for ordinary delegation; publication-grade issuance pending |
+| Initial | ChatGPT Codex; Codex CLI/TUI | Supported separately for ordinary delegation; witnessed-publication issuance pending |
 | Fast follow | Claude Code; Claude Desktop | Separate paired surfaces; real qualification pending |
 | Next | Cursor; Cursor Agent | Qualify together or in close succession |
 

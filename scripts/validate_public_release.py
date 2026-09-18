@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "e767db3786b854a44823de065dd2846daec993597d52783d182c1ad4ccf3355e"
+SOURCE_SHA256 = "ba30a9884ef59634beb3e1f9b517d2e43189abfa6408aefbc815964e14e54b5e"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -92,6 +92,7 @@ COMMON_SUPPORT_PATHS = {
     "tests/amberbridge_v4_fixture.py",
     "tests/fixtures/amberbridge-v4-compatibility.json",
     "tests/fixtures/amberbridge-v1-compatibility.json",
+    "tests/fixtures/amberbridge-v2-compatibility.json",
     "tests/fixtures/amberbridge-v4-private-registry.json",
     "tests/fixtures/amberbridge-v4-private-witness.tar",
     "tests/fixtures/amberbridge-v4-private-conformance-binding.json",

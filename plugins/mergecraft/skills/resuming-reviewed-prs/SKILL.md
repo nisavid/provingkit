@@ -29,6 +29,15 @@ the caller continues the authorized task without another user instruction.
    [Publish Reviewable PRs](../publishing-reviewable-prs/SKILL.md) for the
    authoritative latest receipt. Treat `drift` or
    `unavailable` as evidence to inspect, not permission to replay a mutation.
+   Recover and preserve the explicit publication-review mode and specialist
+   inventory in the next handoff. `not-required` means no witnessed provenance
+   was recorded; it does not establish or waive ordinary independent review.
+   Before reusing a writer's clean hand-back, the receiving owner must verify
+   its candidate, review input, requirements, scopes, and current evidence
+   dependencies. If ordinary observations are unavailable in this task, require
+   a new review or separately qualified retained evidence. Preserve nonclean
+   terminals and the stronger gate when `required` was selected; never infer a
+   downgrade from unavailable Task Witness evidence.
 6. Unless this is a status-only request, return exactly one terminal owner
    handoff in this precedence order, then
    stop this invocation. The caller starts the named owner in a fresh invocation
