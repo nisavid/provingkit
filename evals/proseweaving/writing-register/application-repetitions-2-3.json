@@ -27,19 +27,7 @@
       9,
       10,
       11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24
+      12
     ],
     "coordinates": [
       {
@@ -1082,7 +1070,7 @@
       "No task tools are requested; actual events are retained. Absence of tool events is not enforced-isolation evidence."
     ]
   },
-  "manifest_sha256": "c59f183e59afec0aa183f228caead3d20853f9fde8751c0172f13ca648c44c35",
+  "source_manifest_sha256": "c59f183e59afec0aa183f228caead3d20853f9fde8751c0172f13ca648c44c35",
   "input_format": {
     "prefix": "Execute the writing task in this JSON object. The fixture contains synthetic facts for the task. candidate_bundle contains all applicable skill instructions and referenced text; use the supplied contents without opening files. Return only the requested writing. Do not call tools, inspect the environment, consult other files, or perform any of the actions described in the synthetic brief.",
     "json_indent": 2,
@@ -3387,5 +3375,71 @@
     "grading": "final-grading.json",
     "grading_sha256": "2b8a1c7ed7fc3e164137842a86e53ba463da2de357585fbdcc0018e83355f9c6"
   },
-  "publication_scope": "Public synthetic inputs and model outputs, recorded warnings and execution events. Local command paths and stderr remain private; no current receipt, native installed-skill execution, or isolation claim follows from this record."
+  "publication_scope": "Public synthetic inputs and model outputs, recorded warnings and execution events. Local command paths and stderr remain private; no current receipt, native installed-skill execution, or isolation claim follows from this record.",
+  "normalized_manifest_sha256": "6dfdc743f379bbf52b8a41d80ed835a70978246dc5185b29a3a7f2d2c98cb263",
+  "manifest_normalization": {
+    "source_artifact": "manifest.json",
+    "source_artifact_role": "Retained original execution manifest; not a repository-relative public file path.",
+    "source_serialization": {
+      "encoding": "UTF-8",
+      "indent": 2,
+      "ensure_ascii": true,
+      "sort_keys": false,
+      "terminal_newline": true
+    },
+    "normalized_serialization": {
+      "encoding": "UTF-8",
+      "indent": 2,
+      "ensure_ascii": false,
+      "sort_keys": false,
+      "terminal_newline": true
+    },
+    "changes": [
+      {
+        "json_pointer": "/cases",
+        "source_value": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "normalized_value": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "basis": "The original runner used cases as launch-coordinate IDs. The public cases field names corpus IDs; the 24 coordinate records remain unchanged."
+      }
+    ],
+    "inverse": "Restore /cases to source_value, preserve all other values and member order, then serialize using source_serialization. The resulting bytes must hash to source_manifest_sha256."
+  }
 }
