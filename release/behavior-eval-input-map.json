@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "source": {
+        "path": "evals/proseweaving/writing-register/trigger-evals.json",
+        "sha256": "26ba30d5e537ec5deb1388864e80b85594069ae8dddfda2b954d14682e6bbde9"
+      },
+      "pointer": "",
+      "owners": [
+        "proseweaving/writing-for-people"
+      ],
+      "role": "current-corpus",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/blob/2d30a002ea4d2c3e8c256d6966a28ba6ff4e0286/evals/proseweaving/writing-register/README.md",
+        "mapping_sha256": "0d2790d6b5e850df1e72a794abfc3fa57e0a61b922f1c48c6ec1c71829c73e84",
+        "evidence": [
+          "https://github.com/nisavid/provingkit/blob/2d30a002ea4d2c3e8c256d6966a28ba6ff4e0286/evals/proseweaving/writing-register/discovery.json"
+        ]
+      }
+    }
+  ]
+}
