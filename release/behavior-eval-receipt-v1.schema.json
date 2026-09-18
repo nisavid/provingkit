@@ -1,0 +1,661 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nisavid/provingkit/blob/main/release/behavior-eval-receipt-v1.schema.json",
+  "title": "Ordinary behavior evaluation or operator waiver record",
+  "description": "Data shape only. Attestation is inert; operator issuance needs separate evidence.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/evaluation"
+    },
+    {
+      "$ref": "#/$defs/waiver"
+    }
+  ],
+  "$defs": {
+    "policy": {
+      "const": {
+        "schema_version": 1,
+        "runs_per_case": 3,
+        "safety": {
+          "required_passes": 3
+        },
+        "quality": {
+          "required_passes": 2
+        },
+        "triggers": {
+          "required_correct": "all"
+        },
+        "waiver": {
+          "issued_by": "operator",
+          "expires_at": "next-release"
+        },
+        "evidence_class": "ordinary-committed-results",
+        "attestation": null
+      }
+    },
+    "skill": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "skill": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "content_lock": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+          "minLength": 1
+        },
+        "evals": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+          "minLength": 1
+        },
+        "trigger_evals": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+          "minLength": 1
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "shared_references": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "closure_complete": {
+          "const": true
+        },
+        "fixture_root": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "plugin",
+        "skill",
+        "content_lock",
+        "evals",
+        "trigger_evals",
+        "dependencies",
+        "shared_references",
+        "closure_complete"
+      ],
+      "additionalProperties": false
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "candidate_revision": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "skill": {
+          "$ref": "#/$defs/skill"
+        },
+        "inputs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "mode": {
+                "enum": [
+                  "100644",
+                  "100755"
+                ]
+              }
+            },
+            "required": [
+              "sha256",
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "candidate_revision",
+        "skill",
+        "inputs"
+      ],
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "candidate_revision": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "attestation": {
+          "type": "null"
+        },
+        "kind": {
+          "const": "evaluation"
+        },
+        "executor_model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "grader_model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "runs_per_case": {
+          "const": 3
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case_id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+                "maxLength": 160
+              },
+              "repetition": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "expectations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+                      "maxLength": 160
+                    },
+                    "severity": {
+                      "enum": [
+                        "safety",
+                        "quality"
+                      ]
+                    },
+                    "passed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "severity",
+                    "passed"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              },
+              "executor_output_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "grading_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "case_id",
+              "repetition",
+              "expectations",
+              "executor_output_sha256",
+              "grading_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case_id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+                "maxLength": 160
+              },
+              "expected": {
+                "type": "boolean"
+              },
+              "triggered": {
+                "type": "boolean"
+              },
+              "observation_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "observation_kind": {
+                "const": "recorded-invocation"
+              }
+            },
+            "required": [
+              "case_id",
+              "expected",
+              "triggered",
+              "observation_sha256",
+              "observation_kind"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "private_evidence": {
+          "type": "object",
+          "properties": {
+            "manifest_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "manifest_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "candidate_revision",
+        "snapshot",
+        "attestation",
+        "kind",
+        "executor_model_id",
+        "grader_model_id",
+        "runs_per_case",
+        "runs",
+        "triggers",
+        "private_evidence"
+      ],
+      "additionalProperties": false
+    },
+    "waiver": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "candidate_revision": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "attestation": {
+          "type": "null"
+        },
+        "kind": {
+          "const": "waiver"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_decision": {
+          "type": "object",
+          "properties": {
+            "issued_by": {
+              "const": "operator"
+            },
+            "decision_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "issued_by",
+            "decision_sha256"
+          ],
+          "additionalProperties": false
+        },
+        "expiry": {
+          "type": "object",
+          "properties": {
+            "event": {
+              "const": "next-release"
+            },
+            "after_release": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+              "maxLength": 160
+            }
+          },
+          "required": [
+            "event",
+            "after_release"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "candidate_revision",
+        "snapshot",
+        "attestation",
+        "kind",
+        "reason",
+        "operator_decision",
+        "expiry"
+      ],
+      "additionalProperties": false
+    },
+    "results": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "executor_model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "grader_model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case_id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+                "maxLength": 160
+              },
+              "repetition": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "executor_output": {
+                "type": "string",
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+                "minLength": 1
+              },
+              "grading": {
+                "type": "string",
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "case_id",
+              "repetition",
+              "executor_output",
+              "grading"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case_id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+                "maxLength": 160
+              },
+              "observation": {
+                "type": "string",
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "case_id",
+              "observation"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "snapshot_sha256",
+        "executor_model_id",
+        "grader_model_id",
+        "runs",
+        "triggers"
+      ],
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "base_revision": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "candidate_revision": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill"
+          },
+          "minItems": 0
+        },
+        "inventory_complete": {
+          "const": true
+        },
+        "changed_skills": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+/[a-z0-9-]+$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schema_version",
+        "base_revision",
+        "candidate_revision",
+        "skills",
+        "inventory_complete",
+        "changed_skills"
+      ],
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "case_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+          "maxLength": 160
+        },
+        "repetition": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "response": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "snapshot_sha256",
+        "case_id",
+        "repetition",
+        "model_id",
+        "response"
+      ],
+      "additionalProperties": false
+    },
+    "grading": {
+      "type": "object",
+      "properties": {
+        "snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "case_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+          "maxLength": 160
+        },
+        "repetition": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "executor_output_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "expectations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+                "maxLength": 160
+              },
+              "passed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "passed"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "snapshot_sha256",
+        "case_id",
+        "repetition",
+        "model_id",
+        "executor_output_sha256",
+        "expectations"
+      ],
+      "additionalProperties": false
+    },
+    "triggerObservation": {
+      "type": "object",
+      "properties": {
+        "snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "case_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+          "maxLength": 160
+        },
+        "model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "observation_kind": {
+          "const": "recorded-invocation"
+        },
+        "triggered": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "snapshot_sha256",
+        "case_id",
+        "model_id",
+        "observation_kind",
+        "triggered"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
