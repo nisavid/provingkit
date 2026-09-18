@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "project-local-discovery-observation",
+  "plan_sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700",
+  "approval_document_sha256": "323cbf991eb8605d511c45593bb60ec8305d9b8aec6a8c5676243df77013aa7c",
+  "source_commit": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+  "source_identities": {
+    "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+    "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json": "421dda27638fb8988cc767c59f28bcfa8bd82f30e26ad3674b5e0b95ec043cc1"
+  },
+  "requested_model": "gpt-6-astra",
+  "requested_effort": "xhigh",
+  "provider_scope": "OpenAI built-in Codex provider",
+  "served_immutable_model_identity": null,
+  "results": [
+    {
+      "index": 0,
+      "should_trigger": true,
+      "passed": true,
+      "final_response": "PROSEWEAVING_DISCOVERY_Q01_73ac8b5bb6c6a1a9",
+      "observed_temporary_body_read": true,
+      "tool_action_count": 1,
+      "prompt_sha256": "b4161f491c0abbf76f381b02c515d62fb586f02344881b5dcd266678be46a4e7",
+      "temporary_skill_sha256": "244d38adb7667a987f5d0aca8b9bd4d7aef2b2755d1bce41b679c018b226d6f9",
+      "stdout_sha256": "d43fcb4f759d3f986da150383bb1ec5e04c846b7374c73a6a187404525f8d834",
+      "stderr_sha256": "1f325068d949ab5786f1d1fbb2582a510e10f7ceefb7b66c2069d9c9d1b1e5f5",
+      "record_sha256": "445c45798f6bbc44f9dc6b70cda5d94d1cc5ebcdabfec6e2b9d1e22c38eaa095",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Give this finished incident update a final pass against the attached log. Keep the facts and the two headings; catch any boilerplate or claims the log cannot support."
+    },
+    {
+      "index": 1,
+      "should_trigger": true,
+      "passed": true,
+      "final_response": "PROSEWEAVING_DISCOVERY_Q02_73ac8b5bb6c6a1a9",
+      "observed_temporary_body_read": true,
+      "tool_action_count": 1,
+      "prompt_sha256": "e46e88557d2c73dfb40f974e977108c0386ef7751ce58674c296657b88bc9b11",
+      "temporary_skill_sha256": "e2ba01cdbdab2e413f789e6e6b6a18a6b91158731506c725c5702f8a8df9e2fc",
+      "stdout_sha256": "3ff67ea20dd6bf19cd4e3ab3664be208ee3d4d402a14218c8087d906e83be384",
+      "stderr_sha256": "27cdbadc062c0df89ae3f1cb876192683b3536ea25d423d94b5a0cbb69a7cd2f",
+      "record_sha256": "3c7c60449558a170ea2ed59dc5f289c88f5e03aa1572fe19d33034ba7e1cf86c",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "These three replies are ready to send, but they sound like copies of each other. Tighten them without changing what I did or promised."
+    },
+    {
+      "index": 2,
+      "should_trigger": true,
+      "passed": true,
+      "final_response": "PROSEWEAVING_DISCOVERY_Q03_73ac8b5bb6c6a1a9",
+      "observed_temporary_body_read": true,
+      "tool_action_count": 1,
+      "prompt_sha256": "69f5a3f20a9348340eeb7abd4f66b8b16ed2cf3cef8a6dd2d24ceacdc5be5f5d",
+      "temporary_skill_sha256": "1441c3926022f3e8f0de164a40962eeafa32277e9b6430ba4931e828e4b33681",
+      "stdout_sha256": "b924ce8fb5f2b2c7d151cc000abae7107ae2be6065122429d87bf7c05a99dac8",
+      "stderr_sha256": "b2141a2a55d29f54d22da74dfe38f0218edb9984f720d0e21b537b696c2b7a01",
+      "record_sha256": "c76a2ad5f154ba780b5178b5458e6c6c63a705c5a8fd2264f2a85f1133f7cec7",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Check the last draft of this guide before publication. Keep the numbered procedure and the quoted examples as written, and compare the prose with the supplied notes."
+    },
+    {
+      "index": 3,
+      "should_trigger": true,
+      "passed": true,
+      "final_response": "PROSEWEAVING_DISCOVERY_Q04_73ac8b5bb6c6a1a9",
+      "observed_temporary_body_read": true,
+      "tool_action_count": 1,
+      "prompt_sha256": "b9199aec73e628289191db35b64bfd54ca0bdb977d688c68dfd4b056f066fbfb",
+      "temporary_skill_sha256": "78ad7627b30514a6d9f568b4d90b309fb7af016a09ee697af343dc4cb3ce77c6",
+      "stdout_sha256": "3e593a300fb3046224f179d036c7243b077158c3f5e94f598d6a77a8b628266e",
+      "stderr_sha256": "770db14f987b69bcc3cc6b2a9966becc3edd30f56ecce20a8494104021f1017d",
+      "record_sha256": "e9f5b27a4712548ee37865ff427702bad20ced9edfedab0974acf6b399afb6ce",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Can you proofread this complete customer update for unsupported certainty and awkward stock phrases? The approved facts are below."
+    },
+    {
+      "index": 4,
+      "should_trigger": true,
+      "passed": true,
+      "final_response": "PROSEWEAVING_DISCOVERY_Q05_73ac8b5bb6c6a1a9",
+      "observed_temporary_body_read": true,
+      "tool_action_count": 1,
+      "prompt_sha256": "0be64dc59c2d5f87764f632c2ce72fdc41ff06edea98d8c85bac1f2fbcb812e8",
+      "temporary_skill_sha256": "bf87d394c061b65f9ca8e4fd0a1de7c7c1d957dad5a2f8612776e4e790bd92e7",
+      "stdout_sha256": "b1500a463aa3b9c4c052858fb6963bba2971f2890d126e300dee1bbca311d3d1",
+      "stderr_sha256": "9d812e1c054b3927214da2c2db5b884b70f41dd29aeac05ffe66aa6d4670bbf5",
+      "record_sha256": "13732109ebd10fb00ac298df9dc12aec2aa1675428b41646379147aa7a948075",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "This final reply may already be fine. Check it against the short brief and leave it unchanged if there is nothing to fix."
+    },
+    {
+      "index": 5,
+      "should_trigger": false,
+      "passed": true,
+      "final_response": "SKILL_NOT_TRIGGERED",
+      "observed_temporary_body_read": false,
+      "tool_action_count": 0,
+      "prompt_sha256": "54dccf6da819cdd39be57bc8ed2326098b3021a937764c8f0fd1ed06e98bb9ba",
+      "temporary_skill_sha256": "7adaf5d0312bad7f655c7b49ce01d051e7e15bf9ff0903afebcb9584a382c094",
+      "stdout_sha256": "d8773f0c825346a94105da0d861b6460c7a550f6ac2d1968ef9ca39d84560fa7",
+      "stderr_sha256": "f27b2e07195d3a392eb84883b341e2d1c6a95c49418ce3c4d7e06e02673f7510",
+      "record_sha256": "feffaa38b58d07ece6b668b215a314097275194431b9adec1019e8fc909756ca",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Write a new incident update from these log notes. We have no draft yet; make it suitable for support."
+    },
+    {
+      "index": 6,
+      "should_trigger": false,
+      "passed": true,
+      "final_response": "SKILL_NOT_TRIGGERED",
+      "observed_temporary_body_read": false,
+      "tool_action_count": 0,
+      "prompt_sha256": "123eb9b9b03c8a817124cd886626eb7e8e045f0c355381a5ac6e5ad19a5516c2",
+      "temporary_skill_sha256": "986168607f2cd548145dfc98bea2c1cb2fd6a8d5a5e030229646da748605aa90",
+      "stdout_sha256": "1c049e9e261d2268e7ce460b2b249dc5b42e48e5fcb2fa62acb20aaa8855cfdd",
+      "stderr_sha256": "4c592f3505c3353e4f515cf156b61952743569fdeb86565b0bfefbc238f608f1",
+      "record_sha256": "b1bf891a69ab15243d90bca9bba4c35d683392fc5878a534e4d54de077c86c19",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Outline a guide for retries, including sections on limits, timing, and errors. We will write the prose later."
+    },
+    {
+      "index": 7,
+      "should_trigger": false,
+      "passed": true,
+      "final_response": "SKILL_NOT_TRIGGERED",
+      "observed_temporary_body_read": false,
+      "tool_action_count": 0,
+      "prompt_sha256": "37e2cacc1e4d07d010ff13a90b9590b13d89a2afe157bf64772540f590aca702",
+      "temporary_skill_sha256": "3662c81cbc17dd553033a7976378a9ebd1dbe26aafd7c8433b832423a2ea3cd6",
+      "stdout_sha256": "169aa8528cc06836e2d89b674cd039d8e358304ec7ab0300e8407628e73a3683",
+      "stderr_sha256": "64e427ed13dee24de54497a424ed5e537956c0a28b08f429ad6a96d5c9686c59",
+      "record_sha256": "01762f2da0c3168676f96b4b964e4a148390cab0f489e2d2d82eaeca455afe30",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Review this Python patch for an off-by-one error in the retry counter. The docstring uses the phrase final draft, but I need a code review."
+    },
+    {
+      "index": 8,
+      "should_trigger": false,
+      "passed": true,
+      "final_response": "SKILL_NOT_TRIGGERED",
+      "observed_temporary_body_read": false,
+      "tool_action_count": 0,
+      "prompt_sha256": "48b2a5e2aada0fbc405b6eb4bcd9fc2f33362b330039152ba233a967b267faf0",
+      "temporary_skill_sha256": "3b5221f61f4798bc9c9f63b6b565020ab3ac58ed84d8e9d52f80457ac0633d97",
+      "stdout_sha256": "2cd89494169be9c17fc118c57e853e5d4318d008e04c975c0fe6da35a2101619",
+      "stderr_sha256": "f71368560797b53a93be3b793f4b1d49737dd258185229e1996b06962f7fb462",
+      "record_sha256": "0d42e4b822d04aad29820bf2851e249fee342a6b6c9edc8fb8b05192c7db9204",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "The finished reply is approved. Post these exact bytes in the issue without editing them."
+    },
+    {
+      "index": 9,
+      "should_trigger": false,
+      "passed": true,
+      "final_response": "SKILL_NOT_TRIGGERED",
+      "observed_temporary_body_read": false,
+      "tool_action_count": 0,
+      "prompt_sha256": "f9e01b99eb9d15ae8e9e691c9def54582970201acfb7f050e1bb7b65dac5431f",
+      "temporary_skill_sha256": "d67c7a4c853e9252d26bddf64488807f9fea25f42f32cb394455eaf6be267c5d",
+      "stdout_sha256": "c146bbaf2398176ed686cb6cdb7ac080ef1621c58ef6f9703427b518b508df91",
+      "stderr_sha256": "eb9b776b4a677b0034686ba665728ac8cc98220e035ee354d1efca306d2574d1",
+      "record_sha256": "b85af55155dbcf1eb49b4d9e426c06c6825dccf57f9e7934ffd3aebd3303606b",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Translate this short approved update into French. Keep its meaning; I am not asking for an editing or fact-check pass."
+    },
+    {
+      "index": 10,
+      "should_trigger": false,
+      "passed": true,
+      "final_response": "SKILL_NOT_TRIGGERED",
+      "observed_temporary_body_read": false,
+      "tool_action_count": 0,
+      "prompt_sha256": "46bb2b92651092f4ce42659b8010b97b23400bfa2dae7436c88b8311d6c61dbb",
+      "temporary_skill_sha256": "1a16ac7a11cfa0f5847b4b75809da67f162b1ad32cd271eecf12c54b56ae8034",
+      "stdout_sha256": "0b8dce6848f26ad168d227b7b8e2b3310cde8e0d6819619af3c2231bff702f64",
+      "stderr_sha256": "0d4b77ce7613d99f65eb571cd5a34849a85f15519fed706d80307bba940ee313",
+      "record_sha256": "16add6e90b0bcd72ed4531ae46a7504e1efa4c8127ddcef3eb36d009fa9e90ec",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Only replace retry_count with retry_limit in this document. Do not revise or assess the prose."
+    },
+    {
+      "index": 11,
+      "should_trigger": false,
+      "passed": true,
+      "final_response": "SKILL_NOT_TRIGGERED",
+      "observed_temporary_body_read": false,
+      "tool_action_count": 0,
+      "prompt_sha256": "1f2163e58d98dd5e5b3895c6a125d1483eb4140701159b681458b92cde3acd13",
+      "temporary_skill_sha256": "86425e9cd005f417de8e8482223265faf501159fb2edeefee0cfb823dea6eea3",
+      "stdout_sha256": "ed6593db45e50fe178e3c2282d47ad09bb670dea003d15b097c8cca69187ebc8",
+      "stderr_sha256": "c9d8fba446775ac4d44abce99ecbe34533dd177fe29af9454f093896d272934f",
+      "record_sha256": "134502279c4fc34cfaa5b1ed82632309c6734c62519b6a9b010b10302b4c4309",
+      "diagnostics": [
+        "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+      ],
+      "query": "Explain why a canned closing sentence can weaken a reply. Give two examples; there is no draft to edit."
+    }
+  ],
+  "counts": {
+    "passed": 12,
+    "positive": 5,
+    "negative": 7,
+    "invalid": 0
+  },
+  "independent_trace_review": "receipt_inventory reviewed all 12 traces and bound source/payload identities; no findings against frozen scoring",
+  "limits": [
+    "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+    "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+    "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+    "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+    "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+  ],
+  "source_artifacts": {
+    "observations_sha256": "2ea7ece7c43978d5f24b6c36ae65d67146f2690f2f562ad53b2a9802391a114a",
+    "result_summary_sha256": "67d04169279148105d1e516bf79fb7d14580f2f2abb78871799b3617154a2f96"
+  },
+  "retention": "Sanitized projection of the approved observation summary; trigger query text is copied from the bound corpus. Private operational paths, account binding, prompts, and raw traces are not embedded. Trace digests retain their original private evidence identity."
+}
