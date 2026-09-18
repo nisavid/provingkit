@@ -60,6 +60,7 @@
           "minLength": 1
         },
         "dependencies": {
+          "description": "Additional evaluation inputs bound for freshness; behavioral inputs belong in behavior_inputs or shared_references.",
           "type": "array",
           "items": {
             "type": "string",
@@ -86,6 +87,17 @@
           "type": "string",
           "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
           "minLength": 1
+        },
+        "behavior_inputs": {
+          "description": "Complete external fixture, behavioral resource, and ownership-map file inventory used for skill selection and receipt freshness.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
         }
       },
       "required": [
@@ -96,7 +108,8 @@
         "trigger_evals",
         "dependencies",
         "shared_references",
-        "closure_complete"
+        "closure_complete",
+        "behavior_inputs"
       ],
       "additionalProperties": false
     },

@@ -80,6 +80,7 @@ class ReceiptWorkflowTests(unittest.TestCase):
             "evals": self.prefix + "/evals/evals.json",
             "trigger_evals": self.prefix + "/evals/trigger-evals.json",
             "dependencies": [],
+            "behavior_inputs": [],
             "shared_references": [],
             "closure_complete": True,
         }
@@ -429,8 +430,10 @@ class ReceiptWorkflowTests(unittest.TestCase):
 
     def test_all_bound_input_roles_invalidate_old_results(self):
         self.write("shared/writing.md", "Shared instructions.")
+        self.write("shared/style.md", "Behavioral style rules.")
         self.write("runner/settings.json", {"temperature": 0})
         self.spec["dependencies"] = ["runner/settings.json"]
+        self.spec["behavior_inputs"] = ["shared/style.md"]
         self.spec["shared_references"] = ["shared/writing.md"]
         self.candidate = self.commit("complete closure")
         receipt = self.receipt()
@@ -440,6 +443,7 @@ class ReceiptWorkflowTests(unittest.TestCase):
             self.spec["trigger_evals"],
             self.spec["content_lock"],
             "shared/writing.md",
+            "shared/style.md",
             "runner/settings.json",
             "release/behavior-eval-policy.json",
             "release/behavior-eval-receipt-v1.schema.json",
@@ -501,6 +505,110 @@ class ReceiptWorkflowTests(unittest.TestCase):
         self.assertEqual(
             receipts.check(self.repo, request, {})["status"], "not-required"
         )
+
+    def test_freshness_only_changes_do_not_select_an_untouched_skill(self):
+        for relative in (
+            self.spec["content_lock"],
+            "scripts/behavior_eval_receipts.py",
+            "release/behavior-eval-policy.json",
+            "release/behavior-eval-receipt-v1.schema.json",
+        ):
+            with self.subTest(path=relative):
+                path = self.repo / relative
+                path.write_bytes(path.read_bytes() + b"\n")
+                later = self.commit("freshness input changed")
+                request = self.request(later)
+                request["base_revision"] = self.candidate
+                result = receipts.check(self.repo, request, {})
+                self.assertEqual(result["status"], "not-required")
+                self.assertEqual(result["skills"], [])
+
+    def test_untouched_unsupported_corpus_is_a_noop_until_explicitly_selected(self):
+        for corpus, reason in (
+            ({"unsupported": "matrix"}, "unsupported"),
+            ("not JSON", "invalid"),
+        ):
+            with self.subTest(corpus=corpus):
+                self.write(self.spec["evals"], corpus)
+                before = self.commit("unsupported corpus")
+                self.write("README.md", f"Unrelated documentation: {reason}.")
+                after = self.commit("unrelated change")
+                request = self.request(after)
+                request["base_revision"] = before
+                result = receipts.check(self.repo, request, {})
+                self.assertEqual(result["status"], "not-required")
+                request["changed_skills"] = ["example/writing"]
+                result = receipts.check(self.repo, request, {})
+                self.assertEqual(result["status"], "fail")
+                self.assertIn(reason, result["skills"][0]["reason"])
+
+    def test_declared_behavior_inputs_select_skills_but_runner_dependencies_do_not(self):
+        self.write("shared/style.md", "Writing style.")
+        self.write("evals/owners.json", {"writing": ["shared/style.md"]})
+        self.write("runner/settings.json", {"temperature": 0})
+        self.spec["behavior_inputs"] = ["shared/style.md", "evals/owners.json"]
+        self.spec["dependencies"] = ["runner/settings.json"]
+        before = self.commit("declared input roles")
+        for relative, expected in (
+            ("runner/settings.json", []),
+            ("shared/style.md", ["example/writing"]),
+            ("evals/owners.json", ["example/writing"]),
+        ):
+            with self.subTest(path=relative):
+                path = self.repo / relative
+                path.write_bytes(path.read_bytes() + b"\n")
+                after = self.commit("input changed")
+                request = self.request(after)
+                request["base_revision"] = before
+                result = receipts.check(self.repo, request, {})
+                self.assertEqual(
+                    [item["skill"] for item in result["skills"]], expected
+                )
+                before = after
+
+    def test_explicit_changed_id_requires_a_receipt_and_fresh_inputs(self):
+        receipt = self.receipt()
+        request = self.request()
+        request["base_revision"] = self.candidate
+        request["changed_skills"] = ["example/writing"]
+        result = receipts.check(self.repo, request, {})
+        self.assertEqual(result["skills"][0]["reason"], "receipt missing")
+        self.assertEqual(
+            receipts.check(self.repo, request, {"example/writing": receipt})["status"],
+            "pass",
+        )
+        path = self.repo / "scripts/behavior_eval_receipts.py"
+        path.write_bytes(path.read_bytes() + b"\n")
+        request["candidate_revision"] = self.commit("checker input changed")
+        result = receipts.check(self.repo, request, {"example/writing": receipt})
+        self.assertEqual(result["status"], "fail")
+        self.assertIn("stale evaluated input closure", result["skills"][0]["reason"])
+
+    def test_global_file_declared_behavioral_selects_its_consumer(self):
+        self.spec["behavior_inputs"] = [self.spec["content_lock"]]
+        path = self.repo / self.spec["content_lock"]
+        path.write_bytes(path.read_bytes() + b"\n")
+        request = self.request(self.commit("behavioral lock changed"))
+        request["base_revision"] = self.candidate
+        result = receipts.check(self.repo, request, {})
+        self.assertEqual(result["skills"][0]["reason"], "receipt missing")
+
+    def test_external_application_and_trigger_corpora_select_their_skill(self):
+        for field in ("evals", "trigger_evals"):
+            original = self.repo / self.spec[field]
+            self.spec[field] = "evals/external/" + original.name
+            self.write(self.spec[field], original.read_text())
+        before = self.commit("external corpora")
+        for field in ("evals", "trigger_evals"):
+            with self.subTest(corpus=field):
+                path = self.repo / self.spec[field]
+                path.write_bytes(path.read_bytes() + b"\n")
+                after = self.commit("external corpus changed")
+                request = self.request(after)
+                request["base_revision"] = before
+                result = receipts.check(self.repo, request, {})
+                self.assertEqual(result["skills"][0]["reason"], "receipt missing")
+                before = after
 
     def test_incomplete_discovery_and_unknown_changed_skill_do_not_imply_noop(self):
         for field in ("inventory_complete", "changed_skills"):
@@ -586,6 +694,10 @@ class ReceiptWorkflowTests(unittest.TestCase):
         document["evals"][0]["fixture_paths"] = ["fixture.md"]
         self.write(self.spec["evals"], document)
         self.candidate = self.commit("external fixture")
+        self.spec["dependencies"] = ["evals/external/fixture.md"]
+        with self.assertRaisesRegex(receipts.ReceiptError, "external fixture"):
+            receipts.prepare(self.repo, self.candidate, self.spec)
+        self.spec["behavior_inputs"] = ["evals/external/fixture.md"]
         receipt = self.receipt()
         self.write("evals/external/fixture.md", "Changed external fixture.")
         later = self.commit("fixture change only")
@@ -593,6 +705,11 @@ class ReceiptWorkflowTests(unittest.TestCase):
         request["base_revision"] = self.candidate
         result = receipts.check(self.repo, request, {"example/writing": receipt})
         self.assertEqual(result["status"], "fail")
+
+        (self.repo / "evals/external/fixture.md").unlink()
+        request["candidate_revision"] = self.commit("owned fixture removed")
+        result = receipts.check(self.repo, request, {})
+        self.assertEqual(result["skills"][0]["reason"], "receipt missing")
 
     def test_cli_noop_does_not_consume_an_unrelated_malformed_receipt(self):
         self.write("release/eval-receipts/example/writing.json", "not valid JSON")

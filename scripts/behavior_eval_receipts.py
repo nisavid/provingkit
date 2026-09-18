@@ -158,9 +158,17 @@ def prepare(repository, candidate_revision, skill):
         ]
     )
     paths.update(skill["dependencies"])
+    paths.update(skill["behavior_inputs"])
     paths.update(skill["shared_references"])
     parsed = corpus(
         repository, {"candidate_revision": candidate_revision, "skill": skill}
+    )
+    require(
+        all(
+            path.startswith(prefix + "/") or path in skill["behavior_inputs"]
+            for path in parsed[2]
+        ),
+        "external fixture is absent from declared behavior inputs",
     )
     paths.update(parsed[2])
     inputs = {}
@@ -479,40 +487,29 @@ def check(repository, request, receipts):
     for spec in request["skills"]:
         key = spec["plugin"] + "/" + spec["skill"]
         prefix = f"plugins/{spec['plugin']}/skills/{spec['skill']}/"
-        required_paths = {
-            spec["content_lock"],
+        behavior_paths = {
             spec["evals"],
             spec["trigger_evals"],
-            POLICY_PATH,
-            SCHEMA_PATH,
-            TOOL_PATH,
-            *spec["dependencies"],
+            *spec["behavior_inputs"],
             *spec["shared_references"],
         }
         require(
             spec.get("closure_complete") is True,
             "complete caller-owned dependency closure is required",
         )
-        source_error = None
-        try:
-            _, _, fixtures = corpus(
-                repository,
-                {"candidate_revision": request["candidate_revision"], "skill": spec},
-            )
-            required_paths.update(fixtures)
-        except ReceiptError as error:
-            source_error = str(error)
         if (
-            source_error is None
-            and key not in request["changed_skills"]
+            key not in request["changed_skills"]
             and not any(
-                path.startswith(prefix) or path in required_paths for path in changed
+                path.startswith(prefix) or path in behavior_paths for path in changed
             )
         ):
             continue
         receipt_identity = {}
         try:
-            require(source_error is None, source_error)
+            corpus(
+                repository,
+                {"candidate_revision": request["candidate_revision"], "skill": spec},
+            )
             require(key in receipts, "receipt missing")
             receipt = receipts[key]
             if isinstance(receipt, bytes):
