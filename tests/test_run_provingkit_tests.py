@@ -191,12 +191,14 @@ class Example(unittest.TestCase):
         Path(__file__).with_name("worker-b.pid").write_text(str(os.getpid()))
         time.sleep(10)
 ''')
-        process = self.run_suite("--timeout-seconds", "0.3")
+        process = self.run_suite("--timeout-seconds", "2")
         self.assertNotEqual(process.returncode, 0)
         report = json.loads((self.output / "result.json").read_text())
         self.assertFalse(report["successful"])
         self.assertIn("timed out", report["error"])
-        for pid_file in (self.candidate / "tests").glob("worker-*.pid"):
+        pid_files = list((self.candidate / "tests").glob("worker-*.pid"))
+        self.assertEqual(len(pid_files), 2, "both workers must reach the timed operation")
+        for pid_file in pid_files:
             self.assertFalse(self.running(int(pid_file.read_text())))
 
     def test_cancellation_is_unsuccessful_and_stops_owned_workers(self):
@@ -241,15 +243,15 @@ class Example(unittest.TestCase):
         self.write_suite(f'''import os, time, unittest
 from pathlib import Path
 Path({str(pid_file)!r}).write_text(str(os.getpid()))
-time.sleep(2)
+time.sleep(20)
 class Example(unittest.TestCase):
     def test_a(self): pass
     def test_b(self): pass
 ''')
         start = time.monotonic()
-        process = self.run_suite("--timeout-seconds", "0.2")
+        process = self.run_suite("--timeout-seconds", "2")
         self.assertNotEqual(process.returncode, 0)
-        self.assertLess(time.monotonic() - start, 1.5)
+        self.assertLess(time.monotonic() - start, 8)
         report = json.loads((self.output / "result.json").read_text())
         self.assertFalse(report["successful"])
         self.assertIn("timed out", report["error"])
@@ -358,6 +360,55 @@ class Example(unittest.TestCase):
         report = json.loads((self.output / "result.json").read_text())
         self.assertFalse(report["successful"])
         self.assertIn("candidate changed", report["error"])
+
+    def test_intentionally_skipped_subtest_is_a_completed_successful_method(self):
+        self.write_suite('''import unittest
+class Example(unittest.TestCase):
+    def test_partial_skip(self):
+        with self.subTest(case="pass"): self.assertTrue(True)
+        with self.subTest(case="optional"): self.skipTest("optional subcase")
+    def test_other(self): pass
+''')
+        process = self.run_suite()
+        self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+        report = json.loads((self.output / "result.json").read_text())
+        record = next(r for r in report["records"] if r["id"].endswith(".test_partial_skip"))
+        self.assertEqual(record["outcome"], "success")
+        self.assertEqual(record["subtests"], {"success": 1, "failure": 0, "error": 0, "skip": 1})
+        self.assertEqual(record["skip_reasons"], ["optional subcase"])
+
+    def test_cancellation_during_cleanup_still_stops_descendants(self):
+        pid_file, term_file = self.root / "child.pid", self.root / "child.term"
+        self.write_suite(f'''import subprocess, sys, time, unittest
+from pathlib import Path
+class Example(unittest.TestCase):
+    def test_child(self):
+        child = "import os,signal,time;from pathlib import Path;signal.signal(signal.SIGTERM,lambda *args:Path({str(term_file)!r}).write_text('term'));Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(60)"
+        subprocess.Popen([sys.executable, "-c", child], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        while not Path({str(pid_file)!r}).exists(): time.sleep(0.01)
+    def test_other(self): pass
+''')
+        process = subprocess.Popen(
+            [sys.executable, "-B", str(RUNNER), str(self.candidate), "--output-dir", str(self.output)],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        try:
+            deadline = time.monotonic() + 5
+            while not term_file.exists():
+                self.assertIsNone(process.poll())
+                self.assertLess(time.monotonic(), deadline)
+                time.sleep(0.01)
+            process.send_signal(signal.SIGTERM)
+            self.assertNotEqual(process.wait(timeout=5), 0)
+            self.assertFalse(self.running(int(pid_file.read_text())), "cleanup was interrupted")
+            self.assertTrue(json.loads((self.output / "cleanup.json").read_text())["successful"])
+            self.assertFalse(json.loads((self.output / "result.json").read_text())["successful"])
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+            if pid_file.exists() and self.running(int(pid_file.read_text())):
+                os.kill(int(pid_file.read_text()), signal.SIGKILL)
 
 
 if __name__ == "__main__":

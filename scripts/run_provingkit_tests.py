@@ -183,6 +183,8 @@ class RecordingResult(unittest.TextTestResult):
                 self.outcome("skip")
             else:
                 self.current["subtests"]["skip"] += 1
+                # unittest omits addSuccess when any subtest is skipped.
+                self.outcome("success")
 
     def addSubTest(self, test, subtest, error):
         super().addSubTest(test, subtest, error)
@@ -255,11 +257,13 @@ def cleanup_workers(processes):
     return {"successful": not live, "process_groups": sorted(groups), "live_members": live}
 
 
-def wait_workers(processes, deadline):
+def wait_workers(processes, deadline, check_cancelled):
     while any(process.poll() is None for process in processes):
+        check_cancelled()
         if time.monotonic() >= deadline:
             raise TimeoutError("suite execution timed out")
         time.sleep(0.01)
+    check_cancelled()
     return [process.returncode for process in processes]
 
 
@@ -293,15 +297,20 @@ def run(root, output, timeout, hints_path):
         print("evidence directory must be outside the candidate repository", file=sys.stderr)
         return 1
     output.mkdir(parents=True, exist_ok=False)
+    cancellation = []
     def interrupted(signum, frame):
-        # Repeated cancellation must not interrupt ownership cleanup.
-        for sig in (signal.SIGINT, signal.SIGTERM):
-            signal.signal(sig, signal.SIG_IGN)
-        raise InterruptedError(f"suite cancelled by signal {signum}")
+        # The wait loop observes cancellation; handlers never interrupt cleanup.
+        cancellation.append(signum)
+
+    def check_cancelled():
+        if cancellation:
+            raise InterruptedError(f"suite cancelled by signal {cancellation[0]}")
 
     previous = {sig: signal.signal(sig, interrupted) for sig in (signal.SIGINT, signal.SIGTERM)}
     try:
-        return execute(root, output, timeout, hints_path)
+        status = execute(root, output, timeout, hints_path, check_cancelled)
+        check_cancelled()
+        return status
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as error:
         write_json(output / "result.json", {"successful": False, "error": str(error)})
         print(str(error), file=sys.stderr)
@@ -311,7 +320,7 @@ def run(root, output, timeout, hints_path):
             signal.signal(sig, handler)
 
 
-def execute(root, output, timeout, hints_path):
+def execute(root, output, timeout, hints_path, check_cancelled):
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError("timeout must be a positive finite number of seconds")
     started = time.monotonic()
@@ -335,13 +344,14 @@ def execute(root, output, timeout, hints_path):
                  "--output-dir", str(output), "--discover"],
                 cwd=root, start_new_session=True, stdout=log, stderr=subprocess.STDOUT,
             ))
-            if wait_workers(discovery, deadline) != [0]:
+            if wait_workers(discovery, deadline, check_cancelled) != [0]:
                 raise ValueError("test discovery failed: " + (output / "discovery.log").read_text())
     finally:
         cleanup = cleanup_workers(discovery)
         write_json(output / "discovery-cleanup.json", cleanup)
         if not cleanup["successful"]:
             raise RuntimeError("discovery process cleanup failed")
+    check_cancelled()
     ids = json.loads((output / "discovery.json").read_text())
     hints = json.loads(hints_path.read_text())
     if not isinstance(hints, dict) or any(
@@ -372,7 +382,7 @@ def execute(root, output, timeout, hints_path):
                     cwd=root, env={**os.environ, "TMPDIR": str(temporary)}, start_new_session=True,
                     stdout=log, stderr=subprocess.STDOUT,
                 ))
-        codes = wait_workers(processes, deadline)
+        codes = wait_workers(processes, deadline, check_cancelled)
     finally:
         cleanup = cleanup_workers(processes)
         write_json(output / "cleanup.json", cleanup)
@@ -382,6 +392,7 @@ def execute(root, output, timeout, hints_path):
             temporary = output / f"tmp-{index}"
             if temporary.exists():
                 shutil.rmtree(temporary)
+    check_cancelled()
     workers = [json.loads((output / f"worker-{i}.json").read_text()) for i in range(2)]
     after = source_snapshot(root)
     write_json(output / "source-after.json", after)
