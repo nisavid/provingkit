@@ -10,14 +10,27 @@
     "discovery": "Separate requirement; not combined or assessed in this application aggregation."
   },
   "provenance": {
-    "manifest_sha256": "c59f183e59afec0aa183f228caead3d20853f9fde8751c0172f13ca648c44c35",
+    "source_manifest_sha256": "c59f183e59afec0aa183f228caead3d20853f9fde8751c0172f13ca648c44c35",
     "additional_grading_sha256": "f6faff8b339f3028d01221014717bb7270a36d27f4906f8f8cf6a652165afea9",
     "repetition_1_grading": "evals/proseweaving/writing-register/final-grading.json",
     "repetition_1_grading_sha256": "2b8a1c7ed7fc3e164137842a86e53ba463da2de357585fbdcc0018e83355f9c6",
     "repetition_1_application": "evals/proseweaving/writing-register/application-iteration-2.json",
     "repetition_1_application_sha256": "629624cf37ed6e0a8776fe66d5ef88bb82d5ffb1f5a18d6dd1bf5e84ab449a32",
     "repetition_1_handling": "Retained final current-corpus grades copied without editing; original execution and earlier grading history preserved. Case 1 final criterion was explicitly adjudicated before these additions; its task/fixture/instructions/prompt were unchanged.",
-    "new_judgments_written_before_prior_grade_inspection": true
+    "new_judgments_written_before_prior_grade_inspection": true,
+    "normalized_manifest": {
+      "path": "application-repetitions-2-3.json#/manifest",
+      "sha256": "6dfdc743f379bbf52b8a41d80ed835a70978246dc5185b29a3a7f2d2c98cb263",
+      "serialization_defined_by": "application-repetitions-2-3.json#/manifest_normalization/normalized_serialization"
+    },
+    "source_aggregate": {
+      "artifact": "grading-aggregate.json",
+      "role": "Retained original aggregation before public metadata normalization.",
+      "sha256": "7da16f9e599eb17b1529d8e32cc6c448803a42062a9557028cbb04616e759df3"
+    },
+    "grade_source_normalization": {
+      "grading-additional.json": "repeated-grading.json"
+    }
   },
   "results": [
     {
@@ -40,14 +53,14 @@
               "coordinate": 1,
               "passed": true,
               "evidence": "The first paragraph names the two migrated loaders, reports 14 and 9 passing focused tests, and says remote_loader.py is untouched before explaining the timeout mismatch.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 13,
               "passed": true,
               "evidence": "The opening identifies both migrated loaders, their 14 and 9 passing tests, and the untouched remote loader before the causal explanation.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -71,14 +84,14 @@
               "coordinate": 1,
               "passed": true,
               "evidence": "The report says the shared settings change expands scope, the alternative changes behavior, and nothing technical blocks work; its closing recommendation asks permission to preserve the fallback and finish the remaining loader.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 13,
               "passed": true,
               "evidence": "It identifies a scope decision rather than a technical blocker, contrasts preserving the fallback with raising on timeout, and closes by seeking the shared-settings scope extension.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -102,14 +115,14 @@
               "coordinate": 1,
               "passed": true,
               "evidence": "It explicitly says the remote loader tests, integration tests, and full suite were not run; the only pass counts are the supplied 14 and 9.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 13,
               "passed": true,
               "evidence": "It explicitly disclaims running the remote loader tests, integration tests, or full suite; no broader test success is implied.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -140,14 +153,14 @@
               "coordinate": 2,
               "passed": true,
               "evidence": "The reply opens with the concrete commitment to add a hard cap and immediately explains that exponential backoff already exists.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 14,
               "passed": true,
               "evidence": "The opening commits to adding the hard cap, then supplies the supported correction with the existing 0.2s, 0.4s, 0.8s backoff.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -171,14 +184,14 @@
               "coordinate": 2,
               "passed": true,
               "evidence": "“I’ll add a hard attempt cap in this PR” supplies the concession and action in one short sentence; the remaining sentences concern only the existing delay and choosing the cap.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 14,
               "passed": true,
               "evidence": "Adding the cap is stated once, briefly; the reply does not restate the full comment or justify the suggestion at length.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -202,14 +215,14 @@
               "coordinate": 2,
               "passed": true,
               "evidence": "The cap remains pending an upstream published-rate-limit check. The stated eight attempts describe current behavior rather than a newly chosen cap.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 14,
               "passed": true,
               "evidence": "It explicitly postpones deciding whether 3 is appropriate until the upstream rate-limit check; it adopts no cap value.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -240,14 +253,14 @@
               "coordinate": 3,
               "passed": true,
               "evidence": "The comments lead respectively with the unbounded list conversion, removal of the two unused imports, and the naming preference grounded in the two existing endpoints.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 15,
               "passed": true,
               "evidence": "The three openings identify the full-result memory allocation, unused imports, and naming preference grounded in export_json/export_xlsx.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -271,14 +284,14 @@
               "coordinate": 3,
               "passed": true,
               "evidence": "The blocker explains behavior and scale, the cleanup is one short sentence, and the naming comment weighs a tradeoff. These are distinct responses rather than a repeated template.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 15,
               "passed": true,
               "evidence": "The long evidence-based blocker, short cleanup, and qualified naming preference have proportionate and distinct shapes.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -302,14 +315,14 @@
               "coordinate": 3,
               "passed": true,
               "evidence": "The first asks for bounded chunk iteration before merging, the second removes only unused imports, and the third gives a nonblocking consistency preference. Each preserves its supplied stakes.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 15,
               "passed": true,
               "evidence": "The first explicitly blocks merge pending chunk iteration, the second requests import removal, and the third explicitly would not hold the PR. No unrelated action is requested.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -340,14 +353,14 @@
               "coordinate": 4,
               "passed": true,
               "evidence": "Staging is described as unverified and last seen in rollout; completion and health are not confirmed. The manual backfill is explicitly unrun.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 16,
               "passed": true,
               "evidence": "The reply says staging was in rollout at the last check, with completion and health unconfirmed, and says the backfill has not run.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -371,14 +384,14 @@
               "coordinate": 4,
               "passed": true,
               "evidence": "The flag is reported disabled, missing limit_default, and last updated June 2. Skipped, failed, or later scheduling are explicitly unknown possibilities, not asserted causes.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 16,
               "passed": true,
               "evidence": "It reports enabled:false, missing limit_default, and the June 2 date, then explicitly says the pre-stage explanation is unknown.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -402,14 +415,14 @@
               "coordinate": 4,
               "passed": true,
               "evidence": "The opening states the merged commit, passing unit/integration CI, and last-observed rollout state. It contains no command or dashboard inventory.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 16,
               "passed": true,
               "evidence": "The first paragraph foregrounds the merge, a41f9c2, green unit/integration CI, and unconfirmed rollout. No checking-tool chronology is listed.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -440,14 +453,14 @@
               "coordinate": 5,
               "passed": true,
               "evidence": "The default reduction is reported without claiming intent or classification. Whether to publish max_attempts=5 advice is asked of the operator, not asserted as an adopted migration policy; that possible setting is grounded in the supplied public argument and unchanged explicit values.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 17,
               "passed": true,
               "evidence": "It reports the unexplained 5-to-3 default change, leaves intent and classification to the operator, and presents optional max_attempts=5 wording as a question grounded in the unchanged explicit argument rather than an established migration requirement.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -471,14 +484,14 @@
               "coordinate": 5,
               "passed": true,
               "evidence": "The question specifically asks whether the 5-to-3 reduction was intentional and, conditionally, how to classify it and whether guidance is desired.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 17,
               "passed": true,
               "evidence": "The closing question names the intentionality and classification gap instead of asking generally what the note should say.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -502,14 +515,14 @@
               "coordinate": 5,
               "passed": true,
               "evidence": "The delivered one-sentence entry begins with retry delays varying randomly and explains reduced synchronization across clients.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 17,
               "passed": true,
               "evidence": "The one-sentence entry leads with changed retry backoff and accurately explains the supplied 25-percent variation in either direction.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -540,14 +553,14 @@
               "coordinate": 6,
               "passed": true,
               "evidence": "The spaced parenthetical dashes and introductory dash construction are replaced by ordinary sentences; no hyphen is used as a dash.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 18,
               "passed": true,
               "evidence": "Ordinary sentences and a colon replace the original dash constructions; no improper spaced dash or hyphen-dash remains.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -571,14 +584,14 @@
               "coordinate": 6,
               "passed": true,
               "evidence": "“Worth noting”, “That said”, and the stock closing sentence are removed. The docstring mismatch appears in the opening rather than as a final afterthought.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 18,
               "passed": true,
               "evidence": "The two introductory mannerisms and stock closer are gone; the docstring mismatch sits in the first paragraph.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -602,14 +615,14 @@
               "coordinate": 6,
               "passed": true,
               "evidence": "The default 3, all three explicit ingest callers, unrun default-path integration test and zero case, proposed positive guard and construction-time failure, and stale default-5 docstring all remain with no additional ask.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 18,
               "passed": true,
               "evidence": "All supplied claims survive: default 3, three explicit callers, unrun integration test catching zero, proposed __post_init__ positive guard, construction-time failure, and docstring 5. No additional fact or ask is introduced.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -640,14 +653,14 @@
               "coordinate": 7,
               "passed": true,
               "evidence": "The opening says the delays are resolved, every affected export completed, and no data was lost or affected before introducing the settings change. The later 09:14, 10:02, and 10:40 times match the brief.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 19,
               "passed": false,
               "evidence": "The first sentence leads with “a settings change ... reduced how many ... exports we could process at once”; completion, no loss, and restoration appear only in the second paragraph. This explains the mechanism before the customer outcome required by the criterion.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 2,
@@ -671,14 +684,14 @@
               "coordinate": 7,
               "passed": true,
               "evidence": "The explanation uses settings and how many exports can run at once, plus an ordinary waiting list, without the internal setting name or unexplained worker/queue jargon.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 19,
               "passed": true,
               "evidence": "The mechanism is explained as how many exports can be processed at once, using ordinary language and no internal setting name.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -702,14 +715,14 @@
               "coordinate": 7,
               "passed": true,
               "evidence": "It leaves why the setting changed under investigation and explicitly says no preventive change or timeline is confirmed; it identifies no responsible person.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 19,
               "passed": true,
               "evidence": "It states that why the setting changed remains under investigation and gives no promised preventive change or timeline and no named actor.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -740,14 +753,14 @@
               "coordinate": 8,
               "passed": true,
               "evidence": "The PR summary opens with reconnect handling and the new attempt limit, followed by the resulting RetryExhausted behavior; it is not an account of the writer’s process.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 20,
               "passed": true,
               "evidence": "The publication starts with reconnect attempts and the configurable limit; personal test evidence is supporting material rather than the summary’s subject.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -771,14 +784,14 @@
               "coordinate": 8,
               "passed": true,
               "evidence": "The chat directly answers “Yes” to local reproduction, then states what the writer changed and retains their own experience.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 20,
               "passed": true,
               "evidence": "The chat says the writer reproduced the endless retry locally before the change and identifies the limit and exhaustion outcome.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -802,14 +815,14 @@
               "coordinate": 8,
               "passed": true,
               "evidence": "The response preserves configurable default three, RetryExhausted at the limit, all 12 focused tests passing, and the unrun full suite, with no deployment result.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 20,
               "passed": true,
               "evidence": "Default three and RetryExhausted are accurate; only the 12 focused tests are claimed passing, and the full suite is explicitly unrun. No deployment is asserted.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -840,14 +853,14 @@
               "coordinate": 9,
               "passed": true,
               "evidence": "The bug body opens on export stalling; the proposal opens on a configurable limit and its intended behavior. Neither opens as a reply to the drafting request.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 21,
               "passed": true,
               "evidence": "The report leads with the CSV stall and the proposal with configurable retry-limit behavior, using standalone Issue prose.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -871,14 +884,14 @@
               "coordinate": 9,
               "passed": true,
               "evidence": "The proposal separately presents the three-or-five default and manual-retry questions, then states neither has been decided.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 21,
               "passed": true,
               "evidence": "Both open decisions are given their own bullets, without collapsing the proposal to one conversational ask.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -902,14 +915,14 @@
               "coordinate": 9,
               "passed": true,
               "evidence": "Version 2.4, local CSV export, interrupted/restored connection, and ten-minute pending state are retained. The cause is unestablished and both policy choices remain open.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 21,
               "passed": true,
               "evidence": "The report preserves the reproduction steps, version, and ten-minute observation without inventing a cause; the proposal explicitly says no owner has decided either policy.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -940,14 +953,14 @@
               "coordinate": 10,
               "passed": true,
               "evidence": "All three requested headings are exact, multiple necessary steps remain, and the guide ends with a one-sentence recap.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 22,
               "passed": true,
               "evidence": "The guide retains the three requested headings, a three-step creation sequence, success/failure bullets, and a final one-sentence recap.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -971,14 +984,14 @@
               "coordinate": 10,
               "passed": true,
               "evidence": "The text directs the reader to open settings, select the inputs, create the export, and check the result; no first-person setup story remains.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 22,
               "passed": true,
               "evidence": "The prose addresses the reader’s setup actions directly instead of recounting the writer’s actions or answering the drafting request.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -1002,14 +1015,14 @@
               "coordinate": 10,
               "passed": true,
               "evidence": "It covers dataset/folder selection, Create export, report.csv on Complete, and Details on Failed, with no duration or additional outcome guarantee.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 22,
               "passed": true,
               "evidence": "The supplied selection, creation, Complete/report.csv, and Failed/Details paths are all present, without invented controls, timing, or guaranteed success.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -1040,14 +1053,14 @@
               "coordinate": 11,
               "passed": true,
               "evidence": "The output begins exactly “I tried the smaller batch first.” and maintains the requested personal perspective.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 23,
               "passed": true,
               "evidence": "The requested opening sentence is verbatim and the rest remains a first-person account.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -1071,14 +1084,14 @@
               "coordinate": 11,
               "passed": true,
               "evidence": "It explains the shift from fixed-startup-delay suspicion toward row-count-proportional work while explicitly retaining uncertainty.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 23,
               "passed": true,
               "evidence": "The writer’s first guess and revised suspicion about work proportional to rows both remain; the latter is not stated as a finding.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -1102,14 +1115,14 @@
               "coordinate": 11,
               "passed": true,
               "evidence": "The 18- and 41-second timings are accurate; it says no benchmark suite ran and two observations do not establish the cause.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 23,
               "passed": true,
               "evidence": "The output preserves 18 and 41 seconds, explicitly disclaims a benchmark suite, and states the two observations do not establish cause.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -1140,14 +1153,14 @@
               "coordinate": 12,
               "passed": true,
               "evidence": "The note plainly states parse_limit rejects negative values and identifies source inspection as establishing that behavior.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 24,
               "passed": true,
               "evidence": "The negative-value guard is stated directly as source-established behavior rather than a speculative result requiring a runtime test.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -1171,14 +1184,14 @@
               "coordinate": 12,
               "passed": true,
               "evidence": "The 429 observation is tied to a local test build and the test-specific ten-per-minute setting, with production defaults explicitly unchecked.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 24,
               "passed": true,
               "evidence": "The endpoint run is explicitly a local test build configured to ten requests per minute; the note labels that setting test-specific and leaves production defaults unchecked.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,
@@ -1202,14 +1215,14 @@
               "coordinate": 12,
               "passed": true,
               "evidence": "It says the function was not invoked at runtime and production was not checked, and accurately reports 429 for requests eleven and twelve.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             },
             {
               "repetition": 3,
               "coordinate": 24,
               "passed": true,
               "evidence": "The note says parse_limit was not invoked, production was not checked, and requests eleven and twelve returned 429.",
-              "grade_source": "grading-additional.json"
+              "grade_source": "repeated-grading.json"
             }
           ],
           "passed_runs": 3,

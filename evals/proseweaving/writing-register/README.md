@@ -61,6 +61,24 @@ These repeated application results remain separate from the discovery checks
 below and from ordinary receipt normalization and readiness checks. They do
 not establish the preview or release claims excluded above.
 
+The repeated-application record distinguishes the original execution manifest
+(`source_manifest_sha256`) from its public projection
+(`normalized_manifest_sha256`). The public `cases` inventory contains the twelve
+corpus IDs; the unchanged `coordinates` contain all twenty-four executions.
+`manifest_normalization` records the original coordinate-ID inventory, both
+serialization conventions, and the exact inverse that reconstructs the source
+manifest. Its source digest hashes the original indented ASCII-escaped JSON
+with a terminal newline; its normalized digest hashes the corrected UTF-8 JSON
+with unescaped Unicode and a terminal newline.
+
+`repeated-grading.json` is an unchanged copy of the independent grade. Its
+`manifest_sha256` still binds the original source manifest. The public aggregate
+points its additional observations to that sibling file, records the original
+`grading-additional.json` filename mapping, and retains the original aggregate's
+digest separately. These metadata projections preserve every request, response,
+judgment, and threshold result; their digests do not replace historical input
+identities.
+
 The shared CLI installation changed from 0.154.0 to 0.155.0 between iterations.
 The second record corrects its earlier version declaration using the later
 version and binary observation. It makes no controlled comparison across
