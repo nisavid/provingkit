@@ -11,11 +11,13 @@ five positives and seven negatives.
 ## Source and procedure consumption
 
 This integration consumes `writing-for-people` and its conditional references
-from reviewed producer revision `9f5a0ca40e8bc93869d9f4490e700f1d089505f2`.
-The integrated producer checkpoint is
-`256887fa3381fdd9335f4d50fdb8dba7ff7812ba`; its metadata correction changes no
-runtime skill or corpus bytes. I compared those inputs before carrying the six
-observations forward. Their retained record still names the original producer.
+from published producer revision `aaf328903bbecfc0663b1219b0da721ef2738b7f`.
+I verified that the complete Proseweaving plugin, application corpus, and
+retained observations are byte-identical to accepted finished-draft checkpoint
+`c8fa3f3181a50c6906a4332b74f97103853bb92a`. The original observations retain
+their producer revision `9f5a0ca40e8bc93869d9f4490e700f1d089505f2` and integrated
+checkpoint `256887fa3381fdd9335f4d50fdb8dba7ff7812ba`; those earlier metadata
+changes also left the delivered runtime and corpus bytes unchanged.
 The producer's [source-placement record](../writing-register/source-placement.md)
 and [evidence report](../writing-register/README.md) define the generic writing
 boundary. `editing-finished-drafts` calls that skill for the general register,
@@ -105,6 +107,13 @@ approval review rejected its outside-sandbox retry because the service
 destination and data boundary were not bound. That preparation did not retry
 or run a fallback. The later observations above used a separately approved plan;
 the earlier failed probe remains historical evidence.
+
+The composed source carries 29 skills and 25 shared routing rows, including the
+relation skill from the current writing producer's base. The twelve retained
+single-target observations do not cover selection from that full catalog or
+the four ordered shared routing expectations for the editor. New observations
+need their own frozen catalog, payloads, supported selection signal, and
+execution authorization; none are added by this source integration.
 
 ## Reuse and invalidation
 
