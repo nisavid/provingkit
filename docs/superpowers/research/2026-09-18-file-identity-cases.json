@@ -1,0 +1,5919 @@
+{
+  "artifact_kind": "factual_source_inventory",
+  "issue": "https://github.com/nisavid/provingkit/issues/125",
+  "source_revision": "ad31344cdcb9891438cf1e92c27c776945bee6ab",
+  "source_file": "tests/test_validate_provingkit.py",
+  "source_sha256": "a4a73f006b77576f3093f6ce2dad3df086921fbfda799a6dad26032c4c2dcab1",
+  "counts_are": "Source-defined expansion of literal variants and fixed loops, not executed tests or successful validations. Logical probes count each independently asserted helper/CLI/direct-parser call, the separate timeout probe, and the allowlist source assertion group. Subtest counts count entries through the one subTest site per parameterized method, not fixture-building loops. Counts presume setup and preceding assertions permit each intended path. The six-member schema loop is derived from synthetic_release_manifest at lines 194-275, not live definition data.",
+  "summary": {
+    "test_methods_in_file": 94,
+    "file_identity_methods": 41,
+    "methods_using_identity_fixture_helper": 32,
+    "helper_call_sites": 33,
+    "expanded_helper_invocations": 117,
+    "file_identity_logical_probes": 135,
+    "file_identity_subtest_sites": 25,
+    "file_identity_expanded_subtest_entries": 115,
+    "all_file_subtest_sites": 34,
+    "all_file_expanded_subtest_entries": 146,
+    "full_validator_invocations_within_file_identity_methods": 131,
+    "accepted_full_validator_invocations": 36,
+    "rejected_full_validator_invocations": 95,
+    "static_count_unknowns": []
+  },
+  "helper_assertion_contract": {
+    "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L167-L192",
+    "accepted": "return code == 0; no success-message assertion here",
+    "rejected": "return code != 0, stderr includes requested diagnostic and fixture-relative path"
+  },
+  "methods": [
+    {
+      "method": "test_identity_fixture_clone_preserves_required_retained_refs",
+      "line": 277,
+      "end_line": 302,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L277-L302",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 302,
+          "expression": "self.assertEqual(observed, expected)",
+          "role": "assertion",
+          "source_lines": [
+            302,
+            302
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_source_stage_validator_accepts_the_cutover_candidate",
+      "line": 323,
+      "end_line": 327,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L323-L327",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 326,
+          "expression": "self.assertEqual(result.returncode, 0, result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            326,
+            326
+          ]
+        },
+        {
+          "line": 327,
+          "expression": "self.assertEqual(result.stdout, 'Provingkit source validation passed\\n')",
+          "role": "assertion",
+          "source_lines": [
+            327,
+            327
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_source_stage_validator_accepts_a_repository_without_tags",
+      "line": 329,
+      "end_line": 352,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L329-L352",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 351,
+          "expression": "self.assertEqual(result.returncode, 0, result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            351,
+            351
+          ]
+        },
+        {
+          "line": 352,
+          "expression": "self.assertEqual(result.stdout, 'Provingkit source validation passed\\n')",
+          "role": "assertion",
+          "source_lines": [
+            352,
+            352
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_source_stage_validator_accepts_the_published_preview_tag",
+      "line": 354,
+      "end_line": 363,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L354-L363",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 362,
+          "expression": "self.assertEqual(result.returncode, 0, result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            362,
+            362
+          ]
+        },
+        {
+          "line": 363,
+          "expression": "self.assertEqual(result.stdout, 'Provingkit source validation passed\\n')",
+          "role": "assertion",
+          "source_lines": [
+            363,
+            363
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_source_stage_validator_rejects_the_preview_tag_at_another_source",
+      "line": 365,
+      "end_line": 373,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L365-L373",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 373,
+          "expression": "self.assert_unauthorized_tag(repository)",
+          "role": "assertion",
+          "source_lines": [
+            373,
+            373
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_source_stage_validator_rejects_an_additional_preview_tag",
+      "line": 375,
+      "end_line": 382,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L375-L382",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 382,
+          "expression": "self.assert_unauthorized_tag(repository)",
+          "role": "assertion",
+          "source_lines": [
+            382,
+            382
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_source_stage_validator_rejects_an_annotated_preview_tag",
+      "line": 384,
+      "end_line": 395,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L384-L395",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 395,
+          "expression": "self.assert_unauthorized_tag(repository)",
+          "role": "assertion",
+          "source_lines": [
+            395,
+            395
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_provingkit_source_job_pins_identity_validation_dependency",
+      "line": 397,
+      "end_line": 413,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L397-L413",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 408,
+          "expression": "self.assertIn(expected, commands)",
+          "role": "assertion",
+          "source_lines": [
+            408,
+            408
+          ]
+        },
+        {
+          "line": 409,
+          "expression": "self.assertIn('python -m pip install idna==3.18 jsonschema==4.26.0 PyYAML==6.0.3', (REPOSITORY / 'CONTRIBUTING.md').read_text(encoding='utf-8'))",
+          "role": "assertion",
+          "source_lines": [
+            409,
+            413
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_provingkit_source_job_checks_the_trigger_base_to_head_range",
+      "line": 415,
+      "end_line": 439,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L415-L439",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 422,
+          "expression": "self.assertEqual(check['env'], {'BASE_SHA': '${{ github.event.pull_request.base.sha || github.event.before }}', 'HEAD_SHA': '${{ github.event.pull_request.head.sha || github.sha }}'})",
+          "role": "assertion",
+          "source_lines": [
+            422,
+            433
+          ]
+        },
+        {
+          "line": 434,
+          "expression": "self.assertEqual(check['run'], 'git diff --check \"$BASE_SHA\" \"$HEAD_SHA\"')",
+          "role": "assertion",
+          "source_lines": [
+            434,
+            434
+          ]
+        },
+        {
+          "line": 439,
+          "expression": "self.assertIn('git diff --exit-code', derived_commands)",
+          "role": "assertion",
+          "source_lines": [
+            439,
+            439
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_rolecasting_source_job_installs_its_validation_dependency",
+      "line": 441,
+      "end_line": 451,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L441-L451",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 448,
+          "expression": "self.assertIn('python -m pip install --disable-pip-version-check PyYAML==6.0.3', commands)",
+          "role": "assertion",
+          "source_lines": [
+            448,
+            451
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_required_jobs_run_current_tricritical_and_projection_contracts",
+      "line": 453,
+      "end_line": 486,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L453-L486",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 481,
+          "expression": "self.assertIn(expected_tricritical, tricritical_commands)",
+          "role": "assertion",
+          "source_lines": [
+            481,
+            481
+          ]
+        },
+        {
+          "line": 482,
+          "expression": "self.assertIn(expected_projection, provingkit_commands)",
+          "role": "assertion",
+          "source_lines": [
+            482,
+            482
+          ]
+        },
+        {
+          "line": 483,
+          "expression": "self.assertIn(expected_tricritical, (REPOSITORY / 'CONTRIBUTING.md').read_text(encoding='utf-8'))",
+          "role": "assertion",
+          "source_lines": [
+            483,
+            486
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_proseweaving_source_job_and_derived_lock_are_covered",
+      "line": 489,
+      "end_line": 509,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L489-L509",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 504,
+          "expression": "self.assertIn('python -m unittest tests.test_validate_proseweaving', source_commands)",
+          "role": "assertion",
+          "source_lines": [
+            504,
+            504
+          ]
+        },
+        {
+          "line": 505,
+          "expression": "self.assertIn('python scripts/validate_proseweaving.py .', source_commands)",
+          "role": "assertion",
+          "source_lines": [
+            505,
+            505
+          ]
+        },
+        {
+          "line": 506,
+          "expression": "self.assertIn('python scripts/validate_proseweaving.py --write-content-lock .', lock_commands)",
+          "role": "assertion",
+          "source_lines": [
+            506,
+            509
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_human_docs_state_the_current_six_plugin_source_set",
+      "line": 511,
+      "end_line": 523,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L511-L523",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "README.md",
+        "CONTRIBUTING.md",
+        ".github/pull_request_template.md"
+      ],
+      "assertions": [
+        {
+          "line": 521,
+          "expression": "self.assertIn(phrase, normalized)",
+          "role": "assertion",
+          "source_lines": [
+            521,
+            521
+          ]
+        },
+        {
+          "line": 522,
+          "expression": "self.assertIn('Proseweaving', normalized)",
+          "role": "assertion",
+          "source_lines": [
+            522,
+            522
+          ]
+        },
+        {
+          "line": 523,
+          "expression": "self.assertNotIn('seven source members', normalized)",
+          "role": "assertion",
+          "source_lines": [
+            523,
+            523
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          518,
+          518
+        ]
+      ]
+    },
+    {
+      "method": "test_agent_guidance_describes_member_specific_content_identity_writers",
+      "line": 525,
+      "end_line": 545,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L525-L545",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 530,
+          "expression": "self.assertIn('Use `--write-content-lock` only where', guidance)",
+          "role": "assertion",
+          "source_lines": [
+            530,
+            530
+          ]
+        },
+        {
+          "line": 531,
+          "expression": "self.assertIn('Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write only their content locks', guidance)",
+          "role": "assertion",
+          "source_lines": [
+            531,
+            535
+          ]
+        },
+        {
+          "line": 536,
+          "expression": "self.assertIn('Tricritical also regenerates its per-skill reference projections', guidance)",
+          "role": "assertion",
+          "source_lines": [
+            536,
+            539
+          ]
+        },
+        {
+          "line": 540,
+          "expression": "self.assertIn('Task Witness', guidance)",
+          "role": "assertion",
+          "source_lines": [
+            540,
+            540
+          ]
+        },
+        {
+          "line": 541,
+          "expression": "self.assertIn('has no mechanical writer', guidance)",
+          "role": "assertion",
+          "source_lines": [
+            541,
+            541
+          ]
+        },
+        {
+          "line": 542,
+          "expression": "self.assertNotIn(\"validator owns the plugin's projections and content lock\", guidance)",
+          "role": "assertion",
+          "source_lines": [
+            542,
+            545
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_versioned_definition_is_required",
+      "line": 547,
+      "end_line": 562,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L547-L562",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 561,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            561,
+            561
+          ]
+        },
+        {
+          "line": 562,
+          "expression": "self.assertIn('versioned Provingkit definition is missing', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            562,
+            562
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_definition_requires_the_exact_seven_member_set",
+      "line": 564,
+      "end_line": 582,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L564-L582",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 581,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            581,
+            581
+          ]
+        },
+        {
+          "line": 582,
+          "expression": "self.assertIn('definition membership drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            582,
+            582
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_definition_withholds_release_authority_and_instances",
+      "line": 584,
+      "end_line": 606,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L584-L606",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "release_authority",
+        "instances"
+      ],
+      "assertions": [
+        {
+          "line": 605,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            605,
+            605
+          ]
+        },
+        {
+          "line": 606,
+          "expression": "self.assertIn('definition release boundary drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            606,
+            606
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          589,
+          589
+        ]
+      ]
+    },
+    {
+      "method": "test_definition_json_rejects_duplicate_keys",
+      "line": 608,
+      "end_line": 630,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L608-L630",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 629,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            629,
+            629
+          ]
+        },
+        {
+          "line": 630,
+          "expression": "self.assertIn('versioned Provingkit definition is unreadable', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            630,
+            630
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_definition_rejects_boolean_schema_versions_and_extra_claims",
+      "line": 632,
+      "end_line": 651,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L632-L651",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "schema_version",
+        "published"
+      ],
+      "assertions": [
+        {
+          "line": 650,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            650,
+            650
+          ]
+        },
+        {
+          "line": 651,
+          "expression": "self.assertIn('definition membership drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            651,
+            651
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          634,
+          634
+        ]
+      ]
+    },
+    {
+      "method": "test_definition_binds_each_member_identity_and_excluded_source",
+      "line": 653,
+      "end_line": 750,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L653-L750",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 672,
+          "expression": "self.assertEqual(observed, [('rolecasting', 'agent-plugin', '1.0.0', 'plugins/rolecasting/plugin.json', 'plugins/rolecasting/.claude-plugin/plugin.json', 'plugin-content-lock', 'plugins/rolecasting/content-lock.json'), ('tricritical', 'agent-plugin', '1.0.0', 'plugins/tricritical/plugin.json', 'plugins/tricritical/.claude-plugin/plugin.json', 'plugin-content-lock', 'plugins/tricritical/content-lock.json'), ('versionkeeping', 'agent-plugin', '1.0.0', 'plugins/versionkeeping/plugin.json', 'plugins/versionkeeping/.claude-plugin/plugin.json', 'plugin-content-lock', 'release/plugin-content-locks/versionkeeping.json'), ('mergecraft', 'agent-plugin', '1.0.0', 'plugins/mergecraft/plugin.json', 'plugins/mergecraft/.claude-plugin/plugin.json', 'plugin-content-lock', 'release/plugin-content-locks/mergecraft.json'), ('artifact-customs', 'agent-plugin', '1.0.0', 'plugins/artifact-customs/plugin.json', 'plugins/artifact-customs/.claude-plugin/plugin.json', 'plugin-content-lock', 'release/plugin-content-locks/artifact-customs.json'), ('proseweaving', 'agent-plugin', '1.0.0', 'plugins/proseweaving/plugin.json', 'plugins/proseweaving/.claude-plugin/plugin.json', 'plugin-content-lock', 'plugins/proseweaving/content-lock.json')])",
+          "role": "assertion",
+          "source_lines": [
+            672,
+            730
+          ]
+        },
+        {
+          "line": 731,
+          "expression": "self.assertEqual(definition['excluded_source'], {'paths': ['.scratch', 'tooling'], 'products': ['Base Loadout', 'Hindsight', 'personal tools', 'unrelated experiments']})",
+          "role": "assertion",
+          "source_lines": [
+            731,
+            742
+          ]
+        },
+        {
+          "line": 743,
+          "expression": "self.assertEqual(definition['cutover_provenance'], 'release/provingkit/cutover-provenance-v1.json')",
+          "role": "assertion",
+          "source_lines": [
+            743,
+            746
+          ]
+        },
+        {
+          "line": 747,
+          "expression": "self.assertEqual(definition['historical_identity_allowlist'], 'release/provingkit/historical-identity-allowlist-v1.json')",
+          "role": "assertion",
+          "source_lines": [
+            747,
+            750
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_each_member_keeps_its_own_manifest_identity",
+      "line": 752,
+      "end_line": 770,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L752-L770",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 769,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            769,
+            769
+          ]
+        },
+        {
+          "line": 770,
+          "expression": "self.assertIn('member identity drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            770,
+            770
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_claude_manifest_must_match_the_independent_member_version",
+      "line": 772,
+      "end_line": 792,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L772-L792",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 791,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            791,
+            791
+          ]
+        },
+        {
+          "line": 792,
+          "expression": "self.assertIn('member identity drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            792,
+            792
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_cutover_member_version_rejects_a_coordinated_rewrite",
+      "line": 794,
+      "end_line": 832,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L794-L832",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 831,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            831,
+            831
+          ]
+        },
+        {
+          "line": 832,
+          "expression": "self.assertIn('cutover member version drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            832,
+            832
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_member_content_identity_binds_the_exact_review_artifact",
+      "line": 834,
+      "end_line": 851,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L834-L851",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 850,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            850,
+            850
+          ]
+        },
+        {
+          "line": 851,
+          "expression": "self.assertIn('member content identity drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            851,
+            851
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_cutover_provenance_binds_source_history_and_unreleased_scope",
+      "line": 853,
+      "end_line": 924,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L853-L924",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 862,
+          "expression": "self.assertEqual(provenance['contract'], 'provingkit-cutover-provenance-v1')",
+          "role": "assertion",
+          "source_lines": [
+            862,
+            862
+          ]
+        },
+        {
+          "line": 863,
+          "expression": "self.assertEqual(provenance['source_repository']['cutover_baseline'], {'original_commit': '44ee979cdae1d47f2ef3fdc713eaa6f04adf9892', 'filtered_commit': '7dd8273ecab621be662d27c38706e33f2b48ae34'})",
+          "role": "assertion",
+          "source_lines": [
+            863,
+            869
+          ]
+        },
+        {
+          "line": 870,
+          "expression": "self.assertEqual(provenance['source_repository']['retained_extraction_input'], {'kind': 'pull-request', 'number': 69, 'url': 'https://github.com/nisavid' + '/agents/pull/69', 'state': 'open-unmerged', 'production_disposition': 'retained-input-not-accepted-behavior', 'original_head': '02e3c721bdbd922883948bb3af84c5bafd702984', 'filtered_head': '8edaf590736621352262457752d087bad835555d', 'destination_ref': 'refs/heads/retained/agents-pr-69'})",
+          "role": "assertion",
+          "source_lines": [
+            870,
+            882
+          ]
+        },
+        {
+          "line": 884,
+          "expression": "self.assertEqual([(item['platform'], item['source_range']['commit_count']) for item in adopted], [('linux', 21), ('macos', 36)])",
+          "role": "assertion",
+          "source_lines": [
+            884,
+            890
+          ]
+        },
+        {
+          "line": 891,
+          "expression": "self.assertTrue(all((item['evidence_disposition'] == 'historical-stale-not-current-qualification' for item in adopted)))",
+          "role": "assertion",
+          "source_lines": [
+            891,
+            897
+          ]
+        },
+        {
+          "line": 898,
+          "expression": "self.assertEqual(provenance['release_resources'], {'authority': 'not-granted', 'created': []})",
+          "role": "assertion",
+          "source_lines": [
+            898,
+            901
+          ]
+        },
+        {
+          "line": 902,
+          "expression": "self.assertEqual([(entry['source_issue'], entry['destination_issue'], entry['state']) for entry in provenance['issue_migration']['entries']], [(43, 1, 'transferred'), (44, 2, 'transferred'), (45, 3, 'transferred'), (52, 4, 'transferred'), (53, 5, 'transferred'), (56, 6, 'transferred'), (59, 7, 'transferred'), (65, 8, 'transferred'), (79, 9, 'transferred'), (80, 10, 'transferred')])",
+          "role": "assertion",
+          "source_lines": [
+            902,
+            923
+          ]
+        },
+        {
+          "line": 924,
+          "expression": "self.assertEqual(provenance['issue_migration']['state'], 'transferred')",
+          "role": "assertion",
+          "source_lines": [
+            924,
+            924
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_adopted_history_import_map_binds_the_reviewed_replay",
+      "line": 926,
+      "end_line": 1045,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L926-L1045",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 934,
+          "expression": "self.assertEqual(import_history['retained_ref'], {'ref': 'refs/heads/retained/issue-81-history-import', 'disposition': 'immutable-non-release-history-evidence'})",
+          "role": "assertion",
+          "source_lines": [
+            934,
+            940
+          ]
+        },
+        {
+          "line": 941,
+          "expression": "self.assertEqual(import_history['delta_bundle'], {'contract': 'provingkit-adopted-history-delta-bundle-v1', 'path': 'release/provingkit/adopted-history-delta-bundle-v1.json', 'row_count': 57, 'sha256': 'sha256:c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae', 'content_sha256': 'sha256:d14da319649492e7ecb64d20a578983cb2cd88e00a5e4d3a1ed7e49a1a526cc5', 'source_roots': [{'disposition': 'protected-non-release-source-history-evidence', 'platform': 'linux', 'ref': 'refs/heads/ivan/task-witness-linux-qualification-harness', 'repository': 'nisavid' + '/agents', 'ruleset_id': 22049569, 'tip': 'a8410babc9e1b0c2a57b9f69db98a495133f6843'}, {'disposition': 'protected-non-release-source-history-evidence', 'platform': 'macos', 'ref': 'refs/heads/ivan/task-witness-macos-qualification-harness', 'repository': 'nisavid' + '/agents', 'ruleset_id': 22049569, 'tip': '0703e8df26c975a187cb6f36b8dfb21df8bcc6db'}]})",
+          "role": "assertion",
+          "source_lines": [
+            941,
+            984
+          ]
+        },
+        {
+          "line": 985,
+          "expression": "self.assertEqual(import_history['final_main_mapping'], {'completion_gate': 'required-before-closing-source-issue-81', 'contract': 'provingkit-final-main-import-map-v1', 'final_main': {'base_commit': '64060b3d81da21c47487eb6e4da732dbbb4cbd3a', 'tip_commit': '7d2cbbb8de045fd1ba381b982674131c6ead6919', 'tree': '3e5ec43b24517d01ca32319279f6e7365a0fd351'}, 'merge_method': 'rebase', 'path': 'release/provingkit/final-main-import-map-v1.tsv', 'reviewed_carrier': {'commit': '14352d60d765d634c2da0fa9cca54e465f6571f6', 'commit_count': 84, 'comparison': 'ordered-tree-and-message-sequence-equality', 'evidence_envelope': {'commit': 'c566c53db920a6b7048550a4b8f7ee4d3c914003', 'disposition': 'protected-non-release-history-evidence', 'parents': ['7d2cbbb8de045fd1ba381b982674131c6ead6919', '14352d60d765d634c2da0fa9cca54e465f6571f6'], 'ref': 'refs/heads/retained/pr-11-reviewed-carrier', 'tree': '3e5ec43b24517d01ca32319279f6e7365a0fd351'}, 'tree': '3e5ec43b24517d01ca32319279f6e7365a0fd351'}, 'row_count': 57, 'sha256': 'sha256:408de1b00688d05e7f2da00411c490d09c37dbacacd0719f6aef5fa2c62a9f5d', 'source_pull_request': 'https://github.com/nisavid/provingkit/pull/11', 'state': 'verified'})",
+          "role": "assertion",
+          "source_lines": [
+            985,
+            1023
+          ]
+        },
+        {
+          "line": 1028,
+          "expression": "self.assertEqual(len(rows), 58)",
+          "role": "assertion",
+          "source_lines": [
+            1028,
+            1028
+          ]
+        },
+        {
+          "line": 1029,
+          "expression": "self.assertEqual(rows[0].split('\\t'), ['platform', 'ordinal', 'original_commit', 'filtered_commit', 'retained_import_commit', 'full_tree_delta_sha256', 'projected_tree_delta_sha256'])",
+          "role": "assertion",
+          "source_lines": [
+            1029,
+            1040
+          ]
+        },
+        {
+          "line": 1041,
+          "expression": "self.assertEqual([(row.split('\\t')[0], int(row.split('\\t')[1])) for row in rows[1:]], [('linux', ordinal) for ordinal in range(1, 22)] + [('macos', ordinal) for ordinal in range(1, 37)])",
+          "role": "assertion",
+          "source_lines": [
+            1041,
+            1045
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_final_main_import_map_binds_rebase_assigned_commits",
+      "line": 1047,
+      "end_line": 1125,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1047-L1125",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1055,
+          "expression": "self.assertEqual(mapping['state'], 'verified')",
+          "role": "assertion",
+          "source_lines": [
+            1055,
+            1055
+          ]
+        },
+        {
+          "line": 1056,
+          "expression": "self.assertEqual(mapping['contract'], 'provingkit-final-main-import-map-v1')",
+          "role": "assertion",
+          "source_lines": [
+            1056,
+            1056
+          ]
+        },
+        {
+          "line": 1057,
+          "expression": "self.assertEqual(mapping['path'], 'release/provingkit/final-main-import-map-v1.tsv')",
+          "role": "assertion",
+          "source_lines": [
+            1057,
+            1059
+          ]
+        },
+        {
+          "line": 1060,
+          "expression": "self.assertEqual(mapping['row_count'], 57)",
+          "role": "assertion",
+          "source_lines": [
+            1060,
+            1060
+          ]
+        },
+        {
+          "line": 1061,
+          "expression": "self.assertEqual(mapping['merge_method'], 'rebase')",
+          "role": "assertion",
+          "source_lines": [
+            1061,
+            1061
+          ]
+        },
+        {
+          "line": 1062,
+          "expression": "self.assertEqual(mapping['source_pull_request'], 'https://github.com/nisavid/provingkit/pull/11')",
+          "role": "assertion",
+          "source_lines": [
+            1062,
+            1065
+          ]
+        },
+        {
+          "line": 1066,
+          "expression": "self.assertEqual(mapping['reviewed_carrier'], {'commit': '14352d60d765d634c2da0fa9cca54e465f6571f6', 'commit_count': 84, 'comparison': 'ordered-tree-and-message-sequence-equality', 'evidence_envelope': {'commit': 'c566c53db920a6b7048550a4b8f7ee4d3c914003', 'disposition': 'protected-non-release-history-evidence', 'parents': ['7d2cbbb8de045fd1ba381b982674131c6ead6919', '14352d60d765d634c2da0fa9cca54e465f6571f6'], 'ref': 'refs/heads/retained/pr-11-reviewed-carrier', 'tree': '3e5ec43b24517d01ca32319279f6e7365a0fd351'}, 'tree': '3e5ec43b24517d01ca32319279f6e7365a0fd351'})",
+          "role": "assertion",
+          "source_lines": [
+            1066,
+            1084
+          ]
+        },
+        {
+          "line": 1085,
+          "expression": "self.assertEqual(mapping['final_main'], {'base_commit': '64060b3d81da21c47487eb6e4da732dbbb4cbd3a', 'tip_commit': '7d2cbbb8de045fd1ba381b982674131c6ead6919', 'tree': '3e5ec43b24517d01ca32319279f6e7365a0fd351'})",
+          "role": "assertion",
+          "source_lines": [
+            1085,
+            1092
+          ]
+        },
+        {
+          "line": 1097,
+          "expression": "self.assertEqual(len(rows), 58)",
+          "role": "assertion",
+          "source_lines": [
+            1097,
+            1097
+          ]
+        },
+        {
+          "line": 1098,
+          "expression": "self.assertEqual(rows[0].split('\\t'), ['platform', 'ordinal', 'retained_import_commit', 'final_main_commit', 'full_tree_delta_sha256'])",
+          "role": "assertion",
+          "source_lines": [
+            1098,
+            1107
+          ]
+        },
+        {
+          "line": 1108,
+          "expression": "self.assertEqual(rows[1].split('\\t')[:4], ['linux', '1', '56af80454bd356097f264bd81f0920234ae17bfc', 'd79d1699134cfdf3e19895b40fe75da427961b56'])",
+          "role": "assertion",
+          "source_lines": [
+            1108,
+            1116
+          ]
+        },
+        {
+          "line": 1117,
+          "expression": "self.assertEqual(rows[-1].split('\\t')[:4], ['macos', '36', '604c6e8702c4e3914e862bee58ab35f529866737', 'd47e9fbe95c5be6f923c91d0751ccdb1af80280b'])",
+          "role": "assertion",
+          "source_lines": [
+            1117,
+            1125
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_rejects_an_identical_tree_outside_final_main",
+      "line": 1127,
+      "end_line": 1171,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1127-L1171",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1170,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1170,
+            1170
+          ]
+        },
+        {
+          "line": 1171,
+          "expression": "self.assertIn('final main import reachability drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1171,
+            1171
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_rejects_reordered_reachable_final_main_rows",
+      "line": 1173,
+      "end_line": 1239,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1173-L1239",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1226,
+          "expression": "self.assertEqual(validator_source.count(current_map_sha256), 1)",
+          "role": "assertion",
+          "source_lines": [
+            1226,
+            1226
+          ]
+        },
+        {
+          "line": 1238,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1238,
+            1238
+          ]
+        },
+        {
+          "line": 1239,
+          "expression": "self.assertIn('final main import reachability drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1239,
+            1239
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_rejects_rewritten_reviewed_carrier",
+      "line": 1241,
+      "end_line": 1435,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1241-L1435",
+      "scope": "composition_context",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "nonexistent",
+        "wrong-tree",
+        "same-trees-one-message-drift"
+      ],
+      "assertions": [
+        {
+          "line": 1281,
+          "expression": "self.assertEqual(len(carrier_commits), 84)",
+          "role": "assertion",
+          "source_lines": [
+            1281,
+            1281
+          ]
+        },
+        {
+          "line": 1417,
+          "expression": "self.assertEqual(validator_source.count(reviewed_carrier), 1)",
+          "role": "assertion",
+          "source_lines": [
+            1417,
+            1417
+          ]
+        },
+        {
+          "line": 1418,
+          "expression": "self.assertEqual(validator_source.count(reviewed_carrier_envelope), 1)",
+          "role": "assertion",
+          "source_lines": [
+            1418,
+            1418
+          ]
+        },
+        {
+          "line": 1434,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1434,
+            1434
+          ]
+        },
+        {
+          "line": 1435,
+          "expression": "self.assertIn(expected_error, result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1435,
+            1435
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          1263,
+          1263
+        ]
+      ]
+    },
+    {
+      "method": "test_validator_requires_the_reviewed_carrier_retained_ref",
+      "line": 1437,
+      "end_line": 1457,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1437-L1457",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1456,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1456,
+            1456
+          ]
+        },
+        {
+          "line": 1457,
+          "expression": "self.assertIn('reviewed carrier ref attestation drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1457,
+            1457
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_adopted_history_bundle_base64_must_be_canonical",
+      "line": 1459,
+      "end_line": 1465,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1459-L1465",
+      "scope": "composition_context",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "YQ",
+        "YR==",
+        "YQ==\\n"
+      ],
+      "assertions": [
+        {
+          "line": 1460,
+          "expression": "self.assertEqual(validate_provingkit._decode_canonical_base64('YQ=='), b'a')",
+          "role": "assertion",
+          "source_lines": [
+            1460,
+            1460
+          ]
+        },
+        {
+          "line": 1462,
+          "expression": "self.assertRaises(validate_provingkit.ValidationError)",
+          "role": "assertion",
+          "source_lines": [
+            1462,
+            1464
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          1462,
+          1462
+        ]
+      ]
+    },
+    {
+      "method": "test_historical_identity_allowlist_binds_the_delta_bundle",
+      "line": 1467,
+      "end_line": 1489,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1467-L1489",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1474,
+          "expression": "self.assertEqual(len(allowlist['entries']), 31)",
+          "role": "assertion",
+          "source_lines": [
+            1474,
+            1474
+          ]
+        },
+        {
+          "line": 1475,
+          "expression": "self.assertIn({'disposition': 'protected-non-release-source-history-delta-evidence', 'path': 'release/provingkit/adopted-history-delta-bundle-v1.json', 'sha256': 'sha256:c9f5e9a2f9cfee80e943eeb859d4f5b072f98150e7018e474710f709c6e1b9ae'}, allowlist['entries'])",
+          "role": "assertion",
+          "source_lines": [
+            1475,
+            1489
+          ]
+        }
+      ],
+      "observed_test_contract": "The source allowlist has 31 entries and contains the exact adopted-history delta-bundle path, disposition, and SHA-256 entry.",
+      "cases": [
+        {
+          "label": "exact-source-allowlist-entry",
+          "route": "source_document_assertions",
+          "expected": "31 entries and exact delta-bundle membership",
+          "assertion_lines": [
+            1474,
+            1475
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "repository integration required; not a file-only assertion",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_rejects_adopted_history_bundle_file_drift",
+      "line": 1491,
+      "end_line": 1510,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1491-L1510",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1509,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1509,
+            1509
+          ]
+        },
+        {
+          "line": 1510,
+          "expression": "self.assertIn('adopted history delta bundle drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1510,
+            1510
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_rejects_semantic_import_map_drift_with_a_refreshed_hash",
+      "line": 1512,
+      "end_line": 1545,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1512-L1545",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1544,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1544,
+            1544
+          ]
+        },
+        {
+          "line": 1545,
+          "expression": "self.assertIn('adopted history import map drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1545,
+            1545
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_rejects_a_different_cutover_baseline",
+      "line": 1547,
+      "end_line": 1569,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1547-L1569",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1568,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1568,
+            1568
+          ]
+        },
+        {
+          "line": 1569,
+          "expression": "self.assertIn('cutover provenance drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1569,
+            1569
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_locks_compatibility_alias_scopes",
+      "line": 1571,
+      "end_line": 1591,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1571-L1591",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1590,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1590,
+            1590
+          ]
+        },
+        {
+          "line": 1591,
+          "expression": "self.assertIn('cutover provenance drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1591,
+            1591
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_cutover_provenance_inventories_the_repository_id_alias",
+      "line": 1593,
+      "end_line": 1608,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1593-L1608",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1600,
+          "expression": "self.assertIn({'canonical': 'nisavid/provingkit', 'kind': 'repository-id', 'legacy': LEGACY_REPOSITORY_ID, 'scope': 'frozen-receipts'}, provenance['compatibility_aliases'])",
+          "role": "assertion",
+          "source_lines": [
+            1600,
+            1608
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_validator_locks_the_historical_source_lineage_owner",
+      "line": 1610,
+      "end_line": 1630,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1610-L1630",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1629,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1629,
+            1629
+          ]
+        },
+        {
+          "line": 1630,
+          "expression": "self.assertIn('cutover provenance drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1630,
+            1630
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_issue_migration_ledger_requires_unique_destination_issues",
+      "line": 1632,
+      "end_line": 1655,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1632-L1655",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1654,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1654,
+            1654
+          ]
+        },
+        {
+          "line": 1655,
+          "expression": "self.assertIn('issue migration ledger drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1655,
+            1655
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_excluded_products_and_source_roots_cannot_reenter_the_repository",
+      "line": 1657,
+      "end_line": 1683,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1657-L1683",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 4,
+      "subtest_labels": [
+        ".scratch/unrelated-experiment.txt",
+        "tooling/personal-tool/README.md",
+        "plugins/base-loadout/plugin.json",
+        "plugins/hindsight/plugin.json"
+      ],
+      "assertions": [
+        {
+          "line": 1682,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1682,
+            1682
+          ]
+        },
+        {
+          "line": 1683,
+          "expression": "self.assertIn('excluded source present', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1683,
+            1683
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          1667,
+          1667
+        ]
+      ]
+    },
+    {
+      "method": "test_marketplace_is_the_exact_six_agent_plugin_source_projection",
+      "line": 1685,
+      "end_line": 1709,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1685-L1709",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1708,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1708,
+            1708
+          ]
+        },
+        {
+          "line": 1709,
+          "expression": "self.assertIn('marketplace source projection drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1709,
+            1709
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_unallowlisted_legacy_repository_identity_is_rejected",
+      "line": 1711,
+      "end_line": 1716,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1711-L1716",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1713,
+          "expression": "self.assert_identity_fixture(f'Unexpected active link: {legacy_repository}\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            1713,
+            1716
+          ]
+        }
+      ],
+      "observed_test_contract": "An ordinary active legacy repository link is rejected.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            1713,
+            1716
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_unallowlisted_legacy_repository_identity_variants_are_rejected",
+      "line": 1718,
+      "end_line": 1735,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1718-L1735",
+      "scope": "file_identity",
+      "static_subtest_entries": 5,
+      "subtest_labels": [
+        "percent-encoded",
+        "percent-encoded-path-separator",
+        "double-percent-encoded",
+        "html-entity",
+        "github-case"
+      ],
+      "assertions": [
+        {
+          "line": 1732,
+          "expression": "self.assert_identity_fixture(f'Unexpected active link: {legacy_repository}\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            1732,
+            1735
+          ]
+        }
+      ],
+      "observed_test_contract": "Percent encoding, encoded path separator, repeated percent encoding, HTML entity, and case variants are rejected.",
+      "cases": [
+        {
+          "label": "percent-encoded",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            1732,
+            1735
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "percent-encoded-path-separator",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            1732,
+            1735
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "double-percent-encoded",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            1732,
+            1735
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "html-entity",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            1732,
+            1735
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "github-case",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            1732,
+            1735
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 5,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          1731,
+          1731
+        ]
+      ]
+    },
+    {
+      "method": "test_json_unicode_escape_for_legacy_repository_identity_is_rejected",
+      "line": 1737,
+      "end_line": 1745,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1737-L1745",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1741,
+          "expression": "self.assert_identity_fixture('{\"repository\":\"' + encoded_identity + '\"}\\n', accepted=False, extension='json')",
+          "role": "helper_call",
+          "source_lines": [
+            1741,
+            1745
+          ]
+        }
+      ],
+      "observed_test_contract": "A JSON Unicode escape in the repository segment is rejected.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            1741,
+            1745
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_json_escaped_solidus_for_legacy_repository_identity_is_rejected",
+      "line": 1747,
+      "end_line": 1755,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1747-L1755",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1751,
+          "expression": "self.assert_identity_fixture('{\"repository\":\"' + encoded_identity + '\"}\\n', accepted=False, extension='json')",
+          "role": "helper_call",
+          "source_lines": [
+            1751,
+            1755
+          ]
+        }
+      ],
+      "observed_test_contract": "JSON escaped solidus separators are rejected.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            1751,
+            1755
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+      "line": 1757,
+      "end_line": 1788,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1757-L1788",
+      "scope": "file_identity",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "hex-escape",
+        "escaped-line-break",
+        "hex-and-percent-composition"
+      ],
+      "assertions": [
+        {
+          "line": 1776,
+          "expression": "self.assertEqual(yaml.safe_load(document), {'repository': 'https://github.com/nisavid/' + decoded_segment})",
+          "role": "assertion",
+          "source_lines": [
+            1776,
+            1783
+          ]
+        },
+        {
+          "line": 1784,
+          "expression": "self.assert_identity_fixture(document, accepted=False, extension=extension)",
+          "role": "helper_call",
+          "source_lines": [
+            1784,
+            1788
+          ]
+        }
+      ],
+      "observed_test_contract": "YAML scalar decoding reveals hex, escaped newline, and hex-plus-percent variants; the test also checks PyYAML fixture meaning.",
+      "cases": [
+        {
+          "label": "hex-escape",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            1784,
+            1788
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "escaped-line-break",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.yml"
+          ],
+          "call_source_lines": [
+            1784,
+            1788
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "hex-and-percent-composition",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            1784,
+            1788
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 3,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          1770,
+          1770
+        ]
+      ]
+    },
+    {
+      "method": "test_legitimate_yaml_semantics_remain_accepted",
+      "line": 1790,
+      "end_line": 1819,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1790-L1819",
+      "scope": "file_identity",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "canonical-repository",
+        "single-quoted-backslash",
+        "escaped-backslash"
+      ],
+      "assertions": [
+        {
+          "line": 1814,
+          "expression": "self.assertEqual(yaml.safe_load(document), expected)",
+          "role": "assertion",
+          "source_lines": [
+            1814,
+            1814
+          ]
+        },
+        {
+          "line": 1815,
+          "expression": "self.assert_identity_fixture(document, accepted=True, extension='yaml')",
+          "role": "helper_call",
+          "source_lines": [
+            1815,
+            1819
+          ]
+        }
+      ],
+      "observed_test_contract": "Canonical YAML and literal backslash forms remain accepted; the test also checks PyYAML fixture meaning.",
+      "cases": [
+        {
+          "label": "canonical-repository",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            1815,
+            1819
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "single-quoted-backslash",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            1815,
+            1819
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "escaped-backslash",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            1815,
+            1819
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 3,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          1813,
+          1813
+        ]
+      ]
+    },
+    {
+      "method": "test_yaml_frontmatter_escape_for_legacy_repository_identity_is_rejected",
+      "line": 1821,
+      "end_line": 1841,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1821-L1841",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1830,
+          "expression": "self.assertEqual(yaml.safe_load(metadata), {'name': 'unexpected-skill', 'description': 'https://github.com/nisavid/' + 'agents'})",
+          "role": "assertion",
+          "source_lines": [
+            1830,
+            1836
+          ]
+        },
+        {
+          "line": 1837,
+          "expression": "self.assert_identity_fixture('---\\n' + metadata + '---\\n# Unexpected skill\\n', accepted=False, relative='release/provingkit/unexpected-skill/SKILL.md')",
+          "role": "helper_call",
+          "source_lines": [
+            1837,
+            1841
+          ]
+        }
+      ],
+      "observed_test_contract": "YAML in a SKILL.md frontmatter block is inspected; the test also checks PyYAML fixture meaning.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-skill/SKILL.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-skill/SKILL.md"
+          ],
+          "call_source_lines": [
+            1837,
+            1841
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+      "line": 1843,
+      "end_line": 1857,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1843-L1857",
+      "scope": "file_identity",
+      "static_subtest_entries": 4,
+      "subtest_labels": [
+        "no-BOM/LF",
+        "no-BOM/CRLF",
+        "BOM/LF",
+        "BOM/CRLF"
+      ],
+      "assertions": [
+        {
+          "line": 1853,
+          "expression": "self.assert_identity_fixture(document.replace('\\n', newline), accepted=False, extension='md')",
+          "role": "helper_call",
+          "source_lines": [
+            1853,
+            1857
+          ]
+        }
+      ],
+      "observed_test_contract": "The same frontmatter identity is rejected with and without a UTF-8 BOM and with LF or CRLF.",
+      "cases": [
+        {
+          "label": "no-BOM/LF",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.md"
+          ],
+          "call_source_lines": [
+            1853,
+            1857
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "no-BOM/CRLF",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.md"
+          ],
+          "call_source_lines": [
+            1853,
+            1857
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "BOM/LF",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.md"
+          ],
+          "call_source_lines": [
+            1853,
+            1857
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "BOM/CRLF",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.md"
+          ],
+          "call_source_lines": [
+            1853,
+            1857
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 4,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          1849,
+          1849
+        ]
+      ]
+    },
+    {
+      "method": "test_legitimate_bom_frontmatter_remains_accepted",
+      "line": 1859,
+      "end_line": 1874,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1859-L1874",
+      "scope": "file_identity",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "canonical-repository",
+        "literal-backslash"
+      ],
+      "assertions": [
+        {
+          "line": 1870,
+          "expression": "self.assert_identity_fixture('\\ufeff---\\n' + metadata + '---\\nThis Markdown body is not YAML: [\\n', accepted=True, extension='md')",
+          "role": "helper_call",
+          "source_lines": [
+            1870,
+            1874
+          ]
+        }
+      ],
+      "observed_test_contract": "BOM frontmatter accepts canonical and literal-backslash metadata despite a body that is not valid YAML.",
+      "cases": [
+        {
+          "label": "canonical-repository",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.md",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            1870,
+            1874
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "literal-backslash",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.md",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            1870,
+            1874
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          1869,
+          1869
+        ]
+      ]
+    },
+    {
+      "method": "test_malformed_bom_frontmatter_reports_its_path",
+      "line": 1876,
+      "end_line": 1882,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1876-L1882",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 1877,
+          "expression": "self.assert_identity_fixture('\\ufeff---\\nrepository: \"' + '\\\\xZZ' + '\"\\n---\\n# Documentary fixture\\n', accepted=False, extension='md', expected_error='YAML identity source is unreadable')",
+          "role": "helper_call",
+          "source_lines": [
+            1877,
+            1882
+          ]
+        }
+      ],
+      "observed_test_contract": "Malformed BOM frontmatter fails with its path.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "YAML identity source is unreadable",
+            "release/provingkit/unexpected-identity.md"
+          ],
+          "call_source_lines": [
+            1877,
+            1882
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_frontmatter_exception_binds_original_bytes_including_bom",
+      "line": 1884,
+      "end_line": 1920,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1884-L1920",
+      "scope": "file_identity",
+      "static_subtest_entries": 4,
+      "subtest_labels": [
+        "no-BOM/other-digest",
+        "no-BOM/matching-digest",
+        "BOM/other-digest",
+        "BOM/matching-digest"
+      ],
+      "assertions": [
+        {
+          "line": 1914,
+          "expression": "self.assertEqual(result.returncode, 0, result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            1914,
+            1914
+          ]
+        },
+        {
+          "line": 1916,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            1916,
+            1916
+          ]
+        },
+        {
+          "line": 1917,
+          "expression": "self.assertEqual(result.stderr.strip(), 'historical identity allowlist hash drift')",
+          "role": "assertion",
+          "source_lines": [
+            1917,
+            1920
+          ]
+        }
+      ],
+      "observed_test_contract": "Whole-file allowlist hashing distinguishes original bytes with and without a BOM; both matching hashes are accepted and both other hashes are rejected.",
+      "cases": [
+        {
+          "label": "no-BOM/other-digest",
+          "route": "full_validator_CLI_cloned_repository",
+          "fixture_relative_path": "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_stripped_equals": "historical identity allowlist hash drift",
+          "assertion_lines": [
+            1916,
+            1917
+          ]
+        },
+        {
+          "label": "no-BOM/matching-digest",
+          "route": "full_validator_CLI_cloned_repository",
+          "fixture_relative_path": "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "expected_stderr_stripped_equals": null,
+          "assertion_lines": [
+            1914
+          ]
+        },
+        {
+          "label": "BOM/other-digest",
+          "route": "full_validator_CLI_cloned_repository",
+          "fixture_relative_path": "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_stripped_equals": "historical identity allowlist hash drift",
+          "assertion_lines": [
+            1916,
+            1917
+          ]
+        },
+        {
+          "label": "BOM/matching-digest",
+          "route": "full_validator_CLI_cloned_repository",
+          "fixture_relative_path": "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "expected_stderr_stripped_equals": null,
+          "assertion_lines": [
+            1914
+          ]
+        }
+      ],
+      "static_logical_probe_count": 4,
+      "future_test_location_hypothesis": "repository integration required; not a file-only assertion",
+      "subtest_source_lines": [
+        [
+          1907,
+          1907
+        ]
+      ]
+    },
+    {
+      "method": "test_yaml_binary_legacy_repository_identities_are_rejected",
+      "line": 1922,
+      "end_line": 1970,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1922-L1970",
+      "scope": "file_identity",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "yaml-document",
+        "percent-composition",
+        "frontmatter"
+      ],
+      "assertions": [
+        {
+          "line": 1964,
+          "expression": "self.assertEqual(yaml.safe_load(yaml_source), expected)",
+          "role": "assertion",
+          "source_lines": [
+            1964,
+            1964
+          ]
+        },
+        {
+          "line": 1965,
+          "expression": "self.assert_identity_fixture(document, accepted=False, extension='yaml', relative=relative)",
+          "role": "helper_call",
+          "source_lines": [
+            1965,
+            1970
+          ]
+        }
+      ],
+      "observed_test_contract": "YAML binary scalars are scanned as decoded bytes, including percent composition and frontmatter; fixture meanings are separately checked.",
+      "cases": [
+        {
+          "label": "yaml-document",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            1965,
+            1970
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "percent-composition",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            1965,
+            1970
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "frontmatter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-skill/SKILL.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-skill/SKILL.md"
+          ],
+          "call_source_lines": [
+            1965,
+            1970
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 3,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          1960,
+          1960
+        ]
+      ]
+    },
+    {
+      "method": "test_overwritten_yaml_binary_legacy_identities_are_rejected",
+      "line": 1972,
+      "end_line": 2006,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L1972-L2006",
+      "scope": "file_identity",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "yaml-document",
+        "percent-composition",
+        "frontmatter"
+      ],
+      "assertions": [
+        {
+          "line": 2001,
+          "expression": "self.assert_identity_fixture(document, accepted=False, extension='yaml', relative=relative)",
+          "role": "helper_call",
+          "source_lines": [
+            2001,
+            2006
+          ]
+        }
+      ],
+      "observed_test_contract": "An earlier binary scalar still triggers rejection when a later duplicate YAML key replaces its constructed value.",
+      "cases": [
+        {
+          "label": "yaml-document",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            2001,
+            2006
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "percent-composition",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            2001,
+            2006
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "frontmatter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-skill/SKILL.md",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-skill/SKILL.md"
+          ],
+          "call_source_lines": [
+            2001,
+            2006
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 3,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2000,
+          2000
+        ]
+      ]
+    },
+    {
+      "method": "test_identity_irrelevant_yaml_constructors_remain_accepted",
+      "line": 2008,
+      "end_line": 2020,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2008-L2020",
+      "scope": "file_identity",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "custom-tag",
+        "large-integer"
+      ],
+      "assertions": [
+        {
+          "line": 2015,
+          "expression": "self.assertIsNotNone(yaml.compose(document, Loader=yaml.SafeLoader))",
+          "role": "assertion",
+          "source_lines": [
+            2015,
+            2015
+          ]
+        },
+        {
+          "line": 2016,
+          "expression": "self.assert_identity_fixture(document, accepted=True, extension='yaml')",
+          "role": "helper_call",
+          "source_lines": [
+            2016,
+            2020
+          ]
+        }
+      ],
+      "observed_test_contract": "Custom YAML tags and a 5000-digit scalar are accepted; compose returns a node without construction.",
+      "cases": [
+        {
+          "label": "custom-tag",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2016,
+            2020
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "large-integer",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2016,
+            2020
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2014,
+          2014
+        ]
+      ]
+    },
+    {
+      "method": "test_invalid_yaml_identity_source_fails_closed",
+      "line": 2022,
+      "end_line": 2035,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2022-L2035",
+      "scope": "file_identity",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "invalid-escape",
+        "out-of-range-code-point",
+        "surrogate"
+      ],
+      "assertions": [
+        {
+          "line": 2030,
+          "expression": "self.assert_identity_fixture('repository: \"' + encoded_value + '\"\\n', accepted=False, expected_error='YAML identity source is unreadable', extension='yaml')",
+          "role": "helper_call",
+          "source_lines": [
+            2030,
+            2035
+          ]
+        }
+      ],
+      "observed_test_contract": "Malformed YAML escapes, an out-of-range code point, and a surrogate fail with the YAML diagnostic and path.",
+      "cases": [
+        {
+          "label": "invalid-escape",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "YAML identity source is unreadable",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            2030,
+            2035
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "out-of-range-code-point",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "YAML identity source is unreadable",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            2030,
+            2035
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "surrogate",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.yaml",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "YAML identity source is unreadable",
+            "release/provingkit/unexpected-identity.yaml"
+          ],
+          "call_source_lines": [
+            2030,
+            2035
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 3,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2029,
+          2029
+        ]
+      ]
+    },
+    {
+      "method": "test_github_url_dot_segments_for_legacy_identity_are_rejected",
+      "line": 2037,
+      "end_line": 2051,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2037-L2051",
+      "scope": "file_identity",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "current-directory",
+        "parent-directory"
+      ],
+      "assertions": [
+        {
+          "line": 2048,
+          "expression": "self.assert_identity_fixture(f'Unexpected active link: {legacy_repository}\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2048,
+            2051
+          ]
+        }
+      ],
+      "observed_test_contract": "Current and parent-directory path segments expose the identity.",
+      "cases": [
+        {
+          "label": "current-directory",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2048,
+            2051
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "parent-directory",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2048,
+            2051
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2047,
+          2047
+        ]
+      ]
+    },
+    {
+      "method": "test_github_url_backslash_separators_for_legacy_identity_are_rejected",
+      "line": 2053,
+      "end_line": 2060,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2053-L2060",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2057,
+          "expression": "self.assert_identity_fixture(f'Unexpected active link: {legacy_repository}\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2057,
+            2060
+          ]
+        }
+      ],
+      "observed_test_contract": "Backslash URL separators expose the identity.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2057,
+            2060
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_composed_url_encodings_for_legacy_identity_are_rejected",
+      "line": 2062,
+      "end_line": 2095,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2062-L2095",
+      "scope": "file_identity",
+      "static_subtest_entries": 4,
+      "subtest_labels": [
+        "encoded-separators-and-dot-segment",
+        "html-dot-segment",
+        "html-scheme",
+        "html-uts46-host"
+      ],
+      "assertions": [
+        {
+          "line": 2091,
+          "expression": "self.assert_identity_fixture(content, accepted=False, extension=extension)",
+          "role": "helper_call",
+          "source_lines": [
+            2091,
+            2095
+          ]
+        }
+      ],
+      "observed_test_contract": "Separators, dot segments, HTML scheme, and HTML host syntax compose into rejected identities.",
+      "cases": [
+        {
+          "label": "encoded-separators-and-dot-segment",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2091,
+            2095
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "html-dot-segment",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2091,
+            2095
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "html-scheme",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.html",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.html"
+          ],
+          "call_source_lines": [
+            2091,
+            2095
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "html-uts46-host",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.html",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.html"
+          ],
+          "call_source_lines": [
+            2091,
+            2095
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 4,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2090,
+          2090
+        ]
+      ]
+    },
+    {
+      "method": "test_github_special_url_without_scheme_separators_is_rejected",
+      "line": 2097,
+      "end_line": 2112,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2097-L2112",
+      "scope": "file_identity",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "raw",
+        "json"
+      ],
+      "assertions": [
+        {
+          "line": 2108,
+          "expression": "self.assert_identity_fixture(payload, accepted=False, extension=extension)",
+          "role": "helper_call",
+          "source_lines": [
+            2108,
+            2112
+          ]
+        }
+      ],
+      "observed_test_contract": "Raw and JSON special URLs without scheme slashes are rejected.",
+      "cases": [
+        {
+          "label": "raw",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2108,
+            2112
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "json",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2108,
+            2112
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2107,
+          2107
+        ]
+      ]
+    },
+    {
+      "method": "test_github_url_authority_aliases_for_legacy_identity_are_rejected",
+      "line": 2114,
+      "end_line": 2140,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2114-L2140",
+      "scope": "file_identity",
+      "static_subtest_entries": 8,
+      "subtest_labels": [
+        "userinfo",
+        "multiple-userinfo-delimiters",
+        "encoded-userinfo-delimiter",
+        "encoded-userinfo-slash",
+        "empty-port",
+        "default-port",
+        "long-leading-zero-port",
+        "trailing-host-dot"
+      ],
+      "assertions": [
+        {
+          "line": 2137,
+          "expression": "self.assert_identity_fixture(f'Unexpected active link: {legacy_repository}\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2137,
+            2140
+          ]
+        }
+      ],
+      "observed_test_contract": "Userinfo, ports, and a trailing host dot retain the rejected identity.",
+      "cases": [
+        {
+          "label": "userinfo",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "multiple-userinfo-delimiters",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded-userinfo-delimiter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded-userinfo-slash",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "empty-port",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "default-port",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "long-leading-zero-port",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "trailing-host-dot",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2137,
+            2140
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 8,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2136,
+          2136
+        ]
+      ]
+    },
+    {
+      "method": "test_json_escaped_url_controls_are_rejected",
+      "line": 2142,
+      "end_line": 2166,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2142-L2166",
+      "scope": "file_identity",
+      "static_subtest_entries": 5,
+      "subtest_labels": [
+        "authority-tab",
+        "authority-newline",
+        "scheme-short-tab",
+        "scheme-tab",
+        "scheme-newline"
+      ],
+      "assertions": [
+        {
+          "line": 2162,
+          "expression": "self.assert_identity_fixture('{\"repository\":\"' + encoded_identity + '\"}\\n', accepted=False, extension='json')",
+          "role": "helper_call",
+          "source_lines": [
+            2162,
+            2166
+          ]
+        }
+      ],
+      "observed_test_contract": "JSON-escaped authority or scheme controls retain the rejected identity.",
+      "cases": [
+        {
+          "label": "authority-tab",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2162,
+            2166
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "authority-newline",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2162,
+            2166
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "scheme-short-tab",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2162,
+            2166
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "scheme-tab",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2162,
+            2166
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "scheme-newline",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2162,
+            2166
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 5,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2161,
+          2161
+        ]
+      ]
+    },
+    {
+      "method": "test_raw_url_scheme_controls_are_rejected",
+      "line": 2168,
+      "end_line": 2178,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2168-L2178",
+      "scope": "file_identity",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "tab",
+        "newline"
+      ],
+      "assertions": [
+        {
+          "line": 2175,
+          "expression": "self.assert_identity_fixture(legacy_repository + '\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2175,
+            2178
+          ]
+        }
+      ],
+      "observed_test_contract": "Raw tab and newline controls in the scheme retain the rejected identity.",
+      "cases": [
+        {
+          "label": "tab",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2175,
+            2178
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "newline",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2175,
+            2178
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2174,
+          2174
+        ]
+      ]
+    },
+    {
+      "method": "test_github_unicode_host_aliases_for_legacy_identity_are_rejected",
+      "line": 2180,
+      "end_line": 2209,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2180-L2209",
+      "scope": "file_identity",
+      "static_subtest_entries": 5,
+      "subtest_labels": [
+        "ideographic-full-stop",
+        "percent-encoded-ideographic-full-stop",
+        "fullwidth-full-stop",
+        "halfwidth-ideographic-full-stop",
+        "fullwidth-host"
+      ],
+      "assertions": [
+        {
+          "line": 2206,
+          "expression": "self.assert_identity_fixture(legacy_repository + '\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2206,
+            2209
+          ]
+        }
+      ],
+      "observed_test_contract": "Unicode host separator and fullwidth host variants are rejected.",
+      "cases": [
+        {
+          "label": "ideographic-full-stop",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2206,
+            2209
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "percent-encoded-ideographic-full-stop",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2206,
+            2209
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "fullwidth-full-stop",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2206,
+            2209
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "halfwidth-ideographic-full-stop",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2206,
+            2209
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "fullwidth-host",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2206,
+            2209
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 5,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2205,
+          2205
+        ]
+      ]
+    },
+    {
+      "method": "test_whatwg_url_characters_do_not_truncate_legacy_identity_scan",
+      "line": 2211,
+      "end_line": 2288,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2211-L2288",
+      "scope": "file_identity",
+      "static_subtest_entries": 19,
+      "subtest_labels": [
+        "userinfo-space",
+        "path-space",
+        "path-mid-segment-space",
+        "path-repeated-spaces",
+        "path-http-scheme",
+        "path-nested-scheme",
+        "path-double-quote",
+        "path-apostrophe",
+        "path-less-than",
+        "path-greater-than",
+        "path-mid-segment-quote",
+        "path-repeated-quotes",
+        "path-raw-tab",
+        "userinfo-form-feed",
+        "userinfo-vertical-tab",
+        "userinfo-double-quote",
+        "userinfo-apostrophe",
+        "userinfo-less-than",
+        "userinfo-greater-than"
+      ],
+      "assertions": [
+        {
+          "line": 2285,
+          "expression": "self.assert_identity_fixture(legacy_repository + '\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2285,
+            2288
+          ]
+        }
+      ],
+      "observed_test_contract": "The listed authority and path characters do not truncate the identity candidate.",
+      "cases": [
+        {
+          "label": "userinfo-space",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-space",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-mid-segment-space",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-repeated-spaces",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-http-scheme",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-nested-scheme",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-double-quote",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-apostrophe",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-less-than",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-greater-than",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-mid-segment-quote",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-repeated-quotes",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "path-raw-tab",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "userinfo-form-feed",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "userinfo-vertical-tab",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "userinfo-double-quote",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "userinfo-apostrophe",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "userinfo-less-than",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "userinfo-greater-than",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2285,
+            2288
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 19,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2284,
+          2284
+        ]
+      ]
+    },
+    {
+      "method": "test_url_candidate_boundaries_do_not_join_surrounding_prose",
+      "line": 2290,
+      "end_line": 2301,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2290-L2301",
+      "scope": "file_identity",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "same-line",
+        "next-line"
+      ],
+      "assertions": [
+        {
+          "line": 2301,
+          "expression": "self.assert_identity_fixture(content, accepted=True)",
+          "role": "helper_call",
+          "source_lines": [
+            2301,
+            2301
+          ]
+        }
+      ],
+      "observed_test_contract": "Surrounding prose is not joined to a preceding URL to create a rejected identity.",
+      "cases": [
+        {
+          "label": "same-line",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2301,
+            2301
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "next-line",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2301,
+            2301
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2300,
+          2300
+        ]
+      ]
+    },
+    {
+      "method": "test_uts46_github_host_aliases_are_rejected",
+      "line": 2303,
+      "end_line": 2314,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2303-L2314",
+      "scope": "file_identity",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "modifier-capital-g",
+        "subscript-i",
+        "enclosed-capital-g"
+      ],
+      "assertions": [
+        {
+          "line": 2311,
+          "expression": "self.assert_identity_fixture('ht' + f'tps://{host}/nisavid/ignored/../' + 'agents\\n', accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2311,
+            2314
+          ]
+        }
+      ],
+      "observed_test_contract": "The listed UTS 46 host aliases are rejected.",
+      "cases": [
+        {
+          "label": "modifier-capital-g",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2311,
+            2314
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "subscript-i",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2311,
+            2314
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "enclosed-capital-g",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2311,
+            2314
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 3,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2310,
+          2310
+        ]
+      ]
+    },
+    {
+      "method": "test_non_uts46_github_hosts_are_not_reinterpreted",
+      "line": 2316,
+      "end_line": 2327,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2316-L2327",
+      "scope": "file_identity",
+      "static_subtest_entries": 3,
+      "subtest_labels": [
+        "mongolian-todo-soft-hyphen",
+        "zero-width-non-joiner",
+        "zero-width-joiner"
+      ],
+      "assertions": [
+        {
+          "line": 2324,
+          "expression": "self.assert_identity_fixture('ht' + f'tps://{host}/nisavid/ignored/../' + 'agents\\n', accepted=True)",
+          "role": "helper_call",
+          "source_lines": [
+            2324,
+            2327
+          ]
+        }
+      ],
+      "observed_test_contract": "The listed non-UTS-46 host forms are accepted.",
+      "cases": [
+        {
+          "label": "mongolian-todo-soft-hyphen",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2324,
+            2327
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "zero-width-non-joiner",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2324,
+            2327
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "zero-width-joiner",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2324,
+            2327
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 3,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2323,
+          2323
+        ]
+      ]
+    },
+    {
+      "method": "test_separate_url_is_not_hidden_by_prior_authority",
+      "line": 2329,
+      "end_line": 2369,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2329-L2369",
+      "scope": "file_identity",
+      "static_subtest_entries": 5,
+      "subtest_labels": [
+        "raw",
+        "encoded",
+        "comma-separated",
+        "parenthesis-separated",
+        "comma-separated-encoded"
+      ],
+      "assertions": [
+        {
+          "line": 2369,
+          "expression": "self.assert_identity_fixture(content, accepted=False)",
+          "role": "helper_call",
+          "source_lines": [
+            2369,
+            2369
+          ]
+        }
+      ],
+      "observed_test_contract": "A separate raw or encoded URL is still inspected after an earlier authority.",
+      "cases": [
+        {
+          "label": "raw",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2369,
+            2369
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2369,
+            2369
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "comma-separated",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2369,
+            2369
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "parenthesis-separated",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2369,
+            2369
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "comma-separated-encoded",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.txt"
+          ],
+          "call_source_lines": [
+            2369,
+            2369
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 5,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2368,
+          2368
+        ]
+      ]
+    },
+    {
+      "method": "test_non_equivalent_url_text_is_not_reinterpreted_as_github_authority",
+      "line": 2371,
+      "end_line": 2436,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2371-L2436",
+      "scope": "file_identity",
+      "static_subtest_entries": 17,
+      "subtest_labels": [
+        "query",
+        "fragment",
+        "embedded-scheme-prefix",
+        "multiple-trailing-host-dots",
+        "out-of-range-port",
+        "unbounded-port",
+        "encoded-port-delimiter",
+        "encoded-out-of-range-port-delimiter",
+        "encoded-port-digits",
+        "encoded-host-userinfo-delimiter",
+        "encoded-host-userinfo-suffix",
+        "double-encoded-port-delimiter",
+        "double-encoded-host-userinfo-delimiter",
+        "double-encoded-host-path-delimiter",
+        "double-encoded-host-dot",
+        "raw-control-split-scheme-encoded-port",
+        "json-control-split-scheme-encoded-port"
+      ],
+      "assertions": [
+        {
+          "line": 2433,
+          "expression": "self.assert_identity_fixture(external_url + '\\n', accepted=True)",
+          "role": "helper_call",
+          "source_lines": [
+            2433,
+            2436
+          ]
+        }
+      ],
+      "observed_test_contract": "The listed non-equivalent URL text is accepted.",
+      "cases": [
+        {
+          "label": "query",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "fragment",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "embedded-scheme-prefix",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "multiple-trailing-host-dots",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "out-of-range-port",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "unbounded-port",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded-port-delimiter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded-out-of-range-port-delimiter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded-port-digits",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded-host-userinfo-delimiter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "encoded-host-userinfo-suffix",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "double-encoded-port-delimiter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "double-encoded-host-userinfo-delimiter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "double-encoded-host-path-delimiter",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "double-encoded-host-dot",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "raw-control-split-scheme-encoded-port",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "json-control-split-scheme-encoded-port",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2433,
+            2436
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 17,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2432,
+          2432
+        ]
+      ]
+    },
+    {
+      "method": "test_encoded_scheme_does_not_decode_percent_authority",
+      "line": 2438,
+      "end_line": 2457,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2438-L2457",
+      "scope": "file_identity",
+      "static_subtest_entries": 2,
+      "subtest_labels": [
+        "json-unicode",
+        "html-entity"
+      ],
+      "assertions": [
+        {
+          "line": 2453,
+          "expression": "self.assert_identity_fixture(content, accepted=True, extension=extension)",
+          "role": "helper_call",
+          "source_lines": [
+            2453,
+            2457
+          ]
+        }
+      ],
+      "observed_test_contract": "An encoded scheme does not make percent-encoded authority syntax equivalent.",
+      "cases": [
+        {
+          "label": "json-unicode",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2453,
+            2457
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "html-entity",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.txt",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2453,
+            2457
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": [
+        [
+          2452,
+          2452
+        ]
+      ]
+    },
+    {
+      "method": "test_json_identity_extraction_handles_edge_cases_without_tracebacks",
+      "line": 2459,
+      "end_line": 2480,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2459-L2480",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2462,
+          "expression": "self.assertEqual(validate_provingkit._json_string_values(b'\"\\\\ud800\"'), [])",
+          "role": "assertion",
+          "source_lines": [
+            2462,
+            2465
+          ]
+        },
+        {
+          "line": 2467,
+          "expression": "self.assertEqual(validate_provingkit._json_string_values(deeply_nested), [])",
+          "role": "assertion",
+          "source_lines": [
+            2467,
+            2470
+          ]
+        },
+        {
+          "line": 2471,
+          "expression": "self.assert_identity_fixture('\"' + '\\\\ud800' + '\"\\n', accepted=True, extension='json')",
+          "role": "helper_call",
+          "source_lines": [
+            2471,
+            2475
+          ]
+        },
+        {
+          "line": 2476,
+          "expression": "self.assert_identity_fixture('9' * 5000 + '\\n', accepted=True, extension='json')",
+          "role": "helper_call",
+          "source_lines": [
+            2476,
+            2480
+          ]
+        }
+      ],
+      "observed_test_contract": "Two direct JSON extraction probes return empty lists; two separate CLI fixtures are accepted.",
+      "cases": [
+        {
+          "label": "direct-surrogate",
+          "route": "direct_private_json_helper",
+          "expected": [],
+          "assertion_lines": [
+            2462
+          ]
+        },
+        {
+          "label": "direct-10000-level-nesting",
+          "route": "direct_private_json_helper",
+          "expected": [],
+          "assertion_lines": [
+            2467
+          ]
+        },
+        {
+          "label": "CLI-surrogate",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2471,
+            2475
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        },
+        {
+          "label": "CLI-large-number",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "call_source_lines": [
+            2476,
+            2480
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 4,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_json_surrogate_does_not_hide_later_legacy_identity",
+      "line": 2482,
+      "end_line": 2494,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2482-L2494",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2486,
+          "expression": "self.assert_identity_fixture('{\"repository\":\"' + '\\\\ud800' + ' https://' + encoded_host + '/nisavid/ignored/../agents\"}\\n', accepted=False, extension='json')",
+          "role": "helper_call",
+          "source_lines": [
+            2486,
+            2494
+          ]
+        }
+      ],
+      "observed_test_contract": "A leading JSON surrogate does not hide a later Unicode-host identity.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2486,
+            2494
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_large_json_number_does_not_hide_legacy_identity",
+      "line": 2496,
+      "end_line": 2508,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2496-L2508",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2500,
+          "expression": "self.assert_identity_fixture('{\"number\":' + '9' * 5000 + ',\"repository\":\"https://' + encoded_host + '/nisavid/ignored/../agents\"}\\n', accepted=False, extension='json')",
+          "role": "helper_call",
+          "source_lines": [
+            2500,
+            2508
+          ]
+        }
+      ],
+      "observed_test_contract": "A 5000-digit JSON number does not hide a later Unicode-host identity.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_via_assert_identity_fixture",
+          "fixture_relative_path": "release/provingkit/unexpected-identity.json",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/provingkit/unexpected-identity.json"
+          ],
+          "call_source_lines": [
+            2500,
+            2508
+          ],
+          "helper_assertion_lines": [
+            187,
+            192
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "may later fit a production-used path-and-original-bytes file identity seam; no migration or equivalence established",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_path_hard_delimiter_scan_completes_for_large_popped_segment",
+      "line": 2510,
+      "end_line": 2530,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2510-L2530",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2530,
+          "expression": "self.assertEqual(result.returncode, 0, result.stdout + result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2530,
+            2530
+          ]
+        }
+      ],
+      "observed_test_contract": "A separate Python process must find the expected path within the subprocess timeout for a 64000-space popped segment.",
+      "cases": [
+        {
+          "label": "64000-space-popped-segment",
+          "route": "private_URL_helper_in_separate_Python_process",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "timeout_seconds": 5,
+          "assertion_lines": [
+            2530
+          ],
+          "child_assertion_source_lines": [
+            2513,
+            2520
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "retain dedicated completion-time probe; direct private helper is the present route",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_excessive_nested_identity_encoding_is_rejected",
+      "line": 2532,
+      "end_line": 2550,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2532-L2550",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2537,
+          "expression": "self.assertEqual(pristine.returncode, 0, pristine.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2537,
+            2537
+          ]
+        },
+        {
+          "line": 2549,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2549,
+            2549
+          ]
+        },
+        {
+          "line": 2550,
+          "expression": "self.assertIn('repository identity encoding depth exceeds limit', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2550,
+            2550
+          ]
+        }
+      ],
+      "observed_test_contract": "A pristine cloned candidate is accepted before nine additional percent-encoding layers cause rejection.",
+      "cases": [
+        {
+          "label": "pristine-before-mutation",
+          "route": "full_validator_CLI_cloned_repository",
+          "expected_returncode": {
+            "equals": 0
+          },
+          "assertion_lines": [
+            2537
+          ]
+        },
+        {
+          "label": "nine-additional-percent-encoding-layers",
+          "route": "full_validator_CLI_cloned_repository",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "repository identity encoding depth exceeds limit"
+          ],
+          "assertion_lines": [
+            2549,
+            2550
+          ]
+        }
+      ],
+      "static_logical_probe_count": 2,
+      "future_test_location_hypothesis": "mixed: retain pristine CLI acceptance and consider content rejection at a production-used file identity seam",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_active_legacy_repository_guidance_exemption_requires_exact_block",
+      "line": 2552,
+      "end_line": 2581,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2552-L2581",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2569,
+          "expression": "self.assertIn(expected, context_path.read_text(encoding='utf-8'))",
+          "role": "assertion",
+          "source_lines": [
+            2569,
+            2569
+          ]
+        },
+        {
+          "line": 2580,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2580,
+            2580
+          ]
+        },
+        {
+          "line": 2581,
+          "expression": "self.assertIn('active legacy repository guidance scope drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2581,
+            2581
+          ]
+        }
+      ],
+      "observed_test_contract": "Changing the exact CONTEXT.md guidance block causes scope drift.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "active legacy repository guidance scope drift"
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "path-context behavior may fit a production-used file identity seam; retain repository composition evidence",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_active_legacy_repository_guidance_exemption_rejects_extra_content",
+      "line": 2583,
+      "end_line": 2604,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2583-L2604",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2602,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2602,
+            2602
+          ]
+        },
+        {
+          "line": 2603,
+          "expression": "self.assertIn('unallowlisted legacy repository identity', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2603,
+            2603
+          ]
+        },
+        {
+          "line": 2604,
+          "expression": "self.assertIn('CONTEXT.md', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2604,
+            2604
+          ]
+        }
+      ],
+      "observed_test_contract": "Additional legacy content outside the allowed CONTEXT.md block is rejected with that path.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "CONTEXT.md"
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "path-context behavior may fit a production-used file identity seam; retain repository composition evidence",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_active_legacy_tracker_reference_exemption_requires_an_exact_url",
+      "line": 2606,
+      "end_line": 2637,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2606-L2637",
+      "scope": "file_identity",
+      "static_subtest_entries": 4,
+      "subtest_labels": [
+        "suffix:0",
+        "suffix:evil",
+        "suffix:/comments",
+        "suffix:?query=unexpected"
+      ],
+      "assertions": [
+        {
+          "line": 2623,
+          "expression": "self.assertEqual(refresh['workflow']['source_disposition_owner_issue'], legacy_issue)",
+          "role": "assertion",
+          "source_lines": [
+            2623,
+            2626
+          ]
+        },
+        {
+          "line": 2636,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2636,
+            2636
+          ]
+        },
+        {
+          "line": 2637,
+          "expression": "self.assertIn('active legacy tracker reference scope drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2637,
+            2637
+          ]
+        }
+      ],
+      "observed_test_contract": "Four suffix mutations of the designated tracker URL cause scope drift.",
+      "cases": [
+        {
+          "label": "suffix:0",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "active legacy tracker reference scope drift"
+          ]
+        },
+        {
+          "label": "suffix:evil",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "active legacy tracker reference scope drift"
+          ]
+        },
+        {
+          "label": "suffix:/comments",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "active legacy tracker reference scope drift"
+          ]
+        },
+        {
+          "label": "suffix:?query=unexpected",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "active legacy tracker reference scope drift"
+          ]
+        }
+      ],
+      "static_logical_probe_count": 4,
+      "future_test_location_hypothesis": "path-context behavior may fit a production-used file identity seam; retain repository composition evidence",
+      "subtest_source_lines": [
+        [
+          2610,
+          2610
+        ]
+      ]
+    },
+    {
+      "method": "test_active_legacy_tracker_reference_exemption_is_field_scoped",
+      "line": 2639,
+      "end_line": 2664,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2639-L2664",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2659,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2659,
+            2659
+          ]
+        },
+        {
+          "line": 2660,
+          "expression": "self.assertIn('unallowlisted legacy repository identity', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2660,
+            2660
+          ]
+        },
+        {
+          "line": 2661,
+          "expression": "self.assertIn('release/source-skill-disposition/disposition-ledger.json', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2661,
+            2664
+          ]
+        }
+      ],
+      "observed_test_contract": "The designated tracker URL added to an undesignated ledger rationale is rejected with the ledger path.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "unallowlisted legacy repository identity",
+            "release/source-skill-disposition/disposition-ledger.json"
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "path-context behavior may fit a production-used file identity seam; retain repository composition evidence",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_repository_identity_scan_rejects_symbolic_links",
+      "line": 2666,
+      "end_line": 2681,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2666-L2681",
+      "scope": "file_identity",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2680,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2680,
+            2680
+          ]
+        },
+        {
+          "line": 2681,
+          "expression": "self.assertIn('repository identity scan rejects symbolic links', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2681,
+            2681
+          ]
+        }
+      ],
+      "observed_test_contract": "A repository symlink pointing at README.md is rejected.",
+      "cases": [
+        {
+          "label": "default",
+          "route": "full_validator_CLI_copied_repository_without_Git",
+          "expected_returncode": {
+            "not_equals": 0
+          },
+          "expected_stderr_contains": [
+            "repository identity scan rejects symbolic links"
+          ]
+        }
+      ],
+      "static_logical_probe_count": 1,
+      "future_test_location_hypothesis": "repository integration required; not a file-only assertion",
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_cutover_cannot_materialize_a_release_manifest",
+      "line": 2683,
+      "end_line": 2698,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2683-L2698",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2697,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2697,
+            2697
+          ]
+        },
+        {
+          "line": 2698,
+          "expression": "self.assertIn('release manifest instance is not authorized', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2698,
+            2698
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_cutover_rejects_a_renamed_release_manifest_outside_release_root",
+      "line": 2700,
+      "end_line": 2744,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2700-L2744",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 4,
+      "subtest_labels": [
+        "json/plain/single-contract",
+        "json/escaped/single-contract",
+        "txt/escaped/single-contract",
+        "json/plain/duplicate-contract"
+      ],
+      "assertions": [
+        {
+          "line": 2743,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2743,
+            2743
+          ]
+        },
+        {
+          "line": 2744,
+          "expression": "self.assertIn('release manifest instance is not authorized', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2744,
+            2744
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          2710,
+          2714
+        ]
+      ]
+    },
+    {
+      "method": "test_validator_requires_attested_git_history",
+      "line": 2746,
+      "end_line": 2758,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2746-L2758",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2757,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2757,
+            2757
+          ]
+        },
+        {
+          "line": 2758,
+          "expression": "self.assertIn('Git history attestation unavailable', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2758,
+            2758
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_retained_history_import_ref_rejects_a_descendant_tip",
+      "line": 2760,
+      "end_line": 2798,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2760-L2798",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2797,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2797,
+            2797
+          ]
+        },
+        {
+          "line": 2798,
+          "expression": "self.assertIn('retained history-import ref attestation drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2798,
+            2798
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_attested_history_preserves_the_source_stage_boundary",
+      "line": 2800,
+      "end_line": 2858,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2800-L2858",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2807,
+          "expression": "self.assertEqual(retained_ancestry.returncode, 1)",
+          "role": "assertion",
+          "source_lines": [
+            2807,
+            2807
+          ]
+        },
+        {
+          "line": 2821,
+          "expression": "self.assertIn(tags, [[], [f'refs/tags/{PREVIEW_TAG} commit {PREVIEW_SOURCE}']])",
+          "role": "assertion",
+          "source_lines": [
+            2821,
+            2827
+          ]
+        },
+        {
+          "line": 2852,
+          "expression": "self.assertFalse(any((path == root or path.startswith(root + '/') for path in history_paths for root in prohibited_roots)))",
+          "role": "assertion",
+          "source_lines": [
+            2852,
+            2858
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_historical_qualification_is_outside_default_pytest_discovery",
+      "line": 2860,
+      "end_line": 2880,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2860-L2880",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2864,
+          "expression": "self.assertEqual(configuration, '[pytest]\\ntestpaths = tests\\nnorecursedirs = qualification/historical\\npythonpath = .\\n')",
+          "role": "assertion",
+          "source_lines": [
+            2864,
+            2868
+          ]
+        },
+        {
+          "line": 2878,
+          "expression": "self.assertEqual(result.returncode, 0, result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2878,
+            2878
+          ]
+        },
+        {
+          "line": 2879,
+          "expression": "self.assertIn('tests/test_validate_provingkit.py', result.stdout)",
+          "role": "assertion",
+          "source_lines": [
+            2879,
+            2879
+          ]
+        },
+        {
+          "line": 2880,
+          "expression": "self.assertNotIn('qualification/historical', result.stdout)",
+          "role": "assertion",
+          "source_lines": [
+            2880,
+            2880
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_release_manifest_schema_must_be_valid_draft_2020_12",
+      "line": 2882,
+      "end_line": 2902,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2882-L2902",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2901,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2901,
+            2901
+          ]
+        },
+        {
+          "line": 2902,
+          "expression": "self.assertIn('release-manifest schema is invalid', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2902,
+            2902
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_release_manifest_schema_accepts_only_the_exact_member_contract",
+      "line": 2904,
+      "end_line": 2920,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2904-L2920",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2919,
+          "expression": "self.assertEqual(list(validator.iter_errors(valid_manifest)), [])",
+          "role": "assertion",
+          "source_lines": [
+            2919,
+            2919
+          ]
+        },
+        {
+          "line": 2920,
+          "expression": "self.assertNotEqual(list(validator.iter_errors(invalid_manifest)), [])",
+          "role": "assertion",
+          "source_lines": [
+            2920,
+            2920
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_release_manifest_schema_requires_each_definition_member_version",
+      "line": 2922,
+      "end_line": 2944,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2922-L2944",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 6,
+      "subtest_labels": [
+        "rolecasting",
+        "tricritical",
+        "versionkeeping",
+        "mergecraft",
+        "artifact-customs",
+        "proseweaving"
+      ],
+      "assertions": [
+        {
+          "line": 2935,
+          "expression": "self.assertEqual(list(validator.iter_errors(valid_manifest)), [])",
+          "role": "assertion",
+          "source_lines": [
+            2935,
+            2935
+          ]
+        },
+        {
+          "line": 2941,
+          "expression": "self.assertNotEqual(list(validator.iter_errors(invalid_manifest)), [])",
+          "role": "assertion",
+          "source_lines": [
+            2941,
+            2944
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          2937,
+          2937
+        ]
+      ]
+    },
+    {
+      "method": "test_release_boundary_rejects_definition_schema_member_drift",
+      "line": 2946,
+      "end_line": 2968,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2946-L2968",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 2967,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2967,
+            2967
+          ]
+        },
+        {
+          "line": 2968,
+          "expression": "self.assertIn('release-manifest schema member projection drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2968,
+            2968
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    },
+    {
+      "method": "test_release_boundary_binds_closed_member_cardinality_to_definition",
+      "line": 2970,
+      "end_line": 2999,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L2970-L2999",
+      "scope": "other_repository_contract",
+      "static_subtest_entries": 4,
+      "subtest_labels": [
+        "type",
+        "minItems",
+        "maxItems",
+        "items"
+      ],
+      "assertions": [
+        {
+          "line": 2998,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            2998,
+            2998
+          ]
+        },
+        {
+          "line": 2999,
+          "expression": "self.assertIn('release-manifest schema member projection drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            2999,
+            2999
+          ]
+        }
+      ],
+      "subtest_source_lines": [
+        [
+          2980,
+          2980
+        ]
+      ]
+    },
+    {
+      "method": "test_current_member_manifests_require_the_destination_identity",
+      "line": 3001,
+      "end_line": 3019,
+      "source": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py#L3001-L3019",
+      "scope": "composition_context",
+      "static_subtest_entries": 0,
+      "subtest_labels": [],
+      "assertions": [
+        {
+          "line": 3018,
+          "expression": "self.assertNotEqual(result.returncode, 0)",
+          "role": "assertion",
+          "source_lines": [
+            3018,
+            3018
+          ]
+        },
+        {
+          "line": 3019,
+          "expression": "self.assertIn('canonical repository identity drift', result.stderr)",
+          "role": "assertion",
+          "source_lines": [
+            3019,
+            3019
+          ]
+        }
+      ],
+      "subtest_source_lines": []
+    }
+  ],
+  "immutable_test_source_url": "https://github.com/nisavid/provingkit/blob/ad31344cdcb9891438cf1e92c27c776945bee6ab/tests/test_validate_provingkit.py"
+}
