@@ -2,7 +2,7 @@
 
 This reference selects a model-routing disposition for cybersecurity-related and cybersecurity-adjacent work. It does not decide whether to delegate, create tasks, mutate trackers, or perform actions. The owning delegating workflow retains action authority and topology.
 
-Treat cybersecurity-related and cybersecurity-adjacent whole tasks and bounded subtasks as Daybreak-routed work. This policy overrides the general model matrix and fallback rules for that scope.
+First apply [the scope classification and block diagnosis](classifying-security-work.md). Treat cybersecurity-related and cybersecurity-adjacent whole tasks and bounded subtasks as Daybreak-routed work. This policy overrides the general model matrix and fallback rules for that scope; a safety refusal is not a capability failure that authorizes fallback.
 
 In ChatGPT or Codex harnesses authenticated with an OpenAI account, route that work to a Daybreak model whenever any permitted Daybreak route is genuinely runnable. In every other harness, prefer a Daybreak model whenever any permitted Daybreak route is genuinely runnable. The Daybreak model executes the cybersecurity work; it does not merely choose a model for another agent. These rules do not govern unrelated work.
 

@@ -6,12 +6,10 @@
       "name": "writing-github-issue-and-pr-markdown",
       "entrypoint": "skills/writing-github-issue-and-pr-markdown/SKILL.md",
       "interface": "skills/writing-github-issue-and-pr-markdown/agents/openai.yaml",
-      "references": [
-        "skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md"
-      ],
+      "references": ["skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md"],
       "scripts": [],
       "modules": [],
-      "calls": [],
+      "calls": ["operation:issue-pr-relations"],
       "conditional_calls": {},
       "operations": ["github-markdown-content"],
       "contract": {
@@ -23,20 +21,61 @@
           "authoring-intent",
           "applicable-consumer-instructions",
           "retained-replaced-removed-spans",
-          "line-ending-and-terminal-newline-policy"
+          "line-ending-and-terminal-newline-policy",
+          "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": [
-          "exact-body-candidate",
-          "line-ending-and-terminal-newline-state",
-          "material-conflict-blocker"
-        ],
-        "forbidden_reverse_calls": [
-          "publishing-reviewable-prs",
-          "interacting-with-pr-review-feedback",
-          "getting-prs-merged"
-        ],
+        "outputs": ["exact-body-candidate", "line-ending-and-terminal-newline-state", "material-conflict-blocker", "pending-relation-handoff"],
+        "forbidden_reverse_calls": ["publishing-reviewable-prs", "interacting-with-pr-review-feedback", "getting-prs-merged"],
         "loop_owner": null,
         "terminal_statuses": ["authored", "blocked"]
+      }
+    },
+    {
+      "name": "maintaining-issue-pr-relations",
+      "entrypoint": "skills/maintaining-issue-pr-relations/SKILL.md",
+      "interface": "skills/maintaining-issue-pr-relations/agents/openai.yaml",
+      "references": ["skills/maintaining-issue-pr-relations/references/relation-contract.md", "skills/maintaining-issue-pr-relations/references/command.md"],
+      "scripts": ["skills/maintaining-issue-pr-relations/scripts/relation_state.py"],
+      "modules": ["skills/maintaining-issue-pr-relations/scripts/relation_forge.py"],
+      "calls": ["operation:issue-pr-relation-observe", "operation:issue-body-write", "operation:issue-pr-development-write"],
+      "conditional_calls": {},
+      "operations": ["issue-pr-relations"],
+      "contract": {
+        "trigger": "new-or-materially-changed-issue-pr-contribution-or-explicit-repair-or-applicable-merge-consequence",
+        "modes": ["observe", "plan", "reconcile"],
+        "authority": "finite evidenced contributions and separately authorized body or native relation effects",
+        "inputs": [
+          "stable-task-identity",
+          "finite-evidenced-pairs",
+          "compatible-entity-and-setting-observations",
+          "writer-owned-candidate-bodies",
+          "explicit-effect-authorization",
+          "bound-publication-results"
+        ],
+        "outputs": ["digest-bound-plan", "per-effect-results", "body-publication-handoffs", "retained-setting-observations-and-read-counts"],
+        "forbidden_reverse_calls": [
+          "publishing-reviewable-prs",
+          "writing-reviewable-pr-descriptions",
+          "writing-github-issue-and-pr-markdown",
+          "getting-prs-ready-for-review",
+          "getting-prs-merged",
+          "graphite",
+          "stacking-pr-fixups"
+        ],
+        "loop_owner": null,
+        "terminal_handoffs": [
+          {
+            "trigger": "issue-body-authoring-required",
+            "owner": "writing-github-issue-and-pr-markdown",
+            "resume": "relation-plan-with-complete-writer-owned-body"
+          },
+          {
+            "trigger": "pr-body-publication-required",
+            "owner": "publishing-reviewable-prs",
+            "resume": "relation-reconcile-with-bound-publication-result"
+          }
+        ],
+        "terminal_statuses": ["not-applicable", "no-op", "needs-input", "blocked", "verified", "partial", "unknown"]
       }
     },
     {
@@ -48,10 +87,12 @@
         "skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
         "skills/writing-reviewable-pr-descriptions/references/change-navigation.md",
         "skills/writing-reviewable-pr-descriptions/references/review-atlas-extension.json",
-        "skills/writing-reviewable-pr-descriptions/review-atlas-reference-design.md"
+        "skills/writing-reviewable-pr-descriptions/review-atlas-reference-design.md",
+        "skills/writing-reviewable-pr-descriptions/references/relation-ledger.md"
       ],
       "scripts": [
-        "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py"
+        "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py",
+        "skills/writing-reviewable-pr-descriptions/scripts/validate_relation_ledger.py"
       ],
       "modules": [
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/__init__.py",
@@ -77,32 +118,29 @@
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/types.py",
         "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py"
       ],
-      "calls": ["operation:review-loop"],
+      "calls": ["operation:review-loop", "operation:issue-pr-relations"],
       "conditional_calls": {},
       "operations": ["pr-content"],
       "contract": {
         "trigger": "canonical-pr-title-or-body-request",
-        "modes": ["content-only"],
+        "modes": ["content-only", "relation-ledger-only"],
         "authority": "candidate PR title and body bytes only",
         "inputs": [
           "exact-base-tip-head-and-unique-merge-base",
           "reviewer-visible-merge-base-to-head-diff",
           "caller-supplied-categorized-diff-and-stack-observations",
           "current-pr-text",
-          "repository-policy"
+          "repository-policy",
+          "retained-task-relation-context-or-explicit-absence"
         ],
         "outputs": [
           "validated-title-body",
           "authorized-text-surface",
-          "review-input-manifest"
+          "review-input-manifest",
+          "pending-relation-handoff",
+          "relation-ledger-manifest"
         ],
-        "forbidden_reverse_calls": [
-          "publishing-reviewable-prs",
-          "graphite",
-          "getting-prs-ready-for-review",
-          "getting-prs-merged",
-          "stacking-pr-fixups"
-        ],
+        "forbidden_reverse_calls": ["publishing-reviewable-prs", "graphite", "getting-prs-ready-for-review", "getting-prs-merged", "stacking-pr-fixups"],
         "loop_owner": "tricritical:loop",
         "terminal_statuses": ["validated", "blocked"]
       }
@@ -115,15 +153,17 @@
       "scripts": [
         "skills/publishing-reviewable-prs/scripts/audit_reviewable_pr.py",
         "skills/publishing-reviewable-prs/scripts/create_reviewable_pr.py",
-        "skills/publishing-reviewable-prs/scripts/update_reviewable_pr.py"
+        "skills/publishing-reviewable-prs/scripts/update_reviewable_pr.py",
+        "skills/publishing-reviewable-prs/scripts/publish_relation_ledger.py"
       ],
       "modules": [
         "skills/publishing-reviewable-prs/scripts/publication_receipts.py",
         "skills/publishing-reviewable-prs/scripts/publication_support.py",
+        "skills/publishing-reviewable-prs/scripts/relation_ledger_receipts.py",
         "skills/publishing-reviewable-prs/scripts/reviewable_pr_state.py",
         "skills/publishing-reviewable-prs/scripts/required_review.py"
       ],
-      "calls": ["operation:pr-content"],
+      "calls": ["operation:pr-content", "operation:issue-pr-relations"],
       "conditional_calls": {},
       "operations": [
         "pr-creation",
@@ -133,11 +173,12 @@
         "pr-readiness-write",
         "publication-evidence",
         "publication-audit",
-        "publication-reconciliation"
+        "publication-reconciliation",
+        "pr-relation-ledger-write"
       ],
       "contract": {
         "trigger": "authorized-pr-publication-operation",
-        "modes": ["create", "update", "ready", "audit", "reconcile"],
+        "modes": ["create", "update", "ready", "audit", "reconcile", "relation-ledger"],
         "authority": "exact requested forge mutation or read-only audit",
         "inputs": [
           "bound-repository-pr-base-head",
@@ -145,28 +186,19 @@
           "expected-preimage",
           "explicit-publication-review-mode",
           "frozen-publication-candidate",
-          "publication-authority"
+          "publication-authority",
+          "retained-task-relation-context-or-explicit-absence"
         ],
         "outputs": [
           "review-bound-publication-receipt",
           "authoritative-audit",
-          "pre-updater-no-op-classification-without-transition-receipt"
+          "pre-updater-no-op-classification-without-transition-receipt",
+          "separate-relation-publication-receipt",
+          "retained-task-relation-context-or-explicit-absence"
         ],
-        "forbidden_reverse_calls": [
-          "graphite",
-          "resuming-reviewed-prs",
-          "getting-prs-ready-for-review",
-          "getting-prs-merged",
-          "stacking-pr-fixups"
-        ],
+        "forbidden_reverse_calls": ["graphite", "resuming-reviewed-prs", "getting-prs-ready-for-review", "getting-prs-merged", "stacking-pr-fixups"],
         "loop_owner": null,
-        "terminal_statuses": [
-          "verified",
-          "no-op",
-          "reconciled",
-          "blocked",
-          "ambiguous"
-        ]
+        "terminal_statuses": ["verified", "no-op", "reconciled", "blocked", "ambiguous", "unknown"]
       }
     },
     {
@@ -180,7 +212,8 @@
         "operation:pr-text-write",
         "operation:pr-readiness-write",
         "operation:publication-audit",
-        "operation:git-ref-push"
+        "operation:git-ref-push",
+        "operation:issue-pr-relations"
       ],
       "conditional_calls": {},
       "operations": ["graphite-topology", "graphite-transport"],
@@ -201,15 +234,11 @@
           "tracked-stack",
           "exact-branch-heads",
           "explicit-publication-review-profile",
-          "transport-authority"
+          "transport-authority",
+          "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": ["verified-stack-transport", "publication-handoff"],
-        "forbidden_reverse_calls": [
-          "resuming-reviewed-prs",
-          "getting-prs-ready-for-review",
-          "getting-prs-merged",
-          "stacking-pr-fixups"
-        ],
+        "outputs": ["verified-stack-transport", "publication-handoff", "retained-task-relation-context-or-explicit-absence"],
+        "forbidden_reverse_calls": ["resuming-reviewed-prs", "getting-prs-ready-for-review", "getting-prs-merged", "stacking-pr-fixups"],
         "loop_owner": null,
         "terminal_statuses": ["verified", "blocked", "ambiguous"]
       }
@@ -320,12 +349,8 @@
         "trigger": "stale-reviewed-pr-resume-request",
         "modes": ["recover-and-route", "status-only"],
         "authority": "read current state, report status, or route to exactly one lifecycle owner",
-        "inputs": ["repository-hint", "pr-or-branch-hint", "current-authority"],
-        "outputs": [
-          "bound-target",
-          "read-only-status-report",
-          "next-owner-handoff"
-        ],
+        "inputs": ["repository-hint", "pr-or-branch-hint", "current-authority", "retained-task-relation-context-or-explicit-absence"],
+        "outputs": ["bound-target", "read-only-status-report", "next-owner-handoff"],
         "forbidden_reverse_calls": [],
         "loop_owner": null,
         "terminal_handoffs": [
@@ -343,6 +368,11 @@
             "trigger": "explicit-merge-ship-or-merge-closeout-outcome",
             "owner": "getting-prs-merged",
             "resume": "fresh-getting-prs-merged-invocation-from-live-state"
+          },
+          {
+            "trigger": "explicit-issue-pr-association-repair",
+            "owner": "maintaining-issue-pr-relations",
+            "resume": "maintaining-issue-pr-relations-with-retained-task-context"
           },
           {
             "trigger": "live-actionable-feedback-or-requested-changes",
@@ -371,7 +401,8 @@
         "operation:pr-text-write",
         "operation:pr-readiness-write",
         "operation:publication-audit",
-        "operation:git-ref-push"
+        "operation:git-ref-push",
+        "operation:issue-pr-relations"
       ],
       "conditional_calls": {},
       "operations": ["readiness-outcome"],
@@ -383,13 +414,11 @@
           "bound-repository-pr-head",
           "local-validation",
           "current-pr-state",
-          "readiness-authority"
+          "readiness-authority",
+          "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": ["verified-readiness-outcome"],
-        "forbidden_reverse_calls": [
-          "resuming-reviewed-prs",
-          "getting-prs-merged"
-        ],
+        "outputs": ["verified-readiness-outcome", "retained-task-relation-context-or-explicit-absence"],
+        "forbidden_reverse_calls": ["resuming-reviewed-prs", "getting-prs-merged"],
         "loop_owner": null,
         "terminal_statuses": ["ready", "blocked", "ambiguous"]
       }
@@ -404,9 +433,7 @@
         "skills/getting-prs-merged/references/github-markdown-authoring.md",
         "skills/getting-prs-merged/references/merge-actuator.md"
       ],
-      "scripts": [
-        "skills/getting-prs-merged/scripts/post_coderabbit_comment.py"
-      ],
+      "scripts": ["skills/getting-prs-merged/scripts/post_coderabbit_comment.py"],
       "modules": [],
       "calls": [
         "operation:publication-audit",
@@ -417,7 +444,8 @@
         "operation:focused-ci",
         "operation:merge-inspection",
         "operation:merge-actuation",
-        "operation:coderabbit-top-level-comment"
+        "operation:coderabbit-top-level-comment",
+        "operation:issue-pr-relations"
       ],
       "conditional_calls": {},
       "operations": ["merge-outcome"],
@@ -431,14 +459,10 @@
           "complete-feedback",
           "prior-feedback-outcome-or-explicit-absence",
           "checks-approvals-mergeability",
-          "merge-method-authority"
+          "merge-method-authority",
+          "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": [
-          "verified-merge-receipt",
-          "feedback-handoff",
-          "cleanup-handoff",
-          "deployment-handoff"
-        ],
+        "outputs": ["verified-merge-receipt", "feedback-handoff", "cleanup-handoff", "deployment-handoff", "retained-task-relation-context-or-explicit-absence"],
         "forbidden_reverse_calls": ["resuming-reviewed-prs"],
         "loop_owner": null,
         "terminal_handoffs": [
@@ -463,14 +487,7 @@
             "resume": "caller-consumes-terminal-cleanup-outcome-from-live-state"
           }
         ],
-        "terminal_statuses": [
-          "merged",
-          "cleanup-handoff",
-          "feedback-handoff",
-          "readiness-handoff",
-          "blocked",
-          "ambiguous"
-        ]
+        "terminal_statuses": ["merged", "cleanup-handoff", "feedback-handoff", "readiness-handoff", "blocked", "ambiguous"]
       }
     },
     {
@@ -488,7 +505,8 @@
         "operation:publication-audit",
         "operation:graphite-topology",
         "operation:graphite-transport",
-        "operation:git-ref-push"
+        "operation:git-ref-push",
+        "operation:issue-pr-relations"
       ],
       "conditional_calls": {},
       "operations": ["stack-fixup"],
@@ -496,12 +514,8 @@
         "trigger": "narrow-stacked-fixup-request",
         "modes": ["prepare-fixup", "publish-stack"],
         "authority": "task-owned fixup paths and intended stack only",
-        "inputs": [
-          "bound-stack",
-          "accepted-fix-scope",
-          "publication-authority"
-        ],
-        "outputs": ["verified-fixup-stack", "publication-receipts"],
+        "inputs": ["bound-stack", "accepted-fix-scope", "publication-authority", "retained-task-relation-context-or-explicit-absence"],
+        "outputs": ["verified-fixup-stack", "publication-receipts", "retained-task-relation-context-or-explicit-absence"],
         "forbidden_reverse_calls": [],
         "loop_owner": null,
         "terminal_statuses": ["verified", "blocked", "ambiguous"]
@@ -522,6 +536,75 @@
         "interacting-with-pr-review-feedback",
         "writing-github-issue-and-pr-markdown"
       ],
+      "disposition": "public-skill"
+    },
+    {
+      "semantic_id": "issue-pr-relations",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "maintaining-issue-pr-relations",
+      "implementation": "skills/maintaining-issue-pr-relations/SKILL.md",
+      "import": null,
+      "access": "coordinate",
+      "authority": "finite evidenced contributions and separately authorized body or native relation effects",
+      "callers": [
+        "getting-prs-merged",
+        "getting-prs-ready-for-review",
+        "graphite",
+        "maintaining-issue-pr-relations",
+        "publishing-reviewable-prs",
+        "stacking-pr-fixups",
+        "writing-github-issue-and-pr-markdown",
+        "writing-reviewable-pr-descriptions"
+      ],
+      "disposition": "public-skill"
+    },
+    {
+      "semantic_id": "issue-pr-relation-observe",
+      "github_aliases": ["issue-pr-relation-read"],
+      "surface": "github",
+      "owner": "internal:issue-pr-relation-state",
+      "implementation": "skills/maintaining-issue-pr-relations/scripts/relation_state.py",
+      "import": null,
+      "access": "read",
+      "authority": "finite stable entities and missing or invalidated relation observations only",
+      "callers": ["maintaining-issue-pr-relations"],
+      "disposition": "internal-helper"
+    },
+    {
+      "semantic_id": "issue-body-write",
+      "github_aliases": ["issue-body-write"],
+      "surface": "github",
+      "owner": "internal:issue-pr-relation-state",
+      "implementation": "skills/maintaining-issue-pr-relations/scripts/relation_state.py",
+      "import": null,
+      "access": "write",
+      "authority": "one plan-bound complete writer-owned Issue body with an unchanged authorized-span preimage",
+      "callers": ["maintaining-issue-pr-relations"],
+      "disposition": "internal-helper"
+    },
+    {
+      "semantic_id": "issue-pr-development-write",
+      "github_aliases": ["issue-pr-development-write"],
+      "surface": "github",
+      "owner": "internal:issue-pr-relation-state",
+      "implementation": "skills/maintaining-issue-pr-relations/scripts/relation_state.py",
+      "import": null,
+      "access": "write",
+      "authority": "explicit plan-bound manual Development additions or removals preserving all other relations and Issue state",
+      "callers": ["maintaining-issue-pr-relations"],
+      "disposition": "internal-helper"
+    },
+    {
+      "semantic_id": "pr-relation-ledger-write",
+      "github_aliases": ["pr-relation-ledger-write"],
+      "surface": "github",
+      "owner": "publishing-reviewable-prs",
+      "implementation": "skills/publishing-reviewable-prs/scripts/publish_relation_ledger.py",
+      "import": null,
+      "access": "write",
+      "authority": "one stable existing PR and exact authorized ledger span preserving title state and all other body bytes",
+      "callers": ["publishing-reviewable-prs"],
       "disposition": "public-skill"
     },
     {

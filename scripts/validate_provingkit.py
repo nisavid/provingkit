@@ -20,6 +20,11 @@ try:
 except ModuleNotFoundError:
     idna = None
 
+try:
+    import yaml
+except ModuleNotFoundError:
+    yaml = None
+
 
 DEFINITION_RELATIVE = Path("release/provingkit/definition-v1.json")
 PROVENANCE_RELATIVE = Path("release/provingkit/cutover-provenance-v1.json")
@@ -60,6 +65,11 @@ LEGACY_IDENTITY_TOKENS = tuple(
 )
 IDENTITY_SCAN_MAX_DECODE_PASSES = 8
 JSON_ASCII_ESCAPE_PATTERN = re.compile(rb"\\u00([0-7][0-9A-Fa-f])")
+YAML_FRONTMATTER_PATTERN = re.compile(
+    rb"\A---\r?\n(?P<yaml>.*?)\r?\n---(?:\r?\n|\Z)",
+    re.DOTALL,
+)
+YAML_BINARY_TAG = "tag:yaml.org,2002:binary"
 SPECIAL_URL_IGNORED_CONTROL_PATTERN = rb"(?:[\t\r\n]|\\(?:[tnr]|u000[9AaDd]))*"
 SPECIAL_URL_START_PATTERN = re.compile(
     rb"(?<![A-Za-z0-9+._-])"
@@ -721,6 +731,41 @@ def _json_string_values(content: bytes) -> list[bytes]:
     return values
 
 
+def _yaml_string_values(relative_path: Path, content: bytes) -> list[bytes]:
+    if yaml is None:
+        raise ValidationError(
+            "PyYAML is required for YAML identity validation: "
+            + relative_path.as_posix()
+        )
+    try:
+        nodes = list(yaml.compose_all(content, Loader=yaml.SafeLoader))
+        values: list[bytes] = []
+        pending_nodes = [node for node in nodes if node is not None]
+        seen_nodes: set[int] = set()
+        while pending_nodes:
+            node = pending_nodes.pop()
+            node_identity = id(node)
+            if node_identity in seen_nodes:
+                continue
+            seen_nodes.add(node_identity)
+            if isinstance(node, yaml.ScalarNode):
+                values.append(node.value.encode("utf-8"))
+                if node.tag == YAML_BINARY_TAG:
+                    values.append(base64.decodebytes(node.value.encode("ascii")))
+            elif isinstance(node, yaml.SequenceNode):
+                pending_nodes.extend(node.value)
+            elif isinstance(node, yaml.MappingNode):
+                for key_node, value_node in node.value:
+                    pending_nodes.extend((key_node, value_node))
+            else:
+                raise ValueError("unknown YAML node")
+    except (UnicodeError, yaml.YAMLError, RecursionError, ValueError) as error:
+        raise ValidationError(
+            "YAML identity source is unreadable: " + relative_path.as_posix()
+        ) from error
+    return values
+
+
 def _canonical_github_url_paths(content: bytes) -> list[bytes]:
     undecoded_sources = [content, *_json_string_values(content)]
     sources: list[bytes] = []
@@ -773,6 +818,17 @@ def _normalize_identity_scan_content(content: bytes) -> bytes:
     if _decode_identity_scan_content_once(normalized) != normalized:
         raise ValidationError("repository identity encoding depth exceeds limit")
     return (normalized + b"\n" + b"\n".join(canonical_paths)).lower()
+
+
+def _normalize_identity_scan_file(relative_path: Path, content: bytes) -> bytes:
+    sources = [content]
+    if relative_path.suffix.lower() in {".yaml", ".yml"}:
+        sources.extend(_yaml_string_values(relative_path, content))
+    elif frontmatter := YAML_FRONTMATTER_PATTERN.match(content):
+        sources.extend(
+            _yaml_string_values(relative_path, frontmatter.group("yaml"))
+        )
+    return b"\n".join(_normalize_identity_scan_content(source) for source in sources)
 
 
 def _sha256_uri(path: Path, label: str) -> str:
@@ -1562,7 +1618,7 @@ def _validate_historical_identities(repository: Path) -> None:
         or allowlist["schema_version"] != 1
         or allowlist.get("matching") != "exact-relative-path-and-whole-file-sha256"
         or not isinstance(allowlist.get("entries"), list)
-        or len(allowlist["entries"]) != 30
+        or len(allowlist["entries"]) != 31
     ):
         raise ValidationError("historical identity allowlist drift")
 
@@ -1615,8 +1671,9 @@ def _validate_historical_identities(repository: Path) -> None:
             content = path.read_bytes()
         except OSError as error:
             raise ValidationError("repository identity scan failed") from error
-        identity_content = _normalize_identity_scan_content(
-            _identity_scan_content(relative_path, content)
+        identity_content = _normalize_identity_scan_file(
+            relative_path,
+            _identity_scan_content(relative_path, content),
         )
         if any(token in identity_content for token in LEGACY_IDENTITY_TOKENS):
             observed[relative_path.as_posix()] = content

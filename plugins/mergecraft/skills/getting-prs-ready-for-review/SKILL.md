@@ -12,6 +12,14 @@ When invoked within PR closeout, read
 [caller continuation](../getting-prs-merged/references/caller-continuation.md)
 and return readiness to that caller so it can continue from live state.
 
+For creation with Issue contributions or a material contribution/completion
+scope change, use
+[Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+before authoring. Carry its ledger intent into the writer/publisher handoff,
+then resume pending reconciliation with the assigned PR identity and verified
+publication result. Reuse the caller's stable task ID, observations, and plan;
+unchanged ready-only work does not reacquire relations or repository settings.
+
 1. Resolve the exact repository, branch, pushed base/head, exact head repository,
    and existing PR.
 2. Stop on unresolved valid blockers, operator decisions, or overlapping source
@@ -49,3 +57,11 @@ A mutation timeout requires an exact reread and never a blind retry.
 Finish with exact repository/base/head identities, stored text digests,
 receipt id/provenance/sequence and audit status, draft/ready state, and any
 remaining operator-owned gate.
+
+Return the retained task relation context, or explicit absence, with every
+terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
+plan identity, per-pair results, pending handoffs or verified receipts, original
+setting observation metadata, read counts, limitations, and unresolved gates.
+Preserve that context for the caller to resume pending work without rediscovery
+or renewing observation timestamps. Keep relation-publication receipts distinct
+from canonical publication evidence.

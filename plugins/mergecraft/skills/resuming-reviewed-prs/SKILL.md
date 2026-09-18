@@ -16,6 +16,14 @@ For an actionable request, read
 before selecting the next owner. The terminal handoff ends this invocation;
 the caller continues the authorized task without another user instruction.
 
+Carry the stable task ID, Issue–PR relation plan, setting observations, pending
+publication handoffs, and verified results into the selected owner. A resume
+does not expire the task's selected observations or replay completed relation
+work. Status-only recovery performs no relation reconciliation or setting
+acquisition; the next actionable owner applies
+[Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)'s
+creation, material-change, repair, or merge-consequence gate.
+
 1. Resolve the exact repository and PR from the supplied URL, number, branch,
    or checkout. Stop when inputs identify different targets.
 2. Record local checkout, current branch and SHA, dirty state, unpublished work,
@@ -52,6 +60,9 @@ the caller continues the authorized task without another user instruction.
    - an explicit merge, ship, or merge-closeout outcome, even when readiness or
      feedback work is also pending:
      [Get PRs Merged](../getting-prs-merged/SKILL.md);
+   - otherwise, explicit Issue–PR association repair:
+     [Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md),
+     carrying the finite pair scope and separate body/native mutation authority;
    - otherwise, live feedback or requested changes:
      [Address PR Review Feedback](../addressing-pr-review-feedback/SKILL.md);
    - otherwise, a draft or readiness-only outcome:
