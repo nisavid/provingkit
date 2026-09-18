@@ -193,7 +193,8 @@
           "review-bound-publication-receipt",
           "authoritative-audit",
           "pre-updater-no-op-classification-without-transition-receipt",
-          "separate-relation-publication-receipt"
+          "separate-relation-publication-receipt",
+          "retained-task-relation-context-or-explicit-absence"
         ],
         "forbidden_reverse_calls": ["graphite", "resuming-reviewed-prs", "getting-prs-ready-for-review", "getting-prs-merged", "stacking-pr-fixups"],
         "loop_owner": null,
@@ -236,7 +237,7 @@
           "transport-authority",
           "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": ["verified-stack-transport", "publication-handoff"],
+        "outputs": ["verified-stack-transport", "publication-handoff", "retained-task-relation-context-or-explicit-absence"],
         "forbidden_reverse_calls": ["resuming-reviewed-prs", "getting-prs-ready-for-review", "getting-prs-merged", "stacking-pr-fixups"],
         "loop_owner": null,
         "terminal_statuses": ["verified", "blocked", "ambiguous"]
@@ -416,7 +417,7 @@
           "readiness-authority",
           "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": ["verified-readiness-outcome"],
+        "outputs": ["verified-readiness-outcome", "retained-task-relation-context-or-explicit-absence"],
         "forbidden_reverse_calls": ["resuming-reviewed-prs", "getting-prs-merged"],
         "loop_owner": null,
         "terminal_statuses": ["ready", "blocked", "ambiguous"]
@@ -461,7 +462,7 @@
           "merge-method-authority",
           "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": ["verified-merge-receipt", "feedback-handoff", "cleanup-handoff", "deployment-handoff"],
+        "outputs": ["verified-merge-receipt", "feedback-handoff", "cleanup-handoff", "deployment-handoff", "retained-task-relation-context-or-explicit-absence"],
         "forbidden_reverse_calls": ["resuming-reviewed-prs"],
         "loop_owner": null,
         "terminal_handoffs": [
@@ -514,7 +515,7 @@
         "modes": ["prepare-fixup", "publish-stack"],
         "authority": "task-owned fixup paths and intended stack only",
         "inputs": ["bound-stack", "accepted-fix-scope", "publication-authority", "retained-task-relation-context-or-explicit-absence"],
-        "outputs": ["verified-fixup-stack", "publication-receipts"],
+        "outputs": ["verified-fixup-stack", "publication-receipts", "retained-task-relation-context-or-explicit-absence"],
         "forbidden_reverse_calls": [],
         "loop_owner": null,
         "terminal_statuses": ["verified", "blocked", "ambiguous"]

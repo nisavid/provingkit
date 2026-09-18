@@ -126,3 +126,11 @@ Report the final bottom-to-top stack, each branch and PR URL, base/head SHAs,
 validation, submission result, receipt id/provenance/sequence and audit status,
 canonical-body verification, and any unresolved Graphite or reviewer-owned
 action.
+
+Return the retained task relation context, or explicit absence, with every
+terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
+plan identity, per-pair results, pending handoffs or verified receipts, original
+setting observation metadata, read counts, limitations, and unresolved gates.
+Preserve that context for the caller to resume pending work without rediscovery
+or renewing observation timestamps. Keep relation-publication receipts distinct
+from canonical publication evidence.

@@ -52,3 +52,11 @@ observations and plan. No-fix branch preparation performs no relation reads.
 
 Top-level comments, review requests, feedback interactions, and merge actuation
 belong to other operation owners and are not performed here.
+
+Return the retained task relation context, or explicit absence, with every
+terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
+plan identity, per-pair results, pending handoffs or verified receipts, original
+setting observation metadata, read counts, limitations, and unresolved gates.
+Preserve that context for the caller to resume pending work without rediscovery
+or renewing observation timestamps. Keep relation-publication receipts distinct
+from canonical publication evidence.

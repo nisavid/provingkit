@@ -48,3 +48,11 @@ A mutation timeout requires an exact reread and never a blind retry.
 Finish with exact repository/base/head identities, stored text digests,
 receipt id/provenance/sequence and audit status, draft/ready state, and any
 remaining operator-owned gate.
+
+Return the retained task relation context, or explicit absence, with every
+terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
+plan identity, per-pair results, pending handoffs or verified receipts, original
+setting observation metadata, read counts, limitations, and unresolved gates.
+Preserve that context for the caller to resume pending work without rediscovery
+or renewing observation timestamps. Keep relation-publication receipts distinct
+from canonical publication evidence.

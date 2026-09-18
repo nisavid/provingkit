@@ -161,3 +161,11 @@ or unresolved ownership. Green checks never replace complete feedback.
 
 Return PR URL/final head, publication audit evidence, merge receipt or blocker,
 cleanup receipt/gate, and any deployment handoff.
+
+Return the retained task relation context, or explicit absence, with every
+terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
+plan identity, per-pair results, pending handoffs or verified receipts, original
+setting observation metadata, read counts, limitations, and unresolved gates.
+Preserve that context for the caller to resume pending work without rediscovery
+or renewing observation timestamps. Keep relation-publication receipts distinct
+from canonical publication evidence.

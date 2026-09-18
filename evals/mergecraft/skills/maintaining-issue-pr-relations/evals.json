@@ -4,8 +4,8 @@
     {
       "id": 0,
       "name": "absent-pr-creation",
-      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Qualify the Linux work as a partial contribution using the supplied acceptance contract. Pass the initial Issue ledger intent through the existing PR writer and normal creation owner before invoking the relation helper. Bind the assigned PR identity after creation before helper observation, planning, Issue-body mutation, or native mutation. Do not fabricate a PR ID or claim that one backend completes the Issue.",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
+      "expected_output": "Qualify the Linux work as a partial contribution using the supplied acceptance contract. Pass the initial Issue ledger intent through the existing PR writer and normal creation owner before invoking the relation helper. Bind the assigned PR identity after creation before helper observation, planning, Issue-body mutation, or native mutation. Do not fabricate a PR ID or claim that one backend completes the Issue. Return the initial qualified relation context and pending identity/publication work to the caller without inventing helper results.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/absent-pr-creation.md"
       ],
@@ -13,7 +13,8 @@
         "Qualify the Linux work as a partial contribution using the supplied acceptance contract.",
         "Pass the initial Issue ledger intent through the existing PR writer and normal creation owner before invoking the relation helper.",
         "Bind the assigned PR identity after creation before helper observation, planning, Issue-body mutation, or native mutation.",
-        "Do not fabricate a PR ID or claim that one backend completes the Issue."
+        "Do not fabricate a PR ID or claim that one backend completes the Issue.",
+        "Return the initial qualified relation context and pending identity/publication work to the caller without inventing helper results."
       ],
       "caller": "getting-prs-ready-for-review"
     },
@@ -96,15 +97,16 @@
     {
       "id": 6,
       "name": "unchanged-readiness",
-      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Reuse the verified unchanged relation result. Perform zero additional relation-discovery or repository-setting reads solely for the ready transition. Use the existing guarded readiness and publication-audit owners.",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
+      "expected_output": "Reuse the verified unchanged relation result. Perform zero additional relation-discovery or repository-setting reads solely for the ready transition. Use the existing guarded readiness and publication-audit owners. Return the retained verified relation result, original setting observation metadata, and explicit absence of pending relation work without renewing timestamps.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/unchanged-readiness.md"
       ],
       "expectations": [
         "Reuse the verified unchanged relation result.",
         "Perform zero additional relation-discovery or repository-setting reads solely for the ready transition.",
-        "Use the existing guarded readiness and publication-audit owners."
+        "Use the existing guarded readiness and publication-audit owners.",
+        "Return the retained verified relation result, original setting observation metadata, and explicit absence of pending relation work without renewing timestamps."
       ],
       "caller": "getting-prs-ready-for-review"
     },
@@ -126,8 +128,8 @@
     {
       "id": 8,
       "name": "historical-repair",
-      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Preserve the evidenced earlier-contract contribution and annotate its historical role without claiming current completion. Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation. Keep the caller responsible for publication and resume reconciliation from its verified result. Do not close or reopen the Issue.",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
+      "expected_output": "Preserve the evidenced earlier-contract contribution and annotate its historical role without claiming current completion. Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation. Keep the caller responsible for publication and resume reconciliation from its verified result. Do not close or reopen the Issue. Require the publication hand-back to retain the bound relation context and its pending reconciliation alongside the distinct ledger-publication receipt.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/historical-repair.md"
       ],
@@ -135,7 +137,8 @@
         "Preserve the evidenced earlier-contract contribution and annotate its historical role without claiming current completion.",
         "Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation.",
         "Keep the caller responsible for publication and resume reconciliation from its verified result.",
-        "Do not close or reopen the Issue."
+        "Do not close or reopen the Issue.",
+        "Require the publication hand-back to retain the bound relation context and its pending reconciliation alongside the distinct ledger-publication receipt."
       ],
       "caller": "maintaining-issue-pr-relations"
     },
@@ -173,30 +176,32 @@
     {
       "id": 11,
       "name": "ancestry-only-restack",
-      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Keep normal Graphite ancestry/navigation work with its existing owners. Skip relation rediscovery and repository-setting refresh for unchanged intent. Preserve the existing immediate canonical-repair ordering after draft transport.",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
+      "expected_output": "Keep normal Graphite ancestry/navigation work with its existing owners. Skip relation rediscovery and repository-setting refresh for unchanged intent. Preserve the existing immediate canonical-repair ordering after draft transport. Return the unchanged relation context and original observation metadata with the stack/publication result without renewing timestamps.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/ancestry-only-restack.md"
       ],
       "expectations": [
         "Keep normal Graphite ancestry/navigation work with its existing owners.",
         "Skip relation rediscovery and repository-setting refresh for unchanged intent.",
-        "Preserve the existing immediate canonical-repair ordering after draft transport."
+        "Preserve the existing immediate canonical-repair ordering after draft transport.",
+        "Return the unchanged relation context and original observation metadata with the stack/publication result without renewing timestamps."
       ],
       "caller": "graphite"
     },
     {
       "id": 12,
       "name": "fixup-own-contribution",
-      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Qualify the fixup\u2019s direct partial contribution to #20 independently from its base PR. Do not copy unrelated base-PR associations. Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists.",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
+      "expected_output": "Qualify the fixup\u2019s direct partial contribution to #20 independently from its base PR. Do not copy unrelated base-PR associations. Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists. Return the fixup\u2019s qualified relation context and pending creation/identity work rather than drop it at the lifecycle hand-back.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/fixup-own-contribution.md"
       ],
       "expectations": [
         "Qualify the fixup\u2019s direct partial contribution to #20 independently from its base PR.",
         "Do not copy unrelated base-PR associations.",
-        "Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists."
+        "Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists.",
+        "Return the fixup\u2019s qualified relation context and pending creation/identity work rather than drop it at the lifecycle hand-back."
       ],
       "caller": "stacking-pr-fixups"
     },
@@ -248,8 +253,8 @@
     {
       "id": 16,
       "name": "post-merge-selective-completion",
-      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Carry both candidate Issue completions from the retained relation context to the ongoing caller and repository Issue workflow after the verified merge. Use the existing task authority to check current Issue contracts and state, explicitly close only Issue #20 if its supplied completed gates remain current, and independently verify its state. Keep Issue #21 open because deployment and operator acceptance remain unevidenced; do not treat the merged PR or native link as completion. Keep Issue closure outside the relation helper, reuse unchanged relation and setting observations, and do not assume auto-close or change the setting.",
+      "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
+      "expected_output": "Carry both candidate Issue completions from the retained relation context to the ongoing caller and repository Issue workflow after the verified merge. Use the existing task authority to check current Issue contracts and state, explicitly close only Issue #20 if its supplied completed gates remain current, and independently verify its state. Keep Issue #21 open because deployment and operator acceptance remain unevidenced; do not treat the merged PR or native link as completion. Keep Issue closure outside the relation helper, reuse unchanged relation and setting observations, and do not assume auto-close or change the setting. Return retained per-pair relation results, original setting metadata, and remaining completion gates with the merge outcome without renewing timestamps.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/post-merge-selective-completion.md"
       ],
@@ -257,7 +262,8 @@
         "Carry both candidate Issue completions from the retained relation context to the ongoing caller and repository Issue workflow after the verified merge.",
         "Use the existing task authority to check current Issue contracts and state, explicitly close only Issue #20 if its supplied completed gates remain current, and independently verify its state.",
         "Keep Issue #21 open because deployment and operator acceptance remain unevidenced; do not treat the merged PR or native link as completion.",
-        "Keep Issue closure outside the relation helper, reuse unchanged relation and setting observations, and do not assume auto-close or change the setting."
+        "Keep Issue closure outside the relation helper, reuse unchanged relation and setting observations, and do not assume auto-close or change the setting.",
+        "Return retained per-pair relation results, original setting metadata, and remaining completion gates with the merge outcome without renewing timestamps."
       ],
       "caller": "getting-prs-merged"
     }

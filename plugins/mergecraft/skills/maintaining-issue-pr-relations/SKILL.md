@@ -21,11 +21,14 @@ Apply the cheap gate before acquisition. Use supplied task evidence, existing
 ledgers, and native observations first. Search only the narrowly relevant
 scope when those inputs leave a material contribution question. Ordinary PR
 handling does not scan arbitrary repositories. If no activation condition
-applies, return without relation reads.
+applies, return without relation reads. Do not reacquire evidence for pairs
+already excluded by the supplied task evidence.
 
 Retain one stable task identity, observations, plans, and completed results
 through readiness, merge, and resume. Re-enter only for pending work or changed
 evidence. A new lifecycle invocation is not a new task or permission grant.
+Retain unknown continuation state as unknown; unchanged intent does not prove
+that no publication or reconciliation work remains.
 
 This skill owns relation qualification, planning, and reconciliation. The
 [Issue Markdown writer](../writing-github-issue-and-pr-markdown/SKILL.md) owns
@@ -61,18 +64,24 @@ invoking the relation helper or the existing-pair steps below.
    Unavailable observations use enabled-mode limits. Follow the contract's
    task reuse, persistent expiry, and explicit invalidation rules. Let the helper
    select cached state; do not independently expire a selected task observation.
+   Its `observe` result supplies any needed `setting_requests`; `plan` consumes
+   the completed observation without acquiring state.
 3. Plan the complete bilateral ledgers and permitted native effects. Keep every
    verified contribution in both bodies, including historical roles, with
    stable links and useful role annotations. Preserve clear existing entries
    and unrelated text. Do not copy titles or status. Resolve native capacity
-   explicitly without dropping body-ledger pairs.
+   from the observed manual-link set and proposed effects, preserving unrelated
+   links. Report the actual omitted native pairs without dropping ledger entries.
 4. Obtain writer-owned complete candidate bodies for exact authorized spans.
    An absent or ambiguous ledger boundary requires an authoring handoff, not
    guessed text surgery. For an existing PR, return its bound publication
    handoff through `pr-relation-ledger-write` for a ledger-only edit. This mode
    preserves title, state, and every byte outside that span and establishes no
-   readiness or navigation claim, including on historical PRs. After publication,
-   resume from the result and reread its live effect. A new PR's initial ledger
+   readiness or navigation claim, including on historical PRs. Require the
+   publisher's hand-back to retain the bound plan, per-pair state, and pending
+   reconciliation alongside its distinct ledger-publication receipt, carrying
+   the observation metadata and remaining context in step 6 unchanged. Resume
+   from that hand-back and reread its live effect. A new PR's initial ledger
    travels through normal creation. After normal creation or a pending canonical
    update, observe the published PR and build a fresh plan with the writer's
    unchanged-body ledger decision. Bind its assigned identity before planning

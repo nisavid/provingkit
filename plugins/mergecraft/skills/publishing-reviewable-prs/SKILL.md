@@ -248,3 +248,11 @@ Report URL, base/head OIDs, title/body digests, state, receipt id/provenance/
 sequence, audit or result status, checks, and remaining action. Comments,
 feedback, CI, merge, and Git/ref publication retain distinct owners; the bundled
 comment helper is internal.
+
+Return the retained task relation context, or explicit absence, with every
+terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
+plan identity, per-pair results, pending handoffs or verified receipts, original
+setting observation metadata, read counts, limitations, and unresolved gates.
+Preserve that context for the caller to resume pending work without rediscovery
+or renewing observation timestamps. Keep relation-publication receipts distinct
+from canonical publication evidence.
