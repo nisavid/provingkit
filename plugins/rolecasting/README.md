@@ -21,8 +21,11 @@ preserve completed-but-blocked or unverified results as unusable. Their current
 maximum assurance is controller-observed for target, topology, and result, and
 self-reported for model and effective authority. Claude Code and Claude Desktop
 follow, then Cursor and Cursor Agent together or in close succession.
+Ordinary consumers use a frozen same-leader invocation plan and a separate live
+model-selection record. These bind requested execution and observed capability;
+they do not authenticate actual model execution or authority enforcement.
 Operational support is not evidence issuance:
-publication-grade producer and issuer qualification remains pending for every
+witnessed-publication producer and issuer qualification remains pending for every
 exact surface, version, executor, transport, and assurance source.
 
 It does not decide repository ownership, review disposition, publication, or
@@ -75,17 +78,19 @@ harness has not supplied. Its `rolecasting-bootstrap-adapter-v2` issuer contract
 is independent of the dispatch-evidence bundle contract. Private tests may
 construct test-owned bootstrap trust to exercise historical validation, but no
 Rolecasting historical trust has been installed and those results cannot
-become canonical publication evidence. The skill-mediated native Codex module
-sequences pre-spawn freeze and post-result same-leader recording, but it is not
-a harness actuator and emits neither portable evidence nor product
-attestation. New publication stays blocked until a real native harness
-integration authenticates execution and its exact owning bytes are bound into
-a newly registered producer/issuer identity.
-Canonical publication specifically requires a product-attested ChatGPT Codex
+become authenticated evidence for witnessed publication. The skill-mediated
+native Codex module sequences pre-spawn freeze and post-result same-leader
+recording, but it is not a harness actuator and emits neither portable evidence
+nor product attestation. Explicitly witnessed publication stays blocked until a
+real native harness integration authenticates execution and its exact owning
+bytes are bound into a newly registered producer/issuer identity.
+That witnessed route requires a product-attested ChatGPT Codex
 child. Ordinary consumers require controller-observed assurance for every fact
 they rely on. Self-reported dimensions are diagnostic and non-gating; the
-native route is usable only when model and effective authority are not gate
-inputs.
+native route is usable only when actual model execution and effective authority
+are not gate inputs. Live selection capability and granted or requested
+authority remain ordinary plan inputs. The publication owner separately decides
+whether ordinary publication is authorized; these records do not grant it.
 The validator preserves both clean and nonclean execution evidence: `usable` is
 a strict Boolean carried into every execution projection, and `false` remains a
 valid result rather than being discarded.

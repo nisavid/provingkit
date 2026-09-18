@@ -38,7 +38,7 @@ Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) befo
 For native ChatGPT Codex or Codex CLI/TUI children, follow
 [native-codex-subagents.md](references/native-codex-subagents.md).
 
-For frozen multi-worker plans, issue [invocation-topology-receipt.md](references/invocation-topology-receipt.md); the harness adapter serializes it as `adapter:rolecasting-invocation-topology-receipt`. Model selection never supplies dispatch authority. Use [dispatch-evidence.md](references/dispatch-evidence.md) for witnessed execution and assurance minima.
+Freeze ordinary handoffs as `adapter:rolecasting-invocation-plan` under [invocation-topology-receipt.md](references/invocation-topology-receipt.md). Explicitly witnessed consumers additionally require `adapter:rolecasting-invocation-topology-receipt`. Model selection never supplies dispatch authority. Use [dispatch-evidence.md](references/dispatch-evidence.md) for witnessed execution and assurance minima.
 
 Ask workers to return one status:
 

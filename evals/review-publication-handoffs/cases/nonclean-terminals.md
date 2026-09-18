@@ -1,0 +1,3 @@
+Apply the supplied canonical workflow instructions. Report the next permitted operation and any blocker; do not dispatch workers or mutate a forge. Publication authority and ordinary tool access exist unless the situation below says otherwise.
+
+The writer's independent review gate applies to this cross-cutting PR, publication mode is not-required, and all body/navigation validators passed. Evaluate each actual loop terminal separately: clean / degraded; incomplete / non-clean; blocked; failed_verification; needs operator decision. Can any be consumed as bare clean? Does an individual worker DONE or a successful test run change that decision?

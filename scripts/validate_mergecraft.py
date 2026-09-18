@@ -616,7 +616,7 @@ ATLAS_EXTENSION_CONTRACT = {
 }
 EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
-    "writer": "0e6ee2c1377b8b571bda4773a124944361424bd2e251824d0f92ac30405cb2b9",
+    "writer": "daed5dac392e052657198c1595630b17096756c39ee1b8b2f9792b5df13adaaa",
     "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
 }
@@ -2715,7 +2715,7 @@ def validate_atlas_split(repo_root: Path, root: Path) -> None:
         "writer content-only terminal boundary drift",
     )
     require(
-        "bare `clean` receipt" in writer,
+        "bare `clean` hand-back status" in normalized_writer,
         "writer independent review gate drift",
     )
     for requirement in (
@@ -4670,7 +4670,7 @@ def validate_runtime_contracts(root: Path) -> None:
     require(
         "tricritical:loop" in writer
         and "exact candidate title/body bytes" in normalized_writer
-        and "bare `clean` receipt" in normalized_writer
+        and "bare `clean` hand-back status" in normalized_writer
         and "no forge or source authority" in normalized_writer,
         "writer independent review gate drift",
     )

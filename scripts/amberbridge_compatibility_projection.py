@@ -19,8 +19,8 @@ from evidence_transport import (  # noqa: E402
 )
 
 
-COMPATIBILITY_CONTRACT = "amberbridge-public-private-compatibility-v1"
-COMPATIBILITY_SCHEMA_VERSION = 1
+COMPATIBILITY_CONTRACT = "amberbridge-public-private-compatibility-v2"
+COMPATIBILITY_SCHEMA_VERSION = 2
 MAX_SOURCE_BYTES = 2 * 1024 * 1024
 
 ROLECASTING_TOPOLOGY = Path("plugins/rolecasting/topology.json")
@@ -46,6 +46,7 @@ TRICRITICAL_AUTHORITY_FIELDS = (
     "can_cause_mutation",
     "requires_original_mutation_authority",
     "requires",
+    "conditional_requires",
 )
 REVIEW_ATLAS_EXTENSION_FIELDS = (
     "load_condition",
@@ -75,7 +76,7 @@ ROLECASTING_ASSURANCE_STRENGTH_ORDER = (
 SOURCE_SELECTORS = (
     {
         "path": ROLECASTING_TOPOLOGY.as_posix(),
-        "json_pointers": ("/receipt_contract",),
+        "json_pointers": ("/operational_contract", "/receipt_contract"),
     },
     {
         "path": VERSIONKEEPING_TOPOLOGY.as_posix(),
@@ -185,6 +186,10 @@ def compatibility_document(root: Path) -> dict[str, Any]:
         "schema_version": COMPATIBILITY_SCHEMA_VERSION,
         "contract": COMPATIBILITY_CONTRACT,
         "rolecasting": {
+            "operational_contract": _object(
+                _field(rolecasting, "operational_contract", "Rolecasting topology"),
+                "Rolecasting operational contract",
+            ),
             "receipt_contract": _object(
                 _field(rolecasting, "receipt_contract", "Rolecasting topology"),
                 "Rolecasting receipt contract",

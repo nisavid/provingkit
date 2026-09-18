@@ -3097,6 +3097,84 @@ class UpdateReviewablePrTests(ReviewablePrFixture):
                 )
 
 
+class PublicationReviewModeIntegrationTests(unittest.TestCase):
+    """Exercise publication modes through real CLIs and a fixture GitHub service."""
+
+    def setUp(self) -> None:
+        self.lifecycle = importlib.import_module("tests.test_mergecraft_control_plane")
+        self.fixture = self.lifecycle.MergecraftControlPlaneTests()
+        self.addCleanup(self.fixture.doCleanups)
+        self.fixture.setUp()
+        self.fixture.state()
+
+    def test_ordinary_create_and_ready_need_no_task_witness(self) -> None:
+        created, _, manifest, template, validator = self.fixture.create_command(
+            title="feat: widget"
+        )
+        self.assertEqual(validator.returncode, 0, validator.stderr)
+        self.assertEqual(created.returncode, 0, created.stderr)
+
+        ready = self.fixture.ready_created_pr(manifest, template)
+
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(len(state["prs"]), 1)
+        self.assertFalse(state["prs"][0]["isDraft"])
+        self.assertEqual(state["prs"][0]["body"], self.lifecycle.BODY)
+        receipts = [
+            json.loads(raw)
+            for raw in self.fixture.publication_receipt_bytes().values()
+        ]
+        self.assertEqual(
+            {receipt["operation"] for receipt in receipts}, {"create", "mark-ready"}
+        )
+        for receipt in receipts:
+            self.assertEqual(receipt["review"]["mode"], "not-required")
+            self.assertIsNone(receipt["review"]["observation"])
+
+    def test_required_create_without_task_witness_stops_before_any_mutation(self) -> None:
+        template, manifest = self.lifecycle.CONTROL.write_new_draft_fixture(
+            self.fixture.root,
+            title="feat: widget",
+            git_repository=self.fixture.git_repository,
+            base_oid=self.lifecycle.BASE_OID,
+            head_oid=self.lifecycle.HEAD_OID,
+        )
+        arguments = self.lifecycle.CONTROL.build_new_draft_argv(
+            publisher=self.lifecycle.CREATOR,
+            repository="acme/app",
+            base="main",
+            base_oid=self.lifecycle.BASE_OID,
+            head="acme:widget",
+            head_oid=self.lifecycle.HEAD_OID,
+            head_owner="acme",
+            head_repository="acme/app-fork",
+            title="feat: widget",
+            body_template=template,
+            review_input=manifest,
+            review_mode="required",
+            selected_specialists=[],
+        )
+        arguments.extend(["--review-bundle", str(self.fixture.root / "review-bundle")])
+
+        result = self.lifecycle.CONTROL.run_command(
+            arguments,
+            home=self.fixture.home,
+            environment={"MERGECRAFT_GITHUB_STATE": str(self.fixture.github)},
+            allowed_scripts=(self.lifecycle.CREATOR,),
+            cwd=self.fixture.git_repository,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Task Witness native validation is unavailable", result.stderr)
+        state = json.loads(self.fixture.github.read_text())
+        self.assertEqual(state["prs"], [])
+        self.assertFalse(
+            any(set(call) & {"create", "edit", "ready"} for call in state["calls"])
+        )
+        self.assertEqual(self.fixture.publication_receipt_bytes(), {})
+
+
 class TokenReadinessBotTailIntegrationTests(unittest.TestCase):
     def setUp(self) -> None:
         fixtures = importlib.import_module("tests.test_mergecraft_control_plane")

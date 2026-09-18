@@ -32,6 +32,12 @@ and the consumer's minimum for all five assurance dimensions. Requested
 authority is intent; it is not evidence that the product enforced effective
 authority.
 
+For ordinary work, this is `adapter:rolecasting-invocation-plan` with its
+separate `adapter:model-selection-record`. The live record establishes available
+selection and the requested model, not the model that actually executed.
+Granted authority and requested restrictions remain binding without claiming
+that the product attested their enforcement.
+
 Call `freeze_native_dispatch` before invoking the native subagent tool. The
 freeze binds the plan and request digests, dispatch ID, exact Codex surface,
 version, executor, context, read-only authority intent, and assurance minima.
@@ -95,10 +101,15 @@ non-completed result. Its output is an in-process same-leader record with
 
 Same-leader live controller observation is useful for ordinary operational
 delegation, but it is not portable persisted attestation. The recorder is not
-registered as a Task Witness producer or issuer. It cannot satisfy canonical
-publication, cannot create product-attested facts, cannot promote self-reported
-model or authority facts, and cannot authenticate a result after the live
-controller boundary is lost.
+registered as a Task Witness producer or issuer. It cannot satisfy explicitly
+witnessed publication, cannot create product-attested facts, cannot promote
+self-reported model or authority facts, and cannot authenticate a result after
+the live controller boundary is lost.
+
+Ordinary review consumers may use the frozen plan, live selection record, and
+verified native result within that same leader's observations. Publication
+authority stays with the consuming workflow. A stronger consumer minimum still
+blocks this route before spawn.
 
 Keep the Rolecasting provider's producer and issuer inventories empty until a
 qualified product integration authenticates the exact execution and binds its

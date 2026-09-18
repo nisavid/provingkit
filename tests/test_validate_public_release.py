@@ -45,8 +45,8 @@ def install_prepared_release_driver(repository: Path) -> tuple[Path, Path]:
     return entrypoint, supervisor
 
 
-def load_validator_module():
-    specification = importlib.util.spec_from_file_location("public_release", VALIDATOR)
+def load_validator_module(validator: Path = VALIDATOR):
+    specification = importlib.util.spec_from_file_location("public_release", validator)
     module = importlib.util.module_from_spec(specification)
     assert specification.loader is not None
     specification.loader.exec_module(module)
@@ -1004,17 +1004,22 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         name: str = "fixture-runtime",
         *,
         production_eligible: bool = False,
+        repository: Path | None = None,
     ) -> Path:
-        root = Path(
+        root = repository or Path(
             tempfile.mkdtemp(
                 prefix="public-release-registration-",
                 dir=self.temporary_directory.name,
             )
         )
         (root / "plugins" / name).mkdir(parents=True)
+        (root / "plugins" / name / "plugin.json").write_text(
+            json.dumps({"name": name, "version": "0.0.0"}) + "\n",
+            encoding="utf-8",
+        )
         (root / "release" / name).mkdir(parents=True)
-        (root / "scripts").mkdir()
-        (root / "tests").mkdir()
+        (root / "scripts").mkdir(exist_ok=True)
+        (root / "tests").mkdir(exist_ok=True)
         (root / "scripts" / f"validate_{name.replace('-', '_')}.py").write_text(
             "#!/usr/bin/env python3\n", encoding="utf-8"
         )
@@ -1030,16 +1035,15 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         (root / "release" / name / "public-release-registration.json").write_text(
             json.dumps(registration, sort_keys=True) + "\n", encoding="utf-8"
         )
-        (root / "release" / "public-release-runtime-packages.json").write_text(
-            json.dumps(
-                {
-                    "runtime_packages": [name],
-                    "schema_version": 1,
-                    "skill_plugins": [],
-                },
-                sort_keys=True,
-            )
-            + "\n",
+        catalog_path = root / "release/public-release-runtime-packages.json"
+        catalog = (
+            json.loads(catalog_path.read_text(encoding="utf-8"))
+            if catalog_path.exists()
+            else {"runtime_packages": [], "schema_version": 1, "skill_plugins": []}
+        )
+        catalog["runtime_packages"] = sorted([*catalog["runtime_packages"], name])
+        catalog_path.write_text(
+            json.dumps(catalog, sort_keys=True) + "\n",
             encoding="utf-8",
         )
         return root
@@ -2040,17 +2044,34 @@ class ValidatePublicReleaseTests(unittest.TestCase):
     def test_source_stage_only_runtime_change_updates_git_candidate_not_production_identity(
         self,
     ) -> None:
-        source_stage_only = tuple(
-            name
-            for name, registration in self.module.PUBLIC_RELEASE_REGISTRATIONS.items()
-            if not registration["production_eligible"]
+        self.public_release_registration_fixture(repository=self.repository)
+        module = load_validator_module(
+            self.repository / "scripts/validate_public_release.py"
         )
-        self.assertTrue(source_stage_only)
-        package = source_stage_only[0]
-        candidate_before = self.module.git_candidate_identity(self.repository)
-        production_identity_before = self.module.candidate_identities(
+        package = "fixture-runtime"
+        module.validate_public_release_registration_inventory(self.repository)
+        self.assertIn(package, module.SOURCE_STAGE_VALIDATED_PLUGINS)
+        self.assertNotIn(package, module.PRODUCTION_VALIDATED_PLUGINS)
+        subprocess.run(
+            ["git", "add", "--all"],
+            cwd=self.repository,
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            [
+                "git", "-c", "user.name=Release Test",
+                "-c", "user.email=release-test@example.invalid",
+                "commit", "--quiet", "-m", "test: register source-stage runtime",
+            ],
+            cwd=self.repository,
+            check=True,
+            capture_output=True,
+        )
+        candidate_before = module.git_candidate_identity(self.repository)
+        production_identity_before = module.candidate_identities(
             self.repository,
-            self.module.PRODUCTION_VALIDATED_PLUGINS,
+            module.PRODUCTION_VALIDATED_PLUGINS,
         )
         manifest = self.repository / "plugins" / package / "plugin.json"
         manifest.write_bytes(manifest.read_bytes() + b"\n")
@@ -2077,10 +2098,10 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             capture_output=True,
         )
 
-        candidate_after = self.module.git_candidate_identity(self.repository)
-        production_identity_after = self.module.candidate_identities(
+        candidate_after = module.git_candidate_identity(self.repository)
+        production_identity_after = module.candidate_identities(
             self.repository,
-            self.module.PRODUCTION_VALIDATED_PLUGINS,
+            module.PRODUCTION_VALIDATED_PLUGINS,
         )
 
         self.assertNotEqual(candidate_after, candidate_before)
@@ -2451,6 +2472,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         for name in (
             "phase7-v4-compatibility.json",
             "amberbridge-v1-compatibility.json",
+            "amberbridge-v2-compatibility.json",
             "amberbridge-v4-compatibility.json",
             "amberbridge-v4-private-registry.json",
             "amberbridge-v4-private-witness.tar",
@@ -2751,27 +2773,26 @@ class ValidatePublicReleaseTests(unittest.TestCase):
     def test_source_stage_validator_success_cannot_promote_ineligible_runtime_packages(
         self,
     ) -> None:
-        completed = subprocess.CompletedProcess([], 0, "", "")
-        with mock.patch.object(
-            self.module.subprocess,
-            "run",
-            return_value=completed,
-        ):
-            self.module.run_source_stage_validators(self.repository)
+        self.public_release_registration_fixture(repository=self.repository)
+        module = load_validator_module(
+            self.repository / "scripts/validate_public_release.py"
+        )
+        package = "fixture-runtime"
 
-        source_stage_only = {
-            name
-            for name, registration in self.module.PUBLIC_RELEASE_REGISTRATIONS.items()
-            if not registration["production_eligible"]
-        }
-        self.assertTrue(source_stage_only)
-        self.assertTrue(
-            source_stage_only.issubset(self.module.SOURCE_STAGE_VALIDATED_PLUGINS)
+        identities = module.validate_source_stage(self.repository)
+
+        self.assertIn(package, identities["plugins"])
+        self.assertIn(package, module.SOURCE_STAGE_VALIDATED_PLUGINS)
+        self.assertNotIn(package, module.PRODUCTION_VALIDATED_PLUGINS)
+        self.assertNotIn(package, module.MARKETPLACE_PLUGINS)
+        self.assertNotIn(
+            package, module.candidate_identities(self.repository)["plugins"]
         )
-        self.assertTrue(
-            source_stage_only.isdisjoint(self.module.PRODUCTION_VALIDATED_PLUGINS)
+        self.assertFalse(
+            module.load_public_release_registrations(self.repository)[package][
+                "production_eligible"
+            ]
         )
-        self.assertTrue(source_stage_only.isdisjoint(self.module.MARKETPLACE_PLUGINS))
 
     def test_production_contract_omits_source_stage_only_runtime_support(self) -> None:
         production_contract = self.module.release_contract_identity(self.repository)
