@@ -11,7 +11,7 @@ five positives and seven negatives.
 ## Source and procedure consumption
 
 This integration consumes `writing-for-people` and its conditional references
-from published producer revision `aaf328903bbecfc0663b1219b0da721ef2738b7f`.
+from published writer candidate `a63d5e1e449c7dee941aa6e6aabaa96ca4d26adc`.
 I verified that the complete Proseweaving plugin, application corpus, and
 retained observations are byte-identical to accepted finished-draft checkpoint
 `c8fa3f3181a50c6906a4332b74f97103853bb92a`. The original observations retain
@@ -111,9 +111,47 @@ the earlier failed probe remains historical evidence.
 The composed source carries 29 skills and 25 shared routing rows, including the
 relation skill from the current writing producer's base. The twelve retained
 single-target observations do not cover selection from that full catalog or
-the four ordered shared routing expectations for the editor. New observations
-need their own frozen catalog, payloads, supported selection signal, and
-execution authorization; none are added by this source integration.
+the four ordered shared routing expectations for the editor. Those shared rows
+belong to the separate [Phase 2 production-release routing tier](../../README.md#phase-2-observable-routing).
+The ordinary editor batch comprises the six application cases and twelve
+direct Boolean probes. Production routing observations need their own frozen
+catalog, payloads, supported selection signal, and execution authorization.
+
+## Ordinary receipt handoff
+
+Load the published [ordinary behavior-evaluation receipt procedure](https://github.com/nisavid/provingkit/blob/24c2d712a0be6a95958713ec80c7e06a89abdc6c/docs/behavior-eval-receipts.md)
+before reconciling these retained observations or checking their receipts.
+Use processing revision `24c2d712a0be6a95958713ec80c7e06a89abdc6c` as P and
+select the complete committed source as S. Require ready descriptors for
+`proseweaving/editing-finished-drafts` and `proseweaving/writing-for-people`.
+The accepted writer input map is carried unchanged; the editor's per-skill
+corpora already establish ownership of its application cases and direct probes.
+
+Reconcile the editor's 18 application executions and twelve direct probes
+against S, preserving their original artifacts, execution revisions, grades,
+model bases, and discovery limits. Every editor application case received the
+same five-file runtime bundle, with its own fixture; retain the procedure's
+uniform `runtime_inputs` form without a `case_runtime_inputs` table. Compare
+the delivered runtime, prompts, fixtures, trigger inputs, and skill metadata
+before reuse. These observations cannot supply the separate production routing
+tier.
+
+The carried writer receipt evaluates source
+`c5044ed25ffe575b4af1dd93bae39d9c63b63957` using processing revision
+`957550119aca20a31a26f4e5f9a3f09a2d6bd148`. The composed topology, content lock,
+Kit definition, and control-plane matrix change its full freshness inputs.
+The retained writer workflow must reconcile its 36 application executions and
+seven direct probes against the same S and current P, preserving the failed
+`leads-with-what-reader-needs` quality expectation in case 7, repetition 3.
+
+Commit both regenerated receipts at C after reconciliation. Then run the
+procedure's actual B-to-C inventory comparison and committed-receipt check.
+If that comparison selects only the editor, retain an additional explicitly
+scoped writer check to establish the refreshed writer receipt's result.
+Keep B, S, C, P, comparison outputs, receipt identities, and the original
+source-to-observation correspondence with the handoff. Receipt consistency
+and threshold checks retain the evidence limits above and the independent
+readiness requirements.
 
 ## Reuse and invalidation
 
