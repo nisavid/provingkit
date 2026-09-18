@@ -500,10 +500,12 @@ def check(repository, request, receipts):
             )
         ):
             continue
+        receipt_identity = {}
         try:
             require(source_error is None, source_error)
             require(key in receipts, "receipt missing")
             receipt = receipts[key]
+            receipt_identity["receipt_sha256"] = document_digest(receipt)
             validate(receipt)
             require(
                 receipt["snapshot"]["skill"] == spec,
@@ -542,10 +544,9 @@ def check(repository, request, receipts):
             else:
                 result = evaluate(repository, receipt)
             result["evaluated_revision"] = source
-            result["receipt_sha256"] = document_digest(receipt)
         except ReceiptError as error:
             result = {"status": "fail", "reason": str(error)}
-        results.append({"skill": key, **result})
+        results.append({"skill": key, **receipt_identity, **result})
     return {
         "status": (
             "not-required"

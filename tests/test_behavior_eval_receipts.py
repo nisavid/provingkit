@@ -639,6 +639,57 @@ class ReceiptWorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(receipts.ReceiptError, "coverage"):
             receipts.produce(self.repo, snapshot, results_path)
 
+    def test_completed_empty_response_is_recorded_but_absent_response_is_rejected(self):
+        snapshot = receipts.prepare(self.repo, self.candidate, self.spec)
+        results_path = self.results(snapshot)
+        output_path = self.private / "output-1.txt"
+        output = json.loads(output_path.read_text())
+        output["response"] = ""
+        output_path.write_text(json.dumps(output))
+        grade_path = self.private / "grading-1.json"
+        grade = json.loads(grade_path.read_text())
+        grade["executor_output_sha256"] = hashlib.sha256(
+            output_path.read_bytes()
+        ).hexdigest()
+        for expectation in grade["expectations"]:
+            expectation["passed"] = False
+        grade_path.write_text(json.dumps(grade))
+        receipt = receipts.produce(self.repo, snapshot, results_path)
+        result = receipts.check(self.repo, self.request(), {"example/writing": receipt})
+        self.assertEqual(result["status"], "fail")
+        self.assertEqual(result["skills"][0]["reason"], "threshold failed")
+        del output["response"]
+        output_path.write_text(json.dumps(output))
+        with self.assertRaisesRegex(receipts.ReceiptError, "execution schema"):
+            receipts.produce(self.repo, snapshot, results_path)
+
+    def test_rejected_readable_evidence_retains_its_record_identity(self):
+        original = self.receipt()
+        self.write(self.prefix + "/SKILL.md", "Source changed after evaluation.")
+        later = self.commit("stale source")
+        result = receipts.check(
+            self.repo, self.request(later), {"example/writing": original}
+        )
+        self.assertEqual(
+            result["skills"][0]["receipt_sha256"], receipts.document_digest(original)
+        )
+        for problem in ("coverage", "schema"):
+            with self.subTest(problem=problem):
+                receipt = copy.deepcopy(original)
+                if problem == "coverage":
+                    receipt["runs"].pop()
+                else:
+                    receipt["unexpected"] = "invalid receipt field"
+                result = receipts.check(
+                    self.repo, self.request(), {"example/writing": receipt}
+                )
+                self.assertEqual(result["status"], "fail")
+                self.assertEqual(
+                    result["skills"][0]["receipt_sha256"],
+                    receipts.document_digest(receipt),
+                )
+                self.assertNotIn("evaluated_revision", result["skills"][0])
+
 
 if __name__ == "__main__":
     unittest.main()

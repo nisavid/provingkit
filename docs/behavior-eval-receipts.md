@@ -63,14 +63,14 @@ Retain the actual local artifacts in the schema’s private envelopes:
 
 | Artifact | Required binding and result |
 | --- | --- |
-| Executor output | Snapshot digest, case ID, repetition, executor model ID, and response. |
+| Executor output | Snapshot digest, case ID, repetition, executor model ID, and response (including an explicitly observed empty string). |
 | Grading | The same snapshot and coordinate, grader model ID, exact executor-artifact byte digest, and one Boolean `passed` observation per expectation ID. |
 | Trigger observation | Snapshot digest, trigger case ID, executor model ID, `observation_kind: "recorded-invocation"`, and observed Boolean `triggered`. |
 | Results manifest | Snapshot digest, executor and grader model IDs, each run’s coordinate and artifact paths, and each trigger’s observation path. |
 
 Artifact paths are relative to the private results manifest’s directory. `snapshot_sha256` uses `document_digest(snapshot)`: SHA-256 of UTF-8 JSON with sorted keys, compact separators, unescaped Unicode, and no trailing newline. Artifact digests cover their exact file bytes.
 
-The runner records observations; the corpus supplies expected behavior and severity. A model’s authored selection of a skill is not a recorded invocation and cannot populate that observation kind. Missing output, grading, or invocation evidence remains missing. The helper checks envelope consistency, not whether an author truthfully recorded a run or its model identity.
+The runner records observations; the corpus supplies expected behavior and severity. A model’s authored selection of a skill is not a recorded invocation and cannot populate that observation kind. An observed empty response is a completed result that the grader can assess; an absent response field or artifact remains missing. Missing grading or invocation evidence also remains missing. The helper checks envelope consistency, not whether an author truthfully recorded a run or its model identity.
 
 Recording is complete when every required coordinate, expectation, and trigger has its own corresponding artifacts, bound to the preserved snapshot. Keep raw responses, grading files, invocation observations, and the manifest private.
 
@@ -106,7 +106,7 @@ python scripts/behavior_eval_receipts.py check \
 
 The directory contains `<plugin>/<skill>.json` for each supplied receipt. The CLI reads these local files; it does not establish that their bytes are committed in C. A preparation check can use uncommitted receipt files. For an integrated candidate claim, the caller must read or verify the receipt bytes committed at C and supply those bytes to the checker.
 
-For each required skill, the checker validates the record, matches the descriptor and original snapshot, verifies S is an ancestor of C, compares the complete bound inputs at both commits, and recomputes coverage and thresholds. It reports `evaluated_revision` and the checked record’s `receipt_sha256`. Changes outside the declared evaluated closure can preserve the result; changes inside it require fresh preparation and observations.
+For each required skill, the checker validates the record, matches the descriptor and original snapshot, verifies S is an ancestor of C, compares the complete bound inputs at both commits, and recomputes coverage and thresholds. It retains the parsed record’s `receipt_sha256` on acceptance and rejection, and reports `evaluated_revision` after the source and coverage checks complete. Missing or unparseable records have no parsed-record digest. Changes outside the declared evaluated closure can preserve the result; changes inside it require fresh preparation and observations.
 
 | Outcome | Exit | Required action |
 | --- | --- | --- |
@@ -118,7 +118,7 @@ For each required skill, the checker validates the record, matches the descripto
 
 A waiver uses `$defs.waiver`: the bound snapshot and S, `kind: "waiver"`, a reason, `operator_decision` with `issued_by: "operator"` and the actual decision’s SHA-256 digest, `expiry` with `event: "next-release"` and its `after_release` anchor, and `attestation: null`. Record only an existing operator decision. A waiver must pass the same descriptor and freshness checks. The local checker cannot establish issuance or expiry and leaves an otherwise valid waiver pending with both verification flags false.
 
-Checking is complete when every required skill has an explicit outcome tied to the requested revision and receipt bytes. A passing result covers ordinary result-data checks only; pending or failed evidence stays visible to the consumer.
+Checking is complete when every required skill has an explicit outcome tied to the requested revision and, for readable records, its receipt digest. Retain any unparseable raw receipt with the caller’s error evidence. A passing result covers ordinary result-data checks only; pending or failed evidence stays visible to the consumer.
 
 ## Acceptance and integration handoff
 

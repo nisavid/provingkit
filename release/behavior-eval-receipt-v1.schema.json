@@ -549,8 +549,7 @@
           "maxLength": 200
         },
         "response": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         }
       },
       "required": [
