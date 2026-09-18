@@ -1,6 +1,6 @@
 ---
 title: Receipt correspondence and historical processor compatibility
-version: proposal-1
+version: proposal-2
 date_created: 2026-09-18
 owner: Receipt implementation owner, issue 33
 tags: [design, receipts, compatibility]
@@ -87,22 +87,30 @@ of the demonstrated evidence. `schema_version: 1` alone selects no processor.
 - **REQ-06, committed evidence:** Read selected Receipts from the Git tree at C,
   verify their raw bytes and modes against the reviewed bindings, and retain
   their committed object identities. Dirty files and arbitrary local Receipt
-  paths cannot satisfy this contract.
+  paths cannot satisfy this contract. The maintained entrypoint also reads
+  each selected Receipt at H and verifies its complete binding; matching
+  selected consumer IDs alone does not establish reviewed Receipt content.
 - **REQ-07, immutable policy:** Preserve complete application/trigger coverage,
   three distinct executions per case, safety 3/3, quality 2/3, required trigger
-  results, and stricter consumer-specific criteria. Production of a Receipt is
-  not qualification. A pending waiver cannot produce an aggregate pass.
+  results, and stricter consumer-specific criteria. This API reports ordinary
+  Receipt correspondence only. Stricter member results remain independently
+  required and must be bound and checked by the owning member/readiness gate
+  before dependent qualification. Production of a Receipt is not qualification.
+  A pending waiver cannot produce an aggregate pass.
 - **REQ-08, provenance:** Require available B, H, T, S, recorded P, historical
   validation implementation, consumed procedure revisions, V, and C, with the
   source identities needed to reproduce each check. Original private artifacts
   remain under their owners' retention contracts; ordinary public validation
   does not claim to reopen or authenticate those originals.
 - **REQ-09, observable completion:** Record a machine-readable result bound to
-  C outside C's source content. A missing, failed, or incomplete final result
-  leaves C qualification-pending. A previous pre-landing success is insufficient.
+  C outside C's source content. A missing, failed, or incomplete ordinary result,
+  or a missing/failing separately required member result, leaves C
+  qualification-pending. A previous pre-landing success is insufficient.
 
-The original B must remain an ancestor of H and C; T must be an ancestor of C.
-For squash, C's first parent must be T. The caller supplies the independently
+B remains the independently retained comparison anchor; it need not be an
+ancestor of H or C. Both compared committed inventories must be available and
+complete. T must be an ancestor of C; for squash, C's first parent must be T.
+The caller supplies the independently
 established landing relation and refreshed target observation for the supported
 operation. These structural checks do not establish that a forge performed it.
 Issue 136 must define the complete operation-specific check, including rebase
@@ -213,14 +221,22 @@ who may supply them or certify their authenticity.
 2. Run authoritative selection B→H and require agreement with the reviewed
    binding set. Run complete B→C selection and require the same set. Keep changed
    paths, causes, unsupported inputs, and diagnostics from both comparisons.
-3. Derive each C descriptor from the committed inventory. Reject unresolved
+   Do not add a B ancestry test to these complete tree comparisons.
+3. Read each selected Receipt at H through the inventory's committed-blob reader.
+   Require the path, raw digest, Git mode, S, dispatch method, registered profile,
+   and processing binding to match the context. Resolve the producer procedure
+   from its separately retained handoff, since it is not a Receipt field.
+   Preserve each observed H blob identity and a binding-check result. H/context
+   mismatch fails even when C exactly matches the context. Caller preparation
+   should derive bindings from H; the maintained entrypoint verifies them itself.
+4. Derive each C descriptor from the committed inventory. Reject unresolved
    descriptors, missing/removed consumers, and incomplete coverage.
-4. Read each committed Receipt at C. Preserve its raw digest and Git identity
+5. Read each committed Receipt at C. Preserve its raw digest and Git identity
    even if parsing subsequently fails. Match its reviewed binding.
-5. Run `check_correspondence` for every selected consumer. Select and execute
+6. Run `check_correspondence` for every selected consumer. Select and execute
    only the registered matching historical profile; require historical pass,
    complete descriptor/snapshot correspondence, and unchanged policy outcomes.
-6. Return the full aggregate and all selected results. A failure in one consumer
+7. Return the full aggregate and all selected results. A failure in one consumer
    cannot hide missing results for another; mark unattempted rows explicitly if
    an operational error prevents completion.
 
@@ -236,8 +252,11 @@ fresh evidence or reviewed owner migration rather than relaxed matching.
 
 The aggregate returns `contract`, `status`, `stage`, `reason_code`, B/H/T/C,
 `context_sha256`, V, the check's D, `coverage_basis: "complete-inventory"`, both
-comparison results, `selection_complete`, and a row for every selected consumer.
-Each row records the committed Receipt path/mode/object ID/raw digest, canonical
+comparison results, `selection_complete`,
+`qualification_scope: "ordinary-receipt-correspondence"`,
+`member_qualification: "not-evaluated"`, and a row for every selected consumer.
+Each row records the committed H and C Receipt path/mode/object ID/raw digest,
+the H binding-check outcome, canonical
 Receipt digest when parsing succeeds, S, recorded P or null, original producer D,
 profile, actual historical validation implementation and processing binding,
 historical outcome, correspondence outcome, and diagnostics. Record unavailable
@@ -251,6 +270,17 @@ lineage references without replacing the preserved Receipt.
 | `fail` | A well-formed request has missing, stale, unsupported, incomplete, or failing evidence/context. Exit 1. |
 | `error` | Malformed request or unavailable execution machinery prevents a completed check. Exit 2. No qualification. |
 
+An ordinary `pass` does not satisfy stricter member criteria. The owning member
+checker supplies its separate machine-readable result, binding the member,
+actual C, applicable evaluated closure/Receipt identities, the stricter method
+and criteria revision, and its evidence/procedure identities. The member or
+readiness gate, including issue 34's dependent consumers, must verify that result
+alongside this ordinary result before reporting member or Kit qualification.
+Missing or failing member evidence cannot be replaced by ordinary quality 2/3
+success. For example, quality observations true/true/false can pass the ordinary
+policy while failing a member method that requires every criterion at 3/3.
+Issue 136's external result handoff must preserve this distinction for callers.
+
 Per-row status may also be `waiver-pending` or `not-checked`; neither permits an
 aggregate pass. An invalid Receipt is an evidence failure, not a malformed
 caller request. An unavailable retained commit is `fail/provenance-missing`;
@@ -262,11 +292,14 @@ a malformed request and errors.
 
 Other stable reason codes distinguish `context-mismatch`, `target-moved`,
 `operation-unsupported`, `selection-incomplete`, `selection-changed`,
-`descriptor-unresolved`, `receipt-missing`, `receipt-changed`, `receipt-malformed`,
+`reviewed-receipt-mismatch`, `descriptor-unresolved`, `receipt-missing`,
+`receipt-changed`, `receipt-malformed`,
 `processing-mismatch`, `historical-failed`, `snapshot-mismatch`,
 `closure-mismatch`, and `waiver-pending`. Human-readable details retain the
 historical diagnostic without pretending it is a newly standardized legacy code.
 Changed bytes, paths, and modes must be separately identifiable in diagnostics.
+Missing or malformed H Receipts report `reviewed-receipt-mismatch` with an H
+stage and detailed cause; C failures retain their separate C stage and codes.
 
 Compact digests use sorted compact UTF-8 JSON, unescaped Unicode, no terminal
 newline, and no non-finite numbers. `context_sha256` hashes the entire parsed
@@ -318,9 +351,16 @@ any validation step.
 - **AC-06:** Preserve successful evidence containing allowed quality failures,
   original failed grades before regrading, all original identities, and stricter
   consumer criteria. No evidence rewrite is needed merely for a Git rewrite.
+  With true/true/false quality grades, observe ordinary `pass` and a separate
+  3/3-member-method failure; readiness must remain unqualified. Repeat with the
+  separately required member result missing. Neither case may inherit a pass.
 - **AC-07:** A Receipt-only range cannot replace B. Target movement, newly
   selected consumers, wrong actual C, missing context, or changed Receipt bytes
   cannot qualify. Complete empty original selection returns only `not-required`.
+  A retained non-ancestor B with complete committed inventories and otherwise
+  passing evidence must be compared normally. Change only H's Receipt while
+  C/context agree and observe `reviewed-receipt-mismatch`; separately change
+  only C's Receipt and observe the C evidence failure.
 - **AC-08:** Read C while dirty worktree files disagree, remove required retained
   objects in a fresh clone, and recover them through issue 136's implemented
   retention route. Observe committed reads, explicit missing-provenance failure,
@@ -371,7 +411,7 @@ positive and negative matrix. The private prototype helper is not the API.
 | Issue 136 caller/retention | Reconcile the context, landing relation, implementation manifest, historical runtime, durable retrieval, external result, and missing-result behavior. Qualify each hosted route and its required security properties separately. The held legacy caller packet is input, not acceptance of this contract. |
 | Issue 137 migration | Refresh owners and decide in-place or traceable replacement after both designs. Preserve each consumer's S/P/D/B, originals, failures, populated maps, stricter criteria, and review evidence. |
 | Producers and member checkers | Load the new reviewed published procedure before dependent preparation, reconciliation, or checking; record its D separately from actual processing. A member projection of a complete result cannot claim whole-Kit qualification. |
-| Issues 28 and 34 | Disclosure and readiness distinguish historical validation, pre-landing checks, and the actual C result. They verify the required result and implementation/procedure identities before relying on it. |
+| Issues 28 and 34 | Disclosure and readiness distinguish historical validation, pre-landing checks, and the actual C ordinary result. They verify its implementation/procedure identities and every separately required member result bound to C and its stricter method before reporting qualification. |
 | Issues 10, 17, 19, 111, and 112 | Feedback, editing, review voice, PR writing, and adoption retain their own evidence/criteria and consume the new result when their authorized migration activates it. Existing allocations remain intact. |
 
 Under `capturing-agent-procedures`, issue 33 must place entry conditions,

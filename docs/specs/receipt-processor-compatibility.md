@@ -67,6 +67,9 @@ promote caller-declared closure into inventory authority.
 | Changed profile name or recorded P while preserving observations | Reject binding or snapshot mismatch; changing metadata is not a reviewed transformation. |
 | Missing case/repetition/expectation/trigger, wrong severity, duplicate execution identity | Historical failure with the original coordinate and diagnostic retained. |
 | Below-threshold results or a pending waiver | No qualification. Allowed quality failures remain visible when the unchanged aggregate policy passes. |
+| Ordinary quality 2/3 succeeds but a required member method demands 3/3 | Ordinary correspondence can pass; member qualification fails. The member/readiness consumer must require the separate C-bound member result. Missing member evidence also blocks that stronger claim. |
+| Receipt committed at H differs from the reviewed binding while C matches it | `reviewed-receipt-mismatch`; the maintained entrypoint verifies H bytes, mode, source, method, profile, and processing, separately from its C check. |
+| Independently retained original B is not an ancestor of H or C, but both comparisons and evidence are complete | Compare committed trees normally; B ancestry is not an ordinary correspondence prerequisite. |
 | Changed rubric without original grading or adjudication | Historical lineage failure. Current grading cannot erase prior failed observations. |
 | Prepared processing changes at C | Closure mismatch even when skill text is unchanged. |
 | Reconciled processing files change at C, with unchanged recorded P | Check descriptor obligations: P stays independently bound; any processing file explicitly consumed as source still must match. No blanket exclusion. |
