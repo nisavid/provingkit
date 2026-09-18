@@ -1983,7 +1983,7 @@ class ValidateMergecraftTests(unittest.TestCase):
     def test_rejects_writer_independent_review_gate_regression(self) -> None:
         path = self.plugin / "skills/writing-reviewable-pr-descriptions/SKILL.md"
         path.write_text(
-            path.read_text().replace("bare `clean` receipt", "review receipt")
+            path.read_text().replace("bare `clean`", "unverified clean")
         )
         self.assert_rejected("writer independent review gate drift")
 
@@ -2115,7 +2115,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "1b7be802d7af74f9d86e95e4c01ee8c4356f064cd577f8ef0346294b3a014183"
+                "af139b43633a1d5b3831aa8b46a3e8abbebf7e6ed82d7c941d8fb696e1426342"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"

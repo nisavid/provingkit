@@ -434,7 +434,7 @@ class ValidateRolecastingTests(unittest.TestCase):
             with self.subTest(constant=constant):
                 path.write_text(
                     original.replace(
-                        '"schema_version": 3', f'"schema_version": {constant}'
+                        '"schema_version": 4', f'"schema_version": {constant}'
                     )
                 )
                 self.assert_rejected(f"contains non-finite JSON value: {constant}")
@@ -444,7 +444,7 @@ class ValidateRolecastingTests(unittest.TestCase):
         topology = self.plugin / "topology.json"
         topology.write_text(
             topology.read_text().replace(
-                '"schema_version": 3', '"schema_version": true'
+                '"schema_version": 4', '"schema_version": true'
             )
         )
         self.assert_rejected("topology schema_version must be an integer")
@@ -644,11 +644,30 @@ class ValidateRolecastingTests(unittest.TestCase):
         path.write_text(json.dumps(document, indent=2) + "\n")
         self.assert_rejected("topology owner is shared: authority")
 
+    def test_rejects_topology_without_the_ordinary_handoff(self) -> None:
+        path = self.plugin / "topology.json"
+        topology = json.loads(path.read_text())
+        if "operational_contract" in topology:
+            del topology["operational_contract"]
+            path.write_text(json.dumps(topology, indent=2) + "\n")
+
+        self.assert_rejected("operational handoff metadata drift")
+
     def test_invocation_topology_receipt_is_a_separate_closed_world_contract(
         self,
     ) -> None:
         topology = json.loads((self.plugin / "topology.json").read_text())
-        self.assertEqual(topology["schema_version"], 3)
+        self.assertEqual(topology["schema_version"], 4)
+        self.assertEqual(
+            topology["operational_contract"],
+            {
+                "plan": "adapter:rolecasting-invocation-plan",
+                "plan_owner": "delegating-cross-agent-work",
+                "selection_record": "adapter:model-selection-record",
+                "selection_owner": "choosing-agent-models",
+                "scope": "same-leader",
+            },
+        )
         self.assertEqual(
             topology["receipt_contract"],
             {
@@ -691,6 +710,25 @@ class ValidateRolecastingTests(unittest.TestCase):
             "new valid plan",
         ):
             self.assertIn(required, reference)
+
+    def test_rejects_witnessed_or_portable_substitutes_for_ordinary_handoffs(
+        self,
+    ) -> None:
+        path = self.plugin / "topology.json"
+        original = json.loads(path.read_text())
+        for field, replacement in (
+            ("plan", "adapter:rolecasting-invocation-topology-receipt"),
+            ("selection_record", "adapter:model-selection-receipt"),
+            ("plan_owner", "choosing-agent-models"),
+            ("selection_owner", "delegating-cross-agent-work"),
+            ("scope", "portable"),
+        ):
+            with self.subTest(field=field):
+                topology = copy.deepcopy(original)
+                topology["operational_contract"][field] = replacement
+                path.write_text(json.dumps(topology, indent=2) + "\n")
+
+                self.assert_rejected("operational handoff metadata drift")
 
     def test_rejects_every_invocation_receipt_contract_drift(self) -> None:
         path = self.plugin / "topology.json"

@@ -28,7 +28,7 @@ Reuse fresh, unchanged Daybreak observations under its routing rules.
 Never infer executor support, invent a slug or effort, or treat selection as
 invocation authority.
 
-Read [capability-probes-and-fallbacks.md](references/capability-probes-and-fallbacks.md) only when selecting an explicit pair, handling an unavailable preference, using another harness, or evaluating Fable.
+Return `adapter:model-selection-record` for ordinary same-leader selection. Read [capability-probes-and-fallbacks.md](references/capability-probes-and-fallbacks.md) for its binding, inherited selection, witnessed receipts, and fallbacks.
 
 ## Selection Matrix
 

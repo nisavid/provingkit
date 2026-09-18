@@ -72,7 +72,12 @@ invoking the relation helper or the existing-pair steps below.
    and unrelated text. Do not copy titles or status. Resolve native capacity
    from the observed manual-link set and proposed effects, preserving unrelated
    links. Report the actual omitted native pairs without dropping ledger entries.
-4. Obtain writer-owned complete candidate bodies for exact authorized spans.
+4. For needed PR-body authoring, bind the publication review mode and sorted
+   specialist inventory **before invoking the PR writer**. Reuse the caller's
+   existing selection, or return that decision to the caller under current
+   policy. Include the selection in the writer request and candidate, and carry
+   it unchanged into publication. An unavailable required route remains blocked.
+   Obtain writer-owned complete candidate bodies for exact authorized spans.
    An absent or ambiguous ledger boundary requires an authoring handoff, not
    guessed text surgery. For an existing PR, return its bound publication
    handoff through `pr-relation-ledger-write` for a ledger-only edit. This mode
@@ -94,8 +99,11 @@ invoking the relation helper or the existing-pair steps below.
    Expose partial or unknown results and observe before any further attempt.
    No cross-object atomicity or blind retry is implied.
 6. Return the plan identity, per-pair ledger/native result, publication
-   handoffs or verified receipts, setting source and original observation time,
-   actual read counts, limitations, and unresolved gates. Describe reused
+   handoffs or verified receipts, and each PR's selected
+   `review:{mode,selected_specialists}` from its writer request unchanged.
+   If selection is pending, return that pre-authoring gate instead of an
+   executable writer or publisher handoff. Include setting source and original
+   observation time, actual read counts, limitations, and unresolved gates. Describe reused
    settings as **last observed**. `verified` covers only the listed effects;
    it grants no Issue closure, review readiness, or merge authority.
 

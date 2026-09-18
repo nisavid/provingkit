@@ -22,7 +22,7 @@
       "id": 1,
       "name": "direct-implementation",
       "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Use concrete implementation evidence against the Issue contract rather than title similarity. Record a partial implementation in both bodies with stable qualified links and a useful role. Permit the partial native addition only under the supplied usable disabled observation and bound authority. Keep Issue state and unrelated body/native content unchanged.",
+      "expected_output": "Use concrete implementation evidence against the Issue contract rather than title similarity. Record a partial implementation in both bodies with stable qualified links and a useful role. Permit the partial native addition only under the supplied usable disabled observation and bound authority. Keep Issue state and unrelated body/native content unchanged. Bind the explicit publication review mode and specialist inventory before invoking the PR writer, and retain that selection through publication.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/direct-implementation.md"
       ],
@@ -30,7 +30,8 @@
         "Use concrete implementation evidence against the Issue contract rather than title similarity.",
         "Record a partial implementation in both bodies with stable qualified links and a useful role.",
         "Permit the partial native addition only under the supplied usable disabled observation and bound authority.",
-        "Keep Issue state and unrelated body/native content unchanged."
+        "Keep Issue state and unrelated body/native content unchanged.",
+        "Bind the explicit publication review mode and specialist inventory before invoking the PR writer, and retain that selection through publication."
       ],
       "caller": "maintaining-issue-pr-relations"
     },
@@ -38,12 +39,12 @@
       "id": 2,
       "name": "dependency-only",
       "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate.",
-      "expected_output": "Do not inherit the base PR\u2019s Issue association automatically. Treat the dependency as a reference rather than a contribution to #17. Skip relation and repository-setting acquisition for this noncontribution.",
+      "expected_output": "Do not inherit the base PR’s Issue association automatically. Treat the dependency as a reference rather than a contribution to #17. Skip relation and repository-setting acquisition for this noncontribution.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/dependency-only.md"
       ],
       "expectations": [
-        "Do not inherit the base PR\u2019s Issue association automatically.",
+        "Do not inherit the base PR’s Issue association automatically.",
         "Treat the dependency as a reference rather than a contribution to #17.",
         "Skip relation and repository-setting acquisition for this noncontribution."
       ],
@@ -129,7 +130,7 @@
       "id": 8,
       "name": "historical-repair",
       "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
-      "expected_output": "Preserve the evidenced earlier-contract contribution and annotate its historical role without claiming current completion. Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation. Keep the caller responsible for publication and resume reconciliation from its verified result. Do not close or reopen the Issue. Require the publication hand-back to retain the bound relation context and its pending reconciliation alongside the distinct ledger-publication receipt.",
+      "expected_output": "Preserve the evidenced earlier-contract contribution and annotate its historical role without claiming current completion. Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation. Keep the caller responsible for publication and resume reconciliation from its verified result. Do not close or reopen the Issue. Require the publication hand-back to retain the bound relation context and its pending reconciliation alongside the distinct ledger-publication receipt. Bind the explicit publication review mode and specialist inventory before invoking the PR writer, and retain that selection through publication.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/historical-repair.md"
       ],
@@ -138,7 +139,8 @@
         "Use the existing PR writer and pr-relation-ledger-write publication handoff, without requiring a surviving branch or rebuilt navigation.",
         "Keep the caller responsible for publication and resume reconciliation from its verified result.",
         "Do not close or reopen the Issue.",
-        "Require the publication hand-back to retain the bound relation context and its pending reconciliation alongside the distinct ledger-publication receipt."
+        "Require the publication hand-back to retain the bound relation context and its pending reconciliation alongside the distinct ledger-publication receipt.",
+        "Bind the explicit publication review mode and specialist inventory before invoking the PR writer, and retain that selection through publication."
       ],
       "caller": "maintaining-issue-pr-relations"
     },
@@ -177,7 +179,7 @@
       "id": 11,
       "name": "ancestry-only-restack",
       "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
-      "expected_output": "Keep normal Graphite ancestry/navigation work with its existing owners. Skip relation rediscovery and repository-setting refresh for unchanged intent. Preserve the existing immediate canonical-repair ordering after draft transport. Return the unchanged relation context and original observation metadata with the stack/publication result without renewing timestamps.",
+      "expected_output": "Keep normal Graphite ancestry/navigation work with its existing owners. Skip relation rediscovery and repository-setting refresh for unchanged intent. Preserve the existing immediate canonical-repair ordering after draft transport. Return the unchanged relation context and original observation metadata with the stack/publication result without renewing timestamps. Bind the explicit publication review mode and specialist inventory before invoking the PR writer, and retain that selection through publication.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/ancestry-only-restack.md"
       ],
@@ -185,7 +187,8 @@
         "Keep normal Graphite ancestry/navigation work with its existing owners.",
         "Skip relation rediscovery and repository-setting refresh for unchanged intent.",
         "Preserve the existing immediate canonical-repair ordering after draft transport.",
-        "Return the unchanged relation context and original observation metadata with the stack/publication result without renewing timestamps."
+        "Return the unchanged relation context and original observation metadata with the stack/publication result without renewing timestamps.",
+        "Bind the explicit publication review mode and specialist inventory before invoking the PR writer, and retain that selection through publication."
       ],
       "caller": "graphite"
     },
@@ -193,15 +196,15 @@
       "id": 12,
       "name": "fixup-own-contribution",
       "prompt": "Using the supplied fixture and applicable candidate instructions, respond as the agent handling the request. Do not use tools or mutate anything. Give the concrete next actions, ownership handoffs, observation reuse/acquisition, and any unresolved gate. Include the relation continuation state returned to the caller, with pending work or explicit absence.",
-      "expected_output": "Qualify the fixup\u2019s direct partial contribution to #20 independently from its base PR. Do not copy unrelated base-PR associations. Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists. Return the fixup\u2019s qualified relation context and pending creation/identity work rather than drop it at the lifecycle hand-back.",
+      "expected_output": "Qualify the fixup’s direct partial contribution to #20 independently from its base PR. Do not copy unrelated base-PR associations. Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists. Return the fixup’s qualified relation context and pending creation/identity work rather than drop it at the lifecycle hand-back.",
       "files": [
         "maintaining-issue-pr-relations/fixtures/fixup-own-contribution.md"
       ],
       "expectations": [
-        "Qualify the fixup\u2019s direct partial contribution to #20 independently from its base PR.",
+        "Qualify the fixup’s direct partial contribution to #20 independently from its base PR.",
         "Do not copy unrelated base-PR associations.",
         "Carry initial ledger intent through normal creation and defer helper work until a real PR identity exists.",
-        "Return the fixup\u2019s qualified relation context and pending creation/identity work rather than drop it at the lifecycle hand-back."
+        "Return the fixup’s qualified relation context and pending creation/identity work rather than drop it at the lifecycle hand-back."
       ],
       "caller": "stacking-pr-fixups"
     },

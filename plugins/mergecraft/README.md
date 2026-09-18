@@ -12,11 +12,15 @@ Its `schema_version` versions Mergecraft's local topology shape, not a
 repository-wide interchange schema.
 
 Canonical PR publication requires every caller to select `required` or explicit
-`not-required` review. Ordinary publication can proceed with `not-required`;
-`required` publication is reserved for a future authenticated Task Witness
-integration. Task Witness is optional future equipment for callers that need
-its stronger cross-harness evidence contract, and that route reports witnessed
-publication as unavailable when it is not installed.
+`not-required` review and its specialist inventory before invoking the writer
+or freezing the candidate. The writer's ordinary independent review gate
+accepts a verified bare `clean` Tricritical hand-back for the current title/body,
+inputs, requirements, scopes, and evidence dependencies. `not-required` records
+no witnessed provenance and does not waive that review. Callers preserve the
+selection through publication, readiness, and resume. `required` adds the
+authenticated Task Witness gate and remains unavailable without its separately
+qualified integration. Task Witness is optional future equipment for callers
+that need its stronger cross-harness evidence contract.
 
 ## Public skills
 
@@ -303,7 +307,7 @@ configurations; they grant no release, installation, or actuation authority.
 The relation procedure's [experiment](https://github.com/nisavid/provingkit/blob/main/evals/mergecraft/skills/maintaining-issue-pr-relations/experiment.json)
 and [independent grades](https://github.com/nisavid/provingkit/blob/main/evals/mergecraft/skills/maintaining-issue-pr-relations/grading.json)
 bind the current instructions to 51 behavior responses across 17 cases and
-13 native discovery decisions. All 186 selected behavior expectations and
+13 native discovery decisions. All 195 selected behavior expectations and
 13 discovery decisions pass with Claude Code 2.1.273 and `claude-opus-5` at
 high effort. Behavior runs expose no tools; discovery runs expose only `Skill`
 and retain the client's bundled runtime skill descriptions. Failed and

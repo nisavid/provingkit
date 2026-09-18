@@ -21,7 +21,9 @@ Generated forge text is no substitute.
 
 - For an unpublished title/body proposal in chat, use this writer only.
 - For PR creation or stored title/body mutation, the publisher invokes this
-  writer and then owns forge actuation.
+  writer with the explicit publication-review mode and sorted specialist
+  inventory already selected, then owns forge actuation. Keep that selection
+  bound to the candidate and review requirements.
 - For an existing PR's isolated relation-ledger edit, use the bounded mode below,
   including historical PRs. Normal creation and canonical publication retain
   the navigation workflow.
@@ -112,16 +114,32 @@ the authorized span needs a separately scoped content request.
    ```
 
 7. For large, stacked, cross-cutting, reviewer-heavy, or readiness-ambiguous
-   text, invoke the imported `review-loop` operation (`tricritical:loop`) on the
-   exact candidate title/body bytes. Give
-   the loop explicit authority to mutate only those bytes, no forge or source
-   authority, and require a bare `clean` receipt. Revalidate the resulting pair
-   and review-input manifest. Any other terminal blocks return or publication.
+   text, or when the selected publication mode or repository policy requires
+   review, invoke the imported `review-loop` operation (`tricritical:loop`) on
+   the exact candidate title/body bytes. Give the loop explicit authority to
+   mutate only those bytes, no forge or source authority. Require a bare `clean`
+   hand-back status from the actual independently reviewed loop. Verify
+   that its candidate, review input, requirements, selected scopes, and current
+   evidence dependencies match this handoff; the label alone is insufficient.
+   Revalidate the resulting pair and review-input manifest. Any other terminal
+   blocks return or publication, including blocked, incomplete, and degraded
+   outcomes. Changed bytes, requirements, scopes, or evidence dependencies
+   invalidate affected review; rerun it before returning the pair.
+   Ordinary review uses the coordinator's verified operational observations
+   and needs no portable receipt. `not-required` selects no witnessed
+   publication provenance; it does not skip this independent review. Explicit
+   `required` mode adds the authenticated Task Witness evidence gate. If that
+   route is unavailable, stop without inventing evidence or downgrading the
+   mode. On a later task, unavailable ordinary observations require a new
+   review or separately qualified retained evidence.
 8. Compare to the live baseline for loss and prove the candidate is the exact
    ordered fragment derivation, including unchanged suffix line endings and
    final-newline state; return the complete validated title/body pair,
    authorized text surface, and review-input manifest. Unchanged is validated,
    not authorized.
+   Include the selected mode and specialist inventory for publication and,
+   when review ran, its verified hand-back and evidence limits. These provide
+   no publication, source, or other mutation authority.
    Do not mutate the forge or verify stored/rendered state from this skill.
 
 Use local data only when `HEAD` equals PR head. Recompute after push,

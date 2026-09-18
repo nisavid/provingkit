@@ -65,7 +65,9 @@ bot-tail recognizer; a span cannot overlap a recognized bot suffix. Unknown
 fields, duplicate JSON keys, unsupported hosts, and mismatched review choices
 block publication.
 
-Review selection is an explicit caller decision. Both commands require
+Review selection is an explicit caller decision made before invoking the
+writer. Carry the same mode and sorted specialist inventory in the writer
+request, candidate manifest, and publication handoff. Both commands require
 `--review-mode` and `--selected-specialists`; they must match the manifest.
 `not-required` requires an empty specialist array. `required` accepts the
 recorded selection during text validation but the publisher blocks it because

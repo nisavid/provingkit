@@ -56,7 +56,12 @@ with the verified PR identities and publication results. An ancestry-only
 restack or unchanged resubmission does not reacquire relations or settings.
 
 1. Verify root/base and checks; ensure each remote head will equal the recorded
-   local commit, then prepare every canonical pair and bound review-input file.
+   local commit. Before invoking the PR writer for any member, bind that
+   member's publication review mode and sorted specialist inventory under
+   publication policy; reuse its current selection when applicable. Pass it
+   into the writer request and retain it unchanged in the canonical candidate,
+   submit plan, and publication repair. Missing selection blocks authoring.
+   Then prepare every canonical pair and bound review-input file.
 2. Build a schema-v2 absolute-path JSON request for the exact bottom-to-top stack
    and run
    `scripts/submit_draft_stack.py plan`. Review its content-addressed private

@@ -1,5 +1,11 @@
 # Terminal review evidence
 
+This contract applies to explicitly selected authenticated retained evidence.
+Ordinary review and loop hand-backs use the shared invocation boundary and do
+not need this bundle, Task Witness, or a registered producer. An ordinary
+`clean` hand-back cannot substitute for this contract when a consumer requires
+witnessed assurance.
+
 Task Witness validates `tricritical-terminal-review-evidence-v2` with the
 registered `tricritical-terminal-review-evidence-validator-v2`. The bundle is
 one canonical `manifest.json` and returns

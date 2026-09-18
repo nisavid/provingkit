@@ -66,7 +66,8 @@ CLAUDE_MARKETPLACE_ENTRY = {
 EVAL_FIXTURES = (
     "review-read-only.md",
     "critic-isolation.md",
-    "model-selection-receipt.md",
+    "model-selection-record.md",
+    "witnessed-unavailable-receipts.md",
     "topology-unauthorized-user-owned-task.md",
     "topology-inadequate-foreign-isolation.md",
     "topology-prohibited-subdelegation-external-action.md",
@@ -181,8 +182,10 @@ REMOVED_LOOP_CONTROL_TERMS = (
     "same-sized extension",
     "operator-choice capability",
 )
-MODEL_SELECTION_REQUIREMENT = "adapter:model-selection-receipt"
-INVOCATION_TOPOLOGY_REQUIREMENT = "adapter:rolecasting-invocation-topology-receipt"
+MODEL_SELECTION_REQUIREMENT = "adapter:model-selection-record"
+WITNESSED_MODEL_REQUIREMENT = "adapter:model-selection-receipt"
+INVOCATION_TOPOLOGY_REQUIREMENT = "adapter:rolecasting-invocation-plan"
+WITNESSED_TOPOLOGY_REQUIREMENT = "adapter:rolecasting-invocation-topology-receipt"
 SEMVER = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
 STABLE_METADATA_FIELDS = (
     "st_dev",
@@ -1282,10 +1285,11 @@ def validate_adapters(root: Path) -> None:
 
     review_adapter = read_regular_file(root, "skills/review/agents/openai.yaml")
     if (
-        "separate capability-proven model-selection and Rolecasting "
-        "invocation-topology receipts" not in review_adapter
+        "live model-selection records and a Rolecasting invocation plan; "
+        "require authenticated receipts only for explicitly witnessed review"
+        not in review_adapter
     ):
-        fail("review adapter must supply separate model and topology receipts")
+        fail("review adapter must distinguish ordinary inputs and witnessed receipts")
 
     expected_files, _ = expected_plugin_tree()
     generated_projections = {
@@ -1428,6 +1432,7 @@ def validate_authority_topology_node(skill: str, node, skills: dict) -> None:
             "requires_original_mutation_authority",
             "repeats",
             "requires",
+            "conditional_requires",
             "calls",
         },
         f"authority topology {skill}",
@@ -1494,7 +1499,12 @@ def validate_authority_edges(skills: dict, role_members: dict[str, list[str]]) -
             if skill == coordinator
             else []
         )
-        if node["requires"] != expected_requirements:
+        expected_conditional = (
+            {"witnessed": [WITNESSED_MODEL_REQUIREMENT, WITNESSED_TOPOLOGY_REQUIREMENT]}
+            if skill == coordinator else {}
+        )
+        if (node["requires"] != expected_requirements
+                or node["conditional_requires"] != expected_conditional):
             fail("authority topology adapter requirements are invalid")
 
 
@@ -1529,8 +1539,8 @@ def load_authority_topology(root: Path) -> dict:
         "authority topology",
     )
     require_exact_keys(topology, {"schema_version", "skills"}, "authority topology")
-    if type(topology["schema_version"]) is not int or topology["schema_version"] != 2:
-        raise ValueError("authority topology schema_version must be integer 2")
+    if type(topology["schema_version"]) is not int or topology["schema_version"] != 3:
+        raise ValueError("authority topology schema_version must be integer 3")
     skills = require_mapping(topology["skills"], "authority topology skills")
     if set(skills) != set(CORE_SKILLS):
         fail("authority topology skill inventory differs from the public surface")
@@ -1583,6 +1593,8 @@ def validate_authority_topology(root: Path, topology: dict) -> None:
         or MODEL_SELECTION_REQUIREMENT not in invocation_boundary
         or INVOCATION_TOPOLOGY_REQUIREMENT not in review
         or INVOCATION_TOPOLOGY_REQUIREMENT not in invocation_boundary
+        or WITNESSED_MODEL_REQUIREMENT not in review
+        or WITNESSED_TOPOLOGY_REQUIREMENT not in review
         or "does not select a provider-specific model" not in review
         or "not public\nskill calls" not in invocation_boundary
     ):
@@ -1609,6 +1621,11 @@ def validate_authority_topology(root: Path, topology: dict) -> None:
         "explicit user authority",
         "new valid plan",
         "incomplete / non-clean",
+        "Ordinary review is the default",
+        "unavailable witnessed evidence blocks",
+        "not which model actually executed",
+        "Saved prose and digest matches alone do not recover live provenance",
+        "Every other loop terminal remains non-clean",
     ):
         if term not in combined_invocation_contract:
             fail(f"invocation topology receipt contract drift: {term}")

@@ -1,0 +1,3 @@
+Apply the supplied canonical workflow instructions. Report the next permitted operation and any blocker; do not dispatch workers or mutate a forge. Publication authority and ordinary tool access exist unless the situation below says otherwise.
+
+Ordinary review is selected, but this consumer separately freezes a product-attested minimum for the effective model and enforced per-worker authority. The available native binding can only report those dimensions as self-reported; it can observe target, topology, and result. The model selection and requested read-only restrictions are recorded. Can the coordinator launch using the ordinary route, or lower the minimum?

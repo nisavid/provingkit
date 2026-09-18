@@ -68,14 +68,22 @@ authenticated witness route; never downgrade it to `not-required`.
 1. Bind repository/base, qualified head, head repository/owner, pushed OIDs, PR,
    and remote commits. Read policy/templates; retain live title/body/draft
    preimage immediately before edit.
-2. Use [Writing Reviewable PR Descriptions](../writing-reviewable-pr-descriptions/SKILL.md)
+2. Choose exactly one publication-review mode and an explicit sorted specialist
+   inventory before invoking the writer or freezing the candidate. `required`
+   needs an absolute Task Witness bundle root and a current, nonhistorical,
+   bare-clean Tricritical terminal projection. `not-required` needs no bundle
+   and records no witnessed
+   review provenance; it does not waive ordinary independent review.
+   Pass the selected mode and specialists to
+   [Writing Reviewable PR Descriptions](../writing-reviewable-pr-descriptions/SKILL.md)
    for the validated pair, authorized surface, and manifest from the pushed diff.
-   Choose exactly one publication-review mode and an explicit sorted specialist
-   inventory before freezing the candidate. `required` needs an absolute Task
-   Witness bundle root and a current, nonhistorical, bare-clean Tricritical
-   terminal projection. `not-required` needs no bundle and makes no clean-review
-   claim. A suspected credential in either live or candidate PR text blocks
-   before mutation; never echo, preserve, or republish it.
+   When the writer's review gate applies, require its verified bare `clean`
+   hand-back for the same candidate, review input, requirements, selected
+   scopes, and current evidence dependencies. Rerun affected review on drift;
+   preserve nonclean terminals as blockers. The helper's successful validation
+   does not prove that this ordinary review ran. A suspected credential in
+   either live or candidate PR text blocks before mutation; never echo,
+   preserve, or republish it.
 3. Let the helper resolve and prove the canonical private receipt root before
    mutation, then invoke one owned operation. Production CLIs expose no receipt
    root override; internal test and controlled-migration APIs may supply one.
@@ -89,6 +97,12 @@ downgrade. Required mode is an optional witnessed route. When selected, it invok
 authenticated Task Witness front door and requires its current evidence and the
 registered Tricritical producer chain; if those are unavailable, stop before
 mutation. The ordinary `not-required` route does not depend on Task Witness.
+Carry the selected mode and specialist inventory unchanged through creation,
+text publication, and readiness. A changed selection requires a newly frozen
+candidate and fresh applicable review. A ready-only call must still have the
+writer's current review hand-back when its review gate applies. If a resumed
+task cannot verify the ordinary observations, require a new review or separately
+qualified retained evidence; a publication receipt alone does not prove them.
 
 Fixture-level witnessed-review coverage does not establish live publication
 reachability. Do not infer a production claim from fixtures.
