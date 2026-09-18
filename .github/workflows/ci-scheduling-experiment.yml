@@ -1,0 +1,230 @@
+name: CI scheduling experiment
+
+on:
+  push:
+    branches:
+      - ivan/ci-measure-serial
+      - ivan/ci-measure-injob2
+      - ivan/ci-measure-shards4
+
+# Each phase is launched separately after the orchestrator clears the window.
+# These experimental checks do not replace Provingkit source boundary.
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  GIT_CONFIG_NOSYSTEM: "1"
+  GIT_CONFIG_GLOBAL: /dev/null
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+  TZ: UTC
+
+jobs:
+  serial:
+    if: github.ref_name == 'ivan/ci-measure-serial'
+    name: Experiment / serial baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          path: harness
+          persist-credentials: false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ad31344cdcb9891438cf1e92c27c776945bee6ab
+          path: acquisition
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+      - name: Prepare isolated Python environment
+        run: |
+          python -m venv "$RUNNER_TEMP/measurement-venv"
+          "$RUNNER_TEMP/measurement-venv/bin/python" -m pip install --disable-pip-version-check idna==3.18 jsonschema==4.26.0 PyYAML==6.0.3
+          echo "$RUNNER_TEMP/measurement-venv/bin" >> "$GITHUB_PATH"
+          mkdir -p "$RUNNER_TEMP/measurement-results"
+      - name: Freeze the complete validation environment
+        run: python -m pip freeze --all > "$RUNNER_TEMP/measurement-results/requirements.txt"
+      - name: Measure the unchanged complete suite
+        run: |
+          python harness/scripts/measure_provingkit_suite.py discover --candidate "$GITHUB_WORKSPACE/acquisition" --output "$RUNNER_TEMP/measurement-results/acquisition.json"
+          git -C "$GITHUB_WORKSPACE/acquisition" bundle create "$RUNNER_TEMP/measurement-results/candidate.bundle" --all HEAD
+          sha256sum "$RUNNER_TEMP/measurement-results/candidate.bundle" | cut -d ' ' -f 1 > "$RUNNER_TEMP/measurement-results/candidate.bundle.sha256"
+          python harness/scripts/ci_measurement_phase.py restore-candidate --candidate "$GITHUB_WORKSPACE/candidate" --bundle "$RUNNER_TEMP/measurement-results/candidate.bundle" --bundle-digest "$RUNNER_TEMP/measurement-results/candidate.bundle.sha256" --acquisition "$RUNNER_TEMP/measurement-results/acquisition.json"
+          python harness/scripts/measure_provingkit_suite.py run --candidate "$GITHUB_WORKSPACE/candidate" --output "$RUNNER_TEMP/measurement-results/serial.json"
+      - name: Retain serial evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: measurement-serial
+          path: ${{ runner.temp }}/measurement-results/
+          if-no-files-found: error
+          retention-days: 30
+
+  injob:
+    if: github.ref_name == 'ivan/ci-measure-injob2'
+    name: Experiment / two processes on one runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          path: harness
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+      - name: Prepare isolated Python environment
+        run: |
+          python -m venv "$RUNNER_TEMP/measurement-venv"
+          echo "$RUNNER_TEMP/measurement-venv/bin" >> "$GITHUB_PATH"
+          mkdir -p "$RUNNER_TEMP/measurement-results"
+      - name: Resolve the unique completed baseline for this harness revision
+        id: baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api --paginate --slurp "repos/$GH_REPO/actions/workflows/ci-scheduling-experiment.yml/runs?branch=ivan%2Fci-measure-serial&status=completed&head_sha=$GITHUB_SHA&per_page=100" > "$RUNNER_TEMP/baseline-runs.json"
+          python harness/scripts/ci_measurement_phase.py baseline-run --runs "$RUNNER_TEMP/baseline-runs.json" --head "$GITHUB_SHA" --output "$GITHUB_OUTPUT"
+      - name: Download the serial evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: measurement-serial
+          path: ${{ runner.temp }}/serial
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Restore the complete baseline validation environment
+        run: python -m pip install --disable-pip-version-check --requirement "$RUNNER_TEMP/serial/requirements.txt"
+      - name: Restore the complete baseline candidate and refs
+        run: python harness/scripts/ci_measurement_phase.py restore-candidate --candidate "$GITHUB_WORKSPACE/candidate" --bundle "$RUNNER_TEMP/serial/candidate.bundle" --bundle-digest "$RUNNER_TEMP/serial/candidate.bundle.sha256" --acquisition "$RUNNER_TEMP/serial/acquisition.json" --baseline "$RUNNER_TEMP/serial/serial.json"
+      - name: Plan and execute two complete-method workers
+        run: |
+          python harness/scripts/measure_provingkit_suite.py plan --baseline "$RUNNER_TEMP/serial/serial.json" --workers 2 --output "$RUNNER_TEMP/measurement-results/plan.json"
+          python harness/scripts/ci_measurement_phase.py in-job --candidate "$GITHUB_WORKSPACE/candidate" --plan "$RUNNER_TEMP/measurement-results/plan.json" --output-dir "$RUNNER_TEMP/measurement-results"
+      - name: Retain in-job evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: measurement-injob2
+          path: ${{ runner.temp }}/measurement-results/
+          if-no-files-found: error
+          retention-days: 30
+
+  shards:
+    if: github.ref_name == 'ivan/ci-measure-shards4'
+    name: Experiment / isolated shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          path: harness
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+      - name: Prepare isolated Python environment
+        run: |
+          python -m venv "$RUNNER_TEMP/measurement-venv"
+          echo "$RUNNER_TEMP/measurement-venv/bin" >> "$GITHUB_PATH"
+          mkdir -p "$RUNNER_TEMP/measurement-results"
+      - name: Resolve the unique completed baseline for this harness revision
+        id: baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api --paginate --slurp "repos/$GH_REPO/actions/workflows/ci-scheduling-experiment.yml/runs?branch=ivan%2Fci-measure-serial&status=completed&head_sha=$GITHUB_SHA&per_page=100" > "$RUNNER_TEMP/baseline-runs.json"
+          python harness/scripts/ci_measurement_phase.py baseline-run --runs "$RUNNER_TEMP/baseline-runs.json" --head "$GITHUB_SHA" --output "$GITHUB_OUTPUT"
+      - name: Download the serial evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: measurement-serial
+          path: ${{ runner.temp }}/serial
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Restore the complete baseline validation environment
+        run: python -m pip install --disable-pip-version-check --requirement "$RUNNER_TEMP/serial/requirements.txt"
+      - name: Restore the complete baseline candidate and refs
+        run: python harness/scripts/ci_measurement_phase.py restore-candidate --candidate "$GITHUB_WORKSPACE/candidate" --bundle "$RUNNER_TEMP/serial/candidate.bundle" --bundle-digest "$RUNNER_TEMP/serial/candidate.bundle.sha256" --acquisition "$RUNNER_TEMP/serial/acquisition.json" --baseline "$RUNNER_TEMP/serial/serial.json"
+      - name: Measure one complete-method shard
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: |
+          python harness/scripts/measure_provingkit_suite.py plan --baseline "$RUNNER_TEMP/serial/serial.json" --workers 4 --output "$RUNNER_TEMP/measurement-results/plan.json"
+          python harness/scripts/measure_provingkit_suite.py run --candidate "$GITHUB_WORKSPACE/candidate" --plan "$RUNNER_TEMP/measurement-results/plan.json" --shard-index "$SHARD_INDEX" --output "$RUNNER_TEMP/measurement-results/shard-$SHARD_INDEX.json"
+      - name: Retain shard evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: measurement-shard-${{ matrix.shard }}
+          path: ${{ runner.temp }}/measurement-results/
+          if-no-files-found: error
+          retention-days: 30
+
+  aggregate:
+    if: always() && github.ref_name == 'ivan/ci-measure-shards4'
+    needs: shards
+    name: Experiment / complete isolated-shard evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          path: harness
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+      - name: Prepare isolated Python environment
+        run: |
+          python -m venv "$RUNNER_TEMP/measurement-venv"
+          echo "$RUNNER_TEMP/measurement-venv/bin" >> "$GITHUB_PATH"
+          mkdir -p "$RUNNER_TEMP/measurement-results"
+      - name: Resolve the unique completed baseline for this harness revision
+        id: baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api --paginate --slurp "repos/$GH_REPO/actions/workflows/ci-scheduling-experiment.yml/runs?branch=ivan%2Fci-measure-serial&status=completed&head_sha=$GITHUB_SHA&per_page=100" > "$RUNNER_TEMP/baseline-runs.json"
+          python harness/scripts/ci_measurement_phase.py baseline-run --runs "$RUNNER_TEMP/baseline-runs.json" --head "$GITHUB_SHA" --output "$GITHUB_OUTPUT"
+      - name: Download the serial evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: measurement-serial
+          path: ${{ runner.temp }}/serial
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Restore the complete baseline validation environment
+        run: python -m pip install --disable-pip-version-check --requirement "$RUNNER_TEMP/serial/requirements.txt"
+      - name: Restore the complete baseline candidate and refs
+        run: python harness/scripts/ci_measurement_phase.py restore-candidate --candidate "$GITHUB_WORKSPACE/candidate" --bundle "$RUNNER_TEMP/serial/candidate.bundle" --bundle-digest "$RUNNER_TEMP/serial/candidate.bundle.sha256" --acquisition "$RUNNER_TEMP/serial/acquisition.json" --baseline "$RUNNER_TEMP/serial/serial.json"
+      - name: Download every shard's result
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: measurement-shard-*
+          path: ${{ runner.temp }}/shards
+      - name: Require successful execution and exact result coverage
+        env:
+          SHARDS_RESULT: ${{ needs.shards.result }}
+        run: |
+          test "$SHARDS_RESULT" = success
+          python harness/scripts/ci_measurement_phase.py separate-jobs --candidate "$GITHUB_WORKSPACE/candidate" --input-dir "$RUNNER_TEMP/shards" --output "$RUNNER_TEMP/measurement-results/aggregate.json"
+      - name: Retain aggregate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: measurement-shards4-aggregate
+          path: ${{ runner.temp }}/measurement-results/
+          if-no-files-found: error
+          retention-days: 30

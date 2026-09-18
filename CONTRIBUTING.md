@@ -63,6 +63,10 @@ python scripts/validate_proseweaving.py .
 These commands validate public source contracts. They do not grant release,
 installation, runtime, or host-mutation authority.
 
+For the selected scheduling experiment, follow the
+[CI measurement procedure](docs/agents/ci-scheduling-measurement.md). It keeps
+timing evidence separate from the source acceptance checks above.
+
 ### Prepared source-stage containment
 
 The prepared wrapper exposes only `source-stage` validation. Invoke it from a
