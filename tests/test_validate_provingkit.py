@@ -130,6 +130,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/source-skill-lineage/source-manifest.json",
             "release/source-skill-disposition/disposition-ledger.json",
             "release/source-skill-disposition/release-refresh-contract.json",
+            "tests/plugins/mergecraft/writing-reviewable-pr-descriptions/test_review_input.py",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
         expected_members = {
@@ -168,12 +169,17 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         *,
         accepted: bool,
         extension: str = "txt",
+        expected_error: str = "unallowlisted legacy repository identity",
+        relative: str | None = None,
     ) -> None:
-        relative = f"release/provingkit/unexpected-identity.{extension}"
+        if relative is None:
+            relative = f"release/provingkit/unexpected-identity.{extension}"
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             self.clone_with_history(repository)
-            (repository / relative).write_text(content, encoding="utf-8")
+            fixture = repository / relative
+            fixture.parent.mkdir(parents=True, exist_ok=True)
+            fixture.write_text(content, encoding="utf-8")
 
             result = self.validate(repository)
 
@@ -181,7 +187,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
         else:
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("unallowlisted legacy repository identity", result.stderr)
+            self.assertIn(expected_error, result.stderr)
             self.assertIn(relative, result.stderr)
 
     def synthetic_release_manifest(self) -> dict[str, object]:
@@ -1746,6 +1752,207 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             accepted=False,
             extension="json",
         )
+
+    def test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected(
+        self,
+    ) -> None:
+        variants = {
+            "hex-escape": (r"\x61gents", "agents", "yaml"),
+            "escaped-line-break": ("a\\\ngents", "agents", "yml"),
+            "hex-and-percent-composition": (r"\x2561gents", "%61gents", "yaml"),
+        }
+        for variant_name, (
+            encoded_segment,
+            decoded_segment,
+            extension,
+        ) in variants.items():
+            with self.subTest(variant=variant_name):
+                document = (
+                    'repository: "https://github.com/nisavid/'
+                    + encoded_segment
+                    + '"\n'
+                )
+                self.assertEqual(
+                    yaml.safe_load(document),
+                    {
+                        "repository": (
+                            "https://github.com/nisavid/" + decoded_segment
+                        )
+                    },
+                )
+                self.assert_identity_fixture(
+                    document,
+                    accepted=False,
+                    extension=extension,
+                )
+
+    def test_legitimate_yaml_semantics_remain_accepted(self) -> None:
+        literal_escape = "https://github.com/nisavid/" + r"\x61gents"
+        variants = {
+            "canonical-repository": (
+                'repository: "https://github.com/nisavid/provingkit"\n'
+                'label: "\\x61rchived source"\n',
+                {
+                    "repository": "https://github.com/nisavid/provingkit",
+                    "label": "archived source",
+                },
+            ),
+            "single-quoted-backslash": (
+                "repository: '" + literal_escape + "'\n",
+                {"repository": literal_escape},
+            ),
+            "escaped-backslash": (
+                'repository: "https://github.com/nisavid/'
+                + r"\\x61gents"
+                + '"\n',
+                {"repository": literal_escape},
+            ),
+        }
+        for variant_name, (document, expected) in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assertEqual(yaml.safe_load(document), expected)
+                self.assert_identity_fixture(
+                    document,
+                    accepted=True,
+                    extension="yaml",
+                )
+
+    def test_yaml_frontmatter_escape_for_legacy_repository_identity_is_rejected(
+        self,
+    ) -> None:
+        metadata = (
+            "name: unexpected-skill\n"
+            'description: "https://github.com/nisavid/'
+            + r"\x61gents"
+            + '"\n'
+        )
+        self.assertEqual(
+            yaml.safe_load(metadata),
+            {
+                "name": "unexpected-skill",
+                "description": "https://github.com/nisavid/" + "agents",
+            },
+        )
+        self.assert_identity_fixture(
+            "---\n" + metadata + "---\n# Unexpected skill\n",
+            accepted=False,
+            relative="release/provingkit/unexpected-skill/SKILL.md",
+        )
+
+    def test_yaml_binary_legacy_repository_identities_are_rejected(self) -> None:
+        encoded_legacy_repository = (
+            "aHR0cHM6Ly9naXRodWIuY29tL25pc2F2aWQvYWdlbnRz"
+        )
+        encoded_percent_repository = (
+            "aHR0cHM6Ly9naXRodWIuY29tL25pc2F2aWQvJTYxZ2VudHM="
+        )
+        legacy_repository = (
+            "https://github.com/nisavid/" + "agents"
+        ).encode("utf-8")
+        percent_repository = (
+            "https://github.com/nisavid/" + "%61gents"
+        ).encode("utf-8")
+        variants = {
+            "yaml-document": (
+                "repository: !!binary " + encoded_legacy_repository + "\n",
+                {"repository": legacy_repository},
+                None,
+            ),
+            "percent-composition": (
+                "repository: !!binary " + encoded_percent_repository + "\n",
+                {"repository": percent_repository},
+                None,
+            ),
+            "frontmatter": (
+                (
+                    "---\nname: unexpected-skill\ndescription: !!binary "
+                    + encoded_legacy_repository
+                    + "\n---\n# Unexpected skill\n"
+                ),
+                {
+                    "name": "unexpected-skill",
+                    "description": legacy_repository,
+                },
+                "release/provingkit/unexpected-skill/SKILL.md",
+            ),
+        }
+        for variant_name, (document, expected, relative) in variants.items():
+            with self.subTest(variant=variant_name):
+                yaml_source = document
+                if relative is not None:
+                    yaml_source = document.split("---\n", maxsplit=2)[1]
+                self.assertEqual(yaml.safe_load(yaml_source), expected)
+                self.assert_identity_fixture(
+                    document,
+                    accepted=False,
+                    extension="yaml",
+                    relative=relative,
+                )
+
+    def test_overwritten_yaml_binary_legacy_identities_are_rejected(self) -> None:
+        encoded_legacy_repository = (
+            "aHR0cHM6Ly9naXRodWIuY29tL25pc2F2aWQvYWdlbnRz"
+        )
+        encoded_percent_repository = (
+            "aHR0cHM6Ly9naXRodWIuY29tL25pc2F2aWQvJTYxZ2VudHM="
+        )
+        variants = {
+            "yaml-document": (
+                "repository: !!binary "
+                + encoded_legacy_repository
+                + "\nrepository: https://github.com/nisavid/provingkit\n",
+                None,
+            ),
+            "percent-composition": (
+                "repository: !!binary "
+                + encoded_percent_repository
+                + "\nrepository: https://github.com/nisavid/provingkit\n",
+                None,
+            ),
+            "frontmatter": (
+                "---\nname: unexpected-skill\ndescription: !!binary "
+                + encoded_legacy_repository
+                + "\ndescription: canonical repository\n---\n# Unexpected skill\n",
+                "release/provingkit/unexpected-skill/SKILL.md",
+            ),
+        }
+        for variant_name, (document, relative) in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    document,
+                    accepted=False,
+                    extension="yaml",
+                    relative=relative,
+                )
+
+    def test_identity_irrelevant_yaml_constructors_remain_accepted(self) -> None:
+        variants = {
+            "custom-tag": "value: !opaque harmless\n",
+            "large-integer": "value: " + ("9" * 5_000) + "\n",
+        }
+        for variant_name, document in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assertIsNotNone(yaml.compose(document, Loader=yaml.SafeLoader))
+                self.assert_identity_fixture(
+                    document,
+                    accepted=True,
+                    extension="yaml",
+                )
+
+    def test_invalid_yaml_identity_source_fails_closed(self) -> None:
+        variants = {
+            "invalid-escape": r"\xZZ",
+            "out-of-range-code-point": r"\U00110000",
+            "surrogate": r"\uD800",
+        }
+        for variant_name, encoded_value in variants.items():
+            with self.subTest(variant=variant_name):
+                self.assert_identity_fixture(
+                    'repository: "' + encoded_value + '"\n',
+                    accepted=False,
+                    expected_error="YAML identity source is unreadable",
+                    extension="yaml",
+                )
 
     def test_github_url_dot_segments_for_legacy_identity_are_rejected(
         self,
