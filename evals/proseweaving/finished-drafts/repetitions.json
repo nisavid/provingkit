@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "qualitative-application-repetitions",
+  "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+  "application_record": "application.json",
+  "application_sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6",
+  "content_lock_path": "plugins/proseweaving/content-lock.json",
+  "content_lock_sha256": "e42b759653d51b0719165d9bc638e36baa685b93312438f59115502d2594223d",
+  "corpus_path": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json",
+  "corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+  "fixture_sha256": {
+    "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/batch-content-led-variation.md": "148157c08e6fb710a6fc9c9a581338b5edd3927c41412a48d5b8c032541f8888",
+    "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/conversation-useful-first-person.md": "02787d38327399d5482ab3c9179406a56012ffb42c26e2215b6854ffcc7e759e",
+    "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/intentional-form-and-quote.md": "04b07f1356ca897d8ededc8917a758934cf2bc13c0f3f0f6107e6a18dd666f73",
+    "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/missing-material-evidence.md": "87c92cc08385c5381cfd9c28c95533d5daccecce02d16d9766edf2f50cbac313",
+    "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/no-change.md": "86ba1cbc2fb2f283e1887c9739509b8a339faedb02295b44822a68ba848a7d7d",
+    "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/publication-evidence-boundary.md": "38ec665f959ce2be89fa8953d2b7aacc1745e664f9b2b459e3128f81712ccf2c"
+  },
+  "runtime_source_sha256": {
+    "skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+    "skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+    "skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+    "skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+    "skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+  },
+  "runs_per_case": 3,
+  "case_count": 6,
+  "retained_runs": 6,
+  "new_runs": 12,
+  "runs": [
+    {
+      "case_id": 1,
+      "repetition": 1,
+      "source_record": "application.json",
+      "packet_sha256": "b52cdb5c492c7b788ff24de4b1ca562e14e8e148d0270fc4e35a090ca7cbd07c",
+      "response_path": "responses/1.md",
+      "response_sha256": "8f052afeb834c970a6fc3984d91fb75c27bdfe14028e8b8810602d85cd1beada",
+      "native_agent": "integrated_application_1",
+      "producer_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2"
+    },
+    {
+      "case_id": 1,
+      "repetition": 2,
+      "response_path": "responses/1-run-2.md",
+      "response_sha256": "6a8966c0c21bab50c73e5ff1f2f0ecd8989ef070c7dac0db8817ee0fdfde438e",
+      "native_agent": "repeat_application_1_2",
+      "packet_sha256": "b52cdb5c492c7b788ff24de4b1ca562e14e8e148d0270fc4e35a090ca7cbd07c",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 1,
+      "repetition": 3,
+      "response_path": "responses/1-run-3.md",
+      "response_sha256": "7fba15d74ca82562d813dce49b3bd91d5b42b38a8384ac7b206b3b71627e633a",
+      "native_agent": "repeat_application_1_3",
+      "packet_sha256": "b52cdb5c492c7b788ff24de4b1ca562e14e8e148d0270fc4e35a090ca7cbd07c",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 2,
+      "repetition": 1,
+      "source_record": "application.json",
+      "packet_sha256": "1ab7c14f090b521f9ca56389b575ef25a39a9b00e2bf4881100c6c606f1a8a99",
+      "response_path": "responses/2.md",
+      "response_sha256": "bae6e3a05f4cfe8b59f80fce497ce03e95752589bd8a0f4e183f991245c42d62",
+      "native_agent": "integrated_application_2",
+      "producer_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2"
+    },
+    {
+      "case_id": 2,
+      "repetition": 2,
+      "response_path": "responses/2-run-2.md",
+      "response_sha256": "7c131715b87eb633adb0e2a6ebe852eee598825652a24661ed689c3889f70741",
+      "native_agent": "repeat_application_2_2",
+      "packet_sha256": "1ab7c14f090b521f9ca56389b575ef25a39a9b00e2bf4881100c6c606f1a8a99",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 2,
+      "repetition": 3,
+      "response_path": "responses/2-run-3.md",
+      "response_sha256": "d5c6e8d2afb0705321d8d170b50ae04ad8c3b69ad8be861c134d48329e1d34b2",
+      "native_agent": "repeat_application_2_3",
+      "packet_sha256": "1ab7c14f090b521f9ca56389b575ef25a39a9b00e2bf4881100c6c606f1a8a99",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 3,
+      "repetition": 1,
+      "source_record": "application.json",
+      "packet_sha256": "bfab60c0b39e5810da01aeb4b14feac215f2834a05f3ef64ab59846b92988413",
+      "response_path": "responses/3.md",
+      "response_sha256": "41a4ca0145854da670ad04c06076cf2dc69516b9ff3293f1d2222c98d6552871",
+      "native_agent": "integrated_application_3",
+      "producer_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2"
+    },
+    {
+      "case_id": 3,
+      "repetition": 2,
+      "response_path": "responses/3-run-2.md",
+      "response_sha256": "bfb72879d2529676f6e45f1f127a01030da050099c57522ba9220bbabf5513ca",
+      "native_agent": "repeat_application_3_2",
+      "packet_sha256": "bfab60c0b39e5810da01aeb4b14feac215f2834a05f3ef64ab59846b92988413",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 3,
+      "repetition": 3,
+      "response_path": "responses/3-run-3.md",
+      "response_sha256": "7d59d10d725ee97dbb81394b9386186870e921d554ea5b6dff7a391381290d9f",
+      "native_agent": "repeat_application_3_3",
+      "packet_sha256": "bfab60c0b39e5810da01aeb4b14feac215f2834a05f3ef64ab59846b92988413",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 4,
+      "repetition": 1,
+      "source_record": "application.json",
+      "packet_sha256": "820d34518a723aec5e5793993b4e750f0c6ad297ec06298dbba0a91e6219a79e",
+      "response_path": "responses/4.md",
+      "response_sha256": "9ece20c716873e54c6f6d116f48f02e16a0d75e4c736887df7f81b9829b1992e",
+      "native_agent": "integrated_application_4",
+      "producer_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2"
+    },
+    {
+      "case_id": 4,
+      "repetition": 2,
+      "response_path": "responses/4-run-2.md",
+      "response_sha256": "0e2ce3f68a06ec27fc1ffc9e413c2d4a89716ab6ba5c6e6d0bea8a6f8df30859",
+      "native_agent": "repeat_application_4_2",
+      "packet_sha256": "820d34518a723aec5e5793993b4e750f0c6ad297ec06298dbba0a91e6219a79e",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 4,
+      "repetition": 3,
+      "response_path": "responses/4-run-3.md",
+      "response_sha256": "f9f46e7f428649d0b60a8bc5fd0e957669b4cb19eb5e64ce828b01f656c38d8f",
+      "native_agent": "repeat_application_4_3",
+      "packet_sha256": "820d34518a723aec5e5793993b4e750f0c6ad297ec06298dbba0a91e6219a79e",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 5,
+      "repetition": 1,
+      "source_record": "application.json",
+      "packet_sha256": "bf191f30fa6006509be7ce0d265cdb3b45d81be90aa3f5be50f6e8dff6b1e6f8",
+      "response_path": "responses/5.md",
+      "response_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "native_agent": "integrated_application_5",
+      "producer_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2"
+    },
+    {
+      "case_id": 5,
+      "repetition": 2,
+      "response_path": "responses/5-run-2.md",
+      "response_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "native_agent": "repeat_application_5_2",
+      "packet_sha256": "bf191f30fa6006509be7ce0d265cdb3b45d81be90aa3f5be50f6e8dff6b1e6f8",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 5,
+      "repetition": 3,
+      "response_path": "responses/5-run-3.md",
+      "response_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "native_agent": "repeat_application_5_3",
+      "packet_sha256": "bf191f30fa6006509be7ce0d265cdb3b45d81be90aa3f5be50f6e8dff6b1e6f8",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 6,
+      "repetition": 1,
+      "source_record": "application.json",
+      "packet_sha256": "5aa0579fccfb9a1bbfea126953ef15da9967cb582d64a008b59b221210ea5cee",
+      "response_path": "responses/6.md",
+      "response_sha256": "74ef46d31789fc3967f9ed564ab99ecb3ddac51f6cddb4e348269e647afb7831",
+      "native_agent": "integrated_application_6",
+      "producer_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2"
+    },
+    {
+      "case_id": 6,
+      "repetition": 2,
+      "response_path": "responses/6-run-2.md",
+      "response_sha256": "58923fb68593d595e14037ba97d4df80caa40b5cae64c9edfe3e12aa9146a205",
+      "native_agent": "repeat_application_6_2",
+      "packet_sha256": "5aa0579fccfb9a1bbfea126953ef15da9967cb582d64a008b59b221210ea5cee",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    },
+    {
+      "case_id": 6,
+      "repetition": 3,
+      "response_path": "responses/6-run-3.md",
+      "response_sha256": "6b53e916e510d06c7fad3643d06743f3c4dc2ce5bc8fe8a87f73c0042d744e18",
+      "native_agent": "repeat_application_6_3",
+      "packet_sha256": "5aa0579fccfb9a1bbfea126953ef15da9967cb582d64a008b59b221210ea5cee",
+      "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa"
+    }
+  ],
+  "method": {
+    "route": "Codex desktop native subagents; each added run used a fresh agent with context_fork none and inherited model and reasoning settings.",
+    "packet_reuse": "Every prompt, fixture, runtime-bundle byte, packet prefix, JSON encoding, and packet digest equals the original application record and current source. The six original runs count as repetition 1 without changing their provenance. Earlier preparation runs used different dependencies and do not count.",
+    "launch_instruction": "Read the supplied packet path once. Execute the writing task contained in that packet using its supplied procedure contents. After that initial read, do not use tools, inspect the environment, or consult other files. Return only the requested writing. Do not write any file.",
+    "instruction_provenance": "This launch instruction describes the new repetitions only; the retained first runs retain their original delivery record. Local transport paths are omitted.",
+    "response_capture": "Native final messages transcribed verbatim with one trailing newline.",
+    "executor_model_id": null,
+    "model_limit": "Inherited native model selection; no independently exported model identifier or immutable provider attestation.",
+    "limits": [
+      "Ambient provider/system instructions, installed skill metadata, and harness guidance remained available.",
+      "One initial local read was permitted. Further tool restrictions were instructional, not enforced tool denial or filesystem isolation.",
+      "No independently exported full provider context, token accounting, completion timing, or immutable served model identity.",
+      "The same six synthetic cases were repeated; this is not a comparative baseline, installed-plugin observation, discovery result, or release qualification."
+    ]
+  }
+}

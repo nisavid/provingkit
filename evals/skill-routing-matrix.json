@@ -2,7 +2,7 @@
   "schema_version": 2,
   "semantic_definition": {
     "path": "evals/control-plane-matrix.json",
-    "sha256": "d1b4b99f8cf7f923a9414430ff37a26233aa0ecd96212e22489ed7bf07f7c944"
+    "sha256": "036d1df941403af8df0407d9b72dcb7e12e3bbe83a69222d12e5153338d556b5"
   },
   "existing_trigger_sources": [
     {
@@ -352,6 +352,21 @@
         "negative": "Review this frozen candidate for runtime failure paths; return findings without rewriting its human-facing prose.",
         "negative_expected_skills": [
           "runtime"
+        ]
+      }
+    },
+    {
+      "id": "proseweaving:editing-finished-drafts",
+      "cold_start": "Verify and edit this completed draft against the supplied evidence, preserving its purpose, format, and supported claims.",
+      "explicit": "Use $editing-finished-drafts for a final verification and editing pass on this completed draft.",
+      "supplemental": {
+        "positive": "These three replies are ready to send, but they sound like copies of each other. Tighten them without changing what I did or promised.",
+        "positive_expected_skills": [
+          "editing-finished-drafts"
+        ],
+        "negative": "Write a new incident update from these log notes. We have no draft yet; make it suitable for support.",
+        "negative_expected_skills": [
+          "writing-for-people"
         ]
       }
     }
