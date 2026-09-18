@@ -15,7 +15,7 @@ references. Expectations and expected output stay with the separate grader.
 The explicitly delivered bundle exercises application of the instructions;
 it does not test native discovery.
 
-Each case ran once in a fresh Codex CLI session requesting `gpt-6-astra` with
+Each execution uses a fresh Codex CLI session requesting `gpt-6-astra` with
 `xhigh` reasoning, an ephemeral session, and a read-only worker sandbox.
 The executor was instructed to return prose without tools. The retained traces
 show completed responses and no task-tool events. This observed behavior does
@@ -40,9 +40,26 @@ preview/release qualification. The preview panel remains separately owned.
   the failing grade; only the affected criterion needs regrading because no
   executor input changed.
 
-The [final grading](final-grading.json) passes all 36 expectations across the
-twelve cases. It binds the final corpus, regrades only the changed criterion,
-and retains the unchanged grades with their provenance.
+The [first final-source grading](final-grading.json) passes all 36 expectations
+across the twelve cases. It binds the final corpus, regrades only the changed
+criterion, and retains the unchanged grades with their provenance.
+
+[Two additional repetitions](application-repetitions-2-3.json) use exactly the
+same tasks, fixtures, and four instruction files as iteration 2. Their
+[independent grading](repeated-grading.json) records 71 of 72 passing
+expectation observations. The [three-run aggregate](three-run-grading.json)
+combines them with the retained first repetition without changing its evidence.
+All twelve safety criteria pass in all three runs; all twenty-four quality
+criteria pass at least two of three, meeting the
+[accepted application thresholds](https://github.com/nisavid/provingkit/issues/29#issuecomment-5524457529).
+The one retained quality miss is case 7's third repetition: its reply explains
+the mechanism before stating completion, no loss, and resolution. The other
+two repetitions pass that outcome-first criterion. No replacement execution
+or revised criterion removes this observation.
+
+These repeated application results remain separate from the discovery checks
+below and from ordinary receipt normalization and readiness checks. They do
+not establish the preview or release claims excluded above.
 
 The shared CLI installation changed from 0.154.0 to 0.155.0 between iterations.
 The second record corrects its earlier version declaration using the later
