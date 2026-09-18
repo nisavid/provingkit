@@ -1840,6 +1840,85 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             relative="release/provingkit/unexpected-skill/SKILL.md",
         )
 
+    def test_yaml_frontmatter_bom_does_not_change_identity_detection(self) -> None:
+        metadata = (
+            'repository: "https://github.com/nisavid/' + r"\x61gents" + '"\n'
+        )
+        for prefix in ("", "\ufeff"):
+            for newline in ("\n", "\r\n"):
+                with self.subTest(prefix=repr(prefix), newline=repr(newline)):
+                    document = (
+                        prefix + "---\n" + metadata + "---\n# Documentary fixture\n"
+                    )
+                    self.assert_identity_fixture(
+                        document.replace("\n", newline),
+                        accepted=False,
+                        extension="md",
+                    )
+
+    def test_legitimate_bom_frontmatter_remains_accepted(self) -> None:
+        literal_escape = "https://github.com/nisavid/" + r"\x61gents"
+        variants = {
+            "canonical-repository": (
+                'repository: "https://github.com/nisavid/provingkit"\n'
+                'label: "\\x61rchived source"\n'
+            ),
+            "literal-backslash": "repository: '" + literal_escape + "'\n",
+        }
+        for name, metadata in variants.items():
+            with self.subTest(variant=name):
+                self.assert_identity_fixture(
+                    "\ufeff---\n" + metadata + "---\nThis Markdown body is not YAML: [\n",
+                    accepted=True,
+                    extension="md",
+                )
+
+    def test_malformed_bom_frontmatter_reports_its_path(self) -> None:
+        self.assert_identity_fixture(
+            '\ufeff---\nrepository: "' + r"\xZZ" + '"\n---\n# Documentary fixture\n',
+            accepted=False,
+            extension="md",
+            expected_error="YAML identity source is unreadable",
+        )
+
+    def test_frontmatter_exception_binds_original_bytes_including_bom(self) -> None:
+        document = (
+            '---\nrepository: "https://github.com/nisavid/'
+            + r"\x61gents"
+            + '"\n---\n# Documentary fixture\n'
+        )
+        without_bom = "512d00e79a123dfc828ea4efc41a560a1e1ec3c23e454f67d44faf1418c2d310"
+        with_bom = "3ea9a41365ed6c76d7d7a0328abd7e40e6da50b35f3728f3c14d0a0069bafc74"
+        relative = "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md"
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            allowlist_path = (
+                repository / "release/provingkit/historical-identity-allowlist-v1.json"
+            )
+            allowlist = json.loads(allowlist_path.read_text(encoding="utf-8"))
+            entry = next(item for item in allowlist["entries"] if item["path"] == relative)
+            for prefix, expected, other in (
+                ("", without_bom, with_bom),
+                ("\ufeff", with_bom, without_bom),
+            ):
+                (repository / relative).write_text(prefix + document, encoding="utf-8")
+                for digest, accepted in ((other, False), (expected, True)):
+                    with self.subTest(prefix=repr(prefix), matching_digest=accepted):
+                        entry["sha256"] = "sha256:" + digest
+                        allowlist_path.write_text(
+                            json.dumps(allowlist, indent=2) + "\n", encoding="utf-8"
+                        )
+                        result = self.validate(repository)
+                        if accepted:
+                            self.assertEqual(result.returncode, 0, result.stderr)
+                        else:
+                            self.assertNotEqual(result.returncode, 0)
+                            self.assertEqual(
+                                result.stderr.strip(),
+                                "historical identity allowlist hash drift",
+                            )
+
     def test_yaml_binary_legacy_repository_identities_are_rejected(self) -> None:
         encoded_legacy_repository = (
             "aHR0cHM6Ly9naXRodWIuY29tL25pc2F2aWQvYWdlbnRz"

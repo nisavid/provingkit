@@ -66,7 +66,8 @@ LEGACY_IDENTITY_TOKENS = tuple(
 IDENTITY_SCAN_MAX_DECODE_PASSES = 8
 JSON_ASCII_ESCAPE_PATTERN = re.compile(rb"\\u00([0-7][0-9A-Fa-f])")
 YAML_FRONTMATTER_PATTERN = re.compile(
-    rb"\A---\r?\n(?P<yaml>.*?)\r?\n---(?:\r?\n|\Z)",
+    # Recognize an initial encoding marker without changing the bytes we hash.
+    rb"\A(?:\xef\xbb\xbf)?---\r?\n(?P<yaml>.*?)\r?\n---(?:\r?\n|\Z)",
     re.DOTALL,
 )
 YAML_BINARY_TAG = "tag:yaml.org,2002:binary"
