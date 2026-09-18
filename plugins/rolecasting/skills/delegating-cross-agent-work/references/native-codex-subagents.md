@@ -26,8 +26,8 @@ initial-release dependency.
 ## Freeze before launch
 
 First freeze the complete content-addressed Rolecasting plan, including its
-exact request, target version and executor, topology, model-selection identity
-or explicit absence, bounded return and stop contracts, requested authority,
+exact request, target version and executor, topology, model-selection-record
+identity, bounded return and stop contracts, requested authority,
 and the consumer's minimum for all five assurance dimensions. Requested
 authority is intent; it is not evidence that the product enforced effective
 authority.
