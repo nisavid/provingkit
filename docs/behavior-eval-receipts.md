@@ -1,136 +1,198 @@
 # Ordinary behavior-evaluation receipts
 
-Prepare committed evaluation inputs, project local observations into public receipts, and check their coverage and freshness with [the local adapter](../scripts/behavior_eval_receipts.py). Its `prepare`, `produce`, and `check` functions expose the same three stages to repository callers. This is a source-specific procedure for ordinary result data.
+Produce and check behavior-evaluation receipts for the committed Provingkit Slate with [the inventory adapter](../scripts/behavior_eval_inventory.py) and [the receipt core](../scripts/behavior_eval_receipts.py). The inventory derives affected skills and their current cases; the core binds observations to source and checks coverage. Use preparation before new runs, reconciliation for eligible retained observations, and a check of receipt bytes committed in the candidate.
 
 ## When to load this procedure
 
-Load it when producing a behavior receipt from fresh evaluation artifacts, checking receipts after skill or shared-reference changes, or consuming those results for disclosure or readiness. For example, “Record these three runs,” “Does this reference change invalidate the writing skill’s receipt?” and “Check the behavior evidence for this candidate” enter this procedure.
+Load it when recording behavior evaluations, reconciling retained run or discovery artifacts, checking evidence after skill or shared-input changes, or consuming those results for disclosure or readiness. “Record these three runs,” “Can these original runs support the current source?” and “Check behavior evidence for this candidate” enter this procedure.
 
-Static source validation, ordinary pull-request review, publication-review receipts, and deployment qualification use their owning procedures. A request such as “Check Markdown formatting” or “Verify the publication-review receipt” does not enter this procedure. An unchanged candidate still enters when the request is to check behavior evidence; `not-required` is an application outcome, not a discovery exemption.
+Static source validation, ordinary pull-request review, publication-review receipts, and deployment qualification use their owning procedures. “Check Markdown formatting” and “Verify the publication-review receipt” do not enter this procedure. An unchanged candidate still enters when behavior evidence is requested: `not-required` is a check outcome, not a discovery exemption.
 
 ## Inputs and claim
 
-Use a local Git repository with the relevant committed source and ancestry available, Python, and `jsonschema`. JSON inputs must use finite numbers and strings representable as UTF-8 scalar text. The [schema](../release/behavior-eval-receipt-v1.schema.json) defines the public `evaluation` and `waiver` records and the private `skill`, `snapshot`, `results`, `execution`, `grading`, `triggerObservation`, and `request` inputs under `$defs`. The [policy](../release/behavior-eval-policy.json) requires three runs of every case: each safety expectation passes all three, each quality expectation passes at least two, and every trigger case is correct.
+Use a local Git repository with the required commits and ancestry available, Python, and `jsonschema`. JSON must contain finite numbers and UTF-8 scalar text. The [schema](../release/behavior-eval-receipt-v1.schema.json) defines public receipts and private inputs, including `snapshot`, `results`, `reconciliationResults`, `routingSequence`, and `request`. The [policy](../release/behavior-eval-policy.json) requires three runs per application case: every safety expectation passes all three, every quality expectation passes at least two, and every Boolean or ordered-routing trigger is correct.
 
-These checks establish consistency of supplied data, coverage arithmetic, and byte binding to Git source. They do not authenticate observations, prove native invocation from authored fields, or supply issuer, privileged-execution, protected-evidence, or security assurance. `attestation` is always `null` and has no operative meaning. Route a requirement for those stronger claims to its owner before expanding this procedure.
+These are ordinary data checks: source coverage, supplied-artifact consistency, threshold arithmetic, and byte binding. They do not authenticate observations or review decisions, establish native invocation from authored fields, or supply issuer, privileged-execution, protected-evidence, or security assurance. `attestation: null` is inert. Return a requirement for stronger claims to its owner before expanding this procedure.
 
-The local corpus adapter supports:
+Keep four commit identities distinct:
 
-- A per-skill object with matching `skill_name` and a nonempty `evals` array. Every case has a unique positive integer `id`, a `fixture_paths` array, and nonempty `expectations` containing unique `id`, nonblank `text`, and explicit `severity` of `safety` or `quality`.
-- A nonempty trigger array whose entries contain exactly a unique nonblank `query` and Boolean `should_trigger`. Trigger result IDs are the one-based array positions written as strings.
-- Committed regular files with normalized repository-relative paths. Fixture paths resolve under the descriptor’s `fixture_root`, which defaults to the skill directory.
+| Identity | Meaning |
+| --- | --- |
+| B | Comparison base used to decide which skills require receipts. |
+| S | Committed source evaluated after preparation, or matched to retained observations during reconciliation. The receipt calls this `candidate_revision`. |
+| C | Candidate containing the public receipts; the check calls this `candidate_revision`. S must be its ancestor and all bound source inputs must remain unchanged. C is not claimed to have been executed. |
+| P | Committed processing implementation used for reconciliation, recorded separately from S and original execution revisions. |
 
-String-only expectations, missing or empty trigger corpora, and other matrix formats are unsupported. When preparing a skill or checking a selected skill, return the unsupported input and required adapter work to its owner. Checking selects skills before parsing their corpora, so an untouched skill with an unsupported or malformed corpus can remain a no-op. A future matrix adapter must retain every case and distinguish observed invocation from authored selections. Historical output keeps its original input identity; it cannot be rebound to fresh source by adding a new envelope.
+Complete canonical source and content-lock preparation before selecting S. Keep public receipts outside the evaluated input closure. Run commands from the repository root, or put `--repository PATH` before the subcommand. `SKILL` is a `plugin/skill` ID, `EVAL_PRIVATE` is a private artifact directory outside the repository, and `RECEIPTS` is an authorized repository-relative receipt directory. All commands emit JSON on stdout; create destinations before redirecting output.
 
-## 1. Prepare the evaluated source
-
-Choose an existing full commit identity **S** for the source to evaluate. Complete source and content-lock preparation before selecting S. The later commit **C** that contains the receipt must descend from S and retain the entire evaluated input closure unchanged. The receipt’s `candidate_revision` names S; the check request’s `candidate_revision` names C. Neither field claims that C was executed.
-
-Write one private skill descriptor per skill. This illustrative descriptor uses the supported shape; replace its identities and paths with the actual source:
-
-```json
-{
-  "plugin": "example",
-  "skill": "writing",
-  "content_lock": "release/plugin-content-locks/example.json",
-  "evals": "plugins/example/skills/writing/evals/evals.json",
-  "trigger_evals": "plugins/example/skills/writing/evals/trigger-evals.json",
-  "behavior_inputs": [],
-  "dependencies": [],
-  "shared_references": [],
-  "closure_complete": true
-}
-```
-
-Inventory both the inputs whose changes require evaluating this skill and the dependencies that keep its existing evaluation fresh. The required `behavior_inputs` array lists every external fixture, directly consumed behavioral resource, and applicable ownership-map file as a normalized repository-relative exact file path. Use `[]` when there are none. Put canonical shared-reference sources in `shared_references`, including sources whose generated projections affect this skill. Put other freshness dependencies, such as runner configuration, in `dependencies`. A directly consumed behavioral resource outside the automatic skill and corpus inputs also belongs in `behavior_inputs`; listing it only in `dependencies` does not select the skill when it changes.
-
-Fixtures inside the skill directory are covered automatically. For a supported corpus, `prepare` rejects any external fixture absent from `behavior_inputs`, even if it appears in `dependencies`. For example, a fixture resolving to `evals/external/case.md` requires that exact path in `behavior_inputs`. `closure_complete: true` asserts that both the behavioral and freshness inventories are complete; the helper does not independently discover omitted inputs or consumers.
-
-The snapshot binds the whole skill directory, the whole declared content lock, the corpora and their listed fixtures, all three descriptor input arrays, and the receipt tool, policy, and schema. It records each file’s bytes and executable mode. For a selected skill, all these inputs must remain unchanged between S and C. Whole-lock binding is intentionally conservative: a change elsewhere in that lock makes the selected skill’s receipt stale. The lock, tool, policy, schema, and `dependencies` do not by themselves select skills; an independently behavioral use must also appear in the behavioral inventory. Source-stage validators, CI, and shared outputs are outside the automatic closure. Keep receipt outputs outside the evaluated closure so recording them does not invalidate their own inputs.
-
-Run commands from the repository root, or insert `--repository PATH` before the subcommand. In these examples, `S` holds the full evaluated commit, `EVAL_PRIVATE` names a task-specific private directory outside the repository, and `RECEIPTS` names the authorized public receipt directory. JSON results go to stdout; the caller chooses their destinations.
+## 1. Resolve the committed inventory
 
 ```sh
-python scripts/behavior_eval_receipts.py prepare \
-  --revision "$S" --skill-spec "$EVAL_PRIVATE/spec.json" \
+python scripts/behavior_eval_inventory.py discover --revision "$S" \
+  > "$EVAL_PRIVATE/inventory.json"
+python scripts/behavior_eval_inventory.py normalize --revision "$S" --skill "$SKILL" \
+  > "$EVAL_PRIVATE/normalized.json"
+python scripts/behavior_eval_inventory.py descriptor --revision "$S" --skill "$SKILL" \
+  > "$EVAL_PRIVATE/descriptor.json"
+```
+
+The authoritative repository inventory starts at [the Kit definition](../release/provingkit/definition-v1.json): its Slate selects plugins, and each plugin's topology declares its Roster. Discovery compares each Roster with committed `skills/*/SKILL.md` entrypoints. An outside-Slate directory does not become a member through filesystem presence. Missing or extra entrypoints remain diagnostics. `discover` returning zero establishes Roster completeness only; inspect diagnostics and require the selected descriptor's `status: "ready"` before producing evidence.
+
+[Corpus normalization](../scripts/behavior_eval_corpora.py) retains original coordinates as `{source, pointer, id}`. A case with ID `0` at `/evals/0` keeps ID `0`; a string ID stays a string. When an ID is absent, its dictionary key supplies the identity if available; otherwise it remains `null`. JSON pointers locate source records; they are not invented expectation IDs. Normalization retains every owned current application and trigger case, resolves external fixtures and referenced scenarios, and preserves complete ordered `expected_selection` arrays. It distinguishes current corpora and supporting inputs from reference-only material and retained run/grading evidence. A retained grade is not a current case or a newly observed result.
+
+Supported source forms include per-skill evals, scenario lists and dictionaries, Boolean trigger arrays, routing matrices, and scenario references used by control-plane or retirement matrices. Unknown formats, missing fixtures, unresolved owners, and missing expectation IDs or severities remain diagnostics. Missing application or trigger coverage is unresolved; there is no absent-trigger exemption. Selected unresolved inputs block preparation and checking instead of disappearing from coverage.
+
+Use the committed [input map](../release/behavior-eval-input-map.json) for reviewed ownership, role, and dependency declarations, and the [expectation map](../release/behavior-eval-expectation-map.json) for reviewed expectation IDs and `safety`/`quality` severities. Accepted entries bind the original source digest and pointer, their semantic fields, and an accepted review reference with the matching semantic digest. Expectation mappings also retain the exact original value and cannot override an explicit source ID or severity. Byte/digest checks establish correspondence, not the reviewer's authority.
+
+```sh
+python scripts/behavior_eval_inventory.py proposals --revision "$S" --skill "$SKILL" \
+  > "$EVAL_PRIVATE/unresolved.json"
+```
+
+`proposals` returns original unresolved values and existing proposed entries for review. It neither writes mappings nor chooses owners, IDs, severities, or acceptance decisions. A proposed entry does not resolve a case. Return consequential mapping decisions to their owner, commit accepted declarations through the owning workflow, then choose S and normalize again.
+
+The generated descriptor accounts for the skill subtree, consumed corpora and fixtures, topology resources, local linked resources, shared canonical sources and their projections, and declared supporting inputs. Ordered routing also binds the complete Slate catalog's definition, topologies, and skill entrypoints. The snapshot binds the full skill directory, whole content lock, corpora, mappings, and descriptor inputs by bytes and executable mode. Whole-lock binding is deliberately conservative. Preparation also binds the tool, corpus and inventory adapters, policy, and schema at S; reconciliation records those processing files at P instead.
+
+This full freshness closure is broader than the inputs that select a skill for evaluation, and broader than what a runner actually delivered. For example, a skill's `agents/openai.yaml` can be bound source without being a delivered runtime input. Source-stage validation and downstream readiness remain separate requirements.
+
+## 2. Prepare and produce new observations
+
+```sh
+python scripts/behavior_eval_inventory.py prepare --revision "$S" --skill "$SKILL" \
   > "$EVAL_PRIVATE/snapshot.json"
 ```
 
-Preparation is complete when the returned snapshot matches the intended skill and complete committed inputs at S. Preserve it unchanged with the private run artifacts.
+Preserve the returned snapshot unchanged. Use a separately authorized runner to execute every application case at repetitions 1, 2, and 3, grade every expectation, and observe every trigger. These adapters execute no evaluations themselves. Store private artifacts using the schema's envelopes:
 
-## 2. Record observations
-
-Use the separately authorized evaluation runner to execute every corpus case at repetitions 1, 2, and 3, grade every expectation in each run, and observe every trigger case. The receipt adapter executes no model or harness runs.
-
-Retain the actual local artifacts in the schema’s private envelopes:
-
-| Artifact | Required binding and result |
+| Artifact | Required correspondence |
 | --- | --- |
-| Executor output | Snapshot digest, case ID, repetition, executor model ID, and response (including an explicitly observed empty string). |
-| Grading | The same snapshot and coordinate, grader model ID, exact executor-artifact byte digest, and one Boolean `passed` observation per expectation ID. |
-| Trigger observation | Snapshot digest, trigger case ID, executor model ID, `observation_kind: "recorded-invocation"`, and observed Boolean `triggered`. |
-| Results manifest | Snapshot digest, executor and grader model IDs, each run’s coordinate and artifact paths, and each trigger’s observation path. |
+| Executor output | Snapshot digest, original case coordinate, repetition, executor model ID, and actual response. An explicitly observed empty response is valid data. |
+| Grading | Same snapshot and coordinate, grader model ID, exact executor-artifact byte digest, and a Boolean `passed` observation for each expectation ID. |
+| Trigger observation | Same snapshot, trigger coordinate, executor model ID, and recorded Boolean invocation or complete recorded invocation sequence, as required by the corpus. |
+| Results manifest | Same snapshot and model IDs, every run coordinate and artifact path, and every trigger observation path. |
 
-Artifact paths are relative to the private results manifest’s directory. `snapshot_sha256` uses `document_digest(snapshot)`: SHA-256 of UTF-8 JSON with sorted keys, compact separators, unescaped Unicode, and no trailing newline. Artifact digests cover their exact file bytes.
-
-The runner records observations; the corpus supplies expected behavior and severity. A model’s authored selection of a skill is not a recorded invocation and cannot populate that observation kind. An observed empty response is a completed result that the grader can assess; an absent response field or artifact remains missing. Missing grading or invocation evidence also remains missing. The helper checks envelope consistency, not whether an author truthfully recorded a run or its model identity.
-
-Recording is complete when every required coordinate, expectation, and trigger has its own corresponding artifacts, bound to the preserved snapshot. Keep raw responses, grading files, invocation observations, and the manifest private.
-
-## 3. Produce the public receipt
+Paths resolve from the private results manifest. `snapshot_sha256` is `document_digest(snapshot)`: SHA-256 of sorted, compact UTF-8 JSON with unescaped Unicode and no trailing newline. Artifact hashes cover exact bytes. An authored skill selection cannot populate a recorded-invocation field. Missing responses, grades, or observations remain missing; envelope consistency does not prove that a run occurred or a model identity was truthful.
 
 ```sh
 python scripts/behavior_eval_receipts.py produce \
-  --snapshot "$EVAL_PRIVATE/snapshot.json" \
-  --results "$EVAL_PRIVATE/results.json" \
-  > "$RECEIPTS/example/writing.json"
+  --snapshot "$EVAL_PRIVATE/snapshot.json" --results "$EVAL_PRIVATE/results.json" \
+  > "$RECEIPTS/$SKILL.json"
 ```
 
-Create the destination directory beforehand. The producer reads local artifacts, checks their snapshot, coordinate, model, and coverage bindings, and projects expectation results and trigger observations into a receipt. The public record retains hashes of private artifacts and the manifest; it omits their private paths and raw output. Inspect the result before publication. A produced receipt can record failing thresholds; creation alone is not a passing check.
+Production checks all required coordinates and projects results into a public receipt, retaining private-artifact hashes while omitting their paths and raw outputs. Completion requires the intended S, unchanged snapshot, complete results, and retained private artifacts. A produced receipt may record failed thresholds; proceed to candidate checking before treating it as passing.
 
-Production is complete when the public record has the intended evaluated revision S, unchanged snapshot, complete results, and private-evidence digests. Preserve the private artifacts under their existing retention arrangements so those hashes remain useful for later inspection.
+## 3. Reconcile retained observations
 
-## 4. Check the candidate
+Use this route when original artifacts can establish correspondence after execution. It does not backdate a snapshot or create new runs.
 
-Create a request using `$defs.request`:
-
-- `schema_version` is `1`; `base_revision` is the full comparison commit **B**; `candidate_revision` is the full commit to check, **C**.
-- `skills` contains the complete inventory of skill descriptors relevant to the check, including skills affected through shared references. Descriptors reflect the inputs at C and must match those in any accepted receipt.
-- `inventory_complete` is `true`. This is a caller assertion, not verified repository discovery.
-- `changed_skills` explicitly lists affected `plugin/skill` IDs known to the caller; use an empty array only when there are no additional known IDs. Every listed ID must occur in `skills` and is checked even if the diff does not otherwise select it. When ownership changes, include the union of old and new consumers here, keeping their descriptors current at C instead of adding deleted historical files to their current closures.
-
-The checker selects skills from the explicit IDs and the Git diff between B and C. A skill is selected when the diff touches its directory, `evals`, `trigger_evals`, a `behavior_inputs` file, or a canonical source listed in `shared_references`. This selection happens before corpus parsing. Changes confined to freshness inputs do not select an otherwise untouched skill. For example, changing a declared external fixture selects its consumers; changing only runner configuration in `dependencies` does not.
-
-For every selected skill, the checker then requires supported corpora and checks the full S-to-C input binding, including freshness-only dependencies. An unsupported or malformed corpus fails when its skill is selected; it does not block an untouched skill’s no-op. Complete coverage depends on the caller supplying every affected skill and its behavioral and freshness inventories. The result reports `coverage_basis: "caller-declared-complete"`.
+1. Resolve the complete current inventory at S. Select P containing the processing implementation; its committed tool, corpus adapter, inventory adapter, policy, and schema must match the running files. Processing files need not have existed when the original evaluations ran. A processing-only change requires reprocessing, not relabeling the old receipt.
+2. Write a private `$defs.reconciliationResults` manifest with `method: "reconciled-after-run"`. Use read-only `$defs.evidenceReference` values: relative artifact `path`, exact byte `sha256`, `format` (`utf8`, `json`, or `jsonl`), and `pointer`. An empty pointer selects the whole artifact and is required for UTF-8 text. JSONL pointers use **physical zero-based line indices, including blank lines**; blanks occupy null entries. `/2/payload/response` addresses the third physical line, not the third nonblank record. Preserve original bytes and references rather than authoring replacement observations.
+3. Supply three distinct original executions per current application case. Each `execution_record` must be a supported original run object, not an arbitrary field or a newly authored identity. Its `execution` envelope must record successful completion, exactly one `thread_ids` value, and the matching response digest; the alternative supported form records `native_agent`. Every present recognized identifier is checked: when both forms appear, `native_agent` must equal the single recorded thread ID. Both forms must bind the actual response through the record's `response` or `response_sha256`, with every present response field agreeing. Recorded case and repetition fields must also agree. Different references to the same execution cannot supply multiple cases or repetitions. The public `execution_identity` retains its `recorded-thread` or `recorded-native-agent` basis and identity hash.
+4. Retain the recorded original revision or explicitly recorded `null`, original corpus digest, actual prompt and response, and delivered runtime and fixture bindings. The complete reviewed `runtime_inputs` list must include the skill entrypoint and belong to the bound source; `runtime_inputs_complete: true` remains the caller's completeness assertion. Each run must account for that list and every case fixture. Delivered bytes and prompt must match current source exactly. Full source freshness does not establish actual delivery.
+5. Preserve executor and grader identities with their original `configured`, `requested`, or `reported` evidence basis. Configuration evidence does not establish which model served a request. Reference actual Boolean grades bound to the unchanged response and current rubric or corpus digest. Keep original expectations and grades; a rubric correction requires `previous_grading` and actual `adjudication` evidence with the later grading and model basis. Regrading one response remains one execution. Keep failures in the lineage and use actual final grades.
+6. Supply the corresponding discovery evidence below. Missing records, changed delivered inputs, incomplete routing catalogs, and unsupported trace formats remain explicit gaps. Do not manufacture missing observations or substitute authored selections.
 
 ```sh
-python scripts/behavior_eval_receipts.py check \
-  --request "$EVAL_PRIVATE/request.json" --receipts "$RECEIPTS" \
+python scripts/behavior_eval_inventory.py reconcile \
+  --revision "$S" --processing-revision "$P" --skill "$SKILL" \
+  --results "$EVAL_PRIVATE/reconciliation.json" \
+  > "$RECEIPTS/$SKILL.json"
+```
+
+The public receipt records the reconciliation method, original execution and grading lineage, model bases, observation limits, S, and P. References preserve hashes, formats, and pointers while omitting private artifact paths and response text. Inspect public coordinates for unintended private details. Retain originals unchanged, then check the candidate. Successful production alone proves neither passing thresholds nor a new evaluation.
+
+### Boolean discovery
+
+`recorded-invocation` references an original Boolean invocation observation. `recorded-sentinel-body-load` records a bounded probe surrogate. Its trace form retains `record`, `model`, `query`, and `limits`, plus retained `trace`, `probe_skill`, `probe_prompt`, `sentinel`, and `returncode` references. The adapter matches the probe's name and description to current skill metadata, then requires one started and completed turn. A positive permits exactly one successful `cat` read of the named `.agents/skills/<name>/SKILL.md`, parsed through a supported absolute shell with `-c` or `-lc`, returning the exact probe bytes. It rejects repeated or concurrent reads, mismatched read starts and completions, responses during an unfinished read, and events after turn completion. CLI message records have no final phase: preliminary messages may precede the read, but a terminal response must follow every read and precede turn completion. The command is parsed as data and is never executed by reconciliation.
+
+A positive requires the recorded body load, exact sentinel response, and successful completion. A negative requires no body load, the exact negative response prescribed by the original probe prompt, no tool actions, and successful completion. Preserve that original prompt even when the negative trace contains no read. This correspondence covers the probe's name and description, not execution of the current skill body or native invocation. It cannot satisfy an ordered-routing case.
+
+A retained public trace projection may replace its original probe-root path with the literal `<probe-root>`. This is the only supported symbolic root and requires the original run record's nonempty `trace_path_normalization` and valid `original_transcript_sha256`. Preserve those original declarations and projected bytes; do not reconstruct a raw trace or relabel a projection as raw evidence. Artifact references hash the supplied projection, while public reconciliation separately retains `trace_projection: {kind: "symbolic-paths", original_trace_sha256}`. The original-trace digest records retained provenance; reconciliation neither reopens that raw trace nor authenticates the projection's correspondence to it. This allowance does not relax the literal command and read requirements of the complete-catalog sequence route.
+
+### Complete ordered routing
+
+Use `recorded-invocation-sequence` only for an original observed sequence retaining every selection in order. For supplied-catalog marker probes, use `recorded-sentinel-sequence` and `$defs.routingSequence`. Inspect canonical metadata with:
+
+```sh
+python scripts/behavior_eval_inventory.py catalog --revision "$S" \
+  > "$EVAL_PRIVATE/canonical-catalog.json"
+```
+
+The command returns an inspection view with `members` and `source_identities`. Reconciliation's `source_catalog` instead references the original `revision`, `tree`, and `entries` envelope; each entry retains `id` as `plugin:skill`, `name`, `description`, `source_path`, and `source_sha256`. Do not substitute a newly generated inspection view for retained evidence.
+
+The catalog must cover the complete committed Slate and every Roster member, with unique unqualified skill names. Retain original references for:
+
+- `source_catalog`, including its original revision, Git tree, and every member's identity, name, description, entrypoint path, and digest;
+- the exact `offered_catalog` JSON string, `marker_map`, and `bodies` for **every** catalog member, including unselected skills;
+- the frozen `protocol`, original `query`, complete `executor_message`, raw native `trace`, and original `dispatch` and `spawn` records;
+- `record`, model evidence, and limits, with `prompt_basis: "frozen-dispatch-argument"`.
+
+The retained source catalog must match the canonical catalog rebuilt from its original commit, whose complete source identities must also match S's bound inputs. Each offered name and description must match that catalog. Each unique marker body is its unique token followed by a newline; its path, byte count, digest, and literal read command must match the marker map and offered catalog. Use the precise supported literal `functions.exec`/`exec_command` read shape in the core; unsupported wrappers or incomplete evidence require adapter work, not inferred reads.
+
+The frozen executor message must equal `protocol + "\nRequest:\n" + query + "\n\nAvailable skill catalog:\n" + offered_catalog`, preserving the exact offered JSON text. The original dispatch's `arguments.message` must equal that message, `fork_turns` must be `"none"`, and `task_name` must match the spawned agent path. Dispatch and spawn must share a `call_id`; the spawn's `agent_thread_id` must match the native trace's single session identity. One native routing session cannot supply multiple observations.
+
+Recorded user inputs must equal the frozen message or belong to the exact reviewed ambient set described below. Arbitrary additional instructions, conflicting messages, and inputs after completion are rejected. If the recorder omits or encrypts provider-input plaintext, dispatch-to-child correspondence does not recover it. Keep `prompt_basis: "frozen-dispatch-argument"` and record that limit; neither absence of conflicting plaintext nor `fork_turns: "none"` proves a complete provider request, installed-skill discovery, native skill invocation, or runtime isolation.
+
+The adapter validates nested native record types, identities, command arguments, and message blocks before interpreting state or identity correspondence. It then derives the sequence: each allowed sequential tool call must match its completed command, exact marker output, successful exit, and corresponding outer tool result. It requires one identified session and completed turn with matching configured model, and one final response after all reads. Native `phase: "final"` and `channel: "final"` are supported; if both appear, both must be `"final"`. Malformed records and unmatched, concurrent, failing, or unsupported calls reject the evidence. Preserve duplicates and extra reads in their original order; never filter to the expected skill. The final `{"tokens": [...]}` response must agree with the derived reads and serves only as corroboration.
+
+Compare the full observed sequence with the full expected sequence. Expected `["writer"]` with observed `["writer", "writer"]` fails. A neighboring negative may expect another skill; preserve that selection. Expected `[]` passes only with no reads and the corresponding empty-token response in a successful turn.
+
+The public `routingCatalog` retains canonical source identities, every member's metadata/body/token hashes, complete read identities and order, hashes of the prompt, offered catalog, marker map, and trace, and dispatch/spawn references with hashed call, task, child-session, and turn identities. Checking rebuilds the canonical catalog, matches it to the source snapshot, and checks public reads, session uniqueness, and retained evidence references. It does not reopen private traces or authenticate their origin.
+
+### Reviewed ambient context for routing
+
+Optional `sequence.ambient` permits only exact recorded harness envelopes: an AGENTS instruction heading followed by `<INSTRUCTIONS>` and `<environment_context>`, or `<environment_context>` alone. Each `records` entry supplies an original `reference` to the user-message payload in the same trace bytes and format, plus `provenance`. Use `kind: "harness-agents-environment"` with `repository_path_sha256`, `instructions_sha256`, and `environment_sha256`, or `kind: "harness-environment"` with `environment_sha256`. The adapter derives these hashes from the supported envelope and requires agreement; the record digest also binds the complete payload. Every listed payload must occur exactly once, and literal routing markers in it are rejected.
+
+Before accepting this allowance, review the exact ambient content for expected-selection leakage, answer hints, or instructions that alter the probe's routing task. The mechanical marker check cannot make that semantic decision. Record the existing review as `review: {decision: "accepted", reference, records_sha256}`. The digest is `document_digest` of the ordered public records array: each item has `reference` containing only `sha256`, `format`, and `pointer`; `record_sha256` containing `document_digest` of the original user-message payload; and `provenance`. It is not the digest of the private manifest or a blanket approval of an AGENTS filename.
+
+Unsupported user-message shapes remain rejected. Changed content needs a new review; a missing or unaccepted review cannot be replaced by relabeling the input as ambient. The public catalog retains the reviewed records, provenance, and review binding for subsequent consistency checks. This allowance establishes neither authenticated harness provenance nor review authority, and does not remove the provider-input limits above.
+
+## 4. Check committed receipts at C
+
+Through the owning Git workflow, record receipts at `$RECEIPTS/<plugin>/<skill>.json` and select C. First inspect applicability, then run the check:
+
+```sh
+python scripts/behavior_eval_inventory.py compare --base "$B" --candidate "$C" \
+  > "$EVAL_PRIVATE/comparison.json"
+python scripts/behavior_eval_inventory.py check \
+  --base "$B" --candidate "$C" --receipt-root "$RECEIPTS" \
   > "$EVAL_PRIVATE/check.json"
 ```
 
-The directory contains `<plugin>/<skill>.json` for each supplied receipt. The CLI reads these local files; it does not establish that their bytes are committed in C. A preparation check can use uncommitted receipt files. For an integrated candidate claim, the caller must read or verify the receipt bytes committed at C and supply those bytes to the checker.
+Applicability compares committed B and C and selects both old and new consumers of changed behavioral inputs: skill subtrees, current corpora and fixtures, shared sources, topology consumption, and operative ownership or expectation mappings. Mapping selection is per owner. A changed accepted owner or rubric selects its affected consumers; changes only to proposals, rationale, or review metadata do not. Removed or renamed skills, changed unsupported corpora, and changed inputs with unresolved owners produce explicit unsupported coverage. Descriptors for selected skills use C's current inventory, without forcing deleted historical files into its closure.
 
-For each selected skill, the checker validates the record, matches the descriptor and original snapshot, verifies S is an ancestor of C, compares the complete bound inputs at both commits, and recomputes coverage and thresholds. The CLI supplies raw file bytes, and the checker records `receipt_raw_sha256` before parsing them. It also records canonical `receipt_sha256` when the parsed value can be serialized, retaining these identities on acceptance and rejection. Malformed JSON or unsupported numeric/Unicode values retain the raw-file digest without inventing a document digest; an unreadable or missing file has neither. Python callers can supply raw bytes for the same behavior or JSON records, which have only a canonical document identity. `evaluated_revision` appears after the source and coverage checks complete. Changes outside the selected skill’s declared evaluated closure can preserve its result; changes inside it require fresh preparation and observations.
+Freshness then compares the selected receipt's full S-to-C binding. Whole mapping files, content locks, and supporting dependencies remain freshness inputs even where they do not independently select a skill. Processing files also bind S to C for prepared receipts; reconciliation verifies them separately at P. For example, an external behavioral fixture change selects its consumers; a proposal-only map edit does not, but it can stale an already selected receipt through the whole map's digest. Untouched unresolved corpora may remain outside a no-op check; no-op does not establish their support or freshness.
+
+The inventory checker reads actual regular Git blobs at `C:$RECEIPTS/<plugin>/<skill>.json`, not working-directory copies, and records their path, mode, blob identity, and byte digest. It passes C as both revisions to the core with each inventory-selected skill explicit, so the core's broader file-level selection cannot widen the per-owner comparison. The result records this coverage basis and retains selection causes, diagnostics, and unsupported inputs.
+
+For every selected skill, require a ready current descriptor, matching receipt and snapshot, S ancestry, unchanged full source closure, complete coverage, and passing thresholds. Reconciliation also checks P against committed and running processing files and checks public correspondence and lineage. Stale processing requires reconciliation again. Changed delivered prompts, runtime bytes, or fixtures require eligible observations for those changed inputs.
+
+The core records `receipt_raw_sha256` before parsing and canonical `receipt_sha256` when serialization succeeds, on acceptance or rejection. Malformed bytes retain their raw identity; missing or unreadable files have neither. `evaluated_revision` names S after source and coverage checks complete, not an original historical execution revision.
 
 | Outcome | Exit | Required action |
 | --- | --- | --- |
-| `pass` | `0` | Retain the check result and receipt identities for the consuming workflow. |
-| `not-required` | `0` | Record that no skill was selected under this request’s inventory, explicit IDs, and diff. Untouched corpora were not parsed. This does not prove inventory completeness, corpus support, or receipt freshness. |
-| `fail` | `1` | Inspect each selected skill’s reason: unsupported corpus, missing, stale, wrong-skill, malformed coverage, failed expectation threshold, or incorrect trigger evidence needs correction, owner-supplied adapter work, or fresh observations. |
-| Per-skill `waiver-pending`, overall `fail` | `1` | Hand the recorded decision and release anchor to the owner of operator-authority and expiry verification. |
-| `error` | `2` | Correct malformed request/JSON or unavailable inputs before retrying. During preparation, unsupported corpora also produce this outcome; during checking, a selected skill’s unsupported corpus or parsed receipt schema failure is a per-skill rejection. |
+| `pass` | 0 | Retain the committed receipt identities, selected coverage, and result for the consumer. |
+| `not-required` | 0 | Record that the complete comparison selected no skill. Do not infer universal corpus support or receipt freshness. |
+| `fail` | 1 | Preserve all rejected or unsupported coverage. Resolve missing evidence, mappings, adapter support, stale bindings, or actual failed expectations before claiming a pass. |
+| Per-skill `waiver-pending`, overall `fail` | 1 | Hand the existing operator decision and release anchor to the owner of authority and expiry verification. |
+| `error` | 2 | Correct malformed or unavailable inputs. Preparation and reconciliation also use this exit for unresolved selected inventories or invalid evidence. |
 
-A waiver uses `$defs.waiver`: the bound snapshot and S, `kind: "waiver"`, a reason, `operator_decision` with `issued_by: "operator"` and the actual decision’s SHA-256 digest, `expiry` with `event: "next-release"` and its `after_release` anchor, and `attestation: null`. Record only an existing operator decision. A waiver must pass the same descriptor and freshness checks. The local checker cannot establish issuance or expiry and leaves an otherwise valid waiver pending with both verification flags false.
+`normalize`, `descriptor`, and `proposals` return 1 for unresolved results; `compare` returns 1 for unsupported selection. Inspect their JSON, not just process success. A waiver uses `$defs.waiver`: bound S and snapshot, reason, existing operator-decision digest, `expiry.event: "next-release"` with its `after_release` anchor, and `attestation: null`. It must satisfy descriptor and freshness checks. The local checker leaves issuance and expiry verification false; no threshold or authority requirement is waived by recording it.
 
-Checking is complete when every required skill has an explicit outcome tied to the requested revision and every consumed input has its available raw-file or canonical-record identity. Preserve rejected raw inputs with the caller’s error evidence; an in-memory value that cannot be canonicalized has no document identity. A passing result covers ordinary result-data checks only; pending or failed evidence stays visible to the consumer.
+## Direct core callers
 
-## Acceptance and integration handoff
+The core API remains available as `prepare`, `produce`, `reconcile`, and `check`; the inventory exposes `discover`, `normalize`, `canonical_catalog`, `descriptor`, `proposals`, `compare`, `prepare`, `reconcile`, and `check`. Python callers may use these same seams.
 
-Run `python -m unittest tests.test_behavior_eval_receipts` and `git diff --check` for changes to this procedure or adapter. The tests construct local artifacts and Git histories; they establish adapter behavior, not live model execution or harness invocation. Review the procedure against its final tool, policy, and schema revision. Exercise positive and neighboring negative discovery separately from application success, failure, unsupported-input, waiver, and no-op branches; static review or a constructed receipt does not establish live agent behavior.
+For a deliberately caller-scoped check, core CLI `prepare` takes `--revision S --skill-spec spec.json`; `reconcile` additionally takes `--processing-revision P --results reconciliation.json`; `check` takes `--request request.json --receipts DIRECTORY`. Its descriptor requires `behavior_inputs`, `dependencies`, `shared_references`, and `closure_complete: true`; its request supplies B, C, `skills`, explicit `changed_skills`, and `inventory_complete: true`. These completeness fields are caller assertions, not independently discovered coverage.
 
-Shared source-stage validators, CI, disclosure, and readiness are integration work outside this standalone adapter. The integration owner supplies authoritative inventories and corpus adapters, accounts for all external cases and shared consumers, and derives `changed_skills` from old and new ownership while keeping descriptors current at C. That owner also verifies committed receipt bytes at C and preserves independent readiness requirements. Publication-review receipts retain their separate purpose and format.
+List every external fixture, directly consumed behavioral resource, and applicable ownership map in `behavior_inputs`; put canonical shared sources in `shared_references` and other freshness inputs in `dependencies`. A supported external fixture absent from `behavior_inputs` is rejected even if listed as a dependency. The core unions explicit changed IDs with its local Git diff effects, enforces every explicit ID, and selects before parsing corpora. Include both old and new consumers when ownership changes, while keeping descriptors current at C. Its legacy corpus form remains limited to positive integer case IDs with structured expectations and nonempty explicit Boolean trigger arrays; inventory-generated `provingkit-v1` descriptors provide normalized coordinates and matrix coverage.
 
-Before dependent execution, both [disclosure #28](https://github.com/nisavid/provingkit/issues/28) and [readiness #34](https://github.com/nisavid/provingkit/issues/34) must load this procedure and use its tool, policy, and schema from the same reviewed, published source revision. Record that procedure revision together with B, S, C, the request, the checked canonical receipt digests, available raw-file digests, and the result. Disclosure consumes those identities and explicit outcomes; readiness requires passing ordinary checks or separately established waiver handling under its own contract. Feed a correction that changes the procedure’s meaning or input boundary back to its owner and refresh affected evidence.
+The direct CLI reads mutable local receipt files and reports `coverage_basis: "caller-declared-complete"`. It is useful before committing, but does not establish committed receipt bytes at C or authoritative inventory coverage. Python callers supplying raw bytes retain raw and canonical digests; callers supplying JSON values have only canonical identities. Use the inventory check for the committed-Slate claim above.
 
-Consumer invocation pointers, source-stage wiring, current procedure behavior evidence, and verification on the integrated published revision remain prerequisites for the complete [receipt work #33](https://github.com/nisavid/provingkit/issues/33). This document supplies the standalone procedure and required handoff; its presence does not establish that those integrations have occurred.
+## Acceptance and consumer handoff
+
+For adapter changes, run `python -m unittest tests.test_behavior_eval_receipts tests.test_behavior_eval_corpora tests.test_behavior_eval_inventory` and `git diff --check`. Tests construct artifacts and Git histories; they establish adapter behavior, not live evaluations or discovery. Review this procedure against the final implementation, schema, policy, and maps. Exercise positive and neighboring negative discovery separately from application success, failure, unsupported-input, waiver, and no-op branches. A constructed receipt or static review does not establish live procedure behavior.
+
+Before dependent execution, [disclosure #28](https://github.com/nisavid/provingkit/issues/28) and [readiness #34](https://github.com/nisavid/provingkit/issues/34) must load this procedure and invoke the inventory check using the same reviewed, published procedure and implementation revision. Retain that revision, B, S, C, comparison and check outputs, committed receipt identities, explicit failures or gaps, and any independently established waiver disposition. For reconciliation, also retain P, original artifact references and execution revisions, grading/adjudication lineage, model bases, and discovery limits. Disclosure consumes these identities and outcomes; readiness preserves its independent requirements and cannot treat `waiver-pending` as passing.
+
+Consumer invocation pointers, source-stage validators, CI wiring, live procedure evidence, and verification on the integrated published revision remain owned by the integrating workflow. Feed a correction affecting meaning or coverage back to this procedure's owner and refresh affected evidence. This standalone inventory and receipt procedure does not establish consumer completion, publication, or completion of [receipt work #33](https://github.com/nisavid/provingkit/issues/33).

@@ -98,6 +98,38 @@
           },
           "minItems": 0,
           "uniqueItems": true
+        },
+        "corpus_format": {
+          "const": "provingkit-v1"
+        },
+        "case_selection": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+                "minLength": 1
+              },
+              "pointer": {
+                "type": "string",
+                "pattern": "^/"
+              }
+            },
+            "required": [
+              "source",
+              "pointer"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "expectation_map": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+          "minLength": 1
         }
       },
       "required": [
@@ -111,7 +143,36 @@
         "closure_complete",
         "behavior_inputs"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "anyOf": [
+              {
+                "required": [
+                  "corpus_format"
+                ]
+              },
+              {
+                "required": [
+                  "case_selection"
+                ]
+              },
+              {
+                "required": [
+                  "expectation_map"
+                ]
+              }
+            ]
+          },
+          "then": {
+            "required": [
+              "corpus_format",
+              "case_selection"
+            ]
+          }
+        }
+      ]
     },
     "snapshot": {
       "type": "object",
@@ -202,9 +263,7 @@
             "type": "object",
             "properties": {
               "case_id": {
-                "type": "string",
-                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
-                "maxLength": 160
+                "$ref": "#/$defs/caseCoordinate"
               },
               "repetition": {
                 "type": "integer",
@@ -250,6 +309,9 @@
               "grading_sha256": {
                 "type": "string",
                 "pattern": "^[0-9a-f]{64}$"
+              },
+              "reconciliation": {
+                "$ref": "#/$defs/runReconciliation"
               }
             },
             "required": [
@@ -269,9 +331,7 @@
             "type": "object",
             "properties": {
               "case_id": {
-                "type": "string",
-                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
-                "maxLength": 160
+                "$ref": "#/$defs/caseCoordinate"
               },
               "expected": {
                 "type": "boolean"
@@ -284,17 +344,95 @@
                 "pattern": "^[0-9a-f]{64}$"
               },
               "observation_kind": {
-                "const": "recorded-invocation"
+                "enum": [
+                  "recorded-invocation",
+                  "recorded-sentinel-body-load",
+                  "recorded-invocation-sequence",
+                  "recorded-sentinel-sequence"
+                ]
+              },
+              "reconciliation": {
+                "$ref": "#/$defs/triggerReconciliation"
+              },
+              "expected_selection": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "observed_selection": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
               }
             },
             "required": [
               "case_id",
-              "expected",
-              "triggered",
               "observation_sha256",
               "observation_kind"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "oneOf": [
+              {
+                "required": [
+                  "expected",
+                  "triggered"
+                ],
+                "properties": {
+                  "observation_kind": {
+                    "enum": [
+                      "recorded-invocation",
+                      "recorded-sentinel-body-load"
+                    ]
+                  }
+                },
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "expected_selection"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "observed_selection"
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "expected_selection",
+                  "observed_selection"
+                ],
+                "properties": {
+                  "observation_kind": {
+                    "enum": [
+                      "recorded-invocation-sequence",
+                      "recorded-sentinel-sequence"
+                    ]
+                  }
+                },
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "expected"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "triggered"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
           },
           "minItems": 1
         },
@@ -308,6 +446,38 @@
           },
           "required": [
             "manifest_sha256"
+          ],
+          "additionalProperties": false
+        },
+        "method": {
+          "enum": [
+            "prepared-before-run",
+            "reconciled-after-run"
+          ]
+        },
+        "processing": {
+          "$ref": "#/$defs/processing"
+        },
+        "reconciliation": {
+          "type": "object",
+          "properties": {
+            "runtime_inputs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "runtime_inputs_complete": {
+              "const": true
+            }
+          },
+          "required": [
+            "runtime_inputs",
+            "runtime_inputs_complete"
           ],
           "additionalProperties": false
         }
@@ -325,7 +495,87 @@
         "triggers",
         "private_evidence"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "method"
+            ],
+            "properties": {
+              "method": {
+                "const": "reconciled-after-run"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "processing",
+              "reconciliation"
+            ],
+            "properties": {
+              "runs": {
+                "items": {
+                  "required": [
+                    "reconciliation"
+                  ]
+                }
+              },
+              "triggers": {
+                "items": {
+                  "required": [
+                    "reconciliation"
+                  ]
+                }
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "processing"
+                  ]
+                },
+                {
+                  "required": [
+                    "reconciliation"
+                  ]
+                }
+              ]
+            },
+            "properties": {
+              "runs": {
+                "items": {
+                  "not": {
+                    "required": [
+                      "reconciliation"
+                    ]
+                  }
+                }
+              },
+              "triggers": {
+                "items": {
+                  "properties": {
+                    "observation_kind": {
+                      "enum": [
+                        "recorded-invocation",
+                        "recorded-invocation-sequence"
+                      ]
+                    }
+                  },
+                  "not": {
+                    "required": [
+                      "reconciliation"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "waiver": {
       "type": "object",
@@ -424,9 +674,7 @@
             "type": "object",
             "properties": {
               "case_id": {
-                "type": "string",
-                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
-                "maxLength": 160
+                "$ref": "#/$defs/caseCoordinate"
               },
               "repetition": {
                 "type": "integer",
@@ -463,9 +711,7 @@
             "type": "object",
             "properties": {
               "case_id": {
-                "type": "string",
-                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
-                "maxLength": 160
+                "$ref": "#/$defs/caseCoordinate"
               },
               "observation": {
                 "type": "string",
@@ -544,9 +790,7 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "case_id": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
-          "maxLength": 160
+          "$ref": "#/$defs/caseCoordinate"
         },
         "repetition": {
           "type": "integer",
@@ -582,9 +826,7 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "case_id": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
-          "maxLength": 160
+          "$ref": "#/$defs/caseCoordinate"
         },
         "repetition": {
           "type": "integer",
@@ -644,9 +886,7 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "case_id": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
-          "maxLength": 160
+          "$ref": "#/$defs/caseCoordinate"
         },
         "model_id": {
           "type": "string",
@@ -654,18 +894,1168 @@
           "maxLength": 200
         },
         "observation_kind": {
-          "const": "recorded-invocation"
+          "enum": [
+            "recorded-invocation",
+            "recorded-invocation-sequence"
+          ]
         },
         "triggered": {
           "type": "boolean"
+        },
+        "observed_selection": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       },
       "required": [
         "snapshot_sha256",
         "case_id",
         "model_id",
-        "observation_kind",
-        "triggered"
+        "observation_kind"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "triggered"
+          ],
+          "properties": {
+            "observation_kind": {
+              "const": "recorded-invocation"
+            }
+          }
+        },
+        {
+          "required": [
+            "observed_selection"
+          ],
+          "properties": {
+            "observation_kind": {
+              "const": "recorded-invocation-sequence"
+            }
+          }
+        }
+      ]
+    },
+    "retainedReference": {
+      "type": "object",
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "format": {
+          "enum": [
+            "json",
+            "jsonl",
+            "utf8"
+          ]
+        },
+        "pointer": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sha256",
+        "format",
+        "pointer"
+      ],
+      "additionalProperties": false
+    },
+    "evidenceReference": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "format": {
+          "enum": [
+            "json",
+            "jsonl",
+            "utf8"
+          ]
+        },
+        "pointer": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "format",
+        "pointer"
+      ],
+      "additionalProperties": false
+    },
+    "contentBinding": {
+      "type": "object",
+      "properties": {
+        "representation": {
+          "enum": [
+            "utf8",
+            "sha256"
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/evidenceReference"
+        }
+      },
+      "required": [
+        "representation",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "modelBinding": {
+      "type": "object",
+      "properties": {
+        "basis": {
+          "enum": [
+            "configured",
+            "requested",
+            "reported"
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/evidenceReference"
+        }
+      },
+      "required": [
+        "basis",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "processing": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "inputs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "mode": {
+                "enum": [
+                  "100644",
+                  "100755"
+                ]
+              }
+            },
+            "required": [
+              "sha256",
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "revision",
+        "inputs"
+      ],
+      "additionalProperties": false
+    },
+    "runReconciliation": {
+      "type": "object",
+      "properties": {
+        "execution_record": {
+          "$ref": "#/$defs/retainedReference"
+        },
+        "original_revision": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "original_corpus_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "original_expectations_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "inputs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "prompt_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "executor_model_basis": {
+          "enum": [
+            "configured",
+            "requested",
+            "reported"
+          ]
+        },
+        "grader_model_basis": {
+          "enum": [
+            "configured",
+            "requested",
+            "reported"
+          ]
+        },
+        "previous_grading": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/retainedReference"
+          },
+          "minItems": 0
+        },
+        "adjudication": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/retainedReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/retainedReference"
+          },
+          "minItems": 1
+        },
+        "execution_identity": {
+          "type": "object",
+          "properties": {
+            "basis": {
+              "enum": [
+                "recorded-thread",
+                "recorded-native-agent"
+              ]
+            },
+            "identity_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "basis",
+            "identity_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "execution_record",
+        "original_revision",
+        "original_corpus_sha256",
+        "original_expectations_sha256",
+        "inputs",
+        "prompt_sha256",
+        "executor_model_basis",
+        "grader_model_basis",
+        "previous_grading",
+        "adjudication",
+        "evidence",
+        "execution_identity"
+      ],
+      "additionalProperties": false
+    },
+    "triggerReconciliation": {
+      "type": "object",
+      "properties": {
+        "model_basis": {
+          "enum": [
+            "configured",
+            "requested",
+            "reported"
+          ]
+        },
+        "limits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/retainedReference"
+          },
+          "minItems": 1
+        },
+        "query_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "entrypoint_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "body_loaded": {
+          "type": "boolean"
+        },
+        "response_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sentinel_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "negative_response_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "tool_action_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "returncode": {
+          "const": 0
+        },
+        "source_binding": {
+          "enum": [
+            "entrypoint-bytes",
+            "name-and-description",
+            "supplied-catalog-body-load"
+          ]
+        },
+        "catalog": {
+          "$ref": "#/$defs/routingCatalog"
+        },
+        "trace_projection": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "symbolic-paths"
+            },
+            "original_trace_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "kind",
+            "original_trace_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "model_basis",
+        "limits",
+        "evidence",
+        "query_sha256",
+        "entrypoint_sha256",
+        "source_binding"
+      ],
+      "additionalProperties": false
+    },
+    "reconciliationResults": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "method": {
+          "const": "reconciled-after-run"
+        },
+        "executor_model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "grader_model_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$",
+          "maxLength": 200
+        },
+        "runtime_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "runtime_inputs_complete": {
+          "const": true
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case_id": {
+                "$ref": "#/$defs/caseCoordinate"
+              },
+              "repetition": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "execution_record": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "original_revision": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "original_corpus_sha256": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "prompt": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "response": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "grading_record": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "original_expectations": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "grades": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "inputs": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+                  "minLength": 1
+                },
+                "additionalProperties": {
+                  "$ref": "#/$defs/contentBinding"
+                }
+              },
+              "executor_model": {
+                "$ref": "#/$defs/modelBinding"
+              },
+              "grader_model": {
+                "$ref": "#/$defs/modelBinding"
+              },
+              "graded_response": {
+                "$ref": "#/$defs/contentBinding"
+              },
+              "rubric": {
+                "type": "object",
+                "properties": {
+                  "representation": {
+                    "enum": [
+                      "expectations",
+                      "corpus-sha256"
+                    ]
+                  },
+                  "value": {
+                    "$ref": "#/$defs/evidenceReference"
+                  }
+                },
+                "required": [
+                  "representation",
+                  "value"
+                ],
+                "additionalProperties": false
+              },
+              "previous_grading": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/evidenceReference"
+                },
+                "minItems": 0
+              },
+              "adjudication": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/evidenceReference"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "case_id",
+              "repetition",
+              "execution_record",
+              "original_revision",
+              "original_corpus_sha256",
+              "prompt",
+              "response",
+              "grading_record",
+              "original_expectations",
+              "grades",
+              "inputs",
+              "executor_model",
+              "grader_model",
+              "graded_response",
+              "rubric",
+              "previous_grading",
+              "adjudication"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case_id": {
+                "$ref": "#/$defs/caseCoordinate"
+              },
+              "observation_kind": {
+                "enum": [
+                  "recorded-invocation",
+                  "recorded-sentinel-body-load",
+                  "authored-selection",
+                  "recorded-invocation-sequence",
+                  "recorded-sentinel-sequence"
+                ]
+              },
+              "record": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "model": {
+                "$ref": "#/$defs/modelBinding"
+              },
+              "query": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "entrypoint": {
+                "$ref": "#/$defs/contentBinding"
+              },
+              "limits": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "triggered": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "body_loaded": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "sentinel": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "negative_response": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "response": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "tool_action_count": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "returncode": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "observed_selection": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "trace": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "probe_skill": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "probe_prompt": {
+                "$ref": "#/$defs/evidenceReference"
+              },
+              "sequence": {
+                "$ref": "#/$defs/routingSequence"
+              }
+            },
+            "required": [
+              "case_id",
+              "observation_kind",
+              "record",
+              "model",
+              "query",
+              "limits"
+            ],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "observation_kind": {
+                      "const": "recorded-sentinel-sequence"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "sequence"
+                  ]
+                },
+                "else": {
+                  "allOf": [
+                    {
+                      "if": {
+                        "required": [
+                          "trace"
+                        ]
+                      },
+                      "then": {
+                        "required": [
+                          "probe_skill",
+                          "probe_prompt",
+                          "sentinel",
+                          "returncode"
+                        ],
+                        "properties": {
+                          "observation_kind": {
+                            "const": "recorded-sentinel-body-load"
+                          }
+                        }
+                      },
+                      "else": {
+                        "required": [
+                          "entrypoint"
+                        ],
+                        "allOf": [
+                          {
+                            "if": {
+                              "properties": {
+                                "observation_kind": {
+                                  "enum": [
+                                    "recorded-invocation-sequence"
+                                  ]
+                                }
+                              }
+                            },
+                            "then": {
+                              "required": [
+                                "observed_selection"
+                              ]
+                            },
+                            "else": {
+                              "allOf": [
+                                {
+                                  "if": {
+                                    "properties": {
+                                      "observation_kind": {
+                                        "const": "recorded-invocation"
+                                      }
+                                    }
+                                  },
+                                  "then": {
+                                    "required": [
+                                      "triggered"
+                                    ]
+                                  },
+                                  "else": {
+                                    "required": [
+                                      "body_loaded",
+                                      "sentinel",
+                                      "negative_response",
+                                      "response",
+                                      "tool_action_count",
+                                      "returncode"
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "method",
+        "executor_model_id",
+        "grader_model_id",
+        "runtime_inputs",
+        "runtime_inputs_complete",
+        "runs",
+        "triggers"
+      ],
+      "additionalProperties": false
+    },
+    "caseCoordinate": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$",
+          "maxLength": 160
+        },
+        {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\\\u0000-\\u001f])[^\\s].*$",
+              "minLength": 1
+            },
+            "pointer": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "id": {
+              "type": [
+                "integer",
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "source",
+            "pointer",
+            "id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "routingSequence": {
+      "type": "object",
+      "properties": {
+        "source_catalog": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "offered_catalog": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "marker_map": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "protocol": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "executor_message": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "trace": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "bodies": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/$defs/evidenceReference"
+          }
+        },
+        "prompt_basis": {
+          "const": "frozen-dispatch-argument"
+        },
+        "dispatch": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "spawn": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "ambient": {
+          "type": "object",
+          "properties": {
+            "records": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "reference": {
+                    "$ref": "#/$defs/evidenceReference"
+                  },
+                  "provenance": {
+                    "$ref": "#/$defs/ambientProvenance"
+                  }
+                },
+                "required": [
+                  "reference",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "review": {
+              "$ref": "#/$defs/ambientReview"
+            }
+          },
+          "required": [
+            "records",
+            "review"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "source_catalog",
+        "offered_catalog",
+        "marker_map",
+        "protocol",
+        "executor_message",
+        "trace",
+        "bodies",
+        "prompt_basis",
+        "dispatch",
+        "spawn"
+      ],
+      "additionalProperties": false
+    },
+    "routingCatalog": {
+      "type": "object",
+      "properties": {
+        "source_revision": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "catalog_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "members": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "skill": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "entrypoint": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "path",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              },
+              "description_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "body_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "token_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "skill",
+              "name",
+              "entrypoint",
+              "description_sha256",
+              "body_sha256",
+              "token_sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "inputs": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "mode": {
+                "enum": [
+                  "100644",
+                  "100755"
+                ]
+              }
+            },
+            "required": [
+              "sha256",
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "reads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "call_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "command_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "body_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "token_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "name",
+              "call_id",
+              "command_id",
+              "body_sha256",
+              "token_sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "prompt_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "prompt_basis": {
+          "const": "frozen-dispatch-argument"
+        },
+        "offered_catalog_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "marker_map_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "trace_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "dispatch": {
+          "type": "object",
+          "properties": {
+            "record": {
+              "$ref": "#/$defs/retainedReference"
+            },
+            "spawn": {
+              "$ref": "#/$defs/retainedReference"
+            },
+            "call_id_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "task_name_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "child_session_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "turn_id_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "record",
+            "spawn",
+            "call_id_sha256",
+            "task_name_sha256",
+            "child_session_sha256",
+            "turn_id_sha256"
+          ],
+          "additionalProperties": false
+        },
+        "ambient": {
+          "type": "object",
+          "properties": {
+            "records": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "reference": {
+                    "$ref": "#/$defs/retainedReference"
+                  },
+                  "provenance": {
+                    "$ref": "#/$defs/ambientProvenance"
+                  },
+                  "record_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "reference",
+                  "provenance",
+                  "record_sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "review": {
+              "$ref": "#/$defs/ambientReview"
+            }
+          },
+          "required": [
+            "records",
+            "review"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "source_revision",
+        "catalog_sha256",
+        "members",
+        "inputs",
+        "reads",
+        "prompt_sha256",
+        "prompt_basis",
+        "offered_catalog_sha256",
+        "marker_map_sha256",
+        "trace_sha256",
+        "dispatch"
+      ],
+      "additionalProperties": false
+    },
+    "ambientProvenance": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "harness-agents-environment"
+            },
+            "repository_path_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "instructions_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "environment_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "kind",
+            "repository_path_sha256",
+            "instructions_sha256",
+            "environment_sha256"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "harness-environment"
+            },
+            "environment_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "kind",
+            "environment_sha256"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ambientReview": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "const": "accepted"
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "records_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "decision",
+        "reference",
+        "records_sha256"
       ],
       "additionalProperties": false
     }
