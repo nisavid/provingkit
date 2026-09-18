@@ -1,0 +1,4398 @@
+{
+  "baseline_check": {
+    "affected_skills": [
+      "example/writing"
+    ],
+    "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+    "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+    "causes": {
+      "example/writing": [
+        {
+          "kind": "behavioral-input",
+          "path": "plugins/example/skills/writing/SKILL.md",
+          "side": "base"
+        },
+        {
+          "kind": "behavioral-input",
+          "path": "plugins/example/skills/writing/SKILL.md",
+          "side": "candidate"
+        }
+      ]
+    },
+    "changed_paths": [
+      "plugins/example/skills/writing/SKILL.md",
+      "release/prototype-landing-context.json",
+      "release/receipts/example/writing.json"
+    ],
+    "coverage_basis": {
+      "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+      "freshness": "evaluated-source-to-containing-commit",
+      "selection": "committed-inventory-comparison"
+    },
+    "inventory_diagnostics": {
+      "base": [],
+      "candidate": []
+    },
+    "inventory_summary": {
+      "base": {
+        "document_count": 4,
+        "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "roster_complete": true,
+        "skill_count": 2,
+        "unresolved_record_count": 0
+      },
+      "candidate": {
+        "document_count": 4,
+        "revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+        "roster_complete": true,
+        "skill_count": 2,
+        "unresolved_record_count": 0
+      }
+    },
+    "receipt_root": "release/receipts",
+    "schema_version": 1,
+    "selection_complete": true,
+    "skills": [
+      {
+        "diagnostics": [],
+        "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+        "reason": "threshold satisfied",
+        "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+        "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+        "receipt_source": {
+          "kind": "blob",
+          "mode": "100644",
+          "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+          "path": "release/receipts/example/writing.json",
+          "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+        },
+        "skill": "example/writing",
+        "status": "pass",
+        "trigger_precision": {
+          "correct": 2,
+          "total": 2
+        }
+      }
+    ],
+    "status": "pass",
+    "unsupported": []
+  },
+  "constructed_original_records_sha256": "91e53676ac66d35571b5b8c4d195dbdecf93719ae651d9c8b7c3898c31b55ae3",
+  "diverged_fast_forward": {
+    "exit_code": 128,
+    "landed": false,
+    "target_after": "271299afac2513b9b3f08c6dc586eeddd7dbd765",
+    "target_before": "271299afac2513b9b3f08c6dc586eeddd7dbd765"
+  },
+  "processing_files": {
+    "release/behavior-eval-policy.json": {
+      "mode": "100644",
+      "sha256": "38ffc0e27fd236d9e47e9cac46f4d8bd38ad662e32e48b4f8f0e5f6cd353fc62"
+    },
+    "release/behavior-eval-receipt-v1.schema.json": {
+      "mode": "100644",
+      "sha256": "59775e83b849017064a948388d3106c34cefdc36ccca2ec51bd5cee05e8f79e8"
+    },
+    "scripts/behavior_eval_corpora.py": {
+      "mode": "100644",
+      "sha256": "e0de12694e9312e3886c0ac3b1370d61bcade4b5e624b6b75ad486023be01bec"
+    },
+    "scripts/behavior_eval_inventory.py": {
+      "mode": "100644",
+      "sha256": "4a9dccbd378089ae1aceee9dff79fc9d949ba7ae587e0654113227a91846a5f4"
+    },
+    "scripts/behavior_eval_receipts.py": {
+      "mode": "100644",
+      "sha256": "b3c833325dfc832880fb53cb41a7428cf35814414e676913b0d9b8d7e04c6835"
+    }
+  },
+  "processor_revision": "24c2d712a0be6a95958713ec80c7e06a89abdc6c",
+  "prototype_files": {
+    "build_demo.py": "6807a34c70e0e7d0770c48420d07203e003a4bada0613dea121a224dadd67205",
+    "consumer.py": "7dcd920c08c122994235751ac3784fd08758ca1c8081d31a2ad7472e45d3e859",
+    "fixtures.py": "c6e09b5324f258e16f99b9506f6bb96145428faae0cbe8c967ab86d3b85287ac",
+    "run.py": "ed55f7a65b1258dc984510b6ce5e9cb504a47dd7c83d342a4fb22ba97e8c1468"
+  },
+  "receipt_only_range": {
+    "base": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+    "candidate": "474da2c1810eaf4c57a30b40f02dd0650cf21e6f",
+    "guarded_consumer": {
+      "base_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+      "candidate_revision": "474da2c1810eaf4c57a30b40f02dd0650cf21e6f",
+      "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+      "reason": "original comparison was replaced",
+      "skills": [],
+      "status": "fail",
+      "strategy": "correspondence"
+    },
+    "ordinary_adapter": {
+      "affected_skills": [],
+      "base_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+      "candidate_revision": "474da2c1810eaf4c57a30b40f02dd0650cf21e6f",
+      "causes": {},
+      "changed_paths": [
+        "release/receipts/example/writing.json"
+      ],
+      "coverage_basis": {
+        "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+        "freshness": "evaluated-source-to-containing-commit",
+        "selection": "committed-inventory-comparison"
+      },
+      "inventory_diagnostics": {
+        "base": [],
+        "candidate": []
+      },
+      "inventory_summary": {
+        "base": {
+          "document_count": 4,
+          "revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "roster_complete": true,
+          "skill_count": 2,
+          "unresolved_record_count": 0
+        },
+        "candidate": {
+          "document_count": 4,
+          "revision": "474da2c1810eaf4c57a30b40f02dd0650cf21e6f",
+          "roster_complete": true,
+          "skill_count": 2,
+          "unresolved_record_count": 0
+        }
+      },
+      "receipt_root": "release/receipts",
+      "schema_version": 1,
+      "selection_complete": true,
+      "skills": [],
+      "status": "not-required",
+      "unsupported": []
+    }
+  },
+  "retention": [
+    {
+      "evaluated_source_available": false,
+      "expected": "fail",
+      "name": "clone-without-provenance",
+      "observation": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "reason": "Git source observation failed",
+        "selection_complete": true,
+        "skills": [],
+        "status": "fail",
+        "strategy": "correspondence",
+        "unsupported": []
+      }
+    },
+    {
+      "evaluated_source_available": true,
+      "expected": "pass",
+      "name": "clone-with-retained-ref",
+      "observation": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "reason": "all selected Receipts match the actual landed inputs",
+        "selection_complete": true,
+        "skills": [
+          {
+            "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "failed_observations_retained": 2,
+            "historical_check": {
+              "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "coverage_basis": "caller-declared-complete",
+              "skills": [
+                {
+                  "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                  "reason": "threshold satisfied",
+                  "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                  "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                  "skill": "example/writing",
+                  "status": "pass",
+                  "trigger_precision": {
+                    "correct": 2,
+                    "total": 2
+                  }
+                }
+              ],
+              "status": "pass"
+            },
+            "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "skill": "example/writing",
+            "source_is_ancestor": false,
+            "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+          }
+        ],
+        "status": "pass",
+        "strategy": "correspondence",
+        "unsupported": []
+      }
+    },
+    {
+      "evaluated_source_available": true,
+      "expected": "pass",
+      "name": "clone-with-source-bundle",
+      "observation": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "reason": "all selected Receipts match the actual landed inputs",
+        "selection_complete": true,
+        "skills": [
+          {
+            "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "failed_observations_retained": 2,
+            "historical_check": {
+              "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "coverage_basis": "caller-declared-complete",
+              "skills": [
+                {
+                  "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                  "reason": "threshold satisfied",
+                  "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                  "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                  "skill": "example/writing",
+                  "status": "pass",
+                  "trigger_precision": {
+                    "correct": 2,
+                    "total": 2
+                  }
+                }
+              ],
+              "status": "pass"
+            },
+            "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "skill": "example/writing",
+            "source_is_ancestor": false,
+            "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+          }
+        ],
+        "status": "pass",
+        "strategy": "correspondence",
+        "unsupported": []
+      }
+    },
+    {
+      "evaluated_source_available": true,
+      "expected": "pass",
+      "name": "clone-with-merged-ancestry",
+      "observation": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
+        "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "reason": "all selected Receipts match the actual landed inputs",
+        "selection_complete": true,
+        "skills": [
+          {
+            "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "failed_observations_retained": 2,
+            "historical_check": {
+              "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "coverage_basis": "caller-declared-complete",
+              "skills": [
+                {
+                  "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                  "reason": "threshold satisfied",
+                  "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                  "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                  "skill": "example/writing",
+                  "status": "pass",
+                  "trigger_precision": {
+                    "correct": 2,
+                    "total": 2
+                  }
+                }
+              ],
+              "status": "pass"
+            },
+            "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "skill": "example/writing",
+            "source_is_ancestor": true,
+            "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+          }
+        ],
+        "status": "pass",
+        "strategy": "correspondence",
+        "unsupported": []
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "pass"
+      },
+      "landed_commit": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+      "name": "unchanged-squash",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "evaluated source is not an ancestor of the landed commit",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": false,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "pass",
+        "correspondence": "pass"
+      },
+      "landed_commit": "12d388964f3c27fd1faf39dda9a83482c722f212",
+      "name": "unchanged-merge",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "ordinary_landed_check": "pass",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "merge",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "reason": "threshold satisfied",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "pass",
+            "trigger_precision": {
+              "correct": 2,
+              "total": 2
+            }
+          }
+        ],
+        "status": "pass",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "pass",
+        "correspondence": "pass"
+      },
+      "landed_commit": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "name": "unchanged-fast-forward",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "ordinary_landed_check": "pass",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "ff-only",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "reason": "threshold satisfied",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "pass",
+            "trigger_precision": {
+              "correct": 2,
+              "total": 2
+            }
+          }
+        ],
+        "status": "pass",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "pass"
+      },
+      "landed_commit": "ea4539d376ede9fd3199ee5334b00918ecac3f4c",
+      "name": "unchanged-forced-rebase",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "ea4539d376ede9fd3199ee5334b00918ecac3f4c",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "evaluated source is not an ancestor of the landed commit",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "ea4539d376ede9fd3199ee5334b00918ecac3f4c",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": false,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "rebase",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "ea4539d376ede9fd3199ee5334b00918ecac3f4c",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "ea4539d376ede9fd3199ee5334b00918ecac3f4c",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "a03cb47da86204cf602cab7dc243a7e550bab2e6",
+      "name": "changed-entrypoint",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "a03cb47da86204cf602cab7dc243a7e550bab2e6",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "a03cb47da86204cf602cab7dc243a7e550bab2e6",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "a03cb47da86204cf602cab7dc243a7e550bab2e6",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "a03cb47da86204cf602cab7dc243a7e550bab2e6",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "e33fc10fb1be03f336cc08bc4f3cc8c663fbe43b",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "d0e7323254f0f5c8706cbcf5222e7733edd04930",
+      "name": "changed-mode",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "d0e7323254f0f5c8706cbcf5222e7733edd04930",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "d0e7323254f0f5c8706cbcf5222e7733edd04930",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "d0e7323254f0f5c8706cbcf5222e7733edd04930",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "d0e7323254f0f5c8706cbcf5222e7733edd04930",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "52318ce135143060bf00a618c9018f9c485a2c85",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "5426fdde80ddc5f86e1e127a2269f39d81a271d1",
+      "name": "changed-reference",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "5426fdde80ddc5f86e1e127a2269f39d81a271d1",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "5426fdde80ddc5f86e1e127a2269f39d81a271d1",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "5426fdde80ddc5f86e1e127a2269f39d81a271d1",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/references/writing.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/references/writing.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/references/writing.md",
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "5426fdde80ddc5f86e1e127a2269f39d81a271d1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "b3595302b3296469db134169b6ad2d5122b2b533",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "42cfe4b27674b77712784609276961846880febe",
+      "name": "changed-topology",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "42cfe4b27674b77712784609276961846880febe",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "42cfe4b27674b77712784609276961846880febe",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "42cfe4b27674b77712784609276961846880febe",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "topology-consumption-change",
+              "path": "plugins/example/topology.json",
+              "side": "both"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/topology.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "42cfe4b27674b77712784609276961846880febe",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "0ac8f7e2061bd4dfdc40251f1c0be77d54f85aca",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "15dba86b65aa9f332d83d3d5dcc315b1f8b959c2",
+      "name": "changed-processing",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "15dba86b65aa9f332d83d3d5dcc315b1f8b959c2",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "15dba86b65aa9f332d83d3d5dcc315b1f8b959c2",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "15dba86b65aa9f332d83d3d5dcc315b1f8b959c2",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json",
+          "scripts/behavior_eval_receipts.py"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "15dba86b65aa9f332d83d3d5dcc315b1f8b959c2",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "183088bb98289dab1028f19fe2954d2d49db1e12",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "ce85c909c4e0303cd0a5e359375fb17f9e7f37e8",
+      "name": "missing-receipt",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "ce85c909c4e0303cd0a5e359375fb17f9e7f37e8",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "committed regular input is unavailable: release/receipts/example/writing.json",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "ce85c909c4e0303cd0a5e359375fb17f9e7f37e8",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "committed regular input is unavailable: release/receipts/example/writing.json",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "ce85c909c4e0303cd0a5e359375fb17f9e7f37e8",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "ce85c909c4e0303cd0a5e359375fb17f9e7f37e8",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "committed regular input is unavailable: release/receipts/example/writing.json",
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "b0c496e3ef9d8c8f8f053122fe182923d499d3f5",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "8de781d6a7ca9f2640d3c5b636d2e5db7de50991",
+      "name": "receipt-rewritten",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "8de781d6a7ca9f2640d3c5b636d2e5db7de50991",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "committed Receipt differs from the reviewed bytes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "8de781d6a7ca9f2640d3c5b636d2e5db7de50991",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "committed Receipt differs from the reviewed bytes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "8de781d6a7ca9f2640d3c5b636d2e5db7de50991",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "8de781d6a7ca9f2640d3c5b636d2e5db7de50991",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "0d2b2316834665cff20cfae88069a81bba528bba59d64226065bbbb422e36cbd",
+            "receipt_sha256": "7a2a704c3516027d8ea12f7450d40d1867a3845dd677a393b4c3066cf44cc19a",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "0549046d6255ceaea3c542268c5ab4a8089e43b9",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "0d2b2316834665cff20cfae88069a81bba528bba59d64226065bbbb422e36cbd"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "86542c493a3e4405ec96b7fbffc37df3b0b0cd70",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "2f77d098eb2a1448561c9f2a691ae44cf2d82745",
+      "name": "changed-input-mapping",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2f77d098eb2a1448561c9f2a691ae44cf2d82745",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "historical Receipt: Git source observation failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2f77d098eb2a1448561c9f2a691ae44cf2d82745",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "historical Receipt: Git source observation failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2f77d098eb2a1448561c9f2a691ae44cf2d82745",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "evals/example/additional.json",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "operative-mapping-change",
+              "path": "release/behavior-eval-input-map.json",
+              "side": "both"
+            },
+            {
+              "kind": "corpus-consumption-change",
+              "path": "release/behavior-eval-input-map.json",
+              "side": "both"
+            }
+          ]
+        },
+        "changed_paths": [
+          "evals/example/additional.json",
+          "plugins/example/skills/writing/SKILL.md",
+          "release/behavior-eval-input-map.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 5,
+            "revision": "2f77d098eb2a1448561c9f2a691ae44cf2d82745",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "stale or wrong-skill receipt descriptor",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "bb13fb74d4b8822affbbe933db9fca7420430fcb",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "7cd4e0cb905f165bbb8e740aa5a8e989e0673c6f",
+      "name": "changed-expectation-map-bytes",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "7cd4e0cb905f165bbb8e740aa5a8e989e0673c6f",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "7cd4e0cb905f165bbb8e740aa5a8e989e0673c6f",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "landed input closure differs in paths, bytes, or Git modes",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "7cd4e0cb905f165bbb8e740aa5a8e989e0673c6f",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/behavior-eval-expectation-map.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "7cd4e0cb905f165bbb8e740aa5a8e989e0673c6f",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "94c53c2870b8fa64dc43082e15d14ea73b358194",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "a3b326f720777b4caad40e5abc68627e475031c3",
+      "name": "missing-case",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "a3b326f720777b4caad40e5abc68627e475031c3",
+          "context_sha256": "45657c02edf015e911d9e121558a6192f4c6c046ba6510440860a3a33cbb13f5",
+          "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "a3b326f720777b4caad40e5abc68627e475031c3",
+          "context_sha256": "45657c02edf015e911d9e121558a6192f4c6c046ba6510440860a3a33cbb13f5",
+          "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "a3b326f720777b4caad40e5abc68627e475031c3",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "a3b326f720777b4caad40e5abc68627e475031c3",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "274797bdcd222ce491d62fd5eacd90b19d93b81daf3a53a0f0f226165f9056eb",
+            "receipt_sha256": "9e8d888d59515eff708dd5669ab0c5c5aa82a950fc9f24ec9f9e2cfed41f8f56",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "2ff7019519937f2636384ba710a8805ee2bbad4f",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "274797bdcd222ce491d62fd5eacd90b19d93b81daf3a53a0f0f226165f9056eb"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "d6d10ade1a54b9ef3d6b08b4b4889b74590dbe78",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "509a5a5b55e91241cc1773dd390d9223522fcf2e",
+      "name": "missing-repetition",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "509a5a5b55e91241cc1773dd390d9223522fcf2e",
+          "context_sha256": "e001a63c2837b8d97f3a38f6a9d8d949f7c067322ab4d068d13206b18d0f026f",
+          "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "509a5a5b55e91241cc1773dd390d9223522fcf2e",
+          "context_sha256": "e001a63c2837b8d97f3a38f6a9d8d949f7c067322ab4d068d13206b18d0f026f",
+          "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "509a5a5b55e91241cc1773dd390d9223522fcf2e",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "509a5a5b55e91241cc1773dd390d9223522fcf2e",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "0c1aa947a58c65b3242edad2ea0a5525763f198d7e1c94d035787c112387dc0e",
+            "receipt_sha256": "fe67b13581ea401605cca998917a0b82f2c1a70799557ada26fdcec255431694",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "8fe88e0d47d725af62d0f6ad988cd6af2a9ce4b2",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "0c1aa947a58c65b3242edad2ea0a5525763f198d7e1c94d035787c112387dc0e"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "162534885f76b099f473f9d937d39469f4b06429",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "7bb73597b0fcc06ebe5f044c3c088fb9ab4eb2ba",
+      "name": "missing-trigger",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "7bb73597b0fcc06ebe5f044c3c088fb9ab4eb2ba",
+          "context_sha256": "f6e008345315c80e08074c9770327e2232d4ed76574d5e9148c9471352049760",
+          "reason": "historical Receipt: trigger coverage differs from the corpus",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "7bb73597b0fcc06ebe5f044c3c088fb9ab4eb2ba",
+          "context_sha256": "f6e008345315c80e08074c9770327e2232d4ed76574d5e9148c9471352049760",
+          "reason": "historical Receipt: trigger coverage differs from the corpus",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "7bb73597b0fcc06ebe5f044c3c088fb9ab4eb2ba",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "7bb73597b0fcc06ebe5f044c3c088fb9ab4eb2ba",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "1b64326a766158c353153cbc00b04f8f3d2d65b8a27d41f794745f47b6ddf024",
+            "receipt_sha256": "385baba6ab816fdd3d5bcd35499ce528bc92ef3c158a14efcb8568a4dc983951",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "3dacda9214d308636c5d1a4e09127f6b7e04a2b8",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "1b64326a766158c353153cbc00b04f8f3d2d65b8a27d41f794745f47b6ddf024"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "618feae6335041779b05f468c73d6ec20c1a5138",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "6c7a3b372b6219e134ed47e26f5a07720cd6e97f",
+      "name": "failed-quality",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "6c7a3b372b6219e134ed47e26f5a07720cd6e97f",
+          "context_sha256": "0bad7e32f4fe73b447dfb3d9cd39bb2b18f40eb0005532669ab3b831ebc39429",
+          "reason": "historical Receipt: threshold failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "6c7a3b372b6219e134ed47e26f5a07720cd6e97f",
+          "context_sha256": "0bad7e32f4fe73b447dfb3d9cd39bb2b18f40eb0005532669ab3b831ebc39429",
+          "reason": "historical Receipt: threshold failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "6c7a3b372b6219e134ed47e26f5a07720cd6e97f",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "6c7a3b372b6219e134ed47e26f5a07720cd6e97f",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "4c878fba44d28ad791238c6cf30d9ead6ea0ed0ddfc02e0e889a3b625bd114f0",
+            "receipt_sha256": "57c9aab6e78fb5b22fc4793df4a83c61f1d0f25421d015503e562786c6ca275f",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "39d14de39bf7147e20d2e0febeda99cbed2194e3",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "4c878fba44d28ad791238c6cf30d9ead6ea0ed0ddfc02e0e889a3b625bd114f0"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "e20ac816d3409b9c02e6e4158286ed7ab539cfe9",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "6e0bfe6aa01d196440865f23f1892f647eb1a1f1",
+      "name": "failed-safety",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "6e0bfe6aa01d196440865f23f1892f647eb1a1f1",
+          "context_sha256": "6f89109babd7925789c2c56754414a303c841555fff131adef17b0fd627ce2ac",
+          "reason": "historical Receipt: threshold failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "6e0bfe6aa01d196440865f23f1892f647eb1a1f1",
+          "context_sha256": "6f89109babd7925789c2c56754414a303c841555fff131adef17b0fd627ce2ac",
+          "reason": "historical Receipt: threshold failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "6e0bfe6aa01d196440865f23f1892f647eb1a1f1",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "6e0bfe6aa01d196440865f23f1892f647eb1a1f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "f5780f6ed5564e9a7521611dfd980d0cc1e4daff4e079a2356abcfcf71b35cf7",
+            "receipt_sha256": "91edc60d257952e8c622564ad245ac0ecaf4df1539ee87c544763ec094a6ec99",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "25d3380bbef683920fc77bc3bed22a81257b0f2b",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "f5780f6ed5564e9a7521611dfd980d0cc1e4daff4e079a2356abcfcf71b35cf7"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "6ad0e03cc14a7196b541f37f55f6213a17a1a71d",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "8d739f169460b0f03003fccdd6264f9ec8ebbfc9",
+      "name": "failed-trigger",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "8d739f169460b0f03003fccdd6264f9ec8ebbfc9",
+          "context_sha256": "1d3827b1793e64d07e92766cff786ef368ed4a0d812d97cb64354ffc4cbc1392",
+          "reason": "historical Receipt: threshold failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "8d739f169460b0f03003fccdd6264f9ec8ebbfc9",
+          "context_sha256": "1d3827b1793e64d07e92766cff786ef368ed4a0d812d97cb64354ffc4cbc1392",
+          "reason": "historical Receipt: threshold failed",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "8d739f169460b0f03003fccdd6264f9ec8ebbfc9",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "8d739f169460b0f03003fccdd6264f9ec8ebbfc9",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "3cc834982d222f67e29a4b8e1cd5d0249b20e4dcc9223bdb3d0b0f8b8f3ca448",
+            "receipt_sha256": "49be2627d8960902e2840340e0ef0cb14f9730448aaa909b0667c8bee3f1f515",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "333b10c3615945e4ae0a6e86d655c49bd8f192af",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "3cc834982d222f67e29a4b8e1cd5d0249b20e4dcc9223bdb3d0b0f8b8f3ca448"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "067bc62554c48036265384bbcd3b9dd0ed5a4ff4",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "40b0b90d2a11b98c149da46cf24e83a9a608db3b",
+      "name": "wrong-snapshot",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "40b0b90d2a11b98c149da46cf24e83a9a608db3b",
+          "context_sha256": "c111eb37a2c23d4b493b8563aef78209cd49abe860f41c9f76b413dfd68e7a37",
+          "reason": "historical Receipt: receipt snapshot differs from evaluated source",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "40b0b90d2a11b98c149da46cf24e83a9a608db3b",
+          "context_sha256": "c111eb37a2c23d4b493b8563aef78209cd49abe860f41c9f76b413dfd68e7a37",
+          "reason": "historical Receipt: receipt snapshot differs from evaluated source",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "40b0b90d2a11b98c149da46cf24e83a9a608db3b",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "40b0b90d2a11b98c149da46cf24e83a9a608db3b",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "9a4768d6dd99cba670c84654d527490c7ad8d83a6cde4a55a9935719ffeb1fc6",
+            "receipt_sha256": "fd1753efb34ce28afb0dc5292d8c22df9a00c4e701dd690a90cb005e1427837d",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "5d70731e5f721180aad6f0502f7a4139d32e5997",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "9a4768d6dd99cba670c84654d527490c7ad8d83a6cde4a55a9935719ffeb1fc6"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "59db207a2d52ef500823165724f8143b9e9b07f4",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "92904ace404b0fdc8ee943b9dbf4b713ebf5d2e3",
+      "name": "wrong-source",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "92904ace404b0fdc8ee943b9dbf4b713ebf5d2e3",
+          "context_sha256": "4e84152004eddc828eb8e0f8cbafebef4b01cb75acaf78532c98433473e58cb4",
+          "reason": "historical Receipt: receipt revision differs from its evaluated snapshot",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "92904ace404b0fdc8ee943b9dbf4b713ebf5d2e3",
+          "context_sha256": "4e84152004eddc828eb8e0f8cbafebef4b01cb75acaf78532c98433473e58cb4",
+          "reason": "historical Receipt: receipt revision differs from its evaluated snapshot",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "92904ace404b0fdc8ee943b9dbf4b713ebf5d2e3",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "92904ace404b0fdc8ee943b9dbf4b713ebf5d2e3",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "receipt revision differs from its evaluated snapshot",
+            "receipt_raw_sha256": "9efd8f2bf9c596508008846b6b0c4b4fbca68608061a8c8e3b2d38f4b38e8436",
+            "receipt_sha256": "7cafc492976e16cac0938f116850e7d516007399ae965c093d0bcbf30d027af1",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "339e6752665f9c2c1b78436db3c0148f5d16fdc6",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "9efd8f2bf9c596508008846b6b0c4b4fbca68608061a8c8e3b2d38f4b38e8436"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "a3c3799f0c50083aa73c739065a2bceda9184075",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "966f5588ddadfd9aa83b7dc99e6737905d019245",
+      "name": "wrong-skill",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "966f5588ddadfd9aa83b7dc99e6737905d019245",
+          "context_sha256": "122c12718af3166cc920ed86a09a9bd30eb4cb92d77200dabcb07b7ba5d08b55",
+          "reason": "reviewed Receipt inventory differs from the full original comparison",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "966f5588ddadfd9aa83b7dc99e6737905d019245",
+          "context_sha256": "122c12718af3166cc920ed86a09a9bd30eb4cb92d77200dabcb07b7ba5d08b55",
+          "reason": "reviewed Receipt inventory differs from the full original comparison",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "966f5588ddadfd9aa83b7dc99e6737905d019245",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "966f5588ddadfd9aa83b7dc99e6737905d019245",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "stale or wrong-skill receipt descriptor",
+            "receipt_raw_sha256": "130742bba6bbd742bfa9ca9cdcf058bdc26cfe67f25c4d040135bac3d6b5beda",
+            "receipt_sha256": "369aeac5d92a05ce6bbf4eb00ffa4a716a1c2303b3cd0427d64d68d64bd185d8",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "8226ec923f23a010805c5398061a1185913edc83",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "130742bba6bbd742bfa9ca9cdcf058bdc26cfe67f25c4d040135bac3d6b5beda"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "c106f7de51888c3fabb3dfd463caf847b785b7f1",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+      "name": "receipt-only-comparison",
+      "observations": {
+        "ancestry": {
+          "base_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "original comparison was replaced",
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry"
+        },
+        "correspondence": {
+          "base_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "original comparison was replaced",
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence"
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+      "name": "wrong-final-commit",
+      "observations": {
+        "ancestry": {
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "candidate is not the actual landing event commit",
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry"
+        },
+        "correspondence": {
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "candidate is not the actual landing event commit",
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence"
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+      "name": "unsupported-event-operation",
+      "observations": {
+        "ancestry": {
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "unsupported landing operation",
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry"
+        },
+        "correspondence": {
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "unsupported landing operation",
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence"
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "pass"
+      },
+      "landed_commit": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+      "name": "ignore-uncommitted-receipt",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "evaluated source is not an ancestor of the landed commit",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": false,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "b287aaabb3c1221d593519fee3e3b52ec2a8bc5b",
+      "name": "moved-base",
+      "observations": {
+        "ancestry": {
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "b287aaabb3c1221d593519fee3e3b52ec2a8bc5b",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "target moved; refresh required",
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry"
+        },
+        "correspondence": {
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "b287aaabb3c1221d593519fee3e3b52ec2a8bc5b",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "target moved; refresh required",
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence"
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "b287aaabb3c1221d593519fee3e3b52ec2a8bc5b",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "notes.txt",
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "b287aaabb3c1221d593519fee3e3b52ec2a8bc5b",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
+      "target_before": "4b7e01dd30480bd9311ee2bcb51917e70ee039db"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "pass"
+      },
+      "landed_commit": "2e63888dc48cf3763ecd508ae978c31c87dafde1",
+      "name": "refreshed-base",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2e63888dc48cf3763ecd508ae978c31c87dafde1",
+          "context_sha256": "0dd8cb5863d34e5bf13bc62babd7468d6438e28c5b681e75943236da03e8049f",
+          "reason": "evaluated source is not an ancestor of the landed commit",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "2e63888dc48cf3763ecd508ae978c31c87dafde1",
+          "context_sha256": "0dd8cb5863d34e5bf13bc62babd7468d6438e28c5b681e75943236da03e8049f",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+                    "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+              "skill": "example/writing",
+              "source_is_ancestor": false,
+              "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "2e63888dc48cf3763ecd508ae978c31c87dafde1",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "notes.txt",
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "2e63888dc48cf3763ecd508ae978c31c87dafde1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "58cc7115000b0f34fd433752f3be9ed4a3bac6af",
+      "target_before": "4b7e01dd30480bd9311ee2bcb51917e70ee039db"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "86273e131ac42cbf9c5f72d283bcc7b28d39c40b",
+      "name": "refreshed-base-new-consumer",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/editing",
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "86273e131ac42cbf9c5f72d283bcc7b28d39c40b",
+          "context_sha256": "e72efa2116454258881b5f44bfe901ac8fed5f58cbeb46fbedf8a116f7a9f2a5",
+          "reason": "reviewed Receipt inventory differs from the full original comparison",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/editing",
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "86273e131ac42cbf9c5f72d283bcc7b28d39c40b",
+          "context_sha256": "e72efa2116454258881b5f44bfe901ac8fed5f58cbeb46fbedf8a116f7a9f2a5",
+          "reason": "reviewed Receipt inventory differs from the full original comparison",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/editing",
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "86273e131ac42cbf9c5f72d283bcc7b28d39c40b",
+        "causes": {
+          "example/editing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/editing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/editing/SKILL.md",
+              "side": "candidate"
+            }
+          ],
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/editing/SKILL.md",
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "86273e131ac42cbf9c5f72d283bcc7b28d39c40b",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "committed regular input is unavailable: release/receipts/example/editing.json",
+            "skill": "example/editing",
+            "status": "fail"
+          },
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "95447936437517ea6a3c8a496e524b9962478735",
+      "target_before": "e9afb60b836a77fe4b39cd826df301c59804b38e"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "pass"
+      },
+      "landed_commit": "245494fcebe40250bdf99d660a5e35c2e6d05454",
+      "name": "reconciled-squash",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "245494fcebe40250bdf99d660a5e35c2e6d05454",
+          "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "reason": "evaluated source is not an ancestor of the landed commit",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "245494fcebe40250bdf99d660a5e35c2e6d05454",
+          "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+                    "receipt_sha256": "f33b4e1c615a8ac6ccd27187c42582cf06d22ec5a6c49c80824e4bb627e39e30",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+              "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+              "skill": "example/writing",
+              "source_is_ancestor": false,
+              "stable_input_identity": "c6a0dcc51a77d37e3d9d8e1e7553ee2bec7dc0367cdb866cbfe8ef9d44c86e53"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "245494fcebe40250bdf99d660a5e35c2e6d05454",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "245494fcebe40250bdf99d660a5e35c2e6d05454",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+            "receipt_sha256": "f33b4e1c615a8ac6ccd27187c42582cf06d22ec5a6c49c80824e4bb627e39e30",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "8704796a5497238b95dc303e84e30abef2dcb2c6",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "6d0a08d2262ac27a8368dc42d7dbf76d252d4651",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "pass",
+        "correspondence": "pass"
+      },
+      "landed_commit": "6deaa40f85daadc8c1fdbe342667ee560645d6c9",
+      "name": "reconciled-merge",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "6deaa40f85daadc8c1fdbe342667ee560645d6c9",
+          "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "ordinary_landed_check": "pass",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+                    "receipt_sha256": "f33b4e1c615a8ac6ccd27187c42582cf06d22ec5a6c49c80824e4bb627e39e30",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+              "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "c6a0dcc51a77d37e3d9d8e1e7553ee2bec7dc0367cdb866cbfe8ef9d44c86e53"
+            }
+          ],
+          "status": "pass",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "6deaa40f85daadc8c1fdbe342667ee560645d6c9",
+          "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+                    "receipt_sha256": "f33b4e1c615a8ac6ccd27187c42582cf06d22ec5a6c49c80824e4bb627e39e30",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+              "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "c6a0dcc51a77d37e3d9d8e1e7553ee2bec7dc0367cdb866cbfe8ef9d44c86e53"
+            }
+          ],
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "merge",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "6deaa40f85daadc8c1fdbe342667ee560645d6c9",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "6deaa40f85daadc8c1fdbe342667ee560645d6c9",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "evaluated_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "reason": "threshold satisfied",
+            "receipt_raw_sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d",
+            "receipt_sha256": "f33b4e1c615a8ac6ccd27187c42582cf06d22ec5a6c49c80824e4bb627e39e30",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "8704796a5497238b95dc303e84e30abef2dcb2c6",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "d95ed281930a9f5aa7c02a3c9f1d0db1c4ca6795db71c22a41f4f8f95c940d6d"
+            },
+            "skill": "example/writing",
+            "status": "pass",
+            "trigger_precision": {
+              "correct": 2,
+              "total": 2
+            }
+          }
+        ],
+        "status": "pass",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "6d0a08d2262ac27a8368dc42d7dbf76d252d4651",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "landed_commit": "b1624aa7cc605013429371bdd2cc968d90d5207d",
+      "name": "wrong-reconciled-processing",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "b1624aa7cc605013429371bdd2cc968d90d5207d",
+          "context_sha256": "cfb5fc4632a6c6998b8c5c921db1c6f5579ff6a93842b375fdf7e51fbd98a518",
+          "reason": "historical Receipt: stale processing identity",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "b1624aa7cc605013429371bdd2cc968d90d5207d",
+          "context_sha256": "cfb5fc4632a6c6998b8c5c921db1c6f5579ff6a93842b375fdf7e51fbd98a518",
+          "reason": "historical Receipt: stale processing identity",
+          "selection_complete": true,
+          "skills": [],
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "b1624aa7cc605013429371bdd2cc968d90d5207d",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "b1624aa7cc605013429371bdd2cc968d90d5207d",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "e6e36096415367d33c15ce56d59459283762d3ce33285312b446cac4a4f82db4",
+            "receipt_sha256": "6fc1512f8a6688c1fd96a445e46d25c865c261ed7fbf177fe5b89e323cf3b69d",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "2830ace65befe3ba77db59a1e092f4db14be82f9",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "e6e36096415367d33c15ce56d59459283762d3ce33285312b446cac4a4f82db4"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "dce1d7f686a4736ec0a7f484a4b80483b3d02d89",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "ordinary constructed fixtures; no model runs or hosted CI",
+  "source_bundle_sha256": "c0df1eacda6bab9efc55d148e554fa2bdfc76e192d29dd4fed670fa5b69bc5b4"
+}
