@@ -21,7 +21,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
-    def test_rolecasting_has_exactly_twenty_eight_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_exactly_thirty_one_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -40,6 +40,9 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "unrelated-task-model-is-not-a-route",
                 "daybreak-routing-matrix",
                 "daybreak-route-evidence",
+                "engineering-and-security-judgment",
+                "routing-block-diagnosis",
+                "follow-up-review-classification",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
