@@ -1263,6 +1263,52 @@ class InventoryTests(unittest.TestCase):
         self.assertTrue(any(row["code"] == "unknown-owner" and row["scope"] == "ordinary"
                             for row in discovered["diagnostics"]))
 
+    def test_unknown_runtime_owner_covers_changes_to_its_declared_dependencies(self):
+        matrix = "evals/control-plane-matrix.json"
+        dependency = "runtime/unknown/input.md"
+        self.write(matrix, {"skills": [], "runtime_dependencies": {"unknown:owner": ["runtime/unknown"]}})
+        for change in ("bytes", "mode", "remove", "add"):
+            with self.subTest(change=change):
+                self.write(dependency, "Original runtime.\n")
+                (self.repo / dependency).chmod(0o644)
+                base = self.commit("unknown owner with a declared runtime directory " + change)
+                changed_path = dependency
+                if change == "bytes":
+                    self.write(dependency, "Changed runtime.\n")
+                elif change == "mode":
+                    (self.repo / dependency).chmod(0o755)
+                elif change == "remove":
+                    (self.repo / dependency).unlink()
+                else:
+                    changed_path = "runtime/unknown/added.md"
+                    self.write(changed_path, "Added runtime.\n")
+                candidate = self.commit("change unknown owner's runtime " + change)
+                self.assertEqual(inventory.compare(self.repo, base, candidate)["changed_paths"], [changed_path])
+                for before, after in ((base, candidate), (candidate, base)):
+                    compared = inventory.compare(self.repo, before, after)
+                    self.assertEqual(compared["status"], "unsupported")
+                    self.assertFalse(compared["selection_complete"])
+                    self.assertEqual(compared["affected_skills"], [])
+                    self.assertTrue(any(row["code"] == "unknown-owner" for row in compared["unsupported"]))
+                    self.assertEqual(inventory.check(self.repo, before, after, "release/receipts")["status"], "fail")
+        base = self.git("rev-parse", "HEAD")
+        self.write("runtime/unrelated.md", "Unrelated runtime.\n")
+        candidate = self.commit("change outside the unresolved dependency")
+        self.assertEqual(inventory.check(self.repo, base, candidate, "release/receipts")["status"], "not-required")
+
+    def test_unknown_production_runtime_owner_remains_outside_ordinary_selection(self):
+        matrix = "evals/skill-routing-matrix.json"
+        dependency = "runtime/production.md"
+        self.write(matrix, {"skills": [], "runtime_dependencies": {"unknown:owner": [dependency]}})
+        self.write(dependency, "Production runtime.\n")
+        base = self.commit("separate production runtime with unknown owner")
+        self.write(dependency, "Changed production runtime.\n")
+        candidate = self.commit("change separate production runtime")
+        checked = inventory.check(self.repo, base, candidate, "release/receipts")
+        self.assertEqual(checked["status"], "not-required")
+        self.assertTrue(any(row["code"] == "unknown-owner" and row["scope"] == "production-release"
+                            for row in checked["inventory_diagnostics"]["candidate"]))
+
     def test_multiple_matrix_rows_preserve_all_transitive_companions(self):
         matrix = "evals/control-plane-matrix.json"
         corpus = "evals/example/corpus.json"

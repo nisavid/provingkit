@@ -412,13 +412,15 @@ def _link_references(source, documents, records, skills, mappings):
                         "companions": {},
                     }
             for owner, paths in runtime_dependencies.items():
+                runtime_files = {path: [name for name in source.files if name == path or name.startswith(path + "/")]
+                                 for path in paths}
                 if owner not in skills:
                     diagnostics.append({"code": "unknown-owner", "source": document["source"],
                         "owners": [owner], "ordinary_owners": [] if production_scope else [owner],
+                        "inputs": sorted({name for files in runtime_files.values() for name in files}),
                         "scope": "production-release" if production_scope else "ordinary",
                         "message": "Declared runtime consumer is outside the committed roster."})
-                for path in paths:
-                    files = [name for name in source.files if name == path or name.startswith(path + "/")]
+                for path, files in runtime_files.items():
                     if not production_scope:
                         consumed.setdefault(owner, set()).update(files)
                         whole_inputs.setdefault(owner, set()).update(files)
@@ -760,7 +762,7 @@ def compare(repository, base_revision, candidate_revision):
                     "owners": sorted(set(owners) - set(observed["skills"])), "side": side})
         for diagnostic in observed["diagnostics"]:
             if (diagnostic.get("code") == "unknown-owner" and diagnostic.get("scope") != "production-release"
-                    and diagnostic["source"]["path"] in changed):
+                    and {diagnostic["source"]["path"], *diagnostic.get("inputs", [])}.intersection(changed)):
                 complete = False
                 unsupported.append({**diagnostic, "side": side})
         for path, document in observed["documents"].items():
