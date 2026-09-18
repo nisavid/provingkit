@@ -1,6 +1,6 @@
 {
   "attestation": null,
-  "candidate_revision": "c5044ed25ffe575b4af1dd93bae39d9c63b63957",
+  "candidate_revision": "ad31344cdcb9891438cf1e92c27c776945bee6ab",
   "executor_model_id": "gpt-6-astra",
   "grader_model_id": "gpt-6-astra",
   "kind": "evaluation",
@@ -5107,7 +5107,7 @@
   "runs_per_case": 3,
   "schema_version": 1,
   "snapshot": {
-    "candidate_revision": "c5044ed25ffe575b4af1dd93bae39d9c63b63957",
+    "candidate_revision": "ad31344cdcb9891438cf1e92c27c776945bee6ab",
     "inputs": {
       "evals/control-plane-matrix.json": {
         "mode": "100644",
