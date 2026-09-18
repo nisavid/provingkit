@@ -107,6 +107,46 @@ def _trigger_problem(record):
     return None
 
 
+def _admit_source_links(result):
+    """Admit nested values before inventory performs lookup or traversal."""
+    def text(value, field):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{field} must be a nonblank string")
+
+    def strings(value, field):
+        if not isinstance(value, list):
+            raise ValueError(f"{field} must be an array of strings")
+        for item in value:
+            text(item, field)
+
+    for reference in result["references"]:
+        text(reference.get("path"), "reference path")
+        strings(reference.get("owners", []), "reference owners")
+    for record in result["records"]:
+        if "scenario" not in record:
+            continue
+        scenario = record["scenario"]
+        if not isinstance(scenario, dict):
+            raise ValueError("scenario must be an object")
+        text(scenario.get("source"), "scenario source")
+        text(scenario.get("kind"), "scenario kind")
+        if scenario["kind"] not in ("skill-evals", "simple-corpus", "tricritical-corpus"):
+            raise ValueError("unsupported scenario selector kind")
+        if "selector" not in scenario:
+            raise ValueError("scenario requires its original selector")
+    if result["format"] == "scenario-matrix":
+        raw = result["raw"]
+        runtime = raw.get("runtime_dependencies", {})
+        if not isinstance(runtime, dict):
+            raise ValueError("runtime_dependencies must be an object")
+        for owner, paths in runtime.items():
+            text(owner, "runtime dependency owner")
+            strings(paths, "runtime dependency paths")
+        for declaration in raw["skills"]:
+            text(declaration.get("id"), "scenario declaration id")
+            strings(declaration.get("companions", []), "scenario companions")
+
+
 def mapping_digest(entry):
     """SHA-256 of sorted compact UTF-8 JSON for the five semantic fields.
 
@@ -262,6 +302,21 @@ def normalize_records(records, expectation_map, documents):
     return result
 
 
+def apply_source_scope(path, result):
+    """Classify source role even when committed bytes cannot be admitted."""
+    # evals/README.md#phase-2-observable-routing owns this separate release tier.
+    if path == "evals/skill-routing-matrix.json":
+        result.update(role="scope", scope="production-release")
+        for record in result["records"]:
+            record["scope"] = "production-release"
+        for diagnostic in result["diagnostics"]:
+            diagnostic["scope"] = "production-release"
+        result["diagnostics"].append({**_diagnostic("scope-only", result["source"], "",
+            "Phase 2 production routing is retained separately from ordinary PR coverage."),
+            "scope": "production-release"})
+    return result
+
+
 def inspect_document(path, content: bytes, *, plugin=None, skill=None):
     """Return source observations; caller context never invents an owner."""
     source = {"path": path, "sha256": hashlib.sha256(content).hexdigest()}
@@ -270,13 +325,13 @@ def inspect_document(path, content: bytes, *, plugin=None, skill=None):
         raw = _load(content)
     except (ValueError, UnicodeError) as error:
         failure["diagnostics"].append(_diagnostic("invalid-json", source, "", str(error)))
-        return failure
+        return apply_source_scope(path, failure)
     failure["raw"] = raw
     try:
-        return _inspect_document(path, source, raw, plugin)
+        return apply_source_scope(path, _inspect_document(path, source, raw, plugin))
     except (ValueError, TypeError, AttributeError, KeyError, IndexError) as error:
         failure["diagnostics"].append(_diagnostic("malformed-source", source, "", f"Unsupported source shape: {error}"))
-        return failure
+        return apply_source_scope(path, failure)
 
 
 def _inspect_document(path, source, raw, plugin):
@@ -399,6 +454,7 @@ def _inspect_document(path, source, raw, plugin):
             for number, literal in enumerate(case.get("fixture_paths", [])):
                 record["fixtures"].append(_fixture(path, literal, f"{pointer}/fixture_paths/{number}", "source-parent-parent"))
             result["records"].append(record)
+    _admit_source_links(result)
     for record in result["records"]:
         if record["role"] == "trigger":
             problem = _trigger_problem(record)

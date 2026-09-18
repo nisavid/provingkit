@@ -185,6 +185,19 @@ def _runtime_path(path):
         or "expected" in tokens and tokens & {"output", "response"})
 
 
+def _ordinary_scope(item):
+    return item.get("scope") != "production-release" or item.get("ordinary_required") is True
+
+
+def _ordinary_record(record):
+    return record["role"] in ("application", "trigger") and _ordinary_scope(record)
+
+
+def _mapping_selects(row, record):
+    return record["source"]["path"] == row["source"]["path"] and (
+        not row["pointer"] or record["pointer"] == row["pointer"])
+
+
 def _assign_records(records, mappings):
     for row in mappings:
         if (not isinstance(row.get("source"), dict) or not isinstance(row["source"].get("path"), str)
@@ -193,9 +206,11 @@ def _assign_records(records, mappings):
                 or row.get("role") not in ("current-corpus", "current-support", "reference-only", "retained-evidence")):
             continue
         for record in records:
-            if record["source"]["path"] == row["source"]["path"] and (not row["pointer"] or record["pointer"] == row["pointer"]):
+            if _mapping_selects(row, record):
                 record["owners"] = row["owners"]
-                if row["role"] != "current-corpus":
+                if row["role"] == "current-corpus":
+                    record["ordinary_required"] = True
+                else:
                     record["role"] = row["role"]
 
 
@@ -251,10 +266,12 @@ def _catalog(source, skills):
         except InventoryError as error:
             observed = {"source": {"path": path, "sha256": None}, "format": "unsupported", "role": "unsupported", "records": [],
                 "references": [], "diagnostics": [{"code": "corpus-unavailable", "source": {"path": path}, "message": str(error)}]}
+            corpora.apply_source_scope(path, observed)
         except (ValueError, KeyError, TypeError) as error:
             observed = {"source": {"path": path, "sha256": hashlib.sha256(content).hexdigest()},
                         "format": "unsupported", "role": "unsupported", "records": [],
                         "references": [], "diagnostics": [{"code": "malformed-corpus", "message": str(error)}]}
+            corpora.apply_source_scope(path, observed)
         observed["context"] = {"plugin": plugin, "skill": skill}
         documents[path] = observed
         diagnostics.extend(observed["diagnostics"])
@@ -314,13 +331,21 @@ def _declared_resources(skill):
     return {f"plugins/{skill['plugin']}/{path}" for path in paths}
 
 
-def _link_references(source, documents, records, skills):
+def _link_references(source, documents, records, skills, mappings):
     """Resolve declared selectors without assigning neighboring unowned cases."""
     diagnostics, consumed = [], {}
+    for row in mappings:
+        if row["role"] == "current-corpus" and not any(
+                record["role"] in ("application", "trigger") and _mapping_selects(row, record)
+                for record in records):
+            diagnostics.append({"code": "corpus-coordinate-unresolved", "source": row["source"],
+                "pointer": row["pointer"], "owners": row["owners"],
+                "message": "The current-corpus mapping does not select an original application or trigger coordinate."})
     for record in records:
         scenario = record.get("scenario")
         if scenario is None:
             continue
+        ordinary_owners = record["owners"] if _ordinary_scope(record) else []
         selected = [item for item in records if item["role"] == "application"
             and item["source"]["path"] == scenario["source"]
             and (item["name"] if scenario["kind"] == "skill-evals" else
@@ -328,15 +353,29 @@ def _link_references(source, documents, records, skills):
         if len(selected) != 1:
             diagnostics.append({"code": "scenario-selector-unresolved", "source": record["source"],
                 "pointer": record["pointer"], "owners": record["owners"],
+                "ordinary_owners": ordinary_owners,
+                "scope": "ordinary" if _ordinary_scope(record) else "production-release",
                 "message": "The declared scenario selector does not resolve exactly one current case."})
             continue
-        selected[0]["owners"] = sorted(set(selected[0]["owners"] + record["owners"]))
-        for owner in record["owners"]:
+        selected[0]["owners"] = sorted(set(selected[0]["owners"] + ordinary_owners))
+        for owner in ordinary_owners:
             consumed.setdefault(owner, set()).add(record["source"]["path"])
     for document in documents.values():
         document_owners = sorted({owner for record in document["records"] for owner in record["owners"]})
+        production_scope = not _ordinary_scope(document)
+        adoptions = [row for row in mappings if row["role"] == "current-corpus"
+            and row["source"]["path"] == document["source"]["path"]]
+        adopted = {owner for row in adoptions for owner in row["owners"]}
+        if production_scope and adopted and document["format"] == "unsupported":
+            diagnostics.append({"code": "unsupported-adopted-corpus", "source": document["source"],
+                "owners": sorted(adopted), "message": "An explicitly required corpus has an unsupported source format."})
         for reference in document["references"]:
-            owners = [owner.replace(":", "/", 1) for owner in reference.get("owners", [])] or document_owners
+            declared_owners = [owner.replace(":", "/", 1) for owner in reference.get("owners", [])]
+            owners = declared_owners or document_owners
+            ordinary_owners = sorted({owner for row in adoptions
+                if not declared_owners or any(_mapping_selects(row, record)
+                    and set(record["owners"]) & set(declared_owners) for record in document["records"])
+                for owner in row["owners"]}) if production_scope else owners
             path = reference["path"]
             if path not in source.files:
                 problem = "reference-missing"
@@ -349,8 +388,10 @@ def _link_references(source, documents, records, skills):
             if problem:
                 diagnostics.append({"code": problem, "source": document["source"],
                     "pointer": reference["pointer"], "owners": owners,
+                    "ordinary_owners": ordinary_owners,
+                    "scope": "production-release" if production_scope and not ordinary_owners else "ordinary",
                     "message": "The declared referenced bytes are absent or differ from the bound digest."})
-            for owner in owners:
+            for owner in ordinary_owners:
                 consumed.setdefault(owner, set()).add(path)
         raw = document.get("raw")
         if document["format"] == "scenario-matrix":
@@ -358,9 +399,12 @@ def _link_references(source, documents, records, skills):
                 owner = owner.replace(":", "/", 1)
                 for path in paths:
                     files = [name for name in source.files if name == path or name.startswith(path + "/")]
-                    consumed.setdefault(owner, set()).update(files)
+                    if not production_scope:
+                        consumed.setdefault(owner, set()).update(files)
                     if not files:
                         diagnostics.append({"code": "runtime-input-missing", "source": document["source"],
+                            "ordinary_owners": [] if production_scope else [owner],
+                            "scope": "production-release" if production_scope else "ordinary",
                             "owners": [owner], "message": "Declared runtime input is unavailable: " + path})
             declarations = {row["id"].replace(":", "/", 1): row for row in raw["skills"]}
             for owner, declaration in declarations.items():
@@ -373,6 +417,8 @@ def _link_references(source, documents, records, skills):
                     visited.add(companion)
                     if companion not in declarations or companion not in skills:
                         diagnostics.append({"code": "companion-unresolved", "source": document["source"],
+                            "ordinary_owners": [] if production_scope else [owner],
+                            "scope": "production-release" if production_scope else "ordinary",
                             "owners": [owner], "message": "Declared companion is absent from this matrix or roster: " + companion})
                         continue
                     companion_skill = skills[companion]
@@ -383,7 +429,8 @@ def _link_references(source, documents, records, skills):
                     for declared in raw.get("runtime_dependencies", {}).get(companion.replace("/", ":", 1), []):
                         files = {path for path in source.files if (path == declared or path.startswith(declared + "/")) and _runtime_path(path)}
                         paths.update(files or {declared})
-                    consumed.setdefault(owner, set()).update(paths)
+                    if not production_scope:
+                        consumed.setdefault(owner, set()).update(paths)
                     pending.extend(declarations[companion].get("companions", []))
     return diagnostics, consumed
 
@@ -397,20 +444,21 @@ def discover(repository, revision):
     diagnostics.extend(mapping_diagnostics)
     documents, records, corpus_diagnostics = _catalog(source, skills)
     diagnostics.extend(corpus_diagnostics)
-    reference_diagnostics, consumed = _link_references(source, documents, records, skills)
+    reference_diagnostics, consumed = _link_references(source, documents, records, skills, mappings)
     diagnostics.extend(reference_diagnostics)
     # Applicability uses accepted declarations independent of review metadata;
     # normalization below uses only mappings whose full binding was validated.
     applicability_records = [record.copy() for record in records]
     _assign_records(applicability_records, projections)
     _assign_records(records, mappings)
-    unresolved = [record for record in records if record["role"] in ("application", "trigger")
+    unresolved = [record for record in records if _ordinary_record(record)
                   and (not record["owners"] or not set(record["owners"]) <= set(skills))]
     for record in records:
         unknown = sorted(set(record["owners"]) - set(skills))
         if unknown:
             diagnostics.append({"code": "unknown-owner", "source": record["source"],
                 "pointer": record["pointer"], "owners": unknown,
+                "scope": "ordinary" if record.get("ordinary_required") else record.get("scope", "ordinary"),
                 "message": "Declared consumers are outside the committed roster."})
     expectation_map = source.json(EXPECTATION_MAP) if EXPECTATION_MAP in source.files else {"schema_version": 1, "entries": []}
     entries = expectation_map.get("entries", []) if isinstance(expectation_map, dict) else []
@@ -425,11 +473,11 @@ def discover(repository, revision):
         skill["case_selection_projection"] = sorted([
             {"source": record["source"]["path"], "pointer": record["pointer"], "role": record["role"]}
             for record in applicability_records
-            if key in record["owners"] and record["role"] in ("application", "trigger")
+            if key in record["owners"] and _ordinary_record(record)
         ], key=core.canonical_bytes)
         skill["diagnostics"] = [row for row in mapping_diagnostics
             if key in row["entry"].get("owners", [])]
-        skill["diagnostics"].extend(row for row in reference_diagnostics if key in row["owners"])
+        skill["diagnostics"].extend(row for row in reference_diagnostics if key in row.get("ordinary_owners", row["owners"]))
         for document in documents.values():
             context = document["context"]
             relevant = context["plugin"] == skill["plugin"] and context["skill"] in (None, skill["skill"])
@@ -441,7 +489,8 @@ def discover(repository, revision):
                     "pointer": record["pointer"], "message": "A current record has no declared or reviewed owner."})
         selected = [record for record in records if key in record["owners"]]
         skill["records"] = selected
-        skill["expectation_mapping_projection"] = corpora.mapping_projection(entries, selected)
+        skill["expectation_mapping_projection"] = corpora.mapping_projection(entries,
+            [record for record in selected if _ordinary_record(record)])
         skill["projections"] = _projection_sources(source, skill)
         skill["shared_references"] = sorted(set(skill["projections"].values()))
         support = {path for path, document in documents.items()
@@ -461,7 +510,7 @@ def discover(repository, revision):
             path for row in mappings if key in row["owners"]
             for path in ([row["source"]["path"]] if row["role"] == "current-corpus" else []) + row["behavior_inputs"]
         } | {
-            path for record in selected if record["role"] in ("application", "trigger")
+            path for record in selected if _ordinary_record(record)
             for path in [record["source"]["path"]] + [fixture["path"] for fixture in record["fixtures"] if fixture["path"]]
         })
         prefix = f"plugins/{skill['plugin']}/skills/{skill['skill']}/"
@@ -495,17 +544,18 @@ def normalize(repository, revision, skill):
         raise InventoryError("skill is outside the committed roster")
     source = Source(repository, revision)
     selected = observed["skills"][skill]
+    records = [record for record in selected["records"] if _ordinary_record(record)]
     mappings = source.json(EXPECTATION_MAP) if EXPECTATION_MAP in source.files else {"schema_version": 1, "entries": []}
     documents = {record["source"]["path"]: source.read(record["source"]["path"])
-                 for record in selected["records"]}
-    for record in selected["records"]:
+                 for record in records}
+    for record in records:
         for fixture in record["fixtures"]:
             if fixture["path"] in source.files:
                 try:
                     documents[fixture["path"]] = source.read(fixture["path"])
                 except InventoryError:
                     pass  # Discovery and normalization retain the missing-input diagnosis.
-    result = corpora.normalize_records(selected["records"], mappings, documents)
+    result = corpora.normalize_records(records, mappings, documents)
     result["diagnostics"].extend(selected["diagnostics"])
     for field in ("cases", "triggers"):
         if not result[field]:
@@ -569,7 +619,7 @@ def descriptor(repository, revision, skill):
             closure_complete=True, corpus_format="provingkit-v1",
             case_selection=sorted([
                 {"source": record["source"]["path"], "pointer": record["pointer"]}
-                for record in selected["records"] if record["role"] in ("application", "trigger")
+                for record in selected["records"] if _ordinary_record(record)
             ], key=lambda row: (row["source"], row["pointer"])))
         if EXPECTATION_MAP in selected["source_identities"]:
             spec["expectation_map"] = EXPECTATION_MAP
@@ -603,7 +653,7 @@ def reconcile(repository, revision, skill, results_path, processing_revision):
 
 
 def compare(repository, base_revision, candidate_revision):
-    """Select old and new consumers of changed behavioral source."""
+    """Select old and new consumers without embedding full discovery records."""
     base = discover(repository, base_revision)
     candidate = discover(repository, candidate_revision)
     changed = sorted(set(core.git(
@@ -664,7 +714,8 @@ def compare(repository, base_revision, candidate_revision):
                 unsupported.append({"code": "unknown-owner", "source": row.get("source"),
                     "owners": sorted(set(owners) - set(observed["skills"])), "side": side})
         for diagnostic in observed["diagnostics"]:
-            if diagnostic.get("code") == "unknown-owner" and diagnostic["source"]["path"] in changed:
+            if (diagnostic.get("code") == "unknown-owner" and diagnostic.get("scope") != "production-release"
+                    and diagnostic["source"]["path"] in changed):
                 complete = False
                 unsupported.append({**diagnostic, "side": side})
         for path, document in observed["documents"].items():
@@ -682,7 +733,15 @@ def compare(repository, base_revision, candidate_revision):
             "candidate_revision": candidate_revision, "changed_paths": changed,
             "affected_skills": sorted(causes), "causes": causes,
             "selection_complete": complete, "unsupported": unsupported,
-            "base": base, "candidate": candidate}
+            "inventory_diagnostics": {side: observed["diagnostics"] + [
+                {**row, "skill": key} for key, skill in sorted(observed["skills"].items())
+                for row in skill["diagnostics"]
+            ] for side, observed in (("base", base), ("candidate", candidate))},
+            "inventory_summary": {side: {
+                "revision": observed["revision"], "roster_complete": observed["roster_complete"],
+                "skill_count": len(observed["skills"]), "document_count": len(observed["documents"]),
+                "unresolved_record_count": len(observed["unresolved_records"]),
+            } for side, observed in (("base", base), ("candidate", candidate))}}
 
 
 def check(repository, base_revision, candidate_revision, receipt_root):
@@ -721,8 +780,8 @@ def check(repository, base_revision, candidate_revision, receipt_root):
                 "freshness": "evaluated-source-to-containing-commit"},
             "affected_skills": comparison["affected_skills"], "changed_paths": comparison["changed_paths"],
             "selection_complete": comparison["selection_complete"], "causes": comparison["causes"],
-            "unsupported": comparison["unsupported"], "inventory_diagnostics": {
-                side: comparison[side]["diagnostics"] for side in ("base", "candidate")}, "skills": results}
+            "unsupported": comparison["unsupported"], "inventory_diagnostics": comparison["inventory_diagnostics"],
+            "inventory_summary": comparison["inventory_summary"], "skills": results}
 
 
 def proposals(repository, revision, skill):
@@ -758,7 +817,7 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     discover_parser = commands.add_parser("discover", help="Report committed source inventory and completeness observations")
     discover_parser.add_argument("--revision", required=True)
-    compare_parser = commands.add_parser("compare", help="Select both old and new behavioral consumers")
+    compare_parser = commands.add_parser("compare", help="Summarize affected consumers and diagnostics; use discover for full source records")
     compare_parser.add_argument("--base", required=True)
     compare_parser.add_argument("--candidate", required=True)
     catalog_parser = commands.add_parser("catalog", help="Read canonical metadata for the complete committed Slate")

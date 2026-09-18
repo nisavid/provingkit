@@ -65,6 +65,167 @@ class InventoryTests(unittest.TestCase):
                      "scripts/behavior_eval_inventory.py"):
             self.write(path, (source / path).read_text())
 
+    def ordinary_corpora_with_phase_two_source(self):
+        self.current_corpus()
+        self.processing_sources()
+        writing = json.loads((self.repo / "plugins/example/skills/writing/evals/evals.json").read_text())
+        writing["skill_name"] = "editing"
+        self.write("plugins/example/skills/editing/evals/evals.json", writing)
+        self.write("plugins/example/skills/editing/evals/trigger-evals.json", [
+            {"query": "Edit the note.", "should_trigger": True},
+            {"query": "What time is it?", "should_trigger": False}])
+        base = self.commit("ordinary corpora")
+        self.write("evals/control.json", {"skills": []})
+        document = {"semantic_definition": {"path": "evals/control.json", "sha256": hashlib.sha256(
+            (self.repo / "evals/control.json").read_bytes()).hexdigest()}, "skills": [
+                {"id": "example:" + name, "cold_start": "Select " + name,
+                 "explicit": "Use " + name, "supplemental": {"positive": "Try " + name,
+                    "positive_expected_skills": [name], "negative": "Use the neighboring skill.",
+                    "negative_expected_skills": ["editing" if name == "writing" else "writing"]}}
+                for name in ("writing", "editing")]}
+        self.write("evals/skill-routing-matrix.json", document)
+        return base, document
+
+    def test_phase_two_scope_preserves_records_without_ordinary_denominator_or_selection(self):
+        base, document = self.ordinary_corpora_with_phase_two_source()
+        document["semantic_definition"]["sha256"] = "0" * 64
+        document["skills"].append({"id": "future:unknown", "cold_start": "Future request.", "explicit": "Future skill."})
+        self.write("evals/skill-routing-matrix.json", document)
+        candidate = self.commit("separate production routing inventory")
+        discovered = inventory.discover(self.repo, candidate)
+        matrix = discovered["documents"]["evals/skill-routing-matrix.json"]
+        self.assertEqual(matrix["raw"], document)
+        self.assertEqual(matrix["scope"], "production-release")
+        self.assertEqual(len(matrix["records"]), 10)
+        for name in ("writing", "editing"):
+            described = inventory.descriptor(self.repo, candidate, "example/" + name)
+            self.assertEqual(described["status"], "ready", described["diagnostics"])
+            self.assertEqual(len(described["cases"]), 1)
+            self.assertEqual(len(described["triggers"]), 2)
+            self.assertTrue(all("should_trigger" in trigger for trigger in described["triggers"]))
+            self.assertTrue(all(row["source"] != "evals/skill-routing-matrix.json"
+                                for row in described["descriptor"]["case_selection"]))
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["status"], "complete", compared)
+        self.assertEqual(compared["affected_skills"], [])
+        self.assertTrue(any(row["code"] == "unknown-owner" and row.get("scope") == "production-release"
+                            for row in compared["inventory_diagnostics"]["candidate"]))
+        self.assertEqual(inventory.check(self.repo, base, candidate, "release/receipts")["status"], "not-required")
+
+    def test_reviewed_consumer_adoption_requires_its_phase_two_coordinate_without_changing_neighbors(self):
+        _, document = self.ordinary_corpora_with_phase_two_source()
+        base = self.commit("retained separate routing scope")
+        path = "evals/skill-routing-matrix.json"
+        semantic = {"source": {"path": path, "sha256": hashlib.sha256((self.repo / path).read_bytes()).hexdigest()},
+            "pointer": "/skills/0/cold_start", "owners": ["example/writing"], "role": "current-corpus",
+            "behavior_inputs": [], "dependencies": []}
+        entry = {**semantic, "status": "accepted", "review": {"decision": "accepted", "reference": "constructed-scope-adoption",
+            "mapping_sha256": inventory.core.document_digest(semantic)}}
+        self.write(inventory.INPUT_MAP, {"schema_version": 1, "entries": [entry]})
+        adopted = self.commit("explicit ordinary consumer requirement")
+        writer = inventory.descriptor(self.repo, adopted, "example/writing")
+        editor = inventory.descriptor(self.repo, adopted, "example/editing")
+        self.assertEqual(writer["status"], "ready", writer["diagnostics"])
+        self.assertEqual(len(writer["triggers"]), 3)
+        self.assertEqual(len(editor["triggers"]), 2)
+        self.assertIn({"source": path, "pointer": "/skills/0/cold_start"}, writer["descriptor"]["case_selection"])
+        self.assertEqual(inventory.compare(self.repo, base, adopted)["affected_skills"], ["example/writing"])
+        with self.assertRaisesRegex(inventory.core.ReceiptError, "trigger coverage"):
+            self.prepared_receipt(adopted)
+        self.write(inventory.INPUT_MAP, {"schema_version": 1, "entries": []})
+        removed = self.commit("remove explicit ordinary requirement")
+        self.assertEqual(inventory.compare(self.repo, adopted, removed)["affected_skills"], ["example/writing"])
+        self.assertEqual(len(inventory.descriptor(self.repo, removed, "example/writing")["triggers"]), 2)
+
+    def test_production_scope_precedes_scenario_ownership_and_runtime_effects(self):
+        self.ordinary_corpora_with_phase_two_source()
+        source = "plugins/example/skills/editing/evals/evals.json"
+        case = json.loads((self.repo / source).read_text())
+        case["evals"][0]["name"] = "editor-case"
+        self.write(source, case)
+        base = self.commit("ordinary corpora and separate routing source")
+        path = "evals/skill-routing-matrix.json"
+        self.write(path, {"skills": [{"id": "example:writing", "companions": ["example:missing"],
+            "scenario": {"kind": "skill-evals", "source": source, "selector": "editor-case", "id": 0}}],
+            "runtime_dependencies": {"example:writing": ["support/missing-runtime.md"]}})
+        candidate = self.commit("separate production scenario source")
+        observed = inventory.discover(self.repo, candidate)
+        writer = observed["skills"]["example/writing"]
+        self.assertNotIn(path, writer["behavior_inputs"])
+        self.assertNotIn(source, writer["behavior_inputs"])
+        self.assertFalse(writer["diagnostics"])
+        described = inventory.descriptor(self.repo, candidate, "example/writing")
+        self.assertEqual(described["status"], "ready", described["diagnostics"])
+        self.assertEqual(len(described["cases"]), 1)
+        self.assertEqual(observed["documents"][path]["scope"], "production-release")
+        self.assertEqual(len(observed["documents"][path]["records"]), 1)
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["status"], "complete", compared)
+        self.assertEqual(compared["affected_skills"], [])
+        retained = [row for row in compared["inventory_diagnostics"]["candidate"]
+                    if row["code"] in ("runtime-input-missing", "companion-unresolved")]
+        self.assertEqual(len(retained), 2)
+        self.assertTrue(all(row["scope"] == "production-release" and row["ordinary_owners"] == [] for row in retained))
+
+    def test_production_expectation_mappings_do_not_select_ordinary_consumers(self):
+        self.ordinary_corpora_with_phase_two_source()
+        path = "evals/skill-routing-matrix.json"
+        self.write(path, {"skill_name": "example:writing", "evals": [
+            {"id": "release", "prompt": "Release case.", "expectations": ["Release expectation."]}]})
+        base = self.commit("separate production application source")
+        entry = {"source": {"path": path, "sha256": hashlib.sha256((self.repo / path).read_bytes()).hexdigest()},
+            "pointer": "/evals/0/expectations/0", "original": "Release expectation.",
+            "id": "release-check", "severity": "safety", "status": "accepted"}
+        entry["review"] = {"decision": "accepted", "reference": "constructed-release-expectation",
+            "mapping_sha256": inventory.corpora.mapping_digest(entry)}
+        self.write(inventory.EXPECTATION_MAP, {"schema_version": 1, "entries": [entry]})
+        candidate = self.commit("review production expectation")
+        described = inventory.descriptor(self.repo, candidate, "example/writing")
+        self.assertEqual(described["status"], "ready", described["diagnostics"])
+        self.assertEqual(len(described["cases"]), 1)
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["affected_skills"], [])
+        self.assertEqual(compared["status"], "complete", compared)
+
+    def test_malformed_source_links_are_diagnostics_in_their_declared_scope(self):
+        self.ordinary_corpora_with_phase_two_source()
+        scenario = {"skills": [{"id": "example:writing", "companions": [], "scenario": {
+            "kind": "skill-evals", "source": "plugins/example/skills/writing/evals/evals.json", "selector": 0}}],
+            "runtime_dependencies": {}}
+        routing = {"semantic_definition": {"path": "evals/control.json"}, "skills": [
+            {"id": "example:writing", "cold_start": "Write.", "explicit": "$writing"}]}
+        malformed = []
+        for value in ({}, {"path": []}, {"path": None}, {"path": 3}, {"path": ""}):
+            malformed.append({**routing, "semantic_definition": value})
+        for value in ([], None, 3, "runtime", {"example:writing": None},
+                      {"example:writing": 3}, {"example:writing": [3]}, {"example:writing": [""]}):
+            malformed.append({**scenario, "runtime_dependencies": value})
+        for field, value in (("id", 3), ("id", None), ("id", ""), ("companions", None),
+                             ("companions", 3), ("companions", [3]), ("companions", [""])):
+            malformed.append({**scenario, "skills": [{**scenario["skills"][0], field: value}]})
+        for field, value in (("source", []), ("source", None), ("kind", []), ("kind", None)):
+            malformed.append({**scenario, "skills": [{**scenario["skills"][0], "scenario": {
+                **scenario["skills"][0]["scenario"], field: value}}]})
+        base = self.commit("ordinary source and separate routing")
+        for path, expected in (("evals/ordinary-malformed.json", "unsupported"),
+                               ("evals/skill-routing-matrix.json", "complete")):
+            for index, document in enumerate(malformed):
+                with self.subTest(path=path, shape=index):
+                    self.write(path, document)
+                    candidate = self.commit("malformed source declaration")
+                    compared = inventory.compare(self.repo, base, candidate)
+                    self.assertEqual(compared["status"], expected, compared)
+                    observed = inventory.discover(self.repo, candidate)["documents"][path]
+                    self.assertEqual(observed["raw"], document)
+                    self.assertIn("malformed-source", [row["code"] for row in observed["diagnostics"]])
+                    if expected == "complete":
+                        self.assertEqual(compared["affected_skills"], [])
+                        self.assertTrue(all(row["scope"] == "production-release" for row in observed["diagnostics"]))
+                        described = inventory.descriptor(self.repo, candidate, "example/writing")
+                        self.assertEqual(described["status"], "ready", described["diagnostics"])
+            (self.repo / path).unlink()
+            self.commit("remove malformed source")
+
     def test_prepare_freezes_the_authoritative_normalized_descriptor(self):
         self.current_corpus()
         self.processing_sources()
@@ -75,6 +236,77 @@ class InventoryTests(unittest.TestCase):
         self.assertIn(inventory.INPUT_MAP, snapshot["inputs"])
         self.assertIn(inventory.EXPECTATION_MAP, snapshot["inputs"])
         self.assertIn('"id":0', next(iter(inventory.core.corpus(self.repo, snapshot)[0])))
+
+    def test_nonregular_phase_two_source_keeps_its_separate_scope(self):
+        base, _ = self.ordinary_corpora_with_phase_two_source()
+        path = "evals/skill-routing-matrix.json"
+        (self.repo / path).unlink()
+        (self.repo / path).symlink_to("control.json")
+        candidate = self.commit("nonregular separate routing source")
+        observed = inventory.discover(self.repo, candidate)
+        self.assertEqual(observed["documents"][path]["scope"], "production-release")
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["status"], "complete", compared)
+        self.assertEqual(compared["affected_skills"], [])
+        self.assertTrue(any(row["code"] == "corpus-unavailable" and row["scope"] == "production-release"
+                            for row in compared["inventory_diagnostics"]["candidate"]))
+        self.assertEqual(inventory.check(self.repo, base, candidate, "release/receipts")["status"], "not-required")
+
+    def test_adopted_consumer_inherits_document_and_original_owner_references(self):
+        _, document = self.ordinary_corpora_with_phase_two_source()
+        path = "evals/skill-routing-matrix.json"
+        document["skills"] = [document["skills"][1]]
+        document["semantic_definition"]["path"] = "evals/missing-semantic.json"
+        document["existing_trigger_sources"] = [
+            {"path": "evals/missing-editing.json", "skill": "example:editing"},
+            {"path": "evals/unrelated-writing.json", "skill": "example:writing"}]
+        self.write(path, document)
+        semantic = {"source": {"path": path, "sha256": hashlib.sha256((self.repo / path).read_bytes()).hexdigest()},
+            "pointer": "/skills/0/cold_start", "owners": ["example/writing"], "role": "current-corpus",
+            "behavior_inputs": [], "dependencies": []}
+        self.write(inventory.INPUT_MAP, {"schema_version": 1, "entries": [{**semantic, "status": "accepted",
+            "review": {"decision": "accepted", "reference": "constructed-adoption",
+                "mapping_sha256": inventory.core.document_digest(semantic)}}]})
+        candidate = self.commit("cross-consumer routing adoption")
+        described = inventory.descriptor(self.repo, candidate, "example/writing")
+        self.assertEqual(described["status"], "unresolved", described)
+        observed = inventory.discover(self.repo, candidate)["skills"]["example/writing"]
+        unavailable = {row["path"] for row in observed["diagnostics"] if row["code"] == "input-unavailable"}
+        self.assertEqual(unavailable, {"evals/missing-semantic.json", "evals/missing-editing.json"})
+        self.assertNotIn("evals/unrelated-writing.json", observed["behavior_inputs"])
+        self.assertEqual(inventory.descriptor(self.repo, candidate, "example/editing")["status"], "ready")
+
+    def test_current_corpus_mapping_must_select_an_original_case_coordinate(self):
+        self.ordinary_corpora_with_phase_two_source()
+        path = "evals/skill-routing-matrix.json"
+        semantic = {"source": {"path": path, "sha256": hashlib.sha256((self.repo / path).read_bytes()).hexdigest()},
+            "pointer": "/skills/0", "owners": ["example/writing"], "role": "current-corpus",
+            "behavior_inputs": [], "dependencies": []}
+        self.write(inventory.INPUT_MAP, {"schema_version": 1, "entries": [{**semantic, "status": "accepted",
+            "review": {"decision": "accepted", "reference": "constructed-adoption",
+                "mapping_sha256": inventory.core.document_digest(semantic)}}]})
+        candidate = self.commit("unmatched ordinary requirement")
+        described = inventory.descriptor(self.repo, candidate, "example/writing")
+        self.assertEqual(described["status"], "unresolved", described)
+        self.assertTrue(any(row["code"] == "corpus-coordinate-unresolved" and row["pointer"] == "/skills/0"
+                            for row in described["diagnostics"]))
+        self.assertEqual(inventory.descriptor(self.repo, candidate, "example/editing")["status"], "ready")
+
+    def test_compact_comparison_preserves_consumer_diagnostics_by_side(self):
+        self.current_corpus()
+        base = self.commit("ordinary inputs")
+        self.write("plugins/example/skills/writing/SKILL.md", "Read [required](missing.md).\n")
+        candidate = self.commit("missing declared behavior input")
+        compared = inventory.compare(self.repo, base, candidate)
+        expected = [{**row, "skill": "example/writing"} for row in
+                    inventory.discover(self.repo, candidate)["skills"]["example/writing"]["diagnostics"]]
+        self.assertTrue(expected)
+        self.assertEqual(compared["affected_skills"], ["example/writing"])
+        self.assertEqual(compared["inventory_diagnostics"]["candidate"], expected)
+        self.assertEqual(compared["inventory_diagnostics"]["base"], [])
+        checked = inventory.check(self.repo, base, candidate, "release/receipts")
+        self.assertEqual(checked["status"], "fail")
+        self.assertEqual(checked["inventory_diagnostics"], compared["inventory_diagnostics"])
 
     def prepared_receipt(self, revision):
         snapshot = inventory.prepare(self.repo, revision, "example/writing")
@@ -432,6 +664,92 @@ class InventoryTests(unittest.TestCase):
         result = inventory.compare(self.repo, base, candidate)
         self.assertEqual(result["affected_skills"], ["example/editing", "example/writing"])
 
+    def test_compare_cli_keeps_large_retained_artifacts_in_explicit_discovery(self):
+        path = "evals/example/grading.json"
+        retained = {"results": [{"response": "Retained response. " * 100000}]}
+        self.write(path, retained)
+        original = (self.repo / path).read_bytes()
+        base = self.commit("large retained result")
+        self.write("plugins/example/skills/writing/SKILL.md", "Write accurately.\n")
+        candidate = self.commit("writer changes")
+        process = subprocess.run([sys.executable, str(Path(inventory.__file__)),
+            "--repository", str(self.repo), "compare", "--base", base,
+            "--candidate", candidate], capture_output=True, text=True)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertLess(len(process.stdout.encode()), 16000)
+        compared = json.loads(process.stdout)
+        self.assertEqual((compared["base_revision"], compared["candidate_revision"]), (base, candidate))
+        self.assertEqual(compared["affected_skills"], ["example/writing"])
+        self.assertNotIn("base", compared)
+        self.assertNotIn("candidate", compared)
+        for side, revision in (("base", base), ("candidate", candidate)):
+            self.assertEqual(compared["inventory_summary"][side], {"revision": revision,
+                "roster_complete": True, "skill_count": 2, "document_count": 1, "unresolved_record_count": 0})
+            self.assertEqual(compared["inventory_diagnostics"][side][0]["code"], "scope-only")
+        discovered = inventory.discover(self.repo, candidate)
+        self.assertEqual(discovered["documents"][path]["raw"], retained)
+        self.assertEqual((self.repo / path).read_bytes(), original)
+
+    def test_comparison_retains_production_scope_diagnostics_without_ordinary_selection(self):
+        path = "evals/skill-routing-matrix.json"
+        self.write(path, {"semantic_definition": {"path": "evals/missing-control.json", "sha256": "a" * 64},
+            "skills": [{"id": "example:retired", "cold_start": "Retired query.", "explicit": "$retired"}]})
+        candidate = self.commit("separate production routing source")
+        compared = inventory.compare(self.repo, self.base, candidate)
+        self.assertEqual(compared["status"], "complete", compared["unsupported"])
+        self.assertTrue(compared["selection_complete"])
+        self.assertEqual(compared["affected_skills"], [])
+        self.assertEqual(compared["unsupported"], [])
+        diagnostics = compared["inventory_diagnostics"]["candidate"]
+        self.assertEqual({row["code"] for row in diagnostics}, {"scope-only", "reference-missing", "unknown-owner"})
+        self.assertTrue(all(row["scope"] == "production-release" for row in diagnostics))
+        checked = inventory.check(self.repo, self.base, candidate, "release/receipts")
+        self.assertEqual(checked["status"], "not-required")
+        self.assertEqual(checked["inventory_diagnostics"], compared["inventory_diagnostics"])
+        self.assertEqual(checked["inventory_summary"], compared["inventory_summary"])
+
+    def test_compact_comparison_preserves_selection_and_unresolved_coverage_diagnostics(self):
+        self.current_corpus()
+        self.write("evals/example/grading.json", {"results": []})
+        base = self.commit("current and retained sources")
+        self.write("evals/example/unknown.json", {"skill_name": "missing", "evals": [
+            {"id": 0, "prompt": "Unknown owner.", "expectations": []}]})
+        self.write("evals/unowned.json", {"scenarios": [{"id": "unowned", "expectations": []}]})
+        self.write("evals/unsupported.json", {"unknown_format": True})
+        entrypoint = "plugins/example/skills/writing/SKILL.md"
+        self.write(entrypoint, "Write accurately.\n")
+        candidate = self.commit("changed writer and unresolved ordinary sources")
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["status"], "unsupported")
+        self.assertFalse(compared["selection_complete"])
+        self.assertEqual(compared["affected_skills"], ["example/writing"])
+        self.assertEqual(compared["causes"], {"example/writing": [
+            {"path": entrypoint, "side": "base", "kind": "behavioral-input"},
+            {"path": entrypoint, "side": "candidate", "kind": "behavioral-input"}]})
+        self.assertEqual({row["code"] for row in compared["unsupported"]},
+                         {"unknown-owner", "unresolved-owner", "unsupported-corpus"})
+        self.assertEqual({row["code"] for row in compared["inventory_diagnostics"]["candidate"]},
+                         {"scope-only", "unsupported-format", "unknown-owner", "unresolved-owner"})
+        self.assertEqual(compared["inventory_summary"]["candidate"]["unresolved_record_count"], 2)
+        for side, revision in (("base", base), ("candidate", candidate)):
+            observed = inventory.discover(self.repo, revision)
+            for row in observed["diagnostics"]:
+                self.assertIn(row, compared["inventory_diagnostics"][side])
+            for key, skill in observed["skills"].items():
+                for row in skill["diagnostics"]:
+                    self.assertIn({**row, "skill": key}, compared["inventory_diagnostics"][side])
+        process = subprocess.run([sys.executable, str(Path(inventory.__file__)),
+            "--repository", str(self.repo), "check", "--base", base, "--candidate", candidate,
+            "--receipt-root", "release/receipts"], capture_output=True, text=True)
+        self.assertEqual(process.returncode, 1, process.stderr)
+        checked = json.loads(process.stdout)
+        self.assertEqual(checked["status"], "fail")
+        for field in ("base_revision", "candidate_revision", "changed_paths", "affected_skills", "causes",
+                      "selection_complete", "unsupported", "inventory_diagnostics", "inventory_summary"):
+            self.assertEqual(checked[field], compared[field], field)
+        self.assertEqual(checked["skills"][0]["skill"], "example/writing")
+        self.assertIn("unresolved-owner", [row["code"] for row in checked["skills"][0]["diagnostics"]])
+
     def test_external_corpus_fixture_is_selected_without_reading_worktree_bytes(self):
         corpus = "evals/example/skills/writing/evals.json"
         fixture = "evals/example/skills/writing/fixtures/input.md"
@@ -444,7 +762,7 @@ class InventoryTests(unittest.TestCase):
         self.write(corpus, "invalid uncommitted JSON")
         result = inventory.compare(self.repo, base, candidate)
         self.assertEqual(result["affected_skills"], ["example/writing"])
-        self.assertIn(fixture, result["candidate"]["skills"]["example/writing"]["behavior_inputs"])
+        self.assertIn(fixture, inventory.discover(self.repo, candidate)["skills"]["example/writing"]["behavior_inputs"])
 
     def test_removed_skill_is_an_explicit_unsupported_consumer(self):
         self.git("rm", "plugins/example/skills/writing/SKILL.md")
@@ -688,7 +1006,7 @@ class InventoryTests(unittest.TestCase):
         result = inventory.compare(self.repo, base, candidate)
         self.assertEqual(result["status"], "complete", result["unsupported"])
         self.assertEqual(result["affected_skills"], [])
-        selected = result["candidate"]["skills"]["example/writing"]
+        selected = inventory.discover(self.repo, candidate)["skills"]["example/writing"]
         self.assertIn(support, selected["dependencies"])
         self.assertIn("support/runner-v2.txt", selected["dependencies"])
         self.assertFalse(selected["diagnostics"])
@@ -712,7 +1030,7 @@ class InventoryTests(unittest.TestCase):
                 result = inventory.compare(self.repo, base, suppressed)
                 self.assertEqual(result["affected_skills"], ["example/writing"])
                 self.assertFalse(any(row["role"] == "application" for row in
-                    result["candidate"]["skills"]["example/editing"]["records"]))
+                    inventory.discover(self.repo, suppressed)["skills"]["example/editing"]["records"]))
         semantic["role"] = "current-corpus"
         write_mapping()
         transferred = self.commit("current corpus consumed by editing")
@@ -742,7 +1060,7 @@ class InventoryTests(unittest.TestCase):
         refreshed = self.commit("replace support source without changing behavior consumption")
         result = inventory.compare(self.repo, transferred, refreshed)
         self.assertEqual(result["affected_skills"], [])
-        self.assertIn("support/runner-v2.json", result["candidate"]["skills"]["example/editing"]["dependencies"])
+        self.assertIn("support/runner-v2.json", inventory.discover(self.repo, refreshed)["skills"]["example/editing"]["dependencies"])
 
     def test_declared_matrix_companions_supply_transitive_behavior_inputs(self):
         self.write("plugins/example/references/edit.md", "Edit carefully.\n")

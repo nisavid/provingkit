@@ -310,6 +310,9 @@ class CorpusTests(unittest.TestCase):
         self.assertTrue(all(r["owners"] == [] and r["id"] is None for r in result["records"]))
         path = "evals/skill-routing-matrix.json"
         result = corpora.inspect_document(path, (ROOT / path).read_bytes())
+        self.assertEqual(result["role"], "scope")
+        self.assertEqual(result["scope"], "production-release")
+        self.assertTrue(all(record["scope"] == "production-release" for record in result["records"]))
         first = result["records"][:4]
         self.assertEqual([r["pointer"] for r in first], ["/skills/0/cold_start", "/skills/0/explicit", "/skills/0/supplemental/positive", "/skills/0/supplemental/negative"])
         self.assertEqual(first[0]["expected"], ["choosing-agent-models"])
@@ -317,6 +320,24 @@ class CorpusTests(unittest.TestCase):
         self.assertEqual(first[3]["owners"], ["rolecasting:choosing-agent-models"])
         self.assertIsNone(first[3]["id"])
         self.assertEqual(result["references"][1]["owners"], ["versionkeeping:checkpointing-and-publishing-git-work"])
+
+    def test_routing_format_does_not_override_the_declared_source_scope(self):
+        original = {"semantic_definition": {"path": "evals/control.json"}, "skills": [{"id": "example:writing",
+            "cold_start": "Write.", "explicit": "Use writing.", "supplemental": {
+                "positive": "Write a note.", "positive_expected_skills": ["writing", "editing", "writing"],
+                "negative": "Edit a note.", "negative_expected_skills": ["editing"]}}]}
+        content = json.dumps(original).encode()
+        ordinary = corpora.inspect_document("evals/ordinary-routing.json", content)
+        release = corpora.inspect_document("evals/skill-routing-matrix.json", content)
+        self.assertEqual(ordinary["role"], "trigger")
+        self.assertEqual(release["role"], "scope")
+        self.assertEqual(release["scope"], "production-release")
+        self.assertEqual([item["pointer"] for item in ordinary["records"]], [item["pointer"] for item in release["records"]])
+        self.assertEqual(release["records"][2]["expected"], ["writing", "editing", "writing"])
+        self.assertEqual(release["raw"], original)
+        malformed = corpora.inspect_document("evals/skill-routing-matrix.json", b'{')
+        self.assertEqual(malformed["scope"], "production-release")
+        self.assertEqual(malformed["diagnostics"][0]["code"], "invalid-json")
 
     def test_shared_and_dictionary_corpora_preserve_source_fields_and_fixture_rules(self):
         paths = ["evals/mergecraft/corpus.json", "evals/versionkeeping/corpus.json",
