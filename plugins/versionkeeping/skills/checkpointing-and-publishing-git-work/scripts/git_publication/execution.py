@@ -305,6 +305,20 @@ def execute_repository(
                     expected_fingerprint=destination["endpoint_fingerprint"],
                     observed_fingerprint=endpoint_fingerprint,
                 )
+            if repo.config_profile != destination["config_profile"]:
+                early_selection = dict(selection)
+                early_selection["default_branch_ref"] = destination[
+                    "default_branch_ref"
+                ]
+                early_selection["config_profile"] = repo.config_profile
+                raise PolicyGate(
+                    "REVIEWED_CONFIG_CHANGED",
+                    expected_digest=destination["config_digest"],
+                    observed_digest=_config_digest(
+                        early_selection,
+                        endpoint_fingerprint,
+                    ),
+                )
             repo.enable_https_credentials(endpoint)
             default_branch_ref = _probe_default_branch(repo, endpoint, object_format)
             if default_branch_ref != destination["default_branch_ref"]:

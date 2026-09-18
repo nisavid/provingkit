@@ -82,14 +82,18 @@ remote name is discovery metadata, not a publication actuator.
 Ordinary publication uses the `host-compatible` Git configuration profile by
 default. It inherits the effective host Git configuration and credential
 helpers visible to the harness, while retaining endpoint, ref, lease, prompt,
-and post-push verification gates. Set
-`VERSIONKEEPING_GIT_CONFIG_PROFILE=hardened` for the explicit closed profile.
-That profile clears global and system configuration and permits only the
-validated platform provider described below. The selected profile is included
-in the reviewed destination configuration digest; changing it requires a fresh
-plan and review.
+and post-push verification gates. This weaker, harness-trusting profile is
+outside the guarded authenticated HTTPS contract; that distinction is a route
+boundary, not an assertion that it provides hardened isolation. When the
+publication needs no ambient executable Git configuration, one trusted
+provider, and a fail-closed provider boundary, set
+`VERSIONKEEPING_GIT_CONFIG_PROFILE=hardened` before planning and keep it
+selected through execution. That profile clears global and system
+configuration and permits only the validated platform provider described
+below. The selected profile is included in the reviewed destination
+configuration digest; changing it requires a fresh plan and review.
 
-The ordinary publication executor supports noninteractive HTTPS credentials on
+The hardened publication profile supports noninteractive HTTPS credentials on
 modern macOS, Linux, and Windows through closed platform-provider sets:
 
 - macOS uses `git-credential-osxkeychain` from the trusted system Git exec
@@ -137,17 +141,21 @@ variables are also removed. This prevents a narrower Git configuration or
 process environment from weakening TLS beneath the authenticated endpoint.
 Rejected setting values are never read into diagnostics.
 
-Credential bytes travel only between Git and the system helper through Git's
-credential protocol: they are never read by the planner or executor and never
-enter arguments, diagnostics, plans, receipts, or repository configuration.
-SSH and ancestry-guarded local endpoints do not enable a credential helper and
-retain their existing contracts.
+Credential-provider response bytes remain between Git and the system helper.
+The executor sends credential-preflight stdout and stderr to the null device
+and decides availability only from the return code; it never receives or
+inspects provider response bytes. Credential bytes never enter arguments,
+diagnostics, plans, receipts, or repository configuration. SSH and
+ancestry-guarded local endpoints do not enable a credential helper and retain
+their existing contracts.
 
 ## Terminal Remote-Ref Deletion
 
 Remote-ref deletion is a separate planner and executor surface owned by this
 skill. It is not an ordinary publication update and must not be supplied to
-`execute_git_publication.py`. Before planning, the deletion request requires a
+`execute_git_publication.py`. It is outside this guarded authenticated HTTPS
+claim and must establish any credential/profile claim under its own contract.
+Before planning, the deletion request requires a
 verified merge outcome plus explicit repository and operator authorization. Each
 authorization repeats and exactly binds the remote, full `refs/heads/...` ref,
 and `expected_target_sha`; the verified merged source SHA must equal that
