@@ -23,17 +23,25 @@ def require(condition, message):
         raise ReceiptError(message)
 
 
-def document_digest(value):
-    """SHA-256 of UTF-8 JSON, sorted keys, compact separators, and no final newline."""
-    return hashlib.sha256(
-        json.dumps(
+def canonical_bytes(value):
+    """Admit finite JSON values that can be serialized as UTF-8 scalar text."""
+    try:
+        return json.dumps(
             value,
             sort_keys=True,
             separators=(",", ":"),
             ensure_ascii=False,
             allow_nan=False,
-        ).encode()
-    ).hexdigest()
+        ).encode("utf-8")
+    except (TypeError, ValueError, UnicodeError) as error:
+        raise ReceiptError(
+            "value cannot be represented as canonical UTF-8 JSON"
+        ) from error
+
+
+def document_digest(value):
+    """SHA-256 of UTF-8 JSON, sorted keys, compact separators, and no final newline."""
+    return hashlib.sha256(canonical_bytes(value)).hexdigest()
 
 
 def read_json(content):
@@ -48,9 +56,11 @@ def read_json(content):
         raise ReceiptError("non-finite JSON number")
 
     try:
-        return json.loads(
+        value = json.loads(
             content, object_pairs_hook=pairs, parse_constant=invalid_constant
         )
+        canonical_bytes(value)
+        return value
     except (ValueError, UnicodeError) as error:
         raise ReceiptError("invalid or duplicate-key JSON") from error
 
@@ -437,7 +447,7 @@ def evaluate(repository, receipt):
 
 
 def check(repository, request, receipts):
-    """Check declared changed skills at the receipt-containing candidate revision."""
+    """Check declared changed skills using supplied JSON records or raw receipt bytes."""
     validate(request, "request")
     revision(repository, request["base_revision"])
     revision(repository, request["candidate_revision"])
@@ -505,6 +515,11 @@ def check(repository, request, receipts):
             require(source_error is None, source_error)
             require(key in receipts, "receipt missing")
             receipt = receipts[key]
+            if isinstance(receipt, bytes):
+                receipt_identity["receipt_raw_sha256"] = hashlib.sha256(
+                    receipt
+                ).hexdigest()
+                receipt = read_json(receipt)
             receipt_identity["receipt_sha256"] = document_digest(receipt)
             validate(receipt)
             require(
@@ -565,7 +580,7 @@ class _ReceiptFiles(dict):
     """Load only receipts selected by the check; unrelated evidence is a no-op."""
 
     def __getitem__(self, key):
-        return read_json(local_bytes(super().__getitem__(key)))
+        return local_bytes(super().__getitem__(key))
 
 
 def main(argv=None):

@@ -690,6 +690,54 @@ class ReceiptWorkflowTests(unittest.TestCase):
                 )
                 self.assertNotIn("evaluated_revision", result["skills"][0])
 
+    def test_cli_rejects_uncanonicalizable_or_malformed_json_with_raw_identity(self):
+        path = self.private / "request.json"
+        path.write_text(json.dumps(self.request()))
+        receipt_path = self.repo / "release/eval-receipts/example/writing.json"
+        receipt_path.parent.mkdir(parents=True, exist_ok=True)
+        for raw in (
+            b'{"unexpected": 1e400}',
+            b'{"unexpected": "\\ud800"}',
+            b"{malformed",
+        ):
+            with self.subTest(raw=raw):
+                receipt_path.write_bytes(raw)
+                checked = subprocess.run(
+                    [
+                        "python",
+                        str(Path(receipts.__file__).resolve()),
+                        "--repository",
+                        str(self.repo),
+                        "check",
+                        "--request",
+                        str(path),
+                        "--receipts",
+                        str(self.repo / "release/eval-receipts"),
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(checked.returncode, 1, checked.stderr)
+                result = json.loads(checked.stdout)
+                self.assertEqual(result["status"], "fail")
+                self.assertEqual(
+                    result["skills"][0]["receipt_raw_sha256"],
+                    hashlib.sha256(raw).hexdigest(),
+                )
+                self.assertNotIn("receipt_sha256", result["skills"][0])
+                self.assertNotIn("evaluated_revision", result["skills"][0])
+                self.assertEqual(checked.stderr, "")
+
+    def test_document_inputs_without_canonical_identity_are_structured_rejections(self):
+        for invalid in ({"unexpected": float("inf")}, {"unexpected": chr(0xD800)}):
+            with self.subTest(value_type=type(invalid["unexpected"]).__name__):
+                result = receipts.check(
+                    self.repo, self.request(), {"example/writing": invalid}
+                )
+                self.assertEqual(result["status"], "fail")
+                self.assertNotIn("receipt_sha256", result["skills"][0])
+                self.assertNotIn("receipt_raw_sha256", result["skills"][0])
+
 
 if __name__ == "__main__":
     unittest.main()
