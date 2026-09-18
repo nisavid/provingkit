@@ -118,6 +118,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         for relative in (
             ".claude-plugin/marketplace.json",
             "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
+            "docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md",
             "release/provingkit/cutover-provenance-v1.json",
             "release/provingkit/definition-v1.json",
             "release/provingkit/final-main-import-map-v1.tsv",
