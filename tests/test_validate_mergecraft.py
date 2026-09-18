@@ -241,6 +241,27 @@ class ValidateMergecraftTests(unittest.TestCase):
                 self.assertIn("relation evaluation evidence", result.stderr)
                 self.assertNotIn("Traceback", result.stderr)
 
+    def test_publication_rejects_inconsistent_selected_relation_model_identity(self) -> None:
+        path = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/experiment.json"
+        original = json.loads(path.read_bytes())
+        selected = original["selection"]["behavior_by_case"]["0"]
+        selected_id = f"{selected}/case-00-with-skill-1"
+        baseline = self.run_validator("--source-stage")
+        self.assertEqual(baseline.returncode, 0, baseline.stderr)
+        for field in ("model_requested", "init.model"):
+            with self.subTest(field=field):
+                experiment = copy.deepcopy(original)
+                run = next(row for row in experiment["behavior_runs"] if row["id"] == selected_id)
+                if field == "model_requested":
+                    run[field] = "different-executor"
+                else:
+                    run["init"]["model"] = "different-executor"
+                path.write_text(json.dumps(experiment), encoding="utf-8")
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("actual executor identity", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
     def test_publication_requires_relation_thresholds_to_match_selected_grades(self) -> None:
         path = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/grading.json"
         original = json.loads(path.read_bytes())

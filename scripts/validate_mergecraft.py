@@ -1651,7 +1651,10 @@ def _validate_relation_evidence(repo: Path) -> None:
                 "executor failure",
             )
             require(
-                run["assistant_models"] == ["claude-opus-5"]
+                run["model_requested"]
+                == run["init"]["model"]
+                == "claude-opus-5"
+                and run["assistant_models"] == ["claude-opus-5"]
                 and run["effort_requested"] == "high",
                 "actual executor identity",
             )

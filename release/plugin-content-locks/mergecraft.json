@@ -38,7 +38,7 @@
     "skills/maintaining-issue-pr-relations/references/command.md": "449681bb7234c99d582b6931094d4b2be9c8c3263768868840382339515a0931",
     "skills/maintaining-issue-pr-relations/references/relation-contract.md": "240dc1692d9eef1dc1acc123f5363eb4e2656f3c38cf3b43de16ccdcec03af9e",
     "skills/maintaining-issue-pr-relations/scripts/relation_forge.py": "b1f9c23dbe5df73b8fe07c261b6fdb933b9251df6dd2570a3b17feb46eb51d44",
-    "skills/maintaining-issue-pr-relations/scripts/relation_state.py": "fe814d5edde02cd8bf376ab09bf41488f03931ee0a8665c96a195e70edfe784d",
+    "skills/maintaining-issue-pr-relations/scripts/relation_state.py": "3d52b6f986d6d365b9dc2e09718f473e207286809fdd1d17f4d7c4d8db7c2209",
     "skills/publishing-reviewable-prs/SKILL.md": "c5b4a25b5b9f179a120dcb1527371e9e70a774ab977c79408599fc8bfb228ed2",
     "skills/publishing-reviewable-prs/agents/openai.yaml": "1ec6820a15567666cedd724a6e05abd7b9d0b8bb210b159dc0cecb4a36594168",
     "skills/publishing-reviewable-prs/scripts/audit_reviewable_pr.py": "98b383ba03bb2fb3bbb301ce21f970c09f6044b9bbd63afc8024965fbbf8ac67",

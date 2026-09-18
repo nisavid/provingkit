@@ -187,6 +187,24 @@ class RelationCommandTests(unittest.TestCase):
             self.assertEqual(resumed['read_counts']['settings'], 0)
 
 
+    def test_malformed_setting_timestamp_returns_a_structured_block_without_caching(self):
+        for timestamp in (123, True, [], {}):
+            with self.subTest(timestamp=timestamp), tempfile.TemporaryDirectory() as directory:
+                desired = request()
+                desired['setting_observations'] = [{
+                    'host': 'github.com', 'repository_id': 'R1', 'auto_close': False,
+                    'observed_at': timestamp, 'source': 'github-settings-ui',
+                    'evidence': ['task: checkbox unchecked'],
+                }]
+                result = command_module().execute(
+                    'observe', desired, forge=FakeForge(), state_root=directory,
+                    now='2026-09-17T12:00:00Z',
+                )
+                self.assertEqual(result['status'], 'blocked')
+                self.assertEqual(result['reason'], 'invalid-timestamp')
+                self.assertEqual(result['read_counts']['external_write_requests'], 0)
+                self.assertFalse((Path(directory) / 'settings.json').exists())
+
     def test_setting_age_survives_task_resume_and_cross_task_cache_hits(self):
         observed = {'host': 'github.com', 'repository_id': 'R1', 'repository': 'owner/project',
                     'auto_close': False, 'observed_at': '2026-09-01T12:00:00Z',
@@ -839,6 +857,46 @@ class RelationCommandTests(unittest.TestCase):
                     self.assertEqual(result['status'], 'verified')
                     self.assertIn('https://github.com/owner/project/pull/2', forge.entities['I1']['body'])
                     self.assertEqual(forge.connections['I1']['manual'], [])
+
+    def test_entity_url_prefixes_do_not_conflate_retained_and_withdrawn_contributions(self):
+        for intent in ('ensure', 'withdraw'):
+            with self.subTest(intent=intent), tempfile.TemporaryDirectory() as directory:
+                api, forge = command_module(), FakeForge()
+                desired = with_existing_ledgers(forge, request('complete'))
+                first_pair = copy.deepcopy(desired['pairs'][0])
+                forge.entities['I10'] = {
+                    **copy.deepcopy(forge.entities['I1']), 'id': 'I10', 'number': 10,
+                    'url': 'https://github.com/owner/project/issues/10',
+                }
+                forge.connections['I10'] = {'all': [], 'manual': [], 'detected': []}
+                retained = copy.deepcopy(first_pair)
+                retained['issue'].update(id='I10', number=10)
+                desired['pairs'].append(retained)
+                if intent == 'withdraw':
+                    desired['pairs'][0].update(intent='withdraw', withdrawal_reason='scope-dropped')
+                forge.entities['P1']['body'] += ' https://github.com/owner/project/issues/10'
+                desired['body_edits'] = []
+                for entity_id in ('I1', 'I10', 'P1'):
+                    body = forge.entities[entity_id]['body']
+                    candidate = body
+                    if entity_id == 'I1' and intent == 'withdraw':
+                        candidate = 'No contributions.'
+                    elif entity_id == 'P1':
+                        candidate = 'Contributions: https://github.com/owner/project/issues/10'
+                    desired['body_edits'].append({
+                        'entity_id': entity_id, 'expected_body_sha256': hashlib.sha256(body.encode()).hexdigest(),
+                        'start_byte': 0, 'end_byte': len(body.encode()), 'before': body,
+                        'replacement': candidate, 'candidate_body': candidate,
+                        'writer': 'writing-reviewable-pr-descriptions' if entity_id == 'P1' else 'writing-github-issue-and-pr-markdown',
+                        'evidence': ['task: retain Issue 10 contribution in the authored ledger'],
+                    })
+                plan = api.execute('plan', api.execute('observe', desired, forge=forge, state_root=directory))
+                if intent == 'withdraw':
+                    self.assertEqual(plan['status'], 'ready', plan)
+                    self.assertEqual(plan['ledgers']['P1'], [{'entity_id': 'I10', 'url': 'https://github.com/owner/project/issues/10', 'role': 'implementation'}])
+                else:
+                    self.assertEqual(plan['status'], 'blocked')
+                    self.assertEqual(plan['reason'], 'candidate-omits-supported-contribution')
 
     def test_detected_link_removal_is_a_content_handoff(self):
         api, forge = command_module(), FakeForge()

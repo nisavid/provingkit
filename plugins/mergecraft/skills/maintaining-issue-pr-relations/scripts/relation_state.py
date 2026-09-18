@@ -147,6 +147,8 @@ def _cache(state_root):
 def _instant(value):
     if value is None:
         return datetime.now(timezone.utc)
+    if not isinstance(value, str):
+        raise ValueError('invalid-timestamp')
     instant = datetime.fromisoformat(value.replace('Z', '+00:00'))
     if instant.tzinfo is None:
         raise ValueError('timestamp-needs-timezone')
@@ -301,6 +303,11 @@ def _writer(entity):
     return 'writing-github-issue-and-pr-markdown' if entity['kind'] == 'Issue' else 'writing-reviewable-pr-descriptions'
 
 
+def _github_url_tokens(text):
+    # This checks lexical identity; the semantic writer owns ledger completeness.
+    return {url.rstrip('.,;:!?') for url in re.findall(r'https://github\.com/[^\s<>()\[\]\'"`]+', text)}
+
+
 def _body_edit(edit, entity, entries, withdrawn):
     if edit.get('writer') != _writer(entity) or not _has_evidence(edit.get('evidence')):
         raise ValueError('body-edit-needs-writer-output')
@@ -327,9 +334,11 @@ def _body_edit(edit, entity, entries, withdrawn):
     spec.loader.exec_module(sensitive)
     if sensitive.contains_suspected_secret(candidate):
         raise ValueError('candidate-contains-suspected-secret')
-    if any(entry['url'] not in candidate for entry in entries):
+    candidate_urls = _github_url_tokens(candidate)
+    replacement_urls = _github_url_tokens(edit['replacement'])
+    if any(entry['url'] not in candidate_urls for entry in entries):
         raise ValueError('candidate-omits-supported-contribution')
-    if any(entry['url'] in edit['replacement'] for entry in withdrawn):
+    if any(entry['url'] in replacement_urls for entry in withdrawn):
         raise ValueError('candidate-retains-withdrawn-ledger-entry')
     if candidate == body:
         return None
