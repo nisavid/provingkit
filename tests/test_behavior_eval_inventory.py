@@ -1062,6 +1062,222 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(result["affected_skills"], [])
         self.assertIn("support/runner-v2.json", inventory.discover(self.repo, refreshed)["skills"]["example/editing"]["dependencies"])
 
+    def test_appended_matrix_row_selects_only_its_consumer(self):
+        corpus = "evals/example/corpus.json"
+        matrix = "evals/control-plane-matrix.json"
+        self.write(corpus, {"scenarios": [
+            {"id": "write", "skill": "writing", "expectations": ["Write."]},
+            {"id": "edit", "skill": "editing", "expectations": ["Edit."]}]})
+        rows = [{"id": "example:writing", "entrypoint": "plugins/example/skills/writing/SKILL.md", "companions": [],
+                 "scenario": {"kind": "simple-corpus", "source": corpus, "selector": "write", "id": "write"}}]
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {}})
+        base = self.commit("writer scenario consumption")
+        rows.append({"id": "example:editing", "entrypoint": "plugins/example/skills/editing/SKILL.md", "companions": [],
+                     "scenario": {"kind": "simple-corpus", "source": corpus, "selector": "edit", "id": "edit"}})
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {}})
+        candidate = self.commit("append independent editor scenario")
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["affected_skills"], ["example/editing"])
+        self.assertEqual(compared["status"], "complete")
+        self.assertTrue(compared["selection_complete"])
+        for revision in (base, candidate):
+            writer = inventory.discover(self.repo, revision)["skills"]["example/writing"]
+            self.assertIn(matrix, writer["source_identities"])
+
+    def test_direct_whole_matrix_resource_still_selects_its_consumer(self):
+        matrix = "evals/control-plane-matrix.json"
+        corpus = "evals/example/corpus.json"
+        self.write("plugins/example/skills/writing/SKILL.md",
+                   "Read [the full matrix](../../../../evals/control-plane-matrix.json).\n")
+        self.write(corpus, {"scenarios": [
+            {"id": "writing", "skill": "writing", "expectations": ["Write."]},
+            {"id": "editing", "skill": "editing", "expectations": ["Edit."]}]})
+        rows = [{"id": "example:" + name, "entrypoint": f"plugins/example/skills/{name}/SKILL.md", "companions": [],
+                 "scenario": {"kind": "simple-corpus", "source": corpus, "selector": name, "id": name}}
+                for name in ("writing", "editing")]
+        self.write(matrix, {"skills": rows[:1]})
+        base = self.commit("writer also reads complete matrix")
+        self.write(matrix, {"skills": rows})
+        candidate = self.commit("append editor to directly consumed matrix")
+        self.assertEqual(inventory.compare(self.repo, base, candidate)["affected_skills"],
+                         ["example/editing", "example/writing"])
+
+    def test_declared_whole_matrix_runtime_input_keeps_file_applicability(self):
+        matrix = "evals/control-plane-matrix.json"
+        corpus = "evals/example/corpus.json"
+        self.write(corpus, {"scenarios": [
+            {"id": "writing", "skill": "writing", "expectations": ["Write."]},
+            {"id": "editing", "skill": "editing", "expectations": ["Edit."]}]})
+        rows = [{"id": "example:" + name, "entrypoint": f"plugins/example/skills/{name}/SKILL.md", "companions": [],
+                 "scenario": {"kind": "simple-corpus", "source": corpus, "selector": name, "id": name}}
+                for name in ("writing", "editing")]
+        runtime = {"example:writing": [matrix]}
+        self.write(matrix, {"skills": rows[:1], "runtime_dependencies": runtime})
+        base = self.commit("writer runtime reads complete matrix")
+        self.write(matrix, {"skills": rows, "runtime_dependencies": runtime})
+        candidate = self.commit("append editor to runtime matrix")
+        self.assertEqual(inventory.compare(self.repo, base, candidate)["affected_skills"],
+                         ["example/editing", "example/writing"])
+
+    def test_matrix_companion_changes_select_transitive_consumers(self):
+        matrix = "evals/control-plane-matrix.json"
+        corpus = "evals/example/corpus.json"
+        names = ("writing", "editing", "reading")
+        self.write("plugins/example/topology.json", {"skills": {name: {"calls": []} for name in names}})
+        self.write("plugins/example/skills/reading/SKILL.md", "Read.\n")
+        self.write(corpus, {"scenarios": [{"id": name, "skill": name, "expectations": [name]} for name in names]})
+        rows = [{"id": "example:" + name, "entrypoint": f"plugins/example/skills/{name}/SKILL.md",
+                 "companions": ["example:editing"] if name == "writing" else [],
+                 "scenario": {"kind": "simple-corpus", "source": corpus, "selector": name, "id": name}}
+                for name in names]
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {}})
+        base = self.commit("writer consumes editor")
+        rows[1]["companions"] = ["example:reading"]
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {}})
+        candidate = self.commit("editor also consumes reader")
+        self.assertEqual(inventory.compare(self.repo, base, candidate)["affected_skills"],
+                         ["example/editing", "example/writing"])
+        writer = inventory.discover(self.repo, candidate)["skills"]["example/writing"]
+        self.assertIn("plugins/example/skills/reading/SKILL.md", writer["behavior_inputs"])
+        self.assertEqual(inventory.compare(self.repo, candidate, base)["affected_skills"],
+                         ["example/editing", "example/writing"])
+
+    def test_matrix_scenario_owner_and_removal_changes_select_old_and_new_consumers(self):
+        matrix = "evals/control-plane-matrix.json"
+        corpus = "evals/example/corpus.json"
+        self.write(corpus, {"scenarios": [
+            {"id": "first", "skill": "writing", "expectations": ["First."]},
+            {"id": "second", "skill": "writing", "expectations": ["Second."]}]})
+        row = {"id": "example:writing", "entrypoint": "plugins/example/skills/writing/SKILL.md", "companions": [],
+               "scenario": {"kind": "simple-corpus", "source": corpus, "selector": "first", "id": "first"}}
+        self.write(matrix, {"skills": [row]})
+        base = self.commit("first writer scenario")
+        changes = [
+            ([{**row, "scenario": {**row["scenario"], "selector": "second", "id": "second"}}], ["example/writing"]),
+            ([{**row, "id": "example:editing", "entrypoint": "plugins/example/skills/editing/SKILL.md"}],
+             ["example/editing", "example/writing"]),
+            ([], ["example/writing"]),
+        ]
+        for rows, owners in changes:
+            with self.subTest(rows=rows):
+                self.write(matrix, {"skills": rows})
+                candidate = self.commit("change matrix consumption")
+                self.assertEqual(inventory.compare(self.repo, base, candidate)["affected_skills"], owners)
+                self.assertEqual(inventory.compare(self.repo, candidate, base)["affected_skills"], owners)
+        self.git("rm", matrix)
+        removed = self.commit("remove matrix source")
+        self.assertEqual(inventory.compare(self.repo, base, removed)["affected_skills"], ["example/writing"])
+
+    def test_matrix_runtime_changes_select_direct_and_transitive_consumers(self):
+        matrix = "evals/control-plane-matrix.json"
+        corpus = "evals/example/corpus.json"
+        names = ("writing", "editing", "reading")
+        self.write("plugins/example/topology.json", {"skills": {name: {"calls": []} for name in names}})
+        self.write("plugins/example/skills/reading/SKILL.md", "Read.\n")
+        self.write(corpus, {"scenarios": [{"id": name, "skill": name, "expectations": [name]} for name in names]})
+        rows = [{"id": "example:" + name, "entrypoint": f"plugins/example/skills/{name}/SKILL.md",
+                 "companions": ["example:" + names[index + 1]] if index < 2 else [],
+                 "scenario": {"kind": "simple-corpus", "source": corpus, "selector": name, "id": name}}
+                for index, name in enumerate(names)]
+        for path in ("runtime/old.md", "runtime/new.md"):
+            self.write(path, "Runtime input.\n")
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {"example:reading": ["runtime/old.md"]}})
+        base = self.commit("transitive reader runtime")
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {"example:reading": ["runtime/new.md"]}})
+        candidate = self.commit("change transitive runtime declaration")
+        expected = ["example/editing", "example/reading", "example/writing"]
+        self.assertEqual(inventory.compare(self.repo, base, candidate)["affected_skills"], expected)
+        self.assertEqual(inventory.compare(self.repo, candidate, base)["affected_skills"], expected)
+        observed = inventory.discover(self.repo, candidate)
+        for name in names:
+            self.assertIn("runtime/new.md", observed["skills"]["example/" + name]["behavior_inputs"])
+            self.assertNotIn("runtime/old.md", observed["skills"]["example/" + name]["behavior_inputs"])
+        self.write("runtime/new.md", "Changed runtime bytes.\n")
+        changed_bytes = self.commit("change transitive runtime bytes")
+        self.assertEqual(inventory.compare(self.repo, candidate, changed_bytes)["affected_skills"], expected)
+
+    def test_matrix_projection_keeps_full_source_freshness_in_descriptors_and_receipts(self):
+        self.current_corpus()
+        self.processing_sources()
+        matrix = "evals/control-plane-matrix.json"
+        corpus = "plugins/example/skills/writing/evals/evals.json"
+        rows = [{"id": "example:writing", "entrypoint": "plugins/example/skills/writing/SKILL.md", "companions": [],
+                 "scenario": {"kind": "simple-corpus", "source": corpus, "selector": 0, "id": 0}}]
+        self.write(matrix, {"skills": rows})
+        base = self.commit("prepared writer with matrix source")
+        original = inventory.descriptor(self.repo, base, "example/writing")
+        self.assertEqual(original["status"], "ready", original["diagnostics"])
+        receipt = self.prepared_receipt(base)
+        self.assertEqual(receipt["snapshot"]["inputs"][matrix]["sha256"],
+                         hashlib.sha256((self.repo / matrix).read_bytes()).hexdigest())
+        rows.append({**rows[0], "id": "example:editing", "entrypoint": "plugins/example/skills/editing/SKILL.md"})
+        self.write(matrix, {"skills": rows})
+        candidate = self.commit("independent editor matrix row")
+        self.assertEqual(inventory.compare(self.repo, base, candidate)["affected_skills"], ["example/editing"])
+        current = inventory.descriptor(self.repo, candidate, "example/writing")
+        self.assertEqual(current["status"], "ready", current["diagnostics"])
+        self.assertEqual(current["descriptor"], original["descriptor"])
+        self.assertIn(matrix, current["descriptor"]["behavior_inputs"])
+        checked = inventory.core.check(self.repo, {"schema_version": 1,
+            "base_revision": candidate, "candidate_revision": candidate,
+            "skills": [current["descriptor"]], "changed_skills": ["example/writing"], "inventory_complete": True},
+            {"example/writing": json.dumps(receipt).encode()})
+        self.assertEqual(checked["skills"][0]["status"], "fail")
+        self.assertIn("stale evaluated input closure", checked["skills"][0]["reason"])
+
+    def test_matrix_consumption_uses_observed_contextual_owner_coordinates(self):
+        matrix = "evals/example/matrix.json"
+        corpus = "evals/example/corpus.json"
+        self.write(corpus, {"scenarios": [{"id": name, "skill": name, "expectations": [name]}
+                                          for name in ("writing", "editing")]})
+        rows = [
+            {"id": "writing", "companions": ["example:editing"],
+             "scenario": {"kind": "simple-corpus", "source": corpus, "selector": "writing"}},
+            {"id": "example:editing", "companions": [],
+             "scenario": {"kind": "simple-corpus", "source": corpus, "selector": "editing"}},
+        ]
+        for path in ("runtime/old.md", "runtime/new.md"):
+            self.write(path, "Runtime input.\n")
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {"example:editing": ["runtime/old.md"]}})
+        base = self.commit("matrix with contextual writer owner")
+        self.write(matrix, {"skills": rows, "runtime_dependencies": {"example:editing": ["runtime/new.md"]}})
+        candidate = self.commit("contextual owner's companion runtime changes")
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["affected_skills"], ["example/editing", "example/writing"])
+        writer = inventory.discover(self.repo, candidate)["skills"]["example/writing"]
+        self.assertIn("runtime/new.md", writer["behavior_inputs"])
+        reference = next(record for record in writer["records"] if record["role"] == "scenario-reference")
+        self.assertEqual(reference["id"], "writing")
+        self.assertEqual(reference["pointer"], "/skills/0")
+
+    def test_matrix_projection_keeps_unresolved_and_malformed_consumption_visible(self):
+        self.current_corpus()
+        matrix = "evals/control-plane-matrix.json"
+        row = {"id": "example:writing", "companions": [], "scenario": {
+            "kind": "simple-corpus", "source": "plugins/example/skills/writing/evals/evals.json", "selector": 0}}
+        self.write(matrix, {"skills": [row]})
+        base = self.commit("resolved scenario reference")
+        row["scenario"]["selector"] = "absent"
+        row["companions"] = ["example:absent"]
+        self.write(matrix, {"skills": [row], "runtime_dependencies": {"example:writing": ["runtime/absent.md"]}})
+        candidate = self.commit("unresolved scenario runtime and companion")
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["affected_skills"], ["example/writing"])
+        expected = {"scenario-selector-unresolved", "runtime-input-missing", "companion-unresolved"}
+        self.assertTrue(expected <= {row["code"] for row in compared["inventory_diagnostics"]["candidate"]})
+        described = inventory.descriptor(self.repo, candidate, "example/writing")
+        self.assertEqual(described["status"], "unresolved")
+        self.assertTrue(expected <= {row["code"] for row in described["diagnostics"]})
+        checked = inventory.check(self.repo, base, candidate, "release/receipts")
+        self.assertEqual(checked["status"], "fail")
+        self.assertEqual(checked["skills"][0]["diagnostics"], described["diagnostics"])
+        self.write(matrix, {"skills": [row], "runtime_dependencies": False})
+        malformed = self.commit("malformed runtime declaration")
+        compared = inventory.compare(self.repo, base, malformed)
+        self.assertEqual(compared["status"], "unsupported")
+        self.assertEqual(compared["affected_skills"], ["example/writing"])
+        self.assertIn("unsupported-corpus", [row["code"] for row in compared["unsupported"]])
+
     def test_declared_matrix_companions_supply_transitive_behavior_inputs(self):
         self.write("plugins/example/references/edit.md", "Edit carefully.\n")
         self.write("plugins/example/skills/editing/SKILL.md", "Read [edit](../../references/edit.md).\n")

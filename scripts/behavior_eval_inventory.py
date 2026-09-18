@@ -333,7 +333,7 @@ def _declared_resources(skill):
 
 def _link_references(source, documents, records, skills, mappings):
     """Resolve declared selectors without assigning neighboring unowned cases."""
-    diagnostics, consumed = [], {}
+    diagnostics, consumed, matrix_consumption, whole_inputs = [], {}, {}, {}
     for row in mappings:
         if row["role"] == "current-corpus" and not any(
                 record["role"] in ("application", "trigger") and _mapping_selects(row, record)
@@ -393,20 +393,33 @@ def _link_references(source, documents, records, skills, mappings):
                     "message": "The declared referenced bytes are absent or differ from the bound digest."})
             for owner in ordinary_owners:
                 consumed.setdefault(owner, set()).add(path)
+                whole_inputs.setdefault(owner, set()).add(path)
         raw = document.get("raw")
         if document["format"] == "scenario-matrix":
+            if not production_scope:
+                # Compare consumed declarations without narrowing the full
+                # matrix byte binding already recorded in consumed inputs.
+                matrix_path = document["source"]["path"]
+                for owner in set(document_owners) | {
+                        owner.replace(":", "/", 1) for owner in raw.get("runtime_dependencies", {})}:
+                    matrix_consumption.setdefault(owner, {})[matrix_path] = {
+                        "declarations": [record["raw"] for record in document["records"] if owner in record["owners"]],
+                        "runtime_dependencies": raw.get("runtime_dependencies", {}).get(owner.replace("/", ":", 1), []),
+                        "companions": {},
+                    }
             for owner, paths in raw.get("runtime_dependencies", {}).items():
                 owner = owner.replace(":", "/", 1)
                 for path in paths:
                     files = [name for name in source.files if name == path or name.startswith(path + "/")]
                     if not production_scope:
                         consumed.setdefault(owner, set()).update(files)
+                        whole_inputs.setdefault(owner, set()).update(files)
                     if not files:
                         diagnostics.append({"code": "runtime-input-missing", "source": document["source"],
                             "ordinary_owners": [] if production_scope else [owner],
                             "scope": "production-release" if production_scope else "ordinary",
                             "owners": [owner], "message": "Declared runtime input is unavailable: " + path})
-            declarations = {row["id"].replace(":", "/", 1): row for row in raw["skills"]}
+            declarations = {owner: record["raw"] for record in document["records"] for owner in record["owners"]}
             for owner, declaration in declarations.items():
                 pending = list(declaration.get("companions", []))
                 visited = {owner}
@@ -415,6 +428,13 @@ def _link_references(source, documents, records, skills, mappings):
                     if companion in visited:
                         continue
                     visited.add(companion)
+                    if not production_scope:
+                        companion_row = declarations.get(companion)
+                        matrix_consumption[owner][matrix_path]["companions"][companion] = None if companion_row is None else {
+                            "entrypoint": companion_row.get("entrypoint"),
+                            "companions": companion_row.get("companions", []),
+                            "runtime_dependencies": raw.get("runtime_dependencies", {}).get(companion.replace("/", ":", 1), []),
+                        }
                     if companion not in declarations or companion not in skills:
                         diagnostics.append({"code": "companion-unresolved", "source": document["source"],
                             "ordinary_owners": [] if production_scope else [owner],
@@ -431,8 +451,13 @@ def _link_references(source, documents, records, skills, mappings):
                         paths.update(files or {declared})
                     if not production_scope:
                         consumed.setdefault(owner, set()).update(paths)
+                        whole_inputs.setdefault(owner, set()).update(paths)
                     pending.extend(declarations[companion].get("companions", []))
-    return diagnostics, consumed
+    for owner, paths in whole_inputs.items():
+        for path in paths:
+            # A reference or runtime input can also consume the complete file.
+            matrix_consumption.get(owner, {}).pop(path, None)
+    return diagnostics, consumed, matrix_consumption
 
 
 def discover(repository, revision):
@@ -444,7 +469,7 @@ def discover(repository, revision):
     diagnostics.extend(mapping_diagnostics)
     documents, records, corpus_diagnostics = _catalog(source, skills)
     diagnostics.extend(corpus_diagnostics)
-    reference_diagnostics, consumed = _link_references(source, documents, records, skills, mappings)
+    reference_diagnostics, consumed, matrix_consumption = _link_references(source, documents, records, skills, mappings)
     diagnostics.extend(reference_diagnostics)
     # Applicability uses accepted declarations independent of review metadata;
     # normalization below uses only mappings whose full binding was validated.
@@ -506,10 +531,13 @@ def discover(repository, revision):
         except (InventoryError, core.ReceiptError, TypeError) as error:
             declared_resources = set()
             skill["diagnostics"].append({"code": "topology-input-invalid", "message": str(error)})
-        skill["behavior_inputs"] = sorted(_resource_inputs(source, skill) | declared_resources | consumed.get(key, set()) | {
+        direct_inputs = _resource_inputs(source, skill) | declared_resources | {
             path for row in mappings if key in row["owners"]
             for path in ([row["source"]["path"]] if row["role"] == "current-corpus" else []) + row["behavior_inputs"]
-        } | {
+        }
+        skill["matrix_consumption"] = {path: projection for path, projection in matrix_consumption.get(key, {}).items()
+                                       if path not in direct_inputs}
+        skill["behavior_inputs"] = sorted(direct_inputs | consumed.get(key, set()) | {
             path for record in selected if _ordinary_record(record)
             for path in [record["source"]["path"]] + [fixture["path"] for fixture in record["fixtures"] if fixture["path"]]
         })
@@ -666,10 +694,16 @@ def compare(repository, base_revision, candidate_revision):
             for path in changed:
                 if path in (INPUT_MAP, EXPECTATION_MAP):
                     continue  # Per-consumer operative projections own map applicability.
-                if path.startswith(prefix) or path in skill["behavior_inputs"] or path in skill["shared_references"]:
+                if (path.startswith(prefix) or path in skill["shared_references"]
+                        or path in skill["behavior_inputs"] and path not in skill["matrix_consumption"]):
                     causes.setdefault(key, []).append({"path": path, "side": side,
                                                        "kind": "behavioral-input"})
     for key in set(base["skills"]) | set(candidate["skills"]):
+        old_matrices = base["skills"].get(key, {}).get("matrix_consumption", {})
+        new_matrices = candidate["skills"].get(key, {}).get("matrix_consumption", {})
+        for path in sorted(set(old_matrices) | set(new_matrices)):
+            if old_matrices.get(path) != new_matrices.get(path):
+                causes.setdefault(key, []).append({"path": path, "side": "both", "kind": "matrix-consumption-change"})
         old = base["skills"].get(key, {}).get("mapping_projection", [])
         new = candidate["skills"].get(key, {}).get("mapping_projection", [])
         if old != new:
