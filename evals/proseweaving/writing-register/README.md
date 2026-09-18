@@ -54,6 +54,10 @@ by forming the ordered JSON object `prompt`, `fixture`, `candidate_bundle`,
 using the recorded indentation and Unicode setting, and surrounding it with
 the recorded prefix, two newlines, and final newline. Its SHA-256 must match
 `submitted_prompt_sha256`. The response digests cover the exact retained text.
+Iteration 2 links its predecessor to the retained sibling application record.
+Its original pre-publication path declaration remains alongside that normalized
+link. Final grading binds the corrected record digest and retains its earlier
+digest; this metadata correction changes no execution or grading observation.
 Original grading stays beside the rubric used for that run. Changes to the
 candidate, prompt, fixture, or delivered dependencies invalidate affected
 application runs; a rubric-only correction invalidates the affected grade.

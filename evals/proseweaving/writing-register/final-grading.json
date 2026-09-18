@@ -12,7 +12,7 @@
   },
   "provenance": {
     "application_record": "evals/proseweaving/writing-register/application-iteration-2.json",
-    "application_record_sha256": "154658010c1744f8111a33c1f675ea70ef88a41df03e06067c84c6ebb485d76b",
+    "application_record_sha256": "629624cf37ed6e0a8776fe66d5ef88bb82d5ffb1f5a18d6dd1bf5e84ab449a32",
     "adjudication_record": "evals/proseweaving/writing-register/iteration-2-adjudication.json",
     "adjudication_record_sha256": "ca3b43c9f6cceaee427f94506ac92878f5e57333c731534e7c489f16055df5a5",
     "regraded_cases": [
@@ -42,7 +42,9 @@
     ],
     "regraded_response_sha256": "af0c0d185a544274f88de47da15689148f71469ed667206579e495015462956d",
     "executor_inputs_unchanged": true,
-    "other_criteria_unchanged": true
+    "other_criteria_unchanged": true,
+    "application_record_before_metadata_correction_sha256": "154658010c1744f8111a33c1f675ea70ef88a41df03e06067c84c6ebb485d76b",
+    "application_record_metadata_correction": "Resolve the predecessor to the retained sibling application record and preserve the original pre-publication path declaration. Only provenance metadata changed; execution inputs, responses, traces, and grading observations are unchanged. This digest rebinding records no new evaluation or grading."
   },
   "results": [
     {

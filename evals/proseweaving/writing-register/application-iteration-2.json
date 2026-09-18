@@ -36,11 +36,12 @@
     "baseline_status": "unavailable: ignore-user-config retains installed writing guidance and skill discovery; no isolated comparison claimed",
     "context_limit": "Host-global writing instructions and skill metadata can influence these qualitative application checks. Provider-owned instructions are opaque. Candidate bundle is explicitly delivered. Native discovery is a separate probe.",
     "iteration": 2,
-    "prior_iteration": "../manifest.json",
+    "prior_iteration": "application-iteration-1.json",
     "revision_reason": "Improve impact/progress reply ordering and clarify supporting first person in publications; replace two overprescriptive grading-order constraints. Preserve the original responses and grading.",
     "declared_harness_before_run": "codex-cli 0.154.0",
     "harness_observation": "The shared Codex installation changed between iterations. A post-run version check returned 0.155.0; the native binary was installed at 05:28:56 UTC, before iteration 2 started at 05:36:55 UTC. The original pre-run manifest said 0.154.0 and is retained as a declaration, not the observed runtime version.",
-    "native_binary_sha256": "660e159a49e823ac8e5986cb238f73158ce4b957d40d9292f8de90862644b501"
+    "native_binary_sha256": "660e159a49e823ac8e5986cb238f73158ce4b957d40d9292f8de90862644b501",
+    "declared_prior_iteration_before_publication": "../manifest.json"
   },
   "input_format": {
     "prefix": "Execute the writing task in this JSON object. The fixture contains synthetic facts for the task. candidate_bundle contains all applicable skill instructions and referenced text; use the supplied contents without opening files. Return only the requested writing. Do not call tools, inspect the environment, consult other files, or perform any of the actions described in the synthetic brief.",
