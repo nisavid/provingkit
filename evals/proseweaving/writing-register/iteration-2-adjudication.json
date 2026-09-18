@@ -1,0 +1,16 @@
+{
+  "iteration": 2,
+  "original_grading": {
+    "passed": 35,
+    "total": 36,
+    "cases_passed": 11,
+    "cases_total": 12,
+    "sha256": "c78cc4eb0f59642334c1ffc58d6bc3222695808a4b854cf1fed03787ce224a7d"
+  },
+  "case": 1,
+  "expectation": "opens-with-outcome",
+  "decision": "rubric-placement-seam-redesigned",
+  "reason": "The report establishes two of three loaders migrated and the focused-test results first, then names the untouched loader before its explanation. The repeated placement failure showed that moving a single-sentence rule to a single-paragraph rule retained the same unnecessary layout constraint. The accepted contract requires semantic reader orientation. The final criterion binds ordering relative to causal detail, not paragraph boundaries.",
+  "review": "Independent assessment found the semantic criterion consistent with the accepted issue109/26 contract, dropping no substantive reader need and requiring no source change.",
+  "invalidation": "Preserve both original grades. Regrade the unchanged case1 output against the independently reviewed final criterion; no executor input changed, so generation remains current. Other case criteria are unchanged."
+}

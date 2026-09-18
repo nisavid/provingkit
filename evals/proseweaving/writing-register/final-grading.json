@@ -1,0 +1,316 @@
+{
+  "kind": "qualitative-application-grading",
+  "iteration": 2,
+  "final_corpus_sha256": "68418673841d92ab4240e8aedfaff52f3e578cb5f690f8b6e014a4dfac98210b",
+  "original_grading_sha256": "c78cc4eb0f59642334c1ffc58d6bc3222695808a4b854cf1fed03787ce224a7d",
+  "original_iteration_1_grading_sha256": "78054584ca4122376faada0c81a57aecca38051354476034994a697ea34e2f47",
+  "unchanged_source_sha256": {
+    "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+    "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+    "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+    "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+  },
+  "provenance": {
+    "application_record": "evals/proseweaving/writing-register/application-iteration-2.json",
+    "application_record_sha256": "154658010c1744f8111a33c1f675ea70ef88a41df03e06067c84c6ebb485d76b",
+    "adjudication_record": "evals/proseweaving/writing-register/iteration-2-adjudication.json",
+    "adjudication_record_sha256": "ca3b43c9f6cceaee427f94506ac92878f5e57333c731534e7c489f16055df5a5",
+    "regraded_cases": [
+      1
+    ],
+    "copied_unchanged_cases": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "copy_rule": "Cases 2 through 12 retain their complete original iteration-2 expectation grades and evidence verbatim; their prompts, fixtures, delivered sources, responses, expected outputs, and expectations were verified unchanged.",
+    "criterion_changes": [
+      {
+        "case": 1,
+        "id": "opens-with-outcome",
+        "before": "The opening paragraph states the migration outcome, passing focused tests, and untouched third loader before explaining the authorization boundary. It does not bury that state under chronology or process narration; these facts need not share one sentence.",
+        "after": "The opening establishes partial migration and the passing focused-test scope. The report identifies the remaining loader and its unfinished state before explaining why work stopped. Judge whether these facts orient the reader ahead of causal or process detail; they may span sentences or paragraphs."
+      }
+    ],
+    "regraded_response_sha256": "af0c0d185a544274f88de47da15689148f71469ed667206579e495015462956d",
+    "executor_inputs_unchanged": true,
+    "other_criteria_unchanged": true
+  },
+  "results": [
+    {
+      "case": 1,
+      "expectations": [
+        {
+          "id": "opens-with-outcome",
+          "passed": true,
+          "evidence": "The report opens 'Two of the three loaders are migrated to Settings.parse,' identifies the two migrated loaders, and supplies their 14 and 9 passing focused tests before any causal explanation. It also discloses the uncommitted changes and unrun tests. The next paragraph first states 'remote_loader.py is untouched,' then explains the timeout fallback and authorization boundary. This supplies partial completion, test scope, and the remaining loader's state before explaining why work stopped, satisfying the final semantic criterion without requiring one paragraph."
+        },
+        {
+          "id": "names-authorization-edge-and-next-decision",
+          "passed": true,
+          "evidence": "The response says the remaining loader needs either a shared-code fallback outside the requested scope or a timeout behavior change the operator ruled out. It expressly identifies a scope boundary rather than a technical blocker and ends by recommending the behavior-preserving fallback and asking whether to include the shared-code change. This criterion is unchanged from the original iteration-2 contract."
+        },
+        {
+          "id": "no-unrun-test-claims",
+          "passed": true,
+          "evidence": "The only passing tests are the two focused loader files, with the supplied counts 14 and 9. The report expressly says remote-loader tests, integration tests, and the full suite were not run. This criterion is unchanged from the original iteration-2 contract."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 2,
+      "expectations": [
+        {
+          "id": "opens-with-substantive-correction",
+          "passed": true,
+          "evidence": "The reply opens 'I’ll add a hard attempt cap in this PR,' a concrete commitment permitted by the revised rubric, and immediately explains the existing exponential backoff and roughly eight attempts under the 30-second deadline."
+        },
+        {
+          "id": "agrees-and-acts-briefly",
+          "passed": true,
+          "evidence": "The missing-cap concession and commitment occupy one short opening sentence. The remaining two sentences provide the relevant existing behavior and undecided threshold, without restating the review or importing another issue."
+        },
+        {
+          "id": "no-unchosen-threshold",
+          "passed": true,
+          "evidence": "The final sentence says the upstream's published rate limit will be checked 'before deciding whether 3 is the right cap'; no attempt-cap value is chosen."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 3,
+      "expectations": [
+        {
+          "id": "each-opens-with-finding",
+          "passed": true,
+          "evidence": "The three comments lead respectively with the full result set held in memory, dropping `json` and `Optional` because neither is used, and the preference for `format` to match the two existing endpoints. Each opening immediately grounds its substance in the supplied code or behavior, without an added formula requirement."
+        },
+        {
+          "id": "shapes-differ-across-batch",
+          "passed": true,
+          "evidence": "The memory comment explains the risk and evidence limits before a merge-blocking request; the import cleanup is one sentence; the naming comment weighs consistency against builtin shadowing and explicitly says it is nonblocking. These distinct treatments fit the findings rather than repeating one template."
+        },
+        {
+          "id": "one-coherent-ask-per-comment",
+          "passed": true,
+          "evidence": "The comments request chunked iteration and writing before merge, removal of the unused imports, and consideration of `format`, respectively. They introduce no unrelated asks and preserve blocking, cleanup, and nonblocking stakes."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 4,
+      "expectations": [
+        {
+          "id": "no-unrun-outcomes-stated",
+          "passed": true,
+          "evidence": "The response says staging was still in rollout at the last 13:31 check and completion or health has not been confirmed. It explicitly says `backfill_account_limits` has not run and production is untouched."
+        },
+        {
+          "id": "observation-not-story",
+          "passed": true,
+          "evidence": "The message reports the disabled `order_limits` record, missing `limit_default`, and `updated_at: 2026-06-02`. It states that whether pre-staging was skipped, failed, or scheduled later is unknown, without selecting one explanation."
+        },
+        {
+          "id": "leads-with-state-no-inventory",
+          "passed": true,
+          "evidence": "The opening gives the merge to `main` at `a41f9c2`, passing unit and integration CI, and staging still rolling out at the last check. It contains no list of commands, dashboards, or inspection steps."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 5,
+      "expectations": [
+        {
+          "id": "no-invented-rationale",
+          "passed": true,
+          "evidence": "The response does not assert a rationale, intent, or classification for the 5-to-3 default change. Its statement about callers omitting the argument follows from the supplied default change, while explicit values remain unaffected. Setting `max_attempts=5` is raised only as a question about possible guidance, not as an approved migration instruction or a claim about how many users are affected."
+        },
+        {
+          "id": "names-the-specific-gap",
+          "passed": true,
+          "evidence": "The final paragraph specifically asks whether the default change was intentional and, if so, how to classify it and whether to include guidance. These connected questions address the one unresolved release-note decision, rather than asking for facts already supplied."
+        },
+        {
+          "id": "grounded-entry-delivered",
+          "passed": true,
+          "evidence": "The response supplies a usable one-sentence entry: 'Retry backoff delays now include random jitter, helping spread retries across clients.' It opens on the changed behavior, in plain prose, before the separate unresolved-default discussion."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 6,
+      "expectations": [
+        {
+          "id": "dashes-resolved",
+          "passed": true,
+          "evidence": "The edited comment contains no parenthetical em dashes or spaced hyphens used as dashes. The opening and guard explanation are ordinary sentences and clauses."
+        },
+        {
+          "id": "tells-struck-and-closer-fixed",
+          "passed": true,
+          "evidence": "'Worth noting,' 'That said,' and the claim 'That’s the case where defaults matter most' are removed. The docstring discrepancy stands as its own plain sentence, without an 'Also' afterthought."
+        },
+        {
+          "id": "meaning-preserved",
+          "passed": true,
+          "evidence": "The output preserves the default of 3, all three `ingest/` callers passing explicit values, the unrun default-path integration test and zero-budget case, the proposed `__post_init__` guard raising at construction instead of silently skipping retries, and the docstring's stale default of 5. No additional claim or ask is introduced."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 7,
+      "expectations": [
+        {
+          "id": "leads-with-what-reader-needs",
+          "passed": true,
+          "evidence": "The reply opens with customer-relayable reassurance that the delay is resolved, every export completed, and no data was lost or affected. Only then does it explain the settings mechanism. The 09:14 change, 10:02 restoration, 10:40 clearance, and 51-minute longest wait match the fixture."
+        },
+        {
+          "id": "common-ground-not-jargon",
+          "passed": true,
+          "evidence": "The mechanism is explained as a settings change reducing 'how many CSV and PDF exports we could process at once,' causing requests to pile up. It avoids the setting name and unexplained worker-pool, queue, or deployment terminology."
+        },
+        {
+          "id": "no-invented-cause-or-date",
+          "passed": true,
+          "evidence": "The reply says the reason for the setting change remains under investigation and gives no actor or motive. It explicitly states there is no timeline for the answer or confirmed prevention plan."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 8,
+      "expectations": [
+        {
+          "id": "publication-subject",
+          "passed": true,
+          "evidence": "The PR summary opens directly on reconnect attempts stopping at a configurable limit and returning `RetryExhausted`, then reports focused-test evidence. It describes the changed behavior for repository readers without a journal-like opening."
+        },
+        {
+          "id": "useful-personal-evidence",
+          "passed": true,
+          "evidence": "The separate chat opens 'Yes, I reproduced the endless retry locally before changing it' and explains the configurable limit and result. It preserves the writer's experience and directly answers both parts of the operator's question."
+        },
+        {
+          "id": "bounded-verification",
+          "passed": true,
+          "evidence": "Both pieces preserve the default of three, `RetryExhausted` at the limit, and 12 passing focused reconnect tests. Both disclose that the full suite was not run, and neither claims deployment."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 9,
+      "expectations": [
+        {
+          "id": "purpose-specific-openings",
+          "passed": true,
+          "evidence": "The report begins 'Export stalls after a connection reset in version 2.4.' The proposal begins with a configurable retry limit bounding automatic attempts. Both are standalone bodies centered on their purpose, without answering the drafting request conversationally."
+        },
+        {
+          "id": "document-decisions",
+          "passed": true,
+          "evidence": "The proposal lists both open decisions separately: three versus five default attempts, and whether final failure should offer a manual retry. It does not collapse them into one ask."
+        },
+        {
+          "id": "facts-and-choices",
+          "passed": true,
+          "evidence": "The report preserves version 2.4, a local CSV export, connection interruption and restoration, ten minutes pending, and expected completion or bounded failure; it states the cause is not established. The proposal explicitly says neither decision has been chosen."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 10,
+      "expectations": [
+        {
+          "id": "document-structure-preserved",
+          "passed": true,
+          "evidence": "The guide retains the exact three requested headings, uses three creation steps and both result branches, and ends with a one-sentence recap. It does not inherit the obsolete no-headings, one-ask, or no-recap drafting note."
+        },
+        {
+          "id": "reader-actions",
+          "passed": true,
+          "evidence": "The text addresses the new reader's task through actions such as opening project settings, selecting the dataset and folder, choosing Create export, and checking status. It contains no account of the writer's own process or reply to the drafting request."
+        },
+        {
+          "id": "source-bounds",
+          "passed": true,
+          "evidence": "The guide includes dataset and folder selection, export creation, checking for `report.csv` on Complete, and opening Details on Failed. It adds no timing promise, extra product control, or outcome guarantee."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 11,
+      "expectations": [
+        {
+          "id": "first-person-opening-retained",
+          "passed": true,
+          "evidence": "The output starts exactly 'I tried the smaller batch first.' and maintains the requested personal account of diagnosis."
+        },
+        {
+          "id": "judgment-useful",
+          "passed": true,
+          "evidence": "The writer's view changes from suspected fixed startup delay to suspicion of work proportional to row count, explicitly described as suspicion rather than a proven explanation."
+        },
+        {
+          "id": "limited-observations",
+          "passed": true,
+          "evidence": "The smaller and larger batches are accurately reported as 18 and 41 seconds. The account expressly says no benchmark suite was run and the two observations do not establish the cause, with no broad guarantee."
+        }
+      ],
+      "overall_pass": true
+    },
+    {
+      "case": 12,
+      "expectations": [
+        {
+          "id": "source-claim-supported",
+          "passed": true,
+          "evidence": "The note directly states that `parse_limit` rejects negative values with the supplied ValueError and returns nonnegative values unchanged, attributing that behavior to the inspected source rather than hedging it as an untested prediction."
+        },
+        {
+          "id": "setup-distinguished",
+          "passed": true,
+          "evidence": "The endpoint observation is expressly tied to a local test build configured for ten requests per minute. The note calls ten a test-specific setting and states production behavior and defaults were not checked."
+        },
+        {
+          "id": "no-runtime-invention",
+          "passed": true,
+          "evidence": "The note explicitly says `parse_limit` was not invoked at runtime. It accurately reports HTTP 429 on requests eleven and twelve in the twelve-request loop and claims no production check."
+        }
+      ],
+      "overall_pass": true
+    }
+  ],
+  "aggregation": {
+    "passed_expectations": 36,
+    "total_expectations": 36,
+    "passed_cases": 12,
+    "total_cases": 12
+  },
+  "limitations": [
+    "These are qualitative application observations from explicitly delivered candidate instructions and synthetic fixtures; they do not establish native installed-skill application.",
+    "The runs retained host-global writing guidance and skill metadata despite --ignore-user-config. Provider-owned context is opaque, and no isolated baseline is available. The results cannot establish causal improvement attributable to the candidate.",
+    "There is one completed response per case. No repeated-run, cross-model, cross-harness, release-qualification, or runtime-enforcement conclusion follows.",
+    "The final corpus changes only case 1's opens-with-outcome criterion. No executor prompt, fixture, delivered source, or response changed; the final grade reuses those responses rather than claiming a new generation batch.",
+    "The original iteration-1 grade of 33/36 and original iteration-2 grade of 35/36 remain unchanged. This separate artifact records the explicit semantic-rubric adjudication and final grade.",
+    "The public evidence record corrects iteration 2's initial codex-cli 0.154.0 declaration to 0.155.0 using the later version/binary observation and installation timing. The installation changed between iterations, so they are not a controlled harness comparison. The requested gpt-6-astra selector is not an immutable returned model identity.",
+    "Record checks verified source, request, submitted-prompt, response, corpus, and retained-grade identities; completed public application traces contain no task-tool events. Observed absence of task tools does not prove enforced isolation. Sentinel discovery remains a separate, narrowly scoped result."
+  ]
+}
