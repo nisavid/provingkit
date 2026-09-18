@@ -832,6 +832,18 @@ def _normalize_identity_scan_file(relative_path: Path, content: bytes) -> bytes:
     return b"\n".join(_normalize_identity_scan_content(source) for source in sources)
 
 
+def contains_historical_identity(relative_path: Path, original_content: bytes) -> bool:
+    """Detect identity in original file bytes at a repository-relative path.
+
+    True reports detection, not repository rejection or allowlist membership.
+    Existing ValidationError failures propagate without changing their context.
+    """
+    identity_content = _normalize_identity_scan_file(
+        relative_path, _identity_scan_content(relative_path, original_content)
+    )
+    return any(token in identity_content for token in LEGACY_IDENTITY_TOKENS)
+
+
 def _sha256_uri(path: Path, label: str) -> str:
     try:
         return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
@@ -1672,11 +1684,7 @@ def _validate_historical_identities(repository: Path) -> None:
             content = path.read_bytes()
         except OSError as error:
             raise ValidationError("repository identity scan failed") from error
-        identity_content = _normalize_identity_scan_file(
-            relative_path,
-            _identity_scan_content(relative_path, content),
-        )
-        if any(token in identity_content for token in LEGACY_IDENTITY_TOKENS):
+        if contains_historical_identity(relative_path, content):
             observed[relative_path.as_posix()] = content
 
     unexpected = sorted(set(observed) - set(allowed))
