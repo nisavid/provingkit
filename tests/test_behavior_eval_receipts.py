@@ -593,6 +593,27 @@ class ReceiptWorkflowTests(unittest.TestCase):
         result = receipts.check(self.repo, request, {})
         self.assertEqual(result["skills"][0]["reason"], "receipt missing")
 
+    def test_nonnormalized_descriptor_paths_are_rejected_before_selection(self):
+        self.write("shared/style.md", "Behavioral style rules.")
+        request = self.request(self.commit("external behavior added"))
+        request["base_revision"] = self.candidate
+        for field in (
+            "behavior_inputs",
+            "shared_references",
+            "dependencies",
+            "evals",
+            "trigger_evals",
+            "content_lock",
+            "fixture_root",
+        ):
+            for path in ("shared/./style.md", "shared//style.md", "./shared/style.md"):
+                with self.subTest(field=field, path=path):
+                    spec = dict(self.spec)
+                    spec[field] = [path] if isinstance(spec.get(field), list) else path
+                    request["skills"] = [spec]
+                    with self.assertRaisesRegex(receipts.ReceiptError, "normalized"):
+                        receipts.check(self.repo, request, {})
+
     def test_external_application_and_trigger_corpora_select_their_skill(self):
         for field in ("evals", "trigger_evals"):
             original = self.repo / self.spec[field]

@@ -493,6 +493,13 @@ def check(repository, request, receipts):
             *spec["behavior_inputs"],
             *spec["shared_references"],
         }
+        for path in (
+            *behavior_paths,
+            *spec["dependencies"],
+            spec["content_lock"],
+            spec.get("fixture_root", prefix[:-1]),
+        ):
+            relative_path(path)
         require(
             spec.get("closure_complete") is True,
             "complete caller-owned dependency closure is required",
