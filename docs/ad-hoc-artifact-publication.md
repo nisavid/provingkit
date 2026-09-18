@@ -163,7 +163,11 @@ separately, execute once, and require terminal `verified` evidence for the
 publication commit and destination. A request file alone is not a ready plan.
 
 With `VERSIONKEEPING_ROOT` resolved by the harness and the task's reviewed
-request and plan paths selected, the owning commands are:
+request and plan paths selected, choose a new `PROVINGKIT_PUBLICATION_RESULT`
+file for the executor's terminal JSON. Export these paths and
+`PROVINGKIT_REVIEWED_PLAN_SHA256` for readback. Retain the result alongside the
+exact reviewed plan bytes and their separately held digest. The owning commands
+are:
 
 ```sh
 python "$VERSIONKEEPING_ROOT/skills/checkpointing-and-publishing-git-work/scripts/plan_git_publication.py" \
@@ -172,7 +176,8 @@ python "$VERSIONKEEPING_ROOT/skills/checkpointing-and-publishing-git-work/script
 # Continue only after review of ready plan bytes and separate digest custody.
 python "$VERSIONKEEPING_ROOT/skills/checkpointing-and-publishing-git-work/scripts/execute_git_publication.py" \
   --repo "$PROVINGKIT_TRANSPORT_WORKTREE" --plan "$PROVINGKIT_PUBLICATION_PLAN" \
-  --reviewed-plan-sha256 "$PROVINGKIT_REVIEWED_PLAN_SHA256"
+  --reviewed-plan-sha256 "$PROVINGKIT_REVIEWED_PLAN_SHA256" \
+  > "$PROVINGKIT_PUBLICATION_RESULT"
 ```
 
 The reviewed digest argument has the form `sha256:<64-lowercase-hex>`.
@@ -202,10 +207,42 @@ LFS pointers are not archive bytes at these URLs. Neither branch names nor
 version strings may replace commit and checksum pins.
 
 After publication, set `PROVINGKIT_PUBLICATION_COMMIT` and a new
-`PROVINGKIT_READBACK` directory. Download without authentication, keeping failed
-downloads and command status for diagnosis. Run with `set -eu`:
+`PROVINGKIT_READBACK` directory and export both variables. The preflight below
+checks both full commit pins, the retained plan's reviewed digest, and the
+terminal result's correspondence to that plan's source and selected destination
+before constructing URLs. These are checks of ordinary retained execution
+evidence, not authenticated attestation. Download without authentication,
+keeping failed downloads and command status for diagnosis. Run with `set -eu`:
 
 ```sh
+python - <<'PY'
+import hashlib
+import json
+import os
+import re
+from pathlib import Path
+
+source = os.environ["PROVINGKIT_SOURCE_COMMIT"]
+publication = os.environ["PROVINGKIT_PUBLICATION_COMMIT"]
+if not all(re.fullmatch(r"[0-9a-f]{40}", value) for value in (source, publication)):
+    raise SystemExit("full product source and publication commits are required")
+plan_bytes = Path(os.environ["PROVINGKIT_PUBLICATION_PLAN"]).read_bytes()
+if "sha256:" + hashlib.sha256(plan_bytes).hexdigest() != os.environ["PROVINGKIT_REVIEWED_PLAN_SHA256"]:
+    raise SystemExit("retained publication plan differs from the reviewed bytes")
+plan = json.loads(plan_bytes)
+result = json.loads(Path(os.environ["PROVINGKIT_PUBLICATION_RESULT"]).read_bytes())
+destination = plan["destination"]
+if (plan["status"] != "ready" or plan["source_sha"] != publication
+        or destination["ref"] != "refs/heads/ivan/provingkit-ad-hoc-artifacts"
+        or result["status"] != "verified" or result["source_sha"] != publication
+        or result["destination"] != destination or result["push_attempted"] is not True
+        or result["reasons"] != [] or result["postchecks"] != [{
+            "kind": "remote_ref_equals",
+            "endpoint_fingerprint": destination["endpoint_fingerprint"],
+            "ref": destination["ref"], "sha": publication,
+        }]):
+    raise SystemExit("publication result does not verify the selected commit and destination")
+PY
 mkdir "$PROVINGKIT_READBACK"
 for target in agent-plugins claude cursor; do
   mkdir "$PROVINGKIT_READBACK/$target"
