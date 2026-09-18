@@ -1464,7 +1464,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 / "release/provingkit/historical-identity-allowlist-v1.json"
             ).read_text(encoding="utf-8")
         )
-        self.assertEqual(len(allowlist["entries"]), 30)
+        self.assertEqual(len(allowlist["entries"]), 31)
         self.assertIn(
             {
                 "disposition": (

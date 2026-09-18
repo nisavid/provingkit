@@ -27,6 +27,11 @@
       "sha256": "sha256:51ecce992966a49a88dcb80746bf4047710dbd1af58023b3fb1f57874dc16a20"
     },
     {
+      "disposition": "dated-repository-inventory-observation",
+      "path": "docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md",
+      "sha256": "sha256:f25dd0855685e705f1ee157a2fc09fa4293d50f021d8cfab9fb69729022ed984"
+    },
+    {
       "disposition": "historical-design-or-research-record",
       "path": "docs/superpowers/specs/2026-08-12-task-witness-tw4-migration-and-qualification-design.md",
       "sha256": "sha256:b1f7a041df6b0b973b12e91ba45841ab6f33f54b673b74a49fab282d5ad73acd"
