@@ -485,6 +485,28 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             (REPOSITORY / "CONTRIBUTING.md").read_text(encoding="utf-8"),
         )
 
+    def test_source_boundary_runs_complete_methods_with_the_other_owning_checks(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        source = workflow["jobs"]["provingkit-source"]
+        commands = "\n".join(step.get("run", "") for step in source["steps"])
+        checkout = next(step for step in source["steps"] if "actions/checkout@" in step.get("uses", ""))
+        self.assertEqual(source["name"], "Provingkit source boundary")
+        self.assertEqual(checkout["with"]["fetch-depth"], 0)
+        self.assertEqual(source["timeout-minutes"], 90)
+        self.assertIn("python -m unittest tests.test_run_provingkit_tests", commands)
+        self.assertIn('python scripts/run_provingkit_tests.py . --output-dir "$RUNNER_TEMP/provingkit-tests"', commands)
+        for command in (
+            "python scripts/validate_provingkit.py .",
+            "test_human_docs_document_only_the_source_stage_entrypoint",
+            "test_human_docs_document_source_stage_containment",
+            "test_checked_out_candidate_completes_prepared_source_stage_validation",
+            "test_prepared_release_entrypoint_rejects_invalid_inputs",
+        ):
+            self.assertIn(command, commands)
+        evidence = next(step for step in source["steps"] if step.get("name") == "Retain complete-method execution evidence")
+        self.assertEqual(evidence["if"], "always()")
+        self.assertEqual(evidence["with"]["path"], "${{ runner.temp }}/provingkit-tests")
+
 
     def test_proseweaving_source_job_and_derived_lock_are_covered(self) -> None:
         workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
