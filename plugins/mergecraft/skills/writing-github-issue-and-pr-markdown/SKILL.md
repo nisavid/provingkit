@@ -11,6 +11,17 @@ Own the valid GitHub Flavored Markdown and the exact body value for one or more 
 
 This skill grants body-authoring authority only. It does not post or edit a GitHub object, submit a review, reply, react, resolve a thread, or perform an Issue or pull-request lifecycle operation. An operation-specific caller must establish any separate actuation authority.
 
+## Issue Contribution Edits
+
+For a new or materially changed Issue contribution or completion scope, use
+[Maintaining Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+before freezing the body. Carry its qualified plan and exact authorized spans
+into this workflow; return any remaining publication or reconciliation work to
+the caller. When that plan already accompanies the request, author its supplied
+ledger intent without rediscovering relations. Comments, formatting, unchanged
+scope, and other unrelated edits incur no relation reads. This route adds no
+Issue creation, closure, or state-changing authority.
+
 ## Workflow
 
 1. Bind each requested covered field, the body-authoring intent, all applicable repository and consumer instructions, whether the body is new or an edit, and the caller's exact handoff format.
