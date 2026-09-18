@@ -24,7 +24,7 @@ ol{padding-left:24px}li{margin:10px 0}footer{margin-top:24px;overflow-wrap:anywh
 <div class="eyebrow">Throwaway comparison · Issue 131 · No policy adoption</div>
 <h1>Keep the Receipt through landing</h1>
 <p class="intro">Can the actual landed source use its unchanged evaluation Receipt after squash, while rejecting changes to the inputs and preserving the original evidence?</p>
-<p>This page replays results measured by real disposable Git fixtures. Buttons select those observations; they do not execute Git, evaluate a model, or simulate a passing check. The independent review and Ivan’s reaction remain required.</p>
+<p>This page replays results measured by real disposable Git fixtures. Buttons select those observations; they do not execute Git, evaluate a model, or simulate a passing check. The accepted direction goes into a separate strategy decision.</p>
 <section aria-labelledby="current-heading" aria-live="polite">
 <h2 id="current-heading">Current comparison</h2>
 <p id="scenario-name"></p>
@@ -52,7 +52,7 @@ ol{padding-left:24px}li{margin:10px 0}footer{margin-top:24px;overflow-wrap:anywh
 <h2>My recommendation for discussion</h2>
 <p>Keep squash and develop explicit input correspondence, with retained evaluated source and processing provenance, the original comparison, and an independent check of the actual landed commit. A fresh consumer needs a fetchable retained reference or source archive; a digest alone cannot recover missing history.</p>
 <p>An ancestry-preserving merge is the simpler alternative for the Receipt adapter. It still needs the final-commit consumer and would require changing the currently allowed merge operations. Fast-forward only fails when the target diverges; ordinary rebasing does not guarantee the evaluated commit survives.</p>
-<p><strong>The prototype question:</strong> Is the extra correspondence and evidence-retention machinery an acceptable direction to take into the separate strategy decision, or would you rather pursue ancestry-preserving landing?</p>
+<p>I <a href="https://github.com/nisavid/provingkit/issues/131#issuecomment-5733715226">accepted correspondence and retained provenance as the direction for #132</a>. That response does not adopt the strategy or authorize migration; final independent and coordination review are still required to close the prototype question.</p>
 </section>
 <footer class="muted">Measured source: <a href="results.json">results.json</a> · <a href="README.md">scope, rerun steps, and limits</a><br>Results SHA-256: <code>__RESULTS_SHA256__</code></footer>
 </main>
@@ -69,6 +69,8 @@ const Replay = (() => {
       steps:[["changed-reference","Change a required reference"],["missing-case","Remove one case"],["failed-quality","Drop quality below two of three"]]},
     {name:"Keep the full comparison", description:"Retain the original source comparison even when the next change contains only evidence. Refresh a moved target, then include every affected consumer.",
       steps:[["receipt-only-comparison","Supply a Receipt-only comparison"],["moved-base","Move the target after review"],["refreshed-base","Refresh an unrelated target move"],["refreshed-base-new-consumer","Include a second changed skill"]]},
+    {name:"Keep grading history", description:"Six constructed retained responses get a separate constructed grading under a revised rubric. Four original failed quality grades remain recorded, with two failures under the current rubric. No new application is executed.",
+      steps:[["changed-rubric-with-lineage","Land the complete grading lineage"],["changed-rubric-missing-prior-grading","Remove prior grading from the Receipt"],["changed-rubric-missing-adjudication","Remove adjudication from the Receipt"]]},
     {name:"Arrive in a fresh clone", description:"A source hash names the evidence but does not make it available. Fetch retained provenance or preserve it in landed ancestry.",
       steps:[["clone-without-provenance","Clone only squashed main"],["clone-with-retained-ref","Fetch a retained source reference"],["clone-with-source-bundle","Import a retained source archive"],["clone-with-merged-ancestry","Clone an ancestry-preserving merge"]]}
   ];
@@ -87,14 +89,14 @@ function render(){
   const row=Replay.observe(state);document.querySelector('#scenario-name').textContent=row.name.replaceAll('-',' ');
   document.querySelector('#case').value=row.name;
   const identities=document.querySelector('#identities');identities.replaceChildren();
-  for(const [label,value] of [['Operation',row.operation],['Original comparison base',row.original_base],['Evaluated source',row.evaluated_source],['Observed target before landing',row.target_before],['Actual landed commit',row.landed_commit],['Source available in fresh clone',row.source_available]]){
+  for(const [label,value] of [['Operation',row.operation],['Original comparison base',row.original_base],['Evaluated source',row.evaluated_source],['Constructed original execution source',row.original_execution_source],['Failed grades retained in original records',row.original_failed_grades],['Observed target before landing',row.target_before],['Actual landed commit',row.landed_commit],['Source available in fresh clone',row.source_available]]){
     if(value===undefined||value===null)continue;const box=node('div','');box.append(node('dt',label),node('dd',String(value)));identities.append(box)
   }
   const outcomes=document.querySelector('#outcomes');outcomes.replaceChildren();
   for(const [strategy,label] of [['correspondence','Input correspondence'],['ancestry','Preserve evaluated ancestry']]){
     const observation=row.observations[strategy],box=node('div','');box.append(node('h3',label));
     const verdict=node('p',observation?observation.status:'Not measured here');verdict.className='verdict';box.append(verdict);
-    const reason=node('p',observation?observation.reason:'This retention case measured only the correspondence consumer.');reason.className='reason';box.append(reason);
+    const reason=node('p',observation?`${observation.stage}: ${observation.reason}`:'This retention case measured only the correspondence consumer.');reason.className='reason';box.append(reason);
     if(observation){for(const skill of observation.skills){box.append(node('p',`Failed observations retained: ${skill.failed_observations_retained}. Evaluated source in landed ancestry: ${skill.source_is_ancestor}.`));box.append(node('code',`Stable input identity: ${skill.stable_input_identity}`))}}
     outcomes.append(box)
   }

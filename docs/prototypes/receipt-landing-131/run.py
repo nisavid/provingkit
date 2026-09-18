@@ -3,6 +3,7 @@
 
 import argparse
 from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
 import json
 import shutil
@@ -10,34 +11,58 @@ import tempfile
 
 from consumer import check, context_for
 from fixtures import (CONTEXT, CORPUS, ENTRY, KEY, PROCESSING, PROCESSOR, RECEIPT,
-                      REFERENCE, ROOT, commit, create_repo, encoded, git, land,
+                      REFERENCE, ROOT, commit, create_repo, encoded, fetch_processor, git, land,
                       load_adapter, prepared_receipt, reconciled_receipt, sha, write)
+
+
+@dataclass(frozen=True)
+class EvaluatedFixture:
+    repository: Path
+    base: str
+    source: str
+    head: str
+    context: dict
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, help="write measured JSON to this path")
+    parser.add_argument("--fetch-processor", action="store_true",
+                        help="fetch and verify P24 from public PR #116 in a separate temporary repository")
     args = parser.parse_args()
     source_repo = Path(__file__).resolve().parents[3]
     scratch = Path(tempfile.mkdtemp(prefix="receipt-landing-131-"))
+    acquisition = None
+    if args.fetch_processor:
+        source_repo = scratch / "processor-source"
+        acquisition = fetch_processor(source_repo)
     adapter = scratch / "adapter"
     inventory, processing = load_adapter(source_repo, adapter)
     repo = scratch / "template"
     base, source = create_repo(repo, adapter)
     receipt = prepared_receipt(repo, source, inventory, scratch / "private")
-    write(repo, RECEIPT, receipt)
-    context = context_for(repo, base, base, inventory)
-    write(repo, CONTEXT, context)
-    head = commit(repo, "Retain constructed Receipt and original comparison")
+
+    def freeze_fixture(repository, comparison_base, evaluated_source, recorded_receipt):
+        write(repository, RECEIPT, recorded_receipt)
+        handoff = context_for(repository, comparison_base, comparison_base, inventory)
+        write(repository, CONTEXT, handoff)
+        containing = commit(repository, "Retain constructed Receipt and original comparison")
+        return EvaluatedFixture(repository, comparison_base, evaluated_source, containing, handoff)
+
+    baseline_fixture = freeze_fixture(repo, base, source, receipt)
+    head, context = baseline_fixture.head, baseline_fixture.context
     original = inventory.check(repo, base, head, ROOT)
     assert original["status"] == "pass", original
     results = []
 
     def scenario(name, operation="squash", mutate=None, rebind=False, request_change=None,
-                 target_change=None, refresh=False, expected=("pass", "fail")):
+                 target_change=None, refresh=False, expected=("pass", "fail"),
+                 expected_reason=None, expected_stage=None, expected_affected=None, expected_code=None, fixture=None):
+        fixture = fixture or baseline_fixture
+        base, source, head = fixture.base, fixture.source, fixture.head
         directory = scratch / name
-        shutil.copytree(repo, directory)
-        ctx = deepcopy(context)
+        shutil.copytree(fixture.repository, directory)
+        ctx = deepcopy(fixture.context)
         target = base
         if target_change:
             git(directory, "checkout", "--detach", "-q", base)
@@ -46,7 +71,11 @@ def main():
             git(directory, "checkout", "--detach", "-q", head)
         if mutate:
             mutate(directory)
-        if rebind:
+        if rebind == "raw":
+            # Bind intentionally malformed bytes so the negative control reaches
+            # parsing/schema validation instead of stopping at the byte check.
+            ctx["receipts"][KEY]["raw_sha256"] = sha((directory / RECEIPT).read_bytes())
+        elif rebind:
             ctx = context_for(directory, base, base, inventory)
         if refresh:
             ctx["reviewed_target"] = target
@@ -67,9 +96,26 @@ def main():
                "original_base": base, "evaluated_source": source, "reviewed_head": proposed,
                "target_before": target, "landed_commit": final, "ordinary_adapter": ordinary,
                "observations": observations}
+        if expected_reason:
+            row["expected_reason"] = expected_reason
+        if expected_stage:
+            row["expected_stage"] = expected_stage
+        if expected_affected is not None:
+            row["expected_affected_skills"] = expected_affected
+        if expected_code:
+            row["expected_diagnostic_code"] = expected_code
         results.append(row)
         for strategy, outcome in row["expected"].items():
             assert observations[strategy]["status"] == outcome, (name, strategy, observations[strategy])
+            if expected_reason:
+                assert observations[strategy]["reason"] == expected_reason, (name, strategy, observations[strategy])
+            if expected_stage:
+                assert observations[strategy]["stage"] == expected_stage, (name, strategy, observations[strategy])
+            if expected_affected is not None:
+                assert observations[strategy]["affected_skills"] == expected_affected, (name, strategy, observations[strategy])
+            if expected_code:
+                diagnostics = observations[strategy].get("descriptor_diagnostics", []) + observations[strategy]["unsupported"]
+                assert expected_code in [item["code"] for item in diagnostics], (name, strategy, diagnostics)
         return directory, row
 
     squash_repo, squashed = scenario("unchanged-squash")
@@ -132,6 +178,63 @@ def main():
     ):
         scenario(name, mutate=edit_receipt(change), rebind=True, expected=("fail", "fail"))
 
+    def add_dependency(directory):
+        write(directory, "plugins/example/references/additional.md", "Required additional guidance.\n")
+        write(directory, "plugins/example/topology.json", {"skills": {
+            "writing": {"calls": [], "references": ["references/additional.md"]}, "editing": {"calls": []}}})
+
+    scenario("added-declared-dependency", mutate=add_dependency, expected=("fail", "fail"),
+             expected_stage="historical", expected_reason="historical Receipt: stale or wrong-skill receipt descriptor")
+    scenario("deleted-declared-dependency", mutate=lambda directory: (directory / REFERENCE).unlink(),
+             expected=("fail", "fail"), expected_stage="descriptor", expected_reason="landed descriptor is unresolved",
+             expected_code="input-unavailable")
+
+    def transfer_ownership(directory):
+        corpus = json.loads((directory / CORPUS).read_bytes())
+        corpus["skill_name"] = "editing"
+        write(directory, CORPUS, corpus)
+
+    scenario("ownership-transfer", mutate=transfer_ownership, expected=("fail", "fail"),
+             expected_stage="selection", expected_reason="reviewed Receipt inventory differs from the full original comparison",
+             expected_affected=["example/editing", KEY])
+
+    def remove_skill(directory):
+        shutil.rmtree(directory / "plugins/example/skills/writing")
+        write(directory, "plugins/example/topology.json", {"skills": {"editing": {"calls": []}}})
+
+    scenario("removed-skill", mutate=remove_skill, expected=("fail", "fail"), expected_stage="selection",
+             expected_reason="affected consumer selection is unsupported", expected_affected=[KEY],
+             expected_code="removed-or-renamed-skill")
+    scenario("unresolved-affected-corpus", mutate=lambda directory: write(directory, CORPUS, "{\n"),
+             expected=("fail", "fail"), expected_stage="selection",
+             expected_reason="affected consumer selection is unsupported", expected_affected=[KEY],
+             expected_code="unsupported-corpus")
+
+    def unclassified_corpus(directory):
+        corpus = json.loads((directory / CORPUS).read_bytes())
+        corpus["evals"][0]["expectations"] = ["An ordinary expectation whose classification is unresolved."]
+        write(directory, CORPUS, corpus)
+
+    scenario("unclassified-affected-corpus", mutate=unclassified_corpus, expected=("fail", "fail"),
+             expected_stage="descriptor", expected_reason="landed descriptor is unresolved",
+             expected_affected=[KEY], expected_code="expectation-mapping-required")
+    scenario("malformed-committed-receipt", mutate=lambda directory: write(directory, RECEIPT, "{\n"),
+             rebind="raw", expected=("fail", "fail"), expected_stage="receipt-parse",
+             expected_reason="invalid or duplicate-key JSON")
+    scenario("invalid-committed-receipt-shape", mutate=edit_receipt(lambda value: value.pop("runs")),
+             rebind="raw", expected=("fail", "fail"), expected_stage="receipt-schema",
+             expected_reason="receipt schema mismatch")
+    for name, change, reason in (
+        ("duplicate-repetition", lambda value: value["runs"].append(deepcopy(value["runs"][0])),
+         "run coverage must include each case at repetitions 1, 2, and 3 exactly once"),
+        ("missing-expectation", lambda value: value["runs"][0]["expectations"].pop(),
+         "expectation coverage differs from the corpus"),
+        ("wrong-severity", lambda value: value["runs"][0]["expectations"][0].update(severity="safety"),
+         "grade severity or Boolean result differs from the corpus contract"),
+    ):
+        scenario(name, mutate=edit_receipt(change), rebind="raw", expected=("fail", "fail"),
+                 expected_stage="historical", expected_reason="historical Receipt: " + reason)
+
     scenario("receipt-only-comparison", request_change=lambda request, directory, final:
              request.update(base=final), expected=("fail", "fail"))
     assert inventory.check(squash_repo, squashed["landed_commit"], squashed["landed_commit"], ROOT)["status"] == "not-required"
@@ -157,6 +260,49 @@ def main():
     bad_processing["processing"]["inputs"][PROCESSING[0]]["sha256"] = "0" * 64
     scenario("wrong-reconciled-processing", mutate=lambda directory: write(directory, RECEIPT, bad_processing),
              rebind=True, expected=("fail", "fail"))
+
+    lineage_repo = scratch / "changed-rubric-template"
+    shutil.copytree(repo, lineage_repo)
+    git(lineage_repo, "checkout", "--detach", "-q", source)
+    revised_corpus = json.loads((lineage_repo / CORPUS).read_bytes())
+    for case in revised_corpus["evals"]:
+        case["expectations"][0]["text"] = "Preserve essential facts while allowing paraphrases."
+    write(lineage_repo, CORPUS, revised_corpus)
+    current_source = commit(lineage_repo, "Change rubric while retaining delivered source and responses")
+    lineage_private = scratch / "changed-rubric-private"
+    lineage_receipt = reconciled_receipt(lineage_repo, current_source, base, inventory, lineage_private,
+                                         original_source=source)
+    lineage_fixture = freeze_fixture(lineage_repo, base, current_source, lineage_receipt)
+    scenario("changed-rubric-with-lineage", fixture=lineage_fixture)
+    scenario("changed-rubric-with-lineage-merge", "merge", fixture=lineage_fixture, expected=("pass", "pass"))
+    for name, change in (
+        ("changed-rubric-missing-prior-grading", lambda value: value["runs"][0]["reconciliation"].update(previous_grading=[])),
+        ("changed-rubric-missing-adjudication", lambda value: value["runs"][0]["reconciliation"].update(adjudication=None)),
+    ):
+        scenario(name, fixture=lineage_fixture, mutate=edit_receipt(change), rebind="raw", expected=("fail", "fail"),
+                 expected_stage="historical", expected_reason="historical Receipt: changed rubric requires original grading and adjudication lineage")
+
+    original_raw = (lineage_private / "original.json").read_bytes()
+    original_records = json.loads(original_raw)
+    regrading_raw = (lineage_private / "regrading.json").read_bytes()
+    assert len(original_records["runs"]) == len(lineage_receipt["runs"]) == 6
+    assert sum(not grade["passed"] for run in original_records["runs"] for grade in run["grades"]) == 4
+    assert sum(not grade["passed"] for run in lineage_receipt["runs"] for grade in run["expectations"]) == 2
+    for index, (original_run, current_run) in enumerate(zip(original_records["runs"], lineage_receipt["runs"], strict=True)):
+        retained = current_run["reconciliation"]
+        assert retained["original_revision"] == source != current_source
+        assert retained["original_corpus_sha256"] == sha(inventory.core.source_bytes(lineage_repo, source, CORPUS))
+        assert retained["original_expectations_sha256"] == inventory.core.document_digest(original_run["rubric"])
+        assert retained["original_expectations_sha256"] != inventory.core.document_digest(
+            revised_corpus["evals"][original_run["case_id"]]["expectations"])
+        assert retained["execution_record"] == {"sha256": sha(original_raw), "format": "json", "pointer": f"/runs/{index}"}
+        assert retained["execution_identity"]["identity_sha256"] == sha(original_run["native_agent"].encode())
+        assert current_run["executor_output_sha256"] == sha(original_run["response"].encode())
+        assert retained["inputs"] == {ENTRY: sha(original_run["runtime"].encode()),
+                                       REFERENCE: sha(original_run["guidance"].encode())}
+        assert retained["executor_model_basis"] == retained["grader_model_basis"] == "configured"
+        assert retained["previous_grading"] == [{"sha256": sha(original_raw), "format": "json", "pointer": f"/runs/{index}/grades"}]
+        assert retained["adjudication"] == {"sha256": sha(regrading_raw), "format": "json", "pointer": f"/runs/{index}/adjudication"}
 
     # A genuine Q-to-T Receipt-only commit, not just the degenerate C-to-C range.
     receipt_only = scratch / "receipt-only-range"
@@ -219,12 +365,18 @@ def main():
               "diverged_fast_forward": {"exit_code": ff_exit, "target_before": moved,
                                          "target_after": git(diverged, "rev-parse", "HEAD"), "landed": False},
               "constructed_original_records_sha256": sha((scratch / "reconciled-private/original.json").read_bytes()),
+              "changed_rubric_lineage": {"scope": "constructed retained records and regrading; no model or new execution",
+                  "original_source": source, "current_evaluated_source": current_source,
+                  "original_records_sha256": sha(original_raw), "original_records": original_records,
+                  "regrading_sha256": sha(regrading_raw), "regrading": json.loads(regrading_raw),
+                  "public_receipt": lineage_receipt},
               "receipt_only_range": {"base": previous, "candidate": followup,
                                      "ordinary_adapter": narrow, "guarded_consumer": guarded}}
     write(scratch, "results.json", report)
     if args.output:
         args.output.write_bytes(encoded(report))
     print(json.dumps({"scratch": str(scratch), "scenarios": len(results),
+                      "processor_acquisition": acquisition,
                       "all_expected_outcomes": True, "results_sha256": sha(encoded(report))}, indent=2))
 
 

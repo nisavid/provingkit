@@ -77,6 +77,1534 @@
     "status": "pass",
     "unsupported": []
   },
+  "changed_rubric_lineage": {
+    "current_evaluated_source": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+    "original_records": {
+      "runs": [
+        {
+          "case_id": 0,
+          "corpus": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+          "executor": "constructed-executor",
+          "grader": "constructed-grader",
+          "grades": [
+            {
+              "id": "keep",
+              "passed": false
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "guidance": "Preserve the supplied facts.\n",
+          "native_agent": "constructed-0-1",
+          "prompt": "Constructed case 0.",
+          "repetition": 1,
+          "response": "Constructed retained answer.",
+          "revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Keep the supplied meaning."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ],
+          "runtime": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n"
+        },
+        {
+          "case_id": 0,
+          "corpus": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+          "executor": "constructed-executor",
+          "grader": "constructed-grader",
+          "grades": [
+            {
+              "id": "keep",
+              "passed": true
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "guidance": "Preserve the supplied facts.\n",
+          "native_agent": "constructed-0-2",
+          "prompt": "Constructed case 0.",
+          "repetition": 2,
+          "response": "Constructed retained answer.",
+          "revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Keep the supplied meaning."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ],
+          "runtime": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n"
+        },
+        {
+          "case_id": 0,
+          "corpus": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+          "executor": "constructed-executor",
+          "grader": "constructed-grader",
+          "grades": [
+            {
+              "id": "keep",
+              "passed": false
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "guidance": "Preserve the supplied facts.\n",
+          "native_agent": "constructed-0-3",
+          "prompt": "Constructed case 0.",
+          "repetition": 3,
+          "response": "Constructed retained answer.",
+          "revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Keep the supplied meaning."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ],
+          "runtime": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n"
+        },
+        {
+          "case_id": 1,
+          "corpus": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+          "executor": "constructed-executor",
+          "grader": "constructed-grader",
+          "grades": [
+            {
+              "id": "keep",
+              "passed": false
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "guidance": "Preserve the supplied facts.\n",
+          "native_agent": "constructed-1-1",
+          "prompt": "Constructed case 1.",
+          "repetition": 1,
+          "response": "Constructed retained answer.",
+          "revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Keep the supplied meaning."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ],
+          "runtime": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n"
+        },
+        {
+          "case_id": 1,
+          "corpus": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+          "executor": "constructed-executor",
+          "grader": "constructed-grader",
+          "grades": [
+            {
+              "id": "keep",
+              "passed": true
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "guidance": "Preserve the supplied facts.\n",
+          "native_agent": "constructed-1-2",
+          "prompt": "Constructed case 1.",
+          "repetition": 2,
+          "response": "Constructed retained answer.",
+          "revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Keep the supplied meaning."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ],
+          "runtime": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n"
+        },
+        {
+          "case_id": 1,
+          "corpus": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+          "executor": "constructed-executor",
+          "grader": "constructed-grader",
+          "grades": [
+            {
+              "id": "keep",
+              "passed": false
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "guidance": "Preserve the supplied facts.\n",
+          "native_agent": "constructed-1-3",
+          "prompt": "Constructed case 1.",
+          "repetition": 3,
+          "response": "Constructed retained answer.",
+          "revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Keep the supplied meaning."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ],
+          "runtime": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n"
+        }
+      ],
+      "triggers": [
+        {
+          "entrypoint": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n",
+          "model": "constructed-executor",
+          "query": "Do writing.",
+          "triggered": true
+        },
+        {
+          "entrypoint": "---\nname: writing\ndescription: Use for writing.\n---\nDo writing.\nRead [writing guidance](../../references/writing.md).\nUse precise wording.\n",
+          "model": "constructed-executor",
+          "query": "What time is it?",
+          "triggered": false
+        }
+      ]
+    },
+    "original_records_sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9",
+    "original_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+    "public_receipt": {
+      "attestation": null,
+      "candidate_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+      "executor_model_id": "constructed-executor",
+      "grader_model_id": "constructed-grader",
+      "kind": "evaluation",
+      "method": "reconciled-after-run",
+      "private_evidence": {
+        "manifest_sha256": "439c7cea4581d33b4859ab296e610aae4e6faadf04ba901f22757ab3c8846c14"
+      },
+      "processing": {
+        "inputs": {
+          "release/behavior-eval-policy.json": {
+            "mode": "100644",
+            "sha256": "38ffc0e27fd236d9e47e9cac46f4d8bd38ad662e32e48b4f8f0e5f6cd353fc62"
+          },
+          "release/behavior-eval-receipt-v1.schema.json": {
+            "mode": "100644",
+            "sha256": "59775e83b849017064a948388d3106c34cefdc36ccca2ec51bd5cee05e8f79e8"
+          },
+          "scripts/behavior_eval_corpora.py": {
+            "mode": "100644",
+            "sha256": "e0de12694e9312e3886c0ac3b1370d61bcade4b5e624b6b75ad486023be01bec"
+          },
+          "scripts/behavior_eval_inventory.py": {
+            "mode": "100644",
+            "sha256": "4a9dccbd378089ae1aceee9dff79fc9d949ba7ae587e0654113227a91846a5f4"
+          },
+          "scripts/behavior_eval_receipts.py": {
+            "mode": "100644",
+            "sha256": "b3c833325dfc832880fb53cb41a7428cf35814414e676913b0d9b8d7e04c6835"
+          }
+        },
+        "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+      },
+      "reconciliation": {
+        "runtime_inputs": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/references/writing.md"
+        ],
+        "runtime_inputs_complete": true
+      },
+      "runs": [
+        {
+          "case_id": {
+            "id": 0,
+            "pointer": "/evals/0",
+            "source": "plugins/example/skills/writing/evals/evals.json"
+          },
+          "executor_output_sha256": "f9ff39c0fdfe0a3cbd143dbd54e9f76bf99a7481fd672777f5a6c8fbad945c14",
+          "expectations": [
+            {
+              "id": "keep",
+              "passed": true,
+              "severity": "quality"
+            },
+            {
+              "id": "safe",
+              "passed": true,
+              "severity": "safety"
+            }
+          ],
+          "grading_sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483",
+          "reconciliation": {
+            "adjudication": {
+              "format": "json",
+              "pointer": "/runs/0/adjudication",
+              "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+            },
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/runs/0",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/revision",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/corpus",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/guidance",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/runtime",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/prompt",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/executor",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/grader",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/rubric",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/rubric",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/adjudication",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/0/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              }
+            ],
+            "execution_identity": {
+              "basis": "recorded-native-agent",
+              "identity_sha256": "31c20f4692277c607d85263e740fdf6c43724bed0add5af54fe2692fa64cc938"
+            },
+            "execution_record": {
+              "format": "json",
+              "pointer": "/runs/0",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "executor_model_basis": "configured",
+            "grader_model_basis": "configured",
+            "inputs": {
+              "plugins/example/references/writing.md": "3f303545497c32016a927e29ee555b830c8943b42ca3af165ebc4f40396cacd7",
+              "plugins/example/skills/writing/SKILL.md": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12"
+            },
+            "original_corpus_sha256": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+            "original_expectations_sha256": "771e99584bbf137794f1e0ad388002288371d4bc97aa76fcc4ca062e5c14c552",
+            "original_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "previous_grading": [
+              {
+                "format": "json",
+                "pointer": "/runs/0/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "prompt_sha256": "01eebb77d73a1b088addc7445e1851096324444618c19fd7098450700ae72b92"
+          },
+          "repetition": 1
+        },
+        {
+          "case_id": {
+            "id": 0,
+            "pointer": "/evals/0",
+            "source": "plugins/example/skills/writing/evals/evals.json"
+          },
+          "executor_output_sha256": "f9ff39c0fdfe0a3cbd143dbd54e9f76bf99a7481fd672777f5a6c8fbad945c14",
+          "expectations": [
+            {
+              "id": "keep",
+              "passed": true,
+              "severity": "quality"
+            },
+            {
+              "id": "safe",
+              "passed": true,
+              "severity": "safety"
+            }
+          ],
+          "grading_sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483",
+          "reconciliation": {
+            "adjudication": {
+              "format": "json",
+              "pointer": "/runs/1/adjudication",
+              "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+            },
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/runs/1",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/revision",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/corpus",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/guidance",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/runtime",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/prompt",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/executor",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/grader",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/rubric",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/rubric",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/adjudication",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/1/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              }
+            ],
+            "execution_identity": {
+              "basis": "recorded-native-agent",
+              "identity_sha256": "0514afdc0f5bba90eef72293fec4fde8395370f9220e4fb735428734cff80710"
+            },
+            "execution_record": {
+              "format": "json",
+              "pointer": "/runs/1",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "executor_model_basis": "configured",
+            "grader_model_basis": "configured",
+            "inputs": {
+              "plugins/example/references/writing.md": "3f303545497c32016a927e29ee555b830c8943b42ca3af165ebc4f40396cacd7",
+              "plugins/example/skills/writing/SKILL.md": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12"
+            },
+            "original_corpus_sha256": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+            "original_expectations_sha256": "771e99584bbf137794f1e0ad388002288371d4bc97aa76fcc4ca062e5c14c552",
+            "original_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "previous_grading": [
+              {
+                "format": "json",
+                "pointer": "/runs/1/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "prompt_sha256": "01eebb77d73a1b088addc7445e1851096324444618c19fd7098450700ae72b92"
+          },
+          "repetition": 2
+        },
+        {
+          "case_id": {
+            "id": 0,
+            "pointer": "/evals/0",
+            "source": "plugins/example/skills/writing/evals/evals.json"
+          },
+          "executor_output_sha256": "f9ff39c0fdfe0a3cbd143dbd54e9f76bf99a7481fd672777f5a6c8fbad945c14",
+          "expectations": [
+            {
+              "id": "keep",
+              "passed": false,
+              "severity": "quality"
+            },
+            {
+              "id": "safe",
+              "passed": true,
+              "severity": "safety"
+            }
+          ],
+          "grading_sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483",
+          "reconciliation": {
+            "adjudication": {
+              "format": "json",
+              "pointer": "/runs/2/adjudication",
+              "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+            },
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/runs/2",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/revision",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/corpus",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/guidance",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/runtime",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/prompt",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/executor",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/grader",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/rubric",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/rubric",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/adjudication",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/2/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              }
+            ],
+            "execution_identity": {
+              "basis": "recorded-native-agent",
+              "identity_sha256": "9d858027eda4d16919859c0dd97a5de412dcf330aff0a3d9efcb2115d3c4ba34"
+            },
+            "execution_record": {
+              "format": "json",
+              "pointer": "/runs/2",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "executor_model_basis": "configured",
+            "grader_model_basis": "configured",
+            "inputs": {
+              "plugins/example/references/writing.md": "3f303545497c32016a927e29ee555b830c8943b42ca3af165ebc4f40396cacd7",
+              "plugins/example/skills/writing/SKILL.md": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12"
+            },
+            "original_corpus_sha256": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+            "original_expectations_sha256": "771e99584bbf137794f1e0ad388002288371d4bc97aa76fcc4ca062e5c14c552",
+            "original_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "previous_grading": [
+              {
+                "format": "json",
+                "pointer": "/runs/2/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "prompt_sha256": "01eebb77d73a1b088addc7445e1851096324444618c19fd7098450700ae72b92"
+          },
+          "repetition": 3
+        },
+        {
+          "case_id": {
+            "id": 1,
+            "pointer": "/evals/1",
+            "source": "plugins/example/skills/writing/evals/evals.json"
+          },
+          "executor_output_sha256": "f9ff39c0fdfe0a3cbd143dbd54e9f76bf99a7481fd672777f5a6c8fbad945c14",
+          "expectations": [
+            {
+              "id": "keep",
+              "passed": true,
+              "severity": "quality"
+            },
+            {
+              "id": "safe",
+              "passed": true,
+              "severity": "safety"
+            }
+          ],
+          "grading_sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483",
+          "reconciliation": {
+            "adjudication": {
+              "format": "json",
+              "pointer": "/runs/3/adjudication",
+              "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+            },
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/runs/3",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/revision",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/corpus",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/guidance",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/runtime",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/prompt",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/executor",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/grader",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/rubric",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/rubric",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/adjudication",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/3/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              }
+            ],
+            "execution_identity": {
+              "basis": "recorded-native-agent",
+              "identity_sha256": "71478b25e5cfa6b4230cc2d234b2a558ad6c8df18e6d30eded8f60e328eb9d33"
+            },
+            "execution_record": {
+              "format": "json",
+              "pointer": "/runs/3",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "executor_model_basis": "configured",
+            "grader_model_basis": "configured",
+            "inputs": {
+              "plugins/example/references/writing.md": "3f303545497c32016a927e29ee555b830c8943b42ca3af165ebc4f40396cacd7",
+              "plugins/example/skills/writing/SKILL.md": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12"
+            },
+            "original_corpus_sha256": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+            "original_expectations_sha256": "771e99584bbf137794f1e0ad388002288371d4bc97aa76fcc4ca062e5c14c552",
+            "original_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "previous_grading": [
+              {
+                "format": "json",
+                "pointer": "/runs/3/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "prompt_sha256": "bf5da55d260d8745bae26c3bb1536780601a663b541f1b2d926d1fe60f0477d7"
+          },
+          "repetition": 1
+        },
+        {
+          "case_id": {
+            "id": 1,
+            "pointer": "/evals/1",
+            "source": "plugins/example/skills/writing/evals/evals.json"
+          },
+          "executor_output_sha256": "f9ff39c0fdfe0a3cbd143dbd54e9f76bf99a7481fd672777f5a6c8fbad945c14",
+          "expectations": [
+            {
+              "id": "keep",
+              "passed": true,
+              "severity": "quality"
+            },
+            {
+              "id": "safe",
+              "passed": true,
+              "severity": "safety"
+            }
+          ],
+          "grading_sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483",
+          "reconciliation": {
+            "adjudication": {
+              "format": "json",
+              "pointer": "/runs/4/adjudication",
+              "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+            },
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/runs/4",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/revision",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/corpus",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/guidance",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/runtime",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/prompt",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/executor",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/grader",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/rubric",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/rubric",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/adjudication",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/4/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              }
+            ],
+            "execution_identity": {
+              "basis": "recorded-native-agent",
+              "identity_sha256": "37755745180450686013c8a1581d2f9eaa155f852e780c0c44af4978803038c5"
+            },
+            "execution_record": {
+              "format": "json",
+              "pointer": "/runs/4",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "executor_model_basis": "configured",
+            "grader_model_basis": "configured",
+            "inputs": {
+              "plugins/example/references/writing.md": "3f303545497c32016a927e29ee555b830c8943b42ca3af165ebc4f40396cacd7",
+              "plugins/example/skills/writing/SKILL.md": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12"
+            },
+            "original_corpus_sha256": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+            "original_expectations_sha256": "771e99584bbf137794f1e0ad388002288371d4bc97aa76fcc4ca062e5c14c552",
+            "original_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "previous_grading": [
+              {
+                "format": "json",
+                "pointer": "/runs/4/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "prompt_sha256": "bf5da55d260d8745bae26c3bb1536780601a663b541f1b2d926d1fe60f0477d7"
+          },
+          "repetition": 2
+        },
+        {
+          "case_id": {
+            "id": 1,
+            "pointer": "/evals/1",
+            "source": "plugins/example/skills/writing/evals/evals.json"
+          },
+          "executor_output_sha256": "f9ff39c0fdfe0a3cbd143dbd54e9f76bf99a7481fd672777f5a6c8fbad945c14",
+          "expectations": [
+            {
+              "id": "keep",
+              "passed": false,
+              "severity": "quality"
+            },
+            {
+              "id": "safe",
+              "passed": true,
+              "severity": "safety"
+            }
+          ],
+          "grading_sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483",
+          "reconciliation": {
+            "adjudication": {
+              "format": "json",
+              "pointer": "/runs/5/adjudication",
+              "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+            },
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/runs/5",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/revision",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/corpus",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/guidance",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/runtime",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/prompt",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/executor",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/grader",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/response",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/rubric",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/rubric",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/adjudication",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              },
+              {
+                "format": "json",
+                "pointer": "/runs/5/grades",
+                "sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483"
+              }
+            ],
+            "execution_identity": {
+              "basis": "recorded-native-agent",
+              "identity_sha256": "95f10d010ee1fc0752c5d6468fb624f4087f9fefd3edeac48f1eca3ab638f442"
+            },
+            "execution_record": {
+              "format": "json",
+              "pointer": "/runs/5",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "executor_model_basis": "configured",
+            "grader_model_basis": "configured",
+            "inputs": {
+              "plugins/example/references/writing.md": "3f303545497c32016a927e29ee555b830c8943b42ca3af165ebc4f40396cacd7",
+              "plugins/example/skills/writing/SKILL.md": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12"
+            },
+            "original_corpus_sha256": "6ac939c99af303f505e1aaa8eddf4e4b7d9230ba51c247c2b48d2a8c761316b4",
+            "original_expectations_sha256": "771e99584bbf137794f1e0ad388002288371d4bc97aa76fcc4ca062e5c14c552",
+            "original_revision": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+            "previous_grading": [
+              {
+                "format": "json",
+                "pointer": "/runs/5/grades",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "prompt_sha256": "bf5da55d260d8745bae26c3bb1536780601a663b541f1b2d926d1fe60f0477d7"
+          },
+          "repetition": 3
+        }
+      ],
+      "runs_per_case": 3,
+      "schema_version": 1,
+      "snapshot": {
+        "candidate_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+        "inputs": {
+          "plugins/example/references/writing.md": {
+            "mode": "100644",
+            "sha256": "3f303545497c32016a927e29ee555b830c8943b42ca3af165ebc4f40396cacd7"
+          },
+          "plugins/example/skills/writing/SKILL.md": {
+            "mode": "100644",
+            "sha256": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12"
+          },
+          "plugins/example/skills/writing/evals/evals.json": {
+            "mode": "100644",
+            "sha256": "957983a2eb143a78fe82b32bea599c94127feb4d6b05a2303f4aa1983e93fc2c"
+          },
+          "plugins/example/skills/writing/evals/trigger-evals.json": {
+            "mode": "100644",
+            "sha256": "634403c1b422ebb5aa08f0b0a71562d0c5b089f25f32da20dbd574b561e66dc3"
+          },
+          "plugins/example/topology.json": {
+            "mode": "100644",
+            "sha256": "7889784fc82404b9ee3fc7d153549b649c8bbe03bff3b3cd5fdbf3b8e59841ef"
+          },
+          "release/behavior-eval-expectation-map.json": {
+            "mode": "100644",
+            "sha256": "caa20f07e81adb8a91aa9251be68569637c902602c30c34c57f5ef39501df43b"
+          },
+          "release/behavior-eval-input-map.json": {
+            "mode": "100644",
+            "sha256": "caa20f07e81adb8a91aa9251be68569637c902602c30c34c57f5ef39501df43b"
+          },
+          "release/plugin-content-locks/example.json": {
+            "mode": "100644",
+            "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+          },
+          "release/provingkit/definition-v1.json": {
+            "mode": "100644",
+            "sha256": "b4bdae35ff94827973f5f4596f4fe4aab349e38204409f61f5fee24ce6afffa3"
+          }
+        },
+        "schema_version": 1,
+        "skill": {
+          "behavior_inputs": [
+            "plugins/example/references/writing.md",
+            "plugins/example/skills/writing/evals/evals.json",
+            "plugins/example/skills/writing/evals/trigger-evals.json"
+          ],
+          "case_selection": [
+            {
+              "pointer": "/evals/0",
+              "source": "plugins/example/skills/writing/evals/evals.json"
+            },
+            {
+              "pointer": "/evals/1",
+              "source": "plugins/example/skills/writing/evals/evals.json"
+            },
+            {
+              "pointer": "/0",
+              "source": "plugins/example/skills/writing/evals/trigger-evals.json"
+            },
+            {
+              "pointer": "/1",
+              "source": "plugins/example/skills/writing/evals/trigger-evals.json"
+            }
+          ],
+          "closure_complete": true,
+          "content_lock": "release/plugin-content-locks/example.json",
+          "corpus_format": "provingkit-v1",
+          "dependencies": [
+            "plugins/example/topology.json",
+            "release/behavior-eval-expectation-map.json",
+            "release/behavior-eval-input-map.json",
+            "release/plugin-content-locks/example.json",
+            "release/provingkit/definition-v1.json"
+          ],
+          "evals": "plugins/example/skills/writing/evals/evals.json",
+          "expectation_map": "release/behavior-eval-expectation-map.json",
+          "plugin": "example",
+          "shared_references": [],
+          "skill": "writing",
+          "trigger_evals": "plugins/example/skills/writing/evals/trigger-evals.json"
+        }
+      },
+      "triggers": [
+        {
+          "case_id": {
+            "id": null,
+            "pointer": "/0",
+            "source": "plugins/example/skills/writing/evals/trigger-evals.json"
+          },
+          "expected": true,
+          "observation_kind": "recorded-invocation",
+          "observation_sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9",
+          "reconciliation": {
+            "entrypoint_sha256": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12",
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/triggers/0",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/0/model",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/0/query",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/0/entrypoint",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/0/triggered",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "limits": [
+              "Constructed local records; no model invocation."
+            ],
+            "model_basis": "configured",
+            "query_sha256": "0d0e3fd843ee90fff0051396d08cc2867645e0850af668dc74ebaa554a690c81",
+            "source_binding": "entrypoint-bytes"
+          },
+          "triggered": true
+        },
+        {
+          "case_id": {
+            "id": null,
+            "pointer": "/1",
+            "source": "plugins/example/skills/writing/evals/trigger-evals.json"
+          },
+          "expected": false,
+          "observation_kind": "recorded-invocation",
+          "observation_sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9",
+          "reconciliation": {
+            "entrypoint_sha256": "2b006a3aaab3e591996fc710aa9d606be313f474913969b7ac1c322b39f87a12",
+            "evidence": [
+              {
+                "format": "json",
+                "pointer": "/triggers/1",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/1/model",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/1/query",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/1/entrypoint",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              },
+              {
+                "format": "json",
+                "pointer": "/triggers/1/triggered",
+                "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+              }
+            ],
+            "limits": [
+              "Constructed local records; no model invocation."
+            ],
+            "model_basis": "configured",
+            "query_sha256": "cd61bf0cc67fc2233111c91167e2abb3c652200bfe22059a166475d37366b7a8",
+            "source_binding": "entrypoint-bytes"
+          },
+          "triggered": false
+        }
+      ]
+    },
+    "regrading": {
+      "runs": [
+        {
+          "adjudication": {
+            "decision": "retain execution and apply the changed rubric",
+            "original_grading": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/0/grades",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "original_rubric": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/0/rubric",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "reason": "Constructed criterion permits paraphrases; preserve the original failed grade."
+          },
+          "grades": [
+            {
+              "id": "keep",
+              "passed": true
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Preserve essential facts while allowing paraphrases."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ]
+        },
+        {
+          "adjudication": {
+            "decision": "retain execution and apply the changed rubric",
+            "original_grading": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/1/grades",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "original_rubric": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/1/rubric",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "reason": "Constructed criterion permits paraphrases; preserve the original failed grade."
+          },
+          "grades": [
+            {
+              "id": "keep",
+              "passed": true
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Preserve essential facts while allowing paraphrases."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ]
+        },
+        {
+          "adjudication": {
+            "decision": "retain execution and apply the changed rubric",
+            "original_grading": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/2/grades",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "original_rubric": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/2/rubric",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "reason": "Constructed criterion permits paraphrases; preserve the original failed grade."
+          },
+          "grades": [
+            {
+              "id": "keep",
+              "passed": false
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Preserve essential facts while allowing paraphrases."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ]
+        },
+        {
+          "adjudication": {
+            "decision": "retain execution and apply the changed rubric",
+            "original_grading": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/3/grades",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "original_rubric": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/3/rubric",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "reason": "Constructed criterion permits paraphrases; preserve the original failed grade."
+          },
+          "grades": [
+            {
+              "id": "keep",
+              "passed": true
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Preserve essential facts while allowing paraphrases."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ]
+        },
+        {
+          "adjudication": {
+            "decision": "retain execution and apply the changed rubric",
+            "original_grading": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/4/grades",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "original_rubric": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/4/rubric",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "reason": "Constructed criterion permits paraphrases; preserve the original failed grade."
+          },
+          "grades": [
+            {
+              "id": "keep",
+              "passed": true
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Preserve essential facts while allowing paraphrases."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ]
+        },
+        {
+          "adjudication": {
+            "decision": "retain execution and apply the changed rubric",
+            "original_grading": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/5/grades",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "original_rubric": {
+              "format": "json",
+              "path": "original.json",
+              "pointer": "/runs/5/rubric",
+              "sha256": "2d0c951d530215034babd189f9e27e0ec32f051481677015925be743dd4b7cc9"
+            },
+            "reason": "Constructed criterion permits paraphrases; preserve the original failed grade."
+          },
+          "grades": [
+            {
+              "id": "keep",
+              "passed": false
+            },
+            {
+              "id": "safe",
+              "passed": true
+            }
+          ],
+          "rubric": [
+            {
+              "id": "keep",
+              "severity": "quality",
+              "text": "Preserve essential facts while allowing paraphrases."
+            },
+            {
+              "id": "safe",
+              "severity": "safety",
+              "text": "Keep the supplied boundary."
+            }
+          ]
+        }
+      ],
+      "scope": "constructed regrading; no new execution"
+    },
+    "regrading_sha256": "bd7cdc8c635700e0d1f28726ded603f44bb5e0a101caa05d73984c77c9431483",
+    "scope": "constructed retained records and regrading; no model or new execution"
+  },
   "constructed_original_records_sha256": "91e53676ac66d35571b5b8c4d195dbdecf93719ae651d9c8b7c3898c31b55ae3",
   "diverged_fast_forward": {
     "exit_code": 128,
@@ -108,10 +1636,10 @@
   },
   "processor_revision": "24c2d712a0be6a95958713ec80c7e06a89abdc6c",
   "prototype_files": {
-    "build_demo.py": "6807a34c70e0e7d0770c48420d07203e003a4bada0613dea121a224dadd67205",
-    "consumer.py": "7dcd920c08c122994235751ac3784fd08758ca1c8081d31a2ad7472e45d3e859",
-    "fixtures.py": "c6e09b5324f258e16f99b9506f6bb96145428faae0cbe8c967ab86d3b85287ac",
-    "run.py": "ed55f7a65b1258dc984510b6ce5e9cb504a47dd7c83d342a4fb22ba97e8c1468"
+    "build_demo.py": "5e0ff81e48a4f1251c774271eeee71ab8d0f3ac3f3495587673d61f426cd2533",
+    "consumer.py": "80d13bbd5928c4bb3ccce667bed0dbd2dfc12193331925e220b33a87c84886b0",
+    "fixtures.py": "137c5fff7f203fb745534889a79dac6020633162d9a39ede8f3f1c03a550813c",
+    "run.py": "4c1e3e0fd4c0c97ea6488f241ea6388524a209e0f0af38d232b2adbaec2b5c03"
   },
   "receipt_only_range": {
     "base": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
@@ -122,6 +1650,7 @@
       "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
       "reason": "original comparison was replaced",
       "skills": [],
+      "stage": "context",
       "status": "fail",
       "strategy": "correspondence"
     },
@@ -178,9 +1707,11 @@
         "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
         "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
         "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "descriptor_diagnostics": [],
         "reason": "Git source observation failed",
         "selection_complete": true,
         "skills": [],
+        "stage": "processing",
         "status": "fail",
         "strategy": "correspondence",
         "unsupported": []
@@ -197,6 +1728,7 @@
         "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
         "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
         "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "descriptor_diagnostics": [],
         "reason": "all selected Receipts match the actual landed inputs",
         "selection_complete": true,
         "skills": [
@@ -229,6 +1761,7 @@
             "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
           }
         ],
+        "stage": "complete",
         "status": "pass",
         "strategy": "correspondence",
         "unsupported": []
@@ -245,6 +1778,7 @@
         "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
         "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
         "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "descriptor_diagnostics": [],
         "reason": "all selected Receipts match the actual landed inputs",
         "selection_complete": true,
         "skills": [
@@ -277,6 +1811,7 @@
             "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
           }
         ],
+        "stage": "complete",
         "status": "pass",
         "strategy": "correspondence",
         "unsupported": []
@@ -293,6 +1828,7 @@
         "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
         "candidate_revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
         "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+        "descriptor_diagnostics": [],
         "reason": "all selected Receipts match the actual landed inputs",
         "selection_complete": true,
         "skills": [
@@ -325,6 +1861,7 @@
             "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
           }
         ],
+        "stage": "complete",
         "status": "pass",
         "strategy": "correspondence",
         "unsupported": []
@@ -348,9 +1885,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "evaluated source is not an ancestor of the landed commit",
           "selection_complete": true,
           "skills": [],
+          "stage": "ancestry",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -362,6 +1901,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -394,6 +1934,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -493,6 +2034,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "ordinary_landed_check": "pass",
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
@@ -526,6 +2068,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "ancestry",
           "unsupported": []
@@ -537,6 +2080,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "12d388964f3c27fd1faf39dda9a83482c722f212",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -569,6 +2113,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -673,6 +2218,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "ordinary_landed_check": "pass",
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
@@ -706,6 +2252,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "ancestry",
           "unsupported": []
@@ -717,6 +2264,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "354c23319f4b3630fd2605fbc5013eb4bc523d09",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -749,6 +2297,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -853,9 +2402,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "ea4539d376ede9fd3199ee5334b00918ecac3f4c",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "evaluated source is not an ancestor of the landed commit",
           "selection_complete": true,
           "skills": [],
+          "stage": "ancestry",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -867,6 +2418,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "ea4539d376ede9fd3199ee5334b00918ecac3f4c",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -899,6 +2451,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -998,9 +2551,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "a03cb47da86204cf602cab7dc243a7e550bab2e6",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1012,9 +2567,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "a03cb47da86204cf602cab7dc243a7e550bab2e6",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1114,9 +2671,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "d0e7323254f0f5c8706cbcf5222e7733edd04930",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1128,9 +2687,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "d0e7323254f0f5c8706cbcf5222e7733edd04930",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1230,9 +2791,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "5426fdde80ddc5f86e1e127a2269f39d81a271d1",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1244,9 +2807,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "5426fdde80ddc5f86e1e127a2269f39d81a271d1",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1357,9 +2922,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "42cfe4b27674b77712784609276961846880febe",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1371,9 +2938,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "42cfe4b27674b77712784609276961846880febe",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1479,9 +3048,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "15dba86b65aa9f332d83d3d5dcc315b1f8b959c2",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1493,9 +3064,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "15dba86b65aa9f332d83d3d5dcc315b1f8b959c2",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1596,9 +3169,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "ce85c909c4e0303cd0a5e359375fb17f9e7f37e8",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "committed regular input is unavailable: release/receipts/example/writing.json",
           "selection_complete": true,
           "skills": [],
+          "stage": "receipt-bytes",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1610,9 +3185,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "ce85c909c4e0303cd0a5e359375fb17f9e7f37e8",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "committed regular input is unavailable: release/receipts/example/writing.json",
           "selection_complete": true,
           "skills": [],
+          "stage": "receipt-bytes",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1702,9 +3279,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "8de781d6a7ca9f2640d3c5b636d2e5db7de50991",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "committed Receipt differs from the reviewed bytes",
           "selection_complete": true,
           "skills": [],
+          "stage": "receipt-bytes",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1716,9 +3295,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "8de781d6a7ca9f2640d3c5b636d2e5db7de50991",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "committed Receipt differs from the reviewed bytes",
           "selection_complete": true,
           "skills": [],
+          "stage": "receipt-bytes",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1818,9 +3399,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2f77d098eb2a1448561c9f2a691ae44cf2d82745",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: Git source observation failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1832,9 +3415,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2f77d098eb2a1448561c9f2a691ae44cf2d82745",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: Git source observation failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -1951,9 +3536,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "7cd4e0cb905f165bbb8e740aa5a8e989e0673c6f",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -1965,9 +3552,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "7cd4e0cb905f165bbb8e740aa5a8e989e0673c6f",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "landed input closure differs in paths, bytes, or Git modes",
           "selection_complete": true,
           "skills": [],
+          "stage": "correspondence",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2068,9 +3657,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "a3b326f720777b4caad40e5abc68627e475031c3",
           "context_sha256": "45657c02edf015e911d9e121558a6192f4c6c046ba6510440860a3a33cbb13f5",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2082,9 +3673,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "a3b326f720777b4caad40e5abc68627e475031c3",
           "context_sha256": "45657c02edf015e911d9e121558a6192f4c6c046ba6510440860a3a33cbb13f5",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2184,9 +3777,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "509a5a5b55e91241cc1773dd390d9223522fcf2e",
           "context_sha256": "e001a63c2837b8d97f3a38f6a9d8d949f7c067322ab4d068d13206b18d0f026f",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2198,9 +3793,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "509a5a5b55e91241cc1773dd390d9223522fcf2e",
           "context_sha256": "e001a63c2837b8d97f3a38f6a9d8d949f7c067322ab4d068d13206b18d0f026f",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2300,9 +3897,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "7bb73597b0fcc06ebe5f044c3c088fb9ab4eb2ba",
           "context_sha256": "f6e008345315c80e08074c9770327e2232d4ed76574d5e9148c9471352049760",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: trigger coverage differs from the corpus",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2314,9 +3913,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "7bb73597b0fcc06ebe5f044c3c088fb9ab4eb2ba",
           "context_sha256": "f6e008345315c80e08074c9770327e2232d4ed76574d5e9148c9471352049760",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: trigger coverage differs from the corpus",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2416,9 +4017,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "6c7a3b372b6219e134ed47e26f5a07720cd6e97f",
           "context_sha256": "0bad7e32f4fe73b447dfb3d9cd39bb2b18f40eb0005532669ab3b831ebc39429",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: threshold failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2430,9 +4033,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "6c7a3b372b6219e134ed47e26f5a07720cd6e97f",
           "context_sha256": "0bad7e32f4fe73b447dfb3d9cd39bb2b18f40eb0005532669ab3b831ebc39429",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: threshold failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2532,9 +4137,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "6e0bfe6aa01d196440865f23f1892f647eb1a1f1",
           "context_sha256": "6f89109babd7925789c2c56754414a303c841555fff131adef17b0fd627ce2ac",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: threshold failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2546,9 +4153,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "6e0bfe6aa01d196440865f23f1892f647eb1a1f1",
           "context_sha256": "6f89109babd7925789c2c56754414a303c841555fff131adef17b0fd627ce2ac",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: threshold failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2648,9 +4257,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "8d739f169460b0f03003fccdd6264f9ec8ebbfc9",
           "context_sha256": "1d3827b1793e64d07e92766cff786ef368ed4a0d812d97cb64354ffc4cbc1392",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: threshold failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2662,9 +4273,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "8d739f169460b0f03003fccdd6264f9ec8ebbfc9",
           "context_sha256": "1d3827b1793e64d07e92766cff786ef368ed4a0d812d97cb64354ffc4cbc1392",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: threshold failed",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2764,9 +4377,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "40b0b90d2a11b98c149da46cf24e83a9a608db3b",
           "context_sha256": "c111eb37a2c23d4b493b8563aef78209cd49abe860f41c9f76b413dfd68e7a37",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: receipt snapshot differs from evaluated source",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2778,9 +4393,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "40b0b90d2a11b98c149da46cf24e83a9a608db3b",
           "context_sha256": "c111eb37a2c23d4b493b8563aef78209cd49abe860f41c9f76b413dfd68e7a37",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: receipt snapshot differs from evaluated source",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2880,9 +4497,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "92904ace404b0fdc8ee943b9dbf4b713ebf5d2e3",
           "context_sha256": "4e84152004eddc828eb8e0f8cbafebef4b01cb75acaf78532c98433473e58cb4",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: receipt revision differs from its evaluated snapshot",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -2894,9 +4513,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "92904ace404b0fdc8ee943b9dbf4b713ebf5d2e3",
           "context_sha256": "4e84152004eddc828eb8e0f8cbafebef4b01cb75acaf78532c98433473e58cb4",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: receipt revision differs from its evaluated snapshot",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -2999,6 +4620,7 @@
           "reason": "reviewed Receipt inventory differs from the full original comparison",
           "selection_complete": true,
           "skills": [],
+          "stage": "selection",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -3013,6 +4635,7 @@
           "reason": "reviewed Receipt inventory differs from the full original comparison",
           "selection_complete": true,
           "skills": [],
+          "stage": "selection",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -3102,6 +4725,1530 @@
         "ancestry": "fail",
         "correspondence": "fail"
       },
+      "expected_reason": "historical Receipt: stale or wrong-skill receipt descriptor",
+      "expected_stage": "historical",
+      "landed_commit": "9d6faa03164eeac5fb056a2b55c22239930a0bac",
+      "name": "added-declared-dependency",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "9d6faa03164eeac5fb056a2b55c22239930a0bac",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: stale or wrong-skill receipt descriptor",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "9d6faa03164eeac5fb056a2b55c22239930a0bac",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: stale or wrong-skill receipt descriptor",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "9d6faa03164eeac5fb056a2b55c22239930a0bac",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/references/additional.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "topology-consumption-change",
+              "path": "plugins/example/topology.json",
+              "side": "both"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/references/additional.md",
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/topology.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "9d6faa03164eeac5fb056a2b55c22239930a0bac",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "stale or wrong-skill receipt descriptor",
+            "receipt_raw_sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d",
+            "receipt_sha256": "ec8f8ef1ca99f2a54e2011aefbdf76c159d8fb3e3bfdd09de3962c9c09343571",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "7b3694a477d9bed6104f46a0080ef479781edba0",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "2e008212f2e53b02cf94738472f1096fa3be810fde4fd58861016712b6221b1d"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "1c4f427f03e0512239caaeb08525c9f11c29ead0",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_diagnostic_code": "input-unavailable",
+      "expected_reason": "landed descriptor is unresolved",
+      "expected_stage": "descriptor",
+      "landed_commit": "37e79009487e6a80be50ac95b948038bb6e00aec",
+      "name": "deleted-declared-dependency",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "37e79009487e6a80be50ac95b948038bb6e00aec",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [
+            {
+              "code": "input-unavailable",
+              "message": "Committed regular input is unavailable: 'plugins/example/references/writing.md'",
+              "path": "plugins/example/references/writing.md"
+            }
+          ],
+          "reason": "landed descriptor is unresolved",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "descriptor",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "37e79009487e6a80be50ac95b948038bb6e00aec",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [
+            {
+              "code": "input-unavailable",
+              "message": "Committed regular input is unavailable: 'plugins/example/references/writing.md'",
+              "path": "plugins/example/references/writing.md"
+            }
+          ],
+          "reason": "landed descriptor is unresolved",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "descriptor",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "37e79009487e6a80be50ac95b948038bb6e00aec",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/references/writing.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/references/writing.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/references/writing.md",
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": [
+            {
+              "code": "input-unavailable",
+              "message": "Committed regular input is unavailable: 'plugins/example/references/writing.md'",
+              "path": "plugins/example/references/writing.md",
+              "skill": "example/writing"
+            }
+          ]
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "37e79009487e6a80be50ac95b948038bb6e00aec",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [
+              {
+                "code": "input-unavailable",
+                "message": "Committed regular input is unavailable: 'plugins/example/references/writing.md'",
+                "path": "plugins/example/references/writing.md"
+              }
+            ],
+            "reason": "selected inventory is unresolved",
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "db0b693f9947140ec2fdb44e85918a009353f9b8",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_affected_skills": [
+        "example/editing",
+        "example/writing"
+      ],
+      "expected_reason": "reviewed Receipt inventory differs from the full original comparison",
+      "expected_stage": "selection",
+      "landed_commit": "5e91235e24f0c5100a342bc159e05d387486a3fb",
+      "name": "ownership-transfer",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/editing",
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "5e91235e24f0c5100a342bc159e05d387486a3fb",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "reviewed Receipt inventory differs from the full original comparison",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "selection",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/editing",
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "5e91235e24f0c5100a342bc159e05d387486a3fb",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "reviewed Receipt inventory differs from the full original comparison",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "selection",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/editing",
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "5e91235e24f0c5100a342bc159e05d387486a3fb",
+        "causes": {
+          "example/editing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ],
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "5e91235e24f0c5100a342bc159e05d387486a3fb",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "committed regular input is unavailable: release/receipts/example/editing.json",
+            "skill": "example/editing",
+            "status": "fail"
+          },
+          {
+            "diagnostics": [
+              {
+                "code": "missing-cases",
+                "message": "No current cases have a supported owner."
+              }
+            ],
+            "reason": "selected inventory is unresolved",
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "8a67964adbe4fed08b26dbab4c57f71a5fc23560",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_affected_skills": [
+        "example/writing"
+      ],
+      "expected_diagnostic_code": "removed-or-renamed-skill",
+      "expected_reason": "affected consumer selection is unsupported",
+      "expected_stage": "selection",
+      "landed_commit": "8da2328f0ded600d054cec2b9132fe34ecf93164",
+      "name": "removed-skill",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "8da2328f0ded600d054cec2b9132fe34ecf93164",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "affected consumer selection is unsupported",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "selection",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": [
+            {
+              "code": "removed-or-renamed-skill",
+              "skill": "example/writing"
+            }
+          ]
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "8da2328f0ded600d054cec2b9132fe34ecf93164",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "affected consumer selection is unsupported",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "selection",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": [
+            {
+              "code": "removed-or-renamed-skill",
+              "skill": "example/writing"
+            }
+          ]
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "8da2328f0ded600d054cec2b9132fe34ecf93164",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/trigger-evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "topology-consumption-change",
+              "path": "plugins/example/topology.json",
+              "side": "both"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "plugins/example/skills/writing/evals/trigger-evals.json",
+          "plugins/example/topology.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 2,
+            "revision": "8da2328f0ded600d054cec2b9132fe34ecf93164",
+            "roster_complete": true,
+            "skill_count": 1,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [
+              {
+                "code": "unknown-skill",
+                "message": "Skill is outside the committed roster."
+              }
+            ],
+            "reason": "selected inventory is unresolved",
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": [
+          {
+            "code": "removed-or-renamed-skill",
+            "skill": "example/writing"
+          }
+        ]
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "326a024a4fa2a939204c2893a9058d7f206155d6",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_affected_skills": [
+        "example/writing"
+      ],
+      "expected_diagnostic_code": "unsupported-corpus",
+      "expected_reason": "affected consumer selection is unsupported",
+      "expected_stage": "selection",
+      "landed_commit": "9194f55516aceacb3ad8feb11f37a87971f16ad7",
+      "name": "unresolved-affected-corpus",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "9194f55516aceacb3ad8feb11f37a87971f16ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "affected consumer selection is unsupported",
+          "selection_complete": false,
+          "skills": [],
+          "stage": "selection",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": [
+            {
+              "code": "unsupported-corpus",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "9194f55516aceacb3ad8feb11f37a87971f16ad7",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "reason": "affected consumer selection is unsupported",
+          "selection_complete": false,
+          "skills": [],
+          "stage": "selection",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": [
+            {
+              "code": "unsupported-corpus",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "9194f55516aceacb3ad8feb11f37a87971f16ad7",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": [
+            {
+              "code": "invalid-json",
+              "message": "Expecting property name enclosed in double quotes: line 2 column 1 (char 2)",
+              "pointer": "",
+              "source": {
+                "path": "plugins/example/skills/writing/evals/evals.json",
+                "sha256": "a6fb08fda1acb957b6116bd37811a1fe41a01611c0631edbf786d6889a27a55c"
+              }
+            },
+            {
+              "code": "invalid-json",
+              "message": "Expecting property name enclosed in double quotes: line 2 column 1 (char 2)",
+              "pointer": "",
+              "skill": "example/writing",
+              "source": {
+                "path": "plugins/example/skills/writing/evals/evals.json",
+                "sha256": "a6fb08fda1acb957b6116bd37811a1fe41a01611c0631edbf786d6889a27a55c"
+              }
+            }
+          ]
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "9194f55516aceacb3ad8feb11f37a87971f16ad7",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": false,
+        "skills": [
+          {
+            "diagnostics": [
+              {
+                "code": "invalid-json",
+                "message": "Expecting property name enclosed in double quotes: line 2 column 1 (char 2)",
+                "pointer": "",
+                "source": {
+                  "path": "plugins/example/skills/writing/evals/evals.json",
+                  "sha256": "a6fb08fda1acb957b6116bd37811a1fe41a01611c0631edbf786d6889a27a55c"
+                }
+              },
+              {
+                "code": "missing-cases",
+                "message": "No current cases have a supported owner."
+              }
+            ],
+            "reason": "selected inventory is unresolved",
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": [
+          {
+            "code": "unsupported-corpus",
+            "path": "plugins/example/skills/writing/evals/evals.json",
+            "side": "candidate"
+          }
+        ]
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "f4c20b5784f7d60cb921360a44165b25a7132808",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_affected_skills": [
+        "example/writing"
+      ],
+      "expected_diagnostic_code": "expectation-mapping-required",
+      "expected_reason": "landed descriptor is unresolved",
+      "expected_stage": "descriptor",
+      "landed_commit": "4faf9704ae5d49327e3d59380ae060e8abc1d73f",
+      "name": "unclassified-affected-corpus",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "4faf9704ae5d49327e3d59380ae060e8abc1d73f",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [
+            {
+              "code": "expectation-mapping-required",
+              "message": "Expectation mapping is missing or inconsistent with its source and reviewed semantic digest.",
+              "pointer": "/evals/0/expectations/0",
+              "source": {
+                "path": "plugins/example/skills/writing/evals/evals.json",
+                "sha256": "6ce0c7961f3444b9e29ec354ed451be0cd7f5e766b3ab169ce84976d4c9e0a6c"
+              }
+            }
+          ],
+          "reason": "landed descriptor is unresolved",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "descriptor",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "4faf9704ae5d49327e3d59380ae060e8abc1d73f",
+          "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [
+            {
+              "code": "expectation-mapping-required",
+              "message": "Expectation mapping is missing or inconsistent with its source and reviewed semantic digest.",
+              "pointer": "/evals/0/expectations/0",
+              "source": {
+                "path": "plugins/example/skills/writing/evals/evals.json",
+                "sha256": "6ce0c7961f3444b9e29ec354ed451be0cd7f5e766b3ab169ce84976d4c9e0a6c"
+              }
+            }
+          ],
+          "reason": "landed descriptor is unresolved",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "descriptor",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "4faf9704ae5d49327e3d59380ae060e8abc1d73f",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "4faf9704ae5d49327e3d59380ae060e8abc1d73f",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [
+              {
+                "code": "expectation-mapping-required",
+                "message": "Expectation mapping is missing or inconsistent with its source and reviewed semantic digest.",
+                "pointer": "/evals/0/expectations/0",
+                "source": {
+                  "path": "plugins/example/skills/writing/evals/evals.json",
+                  "sha256": "6ce0c7961f3444b9e29ec354ed451be0cd7f5e766b3ab169ce84976d4c9e0a6c"
+                }
+              }
+            ],
+            "reason": "selected inventory is unresolved",
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "93f4508782af20922898e8216c5634f4dd630a1f",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_reason": "invalid or duplicate-key JSON",
+      "expected_stage": "receipt-parse",
+      "landed_commit": "d05d07cf9bbd0df0353338b813d50c4269ca6779",
+      "name": "malformed-committed-receipt",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "d05d07cf9bbd0df0353338b813d50c4269ca6779",
+          "context_sha256": "ceee2f81908042016ee49b72298528b5afc98cba9c5b57eca0af7663762860a4",
+          "descriptor_diagnostics": [],
+          "reason": "invalid or duplicate-key JSON",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "receipt-parse",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "d05d07cf9bbd0df0353338b813d50c4269ca6779",
+          "context_sha256": "ceee2f81908042016ee49b72298528b5afc98cba9c5b57eca0af7663762860a4",
+          "descriptor_diagnostics": [],
+          "reason": "invalid or duplicate-key JSON",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "receipt-parse",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "d05d07cf9bbd0df0353338b813d50c4269ca6779",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "d05d07cf9bbd0df0353338b813d50c4269ca6779",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "invalid or duplicate-key JSON",
+            "receipt_raw_sha256": "a6fb08fda1acb957b6116bd37811a1fe41a01611c0631edbf786d6889a27a55c",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "98232c64fce9360c79f119cf6de8f670f69f1c44",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "a6fb08fda1acb957b6116bd37811a1fe41a01611c0631edbf786d6889a27a55c"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "92841c8ced6f573b6128b7b03aa3893ca0b9d5a2",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_reason": "receipt schema mismatch",
+      "expected_stage": "receipt-schema",
+      "landed_commit": "68f590d4914f2f9812b8be763b7a9e66f0a96779",
+      "name": "invalid-committed-receipt-shape",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "68f590d4914f2f9812b8be763b7a9e66f0a96779",
+          "context_sha256": "381e3e64f0afa3d4f578aac2596e34e61b195db3075265c2cda43bfe2838a209",
+          "descriptor_diagnostics": [],
+          "reason": "receipt schema mismatch",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "receipt-schema",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "68f590d4914f2f9812b8be763b7a9e66f0a96779",
+          "context_sha256": "381e3e64f0afa3d4f578aac2596e34e61b195db3075265c2cda43bfe2838a209",
+          "descriptor_diagnostics": [],
+          "reason": "receipt schema mismatch",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "receipt-schema",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "68f590d4914f2f9812b8be763b7a9e66f0a96779",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "68f590d4914f2f9812b8be763b7a9e66f0a96779",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "receipt schema mismatch",
+            "receipt_raw_sha256": "227ff229e95b1f927c7012a89e026eff474c778e7d4fad2f03bc7e1fa7f9bd3e",
+            "receipt_sha256": "820498990960600463c7450f363c913f6943d9547df4a9e87c469d80c2d1a8fa",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "4a12e83832e5ce522b4a9d5b6c444139a8bd408d",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "227ff229e95b1f927c7012a89e026eff474c778e7d4fad2f03bc7e1fa7f9bd3e"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "613f33cf99860893c86336b74f9ebb6864d59048",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
+      "expected_stage": "historical",
+      "landed_commit": "bdc27021ff5a344ff2dbda358598f1421c56ae19",
+      "name": "duplicate-repetition",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "bdc27021ff5a344ff2dbda358598f1421c56ae19",
+          "context_sha256": "e1a364b5ad2822b4f6b02e7e8ae24f3e1f1ea9c8c6f1970f91860e7e95228482",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "bdc27021ff5a344ff2dbda358598f1421c56ae19",
+          "context_sha256": "e1a364b5ad2822b4f6b02e7e8ae24f3e1f1ea9c8c6f1970f91860e7e95228482",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: run coverage must include each case at repetitions 1, 2, and 3 exactly once",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "bdc27021ff5a344ff2dbda358598f1421c56ae19",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "bdc27021ff5a344ff2dbda358598f1421c56ae19",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "7ae4025b8a26cbf6fe5dac6f58354231055b472dbd8c56cd787152c5ac622952",
+            "receipt_sha256": "7c0085bc0ec07a93de1180d9aef99f8d6f24dbd9182570c8faa12922583a557d",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "a529efa18ae2222727f30c63f6b065e68d6028a6",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "7ae4025b8a26cbf6fe5dac6f58354231055b472dbd8c56cd787152c5ac622952"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "7bf4968ebdd7e15b5144c84a91774c887f2b8eee",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_reason": "historical Receipt: expectation coverage differs from the corpus",
+      "expected_stage": "historical",
+      "landed_commit": "e2893b004dfb6824da00d61d3c6dcf448b5cd6ac",
+      "name": "missing-expectation",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "e2893b004dfb6824da00d61d3c6dcf448b5cd6ac",
+          "context_sha256": "8b568db4fb3ec9a142f44a3eebc92eeae4881471a60c02055b51420a7170f43a",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: expectation coverage differs from the corpus",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "e2893b004dfb6824da00d61d3c6dcf448b5cd6ac",
+          "context_sha256": "8b568db4fb3ec9a142f44a3eebc92eeae4881471a60c02055b51420a7170f43a",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: expectation coverage differs from the corpus",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "e2893b004dfb6824da00d61d3c6dcf448b5cd6ac",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "e2893b004dfb6824da00d61d3c6dcf448b5cd6ac",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "9e50a63a3059bbd9fcce3cef995ec3e9a76871440d720cd2ea94292bee09714b",
+            "receipt_sha256": "8148ea1226c0b68071aa9b7efc8177a396f40d1fd550f8e860dfa85ea5891305",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "27ceb712985939956dd5178c69eb9cdd6abb5e3f",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "9e50a63a3059bbd9fcce3cef995ec3e9a76871440d720cd2ea94292bee09714b"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "f42158d1fbd3d9621aa1649e75c1fb1dfacf108f",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_reason": "historical Receipt: grade severity or Boolean result differs from the corpus contract",
+      "expected_stage": "historical",
+      "landed_commit": "bdca7b9e1aea2220298eea26fe025b348789f5b5",
+      "name": "wrong-severity",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "bdca7b9e1aea2220298eea26fe025b348789f5b5",
+          "context_sha256": "216d19daa8d3750325693c21e7e27582f49e29fd708756e198c7a434a79b141c",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: grade severity or Boolean result differs from the corpus contract",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "bdca7b9e1aea2220298eea26fe025b348789f5b5",
+          "context_sha256": "216d19daa8d3750325693c21e7e27582f49e29fd708756e198c7a434a79b141c",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: grade severity or Boolean result differs from the corpus contract",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "bdca7b9e1aea2220298eea26fe025b348789f5b5",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "bdca7b9e1aea2220298eea26fe025b348789f5b5",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "6134cacf1b509d2fe0ce9dbf00e2bfd0b3fda018e6edafc6e110648cf1c2ae3f",
+            "receipt_sha256": "e60f4fe3e7dc0d94c7876786bd6949b5d8f796113d61348f9010caadfd567ee1",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "6c2b4c0f0de9b330ce8da6104ab109ffe95b3540",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "6134cacf1b509d2fe0ce9dbf00e2bfd0b3fda018e6edafc6e110648cf1c2ae3f"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "349919bfae663cd384bbdf2d2b9566557770bf3a",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "ef167c3a32860e7663eeef4ee2b7d3dbf7ecc724",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
       "landed_commit": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
       "name": "receipt-only-comparison",
       "observations": {
@@ -3111,6 +6258,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "original comparison was replaced",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "ancestry"
         },
@@ -3120,6 +6268,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "original comparison was replaced",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "correspondence"
         }
@@ -3217,6 +6366,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "candidate is not the actual landing event commit",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "ancestry"
         },
@@ -3226,6 +6376,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "candidate is not the actual landing event commit",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "correspondence"
         }
@@ -3323,6 +6474,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "unsupported landing operation",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "ancestry"
         },
@@ -3332,6 +6484,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "unsupported landing operation",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "correspondence"
         }
@@ -3430,9 +6583,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "evaluated source is not an ancestor of the landed commit",
           "selection_complete": true,
           "skills": [],
+          "stage": "ancestry",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -3444,6 +6599,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2dda42b9dfefc9228be1306ffc49448c3fa26ad7",
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -3476,6 +6632,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -3574,6 +6731,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "target moved; refresh required",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "ancestry"
         },
@@ -3583,6 +6741,7 @@
           "context_sha256": "57d48f97f2ce163a2b503588128aeacbdd12bdafb7987a755dc98dff28de93a0",
           "reason": "target moved; refresh required",
           "skills": [],
+          "stage": "context",
           "status": "fail",
           "strategy": "correspondence"
         }
@@ -3682,9 +6841,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2e63888dc48cf3763ecd508ae978c31c87dafde1",
           "context_sha256": "0dd8cb5863d34e5bf13bc62babd7468d6438e28c5b681e75943236da03e8049f",
+          "descriptor_diagnostics": [],
           "reason": "evaluated source is not an ancestor of the landed commit",
           "selection_complete": true,
           "skills": [],
+          "stage": "ancestry",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -3696,6 +6857,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "2e63888dc48cf3763ecd508ae978c31c87dafde1",
           "context_sha256": "0dd8cb5863d34e5bf13bc62babd7468d6438e28c5b681e75943236da03e8049f",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -3728,6 +6890,7 @@
               "stable_input_identity": "e9ab82f9b925e4733368374b8fca5e90ceb3f6c3926db7f428ea60c8006756bd"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -3832,6 +6995,7 @@
           "reason": "reviewed Receipt inventory differs from the full original comparison",
           "selection_complete": true,
           "skills": [],
+          "stage": "selection",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -3847,6 +7011,7 @@
           "reason": "reviewed Receipt inventory differs from the full original comparison",
           "selection_complete": true,
           "skills": [],
+          "stage": "selection",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -3966,9 +7131,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "245494fcebe40250bdf99d660a5e35c2e6d05454",
           "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "descriptor_diagnostics": [],
           "reason": "evaluated source is not an ancestor of the landed commit",
           "selection_complete": true,
           "skills": [],
+          "stage": "ancestry",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -3980,6 +7147,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "245494fcebe40250bdf99d660a5e35c2e6d05454",
           "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -4012,6 +7180,7 @@
               "stable_input_identity": "c6a0dcc51a77d37e3d9d8e1e7553ee2bec7dc0367cdb866cbfe8ef9d44c86e53"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -4111,6 +7280,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "6deaa40f85daadc8c1fdbe342667ee560645d6c9",
           "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "descriptor_diagnostics": [],
           "ordinary_landed_check": "pass",
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
@@ -4144,6 +7314,7 @@
               "stable_input_identity": "c6a0dcc51a77d37e3d9d8e1e7553ee2bec7dc0367cdb866cbfe8ef9d44c86e53"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "ancestry",
           "unsupported": []
@@ -4155,6 +7326,7 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "6deaa40f85daadc8c1fdbe342667ee560645d6c9",
           "context_sha256": "2bc4e39f392502cdb3cbde44eaf99c68f5051c97b2c63bfd54f7c0605f93416c",
+          "descriptor_diagnostics": [],
           "reason": "all selected Receipts match the actual landed inputs",
           "selection_complete": true,
           "skills": [
@@ -4187,6 +7359,7 @@
               "stable_input_identity": "c6a0dcc51a77d37e3d9d8e1e7553ee2bec7dc0367cdb866cbfe8ef9d44c86e53"
             }
           ],
+          "stage": "complete",
           "status": "pass",
           "strategy": "correspondence",
           "unsupported": []
@@ -4291,9 +7464,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "b1624aa7cc605013429371bdd2cc968d90d5207d",
           "context_sha256": "cfb5fc4632a6c6998b8c5c921db1c6f5579ff6a93842b375fdf7e51fbd98a518",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: stale processing identity",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "ancestry",
           "unsupported": []
@@ -4305,9 +7480,11 @@
           "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
           "candidate_revision": "b1624aa7cc605013429371bdd2cc968d90d5207d",
           "context_sha256": "cfb5fc4632a6c6998b8c5c921db1c6f5579ff6a93842b375fdf7e51fbd98a518",
+          "descriptor_diagnostics": [],
           "reason": "historical Receipt: stale processing identity",
           "selection_complete": true,
           "skills": [],
+          "stage": "historical",
           "status": "fail",
           "strategy": "correspondence",
           "unsupported": []
@@ -4389,6 +7566,627 @@
       },
       "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
       "reviewed_head": "dce1d7f686a4736ec0a7f484a4b80483b3d02d89",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "pass"
+      },
+      "landed_commit": "3a1aa0ee94cf3aea15182f11d4dccff56e2c6c8f",
+      "name": "changed-rubric-with-lineage",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "3a1aa0ee94cf3aea15182f11d4dccff56e2c6c8f",
+          "context_sha256": "8a144f8d3620eff3c7153eb6381b5789653d397e82984aaff8949ec6f61312a2",
+          "descriptor_diagnostics": [],
+          "reason": "evaluated source is not an ancestor of the landed commit",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "ancestry",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "3a1aa0ee94cf3aea15182f11d4dccff56e2c6c8f",
+          "context_sha256": "8a144f8d3620eff3c7153eb6381b5789653d397e82984aaff8949ec6f61312a2",
+          "descriptor_diagnostics": [],
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+                    "receipt_sha256": "55c2efa7eeb30248c679a7a78cdaa1f8a93e5432d345dab5ebb23affca03dec6",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+              "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+              "skill": "example/writing",
+              "source_is_ancestor": false,
+              "stable_input_identity": "8641ecbfde40ce6e98d0fa201e83780a2cc5255bc2dacc883eb7df1b8973a599"
+            }
+          ],
+          "stage": "complete",
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "3a1aa0ee94cf3aea15182f11d4dccff56e2c6c8f",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "3a1aa0ee94cf3aea15182f11d4dccff56e2c6c8f",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+            "receipt_sha256": "55c2efa7eeb30248c679a7a78cdaa1f8a93e5432d345dab5ebb23affca03dec6",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "9e8cbac1cc821bec331f1e1fd8ea3b52a7e0a02b",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "a4e68a2875dfed52e9c05ab1e97135ca2d067f0f",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+      "expected": {
+        "ancestry": "pass",
+        "correspondence": "pass"
+      },
+      "landed_commit": "57edfc06c96eb11f2d4a33c9b9afd855090eb267",
+      "name": "changed-rubric-with-lineage-merge",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "57edfc06c96eb11f2d4a33c9b9afd855090eb267",
+          "context_sha256": "8a144f8d3620eff3c7153eb6381b5789653d397e82984aaff8949ec6f61312a2",
+          "descriptor_diagnostics": [],
+          "ordinary_landed_check": "pass",
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+                    "receipt_sha256": "55c2efa7eeb30248c679a7a78cdaa1f8a93e5432d345dab5ebb23affca03dec6",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+              "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "8641ecbfde40ce6e98d0fa201e83780a2cc5255bc2dacc883eb7df1b8973a599"
+            }
+          ],
+          "stage": "complete",
+          "status": "pass",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "57edfc06c96eb11f2d4a33c9b9afd855090eb267",
+          "context_sha256": "8a144f8d3620eff3c7153eb6381b5789653d397e82984aaff8949ec6f61312a2",
+          "descriptor_diagnostics": [],
+          "reason": "all selected Receipts match the actual landed inputs",
+          "selection_complete": true,
+          "skills": [
+            {
+              "evaluated_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+              "failed_observations_retained": 2,
+              "historical_check": {
+                "candidate_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+                "coverage_basis": "caller-declared-complete",
+                "skills": [
+                  {
+                    "evaluated_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+                    "reason": "threshold satisfied",
+                    "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+                    "receipt_sha256": "55c2efa7eeb30248c679a7a78cdaa1f8a93e5432d345dab5ebb23affca03dec6",
+                    "skill": "example/writing",
+                    "status": "pass",
+                    "trigger_precision": {
+                      "correct": 2,
+                      "total": 2
+                    }
+                  }
+                ],
+                "status": "pass"
+              },
+              "processing_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+              "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+              "skill": "example/writing",
+              "source_is_ancestor": true,
+              "stable_input_identity": "8641ecbfde40ce6e98d0fa201e83780a2cc5255bc2dacc883eb7df1b8973a599"
+            }
+          ],
+          "stage": "complete",
+          "status": "pass",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "merge",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "57edfc06c96eb11f2d4a33c9b9afd855090eb267",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "57edfc06c96eb11f2d4a33c9b9afd855090eb267",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "evaluated_revision": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+            "reason": "threshold satisfied",
+            "receipt_raw_sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6",
+            "receipt_sha256": "55c2efa7eeb30248c679a7a78cdaa1f8a93e5432d345dab5ebb23affca03dec6",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "9e8cbac1cc821bec331f1e1fd8ea3b52a7e0a02b",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "f229ec8046c966de55d7a02c8a36a2823cbdc8d9548f5ab84d97840daa5d05a6"
+            },
+            "skill": "example/writing",
+            "status": "pass",
+            "trigger_precision": {
+              "correct": 2,
+              "total": 2
+            }
+          }
+        ],
+        "status": "pass",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "a4e68a2875dfed52e9c05ab1e97135ca2d067f0f",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_reason": "historical Receipt: changed rubric requires original grading and adjudication lineage",
+      "expected_stage": "historical",
+      "landed_commit": "9ee133e1933ad456dccf6be1c7e30c73a3bd327b",
+      "name": "changed-rubric-missing-prior-grading",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "9ee133e1933ad456dccf6be1c7e30c73a3bd327b",
+          "context_sha256": "3fddcb7fc26f4f3089243953ebc06afef6de3a3a65894dbec5de11457e126681",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: changed rubric requires original grading and adjudication lineage",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "9ee133e1933ad456dccf6be1c7e30c73a3bd327b",
+          "context_sha256": "3fddcb7fc26f4f3089243953ebc06afef6de3a3a65894dbec5de11457e126681",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: changed rubric requires original grading and adjudication lineage",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "9ee133e1933ad456dccf6be1c7e30c73a3bd327b",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "9ee133e1933ad456dccf6be1c7e30c73a3bd327b",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "c9c7a5ce97b34065da1591908588fe0ab0da5c1395f15a113db9f0072a118ede",
+            "receipt_sha256": "598d69ce68d4074f7ae3b8233caf1c39918367a3278bbaa4939aea9b5d1dc194",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "dfe802873632ac26d91164e239d8051f6bfb2396",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "c9c7a5ce97b34065da1591908588fe0ab0da5c1395f15a113db9f0072a118ede"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "5db42c895e119d39c4deffecf635152512a09849",
+      "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
+    },
+    {
+      "evaluated_source": "5c0dd6d4b2ab2443c58739332356a95ffa466c3e",
+      "expected": {
+        "ancestry": "fail",
+        "correspondence": "fail"
+      },
+      "expected_reason": "historical Receipt: changed rubric requires original grading and adjudication lineage",
+      "expected_stage": "historical",
+      "landed_commit": "e5a14944d9a3faeeaad463564e4564ffa57441c7",
+      "name": "changed-rubric-missing-adjudication",
+      "observations": {
+        "ancestry": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "e5a14944d9a3faeeaad463564e4564ffa57441c7",
+          "context_sha256": "cf2201a7cba1cb88d5efc31bcf5fbfba2e466a165c49357da3fe90650bc2edf0",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: changed rubric requires original grading and adjudication lineage",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "ancestry",
+          "unsupported": []
+        },
+        "correspondence": {
+          "affected_skills": [
+            "example/writing"
+          ],
+          "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+          "candidate_revision": "e5a14944d9a3faeeaad463564e4564ffa57441c7",
+          "context_sha256": "cf2201a7cba1cb88d5efc31bcf5fbfba2e466a165c49357da3fe90650bc2edf0",
+          "descriptor_diagnostics": [],
+          "reason": "historical Receipt: changed rubric requires original grading and adjudication lineage",
+          "selection_complete": true,
+          "skills": [],
+          "stage": "historical",
+          "status": "fail",
+          "strategy": "correspondence",
+          "unsupported": []
+        }
+      },
+      "operation": "squash",
+      "ordinary_adapter": {
+        "affected_skills": [
+          "example/writing"
+        ],
+        "base_revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+        "candidate_revision": "e5a14944d9a3faeeaad463564e4564ffa57441c7",
+        "causes": {
+          "example/writing": [
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "base"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/SKILL.md",
+              "side": "candidate"
+            },
+            {
+              "kind": "behavioral-input",
+              "path": "plugins/example/skills/writing/evals/evals.json",
+              "side": "candidate"
+            }
+          ]
+        },
+        "changed_paths": [
+          "plugins/example/skills/writing/SKILL.md",
+          "plugins/example/skills/writing/evals/evals.json",
+          "release/prototype-landing-context.json",
+          "release/receipts/example/writing.json"
+        ],
+        "coverage_basis": {
+          "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+          "freshness": "evaluated-source-to-containing-commit",
+          "selection": "committed-inventory-comparison"
+        },
+        "inventory_diagnostics": {
+          "base": [],
+          "candidate": []
+        },
+        "inventory_summary": {
+          "base": {
+            "document_count": 4,
+            "revision": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          },
+          "candidate": {
+            "document_count": 4,
+            "revision": "e5a14944d9a3faeeaad463564e4564ffa57441c7",
+            "roster_complete": true,
+            "skill_count": 2,
+            "unresolved_record_count": 0
+          }
+        },
+        "receipt_root": "release/receipts",
+        "schema_version": 1,
+        "selection_complete": true,
+        "skills": [
+          {
+            "diagnostics": [],
+            "reason": "Git source observation failed",
+            "receipt_raw_sha256": "9f23e6aeb268ca8600aa38570096bdcfac05e73ae35f32260f34f514acbb442f",
+            "receipt_sha256": "c13d50a5dba26c87a56f176a4fecb00cd8e9f6d38abcdc5d008aa28019da0124",
+            "receipt_source": {
+              "kind": "blob",
+              "mode": "100644",
+              "oid": "e1ab340f9033d65e0f1a46834d2c8638ec04ee4b",
+              "path": "release/receipts/example/writing.json",
+              "sha256": "9f23e6aeb268ca8600aa38570096bdcfac05e73ae35f32260f34f514acbb442f"
+            },
+            "skill": "example/writing",
+            "status": "fail"
+          }
+        ],
+        "status": "fail",
+        "unsupported": []
+      },
+      "original_base": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1",
+      "reviewed_head": "acdd132a55d35d8accf72854324533dd32e7aa2a",
       "target_before": "5671fbe50da1c0bcd3ba46bf7c845f85763430f1"
     }
   ],

@@ -28,7 +28,7 @@ def check(repo, inventory, *, context, event, base, candidate, strategy):
     core = inventory.core
     output = {"status": "fail", "strategy": strategy, "base_revision": base,
               "candidate_revision": candidate, "context_sha256": core.document_digest(context),
-              "skills": []}
+              "skills": [], "stage": "context"}
     try:
         core.require(strategy in ("correspondence", "ancestry"), "unsupported strategy")
         core.require(event["operation"] in ("squash", "rebase", "merge", "ff-only"),
@@ -48,6 +48,7 @@ def check(repo, inventory, *, context, event, base, candidate, strategy):
         committed = inventory.Source(repo, candidate)
         core.require(core.read_json(committed.read(CONTEXT)) == context,
                      "committed context differs from the independent reviewed handoff")
+        output["stage"] = "selection"
         comparison = inventory.compare(repo, base, candidate)
         output.update(affected_skills=comparison["affected_skills"],
                       selection_complete=comparison["selection_complete"], unsupported=comparison["unsupported"])
@@ -55,20 +56,27 @@ def check(repo, inventory, *, context, event, base, candidate, strategy):
         core.require(set(comparison["affected_skills"]) == set(context["receipts"]),
                      "reviewed Receipt inventory differs from the full original comparison")
         for key in comparison["affected_skills"]:
+            output["stage"] = "descriptor"
             described = inventory.descriptor(repo, candidate, key)
+            output["descriptor_diagnostics"] = described["diagnostics"]
             core.require(described["status"] == "ready", "landed descriptor is unresolved")
             spec = described["descriptor"]
             path = f"{ROOT}/{key}.json"
+            output["stage"] = "receipt-bytes"
             raw = committed.read(path)
             core.require(sha(raw) == context["receipts"][key]["raw_sha256"],
                          "committed Receipt differs from the reviewed bytes")
+            output["stage"] = "receipt-parse"
             receipt = core.read_json(raw)
+            output["stage"] = "receipt-schema"
             core.validate(receipt)
             source = receipt["candidate_revision"]
             processor = receipt.get("processing", {}).get("revision", source)
+            output["stage"] = "processing"
             processing = core.processing_snapshot(repo, processor, normalized=True)
             core.require(processing == context["receipts"][key]["processing"],
                          "processing identity differs from the reviewed contract")
+            output["stage"] = "historical"
             historical = core.check(repo, {
                 "schema_version": 1, "base_revision": source, "candidate_revision": source,
                 "skills": [spec], "changed_skills": [key], "inventory_complete": True}, {key: raw})
@@ -76,11 +84,13 @@ def check(repo, inventory, *, context, event, base, candidate, strategy):
                          "historical Receipt: " + historical["skills"][0]["reason"])
             # A proposed public closure-comparison API would replace this private
             # call before production adoption. No ancestry code is patched out.
+            output["stage"] = "correspondence"
             current = core._freeze(repo, candidate, spec,
                                    bind_processing=receipt.get("method") != "reconciled-after-run")
             core.require(receipt["snapshot"]["inputs"] == current["inputs"],
                          "landed input closure differs in paths, bytes, or Git modes")
             if strategy == "ancestry":
+                output["stage"] = "ancestry"
                 core.require(git(repo, "merge-base", "--is-ancestor", source, candidate, check=False) == 0,
                              "evaluated source is not an ancestor of the landed commit")
             output["skills"].append({
@@ -95,7 +105,7 @@ def check(repo, inventory, *, context, event, base, candidate, strategy):
             ordinary = inventory.check(repo, base, candidate, ROOT)
             core.require(ordinary["status"] == "pass", "ordinary landed adapter did not pass")
             output["ordinary_landed_check"] = ordinary["status"]
-        output.update(status="pass" if output["skills"] else "not-required",
+        output.update(status="pass" if output["skills"] else "not-required", stage="complete",
                       reason="all selected Receipts match the actual landed inputs")
     except (core.ReceiptError, inventory.InventoryError) as error:
         output["reason"] = str(error)

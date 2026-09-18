@@ -31,24 +31,36 @@ the published procedure at `0797623a3d8dfafb600f0cb1009e4f6d4538bb30`.
 The older writer processor `957550119aca20a31a26f4e5f9a3f09a2d6bd148` is a distinct
 dependency. These fixtures do not establish compatibility or migration for it.
 
-Run from this checkout, with Python, Git, and `jsonschema` available:
+Run from this checkout, with Python, Git, `jsonschema`, and network access to
+the public repository available:
 
 ```sh
-python docs/prototypes/receipt-landing-131/run.py
+python docs/prototypes/receipt-landing-131/run.py --fetch-processor
 ```
 
-All Git mutations occur in a newly created temporary directory. No source
+`--fetch-processor` fetches the retained public `refs/pull/116/head` from
+`https://github.com/nisavid/provingkit.git` into a newly initialized temporary
+repository. It verifies that `24c2d712a0be6a95958713ec80c7e06a89abdc6c` resolves to
+that full commit identity and is an ancestor of the fetched ref before loading
+any adapter files. The summary records the fetched head and verified processor.
+The prototype checkout neither needs nor receives that ref's objects. If the
+ref is unavailable or no longer contains P24, acquisition fails; restore an
+owner-approved retained source before rerunning. It never substitutes another
+processor. An offline rerun may omit the flag only when the checkout already
+contains the verified P24 commit.
+
+All Git mutations occur in newly created temporary directories. No source
 branch, installed projection, hosted check, or shared owner checkout is changed.
 The harness prints the artifact directory so its actual commits can be inspected.
 
 To regenerate the committed measurement and its standalone replay:
 
 ```sh
-python docs/prototypes/receipt-landing-131/run.py --output docs/prototypes/receipt-landing-131/results.json
+python docs/prototypes/receipt-landing-131/run.py --fetch-processor --output docs/prototypes/receipt-landing-131/results.json
 python docs/prototypes/receipt-landing-131/build_demo.py
 ```
 
-Open [the replay](index.html) to explore individual observations or the four
+Open [the replay](index.html) to explore individual observations or the five
 walkthroughs. It embeds measured results and never invents a verdict for a new
 combination. Its navigation is an in-memory model; the Git comparison lives in
 Python. The HTML shell and consumer are both prototype code, kept off `main`.
@@ -77,6 +89,17 @@ processing changes; incomplete cases, repetitions, or triggers; incorrect
 snapshots; threshold failures; wrong source or skill; rewritten Receipt bytes;
 unsupported event operations; and a wrong final commit all fail.
 
+Added and deleted declared dependencies have separate cases. Ownership transfer
+selects both the former and new consumer. Removed skills remain unsupported
+required coverage. Malformed corpora fail selection; valid corpora with unresolved
+expectation classifications fail descriptor resolution. Malformed committed
+Receipts fail parsing or schema validation. Duplicate repetitions, missing
+expectations, and wrong severity fail historical validation. These cases assert
+the exact rejection reason and stage, plus affected consumers or diagnostic
+codes where relevant. Selected negative fixtures bind the intentionally invalid
+Receipt bytes in their constructed handoff so an earlier digest mismatch cannot
+masquerade as evidence of parsing, coverage, or lineage validation.
+
 The constructed corpus has two cases, three repetitions per case, and two
 triggers. Each case retains one failed quality observation and passes quality
 at two of three; safety remains three of three. Removing a case or a repetition
@@ -85,7 +108,19 @@ unchanged policy. Reconciled fixtures retain original records, use distinct
 evaluated and processing commits, and reject an altered processing identity.
 No historical measurement from another owner is imported as a new run.
 
-The full [measurement](results.json) contains 32 landing/check scenarios, four
+The changed-rubric fixtures retain six constructed original execution records at
+the original source revision. Their original grading contains four failed quality
+observations. A separate constructed regrading record applies the revised rubric
+to those same six responses, retains two current failed observations, and carries
+six references to original grading plus six adjudication references. The source
+with the revised rubric has a different commit identity; original execution,
+corpus, response, delivered-input, and configured model evidence remain bound to
+the originals. No application is executed again. Squash and merge pass with the
+complete lineage. Removing either prior grading or adjudication from the landed
+Receipt fails specifically at the changed-rubric lineage check. The measurement
+includes both constructed raw records and the public Receipt for inspection.
+
+The full [measurement](results.json) contains 47 landing/check scenarios, four
 fresh-clone observations, a genuine Receipt-only comparison, and the divergent
 fast-forward refusal. It records concrete commits, adapter results, expected
 outcomes, processing file hashes, prototype Python file hashes, and the retained
@@ -152,11 +187,10 @@ cross-version processor migration are outside the supported prototype inputs.
 
 ## Decision and procedure capture
 
-The reaction requested in #131 is whether the extra correspondence and retention
-machinery is an acceptable direction to bring to #132, or whether to pursue
-ancestry-preserving landing instead. It is not adoption or authorization to migrate
-existing work. Independent review and Ivan's actual response are still required
-before this question can close.
+I [accepted taking correspondence and retention into #132](https://github.com/nisavid/provingkit/issues/131#issuecomment-5733715226).
+That prototype reaction does not adopt the strategy or authorize migration.
+Closing #131 requires independent review of the final candidate and coordination
+review of that evidence and the recorded response.
 
 If #132 selects correspondence, the proposed maintained source is the existing
 ordinary Receipt contract and adapter owned by #33: the public closure interface,

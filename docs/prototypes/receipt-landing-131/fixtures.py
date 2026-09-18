@@ -9,6 +9,8 @@ import subprocess
 import sys
 
 PROCESSOR = "24c2d712a0be6a95958713ec80c7e06a89abdc6c"
+PROCESSOR_REMOTE = "https://github.com/nisavid/provingkit.git"
+PROCESSOR_REF = "refs/pull/116/head"
 PROCESSING = (
     "scripts/behavior_eval_receipts.py",
     "scripts/behavior_eval_corpora.py",
@@ -63,6 +65,7 @@ def commit(repo, message):
 
 
 def load_adapter(source, destination):
+    assert git(source, "rev-parse", "--verify", PROCESSOR + "^{commit}") == PROCESSOR
     identities = {}
     for path in PROCESSING:
         raw = subprocess.check_output(["git", "show", f"{PROCESSOR}:{path}"], cwd=source)
@@ -74,6 +77,18 @@ def load_adapter(source, destination):
     sys.path.insert(0, str(destination / "scripts"))
     inventory = importlib.import_module("behavior_eval_inventory")
     return inventory, identities
+
+
+def fetch_processor(destination):
+    """Acquire the named public dependency in an independent disposable store."""
+    destination.mkdir()
+    git(destination, "init", "-q")
+    git(destination, "fetch", "-q", "--no-tags", PROCESSOR_REMOTE, PROCESSOR_REF)
+    assert git(destination, "rev-parse", "--verify", PROCESSOR + "^{commit}") == PROCESSOR
+    git(destination, "merge-base", "--is-ancestor", PROCESSOR, "FETCH_HEAD")
+    return {"remote": PROCESSOR_REMOTE, "ref": PROCESSOR_REF,
+            "fetched_head": git(destination, "rev-parse", "FETCH_HEAD"),
+            "verified_processor": PROCESSOR}
 
 
 def create_repo(repo, adapter):
@@ -141,25 +156,49 @@ def prepared_receipt(repo, source, inventory, private):
     return inventory.core.produce(repo, snapshot, private / "results.json")
 
 
-def reconciled_receipt(repo, source, processor, inventory, private):
+def reconciled_receipt(repo, source, processor, inventory, private, *, original_source=None):
     """Construct retained records, then invoke the unchanged reconciliation API."""
-    cases = json.loads((repo / CORPUS).read_bytes())["evals"]
-    queries = json.loads((repo / TRIGGERS).read_bytes())
-    runs = [{"revision": source, "corpus": sha((repo / CORPUS).read_bytes()),
+    original_source = original_source or source
+    original_corpus = inventory.core.source_bytes(repo, original_source, CORPUS)
+    cases = json.loads(original_corpus)["evals"]
+    current_cases = json.loads(inventory.core.source_bytes(repo, source, CORPUS))["evals"]
+    queries = json.loads(inventory.core.source_bytes(repo, original_source, TRIGGERS))
+    runtime = inventory.core.source_bytes(repo, original_source, ENTRY).decode()
+    guidance = inventory.core.source_bytes(repo, original_source, REFERENCE).decode()
+    changed_rubric = original_source != source
+    runs = [{"revision": original_source, "corpus": sha(original_corpus),
              "native_agent": f"constructed-{case['id']}-{rep}", "case_id": case["id"],
-             "repetition": rep, "prompt": case["prompt"], "runtime": (repo / ENTRY).read_text(),
-             "guidance": (repo / REFERENCE).read_text(), "response": "Constructed retained answer.",
+             "repetition": rep, "prompt": case["prompt"], "runtime": runtime,
+             "guidance": guidance, "response": "Constructed retained answer.",
              "executor": "constructed-executor", "grader": "constructed-grader",
              "rubric": case["expectations"], "grades": [
-                 {"id": "keep", "passed": rep != 3}, {"id": "safe", "passed": True}]}
+                 {"id": "keep", "passed": rep != 3 and (not changed_rubric or rep != 1)},
+                 {"id": "safe", "passed": True}]}
             for case in cases for rep in (1, 2, 3)]
     original = {"runs": runs, "triggers": [{"query": row["query"], "triggered": row["should_trigger"],
-                "entrypoint": (repo / ENTRY).read_text(), "model": "constructed-executor"} for row in queries]}
+                "entrypoint": runtime, "model": "constructed-executor"} for row in queries]}
     raw = encoded(original)
     write(private, "original.json", raw)
 
     def ref(pointer):
         return {"path": "original.json", "sha256": sha(raw), "format": "json", "pointer": pointer}
+
+    if changed_rubric:
+        # These are new constructed grading decisions about the SAME retained
+        # responses, not new application executions or real model observations.
+        regrading = {"scope": "constructed regrading; no new execution", "runs": [
+            {"rubric": current_cases[run["case_id"]]["expectations"],
+             "grades": [{"id": "keep", "passed": run["repetition"] != 3}, {"id": "safe", "passed": True}],
+             "adjudication": {"decision": "retain execution and apply the changed rubric",
+                 "reason": "Constructed criterion permits paraphrases; preserve the original failed grade.",
+                 "original_grading": ref(f"/runs/{index}/grades"),
+                 "original_rubric": ref(f"/runs/{index}/rubric")}}
+            for index, run in enumerate(runs)]}
+        regrading_raw = encoded(regrading)
+        write(private, "regrading.json", regrading_raw)
+
+        def current_ref(pointer):
+            return {"path": "regrading.json", "sha256": sha(regrading_raw), "format": "json", "pointer": pointer}
 
     declarations = []
     for index, run in enumerate(runs):
@@ -178,6 +217,11 @@ def reconciled_receipt(repo, source, processor, inventory, private):
             "graded_response": {"representation": "utf8", "value": ref(prefix + "/response")},
             "rubric": {"representation": "expectations", "value": ref(prefix + "/rubric")},
             "previous_grading": [], "adjudication": None})
+        if changed_rubric:
+            declarations[-1].update(
+                grading_record=current_ref(prefix + "/grades"), grades=current_ref(prefix + "/grades"),
+                rubric={"representation": "expectations", "value": current_ref(prefix + "/rubric")},
+                previous_grading=[ref(prefix + "/grades")], adjudication=current_ref(prefix + "/adjudication"))
     triggers = [{"case_id": {"source": TRIGGERS, "pointer": f"/{index}", "id": None},
                  "observation_kind": "recorded-invocation", "record": ref(f"/triggers/{index}"),
                  "model": {"basis": "configured", "value": ref(f"/triggers/{index}/model")},
