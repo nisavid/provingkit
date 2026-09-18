@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Give this finished incident update a final pass against the attached log. Keep the facts and the two headings; catch any boilerplate or claims the log cannot support.",
+    "should_trigger": true
+  },
+  {
+    "query": "These three replies are ready to send, but they sound like copies of each other. Tighten them without changing what I did or promised.",
+    "should_trigger": true
+  },
+  {
+    "query": "Check the last draft of this guide before publication. Keep the numbered procedure and the quoted examples as written, and compare the prose with the supplied notes.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you proofread this complete customer update for unsupported certainty and awkward stock phrases? The approved facts are below.",
+    "should_trigger": true
+  },
+  {
+    "query": "This final reply may already be fine. Check it against the short brief and leave it unchanged if there is nothing to fix.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a new incident update from these log notes. We have no draft yet; make it suitable for support.",
+    "should_trigger": false
+  },
+  {
+    "query": "Outline a guide for retries, including sections on limits, timing, and errors. We will write the prose later.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this Python patch for an off-by-one error in the retry counter. The docstring uses the phrase final draft, but I need a code review.",
+    "should_trigger": false
+  },
+  {
+    "query": "The finished reply is approved. Post these exact bytes in the issue without editing them.",
+    "should_trigger": false
+  },
+  {
+    "query": "Translate this short approved update into French. Keep its meaning; I am not asking for an editing or fact-check pass.",
+    "should_trigger": false
+  },
+  {
+    "query": "Only replace retry_count with retry_limit in this document. Do not revise or assess the prose.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain why a canned closing sentence can weaken a reply. Give two examples; there is no draft to edit.",
+    "should_trigger": false
+  }
+]

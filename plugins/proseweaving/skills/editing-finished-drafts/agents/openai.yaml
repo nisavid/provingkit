@@ -1,0 +1,4 @@
+interface:
+  display_name: "Editing Finished Drafts"
+  short_description: "Check and repair a finished draft against its evidence."
+  default_prompt: "Use $proseweaving:editing-finished-drafts to check this finished draft or batch against its evidence and intended recipient, repair prose tells and unsupported claims, and preserve its purpose, useful wording, and required form."
