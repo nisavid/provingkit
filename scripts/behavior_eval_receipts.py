@@ -1434,6 +1434,15 @@ def _correspondence_revision(repository, value, field):
                                   f"{field} commit is unavailable: {value}") from error
 
 
+def _correspondence_validate(value, definition=None):
+    try:
+        validate(value, definition)
+    except ReceiptError as error:
+        if isinstance(error.__cause__, ImportError):
+            raise CorrespondenceError("error", "historical-runtime-unavailable", "validation", str(error)) from error
+        raise
+
+
 def _validate_correspondence_binding(repository, binding):
     required = {"path", "raw_sha256", "mode", "evaluated_revision", "method",
                 "profile", "processing", "producer_procedure_revision"}
@@ -1459,7 +1468,9 @@ def _validate_correspondence_binding(repository, binding):
             "Prepared Receipt requires a null processing binding")
     else:
         try:
-            validate(processing, "processing")
+            _correspondence_validate(processing, "processing")
+        except CorrespondenceError:
+            raise
         except ReceiptError as error:
             raise CorrespondenceError("error", "request-malformed", "request",
                                       "Processing binding is malformed") from error
@@ -1536,7 +1547,7 @@ def _read_bound_receipt(repository, receipt_bytes, binding, result):
     result.update(stage="receipt", reason_code="receipt-malformed")
     receipt = read_json(receipt_bytes)
     result["receipt_sha256"] = document_digest(receipt)
-    validate(receipt)
+    _correspondence_validate(receipt)
     method, profile = binding["method"], binding["profile"]
     expected_method = "prepared-before-run" if method == "prepared" else "reconciled-after-run"
     _correspondence_require(receipt.get("method", "prepared-before-run") == expected_method
@@ -1580,7 +1591,9 @@ def check_correspondence(repository, *, candidate_revision, descriptor, receipt_
         _correspondence_require(isinstance(receipt_bytes, bytes), "request-malformed", "request",
                                 "Receipt bytes are required", status="error")
         try:
-            validate(descriptor, "skill")
+            _correspondence_validate(descriptor, "skill")
+        except CorrespondenceError:
+            raise
         except ReceiptError as error:
             raise CorrespondenceError("error", "request-malformed", "request", str(error)) from error
         receipt, commit, files, manifest = _read_bound_receipt(repository, receipt_bytes, binding, result)

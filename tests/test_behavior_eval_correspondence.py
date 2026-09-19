@@ -257,3 +257,16 @@ class ProfileCorrespondenceTests(unittest.TestCase):
                     "check-landed", "--context", str(cpath), "--landing", str(lpath)], capture_output=True, text=True)
                 self.assertEqual(process.returncode, code, process.stdout + process.stderr)
                 self.assertEqual(json.loads(process.stdout)["status"], status)
+
+    def test_cli_reports_missing_validation_dependency_as_unavailable_machinery(self):
+        case, context, landing = self.landed_fixture()
+        script = Path(__file__).resolve().parents[1] / "scripts/behavior_eval_inventory.py"
+        cpath, lpath = case.private / "context.json", case.private / "landing.json"
+        cpath.write_text(json.dumps(context))
+        lpath.write_text(json.dumps(landing))
+        process = subprocess.run([sys.executable, "-S", str(script), "--repository", str(case.repo),
+            "check-landed", "--context", str(cpath), "--landing", str(lpath)], capture_output=True, text=True)
+        self.assertEqual(process.returncode, 2, process.stdout + process.stderr)
+        result = json.loads(process.stdout)
+        self.assertEqual((result["status"], result["reason_code"]),
+                         ("error", "historical-runtime-unavailable"))
