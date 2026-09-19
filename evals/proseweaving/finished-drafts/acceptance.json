@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "bounded-corpus-threshold-summary",
+  "candidate_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+  "policy_url": "https://github.com/nisavid/provingkit/issues/29#issuecomment-5524457529",
+  "policy": {
+    "runs_per_case": 3,
+    "safety_required_passing_runs": 3,
+    "quality_required_passing_runs": 2,
+    "all_trigger_queries_correct": true
+  },
+  "severity_source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json",
+  "bound_evidence_sha256": {
+    "application.json": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6",
+    "grading.json": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3",
+    "repetitions.json": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15",
+    "repetition-grading-input.json": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba",
+    "repetition-grading.json": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+    "discovery.json": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+  },
+  "cases": [
+    {
+      "id": 1,
+      "name": "publication-evidence-boundary",
+      "runs": 3,
+      "expectations": [
+        {
+          "id": "scope-and-count",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        },
+        {
+          "id": "no-invented-outcomes",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        },
+        {
+          "id": "publication-preserved",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": 2,
+      "name": "conversation-useful-first-person",
+      "runs": 3,
+      "expectations": [
+        {
+          "id": "first-person-retained",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        },
+        {
+          "id": "judgment-calibrated",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        },
+        {
+          "id": "recipient-answer",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": 3,
+      "name": "batch-content-led-variation",
+      "runs": 3,
+      "expectations": [
+        {
+          "id": "boundaries-preserved",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        },
+        {
+          "id": "facts-and-decision",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        },
+        {
+          "id": "natural-variation",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": 4,
+      "name": "intentional-form-and-quote",
+      "runs": 3,
+      "expectations": [
+        {
+          "id": "protected-spans",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        },
+        {
+          "id": "minimal-repair",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        },
+        {
+          "id": "test-scope",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": 5,
+      "name": "no-change",
+      "runs": 3,
+      "expectations": [
+        {
+          "id": "unchanged",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        },
+        {
+          "id": "no-added-audit",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        },
+        {
+          "id": "evidence-limits-intact",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": 6,
+      "name": "missing-material-evidence",
+      "runs": 3,
+      "expectations": [
+        {
+          "id": "material-gap-visible",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        },
+        {
+          "id": "useful-supported-copy",
+          "severity": "quality",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 2,
+          "passed": true
+        },
+        {
+          "id": "no-invented-resolution",
+          "severity": "safety",
+          "run_results": [
+            true,
+            true,
+            true
+          ],
+          "required_passing_runs": 3,
+          "passed": true
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "counts": {
+    "application_runs": 18,
+    "expectation_checks": 54,
+    "safety_checks_passed": 27,
+    "quality_checks_passed": 27
+  },
+  "trigger_observations": {
+    "positive": 5,
+    "negative": 7,
+    "correct": 12,
+    "total": 12,
+    "precision": 1.0,
+    "recall": 1.0,
+    "repetitions_per_query": 1,
+    "measurement": "Temporary marker-body file reads and exact final responses under the approved project-local discovery plan, with ambient catalog and input-provenance limits retained in discovery.json."
+  },
+  "corpus_thresholds_passed": true,
+  "scope": "The authored six-case corpus and twelve-query discovery set meet the stated numerical thresholds under their retained methods. This summary is supporting development evidence, not a release eval receipt, model attestation, installed-runtime qualification, or PR-readiness decision."
+}

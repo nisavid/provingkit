@@ -1,0 +1,1 @@
+I reproduced the export failure locally after a connection reset, but support shouldn’t tell customers it’s fixed yet. From reading the patch, I think it addresses this path; I haven’t run it or checked deployment.

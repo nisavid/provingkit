@@ -1,0 +1,3801 @@
+{
+  "attestation": null,
+  "candidate_revision": "070f832479b2eda2c6ce5ed07e79fa5302518558",
+  "executor_model_id": "gpt-6-astra",
+  "grader_model_id": "gpt-6-astra",
+  "kind": "evaluation",
+  "method": "reconciled-after-run",
+  "private_evidence": {
+    "manifest_sha256": "18ae330d7ae2a0e9bbb24de26d1b4cdd02c14d1650ccb0afa939f8352a616773"
+  },
+  "processing": {
+    "inputs": {
+      "release/behavior-eval-policy.json": {
+        "mode": "100644",
+        "sha256": "38ffc0e27fd236d9e47e9cac46f4d8bd38ad662e32e48b4f8f0e5f6cd353fc62"
+      },
+      "release/behavior-eval-receipt-v1.schema.json": {
+        "mode": "100644",
+        "sha256": "59775e83b849017064a948388d3106c34cefdc36ccca2ec51bd5cee05e8f79e8"
+      },
+      "scripts/behavior_eval_corpora.py": {
+        "mode": "100644",
+        "sha256": "e0de12694e9312e3886c0ac3b1370d61bcade4b5e624b6b75ad486023be01bec"
+      },
+      "scripts/behavior_eval_inventory.py": {
+        "mode": "100644",
+        "sha256": "4a9dccbd378089ae1aceee9dff79fc9d949ba7ae587e0654113227a91846a5f4"
+      },
+      "scripts/behavior_eval_receipts.py": {
+        "mode": "100644",
+        "sha256": "b3c833325dfc832880fb53cb41a7428cf35814414e676913b0d9b8d7e04c6835"
+      }
+    },
+    "revision": "24c2d712a0be6a95958713ec80c7e06a89abdc6c"
+  },
+  "reconciliation": {
+    "runtime_inputs": [
+      "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md"
+    ],
+    "runtime_inputs_complete": true
+  },
+  "runs": [
+    {
+      "case_id": {
+        "id": 1,
+        "pointer": "/evals/0",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "8f052afeb834c970a6fc3984d91fb75c27bdfe14028e8b8810602d85cd1beada",
+      "expectations": [
+        {
+          "id": "scope-and-count",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "no-invented-outcomes",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "publication-preserved",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/0",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/producer_revision",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/0/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/0/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "8f052afeb834c970a6fc3984d91fb75c27bdfe14028e8b8810602d85cd1beada"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/0/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/6/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/response",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/expectations",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "5988f936a4645b03ad2f10a6fba9aa2008053a610070fa15cd30373a207cd369"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/0",
+          "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/publication-evidence-boundary.md": "38ec665f959ce2be89fa8953d2b7aacc1745e664f9b2b459e3128f81712ccf2c",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "1be556da9321b8e5a4a50597ce6190ad79e81eec0a89738a6b8a17cbfc7616a2",
+        "original_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2",
+        "previous_grading": [],
+        "prompt_sha256": "70e0d07e58f252c6b5ebba823298b3c976220e2acbee6fc0f4ecd72205fbf778"
+      },
+      "repetition": 1
+    },
+    {
+      "case_id": {
+        "id": 1,
+        "pointer": "/evals/0",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "6a8966c0c21bab50c73e5ff1f2f0ecd8989ef070c7dac0db8817ee0fdfde438e",
+      "expectations": [
+        {
+          "id": "scope-and-count",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "no-invented-outcomes",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "publication-preserved",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/1",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/1/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/0/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/0/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "6a8966c0c21bab50c73e5ff1f2f0ecd8989ef070c7dac0db8817ee0fdfde438e"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/7/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/9",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/9/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/9/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/9/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/9/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "cd62457d6ce37bd5439ea0eff96315f95b81d1f8d6cbdb9abbfcd62975972fa1"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/1",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/publication-evidence-boundary.md": "38ec665f959ce2be89fa8953d2b7aacc1745e664f9b2b459e3128f81712ccf2c",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "1be556da9321b8e5a4a50597ce6190ad79e81eec0a89738a6b8a17cbfc7616a2",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "70e0d07e58f252c6b5ebba823298b3c976220e2acbee6fc0f4ecd72205fbf778"
+      },
+      "repetition": 2
+    },
+    {
+      "case_id": {
+        "id": 1,
+        "pointer": "/evals/0",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "7fba15d74ca82562d813dce49b3bd91d5b42b38a8384ac7b206b3b71627e633a",
+      "expectations": [
+        {
+          "id": "scope-and-count",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "no-invented-outcomes",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "publication-preserved",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/2",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/2/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/0/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/0/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "7fba15d74ca82562d813dce49b3bd91d5b42b38a8384ac7b206b3b71627e633a"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/8/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "6e8b1c01aa5d41a3516679d907c9dc2a359f24c728cd0def8084b3d0cf21be0e"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/2",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/publication-evidence-boundary.md": "38ec665f959ce2be89fa8953d2b7aacc1745e664f9b2b459e3128f81712ccf2c",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "1be556da9321b8e5a4a50597ce6190ad79e81eec0a89738a6b8a17cbfc7616a2",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "70e0d07e58f252c6b5ebba823298b3c976220e2acbee6fc0f4ecd72205fbf778"
+      },
+      "repetition": 3
+    },
+    {
+      "case_id": {
+        "id": 2,
+        "pointer": "/evals/1",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "bae6e3a05f4cfe8b59f80fce497ce03e95752589bd8a0f4e183f991245c42d62",
+      "expectations": [
+        {
+          "id": "first-person-retained",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "judgment-calibrated",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "recipient-answer",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/1",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/producer_revision",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/1/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/1/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "bae6e3a05f4cfe8b59f80fce497ce03e95752589bd8a0f4e183f991245c42d62"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/1/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/6/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/response",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/5/expectations",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "0b1e4a9784630c4077ba6ca57b2e505308504ec5a70fa6af19594c6da3563a99"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/1",
+          "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/conversation-useful-first-person.md": "02787d38327399d5482ab3c9179406a56012ffb42c26e2215b6854ffcc7e759e",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "a45168bf1b9b8dd68aff4c147559786df2aa68c91ec1375e0383ff9bdae6346f",
+        "original_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2",
+        "previous_grading": [],
+        "prompt_sha256": "544bf69773571d216908da903aa9ad053b68573dab5c36078decce94b80b9a6a"
+      },
+      "repetition": 1
+    },
+    {
+      "case_id": {
+        "id": 2,
+        "pointer": "/evals/1",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "7c131715b87eb633adb0e2a6ebe852eee598825652a24661ed689c3889f70741",
+      "expectations": [
+        {
+          "id": "first-person-retained",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "judgment-calibrated",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "recipient-answer",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/4",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/4/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/1/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/1/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "7c131715b87eb633adb0e2a6ebe852eee598825652a24661ed689c3889f70741"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/9/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "f48fd015944e22efafcc8e1c62e2bce88e2e0145e19402b4abd11062e457822a"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/4",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/conversation-useful-first-person.md": "02787d38327399d5482ab3c9179406a56012ffb42c26e2215b6854ffcc7e759e",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "a45168bf1b9b8dd68aff4c147559786df2aa68c91ec1375e0383ff9bdae6346f",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "544bf69773571d216908da903aa9ad053b68573dab5c36078decce94b80b9a6a"
+      },
+      "repetition": 2
+    },
+    {
+      "case_id": {
+        "id": 2,
+        "pointer": "/evals/1",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "d5c6e8d2afb0705321d8d170b50ae04ad8c3b69ad8be861c134d48329e1d34b2",
+      "expectations": [
+        {
+          "id": "first-person-retained",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "judgment-calibrated",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "recipient-answer",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/5",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/5/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/1/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/1/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "d5c6e8d2afb0705321d8d170b50ae04ad8c3b69ad8be861c134d48329e1d34b2"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/10/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "5b02e1c84287d930789049fcebc04d60afb481a6779e30822a53f163a0c33666"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/5",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/conversation-useful-first-person.md": "02787d38327399d5482ab3c9179406a56012ffb42c26e2215b6854ffcc7e759e",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "a45168bf1b9b8dd68aff4c147559786df2aa68c91ec1375e0383ff9bdae6346f",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "544bf69773571d216908da903aa9ad053b68573dab5c36078decce94b80b9a6a"
+      },
+      "repetition": 3
+    },
+    {
+      "case_id": {
+        "id": 3,
+        "pointer": "/evals/2",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "41a4ca0145854da670ad04c06076cf2dc69516b9ff3293f1d2222c98d6552871",
+      "expectations": [
+        {
+          "id": "boundaries-preserved",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "facts-and-decision",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "natural-variation",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/2",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/producer_revision",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/2/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/2/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "41a4ca0145854da670ad04c06076cf2dc69516b9ff3293f1d2222c98d6552871"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/2/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/6/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/response",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/0/expectations",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "accdc9c55284bee3e2c38f172f97b2f1c8aa2c80b7dde0dc2b0746adb264cbc4"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/2",
+          "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/batch-content-led-variation.md": "148157c08e6fb710a6fc9c9a581338b5edd3927c41412a48d5b8c032541f8888",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "9d7829593c8d9db3cadd4109fbe3cd00af41902cd3c15521d3a0680e20aa8e0a",
+        "original_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2",
+        "previous_grading": [],
+        "prompt_sha256": "d3425473db75d10c815f2673248fcb4ff18e399998199ba14e2815dd003938fb"
+      },
+      "repetition": 1
+    },
+    {
+      "case_id": {
+        "id": 3,
+        "pointer": "/evals/2",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "bfb72879d2529676f6e45f1f127a01030da050099c57522ba9220bbabf5513ca",
+      "expectations": [
+        {
+          "id": "boundaries-preserved",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "facts-and-decision",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "natural-variation",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/7",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/7/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/2/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/2/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "bfb72879d2529676f6e45f1f127a01030da050099c57522ba9220bbabf5513ca"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/11/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/11",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/11/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/11/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/11/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/11/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "9b4444d56b31c6e41a107aaf9b186bd61e6f860e566b194d6dd7f056ffc752e6"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/7",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/batch-content-led-variation.md": "148157c08e6fb710a6fc9c9a581338b5edd3927c41412a48d5b8c032541f8888",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "9d7829593c8d9db3cadd4109fbe3cd00af41902cd3c15521d3a0680e20aa8e0a",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "d3425473db75d10c815f2673248fcb4ff18e399998199ba14e2815dd003938fb"
+      },
+      "repetition": 2
+    },
+    {
+      "case_id": {
+        "id": 3,
+        "pointer": "/evals/2",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "7d59d10d725ee97dbb81394b9386186870e921d554ea5b6dff7a391381290d9f",
+      "expectations": [
+        {
+          "id": "boundaries-preserved",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "facts-and-decision",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "natural-variation",
+          "passed": true,
+          "severity": "quality"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/8",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/8/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/2/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/2/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "7d59d10d725ee97dbb81394b9386186870e921d554ea5b6dff7a391381290d9f"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/12/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "1932864ee5f02c23618f98eb1a930c00e3e835ddd9d2bfb19257b950a47b428a"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/8",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/batch-content-led-variation.md": "148157c08e6fb710a6fc9c9a581338b5edd3927c41412a48d5b8c032541f8888",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "9d7829593c8d9db3cadd4109fbe3cd00af41902cd3c15521d3a0680e20aa8e0a",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "d3425473db75d10c815f2673248fcb4ff18e399998199ba14e2815dd003938fb"
+      },
+      "repetition": 3
+    },
+    {
+      "case_id": {
+        "id": 4,
+        "pointer": "/evals/3",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "9ece20c716873e54c6f6d116f48f02e16a0d75e4c736887df7f81b9829b1992e",
+      "expectations": [
+        {
+          "id": "protected-spans",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "minimal-repair",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "test-scope",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/3",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/producer_revision",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/3/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/3/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "9ece20c716873e54c6f6d116f48f02e16a0d75e4c736887df7f81b9829b1992e"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/3/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/6/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/response",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/4/expectations",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "f73da2bbe2655a501071524dc52b74a42cc030e0667ea87baf6c1d3aaab32a74"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/3",
+          "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/intentional-form-and-quote.md": "04b07f1356ca897d8ededc8917a758934cf2bc13c0f3f0f6107e6a18dd666f73",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "bbbfb9a09dac576cd2ad11ec63b0eb25f4cbdfc7307b953bb7f7121a398b6193",
+        "original_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2",
+        "previous_grading": [],
+        "prompt_sha256": "7ff1933f36682cded913d5f51ded3fb0c1182ebc38718247b018fec55b66f498"
+      },
+      "repetition": 1
+    },
+    {
+      "case_id": {
+        "id": 4,
+        "pointer": "/evals/3",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "0e2ce3f68a06ec27fc1ffc9e413c2d4a89716ab6ba5c6e6d0bea8a6f8df30859",
+      "expectations": [
+        {
+          "id": "protected-spans",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "minimal-repair",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "test-scope",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/10",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/10/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/3/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/3/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "0e2ce3f68a06ec27fc1ffc9e413c2d4a89716ab6ba5c6e6d0bea8a6f8df30859"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/13/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/2/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "36cf34d983670e9587cb8c7c8f2c424f3e831f06b3cf898f035389f505ff64fb"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/10",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/intentional-form-and-quote.md": "04b07f1356ca897d8ededc8917a758934cf2bc13c0f3f0f6107e6a18dd666f73",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "bbbfb9a09dac576cd2ad11ec63b0eb25f4cbdfc7307b953bb7f7121a398b6193",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "7ff1933f36682cded913d5f51ded3fb0c1182ebc38718247b018fec55b66f498"
+      },
+      "repetition": 2
+    },
+    {
+      "case_id": {
+        "id": 4,
+        "pointer": "/evals/3",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "f9f46e7f428649d0b60a8bc5fd0e957669b4cb19eb5e64ce828b01f656c38d8f",
+      "expectations": [
+        {
+          "id": "protected-spans",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "minimal-repair",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "test-scope",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/11",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/11/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/3/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/3/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "f9f46e7f428649d0b60a8bc5fd0e957669b4cb19eb5e64ce828b01f656c38d8f"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/14/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/7",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/7/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/7/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/7/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/7/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "d3ced0b0529ec2346c19739a8fb28bb7b3dfa7de930b62db5a0019c73b5baa1e"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/11",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/intentional-form-and-quote.md": "04b07f1356ca897d8ededc8917a758934cf2bc13c0f3f0f6107e6a18dd666f73",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "bbbfb9a09dac576cd2ad11ec63b0eb25f4cbdfc7307b953bb7f7121a398b6193",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "7ff1933f36682cded913d5f51ded3fb0c1182ebc38718247b018fec55b66f498"
+      },
+      "repetition": 3
+    },
+    {
+      "case_id": {
+        "id": 5,
+        "pointer": "/evals/4",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "expectations": [
+        {
+          "id": "unchanged",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "no-added-audit",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "evidence-limits-intact",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/4",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/producer_revision",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/4/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/4/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/4/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/6/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/response",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/3/expectations",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "1551c1ad57e69fcae496c4fef1eb457233600643d857c5921fb75d45b76a7078"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/4",
+          "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/no-change.md": "86ba1cbc2fb2f283e1887c9739509b8a339faedb02295b44822a68ba848a7d7d",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "4d79afec2d5a708fbce4c12ca85a0b5abe53a3c67db7e80876fc147e95ef9c40",
+        "original_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2",
+        "previous_grading": [],
+        "prompt_sha256": "c968c58677f29df0f4bf4000e19ac06891685e38238d4fe7f9c30df5130c6fd8"
+      },
+      "repetition": 1
+    },
+    {
+      "case_id": {
+        "id": 5,
+        "pointer": "/evals/4",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "expectations": [
+        {
+          "id": "unchanged",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "no-added-audit",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "evidence-limits-intact",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/13",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/13/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/4/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/4/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/15/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/10",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/10/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/10/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/10/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/10/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "3405abba8e6cca14bf8f9e9c8b62831f3825288b995fa489df5c4550875e99a8"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/13",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/no-change.md": "86ba1cbc2fb2f283e1887c9739509b8a339faedb02295b44822a68ba848a7d7d",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "4d79afec2d5a708fbce4c12ca85a0b5abe53a3c67db7e80876fc147e95ef9c40",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "c968c58677f29df0f4bf4000e19ac06891685e38238d4fe7f9c30df5130c6fd8"
+      },
+      "repetition": 2
+    },
+    {
+      "case_id": {
+        "id": 5,
+        "pointer": "/evals/4",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "expectations": [
+        {
+          "id": "unchanged",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "no-added-audit",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "evidence-limits-intact",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/14",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/14/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/4/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/4/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/16/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/8",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/8/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/8/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/8/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/8/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "c45abd4b0e0d17b3663da7caee95ddd7d015eb8a1ebd9e9e26a46592f063a01e"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/14",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/no-change.md": "86ba1cbc2fb2f283e1887c9739509b8a339faedb02295b44822a68ba848a7d7d",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "4d79afec2d5a708fbce4c12ca85a0b5abe53a3c67db7e80876fc147e95ef9c40",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "c968c58677f29df0f4bf4000e19ac06891685e38238d4fe7f9c30df5130c6fd8"
+      },
+      "repetition": 3
+    },
+    {
+      "case_id": {
+        "id": 6,
+        "pointer": "/evals/5",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "74ef46d31789fc3967f9ed564ab99ecb3ddac51f6cddb4e348269e647afb7831",
+      "expectations": [
+        {
+          "id": "material-gap-visible",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "useful-supported-copy",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "no-invented-resolution",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/5",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/producer_revision",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/5/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/5/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "74ef46d31789fc3967f9ed564ab99ecb3ddac51f6cddb4e348269e647afb7831"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/5/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/6/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/response",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/expectations",
+            "sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/expectations",
+            "sha256": "11f64d54118ff0f0b293e177ae7c86c1cec62542a2e2da2b12c242c840a13cf3"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "e530386161df4bd84a5162355344ccff2c9aac211adc61c1ed930596bd245c79"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/5",
+          "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/missing-material-evidence.md": "87c92cc08385c5381cfd9c28c95533d5daccecce02d16d9766edf2f50cbac313",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "4d88fa027ce7ab472f2283d6674368db85a2a16ddb42620957554efe6796052b",
+        "original_revision": "9f5a0ca40e8bc93869d9f4490e700f1d089505f2",
+        "previous_grading": [],
+        "prompt_sha256": "4ce90709075c0853a3a8b48aa6400248dae7a26a8d993843059fd29571479d11"
+      },
+      "repetition": 1
+    },
+    {
+      "case_id": {
+        "id": 6,
+        "pointer": "/evals/5",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "58923fb68593d595e14037ba97d4df80caa40b5cae64c9edfe3e12aa9146a205",
+      "expectations": [
+        {
+          "id": "material-gap-visible",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "useful-supported-copy",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "no-invented-resolution",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/16",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/16/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/5/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/5/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "58923fb68593d595e14037ba97d4df80caa40b5cae64c9edfe3e12aa9146a205"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/17/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/1/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "ee9b72623bae9fde3b29f4f433ea71ba2297904f5ef12d6b028d2b57fbadc32c"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/16",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/missing-material-evidence.md": "87c92cc08385c5381cfd9c28c95533d5daccecce02d16d9766edf2f50cbac313",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "4d88fa027ce7ab472f2283d6674368db85a2a16ddb42620957554efe6796052b",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "4ce90709075c0853a3a8b48aa6400248dae7a26a8d993843059fd29571479d11"
+      },
+      "repetition": 2
+    },
+    {
+      "case_id": {
+        "id": 6,
+        "pointer": "/evals/5",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+      },
+      "executor_output_sha256": "6b53e916e510d06c7fad3643d06743f3c4dc2ce5bc8fe8a87f73c0042d744e18",
+      "expectations": [
+        {
+          "id": "material-gap-visible",
+          "passed": true,
+          "severity": "safety"
+        },
+        {
+          "id": "useful-supported-copy",
+          "passed": true,
+          "severity": "quality"
+        },
+        {
+          "id": "no-invented-resolution",
+          "passed": true,
+          "severity": "safety"
+        }
+      ],
+      "grading_sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80",
+      "reconciliation": {
+        "adjudication": null,
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/runs/17",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/17/candidate_revision",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/corpus_sha256",
+            "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1editing-finished-drafts~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1SKILL.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1edit-pass.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1evidence-in-prose.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/candidate_bundle/skills~1writing-for-people~1references~1threaded-conversation.md",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/5/fixture",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "json",
+            "pointer": "/runs/5/prompt",
+            "sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "6b53e916e510d06c7fad3643d06743f3c4dc2ce5bc8fe8a87f73c0042d744e18"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/18/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/records/19/turn_contexts/0/configured_model",
+            "sha256": "eafcb36a331a1c0d20c2100e8a18684f3e37da88b26870d80e08800391883836"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/6",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/6/response",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/6/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/6/expectations",
+            "sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/outputs/6/expectations",
+            "sha256": "97b3c6faf28021a2f204043bf3447c485d61815f2da71b91b5ae91f03d1abd80"
+          }
+        ],
+        "execution_identity": {
+          "basis": "recorded-native-agent",
+          "identity_sha256": "db6686c5bc20dec79cd74b66a77547bff79f4e6677a864e4f2a51ab0271fdb4e"
+        },
+        "execution_record": {
+          "format": "json",
+          "pointer": "/runs/17",
+          "sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15"
+        },
+        "executor_model_basis": "configured",
+        "grader_model_basis": "configured",
+        "inputs": {
+          "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+          "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/missing-material-evidence.md": "87c92cc08385c5381cfd9c28c95533d5daccecce02d16d9766edf2f50cbac313",
+          "plugins/proseweaving/skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
+          "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
+          "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
+          "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+        },
+        "original_corpus_sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+        "original_expectations_sha256": "4d88fa027ce7ab472f2283d6674368db85a2a16ddb42620957554efe6796052b",
+        "original_revision": "e39566188c8ae792aad977bdf76e22147e52b7aa",
+        "previous_grading": [],
+        "prompt_sha256": "4ce90709075c0853a3a8b48aa6400248dae7a26a8d993843059fd29571479d11"
+      },
+      "repetition": 3
+    }
+  ],
+  "runs_per_case": 3,
+  "schema_version": 1,
+  "snapshot": {
+    "candidate_revision": "070f832479b2eda2c6ce5ed07e79fa5302518558",
+    "inputs": {
+      "evals/control-plane-matrix.json": {
+        "mode": "100644",
+        "sha256": "036d1df941403af8df0407d9b72dcb7e12e3bbe83a69222d12e5153338d556b5"
+      },
+      "plugins/proseweaving/content-lock.json": {
+        "mode": "100644",
+        "sha256": "e42b759653d51b0719165d9bc638e36baa685b93312438f59115502d2594223d"
+      },
+      "plugins/proseweaving/evals/delivery.json": {
+        "mode": "100644",
+        "sha256": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md": {
+        "mode": "100644",
+        "sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/agents/openai.yaml": {
+        "mode": "100644",
+        "sha256": "f8513c011377aa3393b0834d0d3f376337f7b295fb22130cd9ce0e908b194a29"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json": {
+        "mode": "100644",
+        "sha256": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/batch-content-led-variation.md": {
+        "mode": "100644",
+        "sha256": "148157c08e6fb710a6fc9c9a581338b5edd3927c41412a48d5b8c032541f8888"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/conversation-useful-first-person.md": {
+        "mode": "100644",
+        "sha256": "02787d38327399d5482ab3c9179406a56012ffb42c26e2215b6854ffcc7e759e"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/intentional-form-and-quote.md": {
+        "mode": "100644",
+        "sha256": "04b07f1356ca897d8ededc8917a758934cf2bc13c0f3f0f6107e6a18dd666f73"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/missing-material-evidence.md": {
+        "mode": "100644",
+        "sha256": "87c92cc08385c5381cfd9c28c95533d5daccecce02d16d9766edf2f50cbac313"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/no-change.md": {
+        "mode": "100644",
+        "sha256": "86ba1cbc2fb2f283e1887c9739509b8a339faedb02295b44822a68ba848a7d7d"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/publication-evidence-boundary.md": {
+        "mode": "100644",
+        "sha256": "38ec665f959ce2be89fa8953d2b7aacc1745e664f9b2b459e3128f81712ccf2c"
+      },
+      "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json": {
+        "mode": "100644",
+        "sha256": "421dda27638fb8988cc767c59f28bcfa8bd82f30e26ad3674b5e0b95ec043cc1"
+      },
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md": {
+        "mode": "100644",
+        "sha256": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c"
+      },
+      "plugins/proseweaving/skills/writing-for-people/agents/openai.yaml": {
+        "mode": "100644",
+        "sha256": "72c6e18d6871a7ad7a1eed9462b7440de0cede33708afc523f461347a1becb56"
+      },
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": {
+        "mode": "100644",
+        "sha256": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5"
+      },
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md": {
+        "mode": "100644",
+        "sha256": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95"
+      },
+      "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md": {
+        "mode": "100644",
+        "sha256": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe"
+      },
+      "plugins/proseweaving/topology.json": {
+        "mode": "100644",
+        "sha256": "2168bfcb3fd4b273b415730d32481eb9314c17522f5de2f27e40de1aa5a55313"
+      },
+      "release/behavior-eval-input-map.json": {
+        "mode": "100644",
+        "sha256": "43d92aa6161157e9655817144d962a37cd1c252ed6802abcdf62f24f862c9925"
+      },
+      "release/provingkit/definition-v1.json": {
+        "mode": "100644",
+        "sha256": "a3fb38f3cfa6823be88a22c544627af790b53fa34a15083089443357b084d31e"
+      }
+    },
+    "schema_version": 1,
+    "skill": {
+      "behavior_inputs": [
+        "evals/control-plane-matrix.json",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/batch-content-led-variation.md",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/conversation-useful-first-person.md",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/intentional-form-and-quote.md",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/missing-material-evidence.md",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/no-change.md",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/fixtures/publication-evidence-boundary.md",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json",
+        "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+        "plugins/proseweaving/skills/writing-for-people/agents/openai.yaml",
+        "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+        "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+        "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md"
+      ],
+      "case_selection": [
+        {
+          "pointer": "/evals/0",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/1",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/2",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/3",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/4",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/5",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+        },
+        {
+          "pointer": "/0",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/1",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/10",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/11",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/2",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/3",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/4",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/5",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/6",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/7",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/8",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/9",
+          "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+        }
+      ],
+      "closure_complete": true,
+      "content_lock": "plugins/proseweaving/content-lock.json",
+      "corpus_format": "provingkit-v1",
+      "dependencies": [
+        "plugins/proseweaving/content-lock.json",
+        "plugins/proseweaving/evals/delivery.json",
+        "plugins/proseweaving/topology.json",
+        "release/behavior-eval-input-map.json",
+        "release/provingkit/definition-v1.json"
+      ],
+      "evals": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json",
+      "plugin": "proseweaving",
+      "shared_references": [],
+      "skill": "editing-finished-drafts",
+      "trigger_evals": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+    }
+  },
+  "triggers": [
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/0",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": true,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": true,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/0",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/0/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "244d38adb7667a987f5d0aca8b9bd4d7aef2b2755d1bce41b679c018b226d6f9"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "b4161f491c0abbf76f381b02c515d62fb586f02344881b5dcd266678be46a4e7"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/0/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/0",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "d43fcb4f759d3f986da150383bb1ec5e04c846b7374c73a6a187404525f8d834"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "445c45798f6bbc44f9dc6b70cda5d94d1cc5ebcdabfec6e2b9d1e22c38eaa095"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "918b689b239d7cbe758eac25f5d082c97b6264acb1a280226a1e02cdbb7ac77c",
+        "response_sha256": "02ffbfac9563b79dfcecf567566e8be8d0d4bd8dcd14ab614995eb8f2d656c29",
+        "returncode": 0,
+        "sentinel_sha256": "02ffbfac9563b79dfcecf567566e8be8d0d4bd8dcd14ab614995eb8f2d656c29",
+        "source_binding": "name-and-description",
+        "tool_action_count": 1
+      },
+      "triggered": true
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/1",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": true,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": true,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/1",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/1/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "e2ba01cdbdab2e413f789e6e6b6a18a6b91158731506c725c5702f8a8df9e2fc"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "e46e88557d2c73dfb40f974e977108c0386ef7751ce58674c296657b88bc9b11"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/1/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/1",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "3ff67ea20dd6bf19cd4e3ab3664be208ee3d4d402a14218c8087d906e83be384"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "3c7c60449558a170ea2ed59dc5f289c88f5e03aa1572fe19d33034ba7e1cf86c"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "e0b1a4d18061df149bc92c75dc445cedfec2bf127c56fb0498a0e6e18aa2e9f6",
+        "response_sha256": "9e672851396d61e27b07ee79ce31493b99c48bc34084d7285212b05ed0f1dd7d",
+        "returncode": 0,
+        "sentinel_sha256": "9e672851396d61e27b07ee79ce31493b99c48bc34084d7285212b05ed0f1dd7d",
+        "source_binding": "name-and-description",
+        "tool_action_count": 1
+      },
+      "triggered": true
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/2",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": true,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": true,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/2",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/2/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "1441c3926022f3e8f0de164a40962eeafa32277e9b6430ba4931e828e4b33681"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "69f5a3f20a9348340eeb7abd4f66b8b16ed2cf3cef8a6dd2d24ceacdc5be5f5d"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/2/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/2",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "b924ce8fb5f2b2c7d151cc000abae7107ae2be6065122429d87bf7c05a99dac8"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "c76a2ad5f154ba780b5178b5458e6c6c63a705c5a8fd2264f2a85f1133f7cec7"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "10f7cbbda9ad5e26576afd5142de9604f252cacfd7a405843d89ff3a18814249",
+        "response_sha256": "dbd47b396c30c642f8811b1f0c1822aebbde532adad5ea6f9d107c0219a64117",
+        "returncode": 0,
+        "sentinel_sha256": "dbd47b396c30c642f8811b1f0c1822aebbde532adad5ea6f9d107c0219a64117",
+        "source_binding": "name-and-description",
+        "tool_action_count": 1
+      },
+      "triggered": true
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/3",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": true,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": true,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/3",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/3/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "78ad7627b30514a6d9f568b4d90b309fb7af016a09ee697af343dc4cb3ce77c6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "b9199aec73e628289191db35b64bfd54ca0bdb977d688c68dfd4b056f066fbfb"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/3/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/3",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "3e593a300fb3046224f179d036c7243b077158c3f5e94f598d6a77a8b628266e"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "e9f5b27a4712548ee37865ff427702bad20ced9edfedab0974acf6b399afb6ce"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "110c43623e038c724293ad9cdbce4d761e84945aa5f4fdfc71e33eff970b5f5e",
+        "response_sha256": "be2148d4c27db1ce880416d28897a25f0885ff36f39022a1349b88e120f323dd",
+        "returncode": 0,
+        "sentinel_sha256": "be2148d4c27db1ce880416d28897a25f0885ff36f39022a1349b88e120f323dd",
+        "source_binding": "name-and-description",
+        "tool_action_count": 1
+      },
+      "triggered": true
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/4",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": true,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": true,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/4",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/4/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "bf87d394c061b65f9ca8e4fd0a1de7c7c1d957dad5a2f8612776e4e790bd92e7"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "0be64dc59c2d5f87764f632c2ce72fdc41ff06edea98d8c85bac1f2fbcb812e8"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/4/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/4",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "b1500a463aa3b9c4c052858fb6963bba2971f2890d126e300dee1bbca311d3d1"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "13732109ebd10fb00ac298df9dc12aec2aa1675428b41646379147aa7a948075"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "896fe882301920d3e563a3b0a3045ca1f88925d97167280d31f3d25cb66fc816",
+        "response_sha256": "b783c03721e87bb3f9d52a70faafddb291eb26a48b98c5bcb3ba16658895cc0f",
+        "returncode": 0,
+        "sentinel_sha256": "b783c03721e87bb3f9d52a70faafddb291eb26a48b98c5bcb3ba16658895cc0f",
+        "source_binding": "name-and-description",
+        "tool_action_count": 1
+      },
+      "triggered": true
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/5",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": false,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": false,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/5",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/5/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "7adaf5d0312bad7f655c7b49ce01d051e7e15bf9ff0903afebcb9584a382c094"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "54dccf6da819cdd39be57bc8ed2326098b3021a937764c8f0fd1ed06e98bb9ba"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/5/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/5",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "d8773f0c825346a94105da0d861b6460c7a550f6ac2d1968ef9ca39d84560fa7"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "feffaa38b58d07ece6b668b215a314097275194431b9adec1019e8fc909756ca"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "a788c917b88f27f1c4373e1dc057b6d7cdd32bdb89ba7916216aaad3a610e121",
+        "response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "returncode": 0,
+        "sentinel_sha256": "b660c068b7a23a0f2f34ac2af2f9df111f3c4182cc47cad22eb0652219427952",
+        "source_binding": "name-and-description",
+        "tool_action_count": 0
+      },
+      "triggered": false
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/6",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": false,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": false,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/6",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/6/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "986168607f2cd548145dfc98bea2c1cb2fd6a8d5a5e030229646da748605aa90"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "123eb9b9b03c8a817124cd886626eb7e8e045f0c355381a5ac6e5ad19a5516c2"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/6/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/6",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "1c049e9e261d2268e7ce460b2b249dc5b42e48e5fcb2fa62acb20aaa8855cfdd"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "b1bf891a69ab15243d90bca9bba4c35d683392fc5878a534e4d54de077c86c19"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "fb5401a5bde49c1d02d3b2f448d1d205c48529ad9bd5cdb48080541b704ce848",
+        "response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "returncode": 0,
+        "sentinel_sha256": "922a25e6edb6cb2c7661a716fcfc4db0e3a33549f1dc9f818082403a6b086b99",
+        "source_binding": "name-and-description",
+        "tool_action_count": 0
+      },
+      "triggered": false
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/7",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": false,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": false,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/7",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/7/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "3662c81cbc17dd553033a7976378a9ebd1dbe26aafd7c8433b832423a2ea3cd6"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "37e2cacc1e4d07d010ff13a90b9590b13d89a2afe157bf64772540f590aca702"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/7/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/7",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "169aa8528cc06836e2d89b674cd039d8e358304ec7ab0300e8407628e73a3683"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "01762f2da0c3168676f96b4b964e4a148390cab0f489e2d2d82eaeca455afe30"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "6a8f4a7296055753ac6745dbaf5cf17a3a1ba026dbb678c36aa28dc9943e166d",
+        "response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "returncode": 0,
+        "sentinel_sha256": "b115ced9b5d83c27c5cb611a4f7bf58978af0acc8369f4581beb2a6e7cbbbbb5",
+        "source_binding": "name-and-description",
+        "tool_action_count": 0
+      },
+      "triggered": false
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/8",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": false,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": false,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/8",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/8/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "3b5221f61f4798bc9c9f63b6b565020ab3ac58ed84d8e9d52f80457ac0633d97"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "48b2a5e2aada0fbc405b6eb4bcd9fc2f33362b330039152ba233a967b267faf0"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/8/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/8",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "2cd89494169be9c17fc118c57e853e5d4318d008e04c975c0fe6da35a2101619"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "0d42e4b822d04aad29820bf2851e249fee342a6b6c9edc8fb8b05192c7db9204"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "ec4506d5fb0ef808303fd4b28da47b92dc4d673ac60f75fc5b1e928fca4ba4e4",
+        "response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "returncode": 0,
+        "sentinel_sha256": "ca1380f04535d00665021fd2155834764b4fb719e48949c112b072576dc33644",
+        "source_binding": "name-and-description",
+        "tool_action_count": 0
+      },
+      "triggered": false
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/9",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": false,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": false,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/9",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/9/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "d67c7a4c853e9252d26bddf64488807f9fea25f42f32cb394455eaf6be267c5d"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "f9e01b99eb9d15ae8e9e691c9def54582970201acfb7f050e1bb7b65dac5431f"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/9/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/9",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "c146bbaf2398176ed686cb6cdb7ac080ef1621c58ef6f9703427b518b508df91"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "b85af55155dbcf1eb49b4d9e426c06c6825dccf57f9e7934ffd3aebd3303606b"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "62e11c4c832fb6a836c3aa648eaaa87ec059e956dcac21592664aa410cb51cf5",
+        "response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "returncode": 0,
+        "sentinel_sha256": "4e08477287626aef2478c5b17d5bb203e6aecad506e288a2eaf41e3e2506d298",
+        "source_binding": "name-and-description",
+        "tool_action_count": 0
+      },
+      "triggered": false
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/10",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": false,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": false,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/10",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/10/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "1a16ac7a11cfa0f5847b4b75809da67f162b1ad32cd271eecf12c54b56ae8034"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "46bb2b92651092f4ce42659b8010b97b23400bfa2dae7436c88b8311d6c61dbb"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/10/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/10",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "0b8dce6848f26ad168d227b7b8e2b3310cde8e0d6819619af3c2231bff702f64"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "16add6e90b0bcd72ed4531ae46a7504e1efa4c8127ddcef3eb36d009fa9e90ec"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "814219bb138a1a22ee1451e626e05811e4c5d1d2f7b632f8309adbd97beeb493",
+        "response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "returncode": 0,
+        "sentinel_sha256": "cda1cd42b1d22fb8f9e59ffc85b16e1a188db182dd9af59595260c7ebd5a1a99",
+        "source_binding": "name-and-description",
+        "tool_action_count": 0
+      },
+      "triggered": false
+    },
+    {
+      "case_id": {
+        "id": null,
+        "pointer": "/11",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/trigger-evals.json"
+      },
+      "expected": false,
+      "observation_kind": "recorded-sentinel-body-load",
+      "observation_sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816",
+      "reconciliation": {
+        "body_loaded": false,
+        "entrypoint_sha256": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+        "evidence": [
+          {
+            "format": "json",
+            "pointer": "/results/11",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/requested_model",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/11/query",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "86425e9cd005f417de8e8482223265faf501159fb2edeefee0cfb823dea6eea3"
+          },
+          {
+            "format": "utf8",
+            "pointer": "",
+            "sha256": "1f2163e58d98dd5e5b3895c6a125d1483eb4140701159b681458b92cde3acd13"
+          },
+          {
+            "format": "json",
+            "pointer": "/commands/11/sentinel",
+            "sha256": "4cfe865a26dfb52e057f50f1060d0cea3a89f3eb2779df75c056173f30c1b700"
+          },
+          {
+            "format": "json",
+            "pointer": "/results/11",
+            "sha256": "9f3e877be2513a6cdc047478c83bd950874e551621932fa017e9f3c59f449816"
+          },
+          {
+            "format": "jsonl",
+            "pointer": "",
+            "sha256": "ed6593db45e50fe178e3c2282d47ad09bb670dea003d15b097c8cca69187ebc8"
+          },
+          {
+            "format": "json",
+            "pointer": "/exit_code",
+            "sha256": "134502279c4fc34cfaa5b1ed82632309c6734c62519b6a9b010b10302b4c4309"
+          }
+        ],
+        "limits": [
+          "Ambient global instructions and skill catalog were present. Every trace reports skill descriptions shortened to fit the context budget; complete description exposure is not established.",
+          "Positive reads are observed command executions of the temporary marker-only body, not native skill-invocation events or application evidence.",
+          "Launcher inherited plain-pipe stdin; no nonempty input was sent through exec/write_stdin, but stdin was not independently captured or explicitly closed. Exact argv does not establish complete input provenance.",
+          "Stderr contains state-database fallback and some shell-snapshot cleanup warnings; all turns completed and no unexpected model tool action was observed.",
+          "No installed-plugin, isolated-context, provider attestation, immutable served model, hidden-context, live workflow, release, or qualification authority claim."
+        ],
+        "model_basis": "requested",
+        "negative_response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "query_sha256": "dc71c0da91b93fba88ee3bdee2b93eba9bffd5c0843cee570232bd0071e4b581",
+        "response_sha256": "abd776a4d77731e1f058f2abe4d07c26700c6ffa58b68d69d4da597ae3a3f086",
+        "returncode": 0,
+        "sentinel_sha256": "17b18212e900f7e6bb19dcee30e4e2773d1adfffe4c52a275512fd98d208adaf",
+        "source_binding": "name-and-description",
+        "tool_action_count": 0
+      },
+      "triggered": false
+    }
+  ]
+}

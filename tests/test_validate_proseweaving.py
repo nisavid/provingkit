@@ -79,19 +79,95 @@ class ValidateProseweavingTests(unittest.TestCase):
                 "skills/writing-for-people/SKILL.md",
                 "skills/writing-for-people/agents/openai.yaml",
                 "skills/writing-for-people/evals/evals.json",
+                "skills/editing-finished-drafts/SKILL.md",
+                "skills/editing-finished-drafts/agents/openai.yaml",
+                "skills/editing-finished-drafts/evals/evals.json",
+                "skills/editing-finished-drafts/evals/trigger-evals.json",
             }
             <= files
         )
         self.assertNotIn("content-lock.json", files)
 
-    def test_publishes_writing_for_people(self) -> None:
+    def test_publishes_writing_and_finished_draft_entrypoints(self) -> None:
         topology = json.loads((self.plugin / "topology.json").read_text())
-        self.assertEqual(set(topology["skills"]), {"writing-for-people"})
+        self.assertEqual(set(topology["skills"]), {"editing-finished-drafts", "writing-for-people"})
+        editor = topology["skills"]["editing-finished-drafts"]
+        self.assertEqual(editor["owns"], ["finished-draft-verification"])
+        self.assertEqual([call["skill"] for call in editor["may_call"]], ["writing-for-people"])
         self.assertTrue((self.plugin / "skills" / "writing-for-people" / "SKILL.md").is_file())
         manifest = json.loads((self.plugin / "plugin.json").read_text())
         prompts = manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"]
-        self.assertEqual(len(prompts), 1)
-        self.assertIn("$proseweaving:writing-for-people", prompts[0])
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("$proseweaving:editing-finished-drafts", prompts[0])
+        self.assertIn("$proseweaving:writing-for-people", prompts[1])
+
+    def test_trigger_inputs_are_validated_and_locked(self) -> None:
+        result = self.validate("--write-content-lock")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        lock = json.loads((self.plugin / "content-lock.json").read_text())
+        self.assertIn("skills/editing-finished-drafts/evals/trigger-evals.json", lock["files"])
+
+    def test_rejects_malformed_trigger_inputs(self) -> None:
+        path = self.plugin / "skills/editing-finished-drafts/evals/trigger-evals.json"
+        cases = [
+            {}, [], ["query"],
+            [{"query": "", "should_trigger": True}],
+            [{"query": "   ", "should_trigger": True}],
+            [{"query": "Edit my draft", "should_trigger": 1}],
+            [{"query": "Edit my draft", "should_trigger": "true"}],
+            [{"query": "Edit my draft", "should_trigger": True, "extra": "data"}],
+        ]
+        for document in cases:
+            with self.subTest(document=document):
+                path.write_text(json.dumps(document) + "\n")
+                self.assert_rejected("trigger eval")
+
+    def test_rejects_duplicate_trigger_keys(self) -> None:
+        path = self.plugin / "skills/editing-finished-drafts/evals/trigger-evals.json"
+        path.write_text('[{"query":"Edit my draft","should_trigger":true,"should_trigger":false}]\n')
+        self.assert_rejected("duplicate key")
+
+    def test_finished_draft_executor_receives_its_runtime_dependency(self) -> None:
+        module = self.validator_module()
+        topology = module.validate_topology(self.plugin)
+        _, bodies, files = module.validate_skills(self.plugin, topology)
+        files = module.validate_evals(
+            self.plugin, topology, bodies, module.validate_delivery(self.plugin), files
+        )
+        bundle = module.build_candidate_bundle(
+            self.plugin, topology, "editing-finished-drafts", bodies, files
+        )
+        payload = module.build_executor_payload(
+            prompt="Edit the supplied draft.", fixture="The update is ready.", candidate_bundle=bundle
+        )
+        self.assertEqual(set(payload["candidate_bundle"]), {
+            "skills/editing-finished-drafts/SKILL.md",
+            "skills/writing-for-people/SKILL.md",
+            "skills/writing-for-people/references/edit-pass.md",
+            "skills/writing-for-people/references/evidence-in-prose.md",
+            "skills/writing-for-people/references/threaded-conversation.md",
+        })
+        self.assertEqual(set(payload), {"prompt", "fixture", "candidate_bundle"})
+        for path, content in bundle.items():
+            self.assertEqual(content, (self.plugin / path).read_text())
+
+    def test_runtime_bundle_follows_transitive_calls_without_unrelated_skills(self) -> None:
+        skill = self.publish_one_skill()
+        module = self.validator_module()
+        topology = module.validate_topology(self.plugin)
+        _, bodies, files = module.validate_skills(self.plugin, topology)
+        independent = module.build_candidate_bundle(self.plugin, topology, skill, bodies, files)
+        self.assertEqual(set(independent), {
+            f"skills/{skill}/SKILL.md", f"skills/{skill}/references/register.md"
+        })
+        topology["skills"]["writing-for-people"]["may_call"] = [
+            {"skill": skill, "when": "Explain the message to its reader."}
+        ]
+        bundle = module.build_candidate_bundle(
+            self.plugin, topology, "editing-finished-drafts", bodies, files
+        )
+        self.assertIn(f"skills/{skill}/SKILL.md", bundle)
+        self.assertIn(f"skills/{skill}/references/register.md", bundle)
 
     def test_rejects_claude_projection_drift(self) -> None:
         path = self.plugin / ".claude-plugin" / "plugin.json"
@@ -400,7 +476,7 @@ class ValidateProseweavingTests(unittest.TestCase):
         manifest_path = self.plugin / "plugin.json"
         manifest = json.loads(manifest_path.read_text())
         prompts = manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"]
-        manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"] = [prompt, *prompts]
+        manifest["extensions"]["com.openai"]["interface"]["defaultPrompt"] = sorted([prompt, *prompts])
         manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
         (root / "evals" / "fixtures").mkdir(parents=True)
         evals = []

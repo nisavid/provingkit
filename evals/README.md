@@ -1,12 +1,21 @@
 # Phase 1 control-plane behavior evaluation
 
-`control-plane-matrix.json` is the public, declarative inventory for the 24
-Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Proseweaving skills. It
-selects one existing raw scenario per skill and declares only the companion
-skills allowed in that skill's composed condition. It is Phase 1 four-condition
-behavior evidence, not proof that every publication, deployment, hook, or runtime
-control-plane action is integrated correctly. Those claims need their own
-end-to-end evidence.
+`control-plane-matrix.json` covers 25 skills from Rolecasting, Tricritical,
+Versionkeeping, Mergecraft, and Proseweaving. It selects one existing raw
+scenario per covered skill and declares the companion skills allowed in that
+skill's composed condition, including the finished-draft editor's writing
+companion. This authored definition specifies Phase 1 four-condition coverage.
+Runtime observations must be collected and bound to the evaluated revision
+separately; publication, deployment, hooks, and other runtime actions need their
+own evidence.
+
+The current plugin roster contains 29 skills. The four existing coverage gaps
+remain under [#33](https://github.com/nisavid/provingkit/issues/33):
+
+- `versionkeeping:resolving-merge-conflicts`
+- `artifact-customs:assessing-third-party-components`
+- `artifact-customs:adopting-third-party-components`
+- `artifact-customs:maintaining-third-party-components`
 
 Validate the definition without using a model:
 
@@ -96,12 +105,17 @@ not authenticate their external authorization. The shipped evaluation-gate
 executable therefore rejects every invocation before reading evidence and
 grants no evaluation or release authority in this source-stage release.
 
-The production target contract requires 288 current executor coordinates:
-24 skills × 4 conditions × 3 repeats. Its required invalidation drill first
+The retained test-only structural checker still pins its historical 23-skill
+inventory. Its positive regression constructs that inventory in a disposable
+fixture; it does not qualify the expanded authored matrix. The shipped checker
+and historical observations remain unchanged.
+
+The production target contract requires 300 current executor coordinates:
+25 skills × 4 conditions × 3 repeats. Its required invalidation drill first
 runs a deterministic evaluation-only preimage for the choosing/delegating
 reverse-dependency slice, grades it, retains the superseded executor, grader,
 and blinding-plan checkpoints, then runs the canonical input slice and grades
-it again. A completed production manifest must also contain 24 current graders,
+it again. A completed production manifest must also contain 25 current graders,
 separate from those superseded records. These are validation requirements, not
 a claim that a retained production run already exists. Checkpoints are atomic
 and resumable; a provider call that finishes after a local timeout but before
@@ -122,15 +136,19 @@ The canonical Markdown writer keeps its raw eight-case behavior corpus, eleven t
 
 ## Phase 2 observable routing
 
-`skill-routing-matrix.json` is a separate routing tier. It leaves the 288-run
-semantic target unchanged. Its definition derives a 125-call production target:
-24 cold-start cases + 24 explicit invocations + 77 trigger cases. The trigger
+`skill-routing-matrix.json` is a separate routing tier. It leaves the 300-run
+semantic target unchanged. Its definition derives a 129-call production target:
+25 cold-start cases + 25 explicit invocations + 79 trigger cases. The trigger
 tier retains 33 imported skill-local trigger cases and adds one positive and one
-negative case for each of the other 22 skills. The Markdown writer uses an
+negative case for each of the other 23 skills. The Markdown writer uses an
 explicit integrated pair so a complete PR title and description selects the
 PR-description writer; its eleven standalone trigger cases remain separate.
-This count describes the gate; it does not assert that the paid calls have been
-completed.
+The finished-draft editor likewise uses an integrated pair from its twelve local
+trigger cases: editing a finished batch selects the editor, while writing from
+notes without a draft selects `writing-for-people`. The local corpus remains
+intact. These counts describe authored coverage, not completed provider calls.
+Frozen preview and feedback records retain their original inventory and
+revision; they do not qualify the expanded definition.
 
 Production routing evidence uses Claude's first-class `Skill` tool and retains
 the raw JSONL stream, init inventory, model and usage accounting, every failed

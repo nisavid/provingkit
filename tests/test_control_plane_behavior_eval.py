@@ -4,6 +4,7 @@ import base64
 import importlib.util
 import json
 import os
+import runpy
 import shutil
 import subprocess
 import sys
@@ -227,7 +228,7 @@ class LocalProductionAdapter:
         )
 
 
-def build_local_production_evidence(tmp_path: Path, monkeypatch):
+def build_local_production_evidence(tmp_path: Path, monkeypatch, *, retained_contract=False):
     runner = load_runner()
     repository = tmp_path / "candidate"
     shutil.copytree(
@@ -235,6 +236,45 @@ def build_local_production_evidence(tmp_path: Path, monkeypatch):
         repository,
         ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
     )
+    if retained_contract:
+        # The non-authoritative structural checker retains its 23-skill contract.
+        # Construct its historical inventory and calls in this disposable fixture; the
+        # authored current matrix and plugin sources remain unchanged.
+        gate = runpy.run_path(str(
+            ROOT / "plugins/versionkeeping/skills/"
+            "checkpointing-and-publishing-git-work/scripts/check_eval_gate.py"
+        ))
+        retained_ids = gate["CANONICAL_SKILL_IDS"]
+        definition_path = repository / "evals/control-plane-matrix.json"
+        definition = json.loads(definition_path.read_text())
+        by_id = {skill["id"]: skill for skill in definition["skills"]}
+        definition["skills"] = [by_id[skill_id] for skill_id in retained_ids]
+        for skill in definition["skills"]:
+            skill["companions"] = list(gate["CANONICAL_DIRECT_CALLS"][skill["id"]])
+        definition_path.write_text(json.dumps(definition))
+        for topology_path in (repository / "plugins").glob("*/topology.json"):
+            topology = json.loads(topology_path.read_text())
+            skills = topology.get("skills")
+            plugin = topology_path.parent.name
+            if isinstance(skills, dict):
+                topology["skills"] = {
+                    name: node for name, node in skills.items()
+                    if f"{plugin}:{name}" in retained_ids
+                }
+            elif isinstance(skills, list):
+                topology["skills"] = [
+                    node for node in skills
+                    if f"{plugin}:{node['name']}" in retained_ids
+                ]
+            nodes = topology.get("skills", {})
+            entries = nodes.items() if isinstance(nodes, dict) else (
+                (node["name"], node) for node in nodes
+            )
+            for name, node in entries:
+                node["calls"] = list(gate["CANONICAL_DIRECT_CALLS"][f"{plugin}:{name}"])
+                node.pop("may_call", None)
+                node.pop("external_calls", None)
+            topology_path.write_text(json.dumps(topology))
     subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
     subprocess.run(
         ["git", "config", "user.name", "Eval Fixture"], cwd=repository, check=True
@@ -338,7 +378,7 @@ def incumbent_mapping(path: Path, skill_count: int) -> Path:
 def test_definition_is_exact_public_inventory_and_scenario_map():
     definition = json.loads(DEFINITION.read_text())
     skills = definition["skills"]
-    assert len(skills) == 24
+    assert len(skills) == 25
     counts: dict[str, int] = {}
     for skill in skills:
         plugin = skill["id"].split(":", 1)[0]
@@ -346,7 +386,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
     assert counts == {
         "mergecraft": 11,
         "rolecasting": 2,
-        "proseweaving": 1,
+        "proseweaving": 2,
         "tricritical": 7,
         "versionkeeping": 3,
     }
@@ -375,6 +415,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         "merge-explicit-review-loop",
         "narrow-stacked-fixup",
         "stopping-point-report-partial-migration",
+        "publication-evidence-boundary",
     ]
     validated = subprocess.run(
         [sys.executable, str(RUNNER), "validate-definition"],
@@ -383,7 +424,15 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         capture_output=True,
         text=True,
     )
-    assert json.loads(validated.stdout) == {"passed": True, "skills": 24}
+    assert json.loads(validated.stdout) == {"passed": True, "skills": 25}
+
+
+
+
+    declarations = {skill["id"]: skill for skill in skills}
+    assert declarations["proseweaving:editing-finished-drafts"]["companions"] == [
+        "proseweaving:writing-for-people"
+    ]
 
     getting_prs_merged = next(
         skill for skill in skills if skill["id"] == "mergecraft:getting-prs-merged"
@@ -453,6 +502,18 @@ def test_isolated_relation_bundle_plans_a_complete_contribution(tmp_path, defini
     assert result.returncode == 0 and plan["status"] == "ready", plan
     assert [effect["kind"] for effect in plan["effects"]] == ["native-add"]
     assert plan["read_counts"]["external_write_requests"] == 0
+
+
+def test_definition_rejects_omitting_a_declared_proseweaving_skill():
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    definition["skills"] = [
+        skill for skill in definition["skills"]
+        if skill["id"] != "proseweaving:editing-finished-drafts"
+    ]
+
+    with pytest.raises(runner.EvaluationError, match="public skill inventory drift"):
+        runner.validate_definition(ROOT, definition)
 
 
 def test_evaluation_runbook_sizes_the_current_inventory():
@@ -577,7 +638,7 @@ def test_fixture_runner_rejects_symlinked_output_components_without_writing_targ
 
 
 def test_fixture_transport_cannot_masquerade_as_production_matrix(tmp_path: Path):
-    mapping = incumbent_mapping(tmp_path / "incumbents.json", 24)
+    mapping = incumbent_mapping(tmp_path / "incumbents.json", 25)
     rejected = subprocess.run(
         [
             sys.executable,
@@ -3247,8 +3308,10 @@ def test_retirement_gate_binds_bundles_to_the_candidate_commit(
     )
 
 
-def test_fully_local_production_evidence_passes_gate(tmp_path: Path, monkeypatch):
-    runner, output = build_local_production_evidence(tmp_path, monkeypatch)
+def test_local_retained_contract_passes_test_only_structural_checker(tmp_path: Path, monkeypatch):
+    runner, output = build_local_production_evidence(
+        tmp_path, monkeypatch, retained_contract=True
+    )
 
     manifest_path = output / "evidence-v2.json"
     matrix_path = output / "matrix-v2.json"

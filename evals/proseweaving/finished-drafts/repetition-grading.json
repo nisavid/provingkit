@@ -1,0 +1,350 @@
+{
+  "outputs": [
+    {
+      "output_id": "95ede1f726b858bb",
+      "expectations": [
+        {
+          "id": "first-person-retained",
+          "passed": true,
+          "evidence": "The author says “I reproduced” and “I think,” and explicitly states “I haven’t run it.”"
+        },
+        {
+          "id": "judgment-calibrated",
+          "passed": true,
+          "evidence": "The patch assessment is a judgment from reading about “this path”; the stale-connection mechanism is removed, and no tested patch or production outcome is asserted."
+        },
+        {
+          "id": "recipient-answer",
+          "passed": true,
+          "evidence": "The reply explicitly says support should not tell customers it is fixed yet and removes the tonight promise, status label, and canned closer."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "6df74132a7c95cc4",
+      "expectations": [
+        {
+          "id": "material-gap-visible",
+          "passed": true,
+          "evidence": "“I haven’t confirmed whether all queued exports have been recovered” directly preserves the customer’s central question as unresolved."
+        },
+        {
+          "id": "useful-supported-copy",
+          "passed": true,
+          "evidence": "“I’ve confirmed that the patch is merged” provides supported customer wording; lane/gate jargon and the canned closer are removed."
+        },
+        {
+          "id": "no-invented-resolution",
+          "passed": true,
+          "evidence": "The response adds no actor, deadline, commitment, or claim resolving the recovery gap."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "2904f8720f2a2e13",
+      "expectations": [
+        {
+          "id": "protected-spans",
+          "passed": true,
+          "evidence": "Both required labels, the quotation including its enclosing marks, the complete shell code block, and both numbered instructions remain verbatim."
+        },
+        {
+          "id": "minimal-repair",
+          "passed": true,
+          "evidence": "The worth-noting opening and power-of-testing closer are removed; the heading and exercise form remain, and boilerplate inside the quotation is retained."
+        },
+        {
+          "id": "test-scope",
+          "passed": true,
+          "evidence": "“I observed the fixture exit 1” keeps the observation attached to the fixture, and the response states that nothing was run in production."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "267af2789c830201",
+      "expectations": [
+        {
+          "id": "boundaries-preserved",
+          "passed": true,
+          "evidence": "Three replies remain in the original order, separated by ---; the URL correction, CSV check, and launch-date decision remain separate."
+        },
+        {
+          "id": "facts-and-decision",
+          "passed": true,
+          "evidence": "The result is explicitly limited to “only the CSV fixture against a local build,” and the open launch date still requires choosing Tuesday or Thursday."
+        },
+        {
+          "id": "natural-variation",
+          "passed": true,
+          "evidence": "Repeated boilerplate is removed. Each reply uses a concise form suited to its correction, check result, or decision request without added details or asks."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "abc47711bf2541b6",
+      "expectations": [
+        {
+          "id": "first-person-retained",
+          "passed": true,
+          "evidence": "“I reproduced,” “I think,” and “I haven’t run it” retain the author’s ownership of the reproduction and untested patch assessment."
+        },
+        {
+          "id": "judgment-calibrated",
+          "passed": true,
+          "evidence": "“From reading the patch, I think it addresses that path” stays a qualified reset-path assessment. The unsupported mechanism and production claims are removed."
+        },
+        {
+          "id": "recipient-answer",
+          "passed": true,
+          "evidence": "The author advises against telling customers it is fixed yet and removes the tonight promise and canned opening and closing."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "61e67f926a60b135",
+      "expectations": [
+        {
+          "id": "scope-and-count",
+          "passed": true,
+          "evidence": "The default is 3 retries after the first attempt, with at most four total attempts. The failed-request stub test is explicitly local."
+        },
+        {
+          "id": "no-invented-outcomes",
+          "passed": true,
+          "evidence": "The response states that production behavior was not observed and makes no recovery, zero-loss, or Friday rollout claim."
+        },
+        {
+          "id": "publication-preserved",
+          "passed": true,
+          "evidence": "The Retry limits heading, configuration instruction, and first-person local test evidence remain. The section retains documentation form while removing the specified scaffolding."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "16c8591da4313403",
+      "expectations": [
+        {
+          "id": "material-gap-visible",
+          "passed": true,
+          "evidence": "“I can’t yet confirm that all queued exports have been recovered” and the confirmation note explicitly leave recovery unresolved without denying it."
+        },
+        {
+          "id": "useful-supported-copy",
+          "passed": true,
+          "evidence": "“The patch has been merged” retains the supported fact as customer wording, with the internal lane/gate language and canned closer removed."
+        },
+        {
+          "id": "no-invented-resolution",
+          "passed": true,
+          "evidence": "The response adds no deadline, commitment, responsible actor, or unsupported recovery resolution; the colleague and missing evidence are supplied context."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "5cc8a3978433f57c",
+      "expectations": [
+        {
+          "id": "protected-spans",
+          "passed": true,
+          "evidence": "The required labels, quoted sentence and enclosing marks, complete shell code block, and two numbered instructions are preserved verbatim."
+        },
+        {
+          "id": "minimal-repair",
+          "passed": true,
+          "evidence": "The wrapper boilerplate is removed while the exercise remains a training-guide section and the matching words inside the quotation remain untouched."
+        },
+        {
+          "id": "test-scope",
+          "passed": true,
+          "evidence": "The exit-1 observation explicitly concerns the fixture, and the response says nothing was run in production."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "2ab865705f19c11a",
+      "expectations": [
+        {
+          "id": "unchanged",
+          "passed": true,
+          "evidence": "The response exactly matches the draft wording, apart from its trailing newline."
+        },
+        {
+          "id": "no-added-audit",
+          "passed": true,
+          "evidence": "The response contains only the two-sentence reply, with no heading, checklist, rationale, or audit claim."
+        },
+        {
+          "id": "evidence-limits-intact",
+          "passed": true,
+          "evidence": "The reconnect fixture’s local success and the unchecked deployment remain distinct, with no added outcome."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "59593432006685fa",
+      "expectations": [
+        {
+          "id": "scope-and-count",
+          "passed": true,
+          "evidence": "The response explicitly defines the default as 3 retries after the first attempt, gives four maximum total attempts, and identifies the stub test as local."
+        },
+        {
+          "id": "no-invented-outcomes",
+          "passed": true,
+          "evidence": "Production behavior is explicitly unobserved, and the recovery, zero-loss, and Friday rollout assertions are removed."
+        },
+        {
+          "id": "publication-preserved",
+          "passed": true,
+          "evidence": "The Retry limits heading, configuration instruction, and useful first-person test and log details remain in document form without the specified boilerplate."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "ed18ea6eab15a115",
+      "expectations": [
+        {
+          "id": "unchanged",
+          "passed": true,
+          "evidence": "The final reply preserves the draft wording exactly, apart from its trailing newline."
+        },
+        {
+          "id": "no-added-audit",
+          "passed": true,
+          "evidence": "Only the original reply is returned; no editorial heading, explanation, checklist, or audit claim is added."
+        },
+        {
+          "id": "evidence-limits-intact",
+          "passed": true,
+          "evidence": "The local reconnect fixture passed, while deployment remains unchecked; no additional verification or deployment outcome appears."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "bd402b576111335c",
+      "expectations": [
+        {
+          "id": "boundaries-preserved",
+          "passed": true,
+          "evidence": "The three replies preserve their original order and --- separators, with no facts or asks transferred between threads."
+        },
+        {
+          "id": "facts-and-decision",
+          "passed": true,
+          "evidence": "The CSV fixture passed against a local build and was the only check run. No launch date is chosen, and Tuesday or Thursday remains the sole requested decision."
+        },
+        {
+          "id": "natural-variation",
+          "passed": true,
+          "evidence": "All repeated wrapper boilerplate is removed. The correction, test result, and open decision receive distinct, concise wording without invented details or unnecessary asks."
+        }
+      ],
+      "rubric_concerns": []
+    }
+  ],
+  "kind": "qualitative-application-grading",
+  "native_grader": "repetitions_blind_grader",
+  "grader_model_id": null,
+  "method": "Fresh task-history-free native agent, inherited model and reasoning settings, one input-file read, received randomized opaque output IDs with prompts, fixtures, expectations, and responses; no candidate source, condition labels, repetitions, or prior grades. Ambient harness guidance remained available; no independent model identifier or immutable provider attestation.",
+  "case_runs": {
+    "59593432006685fa": {
+      "case_id": 1,
+      "repetition": 2,
+      "response_path": "responses/1-run-2.md",
+      "response_sha256": "6a8966c0c21bab50c73e5ff1f2f0ecd8989ef070c7dac0db8817ee0fdfde438e",
+      "native_agent": "repeat_application_1_2"
+    },
+    "61e67f926a60b135": {
+      "case_id": 1,
+      "repetition": 3,
+      "response_path": "responses/1-run-3.md",
+      "response_sha256": "7fba15d74ca82562d813dce49b3bd91d5b42b38a8384ac7b206b3b71627e633a",
+      "native_agent": "repeat_application_1_3"
+    },
+    "95ede1f726b858bb": {
+      "case_id": 2,
+      "repetition": 2,
+      "response_path": "responses/2-run-2.md",
+      "response_sha256": "7c131715b87eb633adb0e2a6ebe852eee598825652a24661ed689c3889f70741",
+      "native_agent": "repeat_application_2_2"
+    },
+    "abc47711bf2541b6": {
+      "case_id": 2,
+      "repetition": 3,
+      "response_path": "responses/2-run-3.md",
+      "response_sha256": "d5c6e8d2afb0705321d8d170b50ae04ad8c3b69ad8be861c134d48329e1d34b2",
+      "native_agent": "repeat_application_2_3"
+    },
+    "bd402b576111335c": {
+      "case_id": 3,
+      "repetition": 2,
+      "response_path": "responses/3-run-2.md",
+      "response_sha256": "bfb72879d2529676f6e45f1f127a01030da050099c57522ba9220bbabf5513ca",
+      "native_agent": "repeat_application_3_2"
+    },
+    "267af2789c830201": {
+      "case_id": 3,
+      "repetition": 3,
+      "response_path": "responses/3-run-3.md",
+      "response_sha256": "7d59d10d725ee97dbb81394b9386186870e921d554ea5b6dff7a391381290d9f",
+      "native_agent": "repeat_application_3_3"
+    },
+    "2904f8720f2a2e13": {
+      "case_id": 4,
+      "repetition": 2,
+      "response_path": "responses/4-run-2.md",
+      "response_sha256": "0e2ce3f68a06ec27fc1ffc9e413c2d4a89716ab6ba5c6e6d0bea8a6f8df30859",
+      "native_agent": "repeat_application_4_2"
+    },
+    "5cc8a3978433f57c": {
+      "case_id": 4,
+      "repetition": 3,
+      "response_path": "responses/4-run-3.md",
+      "response_sha256": "f9f46e7f428649d0b60a8bc5fd0e957669b4cb19eb5e64ce828b01f656c38d8f",
+      "native_agent": "repeat_application_4_3"
+    },
+    "ed18ea6eab15a115": {
+      "case_id": 5,
+      "repetition": 2,
+      "response_path": "responses/5-run-2.md",
+      "response_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "native_agent": "repeat_application_5_2"
+    },
+    "2ab865705f19c11a": {
+      "case_id": 5,
+      "repetition": 3,
+      "response_path": "responses/5-run-3.md",
+      "response_sha256": "34ea3eb152c3d96635d70c5739ac51993e06a8af9074851811eef5ffaba87006",
+      "native_agent": "repeat_application_5_3"
+    },
+    "6df74132a7c95cc4": {
+      "case_id": 6,
+      "repetition": 2,
+      "response_path": "responses/6-run-2.md",
+      "response_sha256": "58923fb68593d595e14037ba97d4df80caa40b5cae64c9edfe3e12aa9146a205",
+      "native_agent": "repeat_application_6_2"
+    },
+    "16c8591da4313403": {
+      "case_id": 6,
+      "repetition": 3,
+      "response_path": "responses/6-run-3.md",
+      "response_sha256": "6b53e916e510d06c7fad3643d06743f3c4dc2ce5bc8fe8a87f73c0042d744e18",
+      "native_agent": "repeat_application_6_3"
+    }
+  },
+  "repetitions_sha256": "fe3f5856f3dc2bb24c7de66a18ef8c7eb25d9ab558924c1523a120be98563a15",
+  "blind_input_path": "repetition-grading-input.json",
+  "blind_input_sha256": "77369aa25b71226c2b2d7b20d751236eec9143129faffc8b3f56d316a91b65ba",
+  "raw_final_message_sha256": "b616393083e5243bed0203a0e16d35f3e94a463d6532d74c6f87ab8cfa9a7be8"
+}

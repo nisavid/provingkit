@@ -26,5 +26,17 @@
   {
     "query": "Calculate the SHA-256 digest of the supplied bytes. Return only the hexadecimal digest.",
     "should_trigger": false
+  },
+  {
+    "query": "Turn these internal planning notes into a cordial heads-up for a colleague who does not need to act yet.",
+    "should_trigger": true
+  },
+  {
+    "query": "Edit this coordination message so its question is genuinely open and its internal labels make sense to the reader.",
+    "should_trigger": true
+  },
+  {
+    "query": "Parse the supplied task identifiers into a JSON array. Return only JSON, with no prose.",
+    "should_trigger": false
   }
 ]

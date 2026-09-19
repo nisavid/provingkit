@@ -1,6 +1,6 @@
 ---
 name: writing-for-people
-description: Use when drafting or editing prose for people, including publications, documentation, PR and Issue text, reports, chat messages, and review replies.
+description: Use when asked to write, draft, rewrite, edit, or polish text for people, including PRs, Issues, documentation, reports, posts, chat replies, and review comments.
 ---
 
 # Writing For People
@@ -20,6 +20,11 @@ and the reader's purpose. Recover context from the available conversation and
 artifacts before asking for discoverable facts. Distinguish what you know about
 the audience from what you infer. Write a standalone artifact for a reader
 arriving fresh; fold revision feedback into its substance.
+
+Treat an operator's brief as compressed input. Unpack it into what this reader
+needs to understand or do; preserve its facts and decisions without carrying
+the operator's internal roles, powers, or work sequence into the message's
+frame. Include that context only when it helps the reader use the piece.
 
 ## Choose The Register
 
@@ -52,6 +57,9 @@ appears; otherwise use plain words. Use technical precision where it changes
 the reader's understanding or decision and everyday verbs elsewhere. When a
 reader shows that an explanation did not land, recover the missing common
 ground and explain more simply.
+
+Use a workflow identifier only when the same or a recent message establishes
+what it means for this reader. Otherwise explain it where needed or omit it.
 
 ## Let Content Pick The Shape
 

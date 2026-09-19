@@ -339,6 +339,19 @@
         "source": "plugins/proseweaving/skills/writing-for-people/evals/evals.json",
         "selector": "stopping-point-report-partial-migration"
       }
+    },
+    {
+      "id": "proseweaving:editing-finished-drafts",
+      "entrypoint": "plugins/proseweaving/skills/editing-finished-drafts/SKILL.md",
+      "companions": [
+        "proseweaving:writing-for-people"
+      ],
+      "scenario": {
+        "id": "publication-evidence-boundary",
+        "kind": "skill-evals",
+        "source": "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json",
+        "selector": "publication-evidence-boundary"
+      }
     }
   ]
 }

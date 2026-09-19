@@ -71,7 +71,7 @@
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   },
-  "content_sha256": "sha256:b2da23f8b3b238de1b1b89bfee0ea1d94908bbd2b461c367f9ffb1a32c74d20d",
+  "content_sha256": "sha256:2a985b112aa353d26f87ae31f9023ec48d3961966ca090a4fafd39cc49b5badd",
   "contract": "coordinated-source-skill-release-refresh-v1",
   "disposition_ledger": {
     "path": "release/source-skill-disposition/disposition-ledger.json",
@@ -331,6 +331,7 @@
           ],
           "evaluation_paths": [
             "plugins/proseweaving/evals",
+            "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json",
             "plugins/proseweaving/skills/writing-for-people/evals"
           ],
           "id": "proseweaving",

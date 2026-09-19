@@ -1,0 +1,144 @@
+{
+  "outputs": [
+    {
+      "output_id": "74739aa847c5f707",
+      "expectations": [
+        {
+          "id": "boundaries-preserved",
+          "passed": true,
+          "evidence": "Three replies retain their original order and --- separators; each addresses only its own thread."
+        },
+        {
+          "id": "facts-and-decision",
+          "passed": true,
+          "evidence": "Testing is explicitly limited to the CSV fixture against a local build; Tuesday or Thursday remains an unanswered choice."
+        },
+        {
+          "id": "natural-variation",
+          "passed": true,
+          "evidence": "Repeated openings and closers are removed; the correction, test result, and decision request receive appropriate concise wording."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "bc65b3db9766eb53",
+      "expectations": [
+        {
+          "id": "material-gap-visible",
+          "passed": true,
+          "evidence": "The reply explicitly says recovery of all queued exports cannot yet be confirmed, without asserting failure."
+        },
+        {
+          "id": "useful-supported-copy",
+          "passed": true,
+          "evidence": "The confirmed merged-patch fact remains in customer-usable wording; internal lane/gate language and the canned closer are removed."
+        },
+        {
+          "id": "no-invented-resolution",
+          "passed": true,
+          "evidence": "The confirmation gap is identified without adding an actor, deadline, commitment, or recovery outcome."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "be6c0ca266493012",
+      "expectations": [
+        {
+          "id": "scope-and-count",
+          "passed": true,
+          "evidence": "The default is three retries after the first attempt, yielding four total; the failing-stub observation remains explicitly local."
+        },
+        {
+          "id": "no-invented-outcomes",
+          "passed": true,
+          "evidence": "The production recovery, zero-loss, and Friday rollout claims are removed."
+        },
+        {
+          "id": "publication-preserved",
+          "passed": true,
+          "evidence": "The heading, configuration instruction, and first-person test observation remain in a documentation section without the rhetorical scaffolding."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "056cbc543c49b900",
+      "expectations": [
+        {
+          "id": "unchanged",
+          "passed": true,
+          "evidence": "The reply matches the supplied draft exactly apart from its trailing newline."
+        },
+        {
+          "id": "no-added-audit",
+          "passed": true,
+          "evidence": "The output contains only the reply, with no editing commentary or additional structure."
+        },
+        {
+          "id": "evidence-limits-intact",
+          "passed": true,
+          "evidence": "The local reconnect fixture passed, while deployment remains unchecked; no additional outcomes appear."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "34d543f64440f1c1",
+      "expectations": [
+        {
+          "id": "protected-spans",
+          "passed": true,
+          "evidence": "Both labels, the quotation including its straight quotation marks, the complete code block, and both numbered instructions remain verbatim."
+        },
+        {
+          "id": "minimal-repair",
+          "passed": true,
+          "evidence": "Surrounding worth-noting and power-of-testing boilerplate is removed; the guide form and quoted boilerplate example remain."
+        },
+        {
+          "id": "test-scope",
+          "passed": true,
+          "evidence": "Exit 1 remains an observation of the fixture, and the output explicitly states that nothing ran in production."
+        }
+      ],
+      "rubric_concerns": []
+    },
+    {
+      "output_id": "8ed84331bc0da291",
+      "expectations": [
+        {
+          "id": "first-person-retained",
+          "passed": true,
+          "evidence": "The author states that they reproduced the failure locally and have not run the patch."
+        },
+        {
+          "id": "judgment-calibrated",
+          "passed": true,
+          "evidence": "The patch assessment is explicitly a judgment from reading it; the unsupported stale-connection mechanism is removed, and testing and deployment remain unverified."
+        },
+        {
+          "id": "recipient-answer",
+          "passed": true,
+          "evidence": "The reply directly advises against telling customers the issue is fixed yet; the tonight promise and canned framing are removed."
+        }
+      ],
+      "rubric_concerns": []
+    }
+  ],
+  "kind": "qualitative-application-grading",
+  "native_grader": "integrated_blind_grader",
+  "method": "Fresh task-history-free native agent received only randomized opaque output IDs with raw prompts, fixtures, expectations and responses; no candidate source, condition labels or preparation history. Ambient harness guidance remains available.",
+  "case_ids": {
+    "be6c0ca266493012": 1,
+    "8ed84331bc0da291": 2,
+    "74739aa847c5f707": 3,
+    "34d543f64440f1c1": 4,
+    "056cbc543c49b900": 5,
+    "bc65b3db9766eb53": 6
+  },
+  "application_sha256": "8c04d8e9d942cb0d733217fadb5536bf571170c5ddc0196d2ea67cd8f28ee4d6",
+  "blind_input_sha256": "27f36dbbf7415af5e72b392dc03d6c0ddbd512cbb4686148cbe30a51b3c04303",
+  "blind_input_path": "grading-input.json"
+}

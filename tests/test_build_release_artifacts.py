@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -24,6 +25,47 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             self.assertNotIn("task-witness", receipt["plugin_slate"])
             self.assertEqual(receipt["schema"], "provingkit-artifact-receipt-v1")
             self.assertEqual(len(receipt["artifact_sha256"]), 64)
+
+    def test_finished_draft_projections_preserve_runtime_and_exclude_evaluators(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source"
+            policy = Path("release/artifact-projection-policy-v1.json")
+            (source / policy).parent.mkdir(parents=True)
+            shutil.copy2(ROOT / policy, source / policy)
+            plugin = Path("plugins/proseweaving")
+            shutil.copytree(ROOT / plugin, source / plugin)
+            for arguments in (
+                ["init", "-q"],
+                ["config", "user.name", "Test"],
+                ["config", "user.email", "test@example.invalid"],
+                ["add", "."],
+                ["commit", "-qm", "test: projection fixture"],
+            ):
+                subprocess.run(["git", *arguments], cwd=source, check=True)
+
+            skill = plugin / "skills/editing-finished-drafts"
+            runtime = skill / "SKILL.md"
+            adapter = skill / "agents/openai.yaml"
+            for evaluator in ("evals.json", "trigger-evals.json"):
+                self.assertTrue((source / skill / "evals" / evaluator).is_file())
+            self.assertTrue(any((source / skill / "evals/fixtures").glob("*.md")))
+
+            for target in ("agent-plugins", "claude", "cursor"):
+                with self.subTest(target=target):
+                    output = Path(tmp) / target
+                    build(source, output, target, ["proseweaving"], "preview", False)
+                    self.assertEqual(
+                        (output / runtime).read_bytes(),
+                        (source / runtime).read_bytes(),
+                    )
+                    if target == "agent-plugins":
+                        self.assertEqual(
+                            (output / adapter).read_bytes(),
+                            (source / adapter).read_bytes(),
+                        )
+                    else:
+                        self.assertFalse((output / adapter).exists())
+                    self.assertFalse((output / skill / "evals").exists())
 
     def test_target_adapters_are_distinct_and_do_not_leak_dev_files(self):
         for target in ("claude", "cursor"):

@@ -906,6 +906,23 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
 
         self.assert_rejected("release refresh affected-distribution derivation drift")
 
+    def test_finished_draft_corpus_is_a_required_proseweaving_refresh_input(self) -> None:
+        contract = self.load(REFRESH)
+        proseweaving = next(
+            item
+            for item in contract["regeneration"]["affected_distribution_derivation"][
+                "distribution_closure"
+            ]
+            if item["id"] == "proseweaving"
+        )
+        corpus = (
+            "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json"
+        )
+        self.assertIn(corpus, proseweaving["evaluation_paths"])
+        (self.repository / corpus).unlink()
+
+        self.assert_rejected("distribution closure path is missing")
+
     def test_distribution_closure_has_explicit_dependency_edges(self) -> None:
         contract = self.load(REFRESH)
         contract["regeneration"]["affected_distribution_derivation"][
