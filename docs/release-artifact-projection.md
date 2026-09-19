@@ -45,6 +45,11 @@ install, cache, and cleanup behavior remains the harness's concern. A pinned
 preview is the reproducibility default. A `main` candidate is intentionally
 moving: each resolved source commit produces a new receipt and artifact digest.
 
+For a pinned ad hoc installation, follow
+[retained ad hoc artifact publication](ad-hoc-artifact-publication.md) to publish
+the three target archives, complete receipts, and mode inventories through an
+ordinary artifact branch.
+
 ## Receipt and mode preservation
 
 Qualification, publication, and rollout transfer the complete root
