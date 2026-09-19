@@ -1,0 +1,782 @@
+{
+  "published_base": "89d895269db5652aafa9ff9a642114585e7bb709",
+  "interface_candidate": "5eb0f1df86e4e7407acda909905b3fe0c3f5cfd0",
+  "criterion_source": "https://github.com/nisavid/provingkit/issues/134",
+  "cases": [
+    {
+      "case_id": "C01",
+      "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+      "subtest": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected (__main__.Inventory.test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected) (variant='hex-escape')",
+      "path": "release/provingkit/unexpected-identity.yaml",
+      "utf8_bytes_hex": "7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c78363167656e7473220a",
+      "content_sha256": "79dc64e925367703db334bb93c4b5f75871a125764b1fa0fcd4f9b8314248432",
+      "accepted": false,
+      "diagnostic": "unallowlisted legacy repository identity"
+    },
+    {
+      "case_id": "C02",
+      "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+      "subtest": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected (__main__.Inventory.test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected) (variant='escaped-line-break')",
+      "path": "release/provingkit/unexpected-identity.yml",
+      "utf8_bytes_hex": "7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f615c0a67656e7473220a",
+      "content_sha256": "f3c3cf5dd4fef8857d07f485952498f77b9ab86ce82d03c2cf303916fd627a8c",
+      "accepted": false,
+      "diagnostic": "unallowlisted legacy repository identity"
+    },
+    {
+      "case_id": "C03",
+      "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+      "subtest": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected (__main__.Inventory.test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected) (variant='hex-and-percent-composition')",
+      "path": "release/provingkit/unexpected-identity.yaml",
+      "utf8_bytes_hex": "7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c783235363167656e7473220a",
+      "content_sha256": "1a1b6811777be752ff602c9f753d5df8ec69733d89568b6e75f9bd86fbde0d2a",
+      "accepted": false,
+      "diagnostic": "unallowlisted legacy repository identity"
+    },
+    {
+      "case_id": "C04",
+      "method": "test_legitimate_yaml_semantics_remain_accepted",
+      "subtest": "test_legitimate_yaml_semantics_remain_accepted (__main__.Inventory.test_legitimate_yaml_semantics_remain_accepted) (variant='canonical-repository')",
+      "path": "release/provingkit/unexpected-identity.yaml",
+      "utf8_bytes_hex": "7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f70726f76696e676b6974220a6c6162656c3a20225c7836317263686976656420736f75726365220a",
+      "content_sha256": "246fcfa0e8c1b684e20b1ab225cba29681aa59cb03398b46e80dde47e812f2a5",
+      "accepted": true,
+      "diagnostic": null
+    },
+    {
+      "case_id": "C05",
+      "method": "test_legitimate_yaml_semantics_remain_accepted",
+      "subtest": "test_legitimate_yaml_semantics_remain_accepted (__main__.Inventory.test_legitimate_yaml_semantics_remain_accepted) (variant='single-quoted-backslash')",
+      "path": "release/provingkit/unexpected-identity.yaml",
+      "utf8_bytes_hex": "7265706f7369746f72793a202768747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c78363167656e7473270a",
+      "content_sha256": "6f93f721b84364e1286a811a0540e7738e1326f22e24f8d20c521323daeaf21f",
+      "accepted": true,
+      "diagnostic": null
+    },
+    {
+      "case_id": "C06",
+      "method": "test_legitimate_yaml_semantics_remain_accepted",
+      "subtest": "test_legitimate_yaml_semantics_remain_accepted (__main__.Inventory.test_legitimate_yaml_semantics_remain_accepted) (variant='escaped-backslash')",
+      "path": "release/provingkit/unexpected-identity.yaml",
+      "utf8_bytes_hex": "7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c5c78363167656e7473220a",
+      "content_sha256": "bb90ab778f0de0f19150d7c674730e631675462146501a7e88264b089700538a",
+      "accepted": true,
+      "diagnostic": null
+    },
+    {
+      "case_id": "C07",
+      "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+      "subtest": "test_yaml_frontmatter_bom_does_not_change_identity_detection (__main__.Inventory.test_yaml_frontmatter_bom_does_not_change_identity_detection) (prefix=\"''\", newline=\"'\\\\n'\")",
+      "path": "release/provingkit/unexpected-identity.md",
+      "utf8_bytes_hex": "2d2d2d0a7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c78363167656e7473220a2d2d2d0a2320446f63756d656e7461727920666978747572650a",
+      "content_sha256": "512d00e79a123dfc828ea4efc41a560a1e1ec3c23e454f67d44faf1418c2d310",
+      "accepted": false,
+      "diagnostic": "unallowlisted legacy repository identity"
+    },
+    {
+      "case_id": "C08",
+      "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+      "subtest": "test_yaml_frontmatter_bom_does_not_change_identity_detection (__main__.Inventory.test_yaml_frontmatter_bom_does_not_change_identity_detection) (prefix=\"''\", newline=\"'\\\\r\\\\n'\")",
+      "path": "release/provingkit/unexpected-identity.md",
+      "utf8_bytes_hex": "2d2d2d0d0a7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c78363167656e7473220d0a2d2d2d0d0a2320446f63756d656e7461727920666978747572650d0a",
+      "content_sha256": "13fefa0d04d753ffa265d67e3926598734d27ec37b5b925b38879be9f2d6ad0b",
+      "accepted": false,
+      "diagnostic": "unallowlisted legacy repository identity"
+    },
+    {
+      "case_id": "C09",
+      "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+      "subtest": "test_yaml_frontmatter_bom_does_not_change_identity_detection (__main__.Inventory.test_yaml_frontmatter_bom_does_not_change_identity_detection) (prefix=\"'\\\\ufeff'\", newline=\"'\\\\n'\")",
+      "path": "release/provingkit/unexpected-identity.md",
+      "utf8_bytes_hex": "efbbbf2d2d2d0a7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c78363167656e7473220a2d2d2d0a2320446f63756d656e7461727920666978747572650a",
+      "content_sha256": "3ea9a41365ed6c76d7d7a0328abd7e40e6da50b35f3728f3c14d0a0069bafc74",
+      "accepted": false,
+      "diagnostic": "unallowlisted legacy repository identity"
+    },
+    {
+      "case_id": "C10",
+      "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+      "subtest": "test_yaml_frontmatter_bom_does_not_change_identity_detection (__main__.Inventory.test_yaml_frontmatter_bom_does_not_change_identity_detection) (prefix=\"'\\\\ufeff'\", newline=\"'\\\\r\\\\n'\")",
+      "path": "release/provingkit/unexpected-identity.md",
+      "utf8_bytes_hex": "efbbbf2d2d2d0d0a7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c78363167656e7473220d0a2d2d2d0d0a2320446f63756d656e7461727920666978747572650d0a",
+      "content_sha256": "743e883b2faaf4d3cbe42abe10367dec207ed912c25045810f348df7bd87f4ec",
+      "accepted": false,
+      "diagnostic": "unallowlisted legacy repository identity"
+    },
+    {
+      "case_id": "C11",
+      "method": "test_legitimate_bom_frontmatter_remains_accepted",
+      "subtest": "test_legitimate_bom_frontmatter_remains_accepted (__main__.Inventory.test_legitimate_bom_frontmatter_remains_accepted) (variant='canonical-repository')",
+      "path": "release/provingkit/unexpected-identity.md",
+      "utf8_bytes_hex": "efbbbf2d2d2d0a7265706f7369746f72793a202268747470733a2f2f6769746875622e636f6d2f6e6973617669642f70726f76696e676b6974220a6c6162656c3a20225c7836317263686976656420736f75726365220a2d2d2d0a54686973204d61726b646f776e20626f6479206973206e6f742059414d4c3a205b0a",
+      "content_sha256": "df3b142ce6dff027bce34d9e3d03aea0fc3c22ad5a08bbec19762b359c63a46f",
+      "accepted": true,
+      "diagnostic": null
+    },
+    {
+      "case_id": "C12",
+      "method": "test_legitimate_bom_frontmatter_remains_accepted",
+      "subtest": "test_legitimate_bom_frontmatter_remains_accepted (__main__.Inventory.test_legitimate_bom_frontmatter_remains_accepted) (variant='literal-backslash')",
+      "path": "release/provingkit/unexpected-identity.md",
+      "utf8_bytes_hex": "efbbbf2d2d2d0a7265706f7369746f72793a202768747470733a2f2f6769746875622e636f6d2f6e6973617669642f5c78363167656e7473270a2d2d2d0a54686973204d61726b646f776e20626f6479206973206e6f742059414d4c3a205b0a",
+      "content_sha256": "b6cfd9e5833402aef16c0268051ab6225d7b9e84fef32a0d5c01431ca29417fb",
+      "accepted": true,
+      "diagnostic": null
+    }
+  ],
+  "cli_assertions": [
+    {
+      "id": "C01-CLI-1",
+      "case": "C01",
+      "expectation": "returncode != 0",
+      "original_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C01-CLI-2",
+      "case": "C01",
+      "expectation": "stderr contains 'unallowlisted legacy repository identity'",
+      "original_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C01-CLI-3",
+      "case": "C01",
+      "expectation": "stderr contains 'release/provingkit/unexpected-identity.yaml'",
+      "original_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C02-CLI-1",
+      "case": "C02",
+      "expectation": "returncode != 0",
+      "original_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C02-CLI-2",
+      "case": "C02",
+      "expectation": "stderr contains 'unallowlisted legacy repository identity'",
+      "original_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C02-CLI-3",
+      "case": "C02",
+      "expectation": "stderr contains 'release/provingkit/unexpected-identity.yml'",
+      "original_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C03-CLI-1",
+      "case": "C03",
+      "expectation": "returncode != 0",
+      "original_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C03-CLI-2",
+      "case": "C03",
+      "expectation": "stderr contains 'unallowlisted legacy repository identity'",
+      "original_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C03-CLI-3",
+      "case": "C03",
+      "expectation": "stderr contains 'release/provingkit/unexpected-identity.yaml'",
+      "original_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C04-CLI-1",
+      "case": "C04",
+      "expectation": "returncode == 0",
+      "original_owner": {
+        "case": "C04",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C04",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "cases": [
+          "C05",
+          "C06"
+        ],
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "retained original subprocess CLI success checks on the same relative YAML path; different content",
+        "additional_candidate_witness": {
+          "case": "C11",
+          "method": "test_legitimate_bom_frontmatter_remains_accepted",
+          "route": "original CLI success for canonical YAML metadata in BOM Markdown; different format/path"
+        }
+      },
+      "review_state": "PROPOSED ONLY: shared owner, original input context differs; independent reviewer must accept this mapping or reject M"
+    },
+    {
+      "id": "C05-CLI-1",
+      "case": "C05",
+      "expectation": "returncode == 0",
+      "original_owner": {
+        "case": "C05",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C05",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C05",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C06-CLI-1",
+      "case": "C06",
+      "expectation": "returncode == 0",
+      "original_owner": {
+        "case": "C06",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C06",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C06",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C07-CLI-1",
+      "case": "C07",
+      "expectation": "returncode != 0",
+      "original_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C07-CLI-2",
+      "case": "C07",
+      "expectation": "stderr contains 'unallowlisted legacy repository identity'",
+      "original_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C07-CLI-3",
+      "case": "C07",
+      "expectation": "stderr contains 'release/provingkit/unexpected-identity.md'",
+      "original_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C07",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C08-CLI-1",
+      "case": "C08",
+      "expectation": "returncode != 0",
+      "original_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C08-CLI-2",
+      "case": "C08",
+      "expectation": "stderr contains 'unallowlisted legacy repository identity'",
+      "original_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C08-CLI-3",
+      "case": "C08",
+      "expectation": "stderr contains 'release/provingkit/unexpected-identity.md'",
+      "original_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C08",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C09-CLI-1",
+      "case": "C09",
+      "expectation": "returncode != 0",
+      "original_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C09-CLI-2",
+      "case": "C09",
+      "expectation": "stderr contains 'unallowlisted legacy repository identity'",
+      "original_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C09-CLI-3",
+      "case": "C09",
+      "expectation": "stderr contains 'release/provingkit/unexpected-identity.md'",
+      "original_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C09",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C10-CLI-1",
+      "case": "C10",
+      "expectation": "returncode != 0",
+      "original_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C10-CLI-2",
+      "case": "C10",
+      "expectation": "stderr contains 'unallowlisted legacy repository identity'",
+      "original_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C10-CLI-3",
+      "case": "C10",
+      "expectation": "stderr contains 'release/provingkit/unexpected-identity.md'",
+      "original_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C10",
+        "method": "test_yaml_frontmatter_bom_does_not_change_identity_detection",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C11-CLI-1",
+      "case": "C11",
+      "expectation": "returncode == 0",
+      "original_owner": {
+        "case": "C11",
+        "method": "test_legitimate_bom_frontmatter_remains_accepted",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C11",
+        "method": "test_legitimate_bom_frontmatter_remains_accepted",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C11",
+        "method": "test_legitimate_bom_frontmatter_remains_accepted",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    },
+    {
+      "id": "C12-CLI-1",
+      "case": "C12",
+      "expectation": "returncode == 0",
+      "original_owner": {
+        "case": "C12",
+        "method": "test_legitimate_bom_frontmatter_remains_accepted",
+        "route": "assert_identity_fixture -> subprocess validate CLI"
+      },
+      "option_z_owner": {
+        "case": "C12",
+        "method": "test_legitimate_bom_frontmatter_remains_accepted",
+        "route": "same original CLI"
+      },
+      "option_m_owner": {
+        "case": "C12",
+        "method": "test_legitimate_bom_frontmatter_remains_accepted",
+        "route": "same original CLI"
+      },
+      "review_state": "retained exact original owner"
+    }
+  ],
+  "yaml_assertions": [
+    {
+      "id": "C01-YAML",
+      "case": "C01",
+      "expectation": "original yaml.safe_load(document) == original expected mapping",
+      "option_z_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original assertEqual"
+      },
+      "option_m_owner": {
+        "case": "C01",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original assertEqual"
+      }
+    },
+    {
+      "id": "C02-YAML",
+      "case": "C02",
+      "expectation": "original yaml.safe_load(document) == original expected mapping",
+      "option_z_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original assertEqual"
+      },
+      "option_m_owner": {
+        "case": "C02",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original assertEqual"
+      }
+    },
+    {
+      "id": "C03-YAML",
+      "case": "C03",
+      "expectation": "original yaml.safe_load(document) == original expected mapping",
+      "option_z_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original assertEqual"
+      },
+      "option_m_owner": {
+        "case": "C03",
+        "method": "test_yaml_semantic_escapes_for_legacy_repository_identity_are_rejected",
+        "route": "same original assertEqual"
+      }
+    },
+    {
+      "id": "C04-YAML",
+      "case": "C04",
+      "expectation": "original yaml.safe_load(document) == original expected mapping",
+      "option_z_owner": {
+        "case": "C04",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original assertEqual"
+      },
+      "option_m_owner": {
+        "case": "C04",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original assertEqual"
+      }
+    },
+    {
+      "id": "C05-YAML",
+      "case": "C05",
+      "expectation": "original yaml.safe_load(document) == original expected mapping",
+      "option_z_owner": {
+        "case": "C05",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original assertEqual"
+      },
+      "option_m_owner": {
+        "case": "C05",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original assertEqual"
+      }
+    },
+    {
+      "id": "C06-YAML",
+      "case": "C06",
+      "expectation": "original yaml.safe_load(document) == original expected mapping",
+      "option_z_owner": {
+        "case": "C06",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original assertEqual"
+      },
+      "option_m_owner": {
+        "case": "C06",
+        "method": "test_legitimate_yaml_semantics_remain_accepted",
+        "route": "same original assertEqual"
+      }
+    }
+  ],
+  "option_z_cli_calls": 12,
+  "option_m_proposed_cli_calls": 11,
+  "option_m_proposed_subset": [
+    "C04"
+  ],
+  "proposal_not_applied": true,
+  "claimed_qualified_replacements": null
+}
