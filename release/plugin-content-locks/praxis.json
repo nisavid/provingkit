@@ -52,7 +52,7 @@
     },
     "plugins/praxis/skills/aeon-bell/references/structured-harness.md": {
       "mode": 420,
-      "sha256": "b718e8ef59b7513b5022fb8176a402a1309f1c0943c16458126a102b414f40ef"
+      "sha256": "a358320feb6da625802c4d1883d79c0876398d1dfbe6ce62f99bf91d884c02d3"
     },
     "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py": {
       "mode": 493,
@@ -64,7 +64,7 @@
     },
     "plugins/praxis/skills/aeon-bell/scripts/monitor_binding.js": {
       "mode": 420,
-      "sha256": "662222ec151bfc08df5634353fe79c1c6b1f9e78705e023d11ec01b90ff24aac"
+      "sha256": "a85478740c9544544baf47ac87fec6a27ac6aeb194039ceac19a3a7f618f3b5d"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -76,7 +76,7 @@
     },
     "tests/test_aeon_bell_binding.py": {
       "mode": 420,
-      "sha256": "2cbc29c9bf1d3e3ad46c234cf24dc768add676ee8f51ff6c31ea4bb596c4ef6a"
+      "sha256": "f840e02f14745ab41ebb4e7a8f8d1e1046d4841089b528c40053deeeded879bc"
     },
     "tests/test_aeon_bell_codex_status.py": {
       "mode": 420,

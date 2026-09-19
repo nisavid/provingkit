@@ -5,6 +5,8 @@
   const TASK_STATUSES = Object.freeze(["idle", "running", "completed", "archived", "canceled", "human_waiting", "unavailable", "unknown"]);
   const SEND_OUTCOMES = Object.freeze(["accepted", "not_sent", "unknown"]);
   const MAX_SUBMISSION_ATTEMPTS = 3;
+  const MAX_SAFE_REFRESH_ATTEMPTS = 1;
+  const CORRECTABLE_ENGINE_CODES = Object.freeze(["invalid-result", "stale-result", "tick-clock"]);
 
   function plainObject(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -45,7 +47,17 @@
     }
     if (outcome.kind !== "completed") return {transport: outcome.kind};
     if (!Number.isInteger(outcome.exit_code)) return {transport: "unknown", reason: "engine-exit-is-not-authoritative"};
-    if (outcome.exit_code !== 0) return {transport: "refused", reason: "engine-refused"};
+    if (outcome.exit_code !== 0) {
+      if (outcome.exit_code !== 2) return {transport: "unknown", reason: "engine-exit-is-not-authoritative"};
+      const diagnostics = [outcome.stderr, outcome.stdout]
+        .filter(value => typeof value === "string" && value.trim().length > 0);
+      if (diagnostics.length !== 1) return {transport: "unknown", reason: "engine-diagnostic-is-ambiguous"};
+      const lines = diagnostics[0].trim().split(/\r?\n/);
+      if (lines.length !== 1) return {transport: "unknown", reason: "engine-diagnostic-is-ambiguous"};
+      const match = /^aeon bell: ([a-z][a-z0-9-]*): ([^\p{C}]+)$/u.exec(lines[0]);
+      if (match === null) return {transport: "unknown", reason: "engine-diagnostic-is-invalid"};
+      return {transport: "refused", code: match[1], reason: "engine-" + match[1]};
+    }
     if (typeof outcome.stdout !== "string") return {transport: "unknown", reason: "engine-output-is-not-text"};
     let reply;
     try {
@@ -75,7 +87,8 @@
       invocation_id: null, generation: null, continuation: null, action: null,
       action_binding_id: null, native_phase: null, native_actual_result: null,
       native_result_summary: null, decision_id: null, mapped_engine_result: null,
-      result_json: null, submission_attempts: 0, terminal_reason: null,
+      result_json: null, submission_attempts: 0, correction_attempts: 0,
+      engine_correction: null, terminal_reason: null,
     };
   }
 
@@ -195,11 +208,7 @@
     run.generation = reply.generation;
     run.continuation = serializableCopy(reply.continuation);
     run.action = serializableCopy(reply.action);
-    const prior = typeof run.action_binding_id === "string"
-      ? Number(run.action_binding_id.slice(run.action_binding_id.lastIndexOf("-") + 1))
-      : 0;
-    const sequence = Number.isInteger(prior) && prior >= 0 ? prior + 1 : 1;
-    run.action_binding_id = "binding-" + reply.generation + "-" + sequence;
+    advanceActionBinding(run);
     run.native_phase = "ready";
     run.native_actual_result = null;
     run.native_result_summary = null;
@@ -207,6 +216,42 @@
     run.mapped_engine_result = null;
     run.result_json = null;
     run.submission_attempts = 0;
+    run.correction_attempts = 0;
+    run.engine_correction = null;
+    run.phase = "native_ready";
+  }
+
+  function advanceActionBinding(run) {
+    const prior = typeof run.action_binding_id === "string"
+      ? Number(run.action_binding_id.slice(run.action_binding_id.lastIndexOf("-") + 1))
+      : 0;
+    const sequence = Number.isInteger(prior) && prior >= 0 ? prior + 1 : 1;
+    run.action_binding_id = "binding-" + run.generation + "-" + sequence;
+  }
+
+  function preserveCorrection(run, code) {
+    run.engine_correction = {
+      code,
+      action_binding_id: run.action_binding_id,
+      continuation: serializableCopy(run.continuation),
+      native_actual_result: serializableCopy(run.native_actual_result),
+      mapped_engine_result: serializableCopy(run.mapped_engine_result),
+      result_json: serializableCopy(run.result_json),
+    };
+  }
+
+  function prepareSafeRefresh(run, code) {
+    preserveCorrection(run, code);
+    run.correction_attempts = Number.isInteger(run.correction_attempts) ? run.correction_attempts + 1 : 1;
+    advanceActionBinding(run);
+    run.native_phase = "ready";
+    run.native_actual_result = null;
+    run.native_result_summary = null;
+    run.decision_id = null;
+    run.mapped_engine_result = null;
+    run.result_json = null;
+    run.submission_attempts = 0;
+    run.terminal_reason = null;
     run.phase = "native_ready";
   }
 
@@ -221,6 +266,7 @@
     run.mapped_engine_result = null;
     run.result_json = null;
     run.decision_id = null;
+    run.engine_correction = null;
   }
 
   function createStructuredMonitorBinding(options) {
@@ -264,6 +310,7 @@
       } else run = serializableCopy(run);
 
       if (["complete", "stopped", "unresolved", "unsupported"].includes(run.phase)) return publicResult(run, run.phase, displayPolicy);
+      if (run.phase === "correction_required") return publicResult(run, "correction_required", displayPolicy);
       if (run.phase === "entering" || run.phase === "native_started" || run.phase === "submission_started") {
         const prior = run.phase;
         run.phase = "unresolved";
@@ -381,6 +428,19 @@
             put(state, input.runKey, run); return publicResult(run, "unresolved", displayPolicy);
           }
           if (parsed.transport === "refused") {
+            if (CORRECTABLE_ENGINE_CODES.includes(parsed.code)) {
+              const refreshes = Number.isInteger(run.correction_attempts) ? run.correction_attempts : 0;
+              if (parsed.code === "stale-result" &&
+                  ["task_read", "observe"].includes(run.action.kind) &&
+                  refreshes < MAX_SAFE_REFRESH_ATTEMPTS) {
+                prepareSafeRefresh(run, parsed.code);
+                put(state, input.runKey, run);
+                continue;
+              }
+              preserveCorrection(run, parsed.code);
+              run.phase = "correction_required"; run.terminal_reason = parsed.reason;
+              put(state, input.runKey, run); return publicResult(run, "correction_required", displayPolicy);
+            }
             run.phase = "stopped"; run.terminal_reason = parsed.reason;
             put(state, input.runKey, run); return publicResult(run, "stopped", displayPolicy);
           }
@@ -411,7 +471,12 @@
         try {
           if (result.session_id !== sessionId) return {kind: "unknown"};
           result = await options.writeStdin({session_id: sessionId, chars: ""});
-          if (plainObject(result) && typeof result.output === "string") output += result.output;
+          if (!plainObject(result) ||
+              (result.session_id !== undefined && result.session_id !== sessionId) ||
+              (result.session_id === undefined && !Number.isInteger(result.exit_code))) {
+            return {kind: "unknown"};
+          }
+          if (typeof result.output === "string") output += result.output;
         } catch (_) {
           return {kind: "unknown"};
         }

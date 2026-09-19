@@ -106,6 +106,8 @@ every engine transition. The result is one of:
 - `complete`: the original engine invocation completed;
 - `stopped`: the engine definitively refused or stopped, or a positively
   not-started transition exhausted the immediate retry bound;
+- `correction_required`: the engine kept the current continuation active after
+  a correctable rejection, but the binding has no safe automatic correction;
 - `needs_classification`: inspect the stored native episode through the
   harness, then return exactly `{decision_id, choice}` using one listed choice;
 - `unresolved`: an effect or engine transition may have occurred without an
@@ -136,10 +138,29 @@ JSON reply, lost polling session, or other ambiguous outcome is `unresolved`.
 The binding never calls `enter` again after run-state creation and never
 replays a native action after its start became ambiguous.
 
+A completed exit 2 is authoritative only when it carries exactly one
+`aeon bell: <code>: <message>` diagnostic. The binding preserves the code,
+continuation, action, completed native result, and serialized result. A
+`stale-result` for `task_read` or `observe` may refresh that same safe action
+once and submit its fresh result through the unchanged continuation. The
+refresh gets a new decision id when classification is needed. A second stale
+result, or an `invalid-result` or `tick-clock` the binding cannot derive a
+correction for, returns `correction_required`; the engine invocation stays
+active for takeover or explicit recovery. No correctable rejection replays a
+`send`, `emit`, or `heartbeat_set`. `stale-invocation` and other definitive
+engine refusals are `stopped`. A missing, malformed, multiline, conflicting,
+or otherwise ambiguous diagnostic is `unresolved` and cannot retry the
+continuation or any native action.
+
 An `exec_command` result carrying `session_id` is still running. The supplied
 transport polls that exact id until an integer exit code appears and appends
 every initial, intermediate, and final output chunk in order before parsing
-the one engine JSON reply. A changed or lost session id is unknown.
+the one engine JSON reply. Every poll response is checked against the initial
+session before its bytes are appended or its exit accepted. A present changed
+id, or an id-less nonterminal response, is unknown. An id-less response may
+complete only when it carries an integer exit code; this preserves the
+documented terminal response shape without accepting output from a changed or
+lost running session.
 
 The state slots are per native invocation. `store` and `load` do not promise
 that another heartbeat run can recover them. A new invocation uses the
