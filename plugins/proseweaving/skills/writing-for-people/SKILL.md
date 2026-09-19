@@ -1,6 +1,6 @@
 ---
 name: writing-for-people
-description: Use when drafting or editing prose for people, including publications, documentation, PR and Issue text, reports, chat messages, and review replies.
+description: Use when asked to write, draft, rewrite, edit, or polish text for people, including PRs, Issues, documentation, reports, posts, chat replies, and review comments.
 ---
 
 # Writing For People
