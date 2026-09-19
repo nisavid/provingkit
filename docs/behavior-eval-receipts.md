@@ -238,6 +238,34 @@ List every external fixture, directly consumed behavioral resource, and applicab
 
 The direct CLI reads mutable local receipt files and reports `coverage_basis: "caller-declared-complete"`. It is useful before committing, but does not establish committed receipt bytes at C or authoritative inventory coverage. Python callers supplying raw bytes retain raw and canonical digests; callers supplying JSON values have only canonical identities. Use the inventory check for the committed-Slate claim above.
 
+The maintained correspondence seams keep the source and caller responsibilities
+separate. `scripts/behavior_eval_receipts.py` exposes
+`input_closure(repository, revision, descriptor, profile=..., method=...)` for
+the complete path, byte, and mode closure, and
+`check_correspondence(repository, candidate_revision=..., descriptor=...,
+receipt_bytes=..., binding=...)` for one strict historical and landed-commit
+check. The profile is `p957` or `p24`; the method is `prepared` or
+`reconciled-after-run`. The per-Receipt result has
+`coverage_basis: "per-receipt"` and leaves member qualification to its owner.
+Do not call private closure helpers or reproduce their path rules in a caller.
+
+The inventory owner supplies the complete reviewed context and independently
+observed landing envelope to the aggregate seam:
+
+```sh
+python scripts/behavior_eval_inventory.py check-landed \
+  --context "$EVAL_PRIVATE/reviewed-context.json" \
+  --landing "$EVAL_PRIVATE/actual-landing.json" \
+  > "$EVAL_PRIVATE/landed-check.json"
+```
+
+That entrypoint compares B-to-H and B-to-C, verifies each selected committed
+Receipt at H and C against its reviewed binding, and invokes the core seam for
+each row. It reports `coverage_basis: "complete-inventory"`, preserves both
+comparison results and committed blob identities, and never treats a
+caller-supplied selected set as complete. The context and landing envelopes
+remain independently retained inputs owned by the landing workflow.
+
 ## Acceptance and consumer handoff
 
 For adapter changes, run `python -m unittest tests.test_behavior_eval_receipts tests.test_behavior_eval_corpora tests.test_behavior_eval_inventory` and `git diff --check`. Tests construct artifacts and Git histories; they establish adapter behavior, not live evaluations or discovery. Review this procedure against the final implementation, schema, policy, and maps. Exercise positive and neighboring negative discovery separately from application success, failure, unsupported-input, waiver, and no-op branches. A constructed receipt or static review does not establish live procedure behavior.

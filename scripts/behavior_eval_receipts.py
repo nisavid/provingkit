@@ -1483,15 +1483,38 @@ def check_correspondence(
         )
         historical = evaluate(repository, receipt)
         require(historical["status"] == "pass", "historical Receipt validation failed")
+        if method == "prepared":
+            processing_paths = (TOOL_PATH, SCHEMA_PATH, POLICY_PATH)
+            if descriptor.get("corpus_format"):
+                processing_paths += (CORPORA_PATH, INVENTORY_PATH)
+            processing_inputs = {
+                path: historical_snapshot["inputs"][path]
+                for path in processing_paths
+            }
+        else:
+            processing_inputs = receipt["processing"]["inputs"]
+        input_identity = document_digest(
+            {
+                "contract": "provingkit.receipt-inputs/v1",
+                "profile": profile,
+                "method": method,
+                "descriptor": descriptor,
+                "inputs": historical_snapshot["inputs"],
+                "processing_inputs": processing_inputs,
+            }
+        )
         return {
             "status": "pass",
             "coverage_basis": "per-receipt",
             "qualification_scope": "ordinary-receipt-correspondence",
             "member_qualification": "not-evaluated",
+            "profile": profile,
+            "method": method,
             "candidate_revision": candidate_revision,
             "evaluated_revision": source,
             "receipt_raw_sha256": hashlib.sha256(receipt_bytes).hexdigest(),
             "receipt_sha256": document_digest(receipt),
+            "input_identity": input_identity,
             "historical": historical,
         }
     except ReceiptError as error:

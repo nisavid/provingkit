@@ -112,6 +112,66 @@ class InventoryTests(unittest.TestCase):
                             for row in compared["inventory_diagnostics"]["candidate"]))
         self.assertEqual(inventory.check(self.repo, base, candidate, "release/receipts")["status"], "not-required")
 
+    def test_check_landed_accepts_a_complete_context_with_no_selected_consumers(self):
+        self.write("README.md", "An unrelated landing change.\n")
+        candidate = self.commit("unrelated landing change")
+        context = {
+            "contract": "provingkit.receipt-correspondence/v1",
+            "original_base": self.base,
+            "reviewed_head": self.base,
+            "reviewed_target": self.base,
+            "operation": "rebase",
+            "consumer_revision": self.base,
+            "procedure_revision": self.base,
+            "receipt_root": "release/receipts",
+            "receipts": {},
+        }
+        landing = {
+            "contract": "provingkit.receipt-correspondence/v1",
+            "context_sha256": inventory.core.document_digest(context),
+            "operation": "rebase",
+            "reviewed_head": self.base,
+            "target_before": self.base,
+            "candidate_revision": candidate,
+        }
+
+        result = inventory.check_landed(self.repo, context=context, landing=landing)
+
+        self.assertEqual(result["status"], "not-required")
+        self.assertEqual(result["coverage_basis"], "complete-inventory")
+        self.assertEqual(result["selection_complete"], True)
+
+    def test_check_landed_does_not_allow_the_reviewed_binding_set_to_narrow_selection(self):
+        self.write("plugins/example/skills/writing/SKILL.md", "A changed writing skill.\n")
+        reviewed = self.commit("reviewed skill change")
+        self.write("README.md", "An unrelated landing change.\n")
+        candidate = self.commit("land reviewed change")
+        context = {
+            "contract": "provingkit.receipt-correspondence/v1",
+            "original_base": self.base,
+            "reviewed_head": reviewed,
+            "reviewed_target": self.base,
+            "operation": "rebase",
+            "consumer_revision": self.base,
+            "procedure_revision": self.base,
+            "receipt_root": "release/receipts",
+            "receipts": {},
+        }
+        landing = {
+            "contract": "provingkit.receipt-correspondence/v1",
+            "context_sha256": inventory.core.document_digest(context),
+            "operation": "rebase",
+            "reviewed_head": reviewed,
+            "target_before": self.base,
+            "candidate_revision": candidate,
+        }
+
+        result = inventory.check_landed(self.repo, context=context, landing=landing)
+
+        self.assertEqual(result["status"], "fail")
+        self.assertFalse(result["selection_complete"])
+        self.assertEqual(result["reason_code"], "selection-mismatch")
+
     def test_reviewed_consumer_adoption_requires_its_phase_two_coordinate_without_changing_neighbors(self):
         _, document = self.ordinary_corpora_with_phase_two_source()
         base = self.commit("retained separate routing scope")

@@ -209,6 +209,28 @@ class ReceiptWorkflowTests(unittest.TestCase):
         self.assertEqual(result["coverage_basis"], "per-receipt")
         self.assertEqual(result["qualification_scope"], "ordinary-receipt-correspondence")
         self.assertEqual(result["member_qualification"], "not-evaluated")
+        self.assertEqual(result["profile"], "p24")
+        self.assertEqual(result["method"], "prepared")
+        self.assertEqual(
+            result["input_identity"],
+            receipts.document_digest(
+                {
+                    "contract": "provingkit.receipt-inputs/v1",
+                    "profile": "p24",
+                    "method": "prepared",
+                    "descriptor": self.spec,
+                    "inputs": snapshot["inputs"],
+                    "processing_inputs": {
+                        path: snapshot["inputs"][path]
+                        for path in (
+                            "scripts/behavior_eval_receipts.py",
+                            "release/behavior-eval-receipt-v1.schema.json",
+                            "release/behavior-eval-policy.json",
+                        )
+                    },
+                }
+            ),
+        )
         self.assertEqual(result["evaluated_revision"], self.candidate)
 
     def test_check_correspondence_reports_landed_closure_mismatch(self):
