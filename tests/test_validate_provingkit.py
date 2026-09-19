@@ -31,6 +31,19 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             check=False,
         )
 
+    def validate_definitions(self, repository: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(VALIDATOR),
+                str(repository),
+                "--definitions-only",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
     def clone_with_history(self, destination: Path) -> None:
         subprocess.run(
             [
@@ -507,6 +520,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertIn('python scripts/run_provingkit_tests.py . --output-dir "$RUNNER_TEMP/provingkit-tests"', commands)
         for command in (
             "python scripts/validate_provingkit.py .",
+            "python scripts/validate_provingkit.py . --definitions-only",
             "test_human_docs_document_only_the_source_stage_entrypoint",
             "test_human_docs_document_source_stage_containment",
             "test_checked_out_candidate_completes_prepared_source_stage_validation",
@@ -559,6 +573,101 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "six Agent Plugin members",
                 ):
                     self.assertNotIn(stale, normalized)
+
+    def test_design_responsibility_table_names_each_current_member_once(self) -> None:
+        principles = (
+            REPOSITORY / "docs/plugin-system/design-principles.md"
+        ).read_text(encoding="utf-8")
+        rows = [
+            line.split("|", 2)[1].strip()
+            for line in principles.splitlines()
+            if line.startswith("| ")
+            and not line.startswith("| ---")
+            and not line.startswith("| Distribution ")
+        ]
+
+        self.assertEqual(
+            rows[:7],
+            [
+                "Rolecasting",
+                "Versionkeeping",
+                "Tricritical",
+                "Mergecraft",
+                "Artifact Customs",
+                "Proseweaving",
+                "Praxis",
+            ],
+        )
+
+    def test_provider_free_definition_validation_rejects_structural_drift(
+        self,
+    ) -> None:
+        mutations = (
+            ("corpus shape", "evals/praxis/corpus.json", "corpus-shape"),
+            (
+                "control-plane selector",
+                "evals/control-plane-matrix.json",
+                "control-selector",
+            ),
+            (
+                "control-plane inventory",
+                "evals/control-plane-matrix.json",
+                "control-inventory",
+            ),
+            (
+                "routing count",
+                "evals/skill-routing-matrix.json",
+                "routing-count",
+            ),
+            (
+                "routing semantic digest",
+                "evals/skill-routing-matrix.json",
+                "routing-digest",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            control = Path(directory) / "control"
+            shutil.copytree(
+                REPOSITORY,
+                control,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            accepted = self.validate_definitions(control)
+            self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+
+        for label, relative, mutation in mutations:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                repository = Path(directory) / "repository"
+                shutil.copytree(
+                    REPOSITORY,
+                    repository,
+                    ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+                )
+                path = repository / relative
+                document = json.loads(path.read_text(encoding="utf-8"))
+                if mutation == "corpus-shape":
+                    document["scenarios"] = {}
+                elif mutation == "control-selector":
+                    document["skills"][-1]["scenario"]["selector"] = (
+                        "missing-praxis-selector"
+                    )
+                elif mutation == "control-inventory":
+                    document["skills"].pop()
+                elif mutation == "routing-count":
+                    document["skills"].pop()
+                else:
+                    document["semantic_definition"]["sha256"] = "0" * 64
+                path.write_text(
+                    json.dumps(document, indent=2) + "\n", encoding="utf-8"
+                )
+
+                rejected = self.validate_definitions(repository)
+
+                self.assertNotEqual(rejected.returncode, 0)
+                self.assertIn(
+                    "definition validation failed",
+                    rejected.stderr,
+                )
 
     def test_human_docs_keep_praxis_source_membership_below_release_authority(
         self,

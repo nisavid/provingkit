@@ -6,6 +6,7 @@ from __future__ import annotations
 import base64
 import binascii
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -320,6 +321,64 @@ EXPECTED_PYTEST_CONFIGURATION = (
 
 class ValidationError(ValueError):
     """The repository does not satisfy the Provingkit source contract."""
+
+
+def _load_definition_validator(
+    repository: Path,
+    relative: str,
+    module_name: str,
+):
+    path = repository / relative
+    specification = importlib.util.spec_from_file_location(module_name, path)
+    if specification is None or specification.loader is None:
+        raise ValidationError(f"definition validator is unavailable: {relative}")
+    module = importlib.util.module_from_spec(specification)
+    previous = sys.modules.get(module_name)
+    sys.modules[module_name] = module
+    try:
+        specification.loader.exec_module(module)
+    except Exception as error:
+        raise ValidationError(
+            f"definition validator is unavailable: {relative}"
+        ) from error
+    finally:
+        if previous is None:
+            sys.modules.pop(module_name, None)
+        else:
+            sys.modules[module_name] = previous
+    return module
+
+
+def _validate_current_definitions(repository: Path) -> None:
+    try:
+        control_plane = _load_definition_validator(
+            repository,
+            "scripts/run_control_plane_eval.py",
+            "_provingkit_control_plane_definition_validator",
+        )
+        control_plane.validate_definition(
+            repository,
+            control_plane.read_json(repository / "evals/control-plane-matrix.json"),
+        )
+    except Exception as error:
+        if isinstance(error, ValidationError):
+            raise
+        raise ValidationError(
+            f"control-plane definition validation failed: {error}"
+        ) from error
+    try:
+        routing = _load_definition_validator(
+            repository,
+            "scripts/run_skill_routing_eval.py",
+            "_provingkit_skill_routing_definition_validator",
+        )
+        routing.load_definition(repository)
+    except Exception as error:
+        if isinstance(error, ValidationError):
+            raise
+        raise ValidationError(
+            f"routing definition validation failed: {error}"
+        ) from error
 
 
 class _JsonObjectPairs(list[tuple[str, object]]):
@@ -2425,15 +2484,25 @@ def _validate_historical_qualification_boundary(repository: Path) -> None:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 2:
-        print("usage: validate_provingkit.py REPOSITORY", file=sys.stderr)
+    if len(argv) not in (2, 3) or (
+        len(argv) == 3 and argv[2] != "--definitions-only"
+    ):
+        print(
+            "usage: validate_provingkit.py REPOSITORY [--definitions-only]",
+            file=sys.stderr,
+        )
         return 2
     repository = Path(argv[1])
     if not repository.is_dir():
         print("Provingkit repository is not a directory", file=sys.stderr)
         return 1
     try:
+        if len(argv) == 3:
+            _validate_current_definitions(repository)
+            print("Provingkit definition validation passed")
+            return 0
         _validate_definition(repository)
+        _validate_current_definitions(repository)
         _validate_excluded_source(repository)
         _validate_marketplace(repository)
         _validate_cutover_provenance(repository)

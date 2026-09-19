@@ -43,6 +43,7 @@ Each distribution owns a distinct part of the workflow:
 | Tricritical | Own general change review, finding adjudication, authorized revision, and fixed-point review loops. |
 | Mergecraft | Own reviewer-facing pull-request content and the pull-request lifecycle. |
 | Artifact Customs | Govern third-party components from assessment through adoption, maintenance, and retirement. |
+| Proseweaving | Own generic human-facing prose mechanics: register, evidence discipline, and post-draft edit passes. |
 | Praxis | Steward an effort's intent, work graph, participants, context, artifacts, and obligations; Aeon Bell is its first equipment for shared gate observation, task registration, and conditional dispatch. |
 
 One semantic capability or mutable surface has one owner. Outcome coordinators

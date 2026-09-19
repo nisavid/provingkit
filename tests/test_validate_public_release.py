@@ -2500,6 +2500,18 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
 
     def test_source_stage_validator_commands_are_bound_to_the_snapshot(self) -> None:
+        self.assertIn(
+            "scripts/validate_provingkit.py",
+            self.module.SOURCE_STAGE_COMMON_SUPPORT_PATHS,
+        )
+        self.assertNotIn(
+            "scripts/validate_provingkit.py",
+            self.module.COMMON_SUPPORT_PATHS,
+        )
+        self.assertEqual(
+            self.module.SOURCE_STAGE_COMMON_VALIDATOR_FLAGS,
+            {"scripts/validate_provingkit.py": ("--definitions-only",)},
+        )
         snapshot = Path(self.temporary_directory.name).resolve() / "snapshot"
         completed = subprocess.CompletedProcess([], 0, "", "")
         with mock.patch.object(
@@ -2509,13 +2521,16 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
         expected = [
             (
+                relative,
+                self.module.SOURCE_STAGE_COMMON_VALIDATOR_FLAGS.get(relative, ()),
+            )
+            for relative in self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS
+        ] + [
+            (
                 self.module.VALIDATOR_PATHS[plugin],
                 self.module.SOURCE_STAGE_VALIDATOR_FLAGS[plugin],
             )
             for plugin in self.module.SOURCE_STAGE_VALIDATED_PLUGINS
-        ] + [
-            (relative, ())
-            for relative in self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS
         ]
         self.assertEqual(run.call_count, len(expected))
         for (relative, flags), call in zip(
@@ -2626,7 +2641,10 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             self.module.SOURCE_STAGE_VALIDATED_PLUGINS
         )
 
-        self.assertEqual(self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS, ())
+        self.assertEqual(
+            self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS,
+            ("scripts/validate_provingkit.py",),
+        )
         for stale_root in stale_roots:
             with self.subTest(stale_root=stale_root):
                 self.assertFalse(
