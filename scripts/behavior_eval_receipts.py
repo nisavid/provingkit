@@ -15,6 +15,8 @@ SCHEMA_PATH = "release/behavior-eval-receipt-v1.schema.json"
 TOOL_PATH = "scripts/behavior_eval_receipts.py"
 CORPORA_PATH = "scripts/behavior_eval_corpora.py"
 INVENTORY_PATH = "scripts/behavior_eval_inventory.py"
+SUPPORTED_PROFILES = frozenset(("p957", "p24"))
+SUPPORTED_METHODS = frozenset(("prepared", "reconciled-after-run"))
 
 
 class ReceiptError(ValueError):
@@ -142,6 +144,28 @@ def source_inventory(repository, commit):
 def prepare(repository, candidate_revision, skill):
     """Freeze the caller's declared evaluation inputs at an existing source commit."""
     return _freeze(repository, candidate_revision, skill, bind_processing=True)
+
+
+def input_closure(repository, revision_value, descriptor, *, profile, method):
+    """Return the complete source closure for a registered Receipt profile.
+
+    The public contract keeps profile and method selection explicit.  The
+    existing closure builder remains the single source of path, byte, and mode
+    semantics; this seam only selects whether the Receipt's processing inputs
+    are bound at its evaluated source.
+    """
+    require(profile in SUPPORTED_PROFILES, "unsupported receipt profile")
+    require(method in SUPPORTED_METHODS, "unsupported receipt method")
+    require(
+        profile != "p957" or not descriptor.get("corpus_format"),
+        "p957 does not support normalized corpus descriptors",
+    )
+    return _freeze(
+        repository,
+        revision_value,
+        descriptor,
+        bind_processing=method == "prepared",
+    )
 
 
 def _freeze(repository, candidate_revision, skill, *, bind_processing):
@@ -1374,6 +1398,113 @@ def evaluate(repository, receipt):
         "reason": "threshold satisfied" if passed else "threshold failed",
         "trigger_precision": {"correct": correct, "total": len(triggers)},
     }
+
+
+def _validate_correspondence_binding(repository, binding):
+    require(isinstance(binding, dict), "Receipt binding is not an object")
+    required = {
+        "path",
+        "raw_sha256",
+        "mode",
+        "evaluated_revision",
+        "method",
+        "profile",
+        "processing",
+        "producer_procedure_revision",
+    }
+    require(set(binding) == required, "Receipt binding fields are incomplete or unknown")
+    relative_path(binding["path"])
+    require(binding["path"].endswith(".json"), "Receipt binding path is not JSON")
+    require(
+        isinstance(binding["raw_sha256"], str)
+        and re.fullmatch(r"[0-9a-f]{64}", binding["raw_sha256"]),
+        "Receipt binding raw digest is invalid",
+    )
+    require(binding["mode"] in ("100644", "100755"), "Receipt binding mode is invalid")
+    revision(repository, binding["evaluated_revision"])
+    require(binding["method"] in SUPPORTED_METHODS, "Receipt binding method is unsupported")
+    require(binding["profile"] in SUPPORTED_PROFILES, "Receipt binding profile is unsupported")
+    require(
+        binding["processing"] is None or isinstance(binding["processing"], dict),
+        "Receipt binding processing identity is invalid",
+    )
+    revision(repository, binding["producer_procedure_revision"])
+
+
+def _correspondence_failure(reason_code, error):
+    return {"status": "fail", "reason_code": reason_code, "reason": str(error)}
+
+
+def check_correspondence(
+    repository, *, candidate_revision, descriptor, receipt_bytes, binding
+):
+    """Validate one Receipt against its retained source and a landed candidate."""
+    try:
+        revision(repository, candidate_revision)
+        require(isinstance(receipt_bytes, bytes), "Receipt bytes are required")
+        validate(descriptor, "skill")
+        _validate_correspondence_binding(repository, binding)
+        require(
+            hashlib.sha256(receipt_bytes).hexdigest() == binding["raw_sha256"],
+            "Receipt binding raw digest differs",
+        )
+        receipt = read_json(receipt_bytes)
+        validate(receipt)
+        method = binding["method"]
+        profile = binding["profile"]
+        expected_method = (
+            "prepared-before-run" if method == "prepared" else "reconciled-after-run"
+        )
+        require(receipt["method"] == expected_method, "Receipt method differs from binding")
+        require(
+            receipt["candidate_revision"] == binding["evaluated_revision"],
+            "Receipt evaluated revision differs from binding",
+        )
+        source = receipt["candidate_revision"]
+        require(receipt["snapshot"]["skill"] == descriptor, "Receipt descriptor differs")
+        historical_snapshot = input_closure(
+            repository, source, descriptor, profile=profile, method=method
+        )
+        require(
+            receipt["snapshot"] == historical_snapshot,
+            "Receipt snapshot differs from its evaluated source",
+        )
+        if method == "prepared":
+            require(binding["processing"] is None, "Prepared Receipt has a processing binding")
+            require("processing" not in receipt, "Prepared Receipt contains a processing record")
+        else:
+            require(binding["processing"] == receipt.get("processing"), "Processing binding differs")
+        landed_snapshot = input_closure(
+            repository, candidate_revision, descriptor, profile=profile, method=method
+        )
+        require(
+            historical_snapshot["inputs"] == landed_snapshot["inputs"],
+            "landed source input closure differs from the evaluated source",
+        )
+        historical = evaluate(repository, receipt)
+        require(historical["status"] == "pass", "historical Receipt validation failed")
+        return {
+            "status": "pass",
+            "coverage_basis": "per-receipt",
+            "qualification_scope": "ordinary-receipt-correspondence",
+            "member_qualification": "not-evaluated",
+            "candidate_revision": candidate_revision,
+            "evaluated_revision": source,
+            "receipt_raw_sha256": hashlib.sha256(receipt_bytes).hexdigest(),
+            "receipt_sha256": document_digest(receipt),
+            "historical": historical,
+        }
+    except ReceiptError as error:
+        message = str(error)
+        if "landed source input closure" in message:
+            code = "input-closure-mismatch"
+        elif "historical Receipt validation" in message:
+            code = "historical-validation-failed"
+        elif "Receipt binding" in message or "binding" in message:
+            code = "binding-mismatch"
+        else:
+            code = "invalid-receipt"
+        return _correspondence_failure(code, error)
 
 
 def check(repository, request, receipts):
