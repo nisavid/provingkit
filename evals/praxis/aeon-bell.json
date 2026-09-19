@@ -924,6 +924,768 @@
         "Actor reports of no errors describe their visible execution. The structured executor can handle an adapter, configuration, send, or scheduler outcome internally before returning complete; the recorded controls determine those outcomes.",
         "Earlier setup failures, failed tool-routing behavior, stale evidence, and unrun fixtures remain historical records."
       ]
+    },
+    {
+      "id": "round18-structured-monitor",
+      "model": "gpt-5.6-luna",
+      "reasoning_effort": "high",
+      "kind": "constructed agent application with recorded synthetic controls",
+      "live_actions": false,
+      "live_action_detail": "Monitor effects used only supplied synthetic controls. No real native task or scheduling tool was invoked.",
+      "source_digests": {
+        "plugins/praxis/skills/aeon-bell/SKILL.md": "7bd9ffacc4bad597a1d4f143ed3d616a64d81c5a1df696058f3b989830e71dab",
+        "plugins/praxis/skills/aeon-bell/references/structured-harness.md": "a358320feb6da625802c4d1883d79c0876398d1dfbe6ce62f99bf91d884c02d3",
+        "plugins/praxis/skills/aeon-bell/references/engine-cli.md": "8c2e4745d06eda884b1bc48b4a2bcd6cc852eb15540e6eb09f8720a4533a0ce5",
+        "plugins/praxis/skills/aeon-bell/references/native-monitor.md": "fa895903400fabe869d3be14a0e4b25e7396382173886551601a4e42d3550e8a",
+        "plugins/praxis/skills/aeon-bell/references/codex-status-adapter.md": "0fca362b07239ff6bde3a969590a449fcdf0dea118178e7be5e06060059f9fff",
+        "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py": "1320c472965ab968da0aaaa8c71f56cbad9da2d79670c9bab5ca7749c7cc8b95",
+        "plugins/praxis/skills/aeon-bell/scripts/monitor_binding.js": "a85478740c9544544baf47ac87fec6a27ac6aeb194039ceac19a3a7f618f3b5d",
+        "plugins/praxis/skills/aeon-bell/scripts/codex_status.py": "7a21408c1e3fefa83d5b1907e12593eb2e27e1d18399695e449a6596201d5c5c",
+        "plugins/praxis/skills/aeon-bell/agents/openai.yaml": "db1aa6d955443f6e033b9dc6c3543c5c833cb48a305fbc8a710374e27a3a3895"
+      },
+      "candidate_revision": "f95b61ee6162594c7aec0b50fcf7dc01ccfc1b1c",
+      "fixture_manifest_sha256": "400100a0c5ab5a80f7869b424922ee8b320090c829b1f110a77d646020eef515",
+      "harness_sha256": "799b706cdb919be92a21be6b71aaf4b99e97dd81710f221f98eded8e09dfa6f2",
+      "status": "bounded source-interface observations; no live qualification",
+      "results": {
+        "executed_cases": [
+          {
+            "case": "empty",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 0,
+              "send": 0,
+              "emit": 0,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "b878d78c6c6553dd5aa51a642cadaaef81ce3105025f99f5d60f1403e7d82de7",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": false,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "7e64e06457678de8f5a4a12ae039e31daf74c32ddf12aba51bb593141716e7b2",
+              "native-cli-invocations.jsonl": "cb4a29bd22e04a5d2f3fdc65de9cd28660d696872857c385548fa9733a37dbf8"
+            },
+            "actor_transcript_sha256": "76883bff81fa48e81f3428546602618fe5aa0a7cb0a73b4e0616f536fd6a9505",
+            "raw_report_sha256": "812f3ce865a0f95f03d26696e48fea8066636e20ba69db7f9b98fbf9dc700629",
+            "functional_audit_sha256": "88f2952f758a19885cf53fab113c272c2dd612149c47c473c2ecf29a8dec8a96",
+            "transport_audit_sha256": "06cea13ea484d857903368ce1c9a8d075bc3798cc48533c592b950d12c8b258a",
+            "protocol_audit_sha256": "99bf9a9ed1e621ecf1111823ea59e723d99738a643fbeaf9a4ae5a8467737dfa",
+            "output_audit_sha256": "89a0405474d29467beeaa190d3a8d6dd17394b4f66e82552e2f21bd31a739a82",
+            "native_launch_observation_sha256": "04d3787e52a67f6a508e9f87f1686ca743b3a8550644f1a3b50657b0184a9a7f",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "cached-closed",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 0,
+              "send": 0,
+              "emit": 0,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 350,
+                "fingerprint_applied_from": "99de0eaa32e92ddda1d7e31c8761c78367af6318ebbc7f2df52f9eba8165f350",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": false,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "1cfc8effe947c3454d864d0b7e935824ee3aa0bbd106a1ce2392f6c96ab410e4",
+              "native-cli-invocations.jsonl": "9eb3738308f4f65bfab2455c06381a35882fa5cda483d1d6c218c94318b2eb81"
+            },
+            "actor_transcript_sha256": "c52953d6141f61d73441e30a9e76550ac81a4a326b4253aaad950979c2433b11",
+            "raw_report_sha256": "035eee3996040ae7d2b8b33f5861b887792e99657d922a81e7f2c15761df2ab0",
+            "functional_audit_sha256": "ad1dfc693485432892890fe346f8aef4ec784e1e4ede0d46c4c31d55e10aae54",
+            "transport_audit_sha256": "7bd1ee53bad6af6fd71d3f061f2950d1bcd712501972fbcfdf58e4bd56cb4e47",
+            "protocol_audit_sha256": "6292bc0d6e38dde534df2e0cf1e6eaff42932d629778cd5f92449374c56b0a26",
+            "output_audit_sha256": "e8569f69a6c4d7246c239a5c624959ef54a78525bd2db9336156033c3a4318df",
+            "native_launch_observation_sha256": "74463d482ad291e6cab6f7526f0a5bf6778dba53331f7e4b9944bd433049a86f",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "cached-open",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 0,
+              "send": 1,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "c92912b1357109f5b666fb20ea3bc43ffee9a7d629138cc6e38e3ddff3a7f2aa",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:05:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": true,
+                "notice_id": "4449dae88e08d6d7c68e0357",
+                "replayed": false
+              },
+              "printed_anything": true,
+              "wakes": [
+                {
+                  "attempt_id": "1b9b872b81a668503a163b9b",
+                  "registration_id": "afa4e577ac2933bc5878d060",
+                  "result": "accepted"
+                }
+              ]
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "7d60e43ef4205f3f9632f73da6be7ec852573917d918b6733dbc84b4242c4019",
+              "native-cli-invocations.jsonl": "8981cc1d03071962ca1962f6510556640be8008406b3a16a8a2c0c2e3d432812"
+            },
+            "actor_transcript_sha256": "2f50451f6f7413df66a04408aa45865214616eeb71e197588ac09de6539daef2",
+            "raw_report_sha256": "c85db58ff3b9b24225a2b24baf41d1157309919b35163db7e73fa9201ded9849",
+            "functional_audit_sha256": "27b428ae4e7914cbf653454a32b1262e5e9978f7e92191e0f3884303021bd339",
+            "transport_audit_sha256": "d90053df932cf9902568edbac82cc4e962a6ff7c41047a8a017178aded12fc8b",
+            "protocol_audit_sha256": "bdd409799ac64b0392e63771d214549806199955d10a92d3bf4b83ac9ae8ee1b",
+            "output_audit_sha256": "ce2315c085c239260168f7423e5814cac26e5ab296a214ce17325930707565fb",
+            "native_launch_observation_sha256": "f13d9e1aedb2aa661d7ee229f25fb4d757cd6b55938b67ecfb20bbbf9f87de1a",
+            "exact_not_started_retries": 2
+          },
+          {
+            "case": "due-closed",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 1,
+              "send": 0,
+              "emit": 0,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "2882d1f2cb13415d710af2a39ce7eaf9e6076405f7070639821647ac8bc266c0",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": false,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "021c6fc9ff162ca05bea362af173e0694e530472c599c653abeb06f7f96e1755",
+              "native-cli-invocations.jsonl": "f0125d0e8e0812440a3f1ed35ff265cf079cb3d0f4c0b8ccd3b15a8601541811"
+            },
+            "actor_transcript_sha256": "cf9f36590c2113c4faf30f796e25a01976896eea8479c9476e9ff14eb1ecbbf3",
+            "raw_report_sha256": "92c88e46467d96cf7f4683b750e210e9a2894367e02539a830f5a079dc9e8f7e",
+            "functional_audit_sha256": "c9d85b4ec5efc907941fd9422dc02a1e5332a0939107f3e3e692afefadb7f20e",
+            "transport_audit_sha256": "b741f724c2439efd14e3c1b40129b4613134b9c38974ae80d43c7268d79dffad",
+            "protocol_audit_sha256": "1b4dbb46b1974a6eb18e38179523262336d6d72f85a7b922fc25f96f63458b60",
+            "output_audit_sha256": "53073b57a5e56fdbaa9529eebaafeadce5fc495c1da0732b77885100b9e0f6c3",
+            "native_launch_observation_sha256": "96e9262411f4ee353ec0cc5dd9a6283cab06ad427fb523c3a6d452eac4992daa",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "due-open",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 1,
+              "send": 2,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "eacaab1035d2b8ec6935dffa921e682b2cd1ff6961a4923f675c3c35f2dcbb71",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": true,
+                "notice_id": "920c434b6f3139fe61d45c7a",
+                "replayed": false
+              },
+              "printed_anything": true,
+              "wakes": [
+                {
+                  "attempt_id": "b37eeafac8845ab5a92df094",
+                  "registration_id": "14e28d8c0098840e2d31804b",
+                  "result": "accepted"
+                },
+                {
+                  "attempt_id": "df792629f106cdcdc6fcfffc",
+                  "registration_id": "66bcbf36be26fe2fe6231d4d",
+                  "result": "unknown"
+                }
+              ]
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "b9c001f0413df9ac9ca2e49521d0968fd7a79c69f7724d701823a5503bd058da",
+              "native-cli-invocations.jsonl": "48aa0f46ee671eb85e1741a6ed95e2ca0cdb735de284f9ceb476ce1bd0b73af2"
+            },
+            "actor_transcript_sha256": "8ed9ac819c2a783590f845ea6f6c0b23aa5d6ce415ccc3714143dde8d98da18a",
+            "raw_report_sha256": "1fd35db4dc4f5fc5f6180982a5853b46fe2eb2045bf698ca8694f556043058de",
+            "functional_audit_sha256": "6c914b7f5485c3e597e50e75a0172a9b893eeab55ca423a9ad9117e2c1f3d18f",
+            "transport_audit_sha256": "737cdfa54fe3fff5eecd987b64177d2097a81afc2da9c00fb59d33627ce172a7",
+            "protocol_audit_sha256": "5e001d5f911ddc0b4b3cfa56d4e81c1848357dc3ffc8b91422de1fda0b8c7978",
+            "output_audit_sha256": "d469ad15f459224fa1727918606b25793ce8c39ad1b5f6ac2d667bbccd9d79e1",
+            "native_launch_observation_sha256": "06c8062be3aaf6b1bc0eff7014a8a290beb4a9476c84ae11a68d20ed791f33f0",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "held",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 1,
+              "send": 0,
+              "emit": 0,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 15,
+                "fingerprint_applied_from": "f9a9711877e888bdc8c6a31686f1491a0a8a840a11a753ec65d7877108cc497e",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T10:15:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": false,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "b91d4894c1a5c6fe9f4f1fafc31ed770a937f6aa6bb1397d81a9615a9729d781",
+              "native-cli-invocations.jsonl": "293e004043609c12911b9052f7435c1025bcebbbfbc2ab9faaeaab5e7e2815f8"
+            },
+            "actor_transcript_sha256": "51fffe741259256b8f94953c7606ee355f1b9f9d47032330fd6fcae80709bb31",
+            "raw_report_sha256": "aea5709056a458b9392ef0779c4f746d94d13e60e40bd320751f37f2ed2932ae",
+            "functional_audit_sha256": "a7c5ce86a756e9abd42a0157d5a9a6328c6a08f439e0e7e710966d8d42e3ef19",
+            "transport_audit_sha256": "4c3bdfb6c93303028dd4cdf72b630c9b1845c31ab4322f38fe44939e7c902889",
+            "protocol_audit_sha256": "30a75333268a9f5093c2f60708e1d5edd7ab7b3d17bf5515665181d1c2339e62",
+            "output_audit_sha256": "9400cfac042974ce56267d1142321fc9918a68b820135c3321ef17bc9531f36a",
+            "native_launch_observation_sha256": "602388df9d471f13128da3815a0a151c53fe537d5ea038102851647908c84052",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "pending",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 1,
+              "send": 0,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "f636e7abed74e2b99c4d55065a1c44676589c9141398ca479892464237f0dac3",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": true,
+                "notice_id": "8c0b71cd1c7907bebf9a2b76",
+                "replayed": true
+              },
+              "printed_anything": true,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "c6ab2f76658401bb66ff58b6f9fe3f7b7fbb840f9209c49134f44ea3aa82976f",
+              "native-cli-invocations.jsonl": "fb8dca1c62f1f4e5cfc879c0b66dfc9a8dc4795c30e24cb45d7ca627b74f93d2"
+            },
+            "actor_transcript_sha256": "fe6e7b492733202b4f2f13a3023ed211d9db61740e225fbbc7577f81de19a48d",
+            "raw_report_sha256": "ebd55b48e94f56ee56f9b79887e8a6bdd860524f78d20c4a2cdee6dbfe4ce85a",
+            "functional_audit_sha256": "37e910e4cbdab7a408eea1739ff63970fb1c91763c9204802ad2a8fc7faeb77f",
+            "transport_audit_sha256": "89dbc2a01685e85a22f43c493f7a31b842031170f23459646e2d92212ade9102",
+            "protocol_audit_sha256": "61f55a8d4bd0d6a0239c5be7237797dba537edef47d1e30a84a5f8848092bdc9",
+            "output_audit_sha256": "ce7449ae7d53f4f24f148a1d93ac7588139d10b190cf8a7deef2ac94d11464e5",
+            "native_launch_observation_sha256": "e7cf5bf2b3f27c47ee929caac54cfde0035064b47d8bc9d4d19a4bbedd0b0d25",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "adapter-failure",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 1,
+              "send": 0,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 15,
+                "fingerprint_applied_from": "540938b1f069fb920e73b2aa377ad9998ac6e75c037b4d98ec2e217d787bf8c6",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "failed-observation-recovery",
+                "target_at": "2026-09-18T10:15:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": true,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "dab05887de869c432f562d3678e43efba01bce0bf443d962fccede05240d69fd",
+              "native-cli-invocations.jsonl": "f95fa3d3000b408fc71992416e3be4befda85c561fe3e843fd06f73cb0298d0f"
+            },
+            "actor_transcript_sha256": "736fcaed26e99291422c1522c8db6434e79c4c49f7258035cb42ea3c6bcf15a0",
+            "raw_report_sha256": "a7be1e17dd44d268af6a8a9f165e20fb9b31a56cad1c5640cb207be83322008c",
+            "functional_audit_sha256": "3d2f440d5d0ab187006c2a9ef81b1954af0a395085f4bfd7048840f223657e86",
+            "transport_audit_sha256": "6f3eaaebaa9f1da05e1a380233ada720919ea4d203b18179ffc1a246c691333f",
+            "protocol_audit_sha256": "a93a15ef3f7d35eabab356cca859cf99ca8be3cba78f0c8b094025f07af1881a",
+            "output_audit_sha256": "d2113573af5f284f3128149c3b171cae3b3d27a96be13477d71b338f4fc6842a",
+            "native_launch_observation_sha256": "77be34102743451b4fc9a9ab20e551039c0ea28ed0953c843e350cd525eb022b",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "restart-send",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": false,
+            "protocol_deviation": "The actor read harness-config.json and displayed the configured synthetic entry value despite the scoped read prohibition. Its final report did not disclose that deviation.",
+            "counts": {
+              "observe": 0,
+              "send": 0,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "dcfc34da0018b98742c38451544b92c5bc52745a452464dc017a51e8a2fdd625",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:05:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": true,
+                "notice_id": "fa734659130c88af2b455667",
+                "replayed": false
+              },
+              "printed_anything": true,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "45335da83c9cb38e00a68a6bc76906f2ca5816184fdef70a12a8c37f58f4b12e",
+              "native-cli-invocations.jsonl": "cfd87990262a2e92e3ec4ba4ecd30486379730ebe9b5e065ae8a22e23bc642e2"
+            },
+            "actor_transcript_sha256": "9e8fecc2dac644db483560df2d0277a120dcee619dd38c5bc333d7d813ae7da0",
+            "raw_report_sha256": "97ca00c2f7ee831e5b416c1768ba39061695a3a0acbc115167eedc2077a6c0a2",
+            "functional_audit_sha256": "d5b574fb805b859b97180e45510cc489b47ba040391a18a993b8d8ed28e4d4f0",
+            "transport_audit_sha256": "09506cab3bb0b3ba38c1c596a4026ddcbef4a3039c2b7d1a5db402408b152c1b",
+            "protocol_audit_sha256": "cb5b89bb38875ed641bca0cb4a8c8f9db1445304f5ceaf914eb798656107294b",
+            "output_audit_sha256": "e03c4d545486a3ffcbad24444f30afcfdb9cdd94cb6bbc26271f7aeb648a9ce9",
+            "native_launch_observation_sha256": "b0c421a2beaebcbf010dc2c08ab38991c167fb361f6ec96b598c2154c526df8d",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "restart-notice",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 0,
+              "send": 0,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "3226fa793578948e5be18c6f32410df2b04d20f11909f506674f89efc83ba821",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": true,
+                "notice_id": "8c0b71cd1c7907bebf9a2b76",
+                "replayed": true
+              },
+              "printed_anything": true,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "cea00d1f9cba9f25978cd1675b08591188c7325fb8c9fe47f86a8b60ee3f9dfc",
+              "native-cli-invocations.jsonl": "c898ac81f8cb09b7b6a3f50cce85cc911adb7c543c6834ef6228a8257d71cbf1"
+            },
+            "actor_transcript_sha256": "d22741cf65473cd05bc5311f50ff905bd8d204976834dab9a26591bb967d3d72",
+            "raw_report_sha256": "7b0942224ac5df94bc524801add2cc32229e771a4816e705224b775d4d1fea8e",
+            "functional_audit_sha256": "5045dac612947a60e6c63438a9acb5aadd59d6aa91230327108df0440ba3ea2d",
+            "transport_audit_sha256": "de6ada5ac975edcb26e01367340fa4db8a7d4400c902217ab4024cf60f6446f3",
+            "protocol_audit_sha256": "6736c0a4a4e5d77060f45a05d4184dc8892f75ac1a48124b86a3bda96ed4fcf0",
+            "output_audit_sha256": "f5e69b9301f9877a7823cd0a84744636b992b5d91d4991c255714d6e4dff583f",
+            "native_launch_observation_sha256": "8d0fef9e085dfd0b82ed06cd1b60843994130741f431a61301f6fd098b4ca8ca",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "partial-observation",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 1,
+              "send": 0,
+              "emit": 0,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 5,
+                "fingerprint_applied_from": "635b9ae8ff672a1010b21d4a467f8a9f8ab6e485cb9544b452f72deeea45b089",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "failed-observation-recovery",
+                "target_at": "2026-09-18T10:05:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": false,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "1bf6cf6dba177192568252d8342ab4559e191d1a86ab1ef13c731a4c72d89f2d",
+              "native-cli-invocations.jsonl": "681e4963d5c6d92531d410acf8de9a75e0aabdc9f96781df8b709a0fd5de1a6b"
+            },
+            "actor_transcript_sha256": "bc743d52106e0ffea2be9b05bf37b3e58143a16acf3f1b44339802d34b13e15b",
+            "raw_report_sha256": "16b6fe296f49a0a92a67242d18fb57a3160e65a37698fd561236c2e5e29d5e24",
+            "functional_audit_sha256": "2270183c7763ae6451f6a455e8adc027d5b64219bee529e71f4ca9b2e74051c9",
+            "transport_audit_sha256": "a8786e5041d0e930f822d783c3b6722641d46c144f69e6b1d9c58a6b80474999",
+            "protocol_audit_sha256": "7282b70af9ae17b3adb487e12d124de42f73b978fb48b84ce8cf2c6f7daf4d92",
+            "output_audit_sha256": "a5be9857b847275e7c8fa69d1fe95402def6cda8abc4281edb5dee0764338662",
+            "native_launch_observation_sha256": "4984c6cd6c73940bee40ef5b8fbbfc8c0be532ac1657e1e32f9bd69d5a8f1aaf",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "schedule-unavailable",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 1,
+              "send": 0,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": null,
+                "issued": true,
+                "reason": "The synthetic scheduler cannot update the next run.",
+                "registry_changed_after_last_write": false,
+                "result": "unavailable",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": true,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "840733238377eddc6396575aba530d97f77af06a296fec34871436d26c44de9a",
+              "native-cli-invocations.jsonl": "951a4744ddaadf63e34a7605abb835685b07c7bc9302c0fd963ced2e05be176b"
+            },
+            "actor_transcript_sha256": "9000ac0cecf03904fe2904fc27a8c4d7a2c1e8839119a907f6ba9be1527dbe87",
+            "raw_report_sha256": "9e1c38627e9faac3349c2609e9f20436c6c8e0e77540f21e74542cfd2f1835c1",
+            "functional_audit_sha256": "fcc2a1ba04d8bffe5a5169ce0c7e6ced8b29dc92333dd086c51dcf234373ecbb",
+            "transport_audit_sha256": "1b363257e7a139a34b77b857340f88abb9b12f8e946ac537298314d8d4b94d8b",
+            "protocol_audit_sha256": "db20d057ef9cc64551b0e2ed82ce6c8787c2d86725b1fdbe27405b82a5813a7a",
+            "output_audit_sha256": "ddbdd1f33bb5a996d0dfe6e4fb847110db019ff13b1f925acb4f59d650a406da",
+            "native_launch_observation_sha256": "ef0046a05b0741865e5b344863001cbd28f00d98e45cc5b271dc768efdbc4e3b",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "missing-binding",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 0,
+              "send": 0,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "58cc4c3a1464a1730be73dc64c5c49b9730442d3adb1a50f020575436453cd98",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": true,
+                "notice_id": "b19e11ed6893ea72dd7bddcb",
+                "replayed": false
+              },
+              "printed_anything": true,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "fc9527f5eef26a55ab3295ca1020965b688e3969a119348e4fdbc45c611e2cf5",
+              "native-cli-invocations.jsonl": "1c260b67978c831e1568262845f90edd8996863a7c492ca8df80206d496fc7eb"
+            },
+            "actor_transcript_sha256": "1f9c6316a4b0932ec22f9b9ef8d6665d1028ff29b382b172e814cbb15ce5573a",
+            "raw_report_sha256": "4359e5e48357696af566963253de5890d3afb6ca039b76893c3b5df0f909d1c4",
+            "functional_audit_sha256": "c00c5e2513aa0bfb9d32c3711f66ab88d871736b18acc8b2e5aa42a5252ca13a",
+            "transport_audit_sha256": "9366137adb074b011f691176cf2d60736e9fe2aa8441766265dd701e14db4cec",
+            "protocol_audit_sha256": "39a853c8ec63382fa8232d85d853ee4f18b990bd28ee32d7e8e05faa0aa5014f",
+            "output_audit_sha256": "64ce4cb8068947b76cac2f93de2137dbe750c26c140cf915acfebadd94352d2d",
+            "native_launch_observation_sha256": "0ea406831fb3556ebec2ec4d6198666376b83df8200f7c1c9832cd5571518685",
+            "exact_not_started_retries": 0
+          },
+          {
+            "case": "missing-binding-repeat",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 0,
+              "send": 0,
+              "emit": 0,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "1b765fd5d508247ec70a5951cc0321335762e7e988a0a98f3107d90d87b979ea",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:00:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": false,
+                "notice_id": null,
+                "replayed": false
+              },
+              "printed_anything": false,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "aacc8987f21d01922efe6ca2238dcb541354c5398a53d2888da7d98992a54960",
+              "native-cli-invocations.jsonl": "dda1ac302fe26ce918e132d76554b09e57e98a63c6c761e60416d5e7029a49bc"
+            },
+            "actor_transcript_sha256": "6534ef6ca67962e993339bc1f5b521dbe95ae6e539b6342095d5c5e78a70c409",
+            "raw_report_sha256": "f7ef54e5121132605cdeeb69356e3adad25da61fcef35ceb6c2567ca5ab141c5",
+            "functional_audit_sha256": "5fc5c4fd97ec7bc7f680cc0662330e4f990b884b4fd70fcfc4af8d7546655b92",
+            "transport_audit_sha256": "0f9febff6a1cace967b6c761a40bc8c57f7d09e95b04b0fb73f39c3b5ce4c861",
+            "protocol_audit_sha256": "0ece11e135917824141705b7bbd70e165be04c63a39766a8ed4d71cea876ccf7",
+            "output_audit_sha256": "77ab6f405463df59d7990ee5708feb90272b44023cda9fc8651a8c41850e682a",
+            "native_launch_observation_sha256": "bdf6a9f8111df55f9fe7bd5724c6c5fbf25e26ce278f0fb852a7ada255c746f7",
+            "exact_not_started_retries": 0
+          }
+        ],
+        "unrun_cases": []
+      },
+      "assurance": "Ordinary same-leader native controller and trace observations. The selected model and prompt restrictions are not product-attested.",
+      "limitations": [
+        "Synthetic controls do not qualify real task episode detection, idle-only dispatch, heartbeat ordering, installation, operating-model reliability, or consumer cutover.",
+        "All tool inputs and exact outputs were inspected separately from final actor prose. Bounded reference reads do not imply complete-reference reading.",
+        "An internally handled adapter, configuration, send, or scheduler failure may end in complete; recorded controls determine the outcome.",
+        "The restart-send actor read and displayed the synthetic raw configuration despite the scoped prohibition, then failed to disclose that deviation. Its functional and transport checks pass, but its protocol result remains non-clean."
+      ]
+    },
+    {
+      "id": "round19-structured-monitor",
+      "model": "gpt-5.6-luna",
+      "reasoning_effort": "high",
+      "kind": "constructed agent application with recorded synthetic controls",
+      "live_actions": false,
+      "live_action_detail": "Monitor effects used only supplied synthetic controls. No real native task or scheduling tool was invoked.",
+      "source_digests": {
+        "plugins/praxis/skills/aeon-bell/SKILL.md": "7bd9ffacc4bad597a1d4f143ed3d616a64d81c5a1df696058f3b989830e71dab",
+        "plugins/praxis/skills/aeon-bell/references/structured-harness.md": "a358320feb6da625802c4d1883d79c0876398d1dfbe6ce62f99bf91d884c02d3",
+        "plugins/praxis/skills/aeon-bell/references/engine-cli.md": "8c2e4745d06eda884b1bc48b4a2bcd6cc852eb15540e6eb09f8720a4533a0ce5",
+        "plugins/praxis/skills/aeon-bell/references/native-monitor.md": "fa895903400fabe869d3be14a0e4b25e7396382173886551601a4e42d3550e8a",
+        "plugins/praxis/skills/aeon-bell/references/codex-status-adapter.md": "0fca362b07239ff6bde3a969590a449fcdf0dea118178e7be5e06060059f9fff",
+        "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py": "1320c472965ab968da0aaaa8c71f56cbad9da2d79670c9bab5ca7749c7cc8b95",
+        "plugins/praxis/skills/aeon-bell/scripts/monitor_binding.js": "a85478740c9544544baf47ac87fec6a27ac6aeb194039ceac19a3a7f618f3b5d",
+        "plugins/praxis/skills/aeon-bell/scripts/codex_status.py": "7a21408c1e3fefa83d5b1907e12593eb2e27e1d18399695e449a6596201d5c5c",
+        "plugins/praxis/skills/aeon-bell/agents/openai.yaml": "db1aa6d955443f6e033b9dc6c3543c5c833cb48a305fbc8a710374e27a3a3895"
+      },
+      "candidate_revision": "f95b61ee6162594c7aec0b50fcf7dc01ccfc1b1c",
+      "fixture_manifest_sha256": "ac048e57554b544f9267e6252094a9a35e7ac7b5479e17a35290501ace1d336b",
+      "harness_sha256": "799b706cdb919be92a21be6b71aaf4b99e97dd81710f221f98eded8e09dfa6f2",
+      "status": "bounded source-interface observations; no live qualification",
+      "results": {
+        "executed_cases": [
+          {
+            "case": "restart-send",
+            "functional_assertions_passed": true,
+            "structured_transport_passed": true,
+            "strict_protocol_passed": true,
+            "protocol_deviation": null,
+            "counts": {
+              "observe": 0,
+              "send": 0,
+              "emit": 1,
+              "set-schedule": 1
+            },
+            "outcome": {
+              "heartbeat": {
+                "delay_minutes": 360,
+                "fingerprint_applied_from": "e5162a2b0242ba8cb1d75d323c5ed45467467b7a6f3ae779a2de11da128f9d08",
+                "issued": true,
+                "reason": null,
+                "registry_changed_after_last_write": false,
+                "result": "applied",
+                "rule": "schedule-as-printed",
+                "target_at": "2026-09-18T16:05:00+00:00",
+                "writes": 1
+              },
+              "notice": {
+                "acknowledged": true,
+                "notice_id": "c043045e9d30168ff70c2d74",
+                "replayed": false
+              },
+              "printed_anything": true,
+              "wakes": []
+            },
+            "trace_digests": {
+              "engine-cli-invocations.jsonl": "d584a4bb954638ff0c6ea4a9e3b610ff5f8de9f8a444ee1b4f01fcc02b43247f",
+              "native-cli-invocations.jsonl": "a82bb464765f7e42b51f5fd2821f45ccee149a8a52123cb3453b1f2a03f99cd2"
+            },
+            "actor_transcript_sha256": "b8e01b773676995e2f38ceabd93263d9dc16f02e538bf99f1473340d8db60750",
+            "raw_report_sha256": "42a5d0def67a32bafaea3424f1e2db7e160e29d93a343485c4fbfefec37117c1",
+            "functional_audit_sha256": "a1ab1a3c0b5f1860e71c26f0c19bc982758d6a92482f1eb70e1509d524fea4d1",
+            "transport_audit_sha256": "b0be12538f3f647705cccded3cf0ce86b969dbafe25ff49e60700d32542b3838",
+            "protocol_audit_sha256": "481f9cf98582115966c58731003a5e692b11d96e946cbc1a1a7483131e81f019",
+            "output_audit_sha256": "c5aa96689f6ea5b3345bd19ae41295bf8ea97d02a6b504813ce05d5358cb0448",
+            "native_launch_observation_sha256": "11cd4c3c48f2af18369c2fce230da8d24608527cc8dc0143d2eb738e06f8eb0a",
+            "exact_not_started_retries": 0
+          }
+        ],
+        "unrun_cases": []
+      },
+      "assurance": "Ordinary same-leader native controller and trace observations. The selected model and prompt restrictions are not product-attested.",
+      "limitations": [
+        "Synthetic controls do not qualify real task episode detection, idle-only dispatch, heartbeat ordering, installation, operating-model reliability, or consumer cutover.",
+        "All tool inputs and exact outputs were inspected separately from final actor prose. Bounded reference reads do not imply complete-reference reading.",
+        "An internally handled adapter, configuration, send, or scheduler failure may end in complete; recorded controls determine the outcome.",
+        "This separately frozen restart-send repetition removes one unused configuration locator from the briefing while retaining the same governed source and execution harness. Its clean protocol observation does not erase the original failure or prove reliable compliance or enforced isolation."
+      ]
     }
   ],
   "limitations": [
@@ -931,7 +1693,8 @@
     "Passing a plan-only scenario is not evidence of command execution.",
     "Content identity binds the corpus bytes; it does not prove the judgments in it.",
     "Round 15 covered all fourteen constructed branches with functional and structured-transport assertions passing. Thirteen had clean full tool traces. The empty branch attempted a real task-message call after completion; the tool rejected its invalid target. A fresh empty-branch repetition passed with final-response-only reporting explicitly bound. These observations do not establish general model reliability, native tool qualification, or activation authority. That checkpoint preceded the engine-state recovery corrections and affected revalidation.",
-    "Round 17 covered fourteen constructed monitor branches with functional, structured-transport, and full-tool-protocol assertions passing on unchanged governed skill bytes. This qualifies only these source-interface cases; native ordering, task controls, installed discovery, operating-model reliability, and consumer replacement coverage remain unqualified."
+    "Round 17 covered fourteen constructed monitor branches with functional, structured-transport, and full-tool-protocol assertions passing on unchanged governed skill bytes. This qualifies only these source-interface cases; native ordering, task controls, installed discovery, operating-model reliability, and consumer replacement coverage remain unqualified.",
+    "Rounds 18 and 19 retain fifteen constructed invocations over fourteen monitor branches: fifteen functional and transport passes, fourteen clean protocol observations, and one non-clean protocol observation. Native operating qualification remains separate; a clean repetition does not erase a failure or establish model reliability."
   ],
   "evaluation_corrections": [
     {
@@ -949,7 +1712,8 @@
     "Round 13 ran three of fourteen fresh Luna High applications on private verification revision e2c18cbc926d21774301eeb88da5c5fcf6c9c61d. Bound entry prevented replay of the interrupted send, and the due-OPEN trial completed accepted and unknown outcomes without repeating native actions. Both retained invocation failures. The cached-OPEN trial failed after two malformed continuation references and replacement entry following an accepted send. All raw traces and audit digests are retained; pre-recorder path failure is explicitly self-reported. No clean invocation or operating qualification is claimed. Eleven cases remain unrun pending structural reference-preservation and recovery correction.",
     "Structured application used a configured same-read/hash loader, persistent structured state, and independent engine/native CLI recorders. The transport audit checks one entry, exact argument/result associations, two identical pre-execution retries without a repeated send, and unsuppressed native calls. Four negative audit fixtures reject omitted events, changed arguments, suppressed native-call records, and altered retry arguments. Setup corrections and final-report routing changes are retained separately from governed source changes.",
     "Engine recovery now retains unsettled late-result associations or refuses takeover before capacity loss, and binds initial task-state observations to their registration and episode. Earlier structured monitor observations remain historical until the changed engine is requalified.",
-    "Round 17 uses the observation-generation and explicit task-episode source corrections. Its synthetic task provider compares the requested episode with its explicit synthetic record; this fixture correction has eight focused checks and an independent ordinary static review. The transport auditor accepts the version-three fixture schema with the same association checks; its positive control passes and four corrupted traces fail. Full setup-output comparison initially omitted the accepted send classification from its own allowlist; the corrected audit checks each chosen value against the immediately issued decision and preserves the original audit failure. No actor was repaired or steered."
+    "Round 17 uses the observation-generation and explicit task-episode source corrections. Its synthetic task provider compares the requested episode with its explicit synthetic record; this fixture correction has eight focused checks and an independent ordinary static review. The transport auditor accepts the version-three fixture schema with the same association checks; its positive control passes and four corrupted traces fail. Full setup-output comparison initially omitted the accepted send classification from its own allowlist; the corrected audit checks each chosen value against the immediately issued decision and preserves the original audit failure. No actor was repaired or steered.",
+    "Round 18 applies the correctable-continuation and polling-session corrections. The unchanged synthetic harness passed eight compatibility checks against those source bytes. Its exact-output auditor gained a bounded parser for one vector of permitted reference reads with path labels; the earlier unrecognized-shape failure remains retained. The restart-send configuration read was a real protocol failure, not an auditor error. Round 19 separately repeats that case after removing an unused raw-configuration locator from its actor briefing; no actor was repaired or steered."
   ],
   "evidence_format": "Observed fields are a reduced projection of the local execution reports, whose full-byte SHA-256 digests are retained here. Source paths are repository-relative. These authored records do not authenticate model identity or establish live qualification.",
   "prior_candidate_evidence": [
