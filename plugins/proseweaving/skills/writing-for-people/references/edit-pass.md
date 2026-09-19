@@ -60,6 +60,13 @@ clear prose suited to that medium. Keep the shortest phrasing that preserves
 meaning and reads naturally; conversational speech is one register among
 several.
 
+For a brief-derived message, check whether its opening repeats internal roles,
+powers, or sequencing instead of orienting the reader. Resolve unexplained
+workflow identifiers and questions the draft answers for the recipient. For
+peer coordination, check that terse wording still sounds collegial; use the
+[heads-up guidance](threaded-conversation.md#send-a-collegial-heads-up) when
+that is the message's purpose.
+
 ## 6. Recheck Every Fact
 
 Fluent rewriting is where facts drift: "should fail" becomes "fails", a
