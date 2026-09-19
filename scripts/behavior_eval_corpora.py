@@ -230,7 +230,7 @@ def normalize_records(records, expectation_map, documents):
         entries = expectation_map["entries"]
         if any(not isinstance(entry, dict) or not isinstance(entry.get("source"), dict) or not isinstance(entry["source"].get("path"), str) or not isinstance(entry.get("pointer"), str) for entry in entries):
             raise ValueError("Every map entry requires a source path and pointer")
-    except (ValueError, UnicodeError, TypeError) as error:
+    except (ValueError, UnicodeError, TypeError, RecursionError) as error:
         entries = []
         map_invalid = True
         result["diagnostics"].append(_diagnostic("invalid-expectation-map", None, "", str(error)))
@@ -323,7 +323,7 @@ def inspect_document(path, content: bytes, *, plugin=None, skill=None):
     failure = {"source": source, "format": "unsupported", "role": "unsupported", "records": [], "references": [], "diagnostics": [], "raw": None}
     try:
         raw = _load(content)
-    except (ValueError, UnicodeError) as error:
+    except (ValueError, UnicodeError, RecursionError) as error:
         failure["diagnostics"].append(_diagnostic("invalid-json", source, "", str(error)))
         return apply_source_scope(path, failure)
     failure["raw"] = raw
