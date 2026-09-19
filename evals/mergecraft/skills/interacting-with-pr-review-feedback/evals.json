@@ -59,7 +59,7 @@
         "Each draft visibly links to its own exact source permalink in natural prose before the body is frozen.",
         "The submitted-review source never causes review creation, submission, approval, request changes, edit, or dismissal.",
         "Each top-level response routes through the Provingkit-owned operation-specific PR conversation actuator for the verified pull request.",
-        "The missing selected review-voice route is disclosed without claiming it was loaded; applicable ambient writing policy is applied before the portable writer."
+        "The plan orders any supplied review-voice and Proseweaving instructions before portable-writer finalization, without treating supplied instructions as unavailable or claiming a native skill invocation occurred. It does not invent writing policy that was not supplied. When no writing policy is supplied, no policy name or absence disclaimer is required."
       ]
     },
     {

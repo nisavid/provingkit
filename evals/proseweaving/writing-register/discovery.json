@@ -1,0 +1,579 @@
+{
+  "skill_name": "writing-for-people",
+  "detector": "codex-native-sentinel",
+  "efforts": {
+    "xhigh": {
+      "total": 7,
+      "passed": 7,
+      "pass_rate": 1.0,
+      "true_positive_rate": 1.0,
+      "true_negatives": 2,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "failed_indices": [],
+      "mean_duration_seconds": 15.212571428571428
+    }
+  },
+  "results": [
+    {
+      "query_index": 0,
+      "query": "Draft a pull request summary explaining a new configurable retry limit.",
+      "probe_prompt": "Request to classify for skill triggering:\nDraft a pull request summary explaining a new configurable retry limit.\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+      "should_trigger": true,
+      "triggered": true,
+      "passed": true,
+      "effort": "xhigh",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_seconds": 19.876,
+      "usage": {
+        "input_tokens": 40535,
+        "cached_input_tokens": 26240,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 439,
+        "reasoning_output_tokens": 314
+      },
+      "marker": "CODEX_TRIGGERED_writing-for-people_xhigh_0_1c32fc347d08",
+      "messages": [
+        "I’m loading the writing-for-people skill.\n",
+        "CODEX_TRIGGERED_writing-for-people_xhigh_0_1c32fc347d08"
+      ],
+      "event_count": 7,
+      "transcript": [
+        {
+          "type": "thread.started",
+          "thread_id": "01a0b2fa-c510-71f3-82b1-693ff1141a0b"
+        },
+        {
+          "type": "turn.started"
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_0",
+            "type": "agent_message",
+            "text": "I’m loading the writing-for-people skill.\n"
+          }
+        },
+        {
+          "type": "item.started",
+          "item": {
+            "id": "item_1",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "",
+            "exit_code": null,
+            "status": "in_progress"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_1",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_0_1c32fc347d08` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+            "exit_code": 0,
+            "status": "completed"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_2",
+            "type": "agent_message",
+            "text": "CODEX_TRIGGERED_writing-for-people_xhigh_0_1c32fc347d08"
+          }
+        },
+        {
+          "type": "turn.completed",
+          "usage": {
+            "input_tokens": 40535,
+            "cached_input_tokens": 26240,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 439,
+            "reasoning_output_tokens": 314
+          }
+        }
+      ],
+      "probe_skill": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_0_1c32fc347d08` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+      "original_transcript_sha256": "c222a9f503511a0c4323330f1c2323722c01fa38fe7c18ea1effa23bfc70bc61",
+      "trace_path_normalization": "Local probe and operator-home paths are replaced with symbolic roots in this public projection. Messages, markers, event types, and usage are unchanged. The retained original trace has the recorded digest."
+    },
+    {
+      "query_index": 1,
+      "query": "Edit a public getting-started guide so its headings and numbered setup steps are clear.",
+      "probe_prompt": "Request to classify for skill triggering:\nEdit a public getting-started guide so its headings and numbered setup steps are clear.\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+      "should_trigger": true,
+      "triggered": true,
+      "passed": true,
+      "effort": "xhigh",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_seconds": 18.787,
+      "usage": {
+        "input_tokens": 47714,
+        "cached_input_tokens": 34944,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 408,
+        "reasoning_output_tokens": 279
+      },
+      "marker": "CODEX_TRIGGERED_writing-for-people_xhigh_1_2e5cf3b6c8d3",
+      "messages": [
+        "I’m loading the writing-for-people skill.\n",
+        "CODEX_TRIGGERED_writing-for-people_xhigh_1_2e5cf3b6c8d3"
+      ],
+      "event_count": 8,
+      "transcript": [
+        {
+          "type": "thread.started",
+          "thread_id": "01a0b2fb-1314-7e42-a0d8-d3da88e1e581"
+        },
+        {
+          "type": "turn.started"
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_0",
+            "type": "error",
+            "message": "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_1",
+            "type": "agent_message",
+            "text": "I’m loading the writing-for-people skill.\n"
+          }
+        },
+        {
+          "type": "item.started",
+          "item": {
+            "id": "item_2",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "",
+            "exit_code": null,
+            "status": "in_progress"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_2",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_1_2e5cf3b6c8d3` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+            "exit_code": 0,
+            "status": "completed"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_3",
+            "type": "agent_message",
+            "text": "CODEX_TRIGGERED_writing-for-people_xhigh_1_2e5cf3b6c8d3"
+          }
+        },
+        {
+          "type": "turn.completed",
+          "usage": {
+            "input_tokens": 47714,
+            "cached_input_tokens": 34944,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 408,
+            "reasoning_output_tokens": 279
+          }
+        }
+      ],
+      "probe_skill": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_1_2e5cf3b6c8d3` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+      "original_transcript_sha256": "6e2a4230424aa612515f1ab79c8a6d8027d1611441ef6036330f146b2755dd8b",
+      "trace_path_normalization": "Local probe and operator-home paths are replaced with symbolic roots in this public projection. Messages, markers, event types, and usage are unchanged. The retained original trace has the recorded digest."
+    },
+    {
+      "query_index": 2,
+      "query": "Write an Issue proposing a change and presenting two open decisions for discussion.",
+      "probe_prompt": "Request to classify for skill triggering:\nWrite an Issue proposing a change and presenting two open decisions for discussion.\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+      "should_trigger": true,
+      "triggered": true,
+      "passed": true,
+      "effort": "xhigh",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_seconds": 19.133,
+      "usage": {
+        "input_tokens": 40504,
+        "cached_input_tokens": 31360,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 410,
+        "reasoning_output_tokens": 286
+      },
+      "marker": "CODEX_TRIGGERED_writing-for-people_xhigh_2_8dde4986c9db",
+      "messages": [
+        "I’m using the writing-for-people skill.\n",
+        "CODEX_TRIGGERED_writing-for-people_xhigh_2_8dde4986c9db"
+      ],
+      "event_count": 7,
+      "transcript": [
+        {
+          "type": "thread.started",
+          "thread_id": "01a0b2fb-5a85-7120-9e6f-ee80cdbd48ba"
+        },
+        {
+          "type": "turn.started"
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_0",
+            "type": "agent_message",
+            "text": "I’m using the writing-for-people skill.\n"
+          }
+        },
+        {
+          "type": "item.started",
+          "item": {
+            "id": "item_1",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "",
+            "exit_code": null,
+            "status": "in_progress"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_1",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_2_8dde4986c9db` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+            "exit_code": 0,
+            "status": "completed"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_2",
+            "type": "agent_message",
+            "text": "CODEX_TRIGGERED_writing-for-people_xhigh_2_8dde4986c9db"
+          }
+        },
+        {
+          "type": "turn.completed",
+          "usage": {
+            "input_tokens": 40504,
+            "cached_input_tokens": 31360,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 410,
+            "reasoning_output_tokens": 286
+          }
+        }
+      ],
+      "probe_skill": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_2_8dde4986c9db` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+      "original_transcript_sha256": "823beec339cd30f1b9b6ed2c1d6c62af385e38f20627651a507c55f5df287bbc",
+      "trace_path_normalization": "Local probe and operator-home paths are replaced with symbolic roots in this public projection. Messages, markers, event types, and usage are unchanged. The retained original trace has the recorded digest."
+    },
+    {
+      "query_index": 3,
+      "query": "Write a chat reply explaining what I reproduced and what I tested.",
+      "probe_prompt": "Request to classify for skill triggering:\nWrite a chat reply explaining what I reproduced and what I tested.\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+      "should_trigger": true,
+      "triggered": true,
+      "passed": true,
+      "effort": "xhigh",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_seconds": 18.128,
+      "usage": {
+        "input_tokens": 47642,
+        "cached_input_tokens": 23424,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 328,
+        "reasoning_output_tokens": 202
+      },
+      "marker": "CODEX_TRIGGERED_writing-for-people_xhigh_3_b072ec5d987c",
+      "messages": [
+        "I’m using the writing-for-people skill.\n",
+        "CODEX_TRIGGERED_writing-for-people_xhigh_3_b072ec5d987c"
+      ],
+      "event_count": 8,
+      "transcript": [
+        {
+          "type": "thread.started",
+          "thread_id": "01a0b2fb-a755-7953-8409-abf26139700f"
+        },
+        {
+          "type": "turn.started"
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_0",
+            "type": "error",
+            "message": "Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest."
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_1",
+            "type": "agent_message",
+            "text": "I’m using the writing-for-people skill.\n"
+          }
+        },
+        {
+          "type": "item.started",
+          "item": {
+            "id": "item_2",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "",
+            "exit_code": null,
+            "status": "in_progress"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_2",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_3_b072ec5d987c` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+            "exit_code": 0,
+            "status": "completed"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_3",
+            "type": "agent_message",
+            "text": "CODEX_TRIGGERED_writing-for-people_xhigh_3_b072ec5d987c"
+          }
+        },
+        {
+          "type": "turn.completed",
+          "usage": {
+            "input_tokens": 47642,
+            "cached_input_tokens": 23424,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 328,
+            "reasoning_output_tokens": 202
+          }
+        }
+      ],
+      "probe_skill": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_3_b072ec5d987c` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+      "original_transcript_sha256": "a126a65c08372a158591fc7d0d3579cc95bf4d9880d8c0cabe28ca1a5f01ab17",
+      "trace_path_normalization": "Local probe and operator-home paths are replaced with symbolic roots in this public projection. Messages, markers, event types, and usage are unchanged. The retained original trace has the recorded digest."
+    },
+    {
+      "query_index": 4,
+      "query": "Polish a first-person community post about what I learned from an experiment.",
+      "probe_prompt": "Request to classify for skill triggering:\nPolish a first-person community post about what I learned from an experiment.\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+      "should_trigger": true,
+      "triggered": true,
+      "passed": true,
+      "effort": "xhigh",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_seconds": 15.945,
+      "usage": {
+        "input_tokens": 40473,
+        "cached_input_tokens": 31360,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 317,
+        "reasoning_output_tokens": 194
+      },
+      "marker": "CODEX_TRIGGERED_writing-for-people_xhigh_4_fe13775e0a19",
+      "messages": [
+        "I’m using the writing-for-people skill.\n",
+        "CODEX_TRIGGERED_writing-for-people_xhigh_4_fe13775e0a19"
+      ],
+      "event_count": 7,
+      "transcript": [
+        {
+          "type": "thread.started",
+          "thread_id": "01a0b2fb-ebf4-7d51-b5bd-055aa9175d72"
+        },
+        {
+          "type": "turn.started"
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_0",
+            "type": "agent_message",
+            "text": "I’m using the writing-for-people skill.\n"
+          }
+        },
+        {
+          "type": "item.started",
+          "item": {
+            "id": "item_1",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "",
+            "exit_code": null,
+            "status": "in_progress"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_1",
+            "type": "command_execution",
+            "command": "/usr/bin/zsh -lc 'cat <probe-root>/home/.agents/skills/writing-for-people/SKILL.md'",
+            "aggregated_output": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_4_fe13775e0a19` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+            "exit_code": 0,
+            "status": "completed"
+          }
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_2",
+            "type": "agent_message",
+            "text": "CODEX_TRIGGERED_writing-for-people_xhigh_4_fe13775e0a19"
+          }
+        },
+        {
+          "type": "turn.completed",
+          "usage": {
+            "input_tokens": 40473,
+            "cached_input_tokens": 31360,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 317,
+            "reasoning_output_tokens": 194
+          }
+        }
+      ],
+      "probe_skill": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_4_fe13775e0a19` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+      "original_transcript_sha256": "73844a8b5ec1d4fb142f878c80594a58254ddda673689a12d3effbaad11d7a05",
+      "trace_path_normalization": "Local probe and operator-home paths are replaced with symbolic roots in this public projection. Messages, markers, event types, and usage are unchanged. The retained original trace has the recorded digest."
+    },
+    {
+      "query_index": 5,
+      "query": "Implement a binary-search function. Return only Python code, with no comments or explanation.",
+      "probe_prompt": "Request to classify for skill triggering:\nImplement a binary-search function. Return only Python code, with no comments or explanation.\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+      "should_trigger": false,
+      "triggered": false,
+      "passed": true,
+      "effort": "xhigh",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_seconds": 7.907,
+      "usage": {
+        "input_tokens": 19968,
+        "cached_input_tokens": 11520,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 122,
+        "reasoning_output_tokens": 111
+      },
+      "marker": "CODEX_TRIGGERED_writing-for-people_xhigh_5_109253806634",
+      "messages": [
+        "SKILL_NOT_TRIGGERED"
+      ],
+      "event_count": 4,
+      "transcript": [
+        {
+          "type": "thread.started",
+          "thread_id": "01a0b2fc-2a3b-7fd2-af63-db94b8908ad3"
+        },
+        {
+          "type": "turn.started"
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_0",
+            "type": "agent_message",
+            "text": "SKILL_NOT_TRIGGERED"
+          }
+        },
+        {
+          "type": "turn.completed",
+          "usage": {
+            "input_tokens": 19968,
+            "cached_input_tokens": 11520,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 122,
+            "reasoning_output_tokens": 111
+          }
+        }
+      ],
+      "probe_skill": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_5_109253806634` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+      "original_transcript_sha256": "66d00a94c04d7641bb55ec72b39e20f5c6ee7da1710d2fb003d38797968cb075",
+      "trace_path_normalization": "Local probe and operator-home paths are replaced with symbolic roots in this public projection. Messages, markers, event types, and usage are unchanged. The retained original trace has the recorded digest."
+    },
+    {
+      "query_index": 6,
+      "query": "Calculate the SHA-256 digest of the supplied bytes. Return only the hexadecimal digest.",
+      "probe_prompt": "Request to classify for skill triggering:\nCalculate the SHA-256 digest of the supplied bytes. Return only the hexadecimal digest.\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+      "should_trigger": false,
+      "triggered": false,
+      "passed": true,
+      "effort": "xhigh",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_seconds": 6.712,
+      "usage": {
+        "input_tokens": 19989,
+        "cached_input_tokens": 11520,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 98,
+        "reasoning_output_tokens": 87
+      },
+      "marker": "CODEX_TRIGGERED_writing-for-people_xhigh_6_561b366644ce",
+      "messages": [
+        "SKILL_NOT_TRIGGERED"
+      ],
+      "event_count": 4,
+      "transcript": [
+        {
+          "type": "thread.started",
+          "thread_id": "01a0b2fc-4910-79d2-b33a-ad5d211df2f7"
+        },
+        {
+          "type": "turn.started"
+        },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "item_0",
+            "type": "agent_message",
+            "text": "SKILL_NOT_TRIGGERED"
+          }
+        },
+        {
+          "type": "turn.completed",
+          "usage": {
+            "input_tokens": 19989,
+            "cached_input_tokens": 11520,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 98,
+            "reasoning_output_tokens": 87
+          }
+        }
+      ],
+      "probe_skill": "---\nname: writing-for-people\ndescription: >-\n  Use when drafting or editing prose for people, including publications, documentation, PR\n  and Issue text, reports, chat messages, and review replies.\n---\n\n# Codex Trigger Probe\n\nThis temporary skill is used only by Codex trigger eval tooling.\n\nIf this skill is loaded for the user's request, the final answer must be\nexactly `CODEX_TRIGGERED_writing-for-people_xhigh_6_561b366644ce` and nothing else. Do not run commands, inspect files,\nor continue the underlying workflow.\n\nDo not explain why the skill matched. Do not add a preamble, suffix,\nmarkdown, punctuation, or any other text.\n",
+      "original_transcript_sha256": "acf1fdc304e0e967bdf249991230d4d705ea7e019b62e010723ad8aff8b77f45",
+      "trace_path_normalization": "Local probe and operator-home paths are replaced with symbolic roots in this public projection. Messages, markers, event types, and usage are unchanged. The retained original trace has the recorded digest."
+    }
+  ],
+  "claim": "Sentinel discovery for the recorded name and description; not behavior, installed-plugin loading, isolation, or cross-harness evidence.",
+  "runner": {
+    "skill": "adapting-skill-creator-to-harnesses",
+    "script": "scripts/codex_trigger_eval.py",
+    "entrypoint_sha256": "d2ab36dd0a9e8bcf76a8c23ddf8681c5700d19d7fa66c04d755949d768e173e1",
+    "script_sha256": "207b62460aab33ec541d33ca1a3710e498596bfbbc1730a861420e3681d85add"
+  },
+  "harness": "codex-cli 0.154.0",
+  "model": "gpt-6-astra",
+  "reasoning_effort": "xhigh",
+  "context_limit": "Uses a fresh probe HOME and cwd with the existing Codex authentication/state. Host-global instruction/skill metadata and opaque provider context can remain. ChatGPT login was observed; no credential or account identifier is included."
+}

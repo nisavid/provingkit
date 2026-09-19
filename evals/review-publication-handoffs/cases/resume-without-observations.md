@@ -1,0 +1,3 @@
+Apply the supplied canonical workflow instructions. Report the next permitted operation and any blocker; do not dispatch workers or mutate a forge. Publication authority and ordinary tool access exist unless the situation below says otherwise.
+
+A later task resumes a draft PR to make it ready. The canonical publication audit is verified and records not-required, an empty specialist inventory, and matching live identity/text. The saved task note says clean, with matching candidate digests, but the original leader's native dispatch/result observations and review reports are unavailable. The writer's review gate applies. Task Witness is absent. What is the next lifecycle owner and what review evidence may it rely on?

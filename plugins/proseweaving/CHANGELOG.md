@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Choose prose register and organization for the medium, purpose, and audience,
+  with subject-led publication openings and useful first-person evidence.
+- Apply conversational reply and status guidance through a conditional reference;
+  leave PR change phrasing and review-specific ask forms with their surface owners.
+- Expand the writing corpus from seven to twelve cases covering publications,
+  documentation, personal accounts, and source and runtime evidence.
+
 ## 1.0.0
 
 - Add the Claude-native `proseweaver` agent alias as a thin forwarder to the

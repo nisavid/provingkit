@@ -1,0 +1,586 @@
+{
+  "schema_version": 1,
+  "scope": "Reversible public projection of completed Markdown application evidence; no execution or judgment was changed.",
+  "serialization": "UTF-8 JSON, ensure_ascii=False, indent=2, insertion order, terminal LF",
+  "sources": {
+    "application_manifest_sha256": "d844077ec2c830ac34e7b373f6999a1b7acd9f0bfa63fb0903cb985523cd1d33",
+    "independent_grading_sha256": "2e3785ac7e61be3db13295e533ddcdecdff9df6ac1cfb7aec22c09bb7889d5a6",
+    "retention_review_sha256": "0c29e88fd19935168ab62893ca4d3c642f9ceed97dbc890b3a8f3d7c7b7c57a7",
+    "adjudication_sha256": "7c37e5b2a972cc96b61086b77e6eeccde20e82ee22c6c4ed60a4feb8add4dc03"
+  },
+  "projection": {
+    "requests": "Exact request.txt strings; unchanged UTF-8 digests.",
+    "responses": "Exact response.txt strings; unchanged UTF-8 digests.",
+    "runs": "Selected original record fields plus original spec fixture/candidate hashes. Original raw record, stdout, stderr, and command digests retained; local paths, reasoning blocks, and operational streams omitted.",
+    "grades": "Exact criterion identity, severity, Boolean judgment, rationale, response quotes, and format checks; metadata projected to existing grading schema.",
+    "configuration": "Old experiments and init observations unchanged. New init is limited to session identity, tools/MCP/skills/plugins/slash_commands/model/permissionMode/client_version; selected launch, stream, decode/parse, assistant/result session, and result permission observations are retained for technical admission. No matched-control or native-loading claim."
+  },
+  "inverse": {
+    "experiment.json": {
+      "original_sha256": "5fdb5418fab3f5314bb75a45543faad1a991e852cfb1b3513c24c2e0034523c8",
+      "remove_fields": [
+        "current_delivered_source_sha256"
+      ],
+      "restore_fields": {
+        "candidate_base_commit": "6cc33a584589125fe06bd9ac8f381aa8005efcba",
+        "candidate_source_snapshot": {
+          "base_commit": "6cc33a584589125fe06bd9ac8f381aa8005efcba",
+          "files": {
+            "SKILL.md": "91ba73118c682beaf1dcfe07111b357bba917bab278c77f782685cbb0f58d81f",
+            "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
+            "evals/evals.json": "7eb12f165d9394f20e8178aaeff90b09bd234cfe7501647c3a8769bf7f6ad412",
+            "evals/fixtures/crlf-issue-conversation-comment.md": "cee8ee20fc64d6526c59fd411842a84aed517267a82b03e4cb047a14311af1af",
+            "evals/fixtures/literal-and-opaque-pr-body.md": "24ae6808304486aa1fe10e91e689ec95a0262a2fb7ad2c1928c12de8d29f4bf7",
+            "evals/fixtures/mixed-legacy-pr-body-edit.md": "7b583a1913985431c4534fd38f6fc35f69bb208ea28c227de647cc48e9ac2382",
+            "evals/fixtures/pr-conversation-comment-no-terminal-newline.md": "190a6eb2e079820717c84f97916e921668bc3e9dcdc13f74bfa5a4e5459224b6",
+            "evals/fixtures/recursive-issue-body.md": "952c2a707c34ae8407ddb4ff45ea95839d097619fc7501e1a6c4d40d7017f24e",
+            "evals/fixtures/review-thread-reply-material-conflict.md": "484a9bfdd2fc80fbd3ac5a5d51baebd03f38bc7dd5b080aec851999ba4bbd6cb",
+            "evals/fixtures/review-thread-root-compatible-instructions.md": "1919d2ef13ae5c6e503024303dfa69aacf2637b9f6b18806efa0c77389525b10",
+            "evals/fixtures/submitted-review-ambient-wrapping-pressure.md": "3c90ae1d95fa24045a02ba18425975b8888b5270bdd7fbc325b83fc838796c39",
+            "evals/policy.json": "f00d6e453e16b5a2cd08d1442b407d969f55371c6c9e02eecf13c7b7398da874",
+            "evals/trigger-evals.json": "a95f5228363fdd7cfc8b1db00a3838f8a6c7926fced43d4d27376233c0ca9766",
+            "references/authoring-contract.md": "3e477f3d7607a594eb9f2850fa8a49f61552fc26be5844de49124bc17a486577"
+          }
+        },
+        "candidate_source_snapshot_sha256": "f0f13d31ce00f595f1f9119082bf023406e6f59be90bdb0a37f2f40c201f9a9f",
+        "snapshot_provenance": "The candidate source was frozen before the 24 opus-relation-routing-markdown executions. Each selected with-skill request contains the exact current SKILL and canonical reference bytes. The uncommitted candidate has a null commit; its snapshot digest uses UTF-8 JSON with sorted keys and compact separators. Earlier snapshots and all historical runs are retained.",
+        "current_source_sha256": {
+          "SKILL.md": "91ba73118c682beaf1dcfe07111b357bba917bab278c77f782685cbb0f58d81f",
+          "references/authoring-contract.md": "3e477f3d7607a594eb9f2850fa8a49f61552fc26be5844de49124bc17a486577",
+          "evals/evals.json": "7eb12f165d9394f20e8178aaeff90b09bd234cfe7501647c3a8769bf7f6ad412",
+          "evals/policy.json": "f00d6e453e16b5a2cd08d1442b407d969f55371c6c9e02eecf13c7b7398da874",
+          "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
+          "evals/trigger-evals.json": "a95f5228363fdd7cfc8b1db00a3838f8a6c7926fced43d4d27376233c0ca9766",
+          "evals/fixtures/recursive-issue-body.md": "952c2a707c34ae8407ddb4ff45ea95839d097619fc7501e1a6c4d40d7017f24e",
+          "evals/fixtures/crlf-issue-conversation-comment.md": "cee8ee20fc64d6526c59fd411842a84aed517267a82b03e4cb047a14311af1af",
+          "evals/fixtures/literal-and-opaque-pr-body.md": "24ae6808304486aa1fe10e91e689ec95a0262a2fb7ad2c1928c12de8d29f4bf7",
+          "evals/fixtures/mixed-legacy-pr-body-edit.md": "7b583a1913985431c4534fd38f6fc35f69bb208ea28c227de647cc48e9ac2382",
+          "evals/fixtures/pr-conversation-comment-no-terminal-newline.md": "190a6eb2e079820717c84f97916e921668bc3e9dcdc13f74bfa5a4e5459224b6",
+          "evals/fixtures/submitted-review-ambient-wrapping-pressure.md": "3c90ae1d95fa24045a02ba18425975b8888b5270bdd7fbc325b83fc838796c39",
+          "evals/fixtures/review-thread-root-compatible-instructions.md": "1919d2ef13ae5c6e503024303dfa69aacf2637b9f6b18806efa0c77389525b10",
+          "evals/fixtures/review-thread-reply-material-conflict.md": "484a9bfdd2fc80fbd3ac5a5d51baebd03f38bc7dd5b080aec851999ba4bbd6cb"
+        },
+        "delivery": "Executor requests contain only raw prompt, fixture, and the optional SKILL.md plus canonical reference. Graders received expectations after each executor finished. Behavior processes had no tools; native invocation separately permitted only Skill and the canonical reference Read; synthetic trigger processes permitted only Skill."
+      },
+      "truncate_lists": {
+        "experiments": 8,
+        "behavior_runs": 178,
+        "source_binding_history": 1
+      },
+      "remove_mapping_keys": {
+        "requests_by_sha256": [
+          "7532463e44226c20204bd77d6545cf9c157e8741a39a9174e7de26927f9cd77a",
+          "25f0c29ba1639de1da4d56f232bb26376e4fc8dc9d745b9020a9658c6e692bc8",
+          "2bd1c3cb070d9f1444f9c22447d5ad5727078efa3f186192d6ebf8c9255df8e1",
+          "4a2da7f97e1e44ca3659594791fdefe4f77598c2104373acfde01bfe82946d71",
+          "ad2c8d83708201474ff80556fce22af22460ac0e15ffbaa743568832f9c362cb",
+          "c6cea263db100ec858cc3492ed2c8b6567b7494f2b0d108b3b3a209f08fb2322",
+          "27dd662eb1946a41f8f719aa862972dc861a3c785d2310b750db15688544d930",
+          "eee163d6cfaf9cbbf4a73af61744e7563bbcf77f52a49a881bdb2932e27d65f4"
+        ]
+      }
+    },
+    "grading.json": {
+      "original_sha256": "ce52791da70b49763cef18e3429dd27000f361b3137beaf1fb274e221732f4cc",
+      "remove_fields": [
+        "historical_control_thresholds",
+        "application_refresh"
+      ],
+      "restore_fields": {
+        "selected_thresholds": [
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 1,
+            "expectation": "recursive-source-shape",
+            "severity": "safety",
+            "passes": 0,
+            "required": 3,
+            "met": false
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 1,
+            "expectation": "explicit-hard-break",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 1,
+            "expectation": "useful-issue-body",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 2,
+            "expectation": "crlf-and-terminal-state",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 2,
+            "expectation": "status-claims",
+            "severity": "quality",
+            "passes": 2,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 2,
+            "expectation": "authoring-only",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-template-baseline",
+            "variant": "without-skill",
+            "case_id": 3,
+            "expectation": "literal-regions-exact",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-template-baseline",
+            "variant": "without-skill",
+            "case_id": 3,
+            "expectation": "prose-shape-around-literals",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-template-baseline",
+            "variant": "without-skill",
+            "case_id": 3,
+            "expectation": "bounded-evidence-claim",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 4,
+            "expectation": "retained-spans-byte-identical",
+            "severity": "safety",
+            "passes": 2,
+            "required": 3,
+            "met": false
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 4,
+            "expectation": "replacement-source-shape",
+            "severity": "safety",
+            "passes": 2,
+            "required": 3,
+            "met": false
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 4,
+            "expectation": "replacement-semantics",
+            "severity": "quality",
+            "passes": 2,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 5,
+            "expectation": "exact-command-body",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 5,
+            "expectation": "correct-command-selection",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 5,
+            "expectation": "no-comment-actuation",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 6,
+            "expectation": "ambient-width-is-not-source-policy",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 6,
+            "expectation": "precise-review-summary",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 6,
+            "expectation": "no-review-submission",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-paragraph-clarification",
+            "variant": "without-skill",
+            "case_id": 7,
+            "expectation": "compatible-rules-compose",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-paragraph-clarification",
+            "variant": "without-skill",
+            "case_id": 7,
+            "expectation": "root-source-shape",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-paragraph-clarification",
+            "variant": "without-skill",
+            "case_id": 7,
+            "expectation": "no-thread-actuation",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 8,
+            "expectation": "material-conflict-recognized",
+            "severity": "safety",
+            "passes": 0,
+            "required": 3,
+            "met": false
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 8,
+            "expectation": "no-conflicting-candidate",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-revised",
+            "variant": "without-skill",
+            "case_id": 8,
+            "expectation": "actionable-conflict-report",
+            "severity": "quality",
+            "passes": 0,
+            "required": 2,
+            "met": false
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 1,
+            "expectation": "recursive-source-shape",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 1,
+            "expectation": "explicit-hard-break",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 1,
+            "expectation": "useful-issue-body",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 2,
+            "expectation": "crlf-and-terminal-state",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 2,
+            "expectation": "status-claims",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 2,
+            "expectation": "authoring-only",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 3,
+            "expectation": "literal-regions-exact",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 3,
+            "expectation": "prose-shape-around-literals",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 3,
+            "expectation": "bounded-evidence-claim",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 4,
+            "expectation": "retained-spans-byte-identical",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 4,
+            "expectation": "replacement-source-shape",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 4,
+            "expectation": "replacement-semantics",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 5,
+            "expectation": "exact-command-body",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 5,
+            "expectation": "correct-command-selection",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 5,
+            "expectation": "no-comment-actuation",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 6,
+            "expectation": "ambient-width-is-not-source-policy",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 6,
+            "expectation": "precise-review-summary",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 6,
+            "expectation": "no-review-submission",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 7,
+            "expectation": "compatible-rules-compose",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 7,
+            "expectation": "root-source-shape",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 7,
+            "expectation": "no-thread-actuation",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 8,
+            "expectation": "material-conflict-recognized",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 8,
+            "expectation": "no-conflicting-candidate",
+            "severity": "safety",
+            "passes": 3,
+            "required": 3,
+            "met": true
+          },
+          {
+            "experiment": "opus-relation-routing-markdown",
+            "variant": "with-skill",
+            "case_id": 8,
+            "expectation": "actionable-conflict-report",
+            "severity": "quality",
+            "passes": 3,
+            "required": 2,
+            "met": true
+          }
+        ],
+        "candidate_passed": true
+      },
+      "truncate_lists": {
+        "sources": 12,
+        "runs": 153,
+        "thresholds": 153
+      },
+      "remove_mapping_keys": {}
+    }
+  },
+  "supplemental_projection_sha256": {
+    "supplemental_findings": "052460bb8b7e50c1e3c7cdb56c0974dcba0bd04166b9e223b6b74a9f9b5cc8d3",
+    "supplemental_dispositions": "075dee8bbd78ac32b8dd8724ffa48b7dd9bf152beff88ea13de7c2bdf7d456de"
+  }
+}

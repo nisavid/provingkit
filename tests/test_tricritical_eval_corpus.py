@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -10,6 +11,71 @@ EVAL_ROOT = REPO_ROOT / "plugins" / "tricritical" / "evals"
 class TricriticalEvalCorpusTests(unittest.TestCase):
     def setUp(self):
         self.corpus = json.loads((EVAL_ROOT / "corpus.json").read_text())
+
+    def test_dispatch_scenarios_isolate_their_admission_boundary(self):
+        scenarios = {
+            "model-selection-record.md": "missing-selection-records",
+            "topology-unauthorized-user-owned-task.md": "user-owned-authority",
+            "topology-inadequate-foreign-isolation.md": "shared-context",
+            "topology-prohibited-subdelegation-external-action.md": "excess-authority",
+            "topology-valid-native-dispatch.md": None,
+            "witnessed-unavailable-receipts.md": "missing-witnessed-receipts",
+        }
+        for fixture, defect in scenarios.items():
+            with self.subTest(fixture=fixture):
+                prompt = (EVAL_ROOT / "fixtures" / fixture).read_text()
+                packet = re.search(r"```json\n(.*?)\n```", prompt, re.DOTALL)
+                self.assertIsNotNone(packet, "dispatch premises must be explicit")
+                facts = json.loads(packet.group(1))
+                self.assertEqual(
+                    facts["mode"],
+                    "witnessed" if defect == "missing-witnessed-receipts" else "ordinary",
+                )
+                self.assertEqual(set(facts["bindings"]), {"candidate", "review_input", "requirements"})
+                for identity in facts["bindings"].values():
+                    self.assertRegex(identity, r"^sha256:[0-9a-f]{64}$")
+                roles = {"intent", "runtime", "structure"}
+                if defect is None:
+                    roles.add("persistence-specialist")
+                entries = facts["plan_entries"]
+                self.assertEqual(len(entries), len(roles))
+                self.assertEqual({entry["role"] for entry in entries}, roles)
+                self.assertEqual(len({entry["context"] for entry in entries}), len(roles))
+                records = facts["model_selection_records"]
+                self.assertEqual(
+                    {(record["id"], record["role"]) for record in records},
+                    set() if defect == "missing-selection-records" else
+                    {(entry["selection_record"], entry["role"]) for entry in entries},
+                )
+                self.assertEqual(facts["assurance_minimum"], {
+                    "target": "controller-observed", "model": "self-reported",
+                    "topology": "controller-observed", "authority": "self-reported",
+                    "execution_result": "controller-observed",
+                })
+                self.assertEqual(facts["observed_distinct_contexts"], defect != "shared-context")
+                self.assertEqual(
+                    facts["ownership"],
+                    "user-owned" if defect == "user-owned-authority" else "leader-owned",
+                )
+                self.assertFalse(facts["user_owned_task_authority"])
+                self.assertEqual(
+                    facts["intent_extra_authority"],
+                    ["subdelegation", "external-action"] if defect == "excess-authority" else [],
+                )
+                self.assertFalse(facts["authenticated_receipts_available"])
+                self.assertFalse(facts["qualified_issuer_available"])
+                normalized = " ".join(prompt.split())
+                for premise in (
+                    "Invocation plan:", "read-only", "subdelegation and external action denied",
+                    "Model-selection records:", "same frozen bindings", "No execution has started",
+                    "mandatory tool denial", "effective executed model",
+                ):
+                    self.assertIn(premise, normalized)
+                if defect != "missing-selection-records":
+                    self.assertIn("fresh live catalog", normalized)
+                    self.assertIn("existing selection authority", normalized)
+                for marker in ("pass if", "expected output", "reference answer", "grader_expectations"):
+                    self.assertNotIn(marker, prompt.lower())
 
     def test_corpus_manifest_covers_all_raw_fixtures(self):
         fixture_files = {
@@ -119,10 +185,32 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
 
     def test_scenarios_cover_terminal_reverse_edge_and_provenance_gates(self):
         expected = {
-            "model-selection-receipt.md": {
-                "dispatch_blocked_without_receipt",
+            "model-selection-record.md": {
+                "dispatch_blocked_without_selection_records",
                 "capability_proof_required",
                 "portable_policy_does_not_select_provider_model",
+            },
+            "topology-valid-native-dispatch.md": {
+                "exact_closed_world_dispatch_set",
+                "unique_entry_per_selected_execution",
+                "ordinary_plan_and_separate_selection_records",
+                "controller_observed_independence_with_cooperative_tool_limits",
+                "no_receipt_requirement_for_ordinary_dispatch",
+                "completeness_accounts_for_all_four",
+            },
+            "topology-inadequate-foreign-isolation.md": {
+                "live_isolation_observation_overrides_plan_claim",
+                "foreign_dispatch_rejected",
+                "no_native_fallback_without_new_valid_plan",
+                "incomplete_non_clean",
+            },
+            "witnessed-unavailable-receipts.md": {
+                "valid_ordinary_prerequisites_do_not_replace_witnessed_receipts",
+                "missing_qualified_receipts_block_dispatch",
+                "no_receipt_fabrication",
+                "no_downgrade_to_ordinary",
+                "zero_dispatches",
+                "incomplete_non_clean",
             },
             "terminal-needs-operator-decision.md": {
                 "needs_operator_decision_before_clean",
@@ -298,8 +386,8 @@ class TricriticalEvalCorpusTests(unittest.TestCase):
                 "author's rationale",
                 "expected findings",
             ),
-            "model-selection-receipt.md": (
-                "model-selection receipt",
+            "model-selection-record.md": (
+                "model-selection records",
                 "supported-model catalog",
                 "selection authority",
                 "provider-specific model",

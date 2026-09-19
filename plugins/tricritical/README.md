@@ -35,20 +35,19 @@ skill rather than copy its policy.
 Semantic skill-to-skill edges use literal public identities linked to sibling
 `SKILL.md` files and remain relative and unqualified. Claude adapters, the Codex
 extension, and `agents/openai.yaml` prompts use `$tricritical:<skill>` targets.
-The review coordinator's two topology requirements are adapter inputs rather
-than skill edges. A harness adapter supplies a capability-proven model-selection
-receipt for every distinct dispatch and a separate Rolecasting-defined
-`adapter:rolecasting-invocation-topology-receipt` for the frozen plan. The latter
-binds the immutable candidate/review-input/requirements identities and exactly
-one unique, isolated, read-only entry for every selected critic and specialist.
-Each entry records its target product family, surface, version, and executor;
-child, peer, or external relationship; leader-owned or user-owned ownership;
-transport; authority; isolation; and assurance. It is a closed-world dispatch
-set with subdelegation and external action denied by default; user-owned work
-requires explicit user authority. Portable review policy validates both
-receipts without copying provider-specific model policy, and any changed
-target, topology, transport, authority, isolation, or assurance minimum requires
-a new valid plan.
+Ordinary review consumes a live model-selection record per execution and a
+separate Rolecasting frozen invocation plan. The same leader verifies distinct
+worker contexts, unchanged inputs, completed reports, and declared verification.
+The resulting hand-back reports review status and its assurance limits; it does
+not attest the effective model or product-enforced permissions.
+
+Explicitly witnessed review adds separate authenticated model-selection and
+invocation-topology receipts through `conditional_requires.witnessed`. Missing
+issuance or a consumer minimum above the route's capability blocks that mode.
+Neither mode changes original authority, closed dispatch membership, review
+completeness, or freshness. A changed candidate or evidence dependency requires
+fresh affected review before a downstream action. See the shared
+[invocation boundary](references/invocation-boundary.md).
 
 `topology.json` is the sole machine-readable authority and dependency
 declaration. The table above and sibling skill links are validated projections

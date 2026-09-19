@@ -338,13 +338,13 @@ def incumbent_mapping(path: Path, skill_count: int) -> Path:
 def test_definition_is_exact_public_inventory_and_scenario_map():
     definition = json.loads(DEFINITION.read_text())
     skills = definition["skills"]
-    assert len(skills) == 23
+    assert len(skills) == 24
     counts: dict[str, int] = {}
     for skill in skills:
         plugin = skill["id"].split(":", 1)[0]
         counts[plugin] = counts.get(plugin, 0) + 1
     assert counts == {
-        "mergecraft": 10,
+        "mergecraft": 11,
         "rolecasting": 2,
         "proseweaving": 1,
         "tricritical": 7,
@@ -364,6 +364,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         "non-default-fork-sync",
         "persistent-worktree-containment",
         "markdown-authoring-recursive-issue-body",
+        "relation-direct-implementation",
         "writer-owns-content",
         "publisher-owns-actuation",
         "graphite-transport-boundary",
@@ -382,7 +383,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         capture_output=True,
         text=True,
     )
-    assert json.loads(validated.stdout) == {"passed": True, "skills": 23}
+    assert json.loads(validated.stdout) == {"passed": True, "skills": 24}
 
     getting_prs_merged = next(
         skill for skill in skills if skill["id"] == "mergecraft:getting-prs-merged"
@@ -410,6 +411,48 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
     } == {
         "plugins/mergecraft/skills/publishing-reviewable-prs/scripts/reviewable_pr_state.py"
     }
+
+
+@pytest.mark.parametrize("definition_path", [
+    DEFINITION,
+    ROOT / "evals/mergecraft/retirement-control-plane.json",
+])
+def test_isolated_relation_bundle_plans_a_complete_contribution(tmp_path, definition_path):
+    from tests.test_mergecraft_issue_pr_relations import (
+        FakeForge, command_module, request, with_existing_ledgers,
+    )
+
+    definition = json.loads(definition_path.read_bytes())
+    skill_id = "mergecraft:maintaining-issue-pr-relations"
+    skill = next(item for item in definition["skills"] if item["id"] == skill_id)
+    runner = load_runner()
+    files = runner.runtime_subtree_files(runner.BundleSource(
+        ROOT, (skill["entrypoint"],), "fixture://candidate", "candidate-revision",
+        runtime_dependencies=tuple(definition["runtime_dependencies"].get(skill_id, [])),
+    ))
+    isolated = tmp_path / "bundle"
+    for relative, content in files.items():
+        destination = isolated / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(content)
+
+    forge = FakeForge()
+    desired = with_existing_ledgers(forge, request("complete"))
+    observed = command_module().execute(
+        "observe", desired, forge=forge, state_root=tmp_path / "state",
+    )
+    assert observed["status"] == "observed", observed
+    observation = tmp_path / "observation.json"
+    observation.write_text(json.dumps(observed), encoding="utf-8")
+    command = isolated / Path(skill["entrypoint"]).parent / "scripts/relation_state.py"
+    result = subprocess.run(
+        [sys.executable, "-I", "-B", str(command), "plan", "--input", str(observation)],
+        cwd=isolated, capture_output=True, text=True, timeout=30,
+    )
+    plan = json.loads(result.stdout)
+    assert result.returncode == 0 and plan["status"] == "ready", plan
+    assert [effect["kind"] for effect in plan["effects"]] == ["native-add"]
+    assert plan["read_counts"]["external_write_requests"] == 0
 
 
 def test_evaluation_runbook_sizes_the_current_inventory():
@@ -534,7 +577,7 @@ def test_fixture_runner_rejects_symlinked_output_components_without_writing_targ
 
 
 def test_fixture_transport_cannot_masquerade_as_production_matrix(tmp_path: Path):
-    mapping = incumbent_mapping(tmp_path / "incumbents.json", 23)
+    mapping = incumbent_mapping(tmp_path / "incumbents.json", 24)
     rejected = subprocess.run(
         [
             sys.executable,

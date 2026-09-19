@@ -1,100 +1,90 @@
 ---
 name: writing-for-people
-description: Use when drafting or editing prose a person will read, such as chat messages, replies, reports, summaries, review comments, or documentation written by an agent.
+description: Use when drafting or editing prose for people, including publications, documentation, PR and Issue text, reports, chat messages, and review replies.
 ---
 
 # Writing For People
 
 ## Scope
 
-Own how prose an agent writes to a person opens, what shape it takes,
-how it asks, what it may claim, and how it is edited before sending.
-This skill sets no voice; the caller's instructions supply one. Review
-comments and review replies are in scope; composing pull-request titles
-and bodies and resolving review threads are not.
+Own generic prose mechanics: grounding, register, organization, clarity,
+evidence, and editing. The caller supplies personal voice. Surface owners
+retain their content and format contracts: compose this guidance with the
+applicable PR, Issue, or review writer, preserve retained text as its contract
+requires, and leave publication and other actions to their authorized owners.
 
-## Ground The Draft First
+## Ground The Draft
 
-Before drafting, gather what the draft rests on: what was run and what
-it returned, what was decided and by whom, what the reader asked in
-their words. Say what you did not check rather than filling it in.
+Gather the source material, verified observations, decisions, open questions,
+and the reader's purpose. Recover context from the available conversation and
+artifacts before asking for discoverable facts. Distinguish what you know about
+the audience from what you infer. Write a standalone artifact for a reader
+arriving fresh; fold revision feedback into its substance.
 
-## Open On The Point
+## Choose The Register
 
-Open by answering what the person asked or engaging what they just said
-or did; when you initiate, open with what the reader most needs. A
-finding opens as a plain declarative anchored on a backticked symbol or
-a concrete mechanism. No scene-setting, topic labels ("Status:"), or "I
-noticed". A deliverable opens with what it hands the reader (the
-capability, the fix, the decision), never a defense of its own
-existence; let motivation and evidence land where the reader would ask
-for them.
+Choose phrasing and structure for the medium, purpose, and audience. Lead the
+piece and its sections with the subject the reader came for: the change,
+finding, capability, question, or decision. Use first-person experience,
+actions, judgments, and uncertainty where they help the reader assess that
+subject. In publications and documents, these are usually supporting
+statements; prefer subject-led openings. Let first person lead when the
+writer's perspective is itself the subject, as in a personal account or a
+reply about what the writer tried.
 
-After each point the reader silently responds with a follow-up, a doubt,
-or a challenge; write the next point to meet it. End on the last
-substantive point. Write a drafted artifact for a reader arriving fresh:
-fold corrections in without defending against them, keep revision
-feedback out, and state open questions as scope to investigate, not as
-rebuttal.
+A publication explains its subject to readers beyond the exchange that
+produced it. A conversation responds to what someone just said. A report,
+proposal, guide, and reference document each need the organization their reader
+will use. A public register can stay plain and approachable without turning
+the artifact into a chat update or adopting an academic tone.
+
+For chat, threaded comments, review replies, and status exchanges, read
+[threaded-conversation.md](references/threaded-conversation.md). Apply those
+exchange-specific rules only to that surface; a document requested in chat
+still uses the document's register. Specialized writers own narrower
+conventions, such as how a PR summarizes the change it applies.
 
 ## Build From Common Ground
 
-Consider what the reader needs to understand or do, and the context and
-language you share with them. Build from the nearest common ground with
-only the orientation needed. Explain each term where it stands or use
-plain words. Match the reader's register while staying professional. If
-a message does not land, stop, rebuild shared context, and explain more
-simply.
-
-## Make One Ask, Graded To Severity
-
-Each comment carries exactly one ask. Default to a declinable question
-("Could we…?"). Use "Please" plus an imperative only for a genuine
-blocker, "Let's" for obvious cleanup, and first-person conviction ("I'd
-drop the count") when confident but not blocking. Say why the remedy
-closes the specific failure path.
-
-## Claim And Qualify
-
-Use technical precision where it changes the reader's decision and
-everyday verbs everywhere else. State a confident finding as a plain
-declarative; qualify only claims that are genuinely uncertain, and say
-what makes them so. Credit real strengths only when the credit is
-load-bearing for the point; when it is, it comes before the flag. In a
-reply to a reviewer, agreement is action, not a lead-in: say little and
-act, and never restate the other person's comment back at them, justify
-their suggestion, or import decisions from outside the thread.
+Start from the context and language shared with the reader, giving enough
+orientation for what follows. Explain a necessary unfamiliar term where it
+appears; otherwise use plain words. Use technical precision where it changes
+the reader's understanding or decision and everyday verbs elsewhere. When a
+reader shows that an explanation did not land, recover the missing common
+ground and explain more simply.
 
 ## Let Content Pick The Shape
 
-A short answer needs no scaffolding. A substantial analysis opens with
-one plain sentence carrying the whole verdict, with detail descending
-from it. A substantial reply is still a reply: paragraphs in sequence,
-collapsed details for optional depth; heading hierarchies and tables
-belong to documents. A detail earns its place only if it changes what
-the reader does next. Spend emphasis in proportion to stakes, pair each
-dense, load-bearing statement with a concrete instance, and mention
-concrete caveats briefly. Report verification as what the reader can now
-trust, naming the machinery only when they must rerun or audit the
-check. When work stops at the edge of what was asked or authorized
-rather than at a real blocker, say so, and end the report with what
-remains and the next decision.
+Make the central point easy to find, then supply the motivation, evidence, and
+detail needed to assess or act on it. Use headings, lists, tables, examples,
+and conclusions when they serve the artifact's purpose. A short answer needs
+little scaffolding; a procedure may need several steps, and a proposal may
+need several decisions. Keep useful structure consistent across related
+documents.
 
-## Treat Evidence As A Hard Constraint
+Spend emphasis in proportion to stakes. Give dense, important claims a
+concrete instance, mention material caveats briefly, and keep each detail for
+what it helps the reader understand or do. Describe verification in terms of
+what it establishes, naming the machinery when readers need to rerun or audit
+it. Credit a real strength when it helps explain the judgment.
 
-Never assert what a test, command, or system does unless your brief says
-you ran it. Never commit to a position, threshold, offer, or concession
-that is not in your brief. Report what you observed ("the config record
-hasn't changed since June 2"), not the inference ("the update silently
-failed"). When a social fact (who asked, what happened, when) is not in
-evidence, ask or leave it out.
+## Bind Claims To Evidence
 
-Read [evidence-in-prose.md](references/evidence-in-prose.md) when the
-draft reports an outcome, makes a commitment, or describes what someone
-did.
+Distinguish behavior established from source from outcomes observed in a run.
+A source-supported finding can be a plain declarative; an assertion that a
+check passed needs the recorded observation. Separate the real system from
+conditions constructed to test it. Identify an inference as an inference and
+qualify only the uncertainty that remains, saying what causes it.
 
-## Edit Before Sending
+Read [evidence-in-prose.md](references/evidence-in-prose.md) when the draft
+describes system behavior, reports an outcome, makes a commitment, or states
+what someone did. Keep claims within the evidence and decisions supplied or
+verified for the task.
 
-Run [edit-pass.md](references/edit-pass.md) on the finished draft. For
-anything going to a reviewer, a shared channel, or a customer, have a
-second pass hunt for tells and recheck every fact against the brief.
+## Edit Before Delivery
+
+Run [edit-pass.md](references/edit-pass.md) on the finished draft. Check its
+register against the intended surface, its structure against the reader's
+purpose, and every factual claim against the evidence after rewriting. For
+text going to a reviewer, a shared channel, or a customer, make a second pass
+for distracting mannerisms and factual drift.

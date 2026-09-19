@@ -39,6 +39,51 @@ class EvidenceTests(unittest.TestCase):
                 module.read_source(root, "link/x")
 
 class RetainedEvidenceTests(unittest.TestCase):
+    def test_current_evidence_binds_canonical_policy_and_evaluation_method(self):
+        for path in (
+            "plugins/mergecraft/references/review-voice.md",
+            "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/review-voice.md",
+            "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md",
+            "plugins/mergecraft/topology.json",
+            "plugins/proseweaving/topology.json",
+            "scripts/validate_feedback_response_evidence.py",
+            "tests/test_feedback_response_evidence.py",
+            "scripts/feedback_response_evals.py",
+            "tests/test_feedback_response_evals.py",
+            "docs/agents/mergecraft-feedback-evaluations.md",
+            "plugins/mergecraft/README.md",
+        ):
+            self.assertIn(path, self.document["source_sha256"])
+            self.assertNotIn(path, self.document["candidate_paths"])
+            original = (self.root / path).read_bytes()
+            (self.root / path).write_bytes(original + b"\nchanged")
+            with self.assertRaisesRegex(module.EvidenceError, "source digest"):
+                module.validate(self.root, document=self.document)
+            (self.root / path).write_bytes(original)
+
+    def test_feedback_request_supplies_the_complete_writing_route(self):
+        prose = "plugins/proseweaving/skills/writing-for-people"
+        for path, body in (
+            (f"{module.SKILL}/references/review-voice.md", "Voice policy"),
+            (f"{prose}/SKILL.md", "Writing policy"),
+            (f"{prose}/references/edit-pass.md", "Edit pass"),
+            (f"{prose}/references/evidence-in-prose.md", "Evidence rule"),
+            (f"{prose}/references/threaded-conversation.md", "Conversation rule"),
+        ):
+            target = self.root / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(body)
+        request = module.strict_json(
+            module.executor_request(self.root, self.case, "with_skill")
+        )
+        self.assertEqual(request["candidate_bundle"], ["source"] * 3 + [
+            "Voice policy", "Writing policy", "Edit pass", "Evidence rule", "Conversation rule",
+        ])
+        control = module.strict_json(
+            module.executor_request(self.root, self.case, "without_skill")
+        )
+        self.assertEqual(control["candidate_bundle"], [])
+
     def setUp(self):
         import tempfile
 
@@ -52,7 +97,7 @@ class RetainedEvidenceTests(unittest.TestCase):
             "expected_output": "A contract-preserving response.",
             "expectations": ["Preserve the contract."],
         }
-        paths = list(module.CANDIDATE_PATHS) + [
+        paths = list(module.CANDIDATE_PATHS + module.PROVENANCE_PATHS + module.METHOD_PATHS) + [
             module.MANIFEST,
             "evals/mergecraft/skills/interacting-with-pr-review-feedback/fixtures/example.md",
             f"{module.SKILL}/scripts/response_runtime.py",
@@ -303,7 +348,7 @@ class RetainedEvidenceTests(unittest.TestCase):
     def test_executor_gets_content_without_fixture_or_candidate_path_labels(self):
         request = module.strict_json(self.document["records"][0]["request"])
         self.assertEqual(request["fixture"], ["source"])
-        self.assertEqual(request["candidate_bundle"], ["source"] * 3)
+        self.assertEqual(request["candidate_bundle"], ["source"] * 8)
         self.assertNotIn("fixtures/example.md", self.document["records"][0]["request"])
 
     def test_identity_helper_is_source_evidence_not_executor_prompt_content(self):
@@ -480,6 +525,20 @@ class RetainedEvidenceTests(unittest.TestCase):
         self.document["records"][0]["grades"][0]["passed"] = False
         with self.assertRaisesRegex(module.EvidenceError, "grades differ"):
             self.validate()
+
+    def test_numeric_projected_grades_rejected(self):
+        record = next(
+            record for record in self.document["records"]
+            if record["variant"] == "without_skill"
+        )
+        for passed, projected in ((True, 1), (False, 0), (True, 1.0), (False, 0.0)):
+            with self.subTest(passed=passed, projected=projected):
+                record["grades"][0]["passed"] = passed
+                self.sync_grading_response(record)
+                self.assertEqual(self.validate()["runs"], 3)
+                record["grades"][0]["passed"] = projected
+                with self.assertRaisesRegex(module.EvidenceError, "grades differ"):
+                    self.validate()
 
     def test_unknown_grading_response_field_rejected(self):
         record = self.document["records"][0]
@@ -1089,10 +1148,14 @@ class RetainedEvidenceTests(unittest.TestCase):
                 if record["variant"] == "with_skill"
             )["request"]
         )
-        self.assertEqual(old_request["candidate_bundle"], ["source"] * 3)
+        self.assertEqual(old_request["candidate_bundle"], ["source"] * 8)
         self.assertEqual(
             new_request["candidate_bundle"],
-            ["current source 0", "current source 1", "current source 2"],
+            [
+                "current source 0", "current source 1", "current source 2",
+                "current source 3", "current source 4", "current source 5",
+                "current source 6", "current source 7",
+            ],
         )
         self.assertEqual(second["history"]["prior_document"], first_text)
         self.assertEqual(third["history"]["prior_document"], second_text)

@@ -1,0 +1,20 @@
+{
+  "can_start_review": false,
+  "next_operation": "Stop before critic dispatch and report blocked at Tricritical's mandatory adapter-receipt gate. The native operational binding can admit the frozen plan, but the supplied Tricritical workflow still requires separate adapter model-selection receipts and a valid adapter invocation-topology receipt before dispatch.",
+  "blockers": [
+    "Tricritical review unconditionally requires a capability-proven adapter:model-selection-receipt for each selected execution and a separate valid adapter:rolecasting-invocation-topology-receipt for the whole plan. Observed capabilities and a frozen plan do not themselves supply those adapter receipts.",
+    "Rolecasting's invocation-topology contract requires real adapter qualification for receipt issuance. The fixture has no authenticated adapter receipt issuer. Its native binding produces only a same-leader record with portable_evidence: false and product_attested: false; it does not supply the required portable issuance.",
+    "The native binding's admission at its documented assurance maxima does not waive Tricritical's receipt prerequisites. Neither degraded review nor the publisher's not-required mode supplies that waiver."
+  ],
+  "writer_consumption": "The writer's workflow step 7 requires this cross-cutting candidate to pass tricritical:loop with a bare clean receipt, followed by revalidation of the complete title/body pair and review-input manifest. Loop defines bare clean as complete independent review of every selected scope plus successful declared verification of the unchanged final candidate. The present blocked result therefore prevents the writer from returning a publication-ready pair. If the mandatory review prerequisites were satisfied and the loop returned bare clean, the writer would revalidate, complete its preservation checks, and return the pair, authorized text surface, and manifest. The ordinary publisher would then use explicit not-required mode and [], without a Task Witness bundle or a witnessed clean-review claim. Missing Task Witness infrastructure is not independently a blocker for that publication mode.",
+  "evidence_paths": [
+    "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+    "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
+    "plugins/tricritical/skills/review/SKILL.md",
+    "plugins/tricritical/skills/loop/SKILL.md",
+    "plugins/tricritical/references/invocation-boundary.md",
+    "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
+    "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md",
+    "plugins/rolecasting/skills/delegating-cross-agent-work/references/dispatch-evidence.md"
+  ]
+}

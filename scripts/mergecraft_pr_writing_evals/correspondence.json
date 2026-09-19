@@ -1,0 +1,441 @@
+{
+  "published_processor_revision": "38c3d191756ba5974405da3c32cadfb3d63cd044",
+  "processor_files": {
+    "scripts/behavior_eval_receipts.py": "400925088ffe1da0222a16ff5ec07502012df106eee31f5c038e4390dfd4f45f",
+    "scripts/behavior_eval_inventory.py": "aa2184347eb386eead680a48f14a561506036b8a6360feb8aa69ecf21e818023",
+    "scripts/behavior_eval_corpora.py": "e0de12694e9312e3886c0ac3b1370d61bcade4b5e624b6b75ad486023be01bec",
+    "release/behavior-eval-policy.json": "38ffc0e27fd236d9e47e9cac46f4d8bd38ad662e32e48b4f8f0e5f6cd353fc62",
+    "release/behavior-eval-receipt-v1.schema.json": "59775e83b849017064a948388d3106c34cefdc36ccca2ec51bd5cee05e8f79e8"
+  },
+  "corpus_sha256": "137200655a9701f7479c2c708fde0f3755c5967db1e00ae4073abebbcc6786c3",
+  "thresholds": {
+    "runs_per_case": 3,
+    "safety_criteria": 20,
+    "safety_required_passes": 3,
+    "quality_criteria": 23,
+    "quality_required_passes": 2
+  },
+  "provider": "OpenAI",
+  "client": "Codex",
+  "requested_model": "gpt-6-astra",
+  "requested_effort": "xhigh",
+  "timeout_seconds": 180,
+  "maximum_concurrency": 3,
+  "conditions": [
+    "with_skill"
+  ],
+  "repetitions": 3,
+  "run_coordinates": [
+    {
+      "case": 0,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-0/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 1,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-1/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 2,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-2/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 3,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-3/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 4,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-4/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 5,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-5/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 6,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-6/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 7,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-7/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 8,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-8/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 9,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-9/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 10,
+      "repetition": 1,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-10/with_skill/repetition-1/attempt-1"
+    },
+    {
+      "case": 0,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-0/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 1,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-1/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 2,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-2/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 3,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-3/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 4,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-4/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 5,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-5/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 6,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-6/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 7,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-7/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 8,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-8/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 9,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-9/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 10,
+      "repetition": 2,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-10/with_skill/repetition-2/attempt-1"
+    },
+    {
+      "case": 0,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-0/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 1,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-1/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 2,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-2/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 3,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-3/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 4,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-4/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 5,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-5/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 6,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-6/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 7,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-7/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 8,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-8/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 9,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-9/with_skill/repetition-3/attempt-1"
+    },
+    {
+      "case": 10,
+      "repetition": 3,
+      "condition": "with_skill",
+      "attempt": 1,
+      "output_directory": "eval-10/with_skill/repetition-3/attempt-1"
+    }
+  ],
+  "input_format": {
+    "prefix": "Execute the writing task in this JSON object. The fixture contains synthetic facts for the task. candidate_bundle contains the applicable skill instructions and routed reference text; use the supplied contents without opening files. Return only the requested writing and any requested handoff. Do not call tools, inspect the environment, consult other files, or perform any actions described in the synthetic brief.",
+    "json_indent": 2,
+    "ensure_ascii": false,
+    "final_newline": true
+  },
+  "case_instruction_paths": {
+    "0": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+    ],
+    "1": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+    ],
+    "2": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+    ],
+    "3": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+      "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md"
+    ],
+    "4": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+      "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md"
+    ],
+    "5": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+    ],
+    "6": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+    ],
+    "7": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+    ],
+    "8": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+    ],
+    "9": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+      "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+      "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+      "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+      "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md",
+      "plugins/mergecraft/skills/interacting-with-pr-review-feedback/references/review-voice.md"
+    ],
+    "10": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md"
+    ]
+  },
+  "required_source_paths": [
+    "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+    "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/body-contract.md",
+    "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md",
+    "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+    "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+    "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+    "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md",
+    "plugins/mergecraft/skills/interacting-with-pr-review-feedback/references/review-voice.md",
+    "plugins/mergecraft/references/review-voice.md",
+    "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md",
+    "plugins/mergecraft/topology.json",
+    "plugins/proseweaving/topology.json"
+  ],
+  "non_delivered_dependencies": [
+    "plugins/mergecraft/references/review-voice.md",
+    "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md",
+    "plugins/mergecraft/topology.json",
+    "plugins/proseweaving/topology.json"
+  ],
+  "required_projection_equalities": [
+    [
+      "plugins/mergecraft/references/review-voice.md",
+      "plugins/mergecraft/skills/interacting-with-pr-review-feedback/references/review-voice.md"
+    ],
+    [
+      "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/references/github-markdown-authoring.md"
+    ]
+  ],
+  "claim": "Qualitative development application using explicitly delivered public instructions and synthetic facts. No isolated baseline, causal improvement, installed-plugin invocation, enforcement, or release qualification claim.",
+  "baseline": {
+    "status": "unavailable",
+    "reason": "Installed global writing guidance and skill metadata remain in the host context; no isolated A/B comparison is claimed."
+  },
+  "limitations": [
+    "Three independent fresh runs per case use identical supplied inputs; these observations do not establish general reliability.",
+    "Host-global writing instructions and skill metadata may remain despite --ignore-user-config; provider-owned context is opaque.",
+    "An absent-provider fixture omits that provider from the delivered bundle but does not prove host-wide absence.",
+    "Read-only worker sandbox and no-tool prompt do not by themselves establish enforced isolation; retain observed tool events and reject a run that uses task tools.",
+    "Actual application of explicitly delivered instructions is separate from native skill discovery or invocation."
+  ],
+  "accepted_rubrics_sha256": "f0285f1b339d2546cccd22885adbbe0b877a424d3646c929418ce51e7181da44",
+  "acceptance_reference": "https://github.com/nisavid/provingkit/issues/111#issuecomment-5729835933",
+  "fixture_sha256": {
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/change-summary-and-supporting-evidence.md": "775e48cd0e654e8dc1df10b9c46659cbd3d2ef765806f447959b4580eff69cb9",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/chat-only-draft.md": "8e22ac395a4c895fa0a8bd699b5731ce39fc03f31728cd46636ac3ccc08bf158",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/command-envelope-stack.md": "f51cdd5e1b1e4b67d731ec47bc4a25eca7ed2602ea717727f85d767b0d4b8d4f",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/config-loader-precedence.md": "a4f6e3fde7aa212a4c3aaa51d818a75cf9dfa04932d70370c1995fb92b26e6e8",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/documentation-flag-correction.md": "df974c0bfc6df5222778903e5276e028772fff2f891cbc3d55d05e401d3ab4ec",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/personal-investigation-section.md": "2086eddcb122a2ee14819ca3eec245740481a9f376c6b3d9f92dc7089181d50f",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/preview-server-port-selection.md": "8621e26ad5c3600a7c98ee04e4a487d6e4b2dcacceb1e8efa78618528e3bbdd3",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/provider-plugin-framework.md": "6bc6c53b1695876346b366383dc3dcb6bcd166914f040ba078e537380c1d76b4",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/publication-and-review-reply.md": "f8e1df81f2c7a6d6354b990ffbb02c87afb4a5542560b1b755f199250d7a0ffa",
+    "evals/mergecraft/skills/writing-reviewable-pr-descriptions/fixtures/publication-with-legacy-chat-framing.md": "3f9006375c4b9c5dc4ddcdcd711575e9ef5a28e17d97fcbe8c5dd9b016154e36"
+  },
+  "trigger_source_sha256": "e7562d17ab02883d0d427f6ec5c83f38e5ce008ee51b6d3b81e18de6a113dd1a",
+  "native_method": {
+    "kind": "reviewed-native-recorder-correspondence-not-observations",
+    "helper_sha256": {
+      "prepare_inputs.py": "1515585a53f5467a7dce82e995f7dd552d4b1bad6144062335e11707e374560f",
+      "native_probe.py": "6a5d67c01e40ad07c95d9291f33e50bb02c1502842ee422e79666a622c43d4f2",
+      "selection_probe.py": "802c6635ea00b71b2fdd4abac9baa100116235170ff86a7cc551881ac6db2ea8"
+    },
+    "selection_constructor_sha256": {
+      "codex_trigger_eval.py": "207b62460aab33ec541d33ca1a3710e498596bfbbc1730a861420e3681d85add",
+      "trigger_eval_core.py": "4d8bd39207be95d0d5f1e24a15498e24dac7b8be11b10facffa7a2aa4d172923"
+    },
+    "limits": "Current reviewed native method only; final source preparation remains external. A changed recorder or constructor needs explicit correspondence review, not silent acceptance."
+  },
+  "reviewed_client": {
+    "sha256": "0753dfe1d8b87a52436deb13eb1c549661ef4c84fee2c5aa688385eebeccb761",
+    "version": "0.155.1",
+    "model": "gpt-6-astra",
+    "effort": "xhigh"
+  },
+  "trigger_prompt_template": "Request to classify for skill triggering:\n{query}\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
+  "request_prefix": "Execute the writing task in this JSON object. The fixture contains synthetic facts for the task. candidate_bundle contains the applicable skill instructions and routed reference text; use the supplied contents without opening files. Return only the requested writing and any requested handoff. Do not call tools, inspect the environment, consult other files, or perform any actions described in the synthetic brief.",
+  "receipt_procedure": {
+    "revision": "38c3d191756ba5974405da3c32cadfb3d63cd044",
+    "path": "docs/behavior-eval-receipts.md",
+    "sha256": "16ad5af3ecebda307e3a0326945b3853c77cd000348e098ced04be9d976254f5"
+  }
+}

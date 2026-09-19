@@ -32,6 +32,7 @@ SOURCE_PATHS = (
 V4_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v4-compatibility.json"
 HISTORICAL_V4_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/phase7-v4-compatibility.json"
 V1_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v1-compatibility.json"
+V2_FIXTURE_PATH = REPO_ROOT / "tests/fixtures/amberbridge-v2-compatibility.json"
 SCRIPT_PATH = REPO_ROOT / "scripts/amberbridge_compatibility_projection.py"
 
 
@@ -54,11 +55,19 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
             json.dumps(document, indent=2) + "\n", encoding="utf-8"
         )
 
-    def test_projection_is_byte_identical_to_frozen_v1_fixture(self) -> None:
+    def test_projection_is_byte_identical_to_frozen_v2_fixture(self) -> None:
         self.assertEqual(
             projection.compatibility_bytes(REPO_ROOT),
-            V1_FIXTURE_PATH.read_bytes(),
+            V2_FIXTURE_PATH.read_bytes(),
         )
+
+    def test_retained_v1_fixture_is_immutable_historical_evidence(self) -> None:
+        self.assertEqual(
+            hashlib.sha256(V1_FIXTURE_PATH.read_bytes()).hexdigest(),
+            "c563c56fe02130ad9e9727884822f480b36ff67e9bb6bce38febea3b9f44d47f",
+        )
+        self.assertNotEqual(projection.compatibility_bytes(REPO_ROOT), old := V1_FIXTURE_PATH.read_bytes())
+        self.assertEqual(json.loads(old)["schema_version"], 1)
 
     def test_retained_v4_fixture_is_immutable_historical_evidence(self) -> None:
         self.assertEqual(
@@ -76,7 +85,7 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
     def test_compatibility_exposes_assurance_contract(self) -> None:
         document = projection.compatibility_document(REPO_ROOT)
 
-        self.assertEqual(document["schema_version"], 1)
+        self.assertEqual(document["schema_version"], 2)
         self.assertEqual(
             document["rolecasting"]["assurance_contract"],
             {
@@ -123,7 +132,7 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, V1_FIXTURE_PATH.read_bytes())
+        self.assertEqual(result.stdout, V2_FIXTURE_PATH.read_bytes())
         self.assertEqual(result.stderr, b"")
 
     def test_isolated_cli_fails_closed_when_a_source_is_absent(self) -> None:
@@ -221,6 +230,12 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
 
     def test_each_projected_family_changes_compatibility(self) -> None:
         mutations = {
+            "rolecasting ordinary plan ownership": (
+                SOURCE_PATHS[0],
+                lambda document: document["operational_contract"].__setitem__(
+                    "plan_owner", "changed-owner"
+                ),
+            ),
             "rolecasting receipt ownership": (
                 SOURCE_PATHS[0],
                 lambda document: document["receipt_contract"].__setitem__(
@@ -255,6 +270,12 @@ class AmberbridgeCompatibilityProjectionTests(unittest.TestCase):
                 SOURCE_PATHS[2],
                 lambda document: document["skills"]["review"].__setitem__(
                     "requires", []
+                ),
+            ),
+            "tricritical witnessed requirement": (
+                SOURCE_PATHS[2],
+                lambda document: document["skills"]["review"].__setitem__(
+                    "conditional_requires", {}
                 ),
             ),
             "review atlas overlay authority": (

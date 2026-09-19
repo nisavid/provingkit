@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "runs_per_case": 3,
+  "safety": {"required_passes": 3},
+  "quality": {"required_passes": 2},
+  "triggers": {"required_correct": "all"},
+  "waiver": {"issued_by": "operator", "expires_at": "next-release"},
+  "evidence_class": "ordinary-committed-results",
+  "attestation": null
+}

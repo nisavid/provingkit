@@ -17,17 +17,56 @@ A PR body navigates change, verification, and remaining work.
 actuation. This skill owns the complete pair, bounded by requested surface.
 Generated forge text is no substitute.
 
+For newly authored or replaced prose, invoke `proseweaving:writing-for-people`
+when available and compose its generic writing guidance with this PR contract.
+If it is unavailable, use the caller's and client's writing instructions and
+record the missing route in the handoff, outside the body; do not claim it ran
+or block an otherwise supported draft. The body contract owns PR change
+phrasing. Writing guidance does not authorize changes to retained spans.
+
 ## Routing
 
 - For an unpublished title/body proposal in chat, use this writer only.
 - For PR creation or stored title/body mutation, the publisher invokes this
-  writer and then owns forge actuation.
+  writer with the explicit publication-review mode and sorted specialist
+  inventory already selected, then owns forge actuation. Keep that selection
+  bound to the candidate and review requirements.
+- For an existing PR's isolated relation-ledger edit, use the bounded mode below,
+  including historical PRs. Normal creation and canonical publication retain
+  the navigation workflow.
 - For a ready-only request, the lifecycle caller routes to the publisher. The
   publisher consumes the current writer-owned validated pair and manifest but
   sends no text mutation.
 - Read-only inspection, comments, checks, base changes, labels, and merge-only
   work use their own owners; neither this writer nor the publisher is a generic
   PR router.
+
+## Relation Applicability
+
+Before freezing new or materially changed Issue contributions, use
+[Maintaining Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md).
+Reuse a supplied qualified plan and include its ledger intent in this candidate;
+do not restart discovery or publication. Unchanged intent, incidental mentions,
+and unrelated text edits need no relation reads. Return pending bilateral or
+native work to the caller after the candidate is published.
+
+## Existing Relation Ledger
+
+Use this mode only for an authorized Issue–PR ledger span in an existing PR.
+Read [the ledger contract](references/relation-ledger.md) and the
+[GitHub Markdown authoring contract](references/github-markdown-authoring.md).
+Bind stable repository/PR identity, exact live title/body/state, one UTF-8 span,
+and its authorized replacement. Return the complete title/body pair and ledger
+manifest; preserve title and every body byte outside that span. The validator
+proves this derivation and checks sensitive content. It does not infer semantic
+relations or authorize the edit.
+
+This mode requires no surviving branch or reconstructed Diff navigation and
+establishes no readiness claim. For normal creation or canonical publication,
+include the ledger in the workflow below. A lifecycle caller that needs
+canonical publication evidence must use that route after any isolated edit;
+a ledger receipt cannot satisfy its audit. A detected closing reference outside
+the authorized span needs a separately scoped content request.
 
 ## Workflow
 
@@ -86,16 +125,32 @@ Generated forge text is no substitute.
    ```
 
 7. For large, stacked, cross-cutting, reviewer-heavy, or readiness-ambiguous
-   text, invoke the imported `review-loop` operation (`tricritical:loop`) on the
-   exact candidate title/body bytes. Give
-   the loop explicit authority to mutate only those bytes, no forge or source
-   authority, and require a bare `clean` receipt. Revalidate the resulting pair
-   and review-input manifest. Any other terminal blocks return or publication.
+   text, or when the selected publication mode or repository policy requires
+   review, invoke the imported `review-loop` operation (`tricritical:loop`) on
+   the exact candidate title/body bytes. Give the loop explicit authority to
+   mutate only those bytes, no forge or source authority. Require a bare `clean`
+   hand-back status from the actual independently reviewed loop. Verify
+   that its candidate, review input, requirements, selected scopes, and current
+   evidence dependencies match this handoff; the label alone is insufficient.
+   Revalidate the resulting pair and review-input manifest. Any other terminal
+   blocks return or publication, including blocked, incomplete, and degraded
+   outcomes. Changed bytes, requirements, scopes, or evidence dependencies
+   invalidate affected review; rerun it before returning the pair.
+   Ordinary review uses the coordinator's verified operational observations
+   and needs no portable receipt. `not-required` selects no witnessed
+   publication provenance; it does not skip this independent review. Explicit
+   `required` mode adds the authenticated Task Witness evidence gate. If that
+   route is unavailable, stop without inventing evidence or downgrading the
+   mode. On a later task, unavailable ordinary observations require a new
+   review or separately qualified retained evidence.
 8. Compare to the live baseline for loss and prove the candidate is the exact
    ordered fragment derivation, including unchanged suffix line endings and
    final-newline state; return the complete validated title/body pair,
    authorized text surface, and review-input manifest. Unchanged is validated,
    not authorized.
+   Include the selected mode and specialist inventory for publication and,
+   when review ran, its verified hand-back and evidence limits. These provide
+   no publication, source, or other mutation authority.
    Do not mutate the forge or verify stored/rendered state from this skill.
 
 Use local data only when `HEAD` equals PR head. Recompute after push,

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Separate ordinary same-leader invocation plans and live selection records
+  from explicitly witnessed receipts, preserving native assurance limits and
+  each consumer's existing authority and verification gates.
 - Re-prove the original account binding before every task continuation, bind
   alternate-account Codex CLI resumes with explicit `CODEX_HOME`, and reject
   ambient resumes before sending task data when account affinity is unproven.

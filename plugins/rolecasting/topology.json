@@ -1,5 +1,12 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
+  "operational_contract": {
+    "plan": "adapter:rolecasting-invocation-plan",
+    "plan_owner": "delegating-cross-agent-work",
+    "selection_record": "adapter:model-selection-record",
+    "selection_owner": "choosing-agent-models",
+    "scope": "same-leader"
+  },
   "receipt_contract": {
     "id": "adapter:rolecasting-invocation-topology-receipt",
     "owner": "delegating-cross-agent-work",
@@ -34,6 +41,7 @@
         "authority",
         "handoffs",
         "native-codex-dispatch",
+        "invocation-plan",
         "invocation-topology-receipt",
         "leader-integration"
       ],
@@ -47,6 +55,7 @@
     "choosing-agent-models": {
       "owns": [
         "model-selection",
+        "model-selection-record",
         "reasoning-effort-selection",
         "capability-proof"
       ],

@@ -1,6 +1,6 @@
 ---
 name: publishing-reviewable-prs
-description: Use when standalone GitHub PR creation, canonical title/body/draft-ready publication, publication-evidence audit, or evidence reconciliation is required, including fork-sync and fixup PRs. Do not use for generic PR inspection, comments, checks, threads, or merge actuation.
+description: Use when standalone GitHub PR creation, canonical title/body/draft-ready publication, an authorized relation-ledger edit on an existing or historical PR, publication-evidence audit, or evidence reconciliation is required, including fork-sync and fixup PRs. Do not use for generic PR inspection, comments, checks, threads, or merge actuation.
 ---
 
 # Publishing Reviewable PRs
@@ -25,23 +25,65 @@ race and the reread cannot prevent an intervening lost update.
   writer for the complete validated pair and manifest.
 - Ready-only work uses this publisher with the current writer-owned pair and
   manifest; it never rewrites text as part of readiness.
+- Existing relation-ledger-only edits use `pr-relation-ledger-write` below.
+  New PR ledgers travel through normal creation. When canonical publication is
+  already required, include the ledger there instead of publishing twice.
 - Generic read-only inspection, comments, checks, labels, base changes, and
   merge-only work use their own owners. Publication audit is the publisher's
   narrow read-only exception.
+
+Before new or materially changed contributions are frozen, use
+[Maintaining Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+unless a qualified plan already accompanies the request. Carry that plan to the
+writer, publish once through the selected mode, and return the verified result
+to the caller. After canonical creation or update, the caller observes the
+published PR and builds a fresh relation plan with its already-correct ledger
+unchanged. Only a ledger-publication receipt resumes a pending ledger handoff;
+canonical receipts stay in the lifecycle context. Unchanged relation intent
+and unrelated edits need no relation reads. Never restart relation planning
+inside a received publication handoff.
+
+## Publish An Existing Relation Ledger
+
+The `pr-relation-ledger-write` operation invokes the PR writer's
+[bounded ledger mode](../writing-reviewable-pr-descriptions/references/relation-ledger.md)
+for an existing OPEN, CLOSED, or MERGED PR. Use
+`scripts/publish_relation_ledger.py` with its exact manifest, title file, body
+file, explicit review mode, and sorted specialist inventory. Bind stable
+repository and PR IDs, exact live title/body/state, and one authorized UTF-8
+span. It changes only the body, preserves every other byte and state, and uses
+the existing private publication lease. It needs no surviving Git branch.
+
+The helper checks preimage drift, publishes once, and verifies the complete
+postimage. Unchanged content is a verified no-op. Failure after a possible
+write returns unknown and requires observation before any further attempt.
+It stores separate relation-publication receipts; they cannot satisfy or amend
+canonical navigation, readiness, or merge audit evidence. Reestablish canonical
+publication through its normal owner when the continuing lifecycle requires it.
+Required witnessed review remains a gate until this mode has a supported
+authenticated witness route; never downgrade it to `not-required`.
 
 ## Workflow
 
 1. Bind repository/base, qualified head, head repository/owner, pushed OIDs, PR,
    and remote commits. Read policy/templates; retain live title/body/draft
    preimage immediately before edit.
-2. Use [Writing Reviewable PR Descriptions](../writing-reviewable-pr-descriptions/SKILL.md)
+2. Choose exactly one publication-review mode and an explicit sorted specialist
+   inventory before invoking the writer or freezing the candidate. `required`
+   needs an absolute Task Witness bundle root and a current, nonhistorical,
+   bare-clean Tricritical terminal projection. `not-required` needs no bundle
+   and records no witnessed
+   review provenance; it does not waive ordinary independent review.
+   Pass the selected mode and specialists to
+   [Writing Reviewable PR Descriptions](../writing-reviewable-pr-descriptions/SKILL.md)
    for the validated pair, authorized surface, and manifest from the pushed diff.
-   Choose exactly one publication-review mode and an explicit sorted specialist
-   inventory before freezing the candidate. `required` needs an absolute Task
-   Witness bundle root and a current, nonhistorical, bare-clean Tricritical
-   terminal projection. `not-required` needs no bundle and makes no clean-review
-   claim. A suspected credential in either live or candidate PR text blocks
-   before mutation; never echo, preserve, or republish it.
+   When the writer's review gate applies, require its verified bare `clean`
+   hand-back for the same candidate, review input, requirements, selected
+   scopes, and current evidence dependencies. Rerun affected review on drift;
+   preserve nonclean terminals as blockers. The helper's successful validation
+   does not prove that this ordinary review ran. A suspected credential in
+   either live or candidate PR text blocks before mutation; never echo,
+   preserve, or republish it.
 3. Let the helper resolve and prove the canonical private receipt root before
    mutation, then invoke one owned operation. Production CLIs expose no receipt
    root override; internal test and controlled-migration APIs may supply one.
@@ -57,6 +99,12 @@ no default or downgrade. Required mode is an optional witnessed route. When sele
 authenticated Task Witness front door and requires its current evidence and the
 registered Tricritical producer chain; if those are unavailable, stop before
 mutation. The ordinary `not-required` route does not depend on Task Witness.
+Carry the selected mode and specialist inventory unchanged through creation,
+text publication, and readiness. A changed selection requires a newly frozen
+candidate and fresh applicable review. A ready-only call must still have the
+writer's current review hand-back when its review gate applies. If a resumed
+task cannot verify the ordinary observations, require a new review or separately
+qualified retained evidence; a publication receipt alone does not prove them.
 
 ## Inspect Publication Failures
 
@@ -126,8 +174,9 @@ preimage or other-state relationship without assigning causality. The unchanged
 preimage does not prove that the intended state was never stored. Write no
 canonical receipt, and do not retry or roll back.
 
-After a verified mutation, build the CLI acknowledgement from the reloaded
-canonical receipt inside the same failure boundary. A missing receipt or failed
+For canonical create, text, and readiness operations, build the CLI
+acknowledgement after a verified mutation from the reloaded canonical receipt
+inside the same failure boundary. A missing receipt or failed
 reload, summary, or serialization leaves publication unacknowledged: report a
 value-free failure, independently audit exact state, and do not retry.
 
@@ -329,3 +378,8 @@ Report URL, base/head OIDs, title/body digests, state, receipt id/provenance/
 sequence, audit or result status, checks, and remaining action. Comments,
 feedback, CI, merge, and Git/ref publication retain distinct owners; the bundled
 comment helper is internal.
+
+Use the
+[required relation/publication hand-back](../maintaining-issue-pr-relations/references/relation-contract.md#relation-and-publication-hand-back)
+for every terminal result. Return all three parts to the caller, who resumes
+pending relation work.

@@ -2,8 +2,16 @@
   "schema_version": 1,
   "evaluation_id": "control-plane-integrated-v1",
   "repetitions": 3,
-  "conditions": ["no_skill", "incumbent", "candidate", "composed"],
+  "conditions": [
+    "no_skill",
+    "incumbent",
+    "candidate",
+    "composed"
+  ],
   "runtime_dependencies": {
+    "mergecraft:maintaining-issue-pr-relations": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/scripts/change_navigation/sensitive_content.py"
+    ],
     "mergecraft:writing-reviewable-pr-descriptions": [
       "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/scripts"
     ],
@@ -31,7 +39,9 @@
     {
       "id": "rolecasting:delegating-cross-agent-work",
       "entrypoint": "plugins/rolecasting/skills/delegating-cross-agent-work/SKILL.md",
-      "companions": ["rolecasting:choosing-agent-models"],
+      "companions": [
+        "rolecasting:choosing-agent-models"
+      ],
       "scenario": {
         "id": "insufficient-foreign-isolation-blocked",
         "kind": "skill-evals",
@@ -138,7 +148,9 @@
     {
       "id": "versionkeeping:syncing-forks-with-upstream",
       "entrypoint": "plugins/versionkeeping/skills/syncing-forks-with-upstream/SKILL.md",
-      "companions": ["versionkeeping:checkpointing-and-publishing-git-work"],
+      "companions": [
+        "versionkeeping:checkpointing-and-publishing-git-work"
+      ],
       "scenario": {
         "id": "non-default-fork-sync",
         "kind": "simple-corpus",
@@ -149,7 +161,9 @@
     {
       "id": "versionkeeping:using-persistent-git-worktrees",
       "entrypoint": "plugins/versionkeeping/skills/using-persistent-git-worktrees/SKILL.md",
-      "companions": ["versionkeeping:checkpointing-and-publishing-git-work"],
+      "companions": [
+        "versionkeeping:checkpointing-and-publishing-git-work"
+      ],
       "scenario": {
         "id": "persistent-worktree-containment",
         "kind": "simple-corpus",
@@ -160,7 +174,9 @@
     {
       "id": "mergecraft:writing-github-issue-and-pr-markdown",
       "entrypoint": "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/SKILL.md",
-      "companions": [],
+      "companions": [
+        "mergecraft:maintaining-issue-pr-relations"
+      ],
       "scenario": {
         "id": "markdown-authoring-recursive-issue-body",
         "kind": "skill-evals",
@@ -169,9 +185,23 @@
       }
     },
     {
+      "id": "mergecraft:maintaining-issue-pr-relations",
+      "entrypoint": "plugins/mergecraft/skills/maintaining-issue-pr-relations/SKILL.md",
+      "companions": [],
+      "scenario": {
+        "id": "relation-direct-implementation",
+        "kind": "skill-evals",
+        "source": "evals/mergecraft/skills/maintaining-issue-pr-relations/evals.json",
+        "selector": "direct-implementation"
+      }
+    },
+    {
       "id": "mergecraft:writing-reviewable-pr-descriptions",
       "entrypoint": "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
-      "companions": ["tricritical:loop"],
+      "companions": [
+        "tricritical:loop",
+        "mergecraft:maintaining-issue-pr-relations"
+      ],
       "scenario": {
         "id": "writer-owns-content",
         "kind": "simple-corpus",
@@ -182,7 +212,10 @@
     {
       "id": "mergecraft:publishing-reviewable-prs",
       "entrypoint": "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
-      "companions": ["mergecraft:writing-reviewable-pr-descriptions"],
+      "companions": [
+        "mergecraft:writing-reviewable-pr-descriptions",
+        "mergecraft:maintaining-issue-pr-relations"
+      ],
       "scenario": {
         "id": "publisher-owns-actuation",
         "kind": "simple-corpus",
@@ -195,7 +228,8 @@
       "entrypoint": "plugins/mergecraft/skills/graphite/SKILL.md",
       "companions": [
         "mergecraft:publishing-reviewable-prs",
-        "versionkeeping:checkpointing-and-publishing-git-work"
+        "versionkeeping:checkpointing-and-publishing-git-work",
+        "mergecraft:maintaining-issue-pr-relations"
       ],
       "scenario": {
         "id": "graphite-transport-boundary",
@@ -223,7 +257,9 @@
     {
       "id": "mergecraft:interacting-with-pr-review-feedback",
       "entrypoint": "plugins/mergecraft/skills/interacting-with-pr-review-feedback/SKILL.md",
-      "companions": ["mergecraft:writing-github-issue-and-pr-markdown"],
+      "companions": [
+        "mergecraft:writing-github-issue-and-pr-markdown"
+      ],
       "scenario": {
         "id": "authorized-reply-and-resolution-boundary",
         "kind": "skill-evals",
@@ -234,7 +270,9 @@
     {
       "id": "mergecraft:resuming-reviewed-prs",
       "entrypoint": "plugins/mergecraft/skills/resuming-reviewed-prs/SKILL.md",
-      "companions": ["mergecraft:publishing-reviewable-prs"],
+      "companions": [
+        "mergecraft:publishing-reviewable-prs"
+      ],
       "scenario": {
         "id": "resume-selects-one-owner",
         "kind": "simple-corpus",
@@ -248,7 +286,8 @@
       "companions": [
         "versionkeeping:checkpointing-and-publishing-git-work",
         "mergecraft:writing-reviewable-pr-descriptions",
-        "mergecraft:publishing-reviewable-prs"
+        "mergecraft:publishing-reviewable-prs",
+        "mergecraft:maintaining-issue-pr-relations"
       ],
       "scenario": {
         "id": "ready-after-verified-checkpoint",
@@ -260,7 +299,12 @@
     {
       "id": "mergecraft:getting-prs-merged",
       "entrypoint": "plugins/mergecraft/skills/getting-prs-merged/SKILL.md",
-      "companions": ["mergecraft:addressing-pr-review-feedback", "mergecraft:getting-prs-ready-for-review", "mergecraft:publishing-reviewable-prs"],
+      "companions": [
+        "mergecraft:addressing-pr-review-feedback",
+        "mergecraft:getting-prs-ready-for-review",
+        "mergecraft:publishing-reviewable-prs",
+        "mergecraft:maintaining-issue-pr-relations"
+      ],
       "scenario": {
         "id": "merge-explicit-review-loop",
         "kind": "skill-evals",
@@ -275,7 +319,8 @@
         "mergecraft:writing-reviewable-pr-descriptions",
         "mergecraft:publishing-reviewable-prs",
         "mergecraft:graphite",
-        "versionkeeping:checkpointing-and-publishing-git-work"
+        "versionkeeping:checkpointing-and-publishing-git-work",
+        "mergecraft:maintaining-issue-pr-relations"
       ],
       "scenario": {
         "id": "narrow-stacked-fixup",

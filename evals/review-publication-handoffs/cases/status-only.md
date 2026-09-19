@@ -1,0 +1,3 @@
+Apply the supplied canonical workflow instructions. Report the next permitted operation and any blocker; do not dispatch workers or mutate a forge. Publication authority and ordinary tool access exist unless the situation below says otherwise.
+
+The operator asks only for the current status of a PR, with no publication, readiness, source, review, or merge request. The resume owner reads verified live status and an existing canonical not-required receipt. No ordinary review observations are present. Does answering the status request require a new review or witnessed bundle, and may the resume owner perform a state change?

@@ -1,0 +1,54 @@
+[
+  {
+    "query": "Create a PR that implements one acceptance item of this Issue; maintain the association as a partial contribution.",
+    "should_trigger": true
+  },
+  {
+    "query": "Repair the missing bilateral Issue\u2013PR association for this historical merged PR.",
+    "should_trigger": true
+  },
+  {
+    "query": "The Issue completion scope changed; reconcile which PR work contributes and which native links remain safe.",
+    "should_trigger": true
+  },
+  {
+    "query": "Before merging, resolve this partial Issue contribution\u2019s closing-keyword consequence.",
+    "should_trigger": true
+  },
+  {
+    "query": "Remove the unsafe native closing link but preserve the valid historical contribution.",
+    "should_trigger": true
+  },
+  {
+    "query": "Change only this comment\u2019s wording; its Issue and PR contribution scope is unchanged.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add the needs-triage label to this Issue.",
+    "should_trigger": false
+  },
+  {
+    "query": "Reformat one Issue heading without changing scope or associations.",
+    "should_trigger": false
+  },
+  {
+    "query": "Give a read-only status report for this PR.",
+    "should_trigger": false
+  },
+  {
+    "query": "Mark this PR ready; its unchanged relation plan already passed in this task.",
+    "should_trigger": false
+  },
+  {
+    "query": "This PR merely depends on another Issue; it supplies none of that Issue\u2019s required work.",
+    "should_trigger": false
+  },
+  {
+    "query": "Update the unrelated benchmark link in a PR that incidentally mentions an Issue.",
+    "should_trigger": false
+  },
+  {
+    "query": "Restack this Graphite branch without changing its contribution or completion intent.",
+    "should_trigger": false
+  }
+]

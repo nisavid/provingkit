@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "mergecraft",
   "version": "1.0.0",
-  "description": "Mergecraft: pull-request authoring, publication, Graphite transport, feedback, readiness, merge, and stack repair.",
+  "description": "Mergecraft: Issue–PR relations, pull-request authoring, publication, Graphite transport, feedback, readiness, merge, and stack repair.",
   "author": {
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
@@ -16,19 +16,23 @@
     "graphite",
     "feedback",
     "merge",
-    "stack"
+    "stack",
+    "issues"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "Mergecraft",
         "shortDescription": "Author, publish, maintain, and merge pull requests safely.",
-        "longDescription": "Mergecraft binds pull-request text to exact pushed state and coordinates Graphite transport, feedback, readiness, merge, and stack repair.",
+        "longDescription": "Mergecraft maintains Issue–PR contribution ledgers and Development links, binds PR text to exact pushed state, and coordinates publication, feedback, readiness, merge, and stack repair.",
         "developerName": "Ivan D Vasin",
         "category": "Developer Tools",
-        "capabilities": ["Pull Requests"],
+        "capabilities": [
+          "Pull Requests"
+        ],
         "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/mergecraft",
         "defaultPrompt": [
+          "Use $mergecraft:maintaining-issue-pr-relations to reconcile these Issue–PR contributions.",
           "Use $mergecraft:writing-github-issue-and-pr-markdown to author the exact GFM body without GitHub actuation.",
           "Use $mergecraft:writing-reviewable-pr-descriptions to prepare and validate the exact PR title and body without forge mutation.",
           "Use $mergecraft:publishing-reviewable-prs to publish a validated PR text or readiness transition through the guarded helper.",

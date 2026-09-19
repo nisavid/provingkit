@@ -1,0 +1,3 @@
+Apply the supplied canonical workflow instructions. Report the next permitted operation and any blocker; do not dispatch workers or mutate a forge. Publication authority and ordinary tool access exist unless the situation below says otherwise.
+
+The ordinary writer has a complete bare clean hand-back for title/body candidate A, but before publication someone edits the body to candidate B. The navigation validator accepts B and pushed code is unchanged. Review input still identifies A. The source/context/result observations for A remain available. Decide whether publication may reuse the review and what must happen next.

@@ -1,0 +1,70 @@
+{
+  "basis": "Prior reviewed request constructor, real corpus and fixtures, synthetic constant instruction bytes. No provider records. Direct selection prompt digests retain the reviewed native constructor correspondence.",
+  "cases": {
+    "0": {
+      "request": "8b87d69be5f318dd0e37e3a8eeaa0e8ae23dca89c2a058f640770b9b9ca4a559",
+      "prompt": "511bd2c4a8e2801a326da6aa4d9b48ff666789b5dab6411ff863d5e45856e5ee"
+    },
+    "1": {
+      "request": "85403d8dcd2c07dfde5170ad6a7435768b3a9192153503d0c8039cebd4f5ae0e",
+      "prompt": "8fd6e09917a0626f14e0185eb7e0f4779dd63522a5b8864f7770115529312d31"
+    },
+    "2": {
+      "request": "3050137c45bf345e2d80a7b31bcbd563707da118d543d86d70d9a770d52b633d",
+      "prompt": "1d2ac6ca0c2747d264bc9f084a0df3a77dae8f6f954ebe264fa26f6164795ed3"
+    },
+    "3": {
+      "request": "8b86d8a37fd1ba14caafe8fdf52b4836a8572de8924eb5fa351185f4afb8b567",
+      "prompt": "257bc6b19948f6a0ae677b9dcd7b6e98ecba3ba0120dd531e40f872ec1f4b8b2"
+    },
+    "4": {
+      "request": "74282198e72649bfebaa30470141e950ba5e05d26fc49d8b87c57190bd8f5a55",
+      "prompt": "8159d0a3f8549bc9cd3dcbea887eb3b72d10e4c7be416beb26c4daab4cfc1369"
+    },
+    "5": {
+      "request": "b7d153bd2de77afc6e614228f9ed6c5704b56ac06c3b53e05cd20521da4d8e66",
+      "prompt": "8d06ce820f2b55d6664af07b7d7c02d7677a2ad6a5b4da1342bc814bc7499799"
+    },
+    "6": {
+      "request": "cfa179f91a91894318b2c0db1b711371857901527e0310353a64d4ab87532bef",
+      "prompt": "df695e7fd967832b80cc5d4b6edeaf4b501e1ea82cc9b024f9baa670f1741308"
+    },
+    "7": {
+      "request": "d9435ff6b243adeea0b1eca193bf09eda662a48551bd7b9ec7acbd353fac7647",
+      "prompt": "635168c419bceb67a5bc0a84385f3d11919a65364ff766be021f32d7e47cca64"
+    },
+    "8": {
+      "request": "77025431817fc4afe4fe3b6afddfceb46134805319b3e292ca901fed22197de3",
+      "prompt": "f8ca988c27640686d8ea655d73d52d4b42d9c5d080d141b1a5c305cde3fc5540"
+    },
+    "9": {
+      "request": "20a884a145260c32d8f19fddfe43b6e9c6486143dc810cd4562f0dfae9bfa547",
+      "prompt": "746cd75e1f2fed683fc3ebb7efe65cc502ed0a58f7c08454cc32531c7cc2fb15"
+    },
+    "10": {
+      "request": "b29e19e99daf0a2c9c05636261fbafae41abc635894ea2b521c9dd9936eaee89",
+      "prompt": "cde8a8ed9581610ed1d91ec97fc19f7bfecfaf5230a0912c5d794d1a76ecb3e2"
+    }
+  },
+  "direct_selection_prompts": {
+    "writing-reviewable-pr-descriptions-00": "94d06171a81acf1a612e66b914f6b2b68d8356bb7a23769312a7532d7df4a1dc",
+    "writing-reviewable-pr-descriptions-01": "a60f434391a98e8253baa91b20d35a932cd5d57ef4a6c999fbd2dc3a564e0f4f",
+    "writing-reviewable-pr-descriptions-02": "a7c3a7e7a6ac4faa20c7837c9a946d49d95a2cfc04298d0e2123150d08683ee4",
+    "writing-reviewable-pr-descriptions-03": "3b47f492a1d75c07b6b0a0e209ae21c59bd95c536e38db71808c489e6d9a6c27",
+    "writing-reviewable-pr-descriptions-04": "e9a6bca8f32b736959cc11465750971fe8b15cd31aabec9f6b11f4b4b58d6bb1",
+    "writing-reviewable-pr-descriptions-05": "3d9fe195893152ec7a143e16fba6c09516c5257cee8bca72b96a8be8aeee0575",
+    "writing-reviewable-pr-descriptions-06": "11eecb1d7a34fcb14efbeb1978d38d0ee02f05769432bcb4ad827cfdd1d8be4b",
+    "writing-reviewable-pr-descriptions-07": "e19f05313b1f78a3c7d88320f7d20b4b839cbd18a7e92b9111d8b934141c5c07",
+    "writing-reviewable-pr-descriptions-08": "205727bc2d36e02fc5e5ec7697364fe8665f50cd38f6e1d3dd6481aed0a77511",
+    "writing-reviewable-pr-descriptions-09": "44b5189c0c162ebd7fd0020878661258914a8298b8f2fabbca5b50922f490a93",
+    "writing-reviewable-pr-descriptions-10": "bf2631c14ce7641a3d7ea0b6f35c4219bb70a5fd3f1370cde003d7ae8a8489d3",
+    "writing-reviewable-pr-descriptions-11": "194a3c35a413f063d123ff25c08e175f790881397b80cc90cfc639e62ffab9ea",
+    "writing-reviewable-pr-descriptions-12": "3ce47ea31a1883aad6a9d0c053299c68f731ed5c46afd87a976e4eb89ea50d5c",
+    "writing-reviewable-pr-descriptions-13": "0c3ed575a3ef406cdfaa4f0a0f6246829081ec2d249efe6961ca6e98406cbe5b",
+    "writing-reviewable-pr-descriptions-14": "26daaaf300dca41bd3f747f57d956014e300cb241ba076e8e0449f91f0568ce5",
+    "writing-reviewable-pr-descriptions-15": "26e203cd408887789fdbf5daacc861db43f171c84b4e1963165a655fa2038e1f",
+    "writing-reviewable-pr-descriptions-16": "d83ca3949dc855b1e95b0500983d3471d078f46fed3e36294a8637a63bda9718",
+    "writing-reviewable-pr-descriptions-17": "cabc856614ae4c5cddb720cb8d42dc41773ee86104d01e4f833c6bce8d491f46",
+    "writing-reviewable-pr-descriptions-18": "7e089d8d992aeb10a96d7ff8d0784f2d1bf476b1ffcffe1a4d553e4ca5f8bdab"
+  }
+}

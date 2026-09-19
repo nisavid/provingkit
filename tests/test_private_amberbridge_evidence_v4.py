@@ -256,7 +256,7 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
             ):
                 self.verify(built)
 
-    def test_current_compatibility_and_synthetic_witness_bindings_are_accepted(
+    def test_retained_compatibility_and_synthetic_witness_bindings_are_accepted(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -267,8 +267,24 @@ class PublicVerifierBoundaryTests(unittest.TestCase):
         self.assertEqual(verified, built["summary"])
         self.assertEqual(
             base64.b64decode(verified["compatibility_bytes_base64"]),
-            evidence.compatibility_bytes(REPO_ROOT),
+            COMPATIBILITY_BYTES,
         )
+        self.assertNotEqual(COMPATIBILITY_BYTES, evidence.compatibility_bytes(REPO_ROOT))
+
+    def test_retained_witness_cannot_qualify_current_review_requirements(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            built = self.build(Path(directory).resolve() / "evidence")
+            current = evidence.compatibility_bytes(REPO_ROOT)
+            built["summary"]["compatibility_bytes_base64"] = base64.b64encode(
+                current
+            ).decode("ascii")
+            self.resign_summary(
+                built, field="compatibility_sha256", digest=fixture.digest_bytes(current)
+            )
+            with self.assertRaisesRegex(
+                evidence.PrivateEvidenceError, "private compatibility projection digest mismatch"
+            ):
+                self.verify(built)
 
     def test_rejects_digest_rebound_non_witness_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

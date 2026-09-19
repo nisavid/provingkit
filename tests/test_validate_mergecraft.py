@@ -107,6 +107,13 @@ class ValidateMergecraftTests(unittest.TestCase):
             external = self.repo / "plugins" / plugin
             external.mkdir(parents=True)
             shutil.copy2(REPO_ROOT / "plugins" / plugin / "topology.json", external)
+        for relative in (
+            Path("plugins/proseweaving/topology.json"),
+            *(Path(path) for path in VALIDATE_MERGECRAFT.MARKDOWN_BUNDLE
+              if path.startswith("plugins/proseweaving/")),
+        ):
+            (self.repo / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO_ROOT / relative, self.repo / relative)
         (self.repo / CONTENT_LOCK).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO_ROOT / CONTENT_LOCK, self.repo / CONTENT_LOCK)
         self.plugin = self.repo / PLUGIN
@@ -194,6 +201,245 @@ class ValidateMergecraftTests(unittest.TestCase):
                 result = self.run_validator("--skill", skill)
                 self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_publication_rejects_missing_relation_evaluation_evidence(self) -> None:
+        evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
+        (evidence / "experiment.json").unlink(missing_ok=True)
+        result = self.run_validator("--source-stage")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("relation evaluation evidence", result.stderr)
+
+    def prepare_relation_contract_fixture(self) -> dict:
+        """Construct validator inputs from the preparation CLI; execute no model.
+
+        The retained response/grade rows are fixture material only. Rebinding
+        them here tests source correspondence, never behavioral qualification.
+        """
+        subprocess.run(["git", "init", "-q", str(self.repo)], check=True)
+        subprocess.run(
+            ["git", "-C", str(self.repo), "-c", "user.name=Fixture",
+             "-c", "user.email=fixture@example.invalid", "-c", "core.hooksPath=/dev/null",
+             "commit", "--allow-empty", "-qm", "test: create synthetic preparation source"],
+            check=True,
+        )
+        prepared = self.repo.parent / "prepared"
+        fixture_client = self.repo.parent / "fixture-claude"
+        fixture_client.write_text(
+            f"#!{sys.executable}\n"
+            "import sys\n"
+            "if sys.argv[1:] != ['--version']:\n"
+            "    raise SystemExit('This fixture supports only --version.')\n"
+            "print('0.0.0 (Claude Code)')\n"
+        )
+        fixture_client.chmod(0o755)
+        result = subprocess.run(
+            [sys.executable, "-B", str(REPO_ROOT / "scripts/mergecraft_writing_evals.py"),
+             "prepare", "--repo", str(self.repo), "--output", str(prepared),
+             "--claude", str(fixture_client)],
+            text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        specs = [row for row in json.loads((prepared / "behavior-specs.json").read_bytes())
+                 if row["suite"] == "relations"]
+        self.assertEqual(len(specs), 51)
+        self.assertFalse((prepared / "runs").exists())
+        source = json.loads((prepared / "manifest.json").read_bytes())["source_sha256"]
+        folder = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
+        experiment = json.loads((folder / "experiment.json").read_bytes())
+        runs = {row["id"]: row for row in experiment["behavior_runs"]}
+        paths = {str(EVAL_ROOT / "skills/maintaining-issue-pr-relations" / name)
+                 for name in ("evals.json", "policy.json", "trigger-evals.json")}
+        for spec in specs:
+            selected = experiment["selection"]["behavior_by_case"][str(spec["case_id"])]
+            run = runs[f"{selected}/case-{spec['case_id']:02d}-with-skill-{spec['repetition']}"]
+            run["request_sha256"] = spec["request_sha256"]
+            run["candidate_sha256"] = spec["candidate_sha256"]
+            run["fixture_sha256"] = spec["fixture_sha256"]
+            experiment["requests_by_sha256"][spec["request_sha256"]] = spec["request"]
+            paths.update(spec["candidate_sha256"])
+            paths.update(f"evals/mergecraft/skills/{path}" for path in spec["fixture_sha256"])
+        experiment["current_source_sha256"] = {path: source[path] for path in sorted(paths)}
+        skill = "plugins/mergecraft/skills/maintaining-issue-pr-relations"
+        native_paths = [f"{skill}/{name}" for name in
+                        ("SKILL.md", "references/relation-contract.md", "references/command.md")]
+        body = (self.repo / native_paths[0]).read_text().split("---\n", 2)[2].lstrip("\n")
+        native = experiment["selection"]["trigger_experiment"]
+        for run in experiment["native_and_trigger_runs"]:
+            if run["id"].startswith(native + "/"):
+                run["candidate_sha256"] = {path: source[path] for path in native_paths}
+                for injection, call in zip(run["skill_injections"], run["tool_use"]):
+                    injection["source_body_sha256"] = hashlib.sha256(body.encode()).hexdigest()
+                    text = "Base directory for this skill: <CANDIDATE_SKILL_DIR>\n\n" + body
+                    if call["input"].get("args"):
+                        text += "\n\nARGUMENTS: " + call["input"]["args"]
+                    injection["text"] = text
+                    injection["retained_text_sha256"] = hashlib.sha256(text.encode()).hexdigest()
+                run["isolation"]["skill_injections"] = [
+                    {key: injection[key] for key in
+                     ("original_text_sha256", "source_body_sha256", "source_body_exact_match")}
+                    for injection in run["skill_injections"]
+                ]
+        (folder / "experiment.json").write_text(json.dumps(experiment) + "\n")
+        return experiment
+
+    def test_relation_contract_accepts_the_prepared_full_instruction_bundle(self) -> None:
+        experiment = self.prepare_relation_contract_fixture()
+        self.assertIn(
+            "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md",
+            experiment["current_source_sha256"],
+        )
+        self.assertIn(
+            "plugins/mergecraft/skills/getting-prs-merged/references/caller-continuation.md",
+            experiment["current_source_sha256"],
+        )
+        VALIDATE_MERGECRAFT.validate_relation_evidence(self.repo)
+
+    def test_publication_requires_the_full_per_case_relation_bundle(self) -> None:
+        original = self.prepare_relation_contract_fixture()
+        common = "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md"
+        routed = "plugins/mergecraft/skills/getting-prs-merged/references/caller-continuation.md"
+        for case_id, path, add in ((0, common, False), (0, routed, False), (11, routed, True)):
+            with self.subTest(case=case_id, path=path, extra=add):
+                experiment = copy.deepcopy(original)
+                selected = experiment["selection"]["behavior_by_case"][str(case_id)]
+                run_id = f"{selected}/case-{case_id:02d}-with-skill-1"
+                run = next(row for row in experiment["behavior_runs"] if row["id"] == run_id)
+                request = json.loads(experiment["requests_by_sha256"][run["request_sha256"]])
+                if add:
+                    self.assertNotIn(path, request["candidate_bundle"])
+                    request["candidate_bundle"][path] = (self.repo / path).read_text()
+                else:
+                    del request["candidate_bundle"][path]
+                text = json.dumps(request, ensure_ascii=False, indent=2)
+                run["request_sha256"] = hashlib.sha256(text.encode()).hexdigest()
+                run["candidate_sha256"] = {
+                    name: hashlib.sha256(value.encode()).hexdigest()
+                    for name, value in request["candidate_bundle"].items()
+                }
+                experiment["requests_by_sha256"][run["request_sha256"]] = text
+                self.write_eval_json("skills/maintaining-issue-pr-relations/experiment.json", experiment)
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("selected executor inputs", result.stderr)
+
+    def test_publication_binds_all_delivered_relation_reference_sources(self) -> None:
+        original = self.prepare_relation_contract_fixture()
+        for path in (
+            "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md",
+            "plugins/mergecraft/skills/getting-prs-merged/references/caller-continuation.md",
+        ):
+            with self.subTest(path=path):
+                experiment = copy.deepcopy(original)
+                del experiment["current_source_sha256"][path]
+                self.write_eval_json("skills/maintaining-issue-pr-relations/experiment.json", experiment)
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("current source binding", result.stderr)
+
+    def test_publication_rejects_malformed_relation_evaluation_without_traceback(self) -> None:
+        evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
+        (evidence / "experiment.json").write_text("[]\n", encoding="utf-8")
+        (evidence / "grading.json").write_text("{}\n", encoding="utf-8")
+        result = self.run_validator("--source-stage")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("relation evaluation evidence", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_publication_rejects_rebound_hashes_with_stale_relation_executor_inputs(self) -> None:
+        relative = "plugins/mergecraft/skills/maintaining-issue-pr-relations/references/command.md"
+        source = self.repo / relative
+        source.write_text(source.read_text() + "\nAdditional current instruction.\n")
+        evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/experiment.json"
+        experiment = json.loads(evidence.read_bytes())
+        experiment["current_source_sha256"][relative] = hashlib.sha256(source.read_bytes()).hexdigest()
+        evidence.write_text(json.dumps(experiment), encoding="utf-8")
+        result = self.run_validator("--source-stage")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("selected executor inputs", result.stderr)
+
+    def test_publication_requires_isolated_relation_runs_and_bound_passing_grades(self) -> None:
+        folder = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
+        original_experiment = self.prepare_relation_contract_fixture()
+        original_grading = json.loads((folder / "grading.json").read_bytes())
+        VALIDATE_MERGECRAFT.validate_relation_evidence(self.repo)
+        selected = original_experiment["selection"]["behavior_by_case"]["0"]
+        selected_id = f"{selected}/case-00-with-skill-1"
+        diagnostics = {
+            "tools exposed": "behavior isolation",
+            "parse error": "executor failure",
+            "permission denial": "executor failure",
+            "failed expectation": "failed behavior expectation",
+            "missing grade": "missing selected run/grade",
+            "wrong response": "independent grade binding",
+            "failed trigger": "trigger grade",
+        }
+        for change, diagnostic in diagnostics.items():
+            with self.subTest(change=change):
+                experiment = copy.deepcopy(original_experiment)
+                grading = copy.deepcopy(original_grading)
+                run = next(row for row in experiment["behavior_runs"] if row["id"] == selected_id)
+                grade = next(row for row in grading["runs"] if row["run_id"] == selected_id)
+                if change == "tools exposed":
+                    run["init"]["tools"] = ["Bash"]
+                elif change == "parse error":
+                    run["parse_errors"] = ["Malformed stream event"]
+                elif change == "permission denial":
+                    run["permission_denials"] = [{"tool_name": "Bash"}]
+                elif change == "failed expectation":
+                    grade["expectations"][0]["passed"] = False
+                elif change == "missing grade":
+                    grading["runs"].remove(grade)
+                elif change == "wrong response":
+                    grade["response_sha256"] = "0" * 64
+                else:
+                    grading["trigger_runs"][0]["passed"] = False
+                (folder / "experiment.json").write_text(json.dumps(experiment), encoding="utf-8")
+                (folder / "grading.json").write_text(json.dumps(grading), encoding="utf-8")
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn(f"relation evaluation evidence: {diagnostic}", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_publication_rejects_inconsistent_selected_relation_model_identity(self) -> None:
+        path = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/experiment.json"
+        original = json.loads(path.read_bytes())
+        selected = original["selection"]["behavior_by_case"]["0"]
+        selected_id = f"{selected}/case-00-with-skill-1"
+        baseline = self.run_validator("--source-stage")
+        self.assertEqual(baseline.returncode, 0, baseline.stderr)
+        for field in ("model_requested", "init.model"):
+            with self.subTest(field=field):
+                experiment = copy.deepcopy(original)
+                run = next(row for row in experiment["behavior_runs"] if row["id"] == selected_id)
+                if field == "model_requested":
+                    run[field] = "different-executor"
+                else:
+                    run["init"]["model"] = "different-executor"
+                path.write_text(json.dumps(experiment), encoding="utf-8")
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("actual executor identity", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_publication_requires_relation_thresholds_to_match_selected_grades(self) -> None:
+        path = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/grading.json"
+        original = json.loads(path.read_bytes())
+        for change in ("false summary", "missing summary", "duplicate summary", "weakened requirement"):
+            with self.subTest(change=change):
+                grading = copy.deepcopy(original)
+                if change == "false summary":
+                    grading["thresholds"][0].update(passes=0, met=False)
+                elif change == "missing summary":
+                    grading["thresholds"].pop()
+                elif change == "duplicate summary":
+                    grading["thresholds"].append(grading["thresholds"][0])
+                else:
+                    grading["thresholds"][0]["required"] = 1
+                path.write_text(json.dumps(grading), encoding="utf-8")
+                result = self.run_validator("--source-stage")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("relation evaluation evidence", result.stderr)
+                self.assertIn("threshold", result.stderr)
+
     def test_uses_canonical_agent_plugins_v1_manifest_and_discovery(self) -> None:
         canonical = json.loads((self.plugin / "plugin.json").read_text())
         topology = json.loads((self.plugin / "topology.json").read_text())
@@ -221,7 +467,10 @@ class ValidateMergecraftTests(unittest.TestCase):
         self.assertIn(MARKDOWN_AUTHORING_SKILL, components)
         self.assertEqual(
             components[MARKDOWN_AUTHORING_SKILL]["references"],
-            [MARKDOWN_AUTHORING_SOURCE.as_posix()],
+            [
+                MARKDOWN_AUTHORING_SOURCE.as_posix(),
+                "skills/writing-github-issue-and-pr-markdown/references/review-voice.md",
+            ],
         )
         for skill, relative in MARKDOWN_AUTHORING_PROJECTIONS.items():
             with self.subTest(skill=skill):
@@ -271,6 +520,129 @@ class ValidateMergecraftTests(unittest.TestCase):
             "response Markdown authoring operation edge drift",
         ):
             VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_projection_command_updates_review_voice_only(self) -> None:
+        canonical = self.plugin / "references/review-voice.md"
+        self.assertTrue(canonical.is_file(), "canonical review voice is missing")
+        canonical.write_bytes(canonical.read_bytes() + b"\nReview-specific addition.\n")
+        projections = {
+            self.plugin / "skills" / skill / "references/review-voice.md"
+            for skill in (
+                "writing-github-issue-and-pr-markdown",
+                "interacting-with-pr-review-feedback",
+            )
+        }
+        before = {
+            path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+
+        result = self.run_validator("--write-markdown-projections")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            {path for path in self.repo.rglob("*") if path.is_file()}, set(before)
+        )
+        for path, (content, mode, inode) in before.items():
+            with self.subTest(path=path.relative_to(self.repo)):
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode), mode)
+                if path in projections:
+                    self.assertEqual(path.read_bytes(), canonical.read_bytes())
+                else:
+                    self.assertEqual(path.read_bytes(), content)
+                    self.assertEqual(path.stat().st_ino, inode)
+
+    def test_current_projections_need_no_replacement(self) -> None:
+        before = {
+            path: (path.read_bytes(), path.stat().st_ino)
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+
+        result = self.run_validator("--write-markdown-projections")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            {path: (path.read_bytes(), path.stat().st_ino) for path in before}, before
+        )
+
+    def test_external_writing_route_rejects_missing_callable(self) -> None:
+        target = self.repo / "plugins/proseweaving/skills/writing-for-people/SKILL.md"
+        target.unlink()
+
+        result = self.run_validator("--write-markdown-projections")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("external call does not resolve to a callable skill", result.stderr)
+
+    def test_external_writing_route_requires_owned_capabilities(self) -> None:
+        path = self.repo / "plugins/proseweaving/topology.json"
+        topology = json.loads(path.read_bytes())
+        for capability in (
+            "human-facing-register", "evidence-in-prose", "post-draft-edit-pass",
+        ):
+            with self.subTest(capability=capability):
+                changed = copy.deepcopy(topology)
+                changed["skills"]["writing-for-people"]["owns"].remove(capability)
+                path.write_text(json.dumps(changed), encoding="utf-8")
+
+                result = self.run_validator("--write-markdown-projections")
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("external writing capabilities missing", result.stderr)
+
+    def test_external_writing_route_rejects_symlink_traversal(self) -> None:
+        for relative in (
+            "proseweaving", "proseweaving/skills",
+            "proseweaving/skills/writing-for-people",
+            "proseweaving/skills/writing-for-people/SKILL.md",
+            "proseweaving/topology.json",
+        ):
+            with self.subTest(relative=relative):
+                path = self.repo / "plugins" / relative
+                moved = Path(self.temporary_directory.name) / "external-writing-input"
+                path.rename(moved)
+                path.symlink_to(moved, target_is_directory=moved.is_dir())
+                try:
+                    result = self.run_validator("--write-markdown-projections")
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertRegex(result.stderr, "symlink|required regular file")
+                finally:
+                    path.unlink()
+                    moved.rename(path)
+
+    def test_external_writing_route_is_declared_by_each_semantic_consumer(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_bytes())
+        consumers = (
+            "writing-github-issue-and-pr-markdown",
+            "writing-reviewable-pr-descriptions",
+            "interacting-with-pr-review-feedback",
+        )
+        for name in consumers:
+            with self.subTest(consumer=name):
+                changed = copy.deepcopy(topology)
+                consumer = next(row for row in changed["skills"] if row["name"] == name)
+                consumer["external_calls"] = []
+                self.write_json("topology.json", changed)
+                result = self.run_validator("--write-markdown-projections")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("external writing call declaration drift", result.stderr)
+
+    def test_content_lock_command_rejects_stale_review_voice(self) -> None:
+        projection = self.plugin / (
+            "skills/interacting-with-pr-review-feedback/references/review-voice.md"
+        )
+        projection.write_bytes(projection.read_bytes() + b"\nStale projection.\n")
+        before = {
+            path: path.read_bytes() for path in self.repo.rglob("*") if path.is_file()
+        }
+
+        result = self.run_validator("--write-content-lock")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("review voice projection drift", result.stderr)
+        self.assertEqual({path: path.read_bytes() for path in before}, before)
 
     def test_source_stage_rejects_markdown_authoring_projection_drift(self) -> None:
         projection = (
@@ -361,6 +733,41 @@ class ValidateMergecraftTests(unittest.TestCase):
             before,
         )
 
+    def test_prepare_content_lock_retains_stale_evidence_and_changes_only_lock(self) -> None:
+        for relative in (
+            PLUGIN / "skills/writing-github-issue-and-pr-markdown/evals/experiment.json",
+            PLUGIN / "skills/interacting-with-pr-review-feedback/evals/response-evidence.json",
+            EVAL_ROOT / "skills/maintaining-issue-pr-relations/experiment.json",
+        ):
+            (self.repo / relative).write_text("{}\n", encoding="utf-8")
+        lock = self.repo / CONTENT_LOCK
+        lock.write_bytes(b"{}\n")
+        lock.chmod(0o640)
+        before = {
+            path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+            for path in self.repo.rglob("*") if path.is_file()
+        }
+
+        result = self.run_validator("--prepare-content-lock")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            result.stdout,
+            "Mergecraft content lock prepared; behavior evidence not checked; candidate unqualified.\n",
+        )
+        self.assertEqual(result.stderr, "")
+        VALIDATE_MERGECRAFT.validate_content_lock(self.repo, self.plugin)
+        self.assertEqual({path for path in self.repo.rglob("*") if path.is_file()}, set(before))
+        for path, (content, mode, inode) in before.items():
+            with self.subTest(path=path.relative_to(self.repo)):
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode), mode)
+                if path != lock:
+                    self.assertEqual((path.read_bytes(), path.stat().st_ino), (content, inode))
+        prepared = lock.read_bytes()
+        repeated = self.run_validator("--prepare-content-lock")
+        self.assertEqual(repeated.returncode, 0, repeated.stderr)
+        self.assertEqual(lock.read_bytes(), prepared)
+
     def test_generation_commands_are_mutually_exclusive(self) -> None:
         before = {
             path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
@@ -382,6 +789,138 @@ class ValidateMergecraftTests(unittest.TestCase):
             before,
         )
 
+    def test_preparation_argument_conflicts_leave_all_files_unchanged(self) -> None:
+        before = {
+            path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+            for path in self.repo.rglob("*") if path.is_file()
+        }
+        for extra in (
+            ("--skill", "getting-prs-merged"),
+            ("--source-stage",),
+            ("--write-content-lock",),
+            ("--write-markdown-projections",),
+        ):
+            with self.subTest(arguments=extra):
+                result = self.run_validator("--prepare-content-lock", *extra)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn("--prepare-content-lock", result.stderr)
+                self.assertEqual(
+                    {path: (path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_ino)
+                     for path in self.repo.rglob("*") if path.is_file()},
+                    before,
+                )
+
+    def test_preparation_rejects_invalid_structure_before_lock_replacement(self) -> None:
+        manifest = json.loads((self.plugin / "plugin.json").read_bytes())
+        manifest["version"] = "invalid-candidate"
+        cases = (
+            (PLUGIN / "plugin.json", json.dumps(manifest).encode(), "manifest"),
+            (PLUGIN / "skills/writing-github-issue-and-pr-markdown/evals/experiment.json",
+             b"{", "contract validation failed"),
+            (EVAL_ROOT / "skills/maintaining-issue-pr-relations/experiment.json",
+             b"{", "contract validation failed"),
+            (PLUGIN / "skills/interacting-with-pr-review-feedback/references/review-voice.md",
+             b"Stale projection.\n", "review voice projection drift"),
+            (ATLAS_RELEASE / "review-atlas-contract.json", b"{}\n", "atlas canonical contract"),
+        )
+        lock = self.repo / CONTENT_LOCK
+        original_lock = (lock.read_bytes(), stat.S_IMODE(lock.stat().st_mode), lock.stat().st_ino)
+        for relative, content, diagnostic in cases:
+            with self.subTest(path=relative):
+                path = self.repo / relative
+                original = path.read_bytes()
+                try:
+                    path.write_bytes(content)
+                    result = self.run_validator("--prepare-content-lock")
+                    self.assertEqual(result.returncode, 1, result.stderr)
+                    self.assertIn(diagnostic.lower(), result.stderr.lower())
+                    self.assertEqual(
+                        (lock.read_bytes(), stat.S_IMODE(lock.stat().st_mode), lock.stat().st_ino),
+                        original_lock,
+                    )
+                finally:
+                    path.write_bytes(original)
+
+    def test_preparation_does_not_disable_evidence_checks_in_existing_modes(self) -> None:
+        relative = "skills/writing-github-issue-and-pr-markdown/evals/experiment.json"
+        evidence = json.loads((self.plugin / relative).read_bytes())
+        evidence["current_source_sha256"]["SKILL.md"] = "0" * 64
+        self.write_json(relative, evidence)
+        lock = self.repo / CONTENT_LOCK
+        before = lock.read_bytes()
+        for extra in ((), ("--source-stage",), ("--write-content-lock",),
+                      ("--source-stage", "--write-content-lock")):
+            with self.subTest(arguments=extra):
+                result = self.run_validator(*extra)
+                self.assertEqual(result.returncode, 1, result.stderr)
+                self.assertIn("Markdown authoring evidence source binding drift", result.stderr)
+                self.assertEqual(lock.read_bytes(), before)
+
+    def test_preparation_rolls_back_lock_after_late_source_change(self) -> None:
+        lock = self.repo / CONTENT_LOCK
+        lock.write_bytes(b"{}\n")
+        lock.chmod(0o640)
+        original_lock = lock.read_bytes()
+        document = self.plugin / "README.md"
+        changed = document.read_bytes() + b"\nConcurrent source change.\n"
+        real_replace = os.replace
+        changed_once = False
+
+        def replace_then_drift(source: object, destination: object, **kwargs: object) -> None:
+            nonlocal changed_once
+            real_replace(source, destination, **kwargs)
+            if Path(destination).name == lock.name and not changed_once:
+                changed_once = True
+                document.write_bytes(changed)
+
+        stderr = io.StringIO()
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(os, "replace", side_effect=replace_then_drift),
+            mock.patch.object(VALIDATE_MERGECRAFT.sys, "argv",
+                              ["validate_mergecraft.py", str(self.repo), "--prepare-content-lock"]),
+            contextlib.redirect_stderr(stderr),
+            contextlib.redirect_stdout(stdout),
+        ):
+            result = VALIDATE_MERGECRAFT.main()
+        self.assertEqual(result, 1, stderr.getvalue())
+        self.assertTrue(changed_once)
+        self.assertIn("validated inputs changed", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
+        self.assertEqual(lock.read_bytes(), original_lock)
+        self.assertEqual(stat.S_IMODE(lock.stat().st_mode), 0o640)
+        self.assertEqual(document.read_bytes(), changed)
+
+    def test_lock_writer_rejects_changed_captured_dependencies(self) -> None:
+        lock = self.repo / CONTENT_LOCK
+        paths = (
+            self.plugin / "README.md",
+            self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations/evals.json",
+            self.repo / ATLAS_RELEASE / "review-atlas-contract.json",
+            self.repo / "plugins/versionkeeping/topology.json",
+            self.repo / "plugins/proseweaving/topology.json",
+            self.repo / "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+            self.repo / "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+            self.retirement_ledger,
+            lock,
+        )
+        for path in paths:
+            with self.subTest(path=path.relative_to(self.repo)):
+                original = path.read_bytes()
+                original_lock = lock.read_bytes()
+                snapshot = VALIDATE_MERGECRAFT.capture_content_lock_write_snapshot(self.repo)
+                changed = original + b"\nConcurrent source change.\n"
+                try:
+                    path.write_bytes(changed)
+                    with self.assertRaisesRegex(
+                        VALIDATE_MERGECRAFT.ContractError, "validated inputs changed"
+                    ):
+                        VALIDATE_MERGECRAFT.write_content_lock(self.repo, snapshot=snapshot)
+                    self.assertEqual(path.read_bytes(), changed)
+                    self.assertEqual(lock.read_bytes(), changed if path == lock else original_lock)
+                finally:
+                    path.write_bytes(original)
+
     def test_projection_command_rolls_back_after_late_input_changes(self) -> None:
         canonical = self.plugin / MARKDOWN_AUTHORING_SOURCE
         canonical.write_bytes(canonical.read_bytes() + b"\nCanonical extension.\n")
@@ -396,7 +935,12 @@ class ValidateMergecraftTests(unittest.TestCase):
         }
         real_replace = os.replace
 
-        for changed_input in (canonical, lock):
+        for changed_input in (
+            canonical,
+            lock,
+            self.repo / "plugins/proseweaving/topology.json",
+            self.repo / "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+        ):
             with self.subTest(changed_input=changed_input.relative_to(self.repo)):
                 before_input = changed_input.read_bytes()
                 replacements = 0
@@ -490,6 +1034,9 @@ class ValidateMergecraftTests(unittest.TestCase):
         path = self.plugin / prefix / "evals/experiment.json"
         experiment = json.loads(path.read_bytes())
         experiment["current_source_sha256"]["SKILL.md"] = hashlib.sha256(
+            skill.read_bytes()
+        ).hexdigest()
+        experiment["current_delivered_source_sha256"][f"plugins/mergecraft/{prefix}/SKILL.md"] = hashlib.sha256(
             skill.read_bytes()
         ).hexdigest()
         self.write_json(f"{prefix}/evals/experiment.json", experiment)
@@ -601,8 +1148,11 @@ class ValidateMergecraftTests(unittest.TestCase):
     def test_validator_accepts_a_consistently_recorded_markdown_failure(self) -> None:
         relative = f"skills/{MARKDOWN_AUTHORING_SKILL}/evals/grading.json"
         grading = json.loads((self.plugin / relative).read_bytes())
-        threshold = grading["selected_thresholds"][0]
-        self.assertEqual((threshold["severity"], threshold["passes"]), ("safety", 3))
+        threshold = next(
+            row for row in grading["selected_thresholds"]
+            if row["variant"] == "with-skill" and row["severity"] == "safety"
+            and row["passes"] == 3
+        )
         run_id = (
             f"{threshold['experiment']}/case-{threshold['case_id']:02d}"
             f"-{threshold['variant']}-1"
@@ -848,6 +1398,10 @@ class ValidateMergecraftTests(unittest.TestCase):
                 "documentation-flag-correction.md",
                 "preview-server-port-selection.md",
                 "provider-plugin-framework.md",
+                "change-summary-and-supporting-evidence.md",
+                "publication-with-legacy-chat-framing.md",
+                "personal-investigation-section.md",
+                "publication-and-review-reply.md",
             },
             "publishing-reviewable-prs": {
                 "body-only-preservation.md",
@@ -867,6 +1421,29 @@ class ValidateMergecraftTests(unittest.TestCase):
                     {path.name for path in (root / "fixtures").glob("*.md")},
                     fixtures,
                 )
+
+    def test_accepts_distinct_writer_cases_sharing_a_fixture(self) -> None:
+        VALIDATE_MERGECRAFT.validate_raw_skill_eval_isolation(self.repo)
+
+    def test_rejects_changed_shared_writer_case_name_or_fixture(self) -> None:
+        relative = "skills/writing-reviewable-pr-descriptions/evals.json"
+        original = json.loads((self.repo / EVAL_ROOT / relative).read_text())
+        for field, replacement, diagnostic in (
+            ("name", "change-summary-and-supporting-evidence", "item schema drift"),
+            (
+                "files",
+                ["writing-reviewable-pr-descriptions/fixtures/chat-only-draft.md"],
+                "fixture binding drift",
+            ),
+        ):
+            with self.subTest(field=field):
+                changed = copy.deepcopy(original)
+                changed["evals"][10][field] = replacement
+                self.write_eval_json(relative, changed)
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, diagnostic
+                ):
+                    VALIDATE_MERGECRAFT.validate_raw_skill_eval_isolation(self.repo)
 
     def test_rejects_writer_publisher_trigger_complement_drift(self) -> None:
         relative = (
@@ -1159,6 +1736,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             {item["owner"] for item in resume["contract"]["terminal_handoffs"]},
             {
                 "addressing-pr-review-feedback",
+                "maintaining-issue-pr-relations",
                 "getting-prs-ready-for-review",
                 "getting-prs-merged",
                 "operation:focused-ci",
@@ -1555,7 +2133,7 @@ class ValidateMergecraftTests(unittest.TestCase):
                 "for every merge request.",
             )
         )
-        self.assert_rejected("semantic content lock mismatch")
+        self.assert_rejected("relation evaluation evidence: current source binding")
 
     def test_invalid_write_candidate_preserves_existing_content_lock_bytes(
         self,
@@ -1647,9 +2225,9 @@ class ValidateMergecraftTests(unittest.TestCase):
     ) -> None:
         lock_path = self.repo / CONTENT_LOCK
         original_lock = lock_path.read_bytes()
-        skill = self.plugin / "skills/getting-prs-merged/SKILL.md"
-        skill.write_text(
-            skill.read_text(encoding="utf-8") + "\nValid semantic change.\n",
+        document = self.plugin / "README.md"
+        document.write_text(
+            document.read_text(encoding="utf-8") + "\nValid semantic change.\n",
             encoding="utf-8",
         )
         real_replace = os.replace
@@ -1661,8 +2239,8 @@ class ValidateMergecraftTests(unittest.TestCase):
         ) -> None:
             real_replace(source, destination, **kwargs)
             if Path(destination).name == lock_path.name:
-                skill.write_text(
-                    skill.read_text(encoding="utf-8")
+                document.write_text(
+                    document.read_text(encoding="utf-8")
                     + "\nConcurrent semantic change.\n",
                     encoding="utf-8",
                 )
@@ -1704,6 +2282,10 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         required = {
             "pr-create",
+            "issue-pr-relation-read",
+            "issue-body-write",
+            "issue-pr-development-write",
+            "pr-relation-ledger-write",
             "repository-orientation",
             "pr-orientation",
             "issue-orientation",
@@ -1741,6 +2323,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         for alias in (
             "pr-text-read",
+            "issue-pr-relation-read",
             "pr-readiness-read",
             "check-inspection",
             "merge-inspection",
@@ -1748,6 +2331,9 @@ class ValidateMergecraftTests(unittest.TestCase):
             self.assertEqual(operations[alias][0], "read")
         for alias in (
             "pr-text-write",
+            "issue-body-write",
+            "issue-pr-development-write",
+            "pr-relation-ledger-write",
             "pr-readiness-write",
             "check-rerun",
             "feedback-conversation-response-write",
@@ -1883,7 +2469,7 @@ class ValidateMergecraftTests(unittest.TestCase):
     def test_rejects_writer_independent_review_gate_regression(self) -> None:
         path = self.plugin / "skills/writing-reviewable-pr-descriptions/SKILL.md"
         path.write_text(
-            path.read_text().replace("bare `clean` receipt", "review receipt")
+            path.read_text().replace("bare `clean`", "unverified clean")
         )
         self.assert_rejected("writer independent review gate drift")
 
@@ -1987,6 +2573,9 @@ class ValidateMergecraftTests(unittest.TestCase):
         shim.write_text("pass\n")
         self.assert_rejected("compatibility shim")
 
+    def test_accepts_current_reviewed_atlas_prose(self) -> None:
+        VALIDATE_MERGECRAFT.validate_atlas_split(self.repo, self.plugin)
+
     def test_atlas_evidence_is_repository_owned_and_byte_preserved(self) -> None:
         runtime_references = (
             self.plugin / "skills/writing-reviewable-pr-descriptions/references"
@@ -2015,7 +2604,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "82f2f6fb9a93bd82e3b7f28666db917f6d888fc4ebaff610a0fbb1c7439f23bd"
+                "c1a56a67d33813303bd1e9e20ec4b9cc6b19cb00c262bd7efe382559d334415c"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"
@@ -2524,7 +3113,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             timeout=30,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('"skills": 16', result.stdout)
+        self.assertIn('"skills": 17', result.stdout)
 
     def test_rejects_retirement_destination_owner_missing_from_bundle(self) -> None:
         definition_path = self.repo / EVAL_ROOT / "retirement-control-plane.json"
@@ -2582,6 +3171,321 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         self.write_eval_json("retirement-fixtures.json", fixtures)
         self.assert_rejected("retirement fixture coverage drift")
+
+
+class MarkdownEvidenceRefreshTests(unittest.TestCase):
+    """Exercise the owning evidence validator without unrelated runtime probes."""
+
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temp.name)
+        for relative in (
+            PLUGIN / "skills" / MARKDOWN_AUTHORING_SKILL,
+            Path("plugins/proseweaving/skills/writing-for-people"),
+        ):
+            shutil.copytree(REPO_ROOT / relative, self.repo / relative)
+        self.plugin = self.repo / PLUGIN
+        self.evals = self.plugin / "skills" / MARKDOWN_AUTHORING_SKILL / "evals"
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def validate(self) -> None:
+        VALIDATE_MERGECRAFT.validate_markdown_authoring_evidence(self.plugin)
+
+    def test_current_full_bundle_and_historical_controls_validate(self) -> None:
+        self.validate()
+
+    def test_selected_current_runs_require_successful_tool_free_execution(self) -> None:
+        path = self.evals / "experiment.json"
+        original = path.read_bytes()
+        for field, value in (
+            ("technically_valid", False), ("exit_code", 1),
+            ("exit_code", False), ("timed_out", True),
+            ("result_subtype", "error_during_execution"),
+            ("result_is_error", True),
+            ("tool_use", [{"type": "tool_use", "name": "Bash"}]),
+        ):
+            with self.subTest(field=field, value=value):
+                data = json.loads(original)
+                run = next(r for r in data["behavior_runs"]
+                           if r["id"] == "markdown/case-01-with-skill-1")
+                run[field] = value
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "current execution validity drift"
+                ):
+                    self.validate()
+        path.write_bytes(original)
+
+    def test_selected_current_protocol_matches_the_recorded_application_method(self) -> None:
+        path = self.evals / "experiment.json"
+        original = path.read_bytes()
+        mutations = (
+            ("launch_error", "Synthetic launch failure"),
+            ("decode_error", {"start": 0}), ("parse_errors", ["invalid"]),
+            ("stream_valid", False), ("assistant_session_ids", ["other-session"]),
+            ("assistant_session_ids", []), ("result_session_id", "other-session"),
+            ("result_permission_denials", [{"tool": "Bash"}]),
+            ("model_requested", "different-model"), ("effort_requested", "low"),
+            ("assistant_models", ["different-model"]),
+            ("system_prompt_sha256", "0" * 64),
+            ("init.session_id", "other-session"),
+            ("init.model", "different-model"), ("init.permissionMode", "default"),
+            ("init.claude_code_version", "2.1.263"),
+            *((f"init.{key}", ["unexpected"])
+              for key in ("tools", "mcp_servers", "skills", "plugins", "slash_commands")),
+        )
+        for field, value in mutations:
+            with self.subTest(field=field, value=value):
+                data = json.loads(original)
+                run = next(r for r in data["behavior_runs"]
+                           if r["id"] == "markdown/case-01-with-skill-1")
+                if field.startswith("init."):
+                    run["init"][field.removeprefix("init.")] = value
+                else:
+                    run[field] = value
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "current execution validity drift"
+                ):
+                    self.validate()
+        for field in ("technically_valid", "exit_code", "timed_out", "launch_error",
+                      "decode_error", "parse_errors", "stream_valid", "init",
+                      "assistant_session_ids", "result_session_id",
+                      "result_permission_denials", "result_is_error", "tool_use"):
+            with self.subTest(missing=field):
+                data = json.loads(original)
+                run = next(r for r in data["behavior_runs"]
+                           if r["id"] == "markdown/case-01-with-skill-1")
+                del run[field]
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "current execution validity drift"
+                ):
+                    self.validate()
+        path.write_bytes(original)
+
+    def test_current_grade_requires_the_runs_original_record_digest(self) -> None:
+        path = self.evals / "grading.json"
+        original = path.read_bytes()
+        for value in ("0" * 64, "malformed", None):
+            with self.subTest(source_record_sha256=value):
+                data = json.loads(original)
+                grade = next(r for r in data["runs"]
+                             if r["run_id"] == "markdown/case-01-with-skill-1")
+                if value is None:
+                    del grade["source_record_sha256"]
+                else:
+                    grade["source_record_sha256"] = value
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "current grade original record binding drift"
+                ):
+                    self.validate()
+        path.write_bytes(original)
+        experiment_path = self.evals / "experiment.json"
+        experiment = json.loads(experiment_path.read_bytes())
+        run = next(r for r in experiment["behavior_runs"]
+                   if r["id"] == "markdown/case-01-with-skill-1")
+        run["source_record_sha256"] = "malformed"
+        experiment_path.write_text(json.dumps(experiment), encoding="utf-8")
+        data = json.loads(original)
+        grade = next(r for r in data["runs"] if r["run_id"] == run["id"])
+        grade["source_record_sha256"] = "malformed"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError, "current grade original record binding drift"
+        ):
+            self.validate()
+
+    def test_supplemental_findings_and_dispositions_bind_one_to_one_to_current_responses(self) -> None:
+        path = self.evals / "grading.json"
+        original = path.read_bytes()
+        normal_path = self.evals / "normalization.json"
+        original_normal = normal_path.read_bytes()
+        mutations = (
+            ("missing findings", lambda r: r.update(supplemental_findings=[])),
+            ("missing dispositions", lambda r: r.update(supplemental_dispositions=[])),
+            ("wrong response", lambda r: r["supplemental_findings"][0].update(response_sha256="0" * 64)),
+            ("wrong disposition key", lambda r: r["supplemental_dispositions"][0].update(finding_key="unrelated")),
+            ("wrong case", lambda r: r["supplemental_findings"][0].update(case_id=1)),
+            ("wrong repetition", lambda r: r["supplemental_dispositions"][0].update(repetition=2)),
+            ("duplicate finding", lambda r: r["supplemental_findings"].append(r["supplemental_findings"][0])),
+            ("duplicate disposition", lambda r: r["supplemental_dispositions"].append(r["supplemental_dispositions"][0])),
+            ("unknown run", lambda r: r["supplemental_findings"][0].update(run_id="missing/case-01-with-skill-1")),
+            ("changed rubric claim", lambda r: r["supplemental_dispositions"][0].update(changes_original_grade=True)),
+            ("wrong origin", lambda r: r["supplemental_dispositions"][0].update(origin="other-grading.json")),
+        )
+        for name, mutate in mutations:
+            with self.subTest(mutation=name):
+                data = json.loads(original)
+                refresh = data["application_refresh"]
+                mutate(refresh)
+                path.write_text(json.dumps(data), encoding="utf-8")
+                # Recompute the declared projection so this tests correspondence,
+                # independently of the separate exact-retention digest check.
+                normal = json.loads(original_normal)
+                normal["supplemental_projection_sha256"] = {
+                    key: hashlib.sha256(json.dumps(refresh[key], sort_keys=True,
+                                                 separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+                    for key in ("supplemental_findings", "supplemental_dispositions")
+                }
+                normal_path.write_text(json.dumps(normal), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "supplemental.*drift"
+                ):
+                    self.validate()
+        path.write_bytes(original)
+        normal_path.write_bytes(original_normal)
+
+    def test_original_supplemental_text_and_provenance_are_retained(self) -> None:
+        path = self.evals / "grading.json"
+        original = path.read_bytes()
+        mutations = (
+            ("remove both lists", lambda r: r.update(supplemental_findings=[], supplemental_dispositions=[])),
+            ("rewrite finding", lambda r: r["supplemental_findings"][0].update(finding="Rewritten finding")),
+            ("rewrite disposition", lambda r: r["supplemental_dispositions"][0].update(followup="Rewritten disposition")),
+            ("wrong grading source", lambda r: r.update(original_grader_artifact_sha256="0" * 64)),
+            ("wrong adjudication source", lambda r: r.update(adjudication_source_sha256="0" * 64)),
+            ("wrong retention source", lambda r: r.update(retention_review_sha256="0" * 64)),
+        )
+        for name, mutate in mutations:
+            with self.subTest(mutation=name):
+                data = json.loads(original)
+                mutate(data["application_refresh"])
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "supplemental.*drift"
+                ):
+                    self.validate()
+        path.write_bytes(original)
+        data = json.loads(original)
+        del data["application_refresh"]
+        path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError, "supplemental.*drift"
+        ):
+            self.validate()
+
+    def test_historical_configuration_cannot_be_relabelled(self) -> None:
+        path = self.evals / "experiment.json"
+        data = json.loads(path.read_bytes())
+        data["experiments"][0]["model"] = "replacement-model"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError, "historical retention drift"
+        ):
+            self.validate()
+
+
+    def test_every_delivered_dependency_invalidates_the_current_observations(self) -> None:
+        # This literal inventory is the approved seven-file delivery contract.
+        markdown = "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown"
+        prose = "plugins/proseweaving/skills/writing-for-people"
+        paths = [
+            f"{markdown}/SKILL.md", f"{markdown}/references/authoring-contract.md",
+            f"{markdown}/references/review-voice.md", f"{prose}/SKILL.md",
+            f"{prose}/references/edit-pass.md",
+            f"{prose}/references/evidence-in-prose.md",
+            f"{prose}/references/threaded-conversation.md",
+        ]
+        for relative in paths:
+            with self.subTest(dependency=relative):
+                path = self.repo / relative
+                original = path.read_bytes()
+                path.write_bytes(original + b"\nChanged delivery.\n")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "source binding drift"
+                ):
+                    self.validate()
+                path.write_bytes(original)
+
+    def test_relabelled_external_dependency_does_not_refresh_old_requests(self) -> None:
+        relative = "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+        source = self.repo / relative
+        source.write_bytes(source.read_bytes() + b"\nNew instruction.\n")
+        path = self.evals / "experiment.json"
+        data = json.loads(path.read_bytes())
+        data["current_delivered_source_sha256"][relative] = hashlib.sha256(
+            source.read_bytes()
+        ).hexdigest()
+        path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError, "selected request binding drift"
+        ):
+            self.validate()
+
+    def test_current_request_must_deliver_the_complete_bundle(self) -> None:
+        path = self.evals / "experiment.json"
+        data = json.loads(path.read_bytes())
+        run = next(r for r in data["behavior_runs"] if r["id"] == "markdown/case-01-with-skill-1")
+        request = json.loads(data["requests_by_sha256"][run["request_sha256"]])
+        omitted = "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md"
+        del request["candidate_bundle"][omitted]
+        value = json.dumps(request, indent=2, ensure_ascii=False)
+        digest = hashlib.sha256(value.encode()).hexdigest()
+        data["requests_by_sha256"][digest] = value
+        run["request_sha256"] = digest
+        del run["candidate_sha256"][omitted]
+        path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError, "selected request binding drift"
+        ):
+            self.validate()
+
+    def test_historical_judgments_and_native_records_remain_immutable(self) -> None:
+        for filename, mutate in (
+            ("grading.json", lambda d: d["runs"][0]["expectations"][0].update(evidence="Rewritten history")),
+            ("experiment.json", lambda d: d["native_and_trigger_runs"].pop()),
+        ):
+            with self.subTest(artifact=filename):
+                path = self.evals / filename
+                original = path.read_bytes()
+                data = json.loads(original)
+                mutate(data)
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, "historical retention drift"
+                ):
+                    self.validate()
+                path.write_bytes(original)
+
+    def test_historical_controls_cannot_be_selected_as_current_application(self) -> None:
+        path = self.evals / "grading.json"
+        data = json.loads(path.read_bytes())
+        data["selected_thresholds"].extend(data["historical_control_thresholds"])
+        path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError, "selected case coverage drift"
+        ):
+            self.validate()
+
+    def test_current_failure_is_retained_without_lowering_its_threshold(self) -> None:
+        path = self.evals / "grading.json"
+        data = json.loads(path.read_bytes())
+        criterion = next(r for r in data["selected_thresholds"] if r["severity"] == "safety")
+        run_id = f"markdown/case-{criterion['case_id']:02d}-with-skill-1"
+        run = next(r for r in data["runs"] if r["run_id"] == run_id)
+        expectation = next(e for e in run["expectations"] if e["id"] == criterion["expectation"])
+        expectation.update(passed=False, evidence="Synthetic failure for validator regression.")
+        for rows in (data["thresholds"], data["selected_thresholds"]):
+            for row in rows:
+                if row["experiment"] == "markdown" and row["case_id"] == criterion["case_id"] and row["expectation"] == criterion["expectation"]:
+                    row.update(passes=2, met=False)
+        data["candidate_passed"] = False
+        path.write_text(json.dumps(data), encoding="utf-8")
+        self.validate()
+        for rows in (data["thresholds"], data["selected_thresholds"]):
+            for row in rows:
+                if row["experiment"] == "markdown" and row["case_id"] == criterion["case_id"] and row["expectation"] == criterion["expectation"]:
+                    row.update(required=2, met=True)
+        data["candidate_passed"] = True
+        path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError, "threshold derivation drift"
+        ):
+            self.validate()
 
 
 if __name__ == "__main__":

@@ -12,12 +12,15 @@ without the author's own global instructions still receives the mechanics.
 Personal voice composes on top through consumer-global instructions and never
 lives in this plugin.
 
-Proseweaving owns generic human-facing prose mechanics only. Surface owners keep
-their surface contracts: Mergecraft owns reviewer-facing pull-request text and
-the review-voice reference that applies this register to review threads, and
-Tricritical owns review findings and their structural output contract. A caller
-can explicitly compose those surface contracts with Proseweaving when prose
-mechanics also apply; projections do not cross plugin boundaries.
+Proseweaving owns generic human-facing prose mechanics, including selection of
+register for a publication, document, or conversation. Its general writing
+skill applies to authored PR and Issue prose as well as other human-facing
+text; conversational openings and reply etiquette live in a conditional
+reference. Surface owners keep their content and format contracts: Mergecraft
+owns reviewer-facing pull-request text and review-specific framing, and
+Tricritical owns review findings and their structural output contract. Compose
+those contracts with Proseweaving while preserving their retained-text and
+publication boundaries; projections do not cross plugin boundaries.
 
 Claude Code also discovers the native `proseweaver` agent alias. It is a thin
 forwarder to the public skill, so the skill remains the portable policy owner.

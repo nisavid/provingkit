@@ -44,10 +44,10 @@
       "candidate_skill": "review",
       "grader_expectations": ["independent_contexts", "no_cross_report_leak"]
     },
-    "model-selection-receipt.md": {
+    "model-selection-record.md": {
       "candidate_skill": "review",
       "grader_expectations": [
-        "dispatch_blocked_without_receipt",
+        "dispatch_blocked_without_selection_records",
         "capability_proof_required",
         "portable_policy_does_not_select_provider_model"
       ]
@@ -64,7 +64,7 @@
     "topology-inadequate-foreign-isolation.md": {
       "candidate_skill": "review",
       "grader_expectations": [
-        "live_isolation_capability_overrides_receipt_claim",
+        "live_isolation_observation_overrides_plan_claim",
         "foreign_dispatch_rejected",
         "no_native_fallback_without_new_valid_plan",
         "incomplete_non_clean"
@@ -84,9 +84,21 @@
       "grader_expectations": [
         "exact_closed_world_dispatch_set",
         "unique_entry_per_selected_execution",
-        "separate_model_and_topology_receipts",
-        "distinct_read_only_native_isolation",
+        "ordinary_plan_and_separate_selection_records",
+        "controller_observed_independence_with_cooperative_tool_limits",
+        "no_receipt_requirement_for_ordinary_dispatch",
         "completeness_accounts_for_all_four"
+      ]
+    },
+    "witnessed-unavailable-receipts.md": {
+      "candidate_skill": "review",
+      "grader_expectations": [
+        "valid_ordinary_prerequisites_do_not_replace_witnessed_receipts",
+        "missing_qualified_receipts_block_dispatch",
+        "no_receipt_fabrication",
+        "no_downgrade_to_ordinary",
+        "zero_dispatches",
+        "incomplete_non_clean"
       ]
     },
     "adjudicate-external-feedback.md": {

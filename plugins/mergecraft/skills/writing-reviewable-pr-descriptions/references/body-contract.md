@@ -26,6 +26,28 @@ primary reviewer-visible behavior or outcome. Preserve a required stack index
 or still-current scope prefix. Do not promote urgency, implementation inventory,
 or impact beyond the reviewed commit.
 
+## Publication Register
+
+Prefer opening the summary and its sections with the change or subject the
+reviewer needs. Phrase statements of what merging the PR changes in the
+imperative, as in a commit message: "Preserve the configured retry limit"
+instead of "I preserved the configured retry limit." Other sentences explain
+the problem, behavior, evidence, or tradeoff in the form that makes them clear.
+
+Use first person for relevant investigation, verification, judgment, and
+uncertainty. These usually support the change's explanation; they need not
+become impersonal or disappear. Let first person open a passage when the
+author's experience or judgment is itself the point, such as explaining an
+unsuccessful reproduction attempt. This is a register choice, not a pronoun
+ban or a required opening formula.
+
+A PR body drafted in chat still addresses its future reviewers. Keep
+review-comment requests and reply conventions with those exchange surfaces;
+do not turn change descriptions into requests for the reviewer to implement
+them. Apply this guidance only within the authorized new or replaced prose.
+
+## Larger Review Paths
+
 For a large or stacked change, order review by authored responsibility. Put a
 generated surface after its contract or generator input, and name the evidence
 that makes de-emphasis safe. Explain the prerequisite or Before state, this

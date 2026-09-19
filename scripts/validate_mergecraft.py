@@ -25,6 +25,14 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from mergecraft_writing_evals import (  # noqa: E402
+    CALLER_REFERENCES,
+    EFFORT,
+    MARKDOWN_BUNDLE,
+    MODEL,
+    RELATION_BUNDLE,
+    SYSTEM,
+)
 from refresh_transaction import (  # noqa: E402
     InputEntry,
     RefreshTransactionError,
@@ -62,13 +70,25 @@ ATLAS_RELEASE_FILES = {
     "review-atlas-contract.json",
     "review-atlas-contribution-ledger.json",
 }
-EXTERNAL_TOPOLOGY_RELATIVES = (
+EXTERNAL_INPUT_RELATIVES = (
     Path("plugins/tricritical/topology.json"),
     Path("plugins/versionkeeping/topology.json"),
+    Path("plugins/proseweaving/topology.json"),
+    Path("plugins/proseweaving/skills/writing-for-people/SKILL.md"),
+    *(Path(path) for path in MARKDOWN_BUNDLE
+      if path.startswith("plugins/proseweaving/") and path.endswith(".md")
+      and not path.endswith("/SKILL.md")),
 )
+PROSEWEAVING_CALL = "proseweaving:writing-for-people"
+PROSEWEAVING_CALLERS = {
+    "writing-github-issue-and-pr-markdown",
+    "writing-reviewable-pr-descriptions",
+    "interacting-with-pr-review-feedback",
+}
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
     "writing-github-issue-and-pr-markdown",
+    "maintaining-issue-pr-relations",
     "writing-reviewable-pr-descriptions",
     "publishing-reviewable-prs",
     "graphite",
@@ -86,6 +106,7 @@ ROOT_FILES = {
     "README.md",
     "plugin.json",
     "topology.json",
+    "references/review-voice.md",
 }
 WRITER_MODULE_NAMES = (
     "__init__",
@@ -144,14 +165,44 @@ MERGE_EVAL_FIXTURES = (
     "feedback-continuation-gates.md",
     "persistent-request-changes-after-addressed.md",
 )
+WRITER_EVAL_CASE_FIXTURES = (
+    ("documentation-flag-correction", "documentation-flag-correction.md"),
+    ("preview-server-port-selection", "preview-server-port-selection.md"),
+    ("command-envelope-stack", "command-envelope-stack.md"),
+    ("provider-plugin-framework", "provider-plugin-framework.md"),
+    ("chat-only-draft", "chat-only-draft.md"),
+    ("config-loader-precedence", "config-loader-precedence.md"),
+    (
+        "change-summary-and-supporting-evidence",
+        "change-summary-and-supporting-evidence.md",
+    ),
+    ("publication-with-legacy-chat-framing", "publication-with-legacy-chat-framing.md"),
+    ("personal-investigation-section", "personal-investigation-section.md"),
+    ("publication-and-review-reply", "publication-and-review-reply.md"),
+    ("publication-without-proseweaving", "change-summary-and-supporting-evidence.md"),
+)
 RAW_SKILL_EVAL_FIXTURES = {
-    "writing-reviewable-pr-descriptions": (
-        "documentation-flag-correction.md",
-        "preview-server-port-selection.md",
-        "command-envelope-stack.md",
-        "provider-plugin-framework.md",
-        "chat-only-draft.md",
-        "config-loader-precedence.md",
+    "maintaining-issue-pr-relations": (
+        "absent-pr-creation.md",
+        "direct-implementation.md",
+        "dependency-only.md",
+        "incidental-mention.md",
+        "formatting-skip.md",
+        "status-only-resume.md",
+        "unchanged-readiness.md",
+        "resume-past-ttl.md",
+        "historical-repair.md",
+        "settled-plan-no-recursion.md",
+        "cross-repository-merge.md",
+        "ancestry-only-restack.md",
+        "fixup-own-contribution.md",
+        "manual-capacity.md",
+        "unlink-preserves-history.md",
+        "explicit-setting-invalidation.md",
+        "post-merge-selective-completion.md",
+    ),
+    "writing-reviewable-pr-descriptions": tuple(
+        fixture for _, fixture in WRITER_EVAL_CASE_FIXTURES
     ),
     "publishing-reviewable-prs": (
         "existing-pr-text-update.md",
@@ -205,6 +256,10 @@ PUBLISHER_ACTUATION_EVAL_FIXTURES = frozenset(
 TERMINAL_INTERNAL_OPERATIONS = {"focused-ci"}
 TERMINAL_OPERATION_HANDOFFS = {"focused-ci", "remote-ref-deletion"}
 GITHUB_ALIAS_ACCESS = {
+    "issue-pr-relation-read": "read",
+    "issue-body-write": "write",
+    "issue-pr-development-write": "write",
+    "pr-relation-ledger-write": "write",
     "pr-create": "write",
     "repository-orientation": "read",
     "pr-orientation": "read",
@@ -245,6 +300,11 @@ MARKDOWN_AUTHORING_PROJECTIONS = {
     "interacting-with-pr-review-feedback": "references/github-markdown-authoring.md",
     "getting-prs-merged": "references/github-markdown-authoring.md",
 }
+REVIEW_VOICE_SOURCE = "references/review-voice.md"
+REVIEW_VOICE_PROJECTIONS = {
+    "writing-github-issue-and-pr-markdown": "references/review-voice.md",
+    "interacting-with-pr-review-feedback": "references/review-voice.md",
+}
 MARKDOWN_AUTHORING_EVAL_CASES = (
     "recursive-issue-body",
     "crlf-issue-conversation-comment",
@@ -283,14 +343,28 @@ MARKDOWN_AUTHORING_FEATURES = {
     "material-conflict",
 }
 EXPECTED_SKILL_FILES = {
+    "maintaining-issue-pr-relations": COMMON_SKILL_FILES
+    | {
+        "references/relation-contract.md",
+        "references/command.md",
+        "scripts/relation_state.py",
+        "scripts/relation_forge.py",
+    },
     "writing-github-issue-and-pr-markdown": COMMON_SKILL_FILES
     | {
         "references/authoring-contract.md",
+        "references/review-voice.md",
+        "evals/review-voice-evals.json",
+        "evals/review-voice/fixtures/review-ask-ladder.md",
+        "evals/review-voice/fixtures/review-summary.md",
+        "evals/review-voice/fixtures/issue-proposal-and-review-reply.md",
+        "evals/review-voice/fixtures/format-only-review-text.md",
         "evals/coverage.json",
         "evals/delivery.json",
         "evals/evals.json",
         "evals/experiment.json",
         "evals/grading.json",
+        "evals/normalization.json",
         "evals/policy.json",
         "evals/trigger-evals.json",
         *{
@@ -306,6 +380,8 @@ EXPECTED_SKILL_FILES = {
         "references/review-atlas-extension.json",
         "review-atlas-reference-design.md",
         "scripts/validate_change_navigation.py",
+        "scripts/validate_relation_ledger.py",
+        "references/relation-ledger.md",
     }
     | {f"scripts/change_navigation/{name}.py" for name in WRITER_MODULE_NAMES},
     "publishing-reviewable-prs": COMMON_SKILL_FILES
@@ -317,6 +393,8 @@ EXPECTED_SKILL_FILES = {
         "scripts/required_review.py",
         "scripts/reviewable_pr_state.py",
         "scripts/update_reviewable_pr.py",
+        "scripts/publish_relation_ledger.py",
+        "scripts/relation_ledger_receipts.py",
     },
     "graphite": COMMON_SKILL_FILES | {"scripts/submit_draft_stack.py"},
     "addressing-pr-review-feedback": COMMON_SKILL_FILES
@@ -328,7 +406,10 @@ EXPECTED_SKILL_FILES = {
     | {
         "evals/response-evidence.json",
         "evals/discovery-evidence.json",
+        "evals/review-voice-evals.json",
+        "evals/review-voice/fixtures/proposed-review-response.md",
         "references/interaction-authority.md",
+        "references/review-voice.md",
         "references/github-markdown-authoring.md",
         "scripts/github_response_provider.py",
         "scripts/response_identity_lifecycle.py",
@@ -350,6 +431,10 @@ EXPECTED_SKILL_FILES = {
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "maintaining-issue-pr-relations": (
+        "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
+        "Issue–PR contributions."
+    ),
     "writing-github-issue-and-pr-markdown": (
         "Use $mergecraft:writing-github-issue-and-pr-markdown to author the "
         "exact GFM body without GitHub actuation."
@@ -385,6 +470,10 @@ CODEX_PROMPTS = {
     ),
 }
 MANIFEST_PROMPTS = [
+    (
+        "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
+        "Issue–PR contributions."
+    ),
     (
         "Use $mergecraft:writing-github-issue-and-pr-markdown to author the "
         "exact GFM body without GitHub actuation."
@@ -616,8 +705,8 @@ ATLAS_EXTENSION_CONTRACT = {
 }
 EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
-    "writer": "f4f3a36187a4fb7d7bcff351b661a3c800d388b4fe024cebe4eee0e0b96efab0",
-    "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
+    "writer": "bc70fc7b35028ed5b4067036d50b3f5d0b95df42750412ae06b6d1086205e7f9",
+    "body": "73b62f1fd44edaa41df6a7195fb5ee2bb39e152bede253370f0da59bf645c073",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
 }
 RELEASE_VERSION = "1.0.0"
@@ -942,27 +1031,44 @@ def read_bytes(root: Path, relative: str) -> bytes:
 
 
 def validate_markdown_authoring_projections(root: Path) -> None:
-    canonical = read_bytes(root, MARKDOWN_AUTHORING_SOURCE)
     topology = load_json(root, "topology.json")
     components = {component["name"]: component for component in topology["skills"]}
     require(
         components["writing-github-issue-and-pr-markdown"]["references"]
-        == [MARKDOWN_AUTHORING_SOURCE],
+        == [
+            MARKDOWN_AUTHORING_SOURCE,
+            "skills/writing-github-issue-and-pr-markdown/references/review-voice.md",
+        ],
         "canonical Markdown authoring source discovery drift",
     )
-    for skill, local_path in MARKDOWN_AUTHORING_PROJECTIONS.items():
+    validate_reference_projections(
+        root, MARKDOWN_AUTHORING_SOURCE, MARKDOWN_AUTHORING_PROJECTIONS,
+        "Markdown authoring",
+    )
+    validate_reference_projections(
+        root, REVIEW_VOICE_SOURCE, REVIEW_VOICE_PROJECTIONS, "review voice",
+    )
+
+
+def validate_reference_projections(
+    root: Path, source: str, projections: dict[str, str], label: str,
+) -> None:
+    canonical = read_bytes(root, source)
+    topology = load_json(root, "topology.json")
+    components = {component["name"]: component for component in topology["skills"]}
+    for skill, local_path in projections.items():
         projection_path = f"skills/{skill}/{local_path}"
         require(
             projection_path in components[skill]["references"],
-            f"writer-local Markdown authoring projection discovery drift: {skill}",
+            f"writer-local {label} projection discovery drift: {skill}",
         )
         require(
             f"({local_path})" in read(root, f"skills/{skill}/SKILL.md"),
-            f"writer-local Markdown authoring projection link drift: {skill}",
+            f"writer-local {label} projection link drift: {skill}",
         )
         require(
             read_bytes(root, projection_path) == canonical,
-            f"writer-local Markdown authoring projection drift: {skill}",
+            f"writer-local {label} projection drift: {skill}",
         )
 
 
@@ -1196,6 +1302,131 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
     )
 
 
+def validate_markdown_evidence_history(root: Path, documents: dict[str, dict]) -> None:
+    """Reconstruct the prior public records using the declared inverse projection."""
+    normalization = load_json(
+        root, "skills/writing-github-issue-and-pr-markdown/evals/normalization.json"
+    )
+    inverse = normalization.get("inverse") if isinstance(normalization, dict) else None
+    require(
+        isinstance(inverse, dict) and set(inverse) == set(documents)
+        and normalization.get("schema_version") == 1
+        and normalization.get("serialization")
+        == "UTF-8 JSON, ensure_ascii=False, indent=2, insertion order, terminal LF",
+        "Markdown authoring historical retention map drift",
+    )
+    for name, document in documents.items():
+        recipe = inverse[name]
+        require(
+            isinstance(recipe, dict)
+            and isinstance(recipe.get("remove_fields"), list)
+            and isinstance(recipe.get("restore_fields"), dict)
+            and isinstance(recipe.get("truncate_lists"), dict)
+            and isinstance(recipe.get("remove_mapping_keys"), dict),
+            "Markdown authoring historical retention map drift",
+        )
+        original = json.loads(json.dumps(document))
+        for key in recipe["remove_fields"]:
+            require(isinstance(key, str) and key in original,
+                    "Markdown authoring historical retention map drift")
+            del original[key]
+        original.update(recipe["restore_fields"])
+        for key, count in recipe["truncate_lists"].items():
+            require(
+                isinstance(original.get(key), list) and type(count) is int
+                and 0 <= count <= len(original[key]),
+                "Markdown authoring historical retention map drift",
+            )
+            original[key] = original[key][:count]
+        for key, removed in recipe["remove_mapping_keys"].items():
+            require(isinstance(original.get(key), dict) and isinstance(removed, list),
+                    "Markdown authoring historical retention map drift")
+            for item in removed:
+                require(isinstance(item, str) and item in original[key],
+                        "Markdown authoring historical retention map drift")
+                del original[key][item]
+        raw = (json.dumps(original, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+        require(
+            hashlib.sha256(raw).hexdigest() == recipe.get("original_sha256"),
+            f"Markdown authoring historical retention drift: {name}",
+        )
+
+
+def validate_markdown_supplements(root: Path, grading: dict, current_runs: dict) -> None:
+    """Bind retained supplementary findings to responses and owner dispositions."""
+    normalization = load_json(
+        root, "skills/writing-github-issue-and-pr-markdown/evals/normalization.json"
+    )
+    refresh = grading.get("application_refresh")
+    require(
+        isinstance(normalization, dict) and isinstance(refresh, dict)
+        and isinstance(normalization.get("sources"), dict)
+        and isinstance(normalization.get("supplemental_projection_sha256"), dict),
+        "Markdown authoring supplemental provenance drift",
+    )
+    for key, source in (
+        ("original_grader_artifact_sha256", "independent_grading_sha256"),
+        ("adjudication_source_sha256", "adjudication_sha256"),
+        ("retention_review_sha256", "retention_review_sha256"),
+    ):
+        digest = refresh.get(key)
+        require(
+            isinstance(digest, str) and re.fullmatch("[0-9a-f]{64}", digest) is not None
+            and digest == normalization["sources"].get(source),
+            "Markdown authoring supplemental provenance drift",
+        )
+    identities = []
+    for field, classification in (
+        ("supplemental_findings", "classification"),
+        ("supplemental_dispositions", "finding_key"),
+    ):
+        rows = refresh.get(field)
+        require(isinstance(rows, list), "Markdown authoring supplemental shape drift")
+        keys: set[tuple[str, str]] = set()
+        for row in rows:
+            require(
+                isinstance(row, dict) and isinstance(row.get("run_id"), str)
+                and row["run_id"] in current_runs
+                and isinstance(row.get(classification), str) and row[classification],
+                "Markdown authoring supplemental identity drift",
+            )
+            run = current_runs[row["run_id"]]
+            key = (row["run_id"], row[classification])
+            require(
+                key not in keys
+                and type(row.get("case_id")) is int and row["case_id"] == run["case_id"]
+                and type(row.get("repetition")) is int
+                and row["repetition"] == run["repetition"]
+                and row.get("response_sha256") == run["response_sha256"],
+                "Markdown authoring supplemental response binding drift",
+            )
+            text_fields = (("quote", "finding", "rubric_boundary")
+                           if field == "supplemental_findings"
+                           else ("disposition", "owner", "followup"))
+            require(
+                all(isinstance(row.get(name), str) and row[name] for name in text_fields),
+                "Markdown authoring supplemental shape drift",
+            )
+            if field == "supplemental_dispositions":
+                require(
+                    row.get("origin") == "markdown-grading.json"
+                    and row.get("changes_original_grade") is False,
+                    "Markdown authoring supplemental disposition drift",
+                )
+            keys.add(key)
+        identities.append(keys)
+        raw = json.dumps(rows, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        require(
+            hashlib.sha256(raw.encode("utf-8")).hexdigest()
+            == normalization["supplemental_projection_sha256"].get(field),
+            "Markdown authoring supplemental original projection drift",
+        )
+    require(
+        identities[0] == identities[1],
+        "Markdown authoring supplemental disposition coverage drift",
+    )
+
+
 def validate_markdown_authoring_evidence(root: Path) -> None:
     """Check retained experiment consistency without judging model behavior."""
     skill = "skills/writing-github-issue-and-pr-markdown"
@@ -1220,6 +1451,19 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
         "Markdown authoring evidence source binding drift",
     )
 
+    repo = root.parent.parent
+    delivered = {
+        path: read_bytes(repo, path).decode("utf-8") for path in MARKDOWN_BUNDLE
+    }
+    delivered_sha256 = {
+        path: hashlib.sha256(read_bytes(repo, path)).hexdigest()
+        for path in MARKDOWN_BUNDLE
+    }
+    require(
+        experiment.get("current_delivered_source_sha256") == delivered_sha256,
+        "Markdown authoring delivered source binding drift",
+    )
+
     def text_digest(value: str) -> str:
         try:
             return hashlib.sha256(value.encode("utf-8")).hexdigest()
@@ -1231,10 +1475,12 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
     requests = experiment.get("requests_by_sha256")
     runs = experiment.get("behavior_runs")
     selected = grading.get("selected_thresholds")
+    controls = grading.get("historical_control_thresholds")
     require(
         isinstance(requests, dict)
         and isinstance(runs, list)
-        and isinstance(selected, list),
+        and isinstance(selected, list)
+        and isinstance(controls, list),
         "Markdown authoring evidence record shape drift",
     )
     for digest, request in requests.items():
@@ -1270,7 +1516,8 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
         recorded_sessions.add(run["session_id"])
     cases = {case["id"]: case for case in corpus}
     selected_groups: set[tuple[str, str, int]] = set()
-    for threshold in selected:
+    control_groups: set[tuple[str, str, int]] = set()
+    for threshold in selected + controls:
         require(
             isinstance(threshold, dict)
             and isinstance(threshold.get("experiment"), str)
@@ -1280,29 +1527,30 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
             and threshold["case_id"] in cases,
             "Markdown authoring selected threshold identity drift",
         )
-        selected_groups.add(
+        destination = selected_groups if threshold in selected else control_groups
+        destination.add(
             (threshold["experiment"], threshold["variant"], threshold["case_id"])
         )
     require(
-        len(selected_groups) == len(cases) * 2
+        len(selected_groups) == len(cases)
         and {(variant, case_id) for _, variant, case_id in selected_groups}
-        == {(variant, case_id) for variant in ("with-skill", "without-skill")
-            for case_id in cases},
+        == {("with-skill", case_id) for case_id in cases}
+        and len(control_groups) == len(cases)
+        and {(variant, case_id) for _, variant, case_id in control_groups}
+        == {("without-skill", case_id) for case_id in cases},
         "Markdown authoring selected case coverage drift",
     )
     policy = load_json(root, f"{skill}/evals/policy.json")
     selected_runs: dict[str, dict] = {}
+    current_runs: dict[str, dict] = {}
     sessions: set[str] = set()
-    for group, variant, case_id in sorted(selected_groups):
+    for group, variant, case_id in sorted(selected_groups | control_groups):
         case = cases[case_id]
         fixtures = {
             path: read_bytes(root, f"{skill}/{path}").decode("utf-8")
             for path in case["fixture_paths"]
         }
-        bundle = {
-            path: read_bytes(root, f"{skill}/{path}").decode("utf-8")
-            for path in ("SKILL.md", "references/authoring-contract.md")
-        } if variant == "with-skill" else {}
+        bundle = delivered if variant == "with-skill" else {}
         expected = {
             "prompt": case["prompt"], "fixture": fixtures, "candidate_bundle": bundle,
         }
@@ -1326,9 +1574,45 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
                 and run.get("fixture_sha256")
                 == {path: experiment["current_source_sha256"][path] for path in fixtures}
                 and run.get("candidate_sha256")
-                == {path: experiment["current_source_sha256"][path] for path in bundle},
+                == {path: delivered_sha256[path] for path in bundle},
                 f"Markdown authoring selected request binding drift: {run_id}",
             )
+            if (group, variant, case_id) in selected_groups:
+                # Current selected-field observations follow the maintained recorder;
+                # older diagnostics and controls retain their original schema.
+                init = run.get("init")
+                assistant_sessions = run.get("assistant_session_ids")
+                require(
+                    run.get("technically_valid") is True
+                    and type(run.get("exit_code")) is int
+                    and run["exit_code"] == 0
+                    and run.get("timed_out") is False
+                    and run.get("result_subtype") == "success"
+                    and run.get("result_is_error") is False
+                    and run.get("tool_use") == []
+                    and run.get("launch_error", "missing") is None
+                    and run.get("decode_error", "missing") is None
+                    and run.get("parse_errors") == []
+                    and run.get("stream_valid") is True
+                    and run.get("model_requested") == MODEL
+                    and run.get("effort_requested") == EFFORT
+                    and run.get("system_prompt_sha256") == text_digest(SYSTEM)
+                    and run.get("assistant_models") == [MODEL]
+                    and isinstance(init, dict)
+                    and all(init.get(key) == [] for key in (
+                        "tools", "mcp_servers", "skills", "plugins", "slash_commands"
+                    ))
+                    and init.get("model") == MODEL
+                    and init.get("permissionMode") == "dontAsk"
+                    and init.get("claude_code_version") == "2.1.273"
+                    and init.get("session_id") == run["session_id"]
+                    and isinstance(assistant_sessions, list) and assistant_sessions
+                    and all(session == run["session_id"] for session in assistant_sessions)
+                    and run.get("result_session_id") == run["session_id"]
+                    and run.get("result_permission_denials") == [],
+                    f"Markdown authoring current execution validity drift: {run_id}",
+                )
+                current_runs[run_id] = run
             sessions.add(run["session_id"])
             selected_runs[run_id] = run
 
@@ -1351,6 +1635,14 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
             and grade["grader_task"],
             "Markdown authoring grade response binding drift",
         )
+        if grade["run_id"] in current_runs:
+            digest = grade.get("source_record_sha256")
+            require(
+                isinstance(digest, str)
+                and re.fullmatch("[0-9a-f]{64}", digest) is not None
+                and digest == run.get("source_record_sha256"),
+                "Markdown authoring current grade original record binding drift",
+            )
         expectations = grade.get("expectations")
         require(
             isinstance(expectations, list) and expectations,
@@ -1386,6 +1678,7 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
         set(selected_runs) <= set(grade_index),
         "Markdown authoring selected grades missing",
     )
+    validate_markdown_supplements(root, grading, current_runs)
     derived: dict[tuple[str, str, int, str], dict] = {}
     for (group, variant, case_id), group_grades in grouped_grades.items():
         require(
@@ -1417,6 +1710,7 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
     for rows, expected_keys in (
         (grading.get("thresholds"), set(derived)),
         (selected, {key for key in derived if key[:3] in selected_groups}),
+        (controls, {key for key in derived if key[:3] in control_groups}),
     ):
         require(isinstance(rows, list), "Markdown authoring thresholds must be a list")
         observed: set[tuple[str, str, int, str]] = set()
@@ -1445,6 +1739,9 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
         == all(row["met"] for row in selected if row["variant"] == "with-skill"),
         "Markdown authoring candidate result derivation drift",
     )
+    validate_markdown_evidence_history(
+        root, {"experiment.json": experiment, "grading.json": grading}
+    )
 
 
 def load_json(root: Path, relative: str) -> Any:
@@ -1467,6 +1764,441 @@ def read_repository_file(repo_root: Path, relative: Path) -> str:
 def load_repository_json(repo_root: Path, relative: Path) -> Any:
     return strict_json(read_repository_file(repo_root, relative), relative.as_posix())
 
+
+def _validate_relation_evidence(repo: Path) -> None:
+    folder = repo / "evals/mergecraft/skills/maintaining-issue-pr-relations"
+    skill = "plugins/mergecraft/skills/maintaining-issue-pr-relations"
+    common = RELATION_BUNDLE
+
+    def require(condition, message):
+        if not condition:
+            raise ContractError(message)
+
+    def digest(text):
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def hex_digest(value):
+        return (
+            isinstance(value, str) and re.fullmatch("[0-9a-f]{64}", value) is not None
+        )
+
+    def read(relative):
+        path = Path(relative)
+        require(not path.is_absolute() and ".." not in path.parts, "unsafe source path")
+        return read_bytes(repo, path.as_posix()).decode("utf-8")
+
+    corpus = load_repository_json(repo, (folder / "evals.json").relative_to(repo))[
+        "evals"
+    ]
+    triggers = load_repository_json(
+        repo, (folder / "trigger-evals.json").relative_to(repo)
+    )
+    policy = load_repository_json(repo, (folder / "policy.json").relative_to(repo))
+    experiment = load_repository_json(
+        repo, (folder / "experiment.json").relative_to(repo)
+    )
+    grading = load_repository_json(repo, (folder / "grading.json").relative_to(repo))
+    cases = {c["id"]: c for c in corpus}
+    require(set(cases) == set(range(17)) and len(corpus) == 17, "case coverage")
+    require(
+        len(triggers) == 13 and policy["repetitions"] == 3,
+        "repetition/trigger coverage",
+    )
+    paths = set(common)
+    paths.update(f"plugins/mergecraft/skills/{c['caller']}/SKILL.md" for c in corpus)
+    paths.update(path for c in corpus for path in CALLER_REFERENCES.get(c["caller"], []))
+    paths.update(f"evals/mergecraft/skills/{p}" for c in corpus for p in c["files"])
+    paths.update(
+        str((folder / p).relative_to(repo))
+        for p in ("evals.json", "policy.json", "trigger-evals.json")
+    )
+    require(
+        experiment["current_source_sha256"] == {p: digest(read(p)) for p in paths},
+        "current source binding",
+    )
+    requests = experiment["requests_by_sha256"]
+    require(
+        all(isinstance(v, str) and digest(v) == k for k, v in requests.items()),
+        "request digest",
+    )
+    all_runs = experiment["behavior_runs"] + experiment["native_and_trigger_runs"]
+    runs = {r["id"]: r for r in all_runs}
+    require(len(runs) == len(all_runs), "duplicate run ID")
+    require(len({r["session_id"] for r in all_runs}) == len(all_runs), "reused session")
+    for run in all_runs:
+        require(
+            run["request_sha256"] in requests
+            and digest(run["response"]) == run["response_sha256"],
+            "run text binding",
+        )
+    grades = {g["run_id"]: g for g in grading["runs"]}
+    trigger_grades = {g["run_id"]: g for g in grading["trigger_runs"]}
+    require(
+        len(grades) == len(grading["runs"])
+        and len(trigger_grades) == len(grading["trigger_runs"]),
+        "duplicate grade",
+    )
+    behavior_by_case = experiment["selection"]["behavior_by_case"]
+    require(
+        set(behavior_by_case) == {str(case_id) for case_id in cases}
+        and all(isinstance(x, str) and x for x in behavior_by_case.values()),
+        "behavior case selection",
+    )
+    selected_trigger = experiment["selection"]["trigger_experiment"]
+    selected_ids = set()
+    expected_thresholds = []
+    for case_id, case in cases.items():
+        selected_behavior = behavior_by_case[str(case_id)]
+        fixture = {p: read(f"evals/mergecraft/skills/{p}") for p in case["files"]}
+        bundle_paths = list(
+            dict.fromkeys(
+                common + [f"plugins/mergecraft/skills/{case['caller']}/SKILL.md"]
+                + CALLER_REFERENCES.get(case["caller"], [])
+            )
+        )
+        bundle = {p: read(p) for p in bundle_paths}
+        expected = {
+            "prompt": case["prompt"],
+            "fixture": fixture,
+            "candidate_bundle": bundle,
+        }
+        for repetition in range(1, 4):
+            run_id = f"{selected_behavior}/case-{case_id:02d}-with-skill-{repetition}"
+            selected_ids.add(run_id)
+            require(run_id in runs and run_id in grades, "missing selected run/grade")
+            run, grade = runs[run_id], grades[run_id]
+            require(
+                run["case_id"] == case_id
+                and run["repetition"] == repetition
+                and run["variant"] == "with-skill",
+                "selected identity",
+            )
+            require(
+                strict_json(
+                    requests[run["request_sha256"]], "relation executor request"
+                )
+                == expected,
+                "selected executor inputs",
+            )
+            require(
+                run["fixture_sha256"] == {p: digest(t) for p, t in fixture.items()},
+                "fixture digest",
+            )
+            require(
+                run["candidate_sha256"] == {p: digest(t) for p, t in bundle.items()},
+                "candidate digest",
+            )
+            require(
+                run["exit_code"] == 0
+                and not run["timed_out"]
+                and run["result_subtype"] == "success"
+                and run["result_is_error"] is False
+                and not run["parse_errors"]
+                and not run["permission_denials"],
+                "executor failure",
+            )
+            require(
+                run["model_requested"]
+                == run["init"]["model"]
+                == "claude-opus-5"
+                and run["assistant_models"] == ["claude-opus-5"]
+                and run["effort_requested"] == "high",
+                "actual executor identity",
+            )
+            require(
+                all(
+                    run["init"][k] == []
+                    for k in ("tools", "skills", "plugins", "mcp_servers")
+                )
+                and not run["tool_use"],
+                "behavior isolation",
+            )
+            require(
+                grade["response_sha256"] == run["response_sha256"]
+                and grade["grader_task"]
+                and grade["grader_distinct_from_executor"] is True,
+                "independent grade binding",
+            )
+            require(
+                [g["text"] for g in grade["expectations"]] == case["expectations"],
+                "grade expectations",
+            )
+            require(
+                all(
+                    g["passed"] is True
+                    and isinstance(g["evidence"], str)
+                    and g["evidence"]
+                    for g in grade["expectations"]
+                ),
+                "failed behavior expectation",
+            )
+        for index, expectation in enumerate(case["expectations"]):
+            passes = sum(
+                grades[f"{selected_behavior}/case-{case_id:02d}-with-skill-{repetition}"][
+                    "expectations"
+                ][index]["passed"] is True
+                for repetition in range(1, 4)
+            )
+            expected_thresholds.append(
+                {
+                    "case_id": case_id,
+                    "expectation": expectation,
+                    "passes": passes,
+                    "required": 3,
+                    "met": passes == 3,
+                }
+            )
+        require(
+            len(
+                [
+                    r
+                    for r in experiment["behavior_runs"]
+                    if r["id"].split("/")[0] == selected_behavior
+                    and r["case_id"] == case_id
+                ]
+            )
+            == 3,
+            "extra selected case run",
+        )
+    require(len(selected_ids) == 51, "selected behavior coverage")
+    require(grading["thresholds"] == expected_thresholds, "behavior threshold summaries")
+    target = "mergecraft-scope-eval:maintaining-issue-pr-relations"
+    prefix = "Decide which available skill, if any, is needed for this user request. If a skill applies, invoke it using Skill, then stop without carrying out the task. If none applies, return NO_SKILL. Do not invoke any other tool or perform any task action.\n\nUser request: "
+    plugin_paths = [
+        f"{skill}/SKILL.md",
+        f"{skill}/references/relation-contract.md",
+        f"{skill}/references/command.md",
+    ]
+    for index, case in enumerate(triggers):
+        run_id = f"{selected_trigger}/case-{index:02d}"
+        selected_ids.add(run_id)
+        require(
+            run_id in runs and run_id in trigger_grades, "missing trigger run/grade"
+        )
+        run, grade = runs[run_id], trigger_grades[run_id]
+        require(
+            requests[run["request_sha256"]] == prefix + case["query"], "trigger request"
+        )
+        require(
+            run["candidate_sha256"] == {p: digest(read(p)) for p in plugin_paths},
+            "trigger source binding",
+        )
+        require(
+            run["init"]["tools"] == ["Skill"] and run["init"]["mcp_servers"] == [],
+            "trigger tools",
+        )
+        require(
+            run["model_requested"] == run["init"]["model"] == "claude-opus-5"
+            and run["assistant_models"] == ["claude-opus-5"]
+            and run["effort_requested"] == "high",
+            "native model/effort",
+        )
+        require(
+            run["init"]["plugins"]
+            == [
+                {
+                    "name": "mergecraft-scope-eval",
+                    "path": "<CANDIDATE_PLUGIN>",
+                    "source": "mergecraft-scope-eval@inline",
+                    "version": "0.0.0",
+                }
+            ]
+            and target in run["init"]["skills"],
+            "native plugin exclusivity",
+        )
+        argv = run["invocation"]["argv"]
+        require(
+            digest(json.dumps(argv, separators=(",", ":")))
+            == run["invocation"]["retained_argv_sha256"]
+            and run["invocation"]["redactions"]
+            and run["metadata_redactions"],
+            "native invocation/redaction binding",
+        )
+        expected_argv = [
+            "claude",
+            "-p",
+            "--verbose",
+            "--output-format",
+            "stream-json",
+            "--no-session-persistence",
+            "--session-id",
+            run["session_id"],
+            "--model",
+            "claude-opus-5",
+            "--effort",
+            "high",
+            "--permission-mode",
+            "dontAsk",
+            "--setting-sources",
+            "",
+            "--strict-mcp-config",
+            "--mcp-config",
+            '{"mcpServers":{}}',
+            "--no-chrome",
+            "--settings",
+            json.dumps(
+                {
+                    "disableAllHooks": True,
+                    "autoMemoryEnabled": False,
+                    "enabledPlugins": {},
+                    "claudeMdExcludes": ["**"],
+                },
+                separators=(",", ":"),
+            ),
+            "--restricted",
+            "--plugin-dir",
+            "<CANDIDATE_PLUGIN>",
+            "--tools",
+            "Skill",
+            "--allowedTools",
+            "Skill",
+            "--debug-file",
+            "<LOCAL_DEBUG_FILE>",
+        ]
+        require(
+            argv == expected_argv and run["init"]["permissionMode"] == "dontAsk",
+            "native configured controls",
+        )
+        require(
+            all(
+                hex_digest(run[key])
+                for key in ("command_sha256", "stdout_sha256", "stderr_sha256")
+            ),
+            "native raw artifact digests",
+        )
+        require(
+            all(t["name"] == "Skill" for t in run["tool_use"]),
+            "unexpected trigger tool call",
+        )
+        require(
+            run["exit_code"] == 0
+            and not run["timed_out"]
+            and run["result_is_error"] is False
+            and run["result_subtype"] == "success"
+            and not run["parse_errors"]
+            and not run["permission_denials"],
+            "trigger failure",
+        )
+        selected = [t["input"].get("skill") for t in run["tool_use"]]
+        require(
+            (selected == [target]) if case["should_trigger"] else (selected == []),
+            "native trigger decision",
+        )
+        successful = {
+            r["tool_use_id"]
+            for r in run["tool_results"]
+            if r.get("is_error") is not True
+            and r.get("content") == f"Launching skill: {target}"
+        }
+        require(
+            successful == {t["id"] for t in run["tool_use"]}
+            and len(run["tool_results"]) == len(selected),
+            "native Skill launch result",
+        )
+        body = read(f"{skill}/SKILL.md").split("---\n", 2)[2].lstrip("\n")
+        require(
+            len(run["skill_injections"]) == len(selected)
+            and all(
+                x["source_body_sha256"] == digest(body)
+                and x["source_body_exact_match"] is True
+                for x in run["skill_injections"]
+            ),
+            "native injected candidate",
+        )
+        for injection, call in zip(run["skill_injections"], run["tool_use"]):
+            expected_text = (
+                "Base directory for this skill: <CANDIDATE_SKILL_DIR>\n\n" + body
+            )
+            if call["input"].get("args"):
+                expected_text += "\n\nARGUMENTS: " + call["input"]["args"]
+            require(
+                injection["text"] == expected_text
+                and injection["retained_text_sha256"] == digest(expected_text)
+                and hex_digest(injection["original_text_sha256"])
+                and injection["redactions"],
+                "native source injection text",
+            )
+        observed = run["isolation"]
+        require(
+            observed["run_id"] == run_id
+            and observed["command_sha256"] == run["command_sha256"]
+            and hex_digest(observed["debug_sha256"]),
+            "native isolation artifact binding",
+        )
+        require(
+            observed["claudeMdExcludes"] == ["**"]
+            and observed["skill_directory_commands"] == 0
+            and observed["loaded_plugin_names"] == ["mergecraft-scope-eval"]
+            and observed["tools"] == ["Skill"]
+            and observed["mcp_servers"] == []
+            and observed["candidate_plugin_skills"] == 1
+            and observed["bundled_runtime_skill_descriptions_retained"] is True,
+            "native context isolation observations",
+        )
+        require(
+            observed["skill_injections"]
+            == [
+                {
+                    key: x[key]
+                    for key in (
+                        "original_text_sha256",
+                        "source_body_sha256",
+                        "source_body_exact_match",
+                    )
+                }
+                for x in run["skill_injections"]
+            ],
+            "native injection observation binding",
+        )
+        require(
+            grade["response_sha256"] == run["response_sha256"]
+            and grade["grader_task"]
+            and grade["grader_distinct_from_executor"] is True,
+            "trigger grade binding",
+        )
+        require(
+            grade["expected_should_trigger"] == case["should_trigger"]
+            and grade["actual_skill_calls"] == selected
+            and grade["passed"] is True
+            and grade["evidence"],
+            "trigger grade",
+        )
+    require(
+        len(
+            [
+                r
+                for r in experiment["native_and_trigger_runs"]
+                if r["id"].split("/")[0] == selected_trigger
+            ]
+        )
+        == 13,
+        "extra selected trigger run",
+    )
+    require(grading["candidate_passed"] is True, "candidate not passed")
+
+
+def validate_relation_evidence(repo_root: Path) -> None:
+    """Bind selected isolated observations and independent grades to current inputs.
+
+    Retained hashes prove consistency, not provider authenticity or the truth of
+    a locally authored report. Unselected diagnostics cannot qualify a candidate.
+    """
+    try:
+        _validate_relation_evidence(repo_root)
+    except ContractError as error:
+        raise ContractError(f"relation evaluation evidence: {error}") from error
+    except (
+        OSError,
+        KeyError,
+        TypeError,
+        IndexError,
+        AttributeError,
+        UnicodeError,
+        json.JSONDecodeError,
+    ) as error:
+        raise ContractError(
+            "relation evaluation evidence: missing or malformed artifact"
+        ) from error
 
 def validate_external_eval_tree(repo_root: Path) -> None:
     root = repo_root / EVAL_RELATIVE
@@ -1652,12 +2384,47 @@ def validate_topology(root: Path) -> None:
                 "scripts",
                 "modules",
                 "calls",
+                "external_calls",
                 "conditional_calls",
                 "operations",
                 "contract",
             },
             f"topology component fields drift: {skill}",
         )
+        require(
+            component["external_calls"]
+            == ([PROSEWEAVING_CALL] if skill in PROSEWEAVING_CALLERS else []),
+            f"external writing call declaration drift: {skill}",
+        )
+        for external_call in component["external_calls"]:
+            plugin, _, name = external_call.partition(":")
+            target = root.parent
+            for part in (plugin, "skills", name, "SKILL.md"):
+                target /= part
+                require(
+                    not target.is_symlink(),
+                    f"external call traverses a symlink: {external_call}",
+                )
+            require(
+                target.is_file(),
+                f"external call does not resolve to a callable skill: {external_call}",
+            )
+            external = load_json(root.parent / plugin, "topology.json")
+            external_skills = external.get("skills") if isinstance(external, dict) else None
+            external_skill = (
+                external_skills.get(name) if isinstance(external_skills, dict) else None
+            )
+            owns = external_skill.get("owns") if isinstance(external_skill, dict) else None
+            require(
+                isinstance(owns, list)
+                and all(isinstance(capability, str) for capability in owns)
+                and {
+                    "human-facing-register",
+                    "evidence-in-prose",
+                    "post-draft-edit-pass",
+                }.issubset(owns),
+                f"external writing capabilities missing: {external_call}",
+            )
         require(
             component["entrypoint"] == f"skills/{skill}/SKILL.md"
             and component["interface"] == f"skills/{skill}/agents/openai.yaml",
@@ -1863,12 +2630,13 @@ def validate_topology(root: Path) -> None:
         {handoff["owner"] for handoff in resume_handoffs}
         == {
             "addressing-pr-review-feedback",
+            "maintaining-issue-pr-relations",
             "getting-prs-ready-for-review",
             "getting-prs-merged",
             "operation:focused-ci",
             "versionkeeping:resolving-merge-conflicts",
         }
-        and len(resume_handoffs) == 5
+        and len(resume_handoffs) == 6
         and [(handoff["trigger"], handoff["owner"]) for handoff in resume_handoffs[:2]]
         == [
             (
@@ -2715,7 +3483,7 @@ def validate_atlas_split(repo_root: Path, root: Path) -> None:
         "writer content-only terminal boundary drift",
     )
     require(
-        "bare `clean` receipt" in writer,
+        "bare `clean` hand-back status" in normalized_writer,
         "writer independent review gate drift",
     )
     for requirement in (
@@ -3206,27 +3974,39 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
             f"raw eval manifest schema drift: {skill}",
         )
         evals = document["evals"]
+        case_names = (
+            tuple(name for name, _ in WRITER_EVAL_CASE_FIXTURES)
+            if skill == "writing-reviewable-pr-descriptions"
+            else tuple(Path(fixture).stem for fixture in fixture_names)
+        )
         require(
             isinstance(evals, list) and len(evals) == len(fixture_names),
             f"raw eval coverage drift: {skill}",
         )
-        for position, (item, fixture_name) in enumerate(zip(evals, fixture_names)):
+        for position, (item, fixture_name, case_name) in enumerate(
+            zip(evals, fixture_names, case_names)
+        ):
             require(
                 isinstance(item, dict)
                 and set(item)
-                == {
+                == ({
                     "id",
                     "name",
                     "prompt",
                     "expected_output",
                     "files",
                     "expectations",
-                }
+                } | ({"caller"} if skill == "maintaining-issue-pr-relations" else set()))
                 and type(item["id"]) is int
                 and item["id"] == position
-                and item["name"] == Path(fixture_name).stem,
+                and item["name"] == case_name,
                 f"raw eval item schema drift: {skill}",
             )
+            if skill == "maintaining-issue-pr-relations":
+                require(
+                    item["caller"] in PUBLIC_SKILLS,
+                    "relation eval caller is outside the public lifecycle",
+                )
             fixture = f"{skill}/fixtures/{fixture_name}"
             require(
                 item["files"] == [fixture],
@@ -3294,6 +4074,7 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
 def validate_writer_publisher_trigger_evals(repo_root: Path) -> None:
     trigger_maps: dict[str, dict[str, bool]] = {}
     for skill in (
+        "maintaining-issue-pr-relations",
         "writing-reviewable-pr-descriptions",
         "publishing-reviewable-prs",
     ):
@@ -4718,7 +5499,7 @@ def validate_runtime_contracts(root: Path) -> None:
     require(
         "tricritical:loop" in writer
         and "exact candidate title/body bytes" in normalized_writer
-        and "bare `clean` receipt" in normalized_writer
+        and "bare `clean` hand-back status" in normalized_writer
         and "no forge or source authority" in normalized_writer,
         "writer independent review gate drift",
     )
@@ -4842,18 +5623,19 @@ class ContentLockWriteSnapshot(NamedTuple):
     plugin_entries: tuple[tuple[str, InputEntry], ...]
     eval_entries: tuple[tuple[str, InputEntry], ...]
     atlas_entries: tuple[tuple[str, InputEntry], ...]
-    external_topologies: tuple[tuple[str, InputEntry], ...]
+    external_inputs: tuple[tuple[str, InputEntry], ...]
     retirement_ledger: InputEntry
     lock_parent: InputEntry
     lock_entry: InputEntry
 
 
-def capture_external_topologies(
+def capture_external_inputs(
     repo_root: Path,
 ) -> tuple[tuple[str, InputEntry], ...]:
     relatives = {Path("plugins")}
-    for relative in EXTERNAL_TOPOLOGY_RELATIVES:
-        relatives.update((relative.parent, relative))
+    for relative in EXTERNAL_INPUT_RELATIVES:
+        relatives.add(relative)
+        relatives.update(parent for parent in relative.parents if parent != Path("."))
     return tuple(
         (
             relative.as_posix(),
@@ -4881,7 +5663,7 @@ def capture_content_lock_write_snapshot(
             repo_root / ATLAS_RELEASE_RELATIVE,
             error_type=ContractError,
         ),
-        external_topologies=capture_external_topologies(repo_root),
+        external_inputs=capture_external_inputs(repo_root),
         retirement_ledger=capture_input_entry(
             repo_root / RETIREMENT_LEDGER_RELATIVE,
             error_type=ContractError,
@@ -4940,28 +5722,33 @@ def _projection_replacement_plan(
     snapshot: ContentLockWriteSnapshot,
 ) -> dict[Path, tuple[bytes, int]]:
     entries = _snapshot_entries(snapshot)
-    source_entry = entries.get(MARKDOWN_AUTHORING_SOURCE)
-    require(
-        source_entry is not None
-        and source_entry.kind == "regular"
-        and source_entry.mode is not None
-        and source_entry.sha256 is not None,
-        "canonical Markdown authoring source snapshot is invalid",
-    )
-    source = read_bytes(root, MARKDOWN_AUTHORING_SOURCE)
-    require(
-        hashlib.sha256(source).hexdigest() == source_entry.sha256,
-        "canonical Markdown authoring source changed after snapshot",
-    )
     replacements: dict[Path, tuple[bytes, int]] = {}
-    for skill, local_path in MARKDOWN_AUTHORING_PROJECTIONS.items():
-        relative = f"skills/{skill}/{local_path}"
-        entry = entries.get(relative)
+    for source_path, projections, label in (
+        (MARKDOWN_AUTHORING_SOURCE, MARKDOWN_AUTHORING_PROJECTIONS, "Markdown authoring"),
+        (REVIEW_VOICE_SOURCE, REVIEW_VOICE_PROJECTIONS, "review voice"),
+    ):
+        source_entry = entries.get(source_path)
         require(
-            entry is not None and entry.kind == "regular" and entry.mode is not None,
-            f"writer-local Markdown authoring projection snapshot is invalid: {skill}",
+            source_entry is not None
+            and source_entry.kind == "regular"
+            and source_entry.mode is not None
+            and source_entry.sha256 is not None,
+            f"canonical {label} source snapshot is invalid",
         )
-        replacements[root / relative] = (source, entry.mode)
+        source = read_bytes(root, source_path)
+        require(
+            hashlib.sha256(source).hexdigest() == source_entry.sha256,
+            f"canonical {label} source changed after snapshot",
+        )
+        for skill, local_path in projections.items():
+            relative = f"skills/{skill}/{local_path}"
+            entry = entries.get(relative)
+            require(
+                entry is not None and entry.kind == "regular" and entry.mode is not None,
+                f"writer-local {label} projection snapshot is invalid: {skill}",
+            )
+            if entry.sha256 != source_entry.sha256:
+                replacements[root / relative] = (source, entry.mode)
     return replacements
 
 
@@ -5004,6 +5791,10 @@ def write_markdown_projections(
         )
         validate_markdown_authoring_projections(root)
 
+    if not replacements:
+        recheck(frozenset())
+        verify()
+        return
     replace_generated_artifacts(
         repo_root,
         replacements,
@@ -5102,8 +5893,8 @@ def write_content_lock(
                 error_type=ContractError,
             )
             == snapshot.atlas_entries
-            and capture_external_topologies(repo_root)
-            == snapshot.external_topologies
+            and capture_external_inputs(repo_root)
+            == snapshot.external_inputs
             and capture_input_entry(
                 repo_root / RETIREMENT_LEDGER_RELATIVE,
                 error_type=ContractError,
@@ -5168,6 +5959,7 @@ def validate(
     check_projections: bool = True,
     check_markdown_evidence: bool = True,
     check_feedback_evidence: bool = True,
+    check_relation_evidence: bool = True,
     emit_success: bool = True,
 ) -> None:
     root = locate_plugin(repo_root)
@@ -5191,6 +5983,8 @@ def validate(
     validate_portability(root)
     validate_atlas_split(repo_root, root)
     validate_external_eval_tree(repo_root)
+    if check_relation_evidence:
+        validate_relation_evidence(repo_root)
     validate_retirement_contribution_ledger(repo_root, root)
     validate_behavior_corpus(repo_root)
     validate_merge_eval_isolation(repo_root)
@@ -5220,17 +6014,42 @@ def main() -> int:
     writing = parser.add_mutually_exclusive_group()
     writing.add_argument("--write-content-lock", action="store_true")
     writing.add_argument("--write-markdown-projections", action="store_true")
+    writing.add_argument(
+        "--prepare-content-lock",
+        action="store_true",
+        help="prepare the whole plugin's lock without checking behavior evidence; candidate remains unqualified",
+    )
     parser.add_argument(
         "--source-stage",
         action="store_true",
         help="validate an unpinned public candidate without accepting it as a release",
     )
     args = parser.parse_args()
+    if args.prepare_content_lock and (args.skill is not None or args.source_stage):
+        parser.error("--prepare-content-lock cannot be combined with --skill or --source-stage")
     try:
         try:
             repository = Path(os.path.abspath(args.repository.expanduser()))
         except RuntimeError as error:
             raise ContractError(str(error)) from error
+        if args.prepare_content_lock:
+            snapshot = capture_content_lock_write_snapshot(repository)
+            structural_checks = dict(
+                check_projections=True,
+                check_markdown_evidence=False,
+                check_feedback_evidence=False,
+                check_relation_evidence=False,
+                emit_success=False,
+            )
+            validate(repository, check_content_lock=False, **structural_checks)
+            require_content_lock_write_snapshot_unchanged(repository, snapshot)
+            write_content_lock(repository, snapshot=snapshot)
+            validate(repository, check_content_lock=True, **structural_checks)
+            print(
+                "Mergecraft content lock prepared; behavior evidence not checked; "
+                "candidate unqualified."
+            )
+            return 0
         if args.write_content_lock or args.write_markdown_projections:
             snapshot = capture_content_lock_write_snapshot(repository)
             validate(
@@ -5241,6 +6060,7 @@ def main() -> int:
                 check_projections=not args.write_markdown_projections,
                 check_markdown_evidence=not args.write_markdown_projections,
                 check_feedback_evidence=not args.write_markdown_projections,
+                check_relation_evidence=not args.write_markdown_projections,
                 emit_success=False,
             )
             require_content_lock_write_snapshot_unchanged(repository, snapshot)
@@ -5255,6 +6075,7 @@ def main() -> int:
             check_content_lock=False if args.write_markdown_projections else None,
             check_markdown_evidence=not args.write_markdown_projections,
             check_feedback_evidence=not args.write_markdown_projections,
+            check_relation_evidence=not args.write_markdown_projections,
             emit_success=not args.write_markdown_projections,
         )
     except (

@@ -22,7 +22,8 @@ finding because of elapsed time or an execution limit.
 
 It owns one bounded cycle at a time:
 
-1. Freeze exact candidate bytes and the current increment. Record their
+1. Freeze exact candidate bytes, the current increment, and the assurance mode
+   from the shared invocation boundary. Record their
    identities, original authority, declared verification, and the dependency
    identity of each selected reviewer scope. Recheck identity around every
    read-only phase; block drift.
@@ -64,5 +65,8 @@ Return only `clean`, `clean / degraded`, `incomplete / non-clean`, `blocked`,
 `failed_verification`, or `needs operator decision`, with the final identity,
 frozen current increment, scope freshness, failures and limits,
 adjudication/revision, verification provenance/result, findings, fog, and owner.
+The ordinary result is a same-leader hand-back, not an authenticated terminal
+projection. Preserve the assurance mode and its limits; require the retained
+evidence contract only when that stronger evidence was selected.
 Bare `clean` requires complete independent review of every frozen reviewer scope
 and successful declared verification of the exact unchanged final candidate.

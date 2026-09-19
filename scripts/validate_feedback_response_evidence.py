@@ -13,6 +13,26 @@ CANDIDATE_PATHS = (
     f"{SKILL}/SKILL.md",
     f"{SKILL}/references/interaction-authority.md",
     f"{SKILL}/references/github-markdown-authoring.md",
+    f"{SKILL}/references/review-voice.md",
+    "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+    "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+    "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+    "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md",
+)
+PROVENANCE_PATHS = (
+    "plugins/mergecraft/references/review-voice.md",
+    "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/review-voice.md",
+    "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md",
+    "plugins/mergecraft/topology.json",
+    "plugins/proseweaving/topology.json",
+)
+METHOD_PATHS = (
+    "scripts/validate_feedback_response_evidence.py",
+    "tests/test_feedback_response_evidence.py",
+    "scripts/feedback_response_evals.py",
+    "tests/test_feedback_response_evals.py",
+    "docs/agents/mergecraft-feedback-evaluations.md",
+    "plugins/mergecraft/README.md",
 )
 SOURCE_GLOBS = (
     f"{SKILL}/scripts/*.py",
@@ -230,7 +250,7 @@ def read_source(root, relative):
 
 
 def source_paths(root, cases):
-    paths = set(CANDIDATE_PATHS) | {MANIFEST}
+    paths = set(CANDIDATE_PATHS) | set(PROVENANCE_PATHS) | set(METHOD_PATHS) | {MANIFEST}
     for case in cases:
         paths.update("evals/mergecraft/skills/" + name for name in case["files"])
     for pattern in SOURCE_GLOBS:
@@ -559,6 +579,40 @@ def retained_experiment(document):
     }
 
 
+def _validated_record_grades(record, expectations, *, context=""):
+    """Admit the same typed grade pair for current and predecessor records."""
+    require(
+        isinstance(record["grading_response"], str)
+        and record["grading_response"].strip()
+        and record["grading_response_sha256"] == digest(record["grading_response"]),
+        f"{context}grading response digest mismatch",
+    )
+    response = strict_json(record["grading_response"])
+    require(
+        isinstance(response, dict)
+        and set(response) == {"expectations"}
+        and isinstance(response["expectations"], list),
+        f"{context}grading response schema drift",
+    )
+    grades = response["expectations"]
+    require(
+        canonical(record["grades"]) == canonical(grades),
+        f"{context}selected grades differ from grading response",
+    )
+    require(len(grades) == len(expectations), f"{context}grade count drift")
+    for grade, expectation in zip(grades, expectations):
+        require(
+            isinstance(grade, dict)
+            and set(grade) == {"id", "passed", "evidence"}
+            and grade["id"] == expectation["id"]
+            and type(grade["passed"]) is bool
+            and isinstance(grade["evidence"], str)
+            and grade["evidence"].strip(),
+            f"{context}grade contract drift",
+        )
+    return grades
+
+
 def _validate_schema2_predecessor(prior):
     """Validate closed schema-2 evidence without rebinding it to current sources."""
     require(
@@ -751,31 +805,10 @@ def _validate_schema2_predecessor(prior):
             and canonical(grading_request_value) == record["grading_request"],
             "schema2 predecessor canonical grading request drift",
         )
-        require(
-            isinstance(record["grading_response"], str)
-            and record["grading_response"].strip()
-            and record["grading_response_sha256"] == digest(record["grading_response"]),
-            "schema2 predecessor grading response digest mismatch",
+        grades = _validated_record_grades(
+            record, expectations, context="schema2 predecessor "
         )
-        grading_response = strict_json(record["grading_response"])
-        require(
-            isinstance(grading_response, dict)
-            and set(grading_response) == {"expectations"}
-            and isinstance(grading_response["expectations"], list)
-            and record["grades"] == grading_response["expectations"]
-            and len(record["grades"]) == len(expectations),
-            "schema2 predecessor grading response drift",
-        )
-        for grade, expectation in zip(record["grades"], expectations):
-            require(
-                isinstance(grade, dict)
-                and set(grade) == {"id", "passed", "evidence"}
-                and grade["id"] == expectation["id"]
-                and type(grade["passed"]) is bool
-                and isinstance(grade["evidence"], str)
-                and grade["evidence"].strip(),
-                "schema2 predecessor grade contract drift",
-            )
+        for grade, expectation in zip(grades, expectations):
             key = (expectation["id"], record["variant"])
             totals[key] = totals.get(key, 0) + int(grade["passed"])
     require(seen == expected_coordinates, "schema2 predecessor coordinate inventory drift")
@@ -1149,32 +1182,8 @@ def validate(root, evidence_path=EVIDENCE, *, document=None):
                 entries,
             )
             require(record["grading_request"] == expected_grading_request, "canonical grading request mismatch")
-            require(
-                isinstance(record["grading_response"], str)
-                and record["grading_response"].strip()
-                and record["grading_response_sha256"] == digest(record["grading_response"]),
-                "grading response digest mismatch",
-            )
-            parsed_grading_response = strict_json(record["grading_response"])
-            require(
-                isinstance(parsed_grading_response, dict)
-                and set(parsed_grading_response) == {"expectations"}
-                and isinstance(parsed_grading_response["expectations"], list),
-                "grading response schema drift",
-            )
-            parsed_grades = parsed_grading_response["expectations"]
-            require(record["grades"] == parsed_grades, "selected grades differ from grading response")
-            require(len(parsed_grades) == len(entries), "grade count drift")
-            for grade, entry in zip(parsed_grades, entries):
-                require(
-                    isinstance(grade, dict)
-                    and set(grade) == {"id", "passed", "evidence"}
-                    and grade["id"] == entry["id"]
-                    and type(grade["passed"]) is bool
-                    and isinstance(grade["evidence"], str)
-                    and grade["evidence"].strip(),
-                    "grade contract drift",
-                )
+            grades = _validated_record_grades(record, entries)
+            for grade, entry in zip(grades, entries):
                 key = (entry["id"], record["variant"])
                 totals[key] = totals.get(key, 0) + int(grade["passed"])
         require(seen == expected_coordinates, "record coordinate inventory drift")

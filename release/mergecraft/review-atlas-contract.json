@@ -14,13 +14,20 @@
     "contributions": [
       {
         "id": "document-navigation",
-        "source_headings": ["Contents"],
+        "source_headings": [
+          "Contents"
+        ],
         "disposition": "public-core",
         "destination_anchor": "purpose"
       },
       {
         "id": "purpose-context-goals",
-        "source_headings": ["Summary", "Context", "Goals", "Non-goals"],
+        "source_headings": [
+          "Summary",
+          "Context",
+          "Goals",
+          "Non-goals"
+        ],
         "disposition": "public-core",
         "destination_anchor": "purpose"
       },
@@ -53,7 +60,9 @@
       },
       {
         "id": "adaptive-lenses",
-        "source_headings": ["Adaptive lens decomposition"],
+        "source_headings": [
+          "Adaptive lens decomposition"
+        ],
         "disposition": "public-core",
         "destination_anchor": "adaptive-lens-decomposition"
       },
@@ -72,20 +81,28 @@
       },
       {
         "id": "worked-application-stack-map",
-        "source_headings": ["Current stack lens map"],
+        "source_headings": [
+          "Current stack lens map"
+        ],
         "disposition": "private-overlay",
         "private_overlay_category": "worked-application",
         "destination_anchor": null
       },
       {
         "id": "delivery-core",
-        "source_headings": ["PR-body delivery", "Publication safety"],
+        "source_headings": [
+          "PR-body delivery",
+          "Publication safety"
+        ],
         "disposition": "public-core",
         "destination_anchor": "pr-body-delivery"
       },
       {
         "id": "concrete-private-delivery",
-        "source_headings": ["PR-body delivery", "Publication safety"],
+        "source_headings": [
+          "PR-body delivery",
+          "Publication safety"
+        ],
         "disposition": "private-overlay",
         "private_overlay_category": "concrete-routes-attachments-and-access",
         "destination_anchor": null
@@ -104,7 +121,9 @@
       },
       {
         "id": "testing",
-        "source_headings": ["Testing strategy"],
+        "source_headings": [
+          "Testing strategy"
+        ],
         "disposition": "public-core",
         "destination_anchor": "testing-strategy"
       },
@@ -137,7 +156,10 @@
     "file_requirement": "regular-no-symlink",
     "load_condition": "present-and-scope-matches",
     "absence": "continue-public-core",
-    "allowed_authority": ["instance-data", "stricter-local-policy"],
+    "allowed_authority": [
+      "instance-data",
+      "stricter-local-policy"
+    ],
     "forbidden_authority": [
       "public-contract-redefinition",
       "weaker-policy",
@@ -162,15 +184,19 @@
   "visual_budgets": {
     "lane_centerline_min_css_px": 16,
     "clearance_min_css_px": 12,
-    "desktop_viewports_css_px": ["1024x768", "1280x800", "1512x982"],
+    "desktop_viewports_css_px": [
+      "1024x768",
+      "1280x800",
+      "1512x982"
+    ],
     "below_1024": "unsupported",
     "preview_width_css_px": 640,
     "preview_text_min_css_px": 12
   },
   "prose_sha256": {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
-    "writer": "f4f3a36187a4fb7d7bcff351b661a3c800d388b4fe024cebe4eee0e0b96efab0",
-    "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
+    "writer": "bc70fc7b35028ed5b4067036d50b3f5d0b95df42750412ae06b6d1086205e7f9",
+    "body": "73b62f1fd44edaa41df6a7195fb5ee2bb39e152bede253370f0da59bf645c073",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec"
   }
 }

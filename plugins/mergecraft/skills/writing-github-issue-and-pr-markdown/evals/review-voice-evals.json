@@ -1,0 +1,104 @@
+{
+  "skill_name": "writing-github-issue-and-pr-markdown",
+  "evals": [
+    {
+      "id": 1,
+      "name": "review-ask-ladder",
+      "prompt": "Using the fixture, draft the requested review comment bodies. Do not post or use live forge tools.",
+      "fixture_paths": [
+        "evals/review-voice/fixtures/review-ask-ladder.md"
+      ],
+      "expected_output": "Distinct review asks preserve the supplied blocker, suggestion, cleanup, and nonblocking judgment.",
+      "expectations": [
+        {
+          "id": "review-ask-ladder-1",
+          "text": "The suggestion is declinable, the blocker asks for the necessary remedy directly and explains its consequence, cleanup is collaborative, and the confident nonblocking recommendation remains a judgment rather than a requirement.",
+          "severity": "quality"
+        },
+        {
+          "id": "review-ask-ladder-2",
+          "text": "Each comment connects one coherent ask to its supplied finding; none adds an unrelated request or invents observed execution.",
+          "severity": "quality"
+        },
+        {
+          "id": "review-ask-ladder-3",
+          "text": "The body values carry the findings in readable prose without imposing a fixed opening word, paragraph count, or pronoun restriction.",
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "review-summary",
+      "prompt": "Using the fixture, draft only the unpublished submitted-review body. Do not post or use live forge tools.",
+      "fixture_paths": [
+        "evals/review-voice/fixtures/review-summary.md"
+      ],
+      "expected_output": "A review summary communicates the current verdict, resolved issue, remaining blockers, and limits of the observed checks.",
+      "expectations": [
+        {
+          "id": "review-summary-1",
+          "text": "The summary leads with the current review verdict and clearly explains what the new revision resolved.",
+          "severity": "quality"
+        },
+        {
+          "id": "review-summary-2",
+          "text": "It synthesizes the two remaining blockers without duplicating each inline thread, and distinguishes passed focused tests from unrun integration behavior.",
+          "severity": "quality"
+        },
+        {
+          "id": "review-summary-3",
+          "text": "It does not imply approval, merge readiness, complete coverage, or a change to review state.",
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "issue-proposal-and-review-reply",
+      "prompt": "Using the fixture, draft the two exact body values. Do not post or use live forge tools.",
+      "fixture_paths": [
+        "evals/review-voice/fixtures/issue-proposal-and-review-reply.md"
+      ],
+      "expected_output": "The standalone proposal presents both open decisions; the reply reports relevant first-person verification without manufacturing an ask.",
+      "expectations": [
+        {
+          "id": "issue-proposal-and-review-reply-1",
+          "text": "The Issue body gives both unresolved decisions enough context and uses a proposal register rather than inheriting threaded-comment restrictions.",
+          "severity": "quality"
+        },
+        {
+          "id": "issue-proposal-and-review-reply-2",
+          "text": "The reply answers the reviewer with the supplied test observation; a no-ask response is valid and useful first-person evidence remains welcome.",
+          "severity": "quality"
+        },
+        {
+          "id": "issue-proposal-and-review-reply-3",
+          "text": "The old blanket conversational framing does not turn the standalone proposal into a chat update or settle its unanswered policy choices.",
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "format-only-review-text",
+      "prompt": "Using the fixture, return the requested exact JSON string and nothing else. Do not use tools.",
+      "fixture_paths": [
+        "evals/review-voice/fixtures/format-only-review-text.md"
+      ],
+      "expected_output": "Only the authorized physical-line join changes; prose, retained bytes, and terminal-newline state remain intact.",
+      "expectations": [
+        {
+          "id": "format-only-review-text-1",
+          "text": "The decoded body differs from the supplied preimage only by replacing the newline between case and and with one space.",
+          "severity": "quality"
+        },
+        {
+          "id": "format-only-review-text-2",
+          "text": "Writing guidance introduces no new ask, evidence, wording change, or operational claim.",
+          "severity": "quality"
+        }
+      ]
+    }
+  ]
+}

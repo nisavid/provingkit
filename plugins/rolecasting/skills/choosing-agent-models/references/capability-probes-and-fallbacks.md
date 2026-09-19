@@ -3,7 +3,8 @@
 ## Prove An Exact Pair
 
 1. Identify the exact target family, surface, version, executor, and transport
-   from the invocation topology receipt.
+   from the frozen invocation plan; an explicitly witnessed consumer also binds
+   the authenticated invocation topology receipt.
 2. Require a currently fresh catalog observation. For Daybreak, including continuations, reuse an unchanged observation inside its declared freshness window; refresh only when missing, stale, or invalidated. Use `codex debug models` for a needed Codex refresh or the target harness's live model catalog for another target.
 3. Inspect the target executor tool or schema for accepted model slugs and reasoning efforts.
 4. Record the exact live-catalog and target-executor-schema intersection, and pass only a pair present in both.
@@ -13,6 +14,21 @@ remote API, or peer accepts the pair. Proof for one product surface does not
 prove its paired surface. Model support also does not prove relationship,
 ownership, transport, or assurance. When the target exposes no selection
 fields, omit them and use an appropriate inherited or environment-fixed model.
+
+## Return The Selection Record
+
+For ordinary same-leader work, return `adapter:model-selection-record` bound to
+the dispatch identity, execution role, exact target, selected
+model and effort or inherited fixed-model binding, current catalog and executor
+schema observations, and existing selection authority. Record the source and
+freshness of those observations. This record establishes the selected request
+and available capability; it does not attest the model that actually executed.
+The completed plan binds this record's identity before dispatch.
+
+An explicitly witnessed consumer additionally requires its authenticated
+`adapter:model-selection-receipt`. An ordinary record cannot substitute for
+that receipt, create issuer authority, or increase any assurance dimension.
+Stronger model or effective-authority minima still block an insufficient route.
 
 Model selection does not grant authority to invoke a model, peer, CLI, API, or external harness. Capability inspection and any proof invocation must remain within the authority already granted by the operator and worker contract.
 

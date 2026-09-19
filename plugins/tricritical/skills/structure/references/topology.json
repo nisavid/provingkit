@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "skills": {
     "review": {
       "role": "coordinator",
@@ -8,10 +8,20 @@
       "requires_original_mutation_authority": false,
       "repeats": false,
       "requires": [
-        "adapter:model-selection-receipt",
-        "adapter:rolecasting-invocation-topology-receipt"
+        "adapter:model-selection-record",
+        "adapter:rolecasting-invocation-plan"
       ],
-      "calls": ["intent", "runtime", "structure"]
+      "calls": [
+        "intent",
+        "runtime",
+        "structure"
+      ],
+      "conditional_requires": {
+        "witnessed": [
+          "adapter:model-selection-receipt",
+          "adapter:rolecasting-invocation-topology-receipt"
+        ]
+      }
     },
     "intent": {
       "role": "critic",
@@ -20,7 +30,8 @@
       "requires_original_mutation_authority": false,
       "repeats": false,
       "requires": [],
-      "calls": []
+      "calls": [],
+      "conditional_requires": {}
     },
     "runtime": {
       "role": "critic",
@@ -29,7 +40,8 @@
       "requires_original_mutation_authority": false,
       "repeats": false,
       "requires": [],
-      "calls": []
+      "calls": [],
+      "conditional_requires": {}
     },
     "structure": {
       "role": "critic",
@@ -38,7 +50,8 @@
       "requires_original_mutation_authority": false,
       "repeats": false,
       "requires": [],
-      "calls": []
+      "calls": [],
+      "conditional_requires": {}
     },
     "adjudicate": {
       "role": "adjudicator",
@@ -47,7 +60,8 @@
       "requires_original_mutation_authority": false,
       "repeats": false,
       "requires": [],
-      "calls": []
+      "calls": [],
+      "conditional_requires": {}
     },
     "revise": {
       "role": "reviser",
@@ -56,7 +70,8 @@
       "requires_original_mutation_authority": true,
       "repeats": false,
       "requires": [],
-      "calls": []
+      "calls": [],
+      "conditional_requires": {}
     },
     "loop": {
       "role": "loop",
@@ -65,7 +80,12 @@
       "requires_original_mutation_authority": true,
       "repeats": true,
       "requires": [],
-      "calls": ["review", "adjudicate", "revise"]
+      "calls": [
+        "review",
+        "adjudicate",
+        "revise"
+      ],
+      "conditional_requires": {}
     }
   }
 }

@@ -21,7 +21,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
-    def test_rolecasting_has_exactly_twenty_eight_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_exactly_thirty_one_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -40,6 +40,9 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "unrelated-task-model-is-not-a-route",
                 "daybreak-routing-matrix",
                 "daybreak-route-evidence",
+                "engineering-and-security-judgment",
+                "routing-block-diagnosis",
+                "follow-up-review-classification",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
@@ -344,6 +347,13 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         self.assertIn(
             "product-attested ChatGPT Codex child",
             sources["dispatch_evidence"],
+        )
+        self.assertIn("Explicitly witnessed", sources["dispatch_evidence"])
+        self.assertIn("adapter:rolecasting-invocation-plan", sources["delegating"])
+        self.assertIn("adapter:model-selection-record", sources["choosing"])
+        self.assertIn(
+            "Neither requires Task Witness or authenticated receipt issuance",
+            sources["topology_receipt"],
         )
         self.assertIn("ChatGPT Codex", sources["foreign_peers"])
         self.assertIn("Codex CLI/TUI", sources["foreign_peers"])

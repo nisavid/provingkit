@@ -24,13 +24,11 @@ leaf actuator. Perform exactly one authorized response intent per invocation.
    thread is outdated or resolved. A PR conversation comment or submitted-review
    body receives a new top-level PR conversation comment. Keep a review body and
    its inline comments separate; a duplicate disposition may require no response.
-3. Compose the response using the selected Mergecraft review-voice and Tidesmith
-   writing policy before fixing its bytes. Record the selected policy sources
-   and any unavailable route. Where the selected register policy is unavailable,
-   the client's ambient writing instructions govern; do not claim that missing
-   policy was loaded or evaluated. Policy shapes wording and never selects the
-   operation or grants authority. State the evidence naturally, without a
-   formulaic acknowledgement. Every top-level response includes a natural,
+3. Read [the review-voice reference](references/review-voice.md) and invoke
+   `proseweaving:writing-for-people` when available before fixing the response
+   bytes. Follow that reference's composition and absent-plugin rules; record
+   the selected source revision and any unavailable route outside the body.
+   Every top-level response includes a natural,
    human-visible permalink to its exact source, such as “I applied
    [your suggestion](https://github.com/OWNER/REPO/pull/123#issuecomment-456).”
 4. Invoke the `github-markdown-content` portable writer operation through the generated

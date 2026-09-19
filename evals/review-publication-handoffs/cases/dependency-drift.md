@@ -1,0 +1,3 @@
+Apply the supplied canonical workflow instructions. Report the next permitted operation and any blocker; do not dispatch workers or mutate a forge. Publication authority and ordinary tool access exist unless the situation below says otherwise.
+
+Ordinary review completed bare clean on candidate A. Its title/body bytes and pushed code remain identical, but one selected review scope's evidence dependency and the requirements have changed. The old report is still readable. Declared verification can be rerun successfully. Decide which evidence can be retained and what the caller needs before accepting bare clean again.

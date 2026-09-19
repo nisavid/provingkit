@@ -1,0 +1,848 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "source": {
+        "path": "evals/proseweaving/writing-register/trigger-evals.json",
+        "sha256": "26ba30d5e537ec5deb1388864e80b85594069ae8dddfda2b954d14682e6bbde9"
+      },
+      "pointer": "",
+      "owners": [
+        "proseweaving/writing-for-people"
+      ],
+      "role": "current-corpus",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/blob/2d30a002ea4d2c3e8c256d6966a28ba6ff4e0286/evals/proseweaving/writing-register/README.md",
+        "mapping_sha256": "0d2790d6b5e850df1e72a794abfc3fa57e0a61b922f1c48c6ec1c71829c73e84",
+        "evidence": [
+          "https://github.com/nisavid/provingkit/blob/2d30a002ea4d2c3e8c256d6966a28ba6ff4e0286/evals/proseweaving/writing-register/discovery.json"
+        ]
+      }
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/0",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "42c78a16c653273b555b82e4ec0110bee48d06772179614fa100d56456ba63ab"
+      },
+      "rationale": "Retain the actual four-condition comparison selection; it is not a newly adopted ordinary application."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/1",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "50f966019c186f81c2e9e83bfe7a72661a3ef8ffb14c5bc6b86e34cce2e10f9f"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/2",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "f060afcd2260af30be8945605a35af0db374d7aaa0a81efb2a6f64150147f087"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/3",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "4b39997359c414511fb9603b3d52cb20e68ab5e8b28a84e9ba84f399de77f1a6"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/4",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "d21b3d9f491bda0ae054f7cef42160835c3abe83d50bd3f4d29dbb9df357756a"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/5",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "bb4478ef6bd475dde529ebf96df2f879bbe439349c1f85209c4e3a50703e2a82"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/6",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "616023ae1dd3b2d04a1fa1479cc442a647fc7db3c38c5dee27dce7f765a3d7eb"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/7",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "a49a83c8083538401c9f4f383ec8c8ce60769b22b42f45d2bd95be1767a6b34f"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/8",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "91d2791ae36f0734dcdcbc710bb81d55bf6973f8b5f4d3102a64ce6db645473e"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/9",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "e3409d65151b2482cee230b016d111c88e4bb4176432c2695617a5cb8682b04f"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/10",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "0046ae33ff771434e9ccf584b94d89e1484b2f0bc698d0c35fd728314904c6bf"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/11",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "54f033c7da92729907265f5b49a1c2fd42b1abeb04b9745291b476c5ed3af5e1"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/12",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "06c2821e860cb7acfa71be982012b83f067cd5941f42246489b6008730076592"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/13",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "6d84c5d9623eeccc54ebb837d5e8b3aa3532afed77b334411b3f063484c81852"
+      },
+      "rationale": "Retain the actual four-condition comparison selection; it is not a newly adopted ordinary application."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/14",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "9960f7dcaf113f6339ab33f7bed7b7147028257fb8748c086246835c3c6dc20d"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/15",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "c8cdf05abd040bee4762e6228d177415a798bfba63f94a45d8f2fc2fdabbb9d5"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/16",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "7b7f399d706fa82277fced03d33208327220430e683778e574e3634d818901a1"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/17",
+      "owners": [
+        "mergecraft/graphite"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "c99b869d78baa3fc708f84f527decf41685d66c362eae06b450ccf42056f73d8"
+      },
+      "rationale": "Retain the actual four-condition comparison selection; it is not a newly adopted ordinary application."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/18",
+      "owners": [
+        "mergecraft/addressing-pr-review-feedback"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "0dd936c92803d059d130243ab1fec3e683ebe1aa8260940c7d46f583365c37aa"
+      },
+      "rationale": "Retain the actual four-condition comparison selection; it is not a newly adopted ordinary application."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/19",
+      "owners": [
+        "mergecraft/resuming-reviewed-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "c13db4acdb12040496cdf3904369fb6d4fe3ebb94b53fb2d1c87821daa3530e6"
+      },
+      "rationale": "Retain the actual four-condition comparison selection; it is not a newly adopted ordinary application."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/20",
+      "owners": [
+        "mergecraft/resuming-reviewed-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "9d580da5e70dd7111c926bab44ff974d7e3675a9c127d6f324a42a0aebda86b8"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/21",
+      "owners": [
+        "mergecraft/resuming-reviewed-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "7ae66b7685d8a2d27fa3448a10b735f365711233a833386a09767298f0d52ade"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/22",
+      "owners": [
+        "mergecraft/resuming-reviewed-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "c9db4e8ce9be4800f39ccecbed174028f52da24dce70bd1a2558f51d20c71898"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/23",
+      "owners": [
+        "mergecraft/getting-prs-merged"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "c9e0119cce7aab6e16ea897d9788339fcf39cd69e153251c030a6339bf529e49"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/24",
+      "owners": [
+        "mergecraft/getting-prs-merged"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "0d593ba93a4257269778439c8f3eaae5e73a8a9e34daf6a1b268f922585e480b"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/25",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "379c5770b3643b8ea04ef5bf170cc7b7938688290c9b53ad59f80f0530f89f54"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/26",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "635b9377f179c74a3e180a691d12e0654f94965dde2197902bd2567a131b575f"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/27",
+      "owners": [
+        "mergecraft/getting-prs-merged"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "82d71dd38e3e63d4bf1c52ed29dece8a5f4cb56bb408bce28430046919ae580c"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/28",
+      "owners": [
+        "mergecraft/addressing-pr-review-feedback"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "7c5551179147e42106cb776902b6aa8c8b23afde1b158afbdafafe83d08c0660"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/29",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "9d41d73b5c9a78862b1f4532e990f80591dcc30a56d627cbacc744ce0213bf6b"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation. The writer owner confirms bare clean means its verified ordinary hand-back, with no portable or witnessed receipt requirement."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/30",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions",
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "dbc56fa2651c49a68205a5efebb5a4eba024e1cb0540ddda9f40cf551849157b"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/31",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions",
+        "mergecraft/publishing-reviewable-prs"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "cda6d60cde978ff3b046e9f58bd7eb6440550b502bf4e2a9e95321544a061068"
+      },
+      "rationale": "Retain the existing cross-owner routing boundary and structural consumers; neither a sole executor nor new ordinary execution is implied."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/32",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs",
+        "mergecraft/getting-prs-merged"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "21e3c7b51ba7aab840a7b3b3710cf7976795b8f415052b6e397e911a7d4b0ae9"
+      },
+      "rationale": "Retain the existing cross-owner routing boundary and structural consumers; neither a sole executor nor new ordinary execution is implied."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/33",
+      "owners": [
+        "mergecraft/publishing-reviewable-prs",
+        "mergecraft/getting-prs-merged"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "f0fbc4325bae191277d92eab2dab2dbb937c2700663f07bc5c29ee8df40b9672"
+      },
+      "rationale": "Retain the existing cross-owner routing boundary and structural consumers; neither a sole executor nor new ordinary execution is implied."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/34",
+      "owners": [
+        "mergecraft/getting-prs-merged"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "55bfb7b7700d44328337b169cea82196ef2bd4bc4fc2e359296e44950503ec43"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/35",
+      "owners": [
+        "mergecraft/getting-prs-merged"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "16bc73dd7299c24be2714619f1085df9f54beee89e6d11934fa5e2ce08b10b9c"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/36",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "b905e3a5b0affeaed6db58715739e9a5d9c1e9b63ee33a10923693cbc766122c"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/37",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "f95fcb9a82c8b122de4af820691b0aaad9e5379adee6e9e92268839e6ba040a2"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/corpus.json",
+        "sha256": "84236be2fb86041f97f7abca60c25cf6727ba1246a8fdf1a1cb351923978b5a9"
+      },
+      "pointer": "/scenarios/38",
+      "owners": [
+        "mergecraft/writing-reviewable-pr-descriptions"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [],
+      "dependencies": [],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/12#issuecomment-5729597960",
+        "mapping_sha256": "e7b2e3e0faf48aed817873ff17a796ae04bcf98a1a7e3c6dbac7abfedc5abe8b"
+      },
+      "rationale": "Retain the current conformance declaration and structural validation; no ordinary execution consumer for this coordinate is declared."
+    },
+    {
+      "source": {
+        "path": "evals/mergecraft/skills/maintaining-issue-pr-relations/policy.json",
+        "sha256": "9ce2bcc03181894ae6e42d64c354f172cd3f9a53b8eba999a5bee5f130514ea8"
+      },
+      "pointer": "",
+      "owners": [
+        "mergecraft/maintaining-issue-pr-relations"
+      ],
+      "role": "current-support",
+      "behavior_inputs": [
+        "plugins/mergecraft/skills/getting-prs-merged/SKILL.md",
+        "plugins/mergecraft/skills/getting-prs-merged/references/caller-continuation.md",
+        "plugins/mergecraft/skills/getting-prs-merged/references/gh-fix-ci-adapter.md",
+        "plugins/mergecraft/skills/getting-prs-merged/references/github-markdown-authoring.md",
+        "plugins/mergecraft/skills/getting-prs-merged/references/merge-actuator.md",
+        "plugins/mergecraft/skills/getting-prs-ready-for-review/SKILL.md",
+        "plugins/mergecraft/skills/graphite/SKILL.md",
+        "plugins/mergecraft/skills/resuming-reviewed-prs/SKILL.md",
+        "plugins/mergecraft/skills/stacking-pr-fixups/SKILL.md",
+        "plugins/proseweaving/skills/writing-for-people/SKILL.md",
+        "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md",
+        "plugins/proseweaving/skills/writing-for-people/references/evidence-in-prose.md",
+        "plugins/proseweaving/skills/writing-for-people/references/threaded-conversation.md"
+      ],
+      "dependencies": [
+        "scripts/mergecraft_writing_evals.py",
+        "docs/agents/mergecraft-writing-evaluations.md"
+      ],
+      "status": "accepted",
+      "review": {
+        "decision": "accepted",
+        "reference": "https://github.com/nisavid/provingkit/issues/33#issuecomment-5730436125",
+        "mapping_sha256": "d966150b0581d75db5a4f3c8b208bf1126c5fbe281082d585901a4447dde6566"
+      },
+      "rationale": "Declare the 13 additional instruction files already delivered by the fixed relation method, while binding its recorder and procedure as source-freshness dependencies. Cases, per-case delivery, observations, and acceptance policy remain unchanged."
+    }
+  ]
+}

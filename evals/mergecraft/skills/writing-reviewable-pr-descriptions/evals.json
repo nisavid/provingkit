@@ -94,6 +94,76 @@
         "States the new resolution order and that the project file no longer overrides an environment variable, without inventing precedence sources absent from the fixture.",
         "Reports the observed override, project-file, and default outcomes as evidence and keeps the operator migration note as separately tracked remaining work."
       ]
+    },
+    {
+      "id": 6,
+      "name": "change-summary-and-supporting-evidence",
+      "prompt": "Using the fixture, propose a PR title and the reviewer-facing body prose following the already-valid Diff disclosure. Do not use tools.",
+      "expected_output": "A change-led publication uses imperative change statements and preserves relevant first-person investigation and judgment as supporting rationale.",
+      "files": [
+        "writing-reviewable-pr-descriptions/fixtures/change-summary-and-supporting-evidence.md"
+      ],
+      "expectations": [
+        "The summary foregrounds the configured retry-limit change, with imperative phrasing for change statements rather than habitual first-person narration.",
+        "The investigation and author judgment remain pertinent supporting rationale; neither useful first person nor the shared-default tradeoff is erased or turned into a project decision.",
+        "The observed 18 passing worker tests and unrun integration suite remain distinct, with no invented issue relationship, broader command-line change, or operational result."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "publication-with-legacy-chat-framing",
+      "prompt": "Using the fixture, rewrite the authorized PR body prose. Return only the requested body; do not use tools.",
+      "expected_output": "A PR requested in chat uses publication register despite the old blanket framing, preserving the useful evidence and scope.",
+      "files": [
+        "writing-reviewable-pr-descriptions/fixtures/publication-with-legacy-chat-framing.md"
+      ],
+      "expectations": [
+        "The summary and ordinary change-section openings focus on the cache invalidation and resulting preview behavior, using imperative change language instead of making the author the primary subject.",
+        "The body retains the existing-key and expiry boundary, the relevant author judgment, nine passing tests, untested browser limitation, and supplied issue link without inventing closure.",
+        "Legacy conversational framing does not override the publication purpose, and change descriptions do not become requests for the reviewer to implement the work."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "personal-investigation-section",
+      "prompt": "Using the fixture, draft the requested PR body prose, including the specified personal Investigation opening. Do not use tools.",
+      "expected_output": "The summary states the diagnostic change; the investigation preserves the useful first-person opening and limited uncertainty.",
+      "files": [
+        "writing-reviewable-pr-descriptions/fixtures/personal-investigation-section.md"
+      ],
+      "expectations": [
+        "The summary directly describes adding the configured timeout to the existing log, without presenting an unproved timeout fix.",
+        "The Investigation section retains the requested first-person opening about five unsuccessful reproduction attempts; the writing rule is not treated as a blanket ban on first-person openings.",
+        "Five local runs do not disprove the report, the configuration difference stays an unverified suspicion, and the focused logging test is the only passing test claimed."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "publication-and-review-reply",
+      "prompt": "Using the fixture, draft the PR summary and the conversational review reply as separate labeled body values. Do not use tools.",
+      "expected_output": "The same facts receive change-focused publication phrasing and a direct conversational answer to the reviewer.",
+      "files": [
+        "writing-reviewable-pr-descriptions/fixtures/publication-and-review-reply.md"
+      ],
+      "expectations": [
+        "The PR summary uses imperative change language centered on preserving the saved output directory when reopening a project.",
+        "The reply directly answers that reopening was tested and reports the passing regression with the imported-project limitation; it need not force an ask or copy commit-message commands.",
+        "The drafts claim no publication, thread resolution, approval, release, or checks beyond the supplied evidence."
+      ]
+    },
+    {
+      "id": 10,
+      "name": "publication-without-proseweaving",
+      "prompt": "Using the fixture, propose a PR title and the reviewer-facing body prose following the already-valid Diff disclosure, then a separate short handoff. Proseweaving is unavailable for this draft; the caller supplies ordinary concise technical-writing guidance. Do not use tools.",
+      "expected_output": "A supported publication draft uses the PR-specific contract and ambient prose guidance; the separate handoff records the unavailable provider without claiming invocation.",
+      "files": [
+        "writing-reviewable-pr-descriptions/fixtures/change-summary-and-supporting-evidence.md"
+      ],
+      "expectations": [
+        "The draft describes the retry-limit change directly in imperative change statements and preserves useful investigation, judgment, and the supplied verification limits.",
+        "The missing generic provider does not prevent the supported draft, and the handoff records its unavailability without falsely claiming Proseweaving was invoked.",
+        "The provider-availability note stays outside the reviewer-facing body; no publication or other operational result is invented."
+      ]
     }
   ]
 }

@@ -16,13 +16,15 @@ artifacts you already have; ask only for what they cannot tell you.
 
 ## Guards
 
-### Never Assert An Unrun Outcome
+### Distinguish Source Findings From Observed Outcomes
 
-Do not state what a test, command, or system does unless the brief says
-you ran it and saw the result. Predicted behavior takes a modal or a
-condition: "this should fail once the cache is wired up", not "this
-fails". Observed behavior takes a plain declarative with the observation
-attached: "`make check` exits 1 on the fixture branch".
+State behavior established by inspected source as such: "`parse_limit` rejects
+negative values" can follow from its guard without a runtime experiment.
+Keep the claim within what that source establishes. A report that a test or
+command passed, a deployment completed, or a live system behaved a certain way
+needs a recorded run and result. Attach the observation where it matters:
+"`make check` exits 1 on the fixture branch". Use a condition or modal for an
+unverified prediction, such as "this should fail once the cache is wired up".
 
 ### Never Commit To An Undecided Position
 
@@ -33,10 +35,10 @@ who holds it.
 
 ### Write The Observation, Not The Story
 
-Report what is in evidence and stop there: "the config record hasn't
-changed since June 2", not "the update silently failed". The reader can
-draw the inference; the draft must not present the inference as an
-observation.
+Report the observation accurately: "the config record hasn't changed since
+June 2" does not by itself establish that the update silently failed. Include
+an inference when it helps, identifying it as a judgment and giving its basis
+and remaining uncertainty.
 
 ### Leave Out Social Facts You Do Not Have
 

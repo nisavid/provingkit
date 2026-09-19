@@ -30,6 +30,11 @@ release, or establish live runtime behavior. The prepared wrapper exposes only
 4. `scripts/run_amberbridge_production_integration.py` coordinates the later
    release path; the terminal-proof tools bind and combine its terminal results.
 
+The v2 compatibility document binds ordinary Rolecasting plan and selection
+ownership, Tricritical's ordinary inputs, and its conditional witnessed inputs.
+Evidence for the retained v1 or v4 compatibility bytes cannot qualify this
+contract; private and public projections must match exactly.
+
 A changed candidate, support module, private registry, or evidence artifact
 invalidates the corresponding receipt. A passing receipt proves only the
 checks and evidence named by its contract.

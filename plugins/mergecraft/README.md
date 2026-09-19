@@ -2,7 +2,8 @@
 
 Mergecraft is an Agent Plugins GitHub authoring and pull-request lifecycle
 package with a native Claude adapter. It owns exact human-facing Issue and
-pull-request body authoring, reviewer navigation, guarded PR publication,
+pull-request body authoring, Issue–PR contribution ledgers and Development links,
+reviewer navigation, guarded PR publication,
 Graphite draft transport, feedback coordination and interaction, review
 readiness, merge closeout, and stacked fixups. [topology.json](topology.json) is
 the only machine-readable graph and
@@ -11,19 +12,24 @@ Its `schema_version` versions Mergecraft's local topology shape, not a
 repository-wide interchange schema.
 
 Canonical PR publication requires every caller to select `required` or explicit
-`not-required` review. Ordinary publication can proceed with `not-required`;
-`required` publication is reserved for a future authenticated Task Witness
-integration. Task Witness is optional future equipment for callers that need
-its stronger cross-harness evidence contract, and that route reports witnessed
-publication as unavailable when it is not installed.
+`not-required` review and its specialist inventory before invoking the writer
+or freezing the candidate. The writer's ordinary independent review gate
+accepts a verified bare `clean` Tricritical hand-back for the current title/body,
+inputs, requirements, scopes, and evidence dependencies. `not-required` records
+no witnessed provenance and does not waive that review. Callers preserve the
+selection through publication, readiness, and resume. `required` adds the
+authenticated Task Witness gate and remains unavailable without its separately
+qualified integration. Task Witness is optional future equipment for callers
+that need its stronger cross-harness evidence contract.
 
 ## Public skills
 
 | Public skill | Responsibility |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | writing-github-issue-and-pr-markdown | Valid GFM and exact body bytes for seven human-facing GitHub fields, without actuation. |
+| maintaining-issue-pr-relations | Evidenced bilateral contribution ledgers, cached closure settings, and guarded Development-link reconciliation. |
 | writing-reviewable-pr-descriptions | Canonical title/body content and Stack/Diff navigation. |
-| publishing-reviewable-prs | Standalone creation, exact title/body/draft-ready actuation, and publication evidence/audit/reconciliation. |
+| publishing-reviewable-prs | Standalone creation, exact title/body/draft-ready actuation, historical ledger edits, and publication evidence/audit/reconciliation. |
 | graphite | Graphite topology and temporary stacked draft transport. |
 | addressing-pr-review-feedback | Feedback-outcome coordination across acquisition, adjudication, revision, checkpoint, and interaction owners. |
 | interacting-with-pr-review-feedback | One authorized typed-source response through the inline or PR conversation actuator, with durable replay and reconciliation. |
@@ -36,7 +42,33 @@ There are no compatibility routers and no public PR-creation orchestrator.
 Semantic sibling links remain relative within this plugin. Cross-plugin calls
 use qualified identities.
 
-## Markdown authoring projections
+## Issue–PR relations
+
+Relation maintenance applies to new contributions, material contribution or
+completion-scope changes, explicit repairs, and applicable merge consequences.
+Unchanged intent and unrelated edits skip acquisition. Both bodies retain all
+verified contributions using stable links and useful role annotations, without
+copied titles or status. Native Development links follow the Issue repository's
+closure policy and available capacity; they are not a one-to-one relation.
+
+Partial contributions need a usable observation that auto-close is disabled.
+Otherwise, native links require evidence that the triggering merge satisfies
+the Issue's completion gates. The setting cache reuses an observation throughout
+the task, including resumes, and defaults to 30 days across tasks, with optional
+no expiry. Cache hits retain the original timestamp. Explicit refresh, a newly
+observed change, or contradictory behavior invalidates affected plans. No
+setting changes occur during installation or ordinary relation handling.
+
+The [relation contract](skills/maintaining-issue-pr-relations/references/relation-contract.md)
+defines evidence, state-read budgets, disclosure, capacity, and recovery.
+The public helper returns finite plans and verifies individually authorized
+effects. It never closes or reopens Issues. Existing PR ledger edits use the
+[bounded publication mode](skills/writing-reviewable-pr-descriptions/references/relation-ledger.md),
+which preserves title, state, and unrelated bytes even when branches no longer
+exist. Its receipts establish only those edits; canonical publication and
+readiness retain their own gates.
+
+## Markdown and review-voice projections
 
 The canonical portable contract is
 `skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md`.
@@ -50,23 +82,51 @@ conversation responses, and
 conversation-comment bytes. Other lifecycle skills delegate body content or
 actuation and do not become duplicate semantic writers.
 
-Change only the canonical source. From the repository root, run
-`python scripts/validate_mergecraft.py . --write-markdown-projections` to
-regenerate the three writer-local projections. This command preserves the
-content lock and permits stale behavior evidence during canonical development.
-Inspect the projection diff and refresh the evidence for the changed candidate,
-then run `python scripts/validate_mergecraft.py . --write-content-lock`.
-The lock command validates the current projections and evidence before writing
-only the ordinary Mergecraft content lock. The two writing modes are mutually
-exclusive; each uses the generated-artifact recovery transaction for its own
-files.
+The canonical [review voice](references/review-voice.md) owns review findings,
+asks, replies, and review summaries. Byte-identical `references/review-voice.md`
+projections in `writing-github-issue-and-pr-markdown` and
+`interacting-with-pr-review-feedback` apply to review fields, alongside the
+separate Markdown contract. PR-description prose keeps its publication register.
+Mergecraft's semantic writers compose `proseweaving:writing-for-people` through
+their declared external calls for generic prose mechanics.
 
-Run `python scripts/validate_mergecraft.py .` after both steps. A completed
-projection refresh leaves the previous content lock stale until the lock step
-succeeds. Source-stage validation checks discovery, projection links, byte
-equality, and evidence bindings but skips the ordinary content lock. A
-projection that drifts or a supported route that cannot discover the direct
-skill is not evidence that the capability is available.
+Change only the canonical references. From the repository root, run
+`python scripts/validate_mergecraft.py . --write-markdown-projections` to
+regenerate the Markdown-authoring and review-voice projections. This command
+preserves the content lock and permits stale behavior evidence during canonical
+development.
+Inspect the projection diff before preparing the source for new behavior runs.
+Run `python scripts/validate_mergecraft.py . --prepare-content-lock` to write
+only the Mergecraft content lock after structural, projection, Atlas, and
+runtime checks. This whole-plugin operation permits stale behavior evidence and
+prints `Mergecraft content lock prepared; behavior evidence not checked;
+candidate unqualified.` It cannot be combined with `--skill`, `--source-stage`,
+or another writing mode. Each writing mode retains the generated-artifact
+recovery transaction for its own files.
+
+The integration owner completes the remaining source and member identities
+before committing the evaluated source. Load the
+[ordinary receipt procedure](https://github.com/nisavid/provingkit/blob/main/docs/behavior-eval-receipts.md)
+before recording evidence. Its snapshot binds the whole content lock; changes
+to that lock or other bound inputs require a new source and an evidence review.
+
+Run `python scripts/validate_mergecraft.py .` for normal validation after the
+evidence work. The existing `--write-content-lock` operation checks projections
+and evidence before writing the lock. Normal and source-stage validation retain
+their evidence checks, including truthful failed-result retention; source-stage
+validation skips the ordinary content lock. Ordinary receipt thresholds and the
+relation corpus's stronger all-three requirement determine their respective
+behavioral pass. Lock preparation alone supplies neither result.
+
+The [Markdown writer's review-voice cases](skills/writing-github-issue-and-pr-markdown/evals/review-voice-evals.json)
+and [feedback response cases](skills/interacting-with-pr-review-feedback/evals/review-voice-evals.json)
+exercise review wording, publication/conversation selection, retained text, and
+available or absent Proseweaving composition. Give application executors only
+the raw task, fixture, and candidate with its declared companion instructions;
+keep expectations with the grader. Verify discovery separately with observed
+skill/reference loading, including the absent-plugin condition and nearby
+requests that need no review policy. Bind both kinds of evidence to the final
+source and dependency revisions before claiming the procedure is verified.
 
 ## Operation registry
 
@@ -74,6 +134,11 @@ skill is not evidence that the capability is available.
 | Semantic ID | GitHub aliases | Surface | Access | Authority | Disposition | Owner | Implementation/import | Callers |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | github-markdown-content | - | workflow | coordinate | valid GFM and exact candidate body bytes only | public-skill | writing-github-issue-and-pr-markdown | skills/writing-github-issue-and-pr-markdown/SKILL.md | interacting-with-pr-review-feedback, writing-github-issue-and-pr-markdown |
+| issue-pr-relations | - | workflow | coordinate | finite evidenced contributions and separately authorized body or native relation effects | public-skill | maintaining-issue-pr-relations | skills/maintaining-issue-pr-relations/SKILL.md | getting-prs-merged, getting-prs-ready-for-review, graphite, maintaining-issue-pr-relations, publishing-reviewable-prs, stacking-pr-fixups, writing-github-issue-and-pr-markdown, writing-reviewable-pr-descriptions |
+| issue-pr-relation-observe | issue-pr-relation-read | github | read | finite stable entities and missing or invalidated relation observations only | internal-helper | internal:issue-pr-relation-state | skills/maintaining-issue-pr-relations/scripts/relation_state.py | maintaining-issue-pr-relations |
+| issue-body-write | issue-body-write | github | write | one plan-bound complete writer-owned Issue body with an unchanged authorized-span preimage | internal-helper | internal:issue-pr-relation-state | skills/maintaining-issue-pr-relations/scripts/relation_state.py | maintaining-issue-pr-relations |
+| issue-pr-development-write | issue-pr-development-write | github | write | explicit plan-bound manual Development additions or removals preserving all other relations and Issue state | internal-helper | internal:issue-pr-relation-state | skills/maintaining-issue-pr-relations/scripts/relation_state.py | maintaining-issue-pr-relations |
+| pr-relation-ledger-write | pr-relation-ledger-write | github | write | one stable existing PR and exact authorized ledger span preserving title state and all other body bytes | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/scripts/publish_relation_ledger.py | publishing-reviewable-prs |
 | pr-content | - | workflow | coordinate | candidate PR title and body bytes only | public-skill | writing-reviewable-pr-descriptions | skills/writing-reviewable-pr-descriptions/SKILL.md | getting-prs-ready-for-review, publishing-reviewable-prs, stacking-pr-fixups, writing-reviewable-pr-descriptions |
 | pr-creation | pr-create | github | write | exact repository, base, qualified head, head repository, and draft PR creation | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | getting-prs-ready-for-review, publishing-reviewable-prs, stacking-pr-fixups |
 | pr-text-read | pr-text-read | github | read | bound repository and PR identity for exact title and body acquisition | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | publishing-reviewable-prs |
@@ -157,12 +222,10 @@ one-intent calls with no batch atomicity or rollback. The
 [response contract](skills/interacting-with-pr-review-feedback/references/interaction-authority.md)
 defines the supported evidence and reconciliation boundaries.
 
-The review-voice reference and its Tidesmith declaration remain owned by
-[the review-voice projection work](https://github.com/nisavid/provingkit/issues/19).
-Until a selected policy route is available, the caller records that limitation
-and applies its ambient writing instructions before freezing the response body.
-Response-runtime qualification does not establish that missing policy route,
-cross-machine serialization, release eligibility, or production authority.
+The [review-voice reference](references/review-voice.md) defines composition and
+the absent-plugin behavior before the response body is frozen. Response-runtime
+qualification does not establish writing-policy invocation, cross-machine
+serialization, release eligibility, or production authority.
 
 Each public component in `topology.json` declares its trigger, modes, authority,
 inputs, outputs, forbidden reverse calls, loop owner, and terminal statuses.
@@ -185,9 +248,12 @@ owners; there is no additional public review-orchestration layer.
 From the package root:
 
     python3 skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py --help
+    python3 skills/writing-reviewable-pr-descriptions/scripts/validate_relation_ledger.py --help
     python3 skills/publishing-reviewable-prs/scripts/create_reviewable_pr.py --help
     python3 skills/publishing-reviewable-prs/scripts/update_reviewable_pr.py --help
     python3 skills/publishing-reviewable-prs/scripts/audit_reviewable_pr.py --help
+    python3 skills/publishing-reviewable-prs/scripts/publish_relation_ledger.py --help
+    python3 skills/maintaining-issue-pr-relations/scripts/relation_state.py --help
     python3 skills/graphite/scripts/submit_draft_stack.py --help
     python3 skills/getting-prs-merged/scripts/post_coderabbit_comment.py --help
     python3 skills/addressing-pr-review-feedback/scripts/review_feedback_state.py --help
@@ -196,9 +262,24 @@ From the package root:
 Repository release validation additionally runs scripts/validate_mergecraft.py
 and the repository-owned unit suites. Canonical development and release
 evidence lives at `evals/mergecraft/`, the Markdown writer's skill-local raw
-eval corpus, `tests/plugins/mergecraft/`, and
+eval corpus, `tests/plugins/mergecraft/`, the public relation command suites
+`tests/test_mergecraft_issue_pr_relations.py` and
+`tests/test_mergecraft_pr_relation_ledger.py`, and
 `release/plugin-content-locks/mergecraft.json`. Skill-local eval resources are
 package support artifacts, not runtime authority.
+
+When Markdown-writer or Issue–PR relation instruction changes invalidate
+supplied-instruction evidence, follow the
+[writing evaluation procedure](https://github.com/nisavid/provingkit/blob/main/docs/agents/mergecraft-writing-evaluations.md)
+and use `scripts/mergecraft_writing_evals.py` from the repository root.
+Semantic grading, native discovery, receipt acceptance, content locks, and
+publication retain their owning gates.
+
+When feedback instruction, corpus, fixture, grading, or recording inputs change,
+or when resuming a prepared feedback batch, load the
+[feedback evaluation procedure](https://github.com/nisavid/provingkit/blob/main/docs/agents/mergecraft-feedback-evaluations.md)
+and use `scripts/feedback_response_evals.py` from the repository root. It prepares
+and imports observations for a separately reviewed runner; it launches no model.
 
 The feedback-response [experiment](skills/interacting-with-pr-review-feedback/evals/response-evidence.json)
 binds the raw scenarios, delivered skill and reference bytes, source and test
@@ -227,8 +308,8 @@ history. The envelope marks
 earlier selected, rejected, and audit records unqualified for the revised
 candidate and marks fields that were never recorded as unavailable. It promises
 consistent retention of the declared local documents, not a complete census of
-model activity. The checked-in document is historical input until
-revised-candidate qualification regenerates the selected records.
+model activity. A source-changing refresh retains its predecessor as historical
+input and regenerates selected records for the revised candidate.
 
 Run `python3 scripts/validate_feedback_response_evidence.py .` to apply the
 maintained evidence method. The validator checks exact schemas and byte digests,
@@ -245,18 +326,48 @@ Behavioral runs exercise the supplied instructions. Separate subprocess-provider
 tests exercise the runtime and both response operations without posting to
 GitHub.
 
-The selected `gpt-daybreak-blue-latest` runs at high effort pass all 87
-candidate judgments across seven cases and three repetitions; the baseline
-passes 63 of 87. Each execution and grade uses a separate session. Earlier
-failed or insufficiently isolated runs remain recorded as unqualified history.
+The current corpus has 13 cases and 64 expectations; a fresh batch
+requires 78 executions and 78 independent grading exchanges across both
+conditions and three repetitions. All 192 candidate judgments must pass.
+Baseline failures remain comparison results. These requirements describe the
+current qualification shape; results and their source bindings are recorded in
+the experiment and its retained provenance.
 
 The Markdown writer's [experiment](skills/writing-github-issue-and-pr-markdown/evals/experiment.json)
-retains exact requests and responses, source hashes, and selected runtime
-observations; its [grading](skills/writing-github-issue-and-pr-markdown/evals/grading.json)
-records independent judgments and the final selected repetitions. Claude Code
-2.1.263 with `claude-opus-5` at high effort meets every selected behavior
-threshold, loads the skill and reference through native tools, and passes all
-11 trigger cases. Sonnet at the CLI's default effort fails the exact output
-boundary; those failed runs remain in the experiment. This is unsigned
-development evidence for the tested configuration. It does not qualify other
-models or harnesses or grant release, installation, or actuation authority.
+retains exact requests and responses, source hashes, and runtime observations;
+its [grading](skills/writing-github-issue-and-pr-markdown/evals/grading.json)
+records independent judgments and selected repetitions. All 72 declared
+expectation observations pass across eight cases and three executions per case
+with Claude Code 2.1.273, requesting `claude-opus-5` at high effort. Each request
+explicitly delivers all seven files in the maintained Markdown instruction
+bundle. The independent grade also retains five supplementary inaccuracies:
+three unsupported historical comparisons, an unsupported replay consequence,
+and insufficient proposed remedies for a policy conflict. Rubric success does
+not make those extra claims correct.
+
+The no-skill controls keep their original configuration, including Claude Code
+2.1.263; they are historical observations, not a matched current comparison.
+Earlier native loading and 11-trigger observations also remain historical.
+Current application runs do not establish native discovery, enforced isolation,
+or causal improvement. The [normalization map](skills/writing-github-issue-and-pr-markdown/evals/normalization.json)
+reconstructs the preceding public records without deleting earlier requests,
+responses, grades, or configuration distinctions. Use the
+[writing-evidence procedure](https://github.com/nisavid/provingkit/blob/main/docs/agents/mergecraft-writing-evaluations.md)
+for refresh and normalization. These development observations grant no release,
+installation, or actuation authority.
+
+The relation procedure's [experiment](https://github.com/nisavid/provingkit/blob/main/evals/mergecraft/skills/maintaining-issue-pr-relations/experiment.json)
+and [independent grades](https://github.com/nisavid/provingkit/blob/main/evals/mergecraft/skills/maintaining-issue-pr-relations/grading.json)
+bind the current instructions to 51 behavior responses across 17 cases and
+13 native discovery decisions. All 195 selected behavior expectations and
+13 discovery decisions pass with Claude Code 2.1.273 and `claude-opus-5` at
+high effort. Behavior runs expose no tools; discovery runs expose only `Skill`
+and retain the client's bundled runtime skill descriptions. Failed and
+superseded runs remain unselected, and supplementary response inaccuracies
+remain recorded. These checks establish the stated expectations and observed
+loading behavior, not universal response correctness or provider attestation.
+Publication validation rejects missing, stale, failed, or inconsistent selected
+evidence. Separate live qualifications cover the
+[relation command](https://github.com/nisavid/provingkit/blob/main/docs/superpowers/research/2026-09-17-mergecraft-relation-command-qualification.md)
+and [historical PR ledger publisher](https://github.com/nisavid/provingkit/blob/main/docs/superpowers/research/2026-09-17-mergecraft-relation-publication-qualification.md);
+their stated GitHub.com cases do not qualify other hosts or every failure mode.

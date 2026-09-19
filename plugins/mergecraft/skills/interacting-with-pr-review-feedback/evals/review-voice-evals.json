@@ -1,0 +1,57 @@
+{
+  "skill_name": "interacting-with-pr-review-feedback",
+  "evals": [
+    {
+      "id": 1,
+      "name": "review-composition-available",
+      "prompt": "Using the fixture, prepare the proposed response and its handoff. Proseweaving is available in this exercise. Use its supplied candidate instructions and routed references for this application check; supplied instructions alone do not establish native discovery. Do not use live forge tools.",
+      "fixture_paths": [
+        "evals/review-voice/fixtures/proposed-review-response.md"
+      ],
+      "expected_output": "Useful proposed response wording remains separate from missing admission and execution evidence.",
+      "expectations": [
+        {
+          "id": "composition-available-policy",
+          "text": "The response composes the supplied generic instructions with the review-voice rules and distinguishes this application from observed native invocation.",
+          "severity": "quality"
+        },
+        {
+          "id": "composition-available-wording",
+          "text": "The proposed body reports the supplied reconnect observation, includes a natural permalink to the exact source, and preserves the cancellation limitation without repeating the request or inventing another ask.",
+          "severity": "quality"
+        },
+        {
+          "id": "composition-available-handoff",
+          "text": "The handoff leaves absent epoch, registry, intent, admission, and prewrite evidence absent, and claims no posting, reread, resolution, or runtime success.",
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "review-composition-absent",
+      "prompt": "Using the fixture, prepare the proposed response and its handoff. Proseweaving is absent in this exercise. The client supplies ordinary concise technical-writing instructions. Record the unavailable route without claiming it ran. Do not use live forge tools.",
+      "fixture_paths": [
+        "evals/review-voice/fixtures/proposed-review-response.md"
+      ],
+      "expected_output": "Useful proposed response wording remains separate from missing admission and execution evidence.",
+      "expectations": [
+        {
+          "id": "composition-absent-policy",
+          "text": "The response uses ambient writing instructions for the generic register, records the missing Proseweaving route outside the proposed body, and does not refuse merely because that plugin is absent.",
+          "severity": "quality"
+        },
+        {
+          "id": "composition-absent-wording",
+          "text": "The proposed body reports the supplied reconnect observation, includes a natural permalink to the exact source, and preserves the cancellation limitation without repeating the request or inventing another ask.",
+          "severity": "quality"
+        },
+        {
+          "id": "composition-absent-handoff",
+          "text": "The handoff leaves absent epoch, registry, intent, admission, and prewrite evidence absent, and claims no posting, reread, resolution, or runtime success.",
+          "severity": "quality"
+        }
+      ]
+    }
+  ]
+}

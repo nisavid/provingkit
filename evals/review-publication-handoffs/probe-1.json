@@ -1,0 +1,254 @@
+[
+  {
+    "case": "candidate-drift",
+    "action": "Block publication and review candidate B",
+    "reasoning": "The bare clean result binds A. Unchanged pushed code and passing navigation validation do not establish review of changed title/body bytes. The writer must bind B and its updated review input, invoke the loop, and consume its actual current result.",
+    "conditions": [
+      "Preserve A reports as historical evidence; do not apply their clean status to B.",
+      "Refreeze B and its manifest under the existing authorized text scope; rerun every selected scope affected by changed candidate bytes and declared verification.",
+      "Require independent complete bare clean on unchanged final bytes, then repeat preservation and final validation before publisher preflight."
+    ],
+    "evidence_paths": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/loop/SKILL.md",
+      "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md"
+    ]
+  },
+  {
+    "case": "dependency-drift",
+    "action": "Refreeze changed requirements and rerun affected scopes",
+    "reasoning": "Matching candidate bytes do not preserve review freshness when requirements or scope dependencies change. The explicitly changed scope needs fresh review; assess every other scope against the new requirements rather than assuming it remains applicable.",
+    "conditions": [
+      "Retain only a prior usable report whose identity, unchanged dependencies, and explicit unchanged-applicability proof are preserved.",
+      "If the requirements change alters the authorized increment, settle and refreeze it within original authority; escalate any expansion needing new authority.",
+      "Complete every affected scope, adjudicate current findings, and rerun declared verification on unchanged final bytes before accepting bare clean; successful verification alone is insufficient."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/loop/SKILL.md",
+      "plugins/tricritical/skills/review/SKILL.md",
+      "plugins/tricritical/skills/review/references/completeness-and-synthesis.md"
+    ]
+  },
+  {
+    "case": "model-selection-record",
+    "action": "Block dispatch pending bound selection records",
+    "reasoning": "No critic may start: all three plan entries lack the separate model-selection capability evidence. The portable review skill consumes Rolecasting records; it must not choose a provider-specific model or treat an ordinary plan as a selection record.",
+    "conditions": [
+      "Obtain one fresh role- and target-bound record for intent, runtime, and structure, covering catalog/schema support, exact requested model/effort or a justified inherited binding, and existing selection authority.",
+      "Bind record identities into a complete valid plan and revalidate before dispatch; no invented provider values or silent fallback.",
+      "After valid dispatch, retain distinct launch/completion/result observations, unchanged input checks, usable raw reports, and completeness accounting. Ordinary records do not attest effective model or enforced authority."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/review/SKILL.md",
+      "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md"
+    ]
+  },
+  {
+    "case": "nonclean-terminals",
+    "action": "Reject every listed terminal as bare clean",
+    "reasoning": "The writer requires the actual loop terminal bare clean. Publication mode not-required and successful body validators do not waive that gate; an individual DONE or successful test cannot change a different loop terminal.",
+    "conditions": [
+      "clean / degraded: retain degradation and restore independent complete review before a new bare-clean result.",
+      "incomplete / non-clean: preserve missing or unusable execution evidence and obtain complete selected scope coverage through the owner.",
+      "blocked: resolve the named authority, input, or capability gate before continuing.",
+      "failed_verification: resolve the failure within authorized scope and obtain successful declared verification plus current complete review.",
+      "needs operator decision: obtain that decision; do not resolve it autonomously or publish meanwhile."
+    ],
+    "evidence_paths": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/tricritical/skills/loop/SKILL.md",
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md"
+    ]
+  },
+  {
+    "case": "ordinary-admission",
+    "action": "Admit the two planned ordinary critics",
+    "reasoning": "The frozen plan, supported selections, distinct native contexts, and assurance minima permit the intent and runtime executions. Missing authenticated issuers and Task Witness do not block ordinary same-leader review and do not by themselves degrade it.",
+    "conditions": [
+      "Use the native freeze-then-launch procedure for exactly the two bound entries; retain protocol launch, terminal, result, and verification observations and independently check report usability.",
+      "Keep reviewers read-only, with no subdelegation or external action. Only the loop may revise title/body under the original authority; it gains no source or forge authority.",
+      "The loop must complete independent scopes, adjudication, and declared verification on the unchanged final candidate. The writer verifies candidate/input/requirements/scope/dependency bindings, requires bare clean, and revalidates preservation and the pair/manifest.",
+      "The ordinary publisher retains not-required and the empty specialist inventory, applies separate publication gates, and does not treat its helper receipt as proof of review execution."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/review/SKILL.md",
+      "plugins/tricritical/skills/loop/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md"
+    ]
+  },
+  {
+    "case": "ordinary-clean",
+    "action": "Hand back validated content and proceed to guarded publication",
+    "reasoning": "The same leader has the actual complete bare-clean loop result with current bindings and verification, and the writer has completed its checks. Task Witness is unnecessary for this not-required publication route.",
+    "conditions": [
+      "Return the complete validated title/body pair, authorized surface, manifest, unchanged not-required mode and empty specialist inventory, and verified review hand-back with its assurance limits.",
+      "The publisher may perform the authorized owned operation after fresh identity/preimage checks and all remaining operation-specific gates; creation remains draft and readiness remains separately gated.",
+      "The publication receipt records publication identity, digests, state, and explicit not-required mode. It establishes no witnessed review provenance and does not itself prove ordinary review ran.",
+      "Do not claim model attestation, product-enforced worker permissions, or portable authenticated review evidence."
+    ],
+    "evidence_paths": [
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md"
+    ]
+  },
+  {
+    "case": "ordinary-stronger-minimum",
+    "action": "Block before launch",
+    "reasoning": "Ordinary mode does not waive a separately frozen product-attested model and effective-authority minimum. The native profile supports only self-reported evidence for those dimensions, so recorded selections and read-only instructions cannot satisfy the consumer.",
+    "conditions": [
+      "Do not dispatch or lower the frozen minimum to admit the available route.",
+      "A sufficient alternative requires actual qualifying capability evidence, a new valid plan for any changed route, and fresh validation while preserving the minimum.",
+      "Report the unavailable model/authority evidence precisely; no tool-enforcement or effective-model proof follows from prompt restrictions."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md"
+    ]
+  },
+  {
+    "case": "resume-without-observations",
+    "action": "Hand off to readiness for fresh review",
+    "reasoning": "For the stated readiness-only draft request, resuming-reviewed-prs returns a terminal handoff to getting-prs-ready-for-review. The verified publication audit establishes current publication state, while a saved clean note and matching digests cannot reconstruct the missing review reports and original controller observations.",
+    "conditions": [
+      "Preserve not-required and the empty specialist inventory; absence of Task Witness does not require switching to witnessed mode.",
+      "The readiness owner obtains current writer-owned content and a fresh ordinary loop hand-back, or separately qualified retained evidence satisfying the consumer minimum if such evidence becomes available.",
+      "Require current candidate/input/requirements/scopes/dependencies, independent complete reports, and successful declared verification before guarded ready actuation.",
+      "The resume owner remains read-only and does not itself make the PR ready. Higher-precedence live conflict, failed-CI, or feedback gates would select their named owner if discovered."
+    ],
+    "evidence_paths": [
+      "plugins/mergecraft/skills/resuming-reviewed-prs/SKILL.md",
+      "plugins/mergecraft/skills/getting-prs-ready-for-review/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
+      "plugins/tricritical/references/invocation-boundary.md"
+    ]
+  },
+  {
+    "case": "status-only",
+    "action": "Report verified status and stop",
+    "reasoning": "The resume skill explicitly returns reported for a status-only request without selecting an outcome owner. Reporting observed current state does not require a new ordinary review or witnessed bundle.",
+    "conditions": [
+      "Describe the verified current state and receipt mode without claiming the receipt proves review.",
+      "Do not acquire or exercise publication, readiness, source, review, or merge authority from the status request.",
+      "Return reported and perform no state change."
+    ],
+    "evidence_paths": [
+      "plugins/mergecraft/skills/resuming-reviewed-prs/SKILL.md",
+      "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md"
+    ]
+  },
+  {
+    "case": "topology-inadequate-foreign-isolation",
+    "action": "Reject the entire foreign dispatch plan",
+    "reasoning": "All three context labels resolve to the same conversation with prior reports visible, so the required independent contexts are absent. Selection and lifecycle capabilities cannot repair that isolation failure; no current entry is permitted to launch.",
+    "conditions": [
+      "Preserve the failed isolation probe and report the blocked route.",
+      "A native or other fallback needs a new valid plan and fresh target, selection, isolation, authority, and assurance capability validation; the hypothetical possibility of a native route supplies none.",
+      "A shared-context analysis could only be explicitly non-independent / degraded under an authorized valid alternative boundary, never a substitute satisfying the frozen independent-review claim or bare clean.",
+      "A complete independent hand-back still requires each selected scope in a distinct context, bound usable reports, controller observations, and unchanged input checks."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/review/SKILL.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/foreign-harness-peers.md"
+    ]
+  },
+  {
+    "case": "topology-prohibited-subdelegation-external-action",
+    "action": "Reject the whole plan and correct intent authority",
+    "reasoning": "The intent entry grants subdelegation and a PR comment contrary to the read-only default-denied contract and without user authority. A single unauthorized entry invalidates the closed-world plan, so runtime and structure may not be dispatched under it either.",
+    "conditions": [
+      "Remove the extra permissions and refreeze the complete plan with fresh capability validation before any dispatch; do not merely skip intent.",
+      "Preserve every selected scope and its separate selection record; changed authority is a new plan, not an undeclared fallback.",
+      "After admission, require distinct native observations, bound usable reports, identity checks, and complete scope accounting; no ordinary request proves product enforcement."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
+      "plugins/tricritical/skills/review/SKILL.md"
+    ]
+  },
+  {
+    "case": "topology-unauthorized-user-owned-task",
+    "action": "Block all user-owned task dispatches",
+    "reasoning": "The planned task API creates user-owned peers, which require explicit consent to create or steer. Authorization for read-only review and model selection does not provide that consent; no entry in this plan is dispatchable.",
+    "conditions": [
+      "Obtain explicit authority for the planned user-owned tasks, or build and validate a new authorized leader-owned native plan with fresh capability and model-selection observations.",
+      "Do not assume the possible native route exists or silently substitute it; do not reuse unrelated tasks.",
+      "Any admitted route must preserve selected scopes, isolation, bounded authority, assurance minima, and input identities, then return observed usable results for every scope."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/SKILL.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/foreign-harness-peers.md"
+    ]
+  },
+  {
+    "case": "topology-valid-native-dispatch",
+    "action": "Admit all four selected native executions",
+    "reasoning": "The ordinary prerequisites and frozen minima are satisfied for intent, runtime, structure, and the persistence specialist. The specialist remains a separate isolated execution routed through runtime; it is not a new public skill or a replacement for runtime.",
+    "conditions": [
+      "Freeze each native dispatch before launching it exactly once; preserve the four-entry closed set and byte-identical immutable inputs.",
+      "Use the supplied separately bound requested model/effort records without inventing provider choices or claiming effective-model attestation.",
+      "Retain native launch, context, completion, result, verification, and strict usability observations; obtain raw usable reports and account for all four scopes.",
+      "Any missing, failed, timed-out, exhausted, unusable, or unverified selected execution leaves incomplete / non-clean. Preserve failures without undeclared retries.",
+      "Any changed route or scope requires a new valid plan and capability validation. An independent review report alone does not establish a bare-clean loop terminal; loop adjudication and declared verification remain required."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/review/SKILL.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md",
+      "plugins/tricritical/skills/review/references/completeness-and-synthesis.md",
+      "plugins/tricritical/skills/loop/SKILL.md"
+    ]
+  },
+  {
+    "case": "witnessed-unavailable-receipts",
+    "action": "Block all witnessed dispatches",
+    "reasoning": "The caller explicitly selected witnessed mode and both qualified authenticated receipts before freezing. The otherwise valid ordinary plan and selection records cannot substitute for the unavailable model-selection and invocation-topology receipts.",
+    "conditions": [
+      "No selected critic may launch under this frozen witnessed request.",
+      "Require separately qualified authenticated model-selection and invocation-topology receipts bound to the plan and each exact dispatch, meeting the frozen minimum.",
+      "Do not downgrade automatically to ordinary, merge the two receipts, mint issuer authority from a transcript, or treat validator-only registration as production qualification.",
+      "After receipt qualification, actual distinct executions, unchanged inputs, usable reports, completeness accounting, and any required authenticated terminal evidence still remain necessary."
+    ],
+    "evidence_paths": [
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/review/SKILL.md",
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
+      "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md",
+      "plugins/tricritical/skills/loop/references/review-evidence.md"
+    ]
+  },
+  {
+    "case": "witnessed-unavailable",
+    "action": "Stop before create or ready on the witnessed evidence gate",
+    "reasoning": "The publisher selected required, so complete ordinary review and bare clean are insufficient for the additional Task Witness publication gate. With no installation, authenticated issuer, or registered producer, the required route is unavailable.",
+    "conditions": [
+      "Preserve required mode and specialist selection; reject the proposed automatic downgrade.",
+      "Obtain a qualified current nonhistorical bare-clean terminal bundle and authenticated producer chain through the selected witnessed route before mutation.",
+      "Any explicitly authorized selection change must respect governing policy and requires a newly frozen candidate and fresh applicable review; the existing ordinary hand-back does not authorize or automatically satisfy that change.",
+      "Do not create, mark ready, invent witnessed evidence, or claim fixture/validator coverage proves live producer reachability."
+    ],
+    "evidence_paths": [
+      "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md",
+      "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md",
+      "plugins/tricritical/references/invocation-boundary.md",
+      "plugins/tricritical/skills/loop/references/review-evidence.md"
+    ]
+  }
+]

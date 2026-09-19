@@ -691,7 +691,7 @@ class ValidateTricriticalTests(unittest.TestCase):
 
     def test_topology_separates_direct_transitive_and_original_authority(self):
         topology = json.loads((self.plugin_root / "topology.json").read_text())
-        self.assertEqual(topology["schema_version"], 2)
+        self.assertEqual(topology["schema_version"], 3)
         expected = {
             "review": (False, False, False),
             "intent": (False, False, False),
@@ -786,13 +786,39 @@ class ValidateTricriticalTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("adapter requirements", result.stderr)
 
-    def test_review_requires_separate_invocation_topology_receipt(self):
+    def test_rejects_missing_witnessed_requirements(self):
+        path = self.plugin_root / "topology.json"
+        topology = json.loads(path.read_text())
+        topology["skills"]["review"]["conditional_requires"] = {}
+        self.write_json(path, topology)
+
+        result = self.run_validator()
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("adapter requirements", result.stderr)
+
+    def test_ordinary_review_requires_live_records_without_witnessed_receipts(self):
+        topology = json.loads((self.plugin_root / "topology.json").read_text())
+        review = topology["skills"]["review"]
+        self.assertEqual(
+            review["requires"],
+            ["adapter:model-selection-record", "adapter:rolecasting-invocation-plan"],
+        )
+        self.assertEqual(
+            review["conditional_requires"],
+            {"witnessed": [
+                "adapter:model-selection-receipt",
+                "adapter:rolecasting-invocation-topology-receipt",
+            ]},
+        )
+
+    def test_witnessed_review_requires_separate_invocation_topology_receipt(self):
         topology = json.loads((self.plugin_root / "topology.json").read_text())
         rolecasting_contract = json.loads(
             (REPO_ROOT / "plugins/rolecasting/topology.json").read_text()
         )["receipt_contract"]
         self.assertEqual(
-            topology["skills"]["review"]["requires"],
+            topology["skills"]["review"]["conditional_requires"]["witnessed"],
             [
                 rolecasting_contract["separate_from"],
                 rolecasting_contract["id"],
@@ -826,6 +852,8 @@ class ValidateTricriticalTests(unittest.TestCase):
             self.assertIn(required, combined)
 
         for fixture in (
+            "model-selection-record.md",
+            "witnessed-unavailable-receipts.md",
             "topology-unauthorized-user-owned-task.md",
             "topology-inadequate-foreign-isolation.md",
             "topology-prohibited-subdelegation-external-action.md",
@@ -833,11 +861,10 @@ class ValidateTricriticalTests(unittest.TestCase):
         ):
             self.assertIn(fixture, validator_module.EVAL_FIXTURES)
 
-    def test_rejects_review_adapter_without_model_selection_receipt(self):
+    def test_rejects_review_adapter_without_model_selection_record(self):
         path = self.plugin_root / "skills/review/agents/openai.yaml"
         receipt_prompt = (
-            " with separate capability-proven model-selection and Rolecasting "
-            "invocation-topology receipts"
+            " with live model-selection records and a Rolecasting invocation plan"
         )
         path.write_text(
             path.read_text().replace(
@@ -1215,8 +1242,8 @@ class ValidateTricriticalTests(unittest.TestCase):
             ),
             (
                 self.plugin_root / "topology.json",
-                '  "schema_version": 2,',
-                '  "schema_version": 2,\n  "schema_version": 3,',
+                '  "schema_version": 3,',
+                '  "schema_version": 3,\n  "schema_version": 4,',
             ),
             (
                 self.plugin_root / "evals" / "corpus.json",
