@@ -4,7 +4,7 @@
     {
       "source": {
         "path": "evals/proseweaving/writing-register/trigger-evals.json",
-        "sha256": "26ba30d5e537ec5deb1388864e80b85594069ae8dddfda2b954d14682e6bbde9"
+        "sha256": "7c66d8eec0079bb3c005e8f9257b280057346848bf69ed3fa747d15742930243"
       },
       "pointer": "",
       "owners": [
@@ -16,11 +16,8 @@
       "status": "accepted",
       "review": {
         "decision": "accepted",
-        "reference": "https://github.com/nisavid/provingkit/blob/2d30a002ea4d2c3e8c256d6966a28ba6ff4e0286/evals/proseweaving/writing-register/README.md",
-        "mapping_sha256": "0d2790d6b5e850df1e72a794abfc3fa57e0a61b922f1c48c6ec1c71829c73e84",
-        "evidence": [
-          "https://github.com/nisavid/provingkit/blob/2d30a002ea4d2c3e8c256d6966a28ba6ff4e0286/evals/proseweaving/writing-register/discovery.json"
-        ]
+        "reference": "https://github.com/nisavid/provingkit/issues/33#issuecomment-5745919445",
+        "mapping_sha256": "f6dd7880a4af3c00c717831a54e273a967e1c954bbc74012784352375fe8714f"
       }
     },
     {
