@@ -1,6 +1,6 @@
 ---
 name: choosing-agent-models
-description: Use when selecting a model or reasoning effort for an agent, subagent, Task, peer, or agent definition after delegation has been chosen.
+description: Use when selecting a model or effort after delegation, classifying Daybreak work or continuations, or diagnosing routing blocks or refusals.
 ---
 
 # Choosing Agent Models
@@ -11,7 +11,7 @@ Own model/effort selection and capability proof post-delegation. [delegating-cro
 
 Choose the lowest-cost model that preserves required judgment. Escalate for ambiguity, hard-to-reverse decisions, architecture, reviewer-facing work, or final integration.
 
-Before every dispatch or continuation, apply [Daybreak routing](references/daybreak-routing.md) to the current scope; use the general matrix for unrelated work.
+Before execution and each continuation, [classify scope and diagnose refusals](references/classifying-security-work.md). Apply [Daybreak routing](references/daybreak-routing.md) when security judgment is required; otherwise use the general matrix.
 
 ## Preferred Codex Role Family
 

@@ -1,0 +1,30 @@
+[
+  {
+    "query": "Draft a pull request summary explaining a new configurable retry limit.",
+    "should_trigger": true
+  },
+  {
+    "query": "Edit a public getting-started guide so its headings and numbered setup steps are clear.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write an Issue proposing a change and presenting two open decisions for discussion.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a chat reply explaining what I reproduced and what I tested.",
+    "should_trigger": true
+  },
+  {
+    "query": "Polish a first-person community post about what I learned from an experiment.",
+    "should_trigger": true
+  },
+  {
+    "query": "Implement a binary-search function. Return only Python code, with no comments or explanation.",
+    "should_trigger": false
+  },
+  {
+    "query": "Calculate the SHA-256 digest of the supplied bytes. Return only the hexadecimal digest.",
+    "should_trigger": false
+  }
+]

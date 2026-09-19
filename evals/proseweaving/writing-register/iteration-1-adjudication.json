@@ -1,0 +1,29 @@
+{
+  "iteration": 1,
+  "source_review": "Ralph Review Cycle 2 clean before generation",
+  "grading": {
+    "passed": 33,
+    "total": 36
+  },
+  "adjudications": [
+    {
+      "case": 1,
+      "expectation": "opens-with-outcome",
+      "decision": "rubric-overconstrained",
+      "reason": "The accepted outcome-first requirement applies to the opening, not a mandatory single sentence containing every status fact. The response presents all three facts in its opening paragraph. Keep the original failing grade and use the corrected paragraph-level rubric in the fresh run."
+    },
+    {
+      "case": 2,
+      "expectation": "opens-with-substantive-correction",
+      "decision": "rubric-overconstrained",
+      "reason": "A concrete commitment to make the missing correction directly answers this review. The accepted conversation contract allows action before explaining the already-present backoff. Grade both substantive points without a fixed order."
+    },
+    {
+      "case": 7,
+      "expectation": "leads-with-what-reader-needs",
+      "decision": "valid-instruction-finding",
+      "reason": "The support lead needs customer impact and completion/loss status before the settings mechanism. Add the impact/progress branch to the conversation reference and rerun the changed candidate."
+    }
+  ],
+  "next_boundary": "Judge substantive audience fit and evidence; retain explicit output constraints but do not infer mandatory sentence packing or review opening order. Run all cases afresh after the candidate and rubrics change."
+}

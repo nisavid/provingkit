@@ -45,8 +45,23 @@ branch can be tracked without moving or deleting the worktree.
 
 ## Submit Or Update PRs
 
+For new Issue-contributing PRs or material contribution/completion scope
+changes, use
+[Maintain Issue–PR Relations](../maintaining-issue-pr-relations/SKILL.md)
+before preparing canonical pairs. Share the stable task ID and observations
+across the stack; retain every member's own contribution roles. Carry planned
+ledger content through the existing writer and publisher. After draft transport
+and immediate canonical repair finish, resume pending relation reconciliation
+with the verified PR identities and publication results. An ancestry-only
+restack or unchanged resubmission does not reacquire relations or settings.
+
 1. Verify root/base and checks; ensure each remote head will equal the recorded
-   local commit, then prepare every canonical pair and bound review-input file.
+   local commit. Before invoking the PR writer for any member, bind that
+   member's publication review mode and sorted specialist inventory under
+   publication policy; reuse its current selection when applicable. Pass it
+   into the writer request and retain it unchanged in the canonical candidate,
+   submit plan, and publication repair. Missing selection blocks authoring.
+   Then prepare every canonical pair and bound review-input file.
 2. Build a schema-v2 absolute-path JSON request for the exact bottom-to-top stack
    and run
    `scripts/submit_draft_stack.py plan`. Review its content-addressed private
@@ -116,3 +131,11 @@ Report the final bottom-to-top stack, each branch and PR URL, base/head SHAs,
 validation, submission result, receipt id/provenance/sequence and audit status,
 canonical-body verification, and any unresolved Graphite or reviewer-owned
 action.
+
+Return the retained task relation context, or explicit absence, with every
+terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
+plan identity, per-pair results, pending handoffs or verified receipts, original
+setting observation metadata, read counts, limitations, and unresolved gates.
+Preserve that context for the caller to resume pending work without rediscovery
+or renewing observation timestamps. Keep relation-publication receipts distinct
+from canonical publication evidence.
