@@ -2,7 +2,7 @@
   "schema_version": 2,
   "semantic_definition": {
     "path": "evals/control-plane-matrix.json",
-    "sha256": "d1b4b99f8cf7f923a9414430ff37a26233aa0ecd96212e22489ed7bf07f7c944"
+    "sha256": "d197bd45d2f2b6bc1d3d5bad186988c1ac8c2c382fb15becf5e38e766f4e8411"
   },
   "existing_trigger_sources": [
     {
@@ -353,6 +353,17 @@
         "negative_expected_skills": [
           "runtime"
         ]
+      }
+    },
+    {
+      "id": "praxis:aeon-bell",
+      "cold_start": "Several tasks are waiting on the same quota bucket to recover; set up one shared monitor that observes the condition once per tick and continues only the tasks still waiting for it.",
+      "explicit": "Use $aeon-bell to register this gated continuation and run the shared monitor tick.",
+      "supplemental": {
+        "positive": "Register this task's continuation against the shared quota-recovery gate so the monitor wakes it once the bucket has capacity again.",
+        "positive_expected_skills": ["aeon-bell"],
+        "negative": "The shared quota gate has opened; now choose the exact supported model and reasoning effort for the woken task's next step.",
+        "negative_expected_skills": ["choosing-agent-models"]
       }
     }
   ]

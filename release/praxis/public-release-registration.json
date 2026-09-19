@@ -1,0 +1,13 @@
+{
+  "production_eligible": true,
+  "schema_version": 1,
+  "source_stage_validator_flags": [],
+  "support_paths": [
+    "evals/praxis",
+    "release/plugin-content-locks/praxis.json",
+    "tests/test_aeon_bell.py",
+    "tests/test_aeon_bell_binding.py",
+    "tests/test_aeon_bell_codex_status.py",
+    "tests/test_validate_praxis.py"
+  ]
+}

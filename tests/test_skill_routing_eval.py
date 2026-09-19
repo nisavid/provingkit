@@ -81,12 +81,12 @@ def test_routing_definition_has_the_complete_inventory():
     runner = load_runner()
     bundle = runner.load_definition(ROOT)
     cases = bundle.cases
-    assert len(cases) == 125
+    assert len(cases) == 129
     assert runner.case_counts(cases) == {
-        "cold_start": 24,
-        "explicit_invocation": 24,
-        "trigger": 77,
-        "total": 125,
+        "cold_start": 25,
+        "explicit_invocation": 25,
+        "trigger": 79,
+        "total": 129,
     }
     assert (
         sum(
@@ -94,7 +94,7 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 40
+        == 41
     )
     assert (
         sum(
@@ -102,7 +102,7 @@ def test_routing_definition_has_the_complete_inventory():
             for case in cases
             if case.tier == "trigger"
         )
-        == 37
+        == 38
     )
     assert {
         "versionkeeping:using-persistent-git-worktrees",
@@ -112,8 +112,22 @@ def test_routing_definition_has_the_complete_inventory():
         "mergecraft:graphite",
         "mergecraft:addressing-pr-review-feedback",
         "mergecraft:resuming-reviewed-prs",
+        "mergecraft:maintaining-issue-pr-relations",
         "proseweaving:writing-for-people",
+        "praxis:aeon-bell",
     } <= {case.target for case in cases}
+    praxis_cases = [case for case in cases if case.target == "praxis:aeon-bell"]
+    assert [case.tier for case in praxis_cases] == [
+        "cold_start",
+        "explicit_invocation",
+        "trigger",
+        "trigger",
+    ]
+    assert praxis_cases[0].expected_skills == ("aeon-bell",)
+    assert praxis_cases[1].expected_skills == ("aeon-bell",)
+    assert praxis_cases[2].expected_skills == ("aeon-bell",)
+    assert "aeon-bell" not in praxis_cases[3].expected_skills
+    assert bundle.skill_ids[-1] == "praxis:aeon-bell"
 
 
 @pytest.mark.parametrize(
@@ -391,7 +405,7 @@ def test_evidence_validation_compares_the_declared_candidate_repository(
 
 def test_fixture_mode_rejects_a_full_or_empty_matrix(tmp_path: Path):
     repository, revision = frozen_copy(tmp_path)
-    for limit in (None, "125", "0"):
+    for limit in (None, "129", "0"):
         command = [
             sys.executable,
             str(SCRIPT),

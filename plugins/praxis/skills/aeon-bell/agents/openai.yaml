@@ -1,0 +1,4 @@
+interface:
+  display_name: "Aeon Bell"
+  short_description: "Register gated task continuations and run the shared monitor"
+  default_prompt: "Use $praxis:aeon-bell to register or manage this task's gated continuation, or run the configured shared monitor through its installed structured binding without transcribing monitor values."

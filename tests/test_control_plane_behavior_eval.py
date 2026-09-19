@@ -4,6 +4,7 @@ import base64
 import importlib.util
 import json
 import os
+import runpy
 import shutil
 import subprocess
 import sys
@@ -17,7 +18,19 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts/run_control_plane_eval.py"
 ROUTING_RUNNER = ROOT / "scripts/run_skill_routing_eval.py"
 GATE = ROOT / "tests/_retired_eval_gate.py"
+RETAINED_GATE_SCRIPT = (
+    ROOT
+    / "plugins/versionkeeping/skills/checkpointing-and-publishing-git-work/"
+    "scripts/check_eval_gate.py"
+)
 DEFINITION = ROOT / "evals/control-plane-matrix.json"
+# The retained Versionkeeping structural gate is frozen and non-authoritative.
+# It pins the canonical evaluation ID to the 24-skill inventory that predates
+# Aeon Bell. Tests that exercise that retained contract must feed it the retained
+# 24-skill scenario set; current 25-skill evidence is not valid input for it and
+# is tested separately.
+RETAINED_GATE_SKILL_COUNT = 24
+RETAINED_GATE_LEGACY_VALIDATION_LABEL = "retained-24-skill-fixture"
 
 
 def load_runner():
@@ -227,7 +240,134 @@ class LocalProductionAdapter:
         )
 
 
-def build_local_production_evidence(tmp_path: Path, monkeypatch):
+class RetainedGateInventory(SimpleNamespace):
+    """The frozen skill, scenario, and direct-call pins of the retained gate."""
+
+    skill_ids: tuple[str, ...]
+    scenario_ids: tuple[str, ...]
+    direct_calls: dict[str, tuple[str, ...]]
+
+
+def retained_gate_inventory() -> RetainedGateInventory:
+    """Read the frozen inventory the retained gate pins, without running it."""
+
+    namespace = runpy.run_path(str(RETAINED_GATE_SCRIPT), run_name="retained_gate")
+    inventory = RetainedGateInventory(
+        skill_ids=tuple(namespace["CANONICAL_SKILL_IDS"]),
+        scenario_ids=tuple(namespace["CANONICAL_SCENARIO_IDS"]),
+        direct_calls={
+            skill_id: tuple(calls)
+            for skill_id, calls in namespace["CANONICAL_DIRECT_CALLS"].items()
+        },
+    )
+    assert len(inventory.skill_ids) == RETAINED_GATE_SKILL_COUNT
+    assert len(inventory.scenario_ids) == RETAINED_GATE_SKILL_COUNT
+    assert set(inventory.direct_calls) == set(inventory.skill_ids)
+    return inventory
+
+
+def retained_24_skill_definition(current_definition: dict) -> dict:
+    """Project the current definition onto the retained gate's 24-skill set.
+
+    This is a test-only legacy fixture: it keeps the current entrypoint and
+    scenario selection for every skill the retained gate pins, in the gate's
+    frozen order, binds each skill's companions to the gate's frozen direct-call
+    map, and omits the declarations the gate predates. It does not promote the
+    retained gate or change what the current 25-skill definition means.
+    """
+
+    retained = retained_gate_inventory()
+    declarations = {skill["id"]: skill for skill in current_definition["skills"]}
+    missing = [
+        skill_id for skill_id in retained.skill_ids if skill_id not in declarations
+    ]
+    assert not missing, f"retained gate skills absent from current definition: {missing}"
+    legacy_skills = [
+        {
+            **declarations[skill_id],
+            "companions": list(retained.direct_calls[skill_id]),
+        }
+        for skill_id in retained.skill_ids
+    ]
+    assert [skill["scenario"]["id"] for skill in legacy_skills] == list(
+        retained.scenario_ids
+    )
+    omitted = sorted(set(declarations) - set(retained.skill_ids))
+    assert omitted == ["praxis:aeon-bell"]
+    legacy = {
+        key: value for key, value in current_definition.items() if key != "skills"
+    }
+    legacy["runtime_dependencies"] = {
+        skill_id: paths
+        for skill_id, paths in current_definition["runtime_dependencies"].items()
+        if skill_id in retained.skill_ids
+    }
+    legacy["skills"] = legacy_skills
+    return legacy
+
+
+def bind_runner_definition_validation_to_retained_inventory(runner, monkeypatch):
+    """Validate the legacy fixture with the current runner's structural checks.
+
+    The current runner pins the canonical evaluation ID to the 25-skill public
+    inventory and to the current public topology, while the retained gate pins
+    the same ID to the frozen 24-skill inventory and its frozen direct-call
+    map. The legacy fixture must satisfy the retained pins, so this wrapper
+    swaps exactly those two current pins for explicit retained pins and keeps
+    every other definition check. It touches the runner's definition
+    validation only, never the gate.
+    """
+
+    original_validate_definition = runner.validate_definition
+    original_topology_calls = runner.topology_calls
+    retained = retained_gate_inventory()
+
+    def retained_topology_calls(_repo: Path) -> dict[str, set[str]]:
+        return {
+            skill_id: set(calls) for skill_id, calls in retained.direct_calls.items()
+        }
+
+    def validate_retained_inventory_definition(repo: Path, definition: dict) -> None:
+        assert definition["evaluation_id"] == "control-plane-integrated-v1"
+        assert [skill["id"] for skill in definition["skills"]] == list(
+            retained.skill_ids
+        )
+        assert [skill["scenario"]["id"] for skill in definition["skills"]] == list(
+            retained.scenario_ids
+        )
+        assert "target_skill_ids" not in definition
+        # Every retained skill must still be a public skill in the candidate's
+        # current topology; only its frozen direct calls come from the gate.
+        current_public_calls = original_topology_calls(repo)
+        undeclared = [
+            skill_id
+            for skill_id in retained.skill_ids
+            if skill_id not in current_public_calls
+        ]
+        assert not undeclared, f"topology has no public skill declaration: {undeclared}"
+        with monkeypatch.context() as scoped:
+            scoped.setattr(runner, "topology_calls", retained_topology_calls)
+            original_validate_definition(
+                repo,
+                {**definition, "evaluation_id": RETAINED_GATE_LEGACY_VALIDATION_LABEL},
+            )
+
+    monkeypatch.setattr(
+        runner, "validate_definition", validate_retained_inventory_definition
+    )
+
+
+def build_local_production_evidence(
+    tmp_path: Path, monkeypatch, *, retained_24_skill_inventory: bool = False
+):
+    """Build local fixture-transport evidence in schema-v2 production shape.
+
+    With ``retained_24_skill_inventory`` the frozen candidate tree carries the
+    test-only retained 24-skill definition instead of the current 25-skill one so
+    the retained structural gate can be exercised on the scenario set it pins.
+    Neither shape is live production evidence.
+    """
+
     runner = load_runner()
     repository = tmp_path / "candidate"
     shutil.copytree(
@@ -235,6 +375,13 @@ def build_local_production_evidence(tmp_path: Path, monkeypatch):
         repository,
         ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
     )
+    if retained_24_skill_inventory:
+        current_definition = json.loads(DEFINITION.read_text())
+        (repository / "evals/control-plane-matrix.json").write_text(
+            json.dumps(retained_24_skill_definition(current_definition), indent=2)
+            + "\n"
+        )
+        bind_runner_definition_validation_to_retained_inventory(runner, monkeypatch)
     subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
     subprocess.run(
         ["git", "config", "user.name", "Eval Fixture"], cwd=repository, check=True
@@ -338,7 +485,7 @@ def incumbent_mapping(path: Path, skill_count: int) -> Path:
 def test_definition_is_exact_public_inventory_and_scenario_map():
     definition = json.loads(DEFINITION.read_text())
     skills = definition["skills"]
-    assert len(skills) == 24
+    assert len(skills) == 25
     counts: dict[str, int] = {}
     for skill in skills:
         plugin = skill["id"].split(":", 1)[0]
@@ -347,6 +494,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         "mergecraft": 11,
         "rolecasting": 2,
         "proseweaving": 1,
+        "praxis": 1,
         "tricritical": 7,
         "versionkeeping": 3,
     }
@@ -375,7 +523,17 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         "merge-explicit-review-loop",
         "narrow-stacked-fixup",
         "stopping-point-report-partial-migration",
+        "shared-gate-single-wake",
     ]
+    praxis = next(skill for skill in skills if skill["id"] == "praxis:aeon-bell")
+    assert praxis["entrypoint"] == "plugins/praxis/skills/aeon-bell/SKILL.md"
+    assert praxis["companions"] == []
+    assert praxis["scenario"] == {
+        "id": "shared-gate-single-wake",
+        "kind": "simple-corpus",
+        "source": "evals/praxis/corpus.json",
+        "selector": "shared-gate-single-wake",
+    }
     validated = subprocess.run(
         [sys.executable, str(RUNNER), "validate-definition"],
         cwd=ROOT,
@@ -383,7 +541,7 @@ def test_definition_is_exact_public_inventory_and_scenario_map():
         capture_output=True,
         text=True,
     )
-    assert json.loads(validated.stdout) == {"passed": True, "skills": 24}
+    assert json.loads(validated.stdout) == {"passed": True, "skills": 25}
 
     getting_prs_merged = next(
         skill for skill in skills if skill["id"] == "mergecraft:getting-prs-merged"
@@ -577,7 +735,7 @@ def test_fixture_runner_rejects_symlinked_output_components_without_writing_targ
 
 
 def test_fixture_transport_cannot_masquerade_as_production_matrix(tmp_path: Path):
-    mapping = incumbent_mapping(tmp_path / "incumbents.json", 24)
+    mapping = incumbent_mapping(tmp_path / "incumbents.json", 25)
     rejected = subprocess.run(
         [
             sys.executable,
@@ -3247,30 +3405,70 @@ def test_retirement_gate_binds_bundles_to_the_candidate_commit(
     )
 
 
-def test_fully_local_production_evidence_passes_gate(tmp_path: Path, monkeypatch):
-    runner, output = build_local_production_evidence(tmp_path, monkeypatch)
+def run_retained_gate(manifest_path: Path, matrix_path: Path):
+    return subprocess.run(
+        [
+            sys.executable,
+            str(GATE),
+            "--manifest",
+            str(manifest_path),
+            "--matrix",
+            str(matrix_path),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_retained_gate_rejects_current_25_skill_inventory_evidence(
+    tmp_path: Path, monkeypatch
+):
+    # Current-inventory evidence is structurally complete but is not valid
+    # input for the frozen retained gate: the gate pins the canonical
+    # evaluation ID to the retained 24-skill inventory that predates Aeon Bell.
+    _runner, output = build_local_production_evidence(tmp_path, monkeypatch)
+    matrix = json.loads((output / "matrix-v2.json").read_text())
+    assert len(matrix["skills"]) == RETAINED_GATE_SKILL_COUNT + 1
+
+    rejected = run_retained_gate(
+        output / "evidence-v2.json", output / "matrix-v2.json"
+    )
+
+    assert rejected.returncode == 2
+    assert "production ordered skill inventory drift" in rejected.stdout
+    assert json.loads(rejected.stdout)["passed"] is False
+
+
+def test_retained_gate_passes_retained_24_skill_local_evidence_and_rejects_mutations(
+    tmp_path: Path, monkeypatch
+):
+    # Positive structural assertion for the retained, non-authoritative gate on
+    # the retained 24-skill scenario set, followed by every negative mutation
+    # the gate must still reject. The evidence is a local fixture transport in
+    # production shape; it is not a live positive production gate result.
+    runner, output = build_local_production_evidence(
+        tmp_path, monkeypatch, retained_24_skill_inventory=True
+    )
 
     manifest_path = output / "evidence-v2.json"
     matrix_path = output / "matrix-v2.json"
+    retained = retained_gate_inventory()
+    matrix = json.loads(matrix_path.read_text())
+    assert [skill["id"] for skill in matrix["skills"]] == list(retained.skill_ids)
+    assert [scenario["id"] for scenario in matrix["scenarios"]] == list(
+        retained.scenario_ids
+    )
+    assert matrix["evaluation_id"] == "control-plane-integrated-v1"
 
     def run_gate():
-        return subprocess.run(
-            [
-                sys.executable,
-                str(GATE),
-                "--manifest",
-                str(manifest_path),
-                "--matrix",
-                str(matrix_path),
-            ],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-        )
+        return run_retained_gate(manifest_path, matrix_path)
 
     gated = run_gate()
     assert gated.returncode == 0, gated.stdout + gated.stderr
-    assert json.loads(gated.stdout)["passed"] is True
+    gate_report = json.loads(gated.stdout)
+    assert gate_report["passed"] is True
+    assert len(gate_report["scenarios"]) == RETAINED_GATE_SKILL_COUNT
 
     original_manifest = manifest_path.read_bytes()
     manifest = json.loads(original_manifest)

@@ -2,11 +2,12 @@
 
 Provingkit equips coding agents with workflows for choosing workers, reviewing
 changes, keeping Git history, managing pull requests, assessing dependencies,
-and writing for people. Its six coordinated Agent Plugins pair instructions
-with checks that make the work reviewable.
+writing for people, and stewarding agentic efforts. Its seven coordinated Agent
+Plugins pair instructions with checks that make the work reviewable.
 
 A [pinned unsigned preview](https://github.com/nisavid/provingkit/releases/tag/preview-8acd0e2af1f4)
-is available for Agent Plugins/Codex, Claude Code, and Cursor. Stable release
+is available for Agent Plugins/Codex, Claude Code, and Cursor. The preview
+predates Praxis and carries the earlier six-plugin Slate. Stable release
 and live host qualification remain separate gates.
 
 ## What the plugins do
@@ -27,6 +28,10 @@ Each plugin owns a part of the work:
   an explicit policy.
 - **[Proseweaving](plugins/proseweaving/README.md)** writes and checks prose for
   clarity, evidence, and the reader's needs.
+- **[Praxis](plugins/praxis/README.md)** stewards agentic efforts. Its first
+  equipment, Aeon Bell, is in development for shared gate observation, task
+  registration, and conditional dispatch; it is a source-stage member with no
+  preview or release artifact yet.
 
 Use the Kit when you want these workflows to work together across an agent's
 work on a repository. Each plugin has its own identity and version and can be

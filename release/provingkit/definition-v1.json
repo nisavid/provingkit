@@ -107,6 +107,21 @@
           "claude": "plugins/proseweaving/.claude-plugin/plugin.json"
         },
         "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "release/plugin-content-locks/praxis.json",
+          "sha256": "sha256:b3663a9504ce62f627c76d3945802bc0064c6425183fcb6fba2648917a039f8f"
+        },
+        "display_name": "Praxis",
+        "distribution_kind": "agent-plugin",
+        "id": "praxis",
+        "identity_manifests": {
+          "canonical": "plugins/praxis/plugin.json",
+          "claude": "plugins/praxis/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
       }
     ],
     "mode": "exact",

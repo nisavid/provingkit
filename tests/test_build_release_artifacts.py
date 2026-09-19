@@ -49,6 +49,43 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             self.assertEqual(r1["artifact_sha256"], r2["artifact_sha256"])
             self.assertEqual(r1["files"], r2["files"])
 
+    def test_projection_slate_matches_the_kit_definition_membership(self):
+        policy = json.loads((ROOT / "release/artifact-projection-policy-v1.json").read_text())
+        definition = json.loads((ROOT / "release/provingkit/definition-v1.json").read_text())
+        self.assertEqual(
+            policy["slate"],
+            [member["id"] for member in definition["membership"]["members"]],
+        )
+        self.assertIn("praxis", policy["slate"])
+
+    def test_praxis_projection_ships_only_runtime_files(self):
+        for output, receipt in self.stage("claude", ["praxis"]):
+            self.assertTrue((output / "plugins/praxis/plugin.json").is_file())
+            self.assertTrue((output / "plugins/praxis/.claude-plugin/plugin.json").is_file())
+            self.assertFalse((output / "plugins/praxis/topology.json").exists())
+            self.assertFalse(any("__pycache__" in p.parts or p.suffix == ".pyc" for p in output.rglob("*")))
+            self.assertEqual(receipt["plugin_slate"], ["praxis"])
+
+    def test_praxis_projection_ships_runtime_scripts_everywhere_and_codex_adapter_only_for_agent_plugins(self):
+        # The skill's references route to both runtime scripts, so every
+        # supported target must ship them; the Codex skill adapter is a native
+        # component that only the agent-plugins projection carries.
+        runtime_scripts = (
+            "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py",
+            "plugins/praxis/skills/aeon-bell/scripts/codex_status.py",
+        )
+        codex_adapter = "plugins/praxis/skills/aeon-bell/agents/openai.yaml"
+        for target in ("agent-plugins", "claude", "cursor"):
+            with self.subTest(target=target):
+                for output, receipt in self.stage(target, ["praxis"]):
+                    shipped = {entry["path"] for entry in receipt["files"]}
+                    for script in runtime_scripts:
+                        self.assertTrue((output / script).is_file(), script)
+                        self.assertIn(script, shipped)
+                    self.assertEqual((output / codex_adapter).is_file(), target == "agent-plugins")
+                    self.assertEqual(codex_adapter in shipped, target == "agent-plugins")
+                    self.assertEqual(receipt["plugin_slate"], ["praxis"])
+
     def test_code_only_member_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ValueError):

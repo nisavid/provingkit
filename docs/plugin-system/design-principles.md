@@ -1,9 +1,9 @@
 # Plugin system design principles
 
-This repository develops six coordinated distributions for frontier agents:
-Rolecasting, Versionkeeping, Tricritical, Mergecraft, Artifact Customs, and
-Proseweaving. They form one equipment system, not a catalog of unrelated
-skills. The system should contain the smallest set of durable contracts that
+This repository develops seven coordinated distributions for frontier agents:
+Rolecasting, Versionkeeping, Tricritical, Mergecraft, Artifact Customs,
+Proseweaving, and Praxis. They form one equipment system, not a catalog of
+unrelated skills. The system should contain the smallest set of durable contracts that
 materially improves agent behavior across supported harnesses.
 
 These principles describe the intended steady state. Package references
@@ -43,6 +43,8 @@ Each distribution owns a distinct part of the workflow:
 | Tricritical | Own general change review, finding adjudication, authorized revision, and fixed-point review loops. |
 | Mergecraft | Own reviewer-facing pull-request content and the pull-request lifecycle. |
 | Artifact Customs | Govern third-party components from assessment through adoption, maintenance, and retirement. |
+| Proseweaving | Own generic human-facing prose mechanics: register, evidence discipline, and post-draft edit passes. |
+| Praxis | Steward an effort's intent, work graph, participants, context, artifacts, and obligations; Aeon Bell is its first equipment for shared gate observation, task registration, and conditional dispatch. |
 
 One semantic capability or mutable surface has one owner. Outcome coordinators
 sequence those owners; they do not copy their procedures. Capability owners do

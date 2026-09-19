@@ -16,8 +16,16 @@ each member to its own manifest. The repository contains a schema for a future
 immutable release manifest, but it contains no release-manifest instance.
 
 The root [`marketplace.json`](../.claude-plugin/marketplace.json) is a source
-projection of the six Agent Plugins for Claude Code. Its presence is not
+projection of the seven Agent Plugins for Claude Code. Its presence is not
 marketplace publication.
+
+Praxis is the seventh source-stage member. Its definition entry, marketplace
+projection, artifact-projection slate entry, public-release registration, and
+`scripts/validate_praxis.py` establish source membership only. Source
+membership is not release or deployment qualification: the definition still
+withholds release authority, the pinned preview predates Praxis, and its
+content lock verifies source bytes and declared tests and evals without
+asserting that the Aeon Bell runtime behaves correctly.
 
 ## The pinned preview
 

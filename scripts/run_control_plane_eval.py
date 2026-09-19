@@ -1753,6 +1753,7 @@ def validate_definition(repo: Path, definition: dict[str, Any]) -> None:
         "versionkeeping": 3,
         "mergecraft": 11,
         "proseweaving": 1,
+        "praxis": 1,
     }:
         raise EvaluationError(f"public skill inventory drift: {counts}")
     declarations = {skill["id"]: skill for skill in definition["skills"]}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "praxis",
+  "version": "1.0.0",
+  "description": "Praxis: work stewardship for shaping, conducting, recovering, and completing agentic efforts.",
+  "author": {
+    "name": "Ivan D Vasin",
+    "url": "https://github.com/nisavid"
+  },
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/praxis",
+  "repository": "https://github.com/nisavid/provingkit",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "work-stewardship",
+    "coordination",
+    "monitoring",
+    "dispatch"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Praxis",
+        "shortDescription": "Steward agentic efforts and coordinate shared gate monitoring.",
+        "longDescription": "Praxis is the home for work stewardship: shaping, conducting, recovering, and completing agentic efforts and improving how they run. Its first equipment, Aeon Bell, is in development for shared gate observation, task registration, and conditional dispatch.",
+        "developerName": "Ivan D Vasin",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Orchestration"
+        ],
+        "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/praxis",
+        "defaultPrompt": [
+          "Use $praxis:aeon-bell to coordinate shared gate monitoring, task registration, and conditional dispatch for this effort."
+        ]
+      }
+    }
+  }
+}
