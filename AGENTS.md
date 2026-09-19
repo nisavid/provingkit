@@ -56,6 +56,14 @@ Before publication, run the validation that owns the touched surface:
 `release/`, or the disposition ledger changes. The workflows under
 `.github/workflows/` run the same validators on every pull request.
 
+### Retained source-lineage entrypoints
+
+For changes to the retained lineage validator, refresher, recovery moves, or
+their tests, follow the maintained
+[source-lineage procedure](docs/agents/source-skill-lineage.md). It defines the
+historical/current boundary, rescout ownership, locking and no-replace
+contracts, supported commands, and acceptance evidence.
+
 ## Operating Policy
 
 - This repository uses agentic engineering and operations. Agents should perform assigned tasks autonomously until they reach a boundary that requires stakeholder policy or an unavailable control surface.

@@ -77,11 +77,10 @@ LINEAGE_TREE = {
     LINEAGE_ROOT / "installed-hosts",
     *LINEAGE_ARTIFACTS,
 }
-DISTRIBUTIONS = (
+RETAINED_DISTRIBUTIONS = (
     "artifact-customs",
     "mergecraft",
     "rolecasting",
-    "task-witness",
     "tricritical",
     "versionkeeping",
 )
@@ -379,6 +378,7 @@ _LINEAGE_DIRECTORY_FLAGS = (
 _LINEAGE_FILE_FLAGS = os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
 
 MATERIALIZE_TIMEOUT_SECONDS = 30.0
+LOCK_RETRY_SECONDS = 0.05
 MAX_TREE_ENTRIES = 10_000
 MAX_TREE_LISTING_BYTES = 8 * 1024 * 1024
 MAX_TREE_PATH_BYTES = 4 * 1024
@@ -395,6 +395,7 @@ MAX_JSON_NUMBER_TOKEN_BYTES = 128
 
 TREE_LIMIT_DIAGNOSTIC = "tree exceeds capture limits"
 VALIDATION_LIMIT_DIAGNOSTIC = "source-lineage validation exceeds limits"
+LOCK_LIMIT_DIAGNOSTIC = "source-lineage lock acquisition exceeds limits"
 
 
 class _CaptureBudget:
@@ -793,18 +794,30 @@ def _verified_lineage_parent(artifacts_root: Path):
 def _lineage_lock(repository: Path, *, exclusive: bool, nonblocking: bool = False):
     with _verified_lineage_parent(repository) as view:
         descriptor = view.release_descriptor
-        operation = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
-        if nonblocking:
-            operation |= fcntl.LOCK_NB
+        operation = (fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH) | fcntl.LOCK_NB
+        deadline = time.monotonic() + MATERIALIZE_TIMEOUT_SECONDS
         locked = False
         try:
-            try:
-                fcntl.flock(descriptor, operation)
-            except BlockingIOError as error:
-                raise LineageError("source-lineage writer is already active") from error
-            except OSError:
-                raise LineageError("source-lineage artifact tree drift") from None
-            locked = True
+            while True:
+                if not nonblocking and time.monotonic() >= deadline:
+                    raise LineageError(LOCK_LIMIT_DIAGNOSTIC)
+                try:
+                    fcntl.flock(descriptor, operation)
+                    locked = True
+                    if not nonblocking and time.monotonic() >= deadline:
+                        raise LineageError(LOCK_LIMIT_DIAGNOSTIC)
+                    break
+                except BlockingIOError as error:
+                    if nonblocking:
+                        raise LineageError(
+                            "source-lineage writer is already active"
+                        ) from error
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise LineageError(LOCK_LIMIT_DIAGNOSTIC) from None
+                    time.sleep(min(LOCK_RETRY_SECONDS, remaining))
+                except OSError:
+                    raise LineageError("source-lineage artifact tree drift") from None
             _require_lineage_view_binding(view)
             yield view
         finally:
@@ -2104,7 +2117,8 @@ def _validate_candidate(
     packages = value["packages"]
     require(
         type(packages) is list
-        and [item.get("id") for item in packages] == list(DISTRIBUTIONS),
+        and [item.get("id") for item in packages]
+        == list(RETAINED_DISTRIBUTIONS),
         "candidate package inventory drift",
     )
     require(
@@ -2295,7 +2309,7 @@ def validate_source_manifest(
     require(
         type(scope) is dict
         and set(scope) == {"distribution_ids", "host_profile_ids", "source_families"}
-        and tuple(scope["distribution_ids"]) == DISTRIBUTIONS
+        and tuple(scope["distribution_ids"]) == RETAINED_DISTRIBUTIONS
         and tuple(scope["host_profile_ids"]) == tuple(sorted(HOST_MANIFESTS))
         and tuple(scope["source_families"]) == SOURCE_FAMILIES,
         "source manifest scope drift",
@@ -2322,7 +2336,7 @@ def validate_source_manifest(
     candidate_packages = {
         package["id"]: package for package in value["candidate"]["packages"]
     }
-    for distribution_id in DISTRIBUTIONS:
+    for distribution_id in RETAINED_DISTRIBUTIONS:
         source = validated[f"ivan-{distribution_id}"]
         package = candidate_packages[distribution_id]
         current = source["current"]
@@ -2460,7 +2474,8 @@ def validate_contribution_ledger(
             )
             distribution = destination["distribution_id"]
             require(
-                distribution in DISTRIBUTIONS, "contribution distribution is invalid"
+                distribution in RETAINED_DISTRIBUTIONS,
+                "contribution distribution is invalid",
             )
             distribution_coverage.add(distribution)
             _safe_id(destination["owner_id"], "contribution owner")
@@ -2494,7 +2509,7 @@ def validate_contribution_ledger(
                 safe_ids=True,
             )
             require(
-                set(candidate_ids) <= set(DISTRIBUTIONS),
+                set(candidate_ids) <= set(RETAINED_DISTRIBUTIONS),
                 "unresolved distribution is invalid",
             )
             distribution_coverage.update(candidate_ids)
@@ -2516,7 +2531,7 @@ def validate_contribution_ledger(
         source_coverage == set(sources), "contribution coverage does not match sources"
     )
     require(
-        distribution_coverage == set(DISTRIBUTIONS),
+        distribution_coverage == set(RETAINED_DISTRIBUTIONS),
         "distribution contribution coverage drift",
     )
     _privacy_scan(value, "contribution ledger")
@@ -2898,7 +2913,6 @@ def main() -> int:
         summary = validate_lineage(
             arguments.repository,
             arguments.artifacts_root,
-            acquire_lock=not arguments.receipt_summary,
         )
     except (LineageError, OSError) as error:
         print(f"source-skill-lineage: {error}", file=sys.stderr)
