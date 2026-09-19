@@ -6,7 +6,7 @@ Produce and check behavior-evaluation receipts for the committed Provingkit Slat
 
 Load it when recording behavior evaluations, reconciling retained run or discovery artifacts, checking evidence after skill or shared-input changes, or consuming those results for disclosure or readiness. “Record these three runs,” “Can these original runs support the current source?” and “Check behavior evidence for this candidate” enter this procedure.
 
-Before landing a receipt-bearing PR through squash, load [the two-phase landing sequence](#5-land-a-source-pr-and-a-receipt-only-successor). Use it when the landing discards the receipt's branch-only S and the owning task permits qualification of the final published revision after a separate receipt-only PR. A receipt-only successor still enters this procedure even when its own PR comparison selects no skill.
+Before landing a receipt-bearing PR through squash, load [the two-phase landing sequence](#5-legacy-source-landing-with-a-receipt-only-successor). Use it when the landing discards the receipt's branch-only S and the owning task permits qualification of the final published revision after a separate receipt-only PR. A receipt-only successor still enters this procedure even when its own PR comparison selects no skill.
 
 Static source validation, ordinary pull-request review, publication-review receipts, and deployment qualification use their owning procedures. “Check Markdown formatting” and “Verify the publication-review receipt” do not enter this procedure. An unchanged candidate still enters when behavior evidence is requested: `not-required` is a check outcome, not a discovery exemption.
 
