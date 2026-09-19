@@ -21,6 +21,11 @@ artifacts before asking for discoverable facts. Distinguish what you know about
 the audience from what you infer. Write a standalone artifact for a reader
 arriving fresh; fold revision feedback into its substance.
 
+Treat an operator's brief as compressed input. Unpack it into what this reader
+needs to understand or do; preserve its facts and decisions without carrying
+the operator's internal roles, powers, or work sequence into the message's
+frame. Include that context only when it helps the reader use the piece.
+
 ## Choose The Register
 
 Choose phrasing and structure for the medium, purpose, and audience. Lead the
@@ -52,6 +57,9 @@ appears; otherwise use plain words. Use technical precision where it changes
 the reader's understanding or decision and everyday verbs elsewhere. When a
 reader shows that an explanation did not land, recover the missing common
 ground and explain more simply.
+
+Use a workflow identifier only when the same or a recent message establishes
+what it means for this reader. Otherwise explain it where needed or omit it.
 
 ## Let Content Pick The Shape
 
