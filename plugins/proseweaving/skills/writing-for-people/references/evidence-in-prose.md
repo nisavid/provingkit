@@ -33,6 +33,10 @@ threshold, offer, deadline, or concession that is not in the brief.
 Offer options, ask the question, or name the decision as open and say
 who holds it.
 
+Keep agreement to act separate from agreement on its terms. A suggested value,
+date, or option remains open until the brief records that choice; preserve
+that distinction in wording about what happens next.
+
 ### Write The Observation, Not The Story
 
 Report the observation accurately: "the config record hasn't changed since

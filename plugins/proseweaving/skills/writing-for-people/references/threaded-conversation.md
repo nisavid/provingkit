@@ -11,8 +11,10 @@ did. When initiating, lead with what the reader most needs. Match their
 register and conversational energy while staying professional, and acknowledge
 social intent when it matters. Put a finding directly before its explanation;
 a concrete mechanism or code symbol helps when the reader shares that context.
-For questions about impact or progress, lead with the reader-relevant outcome
-and its material limits, then explain the cause or the work behind it.
+For impact, progress, or incident updates, open with the current condition and
+its effect on the reader, then explain the cause or the work behind it.
+Distinguish completing affected work from fixing the condition that caused it;
+state both when verified.
 
 Let each next point answer a likely follow-up, doubt, or challenge. Keep replies
 focused on the exchange, and end on the last substantive point. First-person
