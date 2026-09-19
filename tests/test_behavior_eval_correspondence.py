@@ -8,6 +8,7 @@ than substituting current code for a historical profile.
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -264,8 +265,10 @@ class ProfileCorrespondenceTests(unittest.TestCase):
         cpath, lpath = case.private / "context.json", case.private / "landing.json"
         cpath.write_text(json.dumps(context))
         lpath.write_text(json.dumps(landing))
+        environment = {**os.environ, "PYTHONPATH": ""}
         process = subprocess.run([sys.executable, "-S", str(script), "--repository", str(case.repo),
-            "check-landed", "--context", str(cpath), "--landing", str(lpath)], capture_output=True, text=True)
+            "check-landed", "--context", str(cpath), "--landing", str(lpath)],
+            capture_output=True, text=True, env=environment)
         self.assertEqual(process.returncode, 2, process.stdout + process.stderr)
         result = json.loads(process.stdout)
         self.assertEqual((result["status"], result["reason_code"]),
