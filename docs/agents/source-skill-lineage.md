@@ -33,8 +33,10 @@ the pathless lock-limit diagnostic.
 The refresher pins the validator's byte size and SHA-256. Update both values
 whenever the validator changes. The existing validator and historical-test
 entries in `release/provingkit/historical-identity-allowlist-v1.json` must also
-match their reviewed file bytes. Keep directory and non-directory recovery
-moves on `_move_bound_noreplace()` with typed binding callbacks. Public
+match their reviewed file bytes. Historical ancestry fixtures that overlay the
+current allowlist must also overlay those reviewed files so digest checks do
+not mask the ancestry condition under test. Keep directory and non-directory
+recovery moves on `_move_bound_noreplace()` with typed binding callbacks. Public
 `write()` tests must reach the directory path and both non-directory quarantine
 paths. Exercise destination appearance, binding substitution, applied partial
 failure, first-error precedence, and preserved source, occupant, and retained
@@ -47,6 +49,7 @@ Run the active source-lineage tests, then exercise both retained readers:
 ```sh
 python -m unittest tests.test_validate_source_skill_lineage
 python scripts/validate_provingkit.py .
+python -m unittest tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_validator_rejects_an_identical_tree_outside_final_main
 python scripts/validate_source_skill_lineage.py .
 python scripts/refresh_source_skill_lineage.py check .
 ```
