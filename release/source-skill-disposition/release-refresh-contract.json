@@ -21,6 +21,13 @@
         "plugin_root": "plugins/mergecraft"
       },
       {
+        "id": "praxis",
+        "identity_artifact_paths": [
+          "release/plugin-content-locks/praxis.json"
+        ],
+        "plugin_root": "plugins/praxis"
+      },
+      {
         "id": "rolecasting",
         "identity_artifact_paths": [
           "plugins/rolecasting/content-lock.json"
@@ -71,7 +78,7 @@
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   },
-  "content_sha256": "sha256:b2da23f8b3b238de1b1b89bfee0ea1d94908bbd2b461c367f9ffb1a32c74d20d",
+  "content_sha256": "sha256:47c709b15f9d299cbadac0b521d3ddab83013fd868f31b5c024718c956c3c7be",
   "contract": "coordinated-source-skill-release-refresh-v1",
   "disposition_ledger": {
     "path": "release/source-skill-disposition/disposition-ledger.json",
@@ -150,6 +157,7 @@
       "all_distribution_ids": [
         "artifact-customs",
         "mergecraft",
+        "praxis",
         "rolecasting",
         "proseweaving",
         "tricritical",
@@ -219,6 +227,9 @@
           "mergecraft": [
             "artifact-customs",
             "mergecraft"
+          ],
+          "praxis": [
+            "praxis"
           ],
           "proseweaving": [
             "proseweaving"
@@ -293,6 +304,33 @@
           ],
           "validation_entrypoints": [
             "scripts/validate_mergecraft.py"
+          ]
+        },
+        {
+          "documentation_paths": [
+            "plugins/praxis/README.md",
+            "plugins/praxis/skills"
+          ],
+          "evaluation_paths": [
+            "evals/praxis"
+          ],
+          "id": "praxis",
+          "identity_artifact_paths": [
+            "release/plugin-content-locks/praxis.json"
+          ],
+          "manifest_path": "plugins/praxis/plugin.json",
+          "package_root": "plugins/praxis",
+          "test_paths": [
+            "tests/test_aeon_bell.py",
+            "tests/test_aeon_bell_binding.py",
+            "tests/test_aeon_bell_codex_status.py",
+            "tests/test_validate_praxis.py"
+          ],
+          "topology_and_owner_paths": [
+            "plugins/praxis/topology.json"
+          ],
+          "validation_entrypoints": [
+            "scripts/validate_praxis.py"
           ]
         },
         {
@@ -602,6 +640,13 @@
         "id": "mergecraft",
         "regenerate_paths": [
           "release/plugin-content-locks/mergecraft.json"
+        ]
+      },
+      {
+        "conditional_regenerate_paths": [],
+        "id": "praxis",
+        "regenerate_paths": [
+          "release/plugin-content-locks/praxis.json"
         ]
       },
       {

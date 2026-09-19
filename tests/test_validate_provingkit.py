@@ -125,16 +125,20 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/provingkit/release-manifest-v1.schema.json",
             "release/plugin-content-locks/artifact-customs.json",
             "release/plugin-content-locks/mergecraft.json",
+            "release/plugin-content-locks/praxis.json",
             "release/plugin-content-locks/versionkeeping.json",
             "plugins/tricritical/content-lock.json",
             "release/source-skill-lineage/source-manifest.json",
             "release/source-skill-disposition/disposition-ledger.json",
             "release/source-skill-disposition/release-refresh-contract.json",
+            "release/praxis/public-release-registration.json",
         ):
+            (destination / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(REPOSITORY / relative, destination / relative)
         expected_members = {
             "artifact-customs",
             "mergecraft",
+            "praxis",
             "proseweaving",
             "rolecasting",
             "tricritical",
@@ -143,7 +147,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         for stale_member in (destination / "plugins").iterdir():
             if stale_member.is_dir() and stale_member.name not in expected_members:
                 shutil.rmtree(stale_member)
-        for member in ("rolecasting", "proseweaving"):
+        for member in ("rolecasting", "proseweaving", "praxis"):
             shutil.copytree(
                 REPOSITORY / "plugins" / member,
                 destination / "plugins" / member,
@@ -223,6 +227,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "agent-plugin",
                 "plugin-content-lock",
                 "plugins/proseweaving/content-lock.json",
+            ),
+            (
+                "praxis",
+                "agent-plugin",
+                "plugin-content-lock",
+                "release/plugin-content-locks/praxis.json",
             ),
         ):
             members.append(
@@ -501,11 +511,11 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             lock_commands,
         )
 
-    def test_human_docs_state_the_current_six_plugin_source_set(self) -> None:
+    def test_human_docs_state_the_current_seven_plugin_source_set(self) -> None:
         expected = {
-            "README.md": "six coordinated Agent Plugins",
-            "CONTRIBUTING.md": "six Agent Plugins",
-            ".github/pull_request_template.md": "six Agent Plugin members",
+            "README.md": "seven coordinated Agent Plugins",
+            "CONTRIBUTING.md": "seven Agent Plugins",
+            ".github/pull_request_template.md": "seven Agent Plugin members",
         }
         for relative, phrase in expected.items():
             with self.subTest(relative=relative):
@@ -513,7 +523,63 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 normalized = " ".join(content.split())
                 self.assertIn(phrase, normalized)
                 self.assertIn("Proseweaving", normalized)
-                self.assertNotIn("seven source members", normalized)
+                self.assertIn("Praxis", normalized)
+                for stale in (
+                    "six coordinated Agent Plugins",
+                    "six Agent Plugins",
+                    "six Agent Plugin members",
+                ):
+                    self.assertNotIn(stale, normalized)
+
+    def test_human_docs_keep_praxis_source_membership_below_release_authority(
+        self,
+    ) -> None:
+        release_boundary = " ".join(
+            (REPOSITORY / "docs/release-boundary.md").read_text(encoding="utf-8").split()
+        )
+        readme = " ".join((REPOSITORY / "README.md").read_text(encoding="utf-8").split())
+
+        self.assertIn("Praxis", release_boundary)
+        self.assertIn("source membership is not release", release_boundary.lower())
+        self.assertIn("[Praxis](plugins/praxis/README.md)", readme)
+        self.assertIn("predates Praxis", readme)
+
+    def test_praxis_source_job_and_derived_lock_are_covered(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        source_commands = {
+            line.strip()
+            for step in workflow["jobs"]["praxis"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+        lock_commands = {
+            line.strip()
+            for step in workflow["jobs"]["derived-locks"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+        contributing = (REPOSITORY / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+        self.assertIn("python -m unittest tests.test_validate_praxis", source_commands)
+        self.assertIn(
+            "python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding",
+            source_commands,
+        )
+        self.assertIn(
+            "python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding",
+            contributing,
+        )
+        self.assertIn("python scripts/validate_praxis.py .", source_commands)
+        self.assertIn(
+            "python -m pip install --disable-pip-version-check PyYAML==6.0.3",
+            source_commands,
+        )
+        self.assertIn(
+            "python scripts/validate_praxis.py --write-content-lock .",
+            lock_commands,
+        )
+        self.assertIn("python -m unittest tests.test_validate_praxis", contributing)
+        self.assertIn("python scripts/validate_praxis.py .", contributing)
 
     def test_agent_guidance_describes_member_specific_content_identity_writers(
         self,
@@ -522,6 +588,11 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertIn("Use `--write-content-lock` only where", guidance)
         self.assertIn(
+            "Rolecasting, Versionkeeping, Mergecraft, Artifact Customs, and Praxis write "
+            "only their content locks",
+            guidance,
+        )
+        self.assertNotIn(
             "Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write "
             "only their content locks",
             guidance,
@@ -719,8 +790,32 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "plugin-content-lock",
                     "plugins/proseweaving/content-lock.json",
                 ),
+                (
+                    "praxis",
+                    "agent-plugin",
+                    "1.0.0",
+                    "plugins/praxis/plugin.json",
+                    "plugins/praxis/.claude-plugin/plugin.json",
+                    "plugin-content-lock",
+                    "release/plugin-content-locks/praxis.json",
+                ),
             ],
         )
+        self.assertEqual(
+            [member["display_name"] for member in definition["membership"]["members"]],
+            [
+                "Rolecasting",
+                "Tricritical",
+                "Versionkeeping",
+                "Mergecraft",
+                "Artifact Customs",
+                "Proseweaving",
+                "Praxis",
+            ],
+        )
+        self.assertEqual(definition["release_manifest"]["release_authority"], "not-granted")
+        self.assertEqual(definition["release_manifest"]["instances"], [])
+        self.assertEqual(definition["state"], "source-stage-unreleased")
         self.assertEqual(
             definition["excluded_source"],
             {
@@ -823,6 +918,73 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("cutover member version drift", result.stderr)
+
+    def test_praxis_member_version_is_bound_outside_the_cutover_set(self) -> None:
+        self.assertEqual(
+            set(validate_provingkit.EXPECTED_CUTOVER_MEMBER_VERSIONS),
+            {
+                "rolecasting",
+                "tricritical",
+                "versionkeeping",
+                "mergecraft",
+                "artifact-customs",
+                "proseweaving",
+            },
+        )
+        self.assertEqual(
+            validate_provingkit.EXPECTED_SOURCE_MEMBER_VERSIONS,
+            {**validate_provingkit.EXPECTED_CUTOVER_MEMBER_VERSIONS, "praxis": "1.0.0"},
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            definition_path = repository / "release/provingkit/definition-v1.json"
+            definition = json.loads(definition_path.read_text(encoding="utf-8"))
+            praxis = next(
+                member
+                for member in definition["membership"]["members"]
+                if member["id"] == "praxis"
+            )
+            praxis["version"] = "2.0.0"
+            definition_path.write_text(
+                json.dumps(definition, indent=2) + "\n", encoding="utf-8"
+            )
+            for relative in (
+                "plugins/praxis/plugin.json",
+                "plugins/praxis/.claude-plugin/plugin.json",
+            ):
+                manifest_path = repository / relative
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                manifest["version"] = "2.0.0"
+                manifest_path.write_text(
+                    json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+                )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("source member version drift", result.stderr)
+
+    def test_praxis_content_identity_must_be_the_generated_release_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            lock_path = repository / "release/plugin-content-locks/praxis.json"
+            if lock_path.exists():
+                lock_path.unlink()
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("member content identity is unreadable", result.stderr)
 
     def test_member_content_identity_binds_the_exact_review_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1675,7 +1837,27 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("excluded source present", result.stderr)
 
-    def test_marketplace_is_the_exact_six_agent_plugin_source_projection(self) -> None:
+    def test_marketplace_is_the_exact_seven_agent_plugin_source_projection(self) -> None:
+        marketplace = json.loads(
+            (REPOSITORY / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            [entry["name"] for entry in marketplace["plugins"]],
+            [
+                "rolecasting",
+                "tricritical",
+                "versionkeeping",
+                "mergecraft",
+                "artifact-customs",
+                "proseweaving",
+                "praxis",
+            ],
+        )
+        self.assertIn("seven Agent Plugins v1 members", marketplace["description"])
+        self.assertIn("not a marketplace publication", marketplace["description"])
+        self.assertEqual(marketplace, validate_provingkit.EXPECTED_MARKETPLACE)
+
+    def test_marketplace_rejects_an_additional_source_projection_entry(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -2686,7 +2868,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 7),
+            ("maxItems", 8),
             ("items", {}),
         )
         for key, value in mutations:

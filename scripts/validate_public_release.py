@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "ba30a9884ef59634beb3e1f9b517d2e43189abfa6408aefbc815964e14e54b5e"
+SOURCE_SHA256 = "a074eaf309734c3b749a321613c8d6225a991f1d6496c3f3037d01a0748bd163"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -59,6 +59,7 @@ SKILL_PLUGINS = (
     "tricritical",
     "artifact-customs",
     "proseweaving",
+    "praxis",
 )
 COMMON_SUPPORT_PATHS = {
     ".claude-plugin/marketplace.json",
@@ -460,7 +461,14 @@ PUBLIC_RELEASE_REGISTRATION_FIELDS = {
     "support_paths",
 }
 PUBLIC_RELEASE_NAME = re.compile(r"[a-z][a-z0-9-]*\Z")
-PUBLIC_RELEASE_PATH_PREFIXES = ("docs", "plugins", "release", "scripts", "tests")
+PUBLIC_RELEASE_PATH_PREFIXES = (
+    "docs",
+    "evals",
+    "plugins",
+    "release",
+    "scripts",
+    "tests",
+)
 PUBLIC_RELEASE_PACKAGE_KIND = "runtime-package"
 PUBLIC_RELEASE_SKILL_PLUGIN_KIND = "skill-plugin"
 REQUIRED_SOURCE_STAGE_RUNTIME_PACKAGES = ()

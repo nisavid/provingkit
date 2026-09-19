@@ -1,12 +1,18 @@
 # Phase 1 control-plane behavior evaluation
 
-`control-plane-matrix.json` is the public, declarative inventory for the 23
-Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Proseweaving skills. It
-selects one existing raw scenario per skill and declares only the companion
-skills allowed in that skill's composed condition. It is Phase 1 four-condition
-behavior evidence, not proof that every publication, deployment, hook, or runtime
-control-plane action is integrated correctly. Those claims need their own
-end-to-end evidence.
+`control-plane-matrix.json` is the public, declarative inventory for the 24
+Rolecasting, Tricritical, Versionkeeping, Mergecraft, Proseweaving, and Praxis
+skills. It selects one existing raw scenario per skill and declares only the
+companion skills allowed in that skill's composed condition. The Praxis
+scenario comes from `praxis/corpus.json`, a focused raw scenario definition in
+the runner's simple-corpus shape; `praxis/aeon-bell.json` is the separate
+Praxis application-evidence corpus and is not consumed by this definition. The
+matrix is Phase 1 four-condition behavior evidence, not proof that every
+publication, deployment, hook, or runtime control-plane action is integrated
+correctly. Those claims need their own end-to-end evidence. Adding a skill to
+this inventory registers its definition only; it produces no model run, grade,
+or gate result, and any evidence retained against the previous 23-skill
+inventory is stale for the current one.
 
 Validate the definition without using a model:
 
@@ -96,12 +102,12 @@ not authenticate their external authorization. The shipped evaluation-gate
 executable therefore rejects every invocation before reading evidence and
 grants no evaluation or release authority in this source-stage release.
 
-The production target contract requires 276 current executor coordinates:
-23 skills × 4 conditions × 3 repeats. Its required invalidation drill first
+The production target contract requires 288 current executor coordinates:
+24 skills × 4 conditions × 3 repeats. Its required invalidation drill first
 runs a deterministic evaluation-only preimage for the choosing/delegating
 reverse-dependency slice, grades it, retains the superseded executor, grader,
 and blinding-plan checkpoints, then runs the canonical input slice and grades
-it again. A completed production manifest must also contain 23 current graders,
+it again. A completed production manifest must also contain 24 current graders,
 separate from those superseded records. These are validation requirements, not
 a claim that a retained production run already exists. Checkpoints are atomic
 and resumable; a provider call that finishes after a local timeout but before
@@ -122,11 +128,11 @@ The canonical Markdown writer keeps its raw eight-case behavior corpus, eleven t
 
 ## Phase 2 observable routing
 
-`skill-routing-matrix.json` is a separate routing tier. It leaves the 276-run
-semantic target unchanged. Its definition derives a 121-call production target:
-23 cold-start cases + 23 explicit invocations + 75 trigger cases. The trigger
+`skill-routing-matrix.json` is a separate routing tier. It leaves the 288-run
+semantic target unchanged. Its definition derives a 125-call production target:
+24 cold-start cases + 24 explicit invocations + 77 trigger cases. The trigger
 tier retains 33 imported skill-local trigger cases and adds one positive and one
-negative case for each of the other 21 skills. The Markdown writer uses an
+negative case for each of the other 22 skills. The Markdown writer uses an
 explicit integrated pair so a complete PR title and description selects the
 PR-description writer; its eleven standalone trigger cases remain separate.
 This count describes the gate; it does not assert that the paid calls have been

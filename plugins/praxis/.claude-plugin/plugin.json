@@ -1,0 +1,20 @@
+{
+  "name": "praxis",
+  "displayName": "Praxis",
+  "version": "1.0.0",
+  "description": "Praxis: work stewardship for shaping, conducting, recovering, and completing agentic efforts.",
+  "author": {
+    "name": "Ivan D Vasin",
+    "url": "https://github.com/nisavid"
+  },
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/praxis",
+  "repository": "https://github.com/nisavid/provingkit",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "work-stewardship",
+    "coordination",
+    "monitoring",
+    "dispatch"
+  ]
+}

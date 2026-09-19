@@ -27,7 +27,7 @@
 
 ## Review checklist
 
-- [ ] The six Agent Plugin members remain independently identified, including Proseweaving.
+- [ ] The seven Agent Plugin members remain independently identified, including Proseweaving and Praxis.
 - [ ] Member manifests keep independent identities and versions.
 - [ ] Historical Linux or macOS inputs are not presented as current qualification.
 - [ ] This change creates no Provingkit release, tag, release-manifest instance, marketplace publication, or live installation.

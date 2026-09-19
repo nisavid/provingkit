@@ -50,8 +50,8 @@
     },
     "members": {
       "items": false,
-      "maxItems": 6,
-      "minItems": 6,
+      "maxItems": 7,
+      "minItems": 7,
       "prefixItems": [
         {
           "$ref": "#/$defs/rolecasting"
@@ -70,6 +70,9 @@
         },
         {
           "$ref": "#/$defs/proseweaving"
+        },
+        {
+          "$ref": "#/$defs/praxis"
         }
       ],
       "type": "array"
@@ -353,6 +356,48 @@
               "properties": {
                 "path": {
                   "const": "plugins/tricritical/.claude-plugin/plugin.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "praxis": {
+      "$ref": "#/$defs/member",
+      "properties": {
+        "content_identity": {
+          "properties": {
+            "kind": {
+              "const": "plugin-content-lock"
+            },
+            "path": {
+              "const": "release/plugin-content-locks/praxis.json"
+            }
+          }
+        },
+        "distribution_kind": {
+          "const": "agent-plugin"
+        },
+        "id": {
+          "const": "praxis"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "identity_manifests": {
+          "properties": {
+            "canonical": {
+              "properties": {
+                "path": {
+                  "const": "plugins/praxis/plugin.json"
+                }
+              }
+            },
+            "claude": {
+              "properties": {
+                "path": {
+                  "const": "plugins/praxis/.claude-plugin/plugin.json"
                 }
               }
             }

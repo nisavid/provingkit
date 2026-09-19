@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "skills": {
+    "aeon-bell": {
+      "owns": [
+        "shared-gate-observation",
+        "task-registration",
+        "conditional-dispatch"
+      ],
+      "may_call": []
+    }
+  }
+}

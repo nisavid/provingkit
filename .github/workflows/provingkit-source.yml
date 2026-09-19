@@ -185,6 +185,32 @@ jobs:
           python -m unittest tests.test_validate_proseweaving
           python scripts/validate_proseweaving.py .
 
+  praxis:
+    name: Praxis source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.21.0"
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.3
+
+      - name: Validate Praxis
+        run: |
+          python -m unittest tests.test_validate_praxis
+          python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding
+          python scripts/validate_praxis.py .
+
   artifact-projections:
     name: Installable artifact projections
     runs-on: ubuntu-latest
@@ -231,6 +257,7 @@ jobs:
           python scripts/validate_mergecraft.py . --source-stage --write-content-lock
           python scripts/validate_artifact_customs.py . --source-stage --write-content-lock
           python scripts/validate_proseweaving.py --write-content-lock .
+          python scripts/validate_praxis.py --write-content-lock .
 
       - name: Require checked-in derived state
         run: git diff --exit-code

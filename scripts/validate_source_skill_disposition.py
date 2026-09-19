@@ -134,6 +134,11 @@ DISTRIBUTION_IDENTITIES = [
         "plugin_root": "plugins/mergecraft",
     },
     {
+        "id": "praxis",
+        "identity_artifact_paths": ["release/plugin-content-locks/praxis.json"],
+        "plugin_root": "plugins/praxis",
+    },
+    {
         "id": "rolecasting",
         "identity_artifact_paths": ["plugins/rolecasting/content-lock.json"],
         "plugin_root": "plugins/rolecasting",
@@ -273,7 +278,7 @@ DEPENDENCY_EDGES = [
     },
 ]
 DISTRIBUTION_CLOSURE_SHA256 = (
-    "sha256:f1965ac4ae8dba705e6aea937a2df6e5d5a8b8fcb6f43e759a33a9cb0ee98f61"
+    "sha256:72b09e7f1d7edeed6fd6d40b09563354cb46f6e7244999cdce6625d12d13bbbe"
 )
 TRIGGER_CHANGE_CLASSES = {
     "candidate-identity-artifact": ["identity-artifact-change"],
@@ -383,6 +388,11 @@ DISTRIBUTION_REGENERATION = [
         "conditional_regenerate_paths": [],
         "id": "mergecraft",
         "regenerate_paths": ["release/plugin-content-locks/mergecraft.json"],
+    },
+    {
+        "conditional_regenerate_paths": [],
+        "id": "praxis",
+        "regenerate_paths": ["release/plugin-content-locks/praxis.json"],
     },
     {
         "conditional_regenerate_paths": [],

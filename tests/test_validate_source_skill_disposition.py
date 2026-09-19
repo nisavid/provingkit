@@ -580,6 +580,47 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
                 "plugin_root": "plugins/proseweaving",
             },
         )
+        praxis = next(
+            item
+            for item in contract["candidate_identity"]["distributions"]
+            if item["id"] == "praxis"
+        )
+        self.assertEqual(
+            praxis,
+            {
+                "id": "praxis",
+                "identity_artifact_paths": ["release/plugin-content-locks/praxis.json"],
+                "plugin_root": "plugins/praxis",
+            },
+        )
+        derivation = contract["regeneration"]["affected_distribution_derivation"]
+        self.assertIn("praxis", derivation["all_distribution_ids"])
+        self.assertEqual(derivation["dependency_graph"]["transitive_closures"]["praxis"], ["praxis"])
+        praxis_closure = next(
+            item for item in derivation["distribution_closure"] if item["id"] == "praxis"
+        )
+        self.assertEqual(praxis_closure["validation_entrypoints"], ["scripts/validate_praxis.py"])
+        # Every public Praxis test module the validator locks and CI runs must
+        # seed the praxis closure, so a change to any of them names praxis
+        # as an affected distribution under the contract's seed rule.
+        self.assertEqual(
+            praxis_closure["test_paths"],
+            [
+                "tests/test_aeon_bell.py",
+                "tests/test_aeon_bell_binding.py",
+                "tests/test_aeon_bell_codex_status.py",
+                "tests/test_validate_praxis.py",
+            ],
+        )
+        self.assertEqual(praxis_closure["evaluation_paths"], ["evals/praxis"])
+        self.assertIn(
+            {
+                "conditional_regenerate_paths": [],
+                "id": "praxis",
+                "regenerate_paths": ["release/plugin-content-locks/praxis.json"],
+            },
+            contract["regeneration"]["distribution_identity_artifacts"],
+        )
 
         contract["candidate_identity"]["distributions"].pop()
         self.write(REFRESH, contract)

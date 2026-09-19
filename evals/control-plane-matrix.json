@@ -294,6 +294,17 @@
         "source": "plugins/proseweaving/skills/writing-for-people/evals/evals.json",
         "selector": "stopping-point-report-partial-migration"
       }
+    },
+    {
+      "id": "praxis:aeon-bell",
+      "entrypoint": "plugins/praxis/skills/aeon-bell/SKILL.md",
+      "companions": [],
+      "scenario": {
+        "id": "shared-gate-single-wake",
+        "kind": "simple-corpus",
+        "source": "evals/praxis/corpus.json",
+        "selector": "shared-gate-single-wake"
+      }
     }
   ]
 }

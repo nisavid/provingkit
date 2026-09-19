@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "shared-gate-single-wake",
+      "fixture_paths": [],
+      "prompt": "Three registered tasks on one host share the same quota-recovery gate. The tick's task states report the first task idle and still in its episode, the second running, and the third completed, and the fresh observation says the bucket is open. Run the monitor tick and state exactly what is observed, proposed, sent, and reported.",
+      "must_include": [
+        "one observation request for the shared gate key",
+        "reserve the attempt before any send",
+        "wake only the idle task still in its episode",
+        "skip the running and completed tasks with their reasons",
+        "report the attempt outcome after the send"
+      ],
+      "must_not_include": [
+        "wake the running or completed task",
+        "query the gate once per registration",
+        "resend an unknown attempt without transcript evidence",
+        "override the target's model or effort"
+      ]
+    }
+  ]
+}

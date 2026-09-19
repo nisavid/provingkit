@@ -147,7 +147,18 @@ EXPECTED_MEMBERS = (
         "plugin-content-lock",
         "plugins/proseweaving/content-lock.json",
     ),
+    (
+        "praxis",
+        "Praxis",
+        "agent-plugin",
+        "plugins/praxis/plugin.json",
+        "plugins/praxis/.claude-plugin/plugin.json",
+        "plugin-content-lock",
+        "release/plugin-content-locks/praxis.json",
+    ),
 )
+# The six members carried through the repository cutover.  Their versions are
+# historical cutover evidence and stay distinct from later source members.
 EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "rolecasting": "1.0.0",
     "tricritical": "1.0.0",
@@ -155,6 +166,12 @@ EXPECTED_CUTOVER_MEMBER_VERSIONS = {
     "mergecraft": "1.0.0",
     "artifact-customs": "1.0.0",
     "proseweaving": "1.0.0",
+}
+# Every current source-stage member.  Praxis joined after the cutover as the
+# seventh member; source membership grants no release authority.
+EXPECTED_SOURCE_MEMBER_VERSIONS = {
+    **EXPECTED_CUTOVER_MEMBER_VERSIONS,
+    "praxis": "1.0.0",
 }
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
@@ -263,7 +280,7 @@ EXPECTED_MARKETPLACE = {
     "name": "provingkit",
     "owner": {"name": "Ivan D Vasin"},
     "description": (
-        "Source projection for Provingkit's six Agent Plugins v1 members. "
+        "Source projection for Provingkit's seven Agent Plugins v1 members. "
         "This manifest is not a marketplace publication."
     ),
     "plugins": [
@@ -279,6 +296,7 @@ EXPECTED_MARKETPLACE = {
             "mergecraft",
             "artifact-customs",
             "proseweaving",
+            "praxis",
         )
     ],
 }
@@ -1063,8 +1081,10 @@ def _validate_definition(repository: Path) -> None:
             content_identity_relative,
         ) = expected
         version = member.get("version")
-        if version != EXPECTED_CUTOVER_MEMBER_VERSIONS[member_id]:
-            raise ValidationError("cutover member version drift")
+        if version != EXPECTED_SOURCE_MEMBER_VERSIONS[member_id]:
+            if member_id in EXPECTED_CUTOVER_MEMBER_VERSIONS:
+                raise ValidationError("cutover member version drift")
+            raise ValidationError("source member version drift")
         canonical_manifest = _load_json(
             repository / canonical_relative, "canonical member manifest"
         )

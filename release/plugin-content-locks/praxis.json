@@ -1,0 +1,88 @@
+{
+  "algorithm": "sha256",
+  "contract": "praxis-content-lock-v1",
+  "files": {
+    "evals/praxis/aeon-bell.json": {
+      "mode": 420,
+      "sha256": "056e6f838dec422d334a4e66af8dda8ca03fdf99a103e3ebb99fe45c5eef3af7"
+    },
+    "evals/praxis/corpus.json": {
+      "mode": 420,
+      "sha256": "295b9ff98699b0e2ff1e2e23605c164a5fffead23ff7e2b0b66ccd1778e89189"
+    },
+    "plugins/praxis/.claude-plugin/plugin.json": {
+      "mode": 420,
+      "sha256": "39f9a633a3ddb3dc92e6e744fc0737a9e43301c1bca7e7606e855e49aef7c47e"
+    },
+    "plugins/praxis/CHANGELOG.md": {
+      "mode": 420,
+      "sha256": "0d0af92b97d7021903ca090151f586656bb9ff1b129dbb82bbe11f28119bd377"
+    },
+    "plugins/praxis/LICENSE": {
+      "mode": 420,
+      "sha256": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8"
+    },
+    "plugins/praxis/README.md": {
+      "mode": 420,
+      "sha256": "6231f12d7db8441581c73b10383caea27bff3f31901ca58956eb8f35fb39bfae"
+    },
+    "plugins/praxis/plugin.json": {
+      "mode": 420,
+      "sha256": "13f5590b73a17219d2db960436d55b050233ecd31232c121b89bab90ca201c16"
+    },
+    "plugins/praxis/skills/aeon-bell/SKILL.md": {
+      "mode": 420,
+      "sha256": "7bd9ffacc4bad597a1d4f143ed3d616a64d81c5a1df696058f3b989830e71dab"
+    },
+    "plugins/praxis/skills/aeon-bell/agents/openai.yaml": {
+      "mode": 420,
+      "sha256": "db1aa6d955443f6e033b9dc6c3543c5c833cb48a305fbc8a710374e27a3a3895"
+    },
+    "plugins/praxis/skills/aeon-bell/references/codex-status-adapter.md": {
+      "mode": 420,
+      "sha256": "7f456368e6230f78201a43616ada9202435ff596acadf1d13c9d6970ae49f0b9"
+    },
+    "plugins/praxis/skills/aeon-bell/references/engine-cli.md": {
+      "mode": 420,
+      "sha256": "2337ea5a15001215fc362583031de77c63b9034ca5cf258739b2613db69c180f"
+    },
+    "plugins/praxis/skills/aeon-bell/references/native-monitor.md": {
+      "mode": 420,
+      "sha256": "9b15e793018feea73adde54aab16b3f3e91d1d4605f325ca09ba763f1e120f30"
+    },
+    "plugins/praxis/skills/aeon-bell/references/structured-harness.md": {
+      "mode": 420,
+      "sha256": "f61b3dc1bd363a80172ed7139823fa95060af3be65a331261927bfab27a1b9d5"
+    },
+    "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py": {
+      "mode": 493,
+      "sha256": "fe9845d77570291019c657a6cca60168e08b4a6f47d56a9d6cd67ceb1250b77b"
+    },
+    "plugins/praxis/skills/aeon-bell/scripts/codex_status.py": {
+      "mode": 420,
+      "sha256": "7a21408c1e3fefa83d5b1907e12593eb2e27e1d18399695e449a6596201d5c5c"
+    },
+    "plugins/praxis/skills/aeon-bell/scripts/monitor_binding.js": {
+      "mode": 420,
+      "sha256": "b5cae167ffffb8df30c00821de65d52f6421ecaed9816e007b1b4d0407973f34"
+    },
+    "plugins/praxis/topology.json": {
+      "mode": 420,
+      "sha256": "d96c55f96c26272a77ad4c413626faa09e192443fba85c990246fbeeb579e33a"
+    },
+    "tests/test_aeon_bell.py": {
+      "mode": 420,
+      "sha256": "6f23da64aea3a84476c22b1020a8bd332fc180fd2798712284818137a766d6f3"
+    },
+    "tests/test_aeon_bell_binding.py": {
+      "mode": 420,
+      "sha256": "67d5ff9374791c4889a59a54e23f5225aa9d0b3531dfee2c32130f74c692c785"
+    },
+    "tests/test_aeon_bell_codex_status.py": {
+      "mode": 420,
+      "sha256": "cb193d33356043eca4384ab87434edadf3ea1577b66dabdde48d643fff0e6036"
+    }
+  },
+  "plugin_root": "plugins/praxis",
+  "schema_version": 1
+}

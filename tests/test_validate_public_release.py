@@ -45,8 +45,8 @@ def install_prepared_release_driver(repository: Path) -> tuple[Path, Path]:
     return entrypoint, supervisor
 
 
-def load_validator_module(validator: Path = VALIDATOR):
-    specification = importlib.util.spec_from_file_location("public_release", validator)
+def load_validator_module(path: Path = VALIDATOR, name: str = "public_release"):
+    specification = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(specification)
     assert specification.loader is not None
     specification.loader.exec_module(module)
@@ -1280,13 +1280,50 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         self.assertIn("proseweaving", self.module.SKILL_PLUGINS)
         self.assertEqual(
             self.module.PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS,
-            ("proseweaving",),
+            ("praxis", "proseweaving"),
         )
         self.assertNotIn("proseweaving", self.module.PRODUCTION_RUNTIME_PACKAGES)
         self.assertEqual(
             self.module.MARKETPLACE_PLUGINS["proseweaving"],
             "./plugins/proseweaving",
         )
+
+    def test_praxis_registration_is_source_validated_without_release_authority(
+        self,
+    ) -> None:
+        praxis = self.module.PUBLIC_RELEASE_REGISTRATIONS["praxis"]
+
+        # A registered skill plugin can only be represented as production
+        # eligible; that enrolls it in the validation scope and marketplace
+        # projection and grants no release authority of its own.
+        self.assertTrue(praxis["production_eligible"])
+        self.assertEqual(praxis["package_kind"], "skill-plugin")
+        self.assertEqual(praxis["source_stage_validator_flags"], ())
+        self.assertEqual(praxis["validator_path"], "scripts/validate_praxis.py")
+        self.assertEqual(
+            praxis["support_paths"],
+            (
+                "evals/praxis",
+                "release/plugin-content-locks/praxis.json",
+                "release/praxis/public-release-registration.json",
+                "scripts/validate_praxis.py",
+                "tests/test_aeon_bell.py",
+                "tests/test_aeon_bell_binding.py",
+                "tests/test_aeon_bell_codex_status.py",
+                "tests/test_validate_praxis.py",
+            ),
+        )
+        self.assertIn("praxis", self.module.SKILL_PLUGINS)
+        self.assertIn("praxis", self.module.SOURCE_STAGE_VALIDATED_PLUGINS)
+        self.assertEqual(self.module.MARKETPLACE_PLUGINS["praxis"], "./plugins/praxis")
+        self.assertIn("plugins/praxis", self.module.all_scope_paths())
+        definition = json.loads(
+            (REPOSITORY / "release/provingkit/definition-v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(definition["release_manifest"]["release_authority"], "not-granted")
+        self.assertEqual(definition["release_manifest"]["instances"], [])
 
     def test_public_release_registration_projection_is_immutable(self) -> None:
         runtime_package = next(iter(self.module.PUBLIC_RELEASE_REGISTRATIONS))
@@ -1343,6 +1380,36 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     ),
                     ("fixture-runtime",) if production_eligible else (),
                 )
+
+    def test_registration_may_bind_an_eval_corpus_directory_but_not_other_roots(
+        self,
+    ) -> None:
+        root = self.public_release_registration_fixture()
+        corpus = root / "evals" / "fixture-runtime"
+        corpus.mkdir(parents=True)
+        (corpus / "corpus.json").write_text("{}\n", encoding="utf-8")
+        registration_path = root / "release/fixture-runtime/public-release-registration.json"
+        registration = json.loads(registration_path.read_text(encoding="utf-8"))
+        registration["support_paths"] = sorted(
+            {*registration["support_paths"], "evals/fixture-runtime"}
+        )
+        registration_path.write_text(json.dumps(registration, sort_keys=True) + "\n")
+
+        registrations = self.module.load_public_release_registrations(root)
+
+        self.assertIn(
+            "evals/fixture-runtime", registrations["fixture-runtime"]["support_paths"]
+        )
+        (root / ".github").mkdir()
+        (root / ".github" / "workflow.yml").write_text("", encoding="utf-8")
+        registration["support_paths"] = sorted(
+            {*registration["support_paths"], ".github/workflow.yml"}
+        )
+        registration_path.write_text(json.dumps(registration, sort_keys=True) + "\n")
+        with self.assertRaisesRegex(
+            self.module.ReleaseError, "canonical repository-relative release path"
+        ):
+            self.module.load_public_release_registrations(root)
 
     def test_registered_skill_plugin_requires_production_eligibility(self) -> None:
         root = self.public_release_registration_fixture(
@@ -2041,42 +2108,9 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 **self.private_provenance_arguments,
             )
 
-    def test_source_stage_only_runtime_change_updates_git_candidate_not_production_identity(
-        self,
-    ) -> None:
-        self.public_release_registration_fixture(repository=self.repository)
-        module = load_validator_module(
-            self.repository / "scripts/validate_public_release.py"
-        )
-        package = "fixture-runtime"
-        module.validate_public_release_registration_inventory(self.repository)
-        self.assertIn(package, module.SOURCE_STAGE_VALIDATED_PLUGINS)
-        self.assertNotIn(package, module.PRODUCTION_VALIDATED_PLUGINS)
+    def commit_candidate(self, message: str) -> None:
         subprocess.run(
             ["git", "add", "--all"],
-            cwd=self.repository,
-            check=True,
-            capture_output=True,
-        )
-        subprocess.run(
-            [
-                "git", "-c", "user.name=Release Test",
-                "-c", "user.email=release-test@example.invalid",
-                "commit", "--quiet", "-m", "test: register source-stage runtime",
-            ],
-            cwd=self.repository,
-            check=True,
-            capture_output=True,
-        )
-        candidate_before = module.git_candidate_identity(self.repository)
-        production_identity_before = module.candidate_identities(
-            self.repository,
-            module.PRODUCTION_VALIDATED_PLUGINS,
-        )
-        manifest = self.repository / "plugins" / package / "plugin.json"
-        manifest.write_bytes(manifest.read_bytes() + b"\n")
-        subprocess.run(
-            ["git", "add", manifest.relative_to(self.repository).as_posix()],
             cwd=self.repository,
             check=True,
             capture_output=True,
@@ -2091,21 +2125,70 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 "commit",
                 "--quiet",
                 "-m",
-                "test: change source-stage-only runtime",
+                message,
             ],
             cwd=self.repository,
             check=True,
             capture_output=True,
         )
 
+    def install_source_stage_only_runtime_fixture(
+        self, name: str = "source-stage-runtime"
+    ) -> tuple[types.ModuleType, str]:
+        """Register a hypothetical runtime package that is not production eligible.
+
+        The real roster need not carry such a package, so the boundary under test
+        is exercised against this controlled registration in the frozen candidate
+        copy.  The shared registration fixture owns the registration bytes; the
+        validator is then loaded from that committed copy so its inventory
+        projections derive from the fixture registry rather than from today's
+        roster.
+        """
+
+        self.public_release_registration_fixture(name, repository=self.repository)
+        self.commit_candidate("test: register a source-stage-only runtime fixture")
+        module = load_validator_module(
+            self.repository / "scripts/validate_public_release.py",
+            "public_release_with_source_stage_only_runtime",
+        )
+        module.validate_public_release_registration_inventory(self.repository)
+        registration = module.PUBLIC_RELEASE_REGISTRATIONS[name]
+        self.assertFalse(registration["production_eligible"])
+        self.assertEqual(registration["package_kind"], "runtime-package")
+        return module, name
+
+    def test_source_stage_only_runtime_change_updates_git_candidate_not_production_identity(
+        self,
+    ) -> None:
+        module, package = self.install_source_stage_only_runtime_fixture()
+        self.assertIn(package, module.SOURCE_STAGE_VALIDATED_PLUGINS)
+        self.assertNotIn(package, module.PRODUCTION_VALIDATED_PLUGINS)
+        candidate_before = module.git_candidate_identity(self.repository)
+        production_identity_before = module.candidate_identities(
+            self.repository,
+            module.PRODUCTION_VALIDATED_PLUGINS,
+        )
+        source_stage_identity_before = module.candidate_identities(
+            self.repository,
+            module.SOURCE_STAGE_VALIDATED_PLUGINS,
+        )
+        manifest = self.repository / "plugins" / package / "plugin.json"
+        manifest.write_bytes(manifest.read_bytes() + b"\n")
+        self.commit_candidate("test: change source-stage-only runtime")
+
         candidate_after = module.git_candidate_identity(self.repository)
         production_identity_after = module.candidate_identities(
             self.repository,
             module.PRODUCTION_VALIDATED_PLUGINS,
         )
+        source_stage_identity_after = module.candidate_identities(
+            self.repository,
+            module.SOURCE_STAGE_VALIDATED_PLUGINS,
+        )
 
         self.assertNotEqual(candidate_after, candidate_before)
         self.assertEqual(production_identity_after, production_identity_before)
+        self.assertNotEqual(source_stage_identity_after, source_stage_identity_before)
 
     def test_production_release_propagates_exact_candidate_to_routing_validator(
         self,
@@ -2773,14 +2856,22 @@ class ValidatePublicReleaseTests(unittest.TestCase):
     def test_source_stage_validator_success_cannot_promote_ineligible_runtime_packages(
         self,
     ) -> None:
-        self.public_release_registration_fixture(repository=self.repository)
-        module = load_validator_module(
-            self.repository / "scripts/validate_public_release.py"
-        )
-        package = "fixture-runtime"
+        module, package = self.install_source_stage_only_runtime_fixture()
+        # Only the child member validators are stubbed to succeed; the real
+        # source-stage pipeline still snapshots, checks, and derives identities.
+        completed = subprocess.CompletedProcess([], 0, "", "")
+        with mock.patch.object(
+            module.subprocess,
+            "run",
+            return_value=completed,
+        ) as run:
+            identities = module.validate_source_stage(self.repository)
 
-        identities = module.validate_source_stage(self.repository)
-
+        validators_run = {
+            Path(call.args[0][3]).relative_to(call.args[0][4]).as_posix()
+            for call in run.call_args_list
+        }
+        self.assertIn(module.VALIDATOR_PATHS[package], validators_run)
         self.assertIn(package, identities["plugins"])
         self.assertIn(package, module.SOURCE_STAGE_VALIDATED_PLUGINS)
         self.assertNotIn(package, module.PRODUCTION_VALIDATED_PLUGINS)
@@ -2793,6 +2884,19 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                 "production_eligible"
             ]
         )
+        source_stage_only = {
+            name
+            for name, registration in module.PUBLIC_RELEASE_REGISTRATIONS.items()
+            if not registration["production_eligible"]
+        }
+        self.assertIn(package, source_stage_only)
+        self.assertTrue(
+            source_stage_only.issubset(module.SOURCE_STAGE_VALIDATED_PLUGINS)
+        )
+        self.assertTrue(
+            source_stage_only.isdisjoint(module.PRODUCTION_VALIDATED_PLUGINS)
+        )
+        self.assertTrue(source_stage_only.isdisjoint(module.MARKETPLACE_PLUGINS))
 
     def test_production_contract_omits_source_stage_only_runtime_support(self) -> None:
         production_contract = self.module.release_contract_identity(self.repository)
@@ -3982,6 +4086,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             "mergecraft",
             "artifact_customs",
             "proseweaving",
+            "praxis",
         ):
             self.assertIn(f"validate_{member}.py", contributing)
         self.assertIn("pinned unsigned preview", normalized_readme)
