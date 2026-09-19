@@ -1459,7 +1459,6 @@
                 "enum": [
                   "recorded-invocation",
                   "recorded-sentinel-body-load",
-                  "authored-selection",
                   "recorded-invocation-sequence",
                   "recorded-sentinel-sequence"
                 ]

@@ -389,6 +389,13 @@ class ReceiptWorkflowTests(unittest.TestCase):
         ]
         receipts.validate(manifest, "reconciliationResults")
 
+    def test_reconciliation_schema_rejects_authored_selection(self):
+        manifest = json.loads(self.retained_results().read_text())
+        receipts.validate(manifest, "reconciliationResults")
+        manifest["triggers"][0]["observation_kind"] = "authored-selection"
+        with self.assertRaisesRegex(receipts.ReceiptError, "schema mismatch"):
+            receipts.validate(manifest, "reconciliationResults")
+
     def heterogeneous_retained_results(self):
         """Construct two source-coordinate cases with distinct delivered references."""
         corpus_path = self.spec["evals"]
@@ -753,7 +760,7 @@ class ReceiptWorkflowTests(unittest.TestCase):
         authored = copy.deepcopy(original)
         authored["triggers"][0]["observation_kind"] = "authored-selection"
         path.write_text(json.dumps(authored))
-        with self.assertRaisesRegex(receipts.ReceiptError, "observed"):
+        with self.assertRaisesRegex(receipts.ReceiptError, "schema mismatch"):
             receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
         wrong_response = copy.deepcopy(original)
         wrong_response["runs"][0]["graded_response"]["value"] = wrong_response["runs"][0]["prompt"]
