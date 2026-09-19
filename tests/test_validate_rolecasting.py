@@ -243,10 +243,8 @@ class ValidateRolecastingTests(unittest.TestCase):
             check=False,
         )
         self.assertEqual(result.returncode, 2)
-        self.assertIn(
-            "usage: validate_rolecasting.py [--write-content-lock] [repo-root]",
-            result.stderr,
-        )
+        self.assertIn("usage: validate_rolecasting.py", result.stderr)
+        self.assertIn("unrecognized arguments: unexpected-second-argument", result.stderr)
         self.assertNotIn("Rolecasting contract validation passed", result.stdout)
 
     def test_rejects_invalid_skill_interface_yaml(self) -> None:

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
@@ -1266,23 +1267,35 @@ def inspect_contract(root: Path) -> tuple[dict, set[str]]:
     return topology, semantic_files
 
 
-def usage() -> None:
-    print(
-        "usage: validate_rolecasting.py [--write-content-lock] [repo-root]",
-        file=sys.stderr,
-    )
-
-
-def main() -> None:
-    arguments = sys.argv[1:]
-    write_lock = bool(arguments and arguments[0] == "--write-content-lock")
-    if write_lock:
-        arguments = arguments[1:]
-    if len(arguments) > 1 or (arguments and arguments[0].startswith("-")):
-        usage()
-        raise SystemExit(2)
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("repository", nargs="?", type=Path)
+    parser.add_argument("--write-content-lock", action="store_true")
+    parser.add_argument("--source-stage", action="store_true")
+    parser.add_argument("--base")
+    parser.add_argument("--candidate")
+    parser.add_argument("--receipt-root")
+    parser.add_argument("--procedure-revision")
+    arguments = parser.parse_args()
+    write_lock = arguments.write_content_lock
+    context = None
     try:
-        repo_root = Path(arguments[0]) if arguments else Path.cwd()
+        repo_root = arguments.repository or Path.cwd()
+        if any(
+            value is not None
+            for value in (
+                arguments.base,
+                arguments.candidate,
+                arguments.receipt_root,
+                arguments.procedure_revision,
+            )
+        ):
+            try:
+                from behavior_eval_source_stage import check_context, prepare_context
+            except ImportError:
+                parser.error("Receipt source-stage support is unavailable")
+
+            context = prepare_context(parser, arguments, repo_root, writing=write_lock)
         root = locate_root(repo_root)
         topology, semantic_files = inspect_contract(root)
         validate_inventory(
@@ -1311,8 +1324,14 @@ def main() -> None:
         raise SystemExit(1) from error
     if write_lock:
         print("Rolecasting semantic content lock updated")
-    print("Rolecasting contract validation passed")
+    print(
+        "Rolecasting contract validation passed",
+        file=sys.stderr if context is not None else sys.stdout,
+    )
+    if context is not None:
+        return check_context(context, "rolecasting")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
