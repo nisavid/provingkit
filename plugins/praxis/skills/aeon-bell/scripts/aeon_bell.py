@@ -1289,6 +1289,18 @@ class AeonBell:
                         and previous is not None
                         and previous.get("tick_id") == current["tick_id"]
                     ):
+                        unsettled = [
+                            effect
+                            for effect in monitor["interrupted_effects"]
+                            if effect["settled_at"] is None
+                        ]
+                        if len(unsettled) >= INTERRUPTED_EFFECT_LIMIT:
+                            raise AeonBellError(
+                                "interrupted-effect-capacity",
+                                "cannot supersede this invocation until an earlier "
+                                "interrupted effect is settled",
+                            )
+                        monitor["interrupted_effects"][:] = unsettled
                         monitor["interrupted_effects"].append(
                             {
                                 "invocation_id": previous["invocation_id"],
@@ -1301,9 +1313,6 @@ class AeonBell:
                                 "settled_at": None,
                             }
                         )
-                        monitor["interrupted_effects"][:] = monitor[
-                            "interrupted_effects"
-                        ][-INTERRUPTED_EFFECT_LIMIT:]
                     last = self._tick_summary(current, "abandoned", now)
             generation = monitor["next_generation"]
             monitor["next_generation"] += 1
@@ -3807,9 +3816,19 @@ class AeonBell:
                 and all(r in state["registrations"] for r in current["registration_order"])
                 and isinstance(current["task_states"], dict)
                 and all(
-                    keys(item, {"status", "observed_at"})
+                    set(item) in (
+                        {"status", "observed_at"},
+                        {"status", "observed_at", "registration_id", "episode"},
+                    )
                     and item["status"] in TASK_STATUSES
                     and time_ok(item["observed_at"])
+                    and (
+                        "registration_id" not in item
+                        or (
+                            text(item["registration_id"])
+                            and text(item["episode"])
+                        )
+                    )
                     for item in current["task_states"].values()
                 )
                 and strings(current["requested_gate_keys"])
@@ -4339,6 +4358,16 @@ class AeonBell:
             task_states: dict[tuple[str, str], dict[str, Any]] = {}
             for key, item in tick["task_states"].items():
                 host, _, task_id = key.partition("\0")
+                record = state["registrations"].get(item.get("registration_id"))
+                if (
+                    record is None
+                    or record["status"] == "removed"
+                    or record["registration_id"] != item.get("registration_id")
+                    or record["episode"] != item.get("episode")
+                    or record["host"] != host
+                    or record["task_id"] != task_id
+                ):
+                    continue
                 task_states[(host, task_id)] = {
                     "status": item["status"],
                     "observed_at": parse_time(item["observed_at"], "observed_at"),
@@ -4941,6 +4970,8 @@ class AeonBell:
                 tick["task_states"][key] = {
                     "status": parsed["status"],
                     "observed_at": format_time(parsed["observed_at"]),
+                    "registration_id": arguments["registration_id"],
+                    "episode": arguments["episode"],
                 }
                 action["consequence"] = "task-state-recorded"
                 action["recorded"] = {"status": parsed["status"]}
@@ -4971,6 +5002,10 @@ class AeonBell:
         """The tick record for printing: no wake message text (only its
         digest) and no action arguments outside the pending action."""
         public = {name: copy.deepcopy(tick[name]) for name in tick if name not in ("proposals", "actions")}
+        public["task_states"] = {
+            key: {name: item[name] for name in ("status", "observed_at")}
+            for key, item in tick["task_states"].items()
+        }
         public["proposals"] = [
             {name: proposal[name] for name in ("attempt_id", "registration_id", "episode", "message_sha256")}
             for proposal in tick["proposals"]

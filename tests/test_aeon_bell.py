@@ -6149,6 +6149,162 @@ class MonitorEntry(DirectedTick):
         self.assertEqual(code, 0, err)
         return next_response
 
+    def test_initial_task_read_cannot_reserve_a_rearmed_episode(self) -> None:
+        rid = self.register()["registration_id"]
+        cycle(self.store, T0, observations=[self.quota_observation(remaining=50)])
+        bound = self.bind_monitor()
+        _, response, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(response["action"]["arguments"]["episode"], "episode-1")
+
+        code, rearmed, err = run(
+            "rearm", "--store", self.store, "--registration-id", rid,
+            "--owner", "owner-a", "--episode", "episode-2", "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual((rearmed["status"], rearmed["attempt_count"]), ("waiting", 0))
+
+        response = self.monitor_continue(response, self.read("idle", T0), T0)
+        self.assertNotEqual(response.get("action", {}).get("kind"), "send")
+        tick = self.status(T0)["tick"]
+        self.assertEqual(tick["proposals"], [])
+        self.assertEqual(
+            tick["dispatch"]["skipped"],
+            [{"registration_id": rid, "reason": "task-unknown"}],
+        )
+        _, inspected, _ = run("inspect", "--store", self.store, "--now", T0)
+        [registration] = inspected["registrations"]
+        self.assertEqual(
+            (registration["episode"], registration["status"], registration["attempt_count"]),
+            ("episode-2", "waiting", 0),
+        )
+        self.assertEqual(inspected["unresolved_attempts"], [])
+
+    def test_initial_task_read_cannot_reserve_a_replacement_registration(self) -> None:
+        old = self.register()["registration_id"]
+        cycle(self.store, T0, observations=[self.quota_observation(remaining=50)])
+        bound = self.bind_monitor()
+        _, response, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(response["action"]["arguments"]["registration_id"], old)
+
+        code, _, err = run(
+            "remove", "--store", self.store, "--registration-id", old,
+            "--owner", "owner-a", "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        replacement = self.register(episode="episode-2")["registration_id"]
+        self.assertNotEqual(replacement, old)
+
+        response = self.monitor_continue(response, self.read("idle", T0), T0)
+        self.assertNotEqual(response.get("action", {}).get("kind"), "send")
+        tick = self.status(T0)["tick"]
+        self.assertEqual(tick["proposals"], [])
+        self.assertEqual(
+            tick["dispatch"]["skipped"],
+            [{"registration_id": replacement, "reason": "task-unknown"}],
+        )
+        _, inspected, _ = run("inspect", "--store", self.store, "--now", T0)
+        [registration] = inspected["registrations"]
+        self.assertEqual(
+            (
+                registration["registration_id"],
+                registration["episode"],
+                registration["status"],
+                registration["attempt_count"],
+            ),
+            (replacement, "episode-2", "waiting", 0),
+        )
+        self.assertEqual(inspected["unresolved_attempts"], [])
+
+    def test_interrupted_effect_capacity_preserves_unsettled_send_results(self) -> None:
+        self.register(task_id="task-1", episode="episode-1")
+        cycle(self.store, T0, observations=[self.quota_observation(remaining=50)])
+        bound = self.bind_monitor()
+
+        _, response, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        response = self.monitor_continue(response, self.read("idle", T0), T0)
+        response = self.monitor_continue(response, self.read("idle", T0), T0)
+        self.assertEqual(response["action"]["kind"], "send")
+        accepted_continuation = response["continuation"]
+        accepted_attempt = response["action"]["arguments"]["attempt_id"]
+
+        _, response, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        while response["status"] != "complete":
+            action = response["action"]
+            self.assertIn(action["kind"], {"emit", "heartbeat_set"})
+            result = (
+                {"emitted": True}
+                if action["kind"] == "emit"
+                else {
+                    "applied": True,
+                    "next_run_at": action["arguments"]["target_at"],
+                }
+            )
+            response = self.monitor_continue(response, result, T0)
+
+        self.register(task_id="task-2", episode="episode-2")
+        _, response, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        response = self.monitor_continue(response, self.read("idle", T0), T0)
+        response = self.monitor_continue(response, self.read("idle", T0), T0)
+        self.assertEqual(response["action"]["kind"], "send")
+        not_sent_continuation = response["continuation"]
+        not_sent_attempt = response["action"]["arguments"]["attempt_id"]
+
+        _, response, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertNotEqual(response["action"]["kind"], "send")
+        for _ in range(62):
+            code, response, err = run(
+                "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+            )
+            self.assertEqual(code, 0, err)
+            self.assertNotEqual(response["action"]["kind"], "send")
+
+        code, payload, err = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(code, 2)
+        self.assertIsNone(payload)
+        self.assertIn("interrupted-effect-capacity", err)
+
+        code, stopped, err = run(
+            "monitor", "continue", "--continuation", accepted_continuation,
+            "--result-json", json.dumps({"outcome": "accepted"}), "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(stopped["late_result"], "recorded")
+        self.assertEqual(self.attempt_record(accepted_attempt, T0)["status"], "accepted")
+
+        code, response, err = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertNotEqual(response["action"]["kind"], "send")
+
+        code, stopped, err = run(
+            "monitor", "continue", "--continuation", not_sent_continuation,
+            "--result-json", json.dumps({"outcome": "not_sent"}), "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(stopped["late_result"], "recorded")
+        self.assertEqual(self.attempt_record(not_sent_attempt, T0)["status"], "not_sent")
+        code, stopped, err = run(
+            "monitor", "continue", "--continuation", not_sent_continuation,
+            "--result-json", json.dumps({"outcome": "not_sent"}), "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(stopped["late_result"], "already-settled")
+
     def test_takeover_reissues_pending_pre_send_without_stranding_reservation(self) -> None:
         rid = self.register()["registration_id"]
         cycle(self.store, T0, observations=[self.quota_observation(remaining=50)])
