@@ -135,10 +135,12 @@ value, or heartbeat reference.
   that ran and applied its schedule prints nothing about it.
 - Tick artifacts belong to the engine. When a query is due, the engine
   writes `plan.json` under `$STORE/ticks/<tick_id>/` (directory `0700`,
-  file `0600`) and names that directory's `input.json` and `report.json` in
-  the adapter argv it issues; the adapter writes both with mode `0600`.
-  The monitor creates no temporary directory and writes no file of its
-  own. The engine removes the directory when the tick completes or is
+  file `0600`) and names one matched `input-<execution_id>.json` and
+  `report-<execution_id>.json` pair in the adapter argv it issues; the
+  adapter writes both with mode `0600`. A generation takeover keeps the same
+  plan but issues a fresh result pair, and the active continuation reads only
+  its pair. The monitor creates no temporary directory and writes no file of
+  its own. The engine removes the directory when the tick completes or is
   superseded and sweeps stale ones at every `monitor enter`; a directory it
   could not remove is a diagnostics line, never silently left. The store
   stays the only durable record.

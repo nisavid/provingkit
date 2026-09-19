@@ -40,23 +40,23 @@
     },
     "plugins/praxis/skills/aeon-bell/references/codex-status-adapter.md": {
       "mode": 420,
-      "sha256": "7f456368e6230f78201a43616ada9202435ff596acadf1d13c9d6970ae49f0b9"
+      "sha256": "0fca362b07239ff6bde3a969590a449fcdf0dea118178e7be5e06060059f9fff"
     },
     "plugins/praxis/skills/aeon-bell/references/engine-cli.md": {
       "mode": 420,
-      "sha256": "2337ea5a15001215fc362583031de77c63b9034ca5cf258739b2613db69c180f"
+      "sha256": "8c2e4745d06eda884b1bc48b4a2bcd6cc852eb15540e6eb09f8720a4533a0ce5"
     },
     "plugins/praxis/skills/aeon-bell/references/native-monitor.md": {
       "mode": 420,
-      "sha256": "9b15e793018feea73adde54aab16b3f3e91d1d4605f325ca09ba763f1e120f30"
+      "sha256": "fa895903400fabe869d3be14a0e4b25e7396382173886551601a4e42d3550e8a"
     },
     "plugins/praxis/skills/aeon-bell/references/structured-harness.md": {
       "mode": 420,
-      "sha256": "f61b3dc1bd363a80172ed7139823fa95060af3be65a331261927bfab27a1b9d5"
+      "sha256": "b718e8ef59b7513b5022fb8176a402a1309f1c0943c16458126a102b414f40ef"
     },
     "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py": {
       "mode": 493,
-      "sha256": "75d10896a3568ee99483d79a0f1c9af0d1acc9988be14eba4ae3740b831f837d"
+      "sha256": "1320c472965ab968da0aaaa8c71f56cbad9da2d79670c9bab5ca7749c7cc8b95"
     },
     "plugins/praxis/skills/aeon-bell/scripts/codex_status.py": {
       "mode": 420,
@@ -64,7 +64,7 @@
     },
     "plugins/praxis/skills/aeon-bell/scripts/monitor_binding.js": {
       "mode": 420,
-      "sha256": "b5cae167ffffb8df30c00821de65d52f6421ecaed9816e007b1b4d0407973f34"
+      "sha256": "662222ec151bfc08df5634353fe79c1c6b1f9e78705e023d11ec01b90ff24aac"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -72,15 +72,15 @@
     },
     "tests/test_aeon_bell.py": {
       "mode": 420,
-      "sha256": "6a3dbd8ab1e3a41794ecd3f4979b61113d8ce64cf415239e260482a1490f3667"
+      "sha256": "ae80134b4902c8357d50b2f9312a2660e3ccaad5f0e6c1042411aee4d4c91cbb"
     },
     "tests/test_aeon_bell_binding.py": {
       "mode": 420,
-      "sha256": "67d5ff9374791c4889a59a54e23f5225aa9d0b3531dfee2c32130f74c692c785"
+      "sha256": "2cbc29c9bf1d3e3ad46c234cf24dc768add676ee8f51ff6c31ea4bb596c4ef6a"
     },
     "tests/test_aeon_bell_codex_status.py": {
       "mode": 420,
-      "sha256": "cb193d33356043eca4384ab87434edadf3ea1577b66dabdde48d643fff0e6036"
+      "sha256": "1c53e1e7d3cd880d91bd98acf9ef79ee7ddf035972b8c55d1c8cccb923e7feee"
     }
   },
   "plugin_root": "plugins/praxis",

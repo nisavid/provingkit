@@ -85,6 +85,9 @@ for raw in sys.stdin:
     if identifier is None:
         continue
     behavior = fixture.get("behavior", {{}}).get(method)
+    delay = fixture.get("delays", {{}}).get(method)
+    if delay is not None:
+        time.sleep(delay)
     rewrite = fixture.get("auth_rewrite")
     if rewrite and rewrite.get("at") == method:
         auth = Path(os.environ["CODEX_HOME"]) / "auth.json"
@@ -1349,7 +1352,12 @@ class CodexStatusAdapterTests(unittest.TestCase):
         self.assertEqual(argv[-2:], ["--now", NOW])
         self.assertNotIn("--task-states", argv)
         directory = store / "ticks" / tick_id
-        self.assertEqual(argv[argv.index("--report") + 1], str(directory / "report.json"))
+        output_path = Path(argv[argv.index("--output") + 1])
+        report_path = Path(argv[argv.index("--report") + 1])
+        self.assertEqual(output_path.parent, directory)
+        self.assertEqual(report_path.parent, directory)
+        self.assertRegex(output_path.name, r"^input-[0-9a-f]{24}\.json$")
+        self.assertRegex(report_path.name, r"^report-[0-9a-f]{24}\.json$")
         # The monitor runs exactly that argv.
         env = {
             "PATH": os.pathsep.join([str(self.harness.bin), str(Path(sys.executable).parent)]),
@@ -1361,10 +1369,10 @@ class CodexStatusAdapterTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(self.harness.calls()["codex_home"], str(self.harness.codex_home))
-        for name in ("plan.json", "report.json", "input.json"):
-            self.assertEqual(stat.S_IMODE((directory / name).stat().st_mode), 0o600, name)
-        self.assertEqual(json.loads((directory / "report.json").read_text(encoding="utf-8")), json.loads(completed.stdout))
-        self.assert_redacted(completed.stdout, (directory / "input.json").read_text(encoding="utf-8"))
+        for path in (directory / "plan.json", report_path, output_path):
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600, path.name)
+        self.assertEqual(json.loads(report_path.read_text(encoding="utf-8")), json.loads(completed.stdout))
+        self.assert_redacted(completed.stdout, output_path.read_text(encoding="utf-8"))
         view = submit(view, {"exit_code": 0})
         key = registration["gate_key"]
         self.assertEqual(view["last_result"]["consequence"], "observation-ingested")
@@ -1388,6 +1396,132 @@ class CodexStatusAdapterTests(unittest.TestCase):
         self.assertEqual(view["tick"]["status"], "complete")
         self.assertFalse(directory.exists())
         self.assert_redacted(json.dumps(view))
+
+    def test_monitor_takeover_ingests_only_the_active_observation_execution(self):
+        revision = self.harness.revision()
+        registration = self.harness.register(quota_gate(revision))
+        config = self.harness.write_config()
+        self.harness.fixture["delays"] = {"account/rateLimits/read": 1.0}
+        self.harness.write_fixture()
+
+        contender = AdapterHarness(
+            Path(tempfile.mkdtemp(dir=self.tempdir.name)).resolve()
+        )
+        contender.fixture["behavior"] = {"account/rateLimits/read": "rpc-error"}
+        contender.write_fixture()
+
+        def engine_cli(*args: str) -> dict[str, Any]:
+            result = run([str(ENGINE), *args])
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return json.loads(result.stdout)
+
+        def adapter_env(harness: AdapterHarness) -> dict[str, str]:
+            return {
+                "PATH": os.pathsep.join(
+                    [str(harness.bin), str(Path(sys.executable).parent)]
+                ),
+                "HOME": str(harness.root),
+            }
+
+        bound = engine_cli(
+            "monitor",
+            "bind",
+            "--store",
+            str(self.harness.store),
+            "--binding",
+            str(config),
+            "--heartbeat",
+            "heartbeat-1",
+        )
+        first = engine_cli(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", NOW
+        )
+        first = engine_cli(
+            "monitor",
+            "continue",
+            "--continuation",
+            first["continuation"],
+            "--result-json",
+            json.dumps({"status": "idle", "observed_at": NOW}),
+            "--now",
+            NOW,
+        )
+        self.assertEqual(first["action"]["kind"], "observe")
+
+        stale_process = subprocess.Popen(
+            first["action"]["arguments"]["argv"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=adapter_env(self.harness),
+            cwd=self.harness.root,
+        )
+        try:
+            deadline = time.monotonic() + 5
+            methods: list[str] = []
+            while "account/rateLimits/read" not in methods:
+                self.assertLess(time.monotonic(), deadline, "stale adapter did not reach its delayed provider response")
+                try:
+                    methods = self.harness.methods()
+                except json.JSONDecodeError:
+                    methods = []
+                time.sleep(0.01)
+
+            active = engine_cli(
+                "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", NOW
+            )
+            self.assertEqual(active["action"]["kind"], "observe")
+            active_argv = active["action"]["arguments"]["argv"]
+
+            active_process = subprocess.run(
+                active_argv,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=60,
+                env=adapter_env(contender),
+                cwd=contender.root,
+            )
+            self.assertEqual(active_process.returncode, 0, active_process.stderr)
+            stale_stdout, stale_stderr = stale_process.communicate(timeout=60)
+            self.assertEqual(stale_process.returncode, 0, stale_stderr)
+            self.assertNotEqual(
+                json.loads(stale_stdout)["cycle_input"],
+                json.loads(active_process.stdout)["cycle_input"],
+                "the overlapping executions must produce divergent coherent results",
+            )
+
+            result = engine_cli(
+                "monitor",
+                "continue",
+                "--continuation",
+                active["continuation"],
+                "--result-json",
+                json.dumps({"exit_code": 0}),
+                "--now",
+                NOW,
+            )
+        finally:
+            if stale_process.poll() is None:
+                stale_process.kill()
+            stale_process.communicate()
+
+        self.assertNotEqual(
+            (result.get("action") or {}).get("purpose"),
+            "pre-send",
+            "the stale OPEN observation must not admit a wake",
+        )
+        self.assertNotEqual(
+            first["action"]["arguments"]["argv"],
+            active_argv,
+            "takeover must bind a fresh observation execution",
+        )
+        inspected = engine_cli(
+            "inspect", "--store", str(self.harness.store), "--now", NOW
+        )
+        self.assertEqual(inspected["observations"], [])
+        retry = inspected["retry_schedule"][registration["gate_key"]]
+        self.assertEqual(retry["last_reason"], "error:rpc-error")
 
     def test_real_invalid_binding_field_set_line_takes_the_query_failed_path(self):
         # Review cycle 9, finding 1: the adapter's longest fixed failure line

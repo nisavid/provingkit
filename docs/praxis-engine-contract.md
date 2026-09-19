@@ -31,10 +31,12 @@ engine-owned paths, a send with the exact reserved message, a print, or a
 heartbeat write); and `monitor continue` accepts the action's typed result or
 failure form through an engine-issued continuation. Takeover safely reissues
 reads and observations under a new generation while retaining their tick,
-proposal, reservation, and engine-owned artifacts; older continuations remain
-fenced, and the existing result path performs every normal recheck. Takeover
-retains an uncertain send reservation without replay, replays durable output,
-and recomputes scheduling. `monitor status` is redacted and cannot resume work.
+proposal, reservation, and engine-owned observation plan. Each observation
+execution has its own result paths, including a reissue after takeover, so the
+active continuation consumes only its execution's output; older continuations
+remain fenced, and the existing result path performs every normal recheck.
+Takeover retains an uncertain send reservation without replay, replays durable
+output, and recomputes scheduling. `monitor status` is redacted and cannot resume work.
 The status adapter turns the engine's observation requests into typed
 observations from one fixed, status-only Codex query per bound route. The
 harness supplies the native heartbeat and its scheduling controls, task
@@ -58,7 +60,9 @@ authentication. In the directed tick the engine enforces the ordering,
 binding, generation fencing, shape, and consequences of every action and result; whether the
 named tool was really invoked and whether a submitted result is true remain
 the monitor's assertions inside the trusted single-user store, never
-verified or attested. The acknowledged native limitations (no atomic
+verified or attested. Observation result paths bind filesystem output to the
+active execution but do not attest that the process named by the action wrote
+it. The acknowledged native limitations (no atomic
 idle-only send, no idempotency token, snapshot observations, acceptance is
 not delivery, non-atomic heartbeat and artifact writes, results as caller
 assertions) are enumerated in the engine reference.

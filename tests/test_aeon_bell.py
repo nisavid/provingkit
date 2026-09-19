@@ -4405,13 +4405,20 @@ class DirectedTick(CycleHelpers):
     def write_artifacts(
         self, view: dict, gates: list[dict], observations: list[dict]
     ) -> None:
-        directory = self.artifacts(view)
-        (directory / "report.json").write_text(
+        output, report = self.observation_result_paths(view)
+        report.write_text(
             json.dumps({"adapter": "praxis-aeon-bell-codex-status", "gates": gates}),
             encoding="utf-8",
         )
-        (directory / "input.json").write_text(
+        output.write_text(
             json.dumps({"observations": observations, "task_states": []}), encoding="utf-8"
+        )
+
+    def observation_result_paths(self, view: dict) -> tuple[Path, Path]:
+        argv = self.pending(view, "observe")["arguments"]["argv"]
+        return (
+            Path(argv[argv.index("--output") + 1]),
+            Path(argv[argv.index("--report") + 1]),
         )
 
     def gate_entry(self, key: str, outcome: str, kind: str = "quota_recovery") -> dict:
@@ -4438,16 +4445,17 @@ class DirectedTick(CycleHelpers):
         self.assertEqual(observe["restart"], "resumable")
         directory = self.artifacts(view)
         adapter = str(SCRIPT.parent / "codex_status.py")
-        self.assertEqual(
-            observe["arguments"]["argv"],
-            [
-                "python3", adapter, "observe", "--binding", binding,
-                "--requests", str(directory / "plan.json"),
-                "--output", str(directory / "input.json"),
-                "--report", str(directory / "report.json"),
-                "--now", at,
-            ],
-        )
+        argv = observe["arguments"]["argv"]
+        self.assertEqual(argv[:7], [
+            "python3", adapter, "observe", "--binding", binding,
+            "--requests", str(directory / "plan.json"),
+        ])
+        output, report = self.observation_result_paths(view)
+        self.assertRegex(output.name, r"^input-[0-9a-f]{24}\.json$")
+        self.assertRegex(report.name, r"^report-[0-9a-f]{24}\.json$")
+        self.assertEqual(output.parent, directory)
+        self.assertEqual(report.parent, directory)
+        self.assertEqual(argv[-2:], ["--now", at])
         self.assertIsNone(observe["arguments"]["cwd"])
         self.assertEqual(stat.S_IMODE(os.stat(directory).st_mode), 0o700)
         self.assertEqual(stat.S_IMODE(os.stat(directory / "plan.json").st_mode), 0o600)
@@ -4645,14 +4653,15 @@ class DirectedTick(CycleHelpers):
         ]
         for label, report, cycle_input, code in cases:
             with self.subTest(label=label):
-                for name in ("report.json", "input.json"):
-                    (directory / name).unlink(missing_ok=True)
+                output_path, report_path = self.observation_result_paths(view)
+                for path in (report_path, output_path):
+                    path.unlink(missing_ok=True)
                 if report == "ok":
                     report = json.dumps({"adapter": "praxis-aeon-bell-codex-status", "gates": [self.gate_entry(key, "observed")]})
                 if report is not None:
-                    (directory / "report.json").write_text(report, encoding="utf-8")
+                    report_path.write_text(report, encoding="utf-8")
                 if cycle_input is not None:
-                    (directory / "input.json").write_text(cycle_input, encoding="utf-8")
+                    output_path.write_text(cycle_input, encoding="utf-8")
                 before = state_path.read_bytes()
                 code_, next_view, err = self.submit(view, {"exit_code": 0}, at)
                 self.assertEqual(code_, 0, err)
@@ -6512,7 +6521,7 @@ class MonitorEntry(DirectedTick):
         )
         self.assertEqual(inspected["unresolved_attempts"], [])
 
-    def test_takeover_reissues_observe_with_the_same_engine_owned_artifacts(self) -> None:
+    def test_takeover_reissues_observe_with_fresh_result_paths_and_the_same_plan(self) -> None:
         self.register()
         key = self.gate_key()
         bound = self.bind_monitor()
@@ -6545,7 +6554,18 @@ class MonitorEntry(DirectedTick):
             (takeover["action"]["kind"], takeover["action"]["purpose"]),
             ("observe", "query"),
         )
-        self.assertEqual(takeover["action"]["arguments"]["argv"], argv)
+        takeover_argv = takeover["action"]["arguments"]["argv"]
+        self.assertNotEqual(takeover_argv, argv)
+        for flag in ("--requests", "--now"):
+            self.assertEqual(
+                takeover_argv[takeover_argv.index(flag) + 1],
+                argv[argv.index(flag) + 1],
+            )
+        for flag in ("--output", "--report"):
+            self.assertNotEqual(
+                takeover_argv[takeover_argv.index(flag) + 1],
+                argv[argv.index(flag) + 1],
+            )
         self.assertTrue((artifact_directory / "plan.json").is_file())
 
         code, payload, err = run(
@@ -6571,6 +6591,56 @@ class MonitorEntry(DirectedTick):
             aeon_bell._continuation_reference(takeover["continuation"])["tick_id"],
             old_ref["tick_id"],
         )
+
+    def test_takeover_rejects_cross_execution_artifact_pair_without_state_change(self) -> None:
+        self.register()
+        key = self.gate_key()
+        bound = self.bind_monitor()
+        at = "2026-09-17T12:05:00+00:00"
+        _, first, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", at,
+        )
+        first = self.monitor_continue(first, self.read("idle", at), at)
+        first_argv = first["action"]["arguments"]["argv"]
+        stale_output = Path(first_argv[first_argv.index("--output") + 1])
+
+        _, active, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", at,
+        )
+        active_argv = active["action"]["arguments"]["argv"]
+        active_report = Path(active_argv[active_argv.index("--report") + 1])
+        stale_output.write_text(
+            json.dumps(
+                {
+                    "observations": [
+                        self.quota_observation(remaining=50, observed_at=at)
+                    ],
+                    "task_states": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        active_report.write_text(
+            json.dumps(
+                {
+                    "adapter": "praxis-aeon-bell-codex-status",
+                    "gates": [self.gate_entry(key, "observed")],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        active = self.monitor_continue(active, {"exit_code": 0}, at)
+        self.assertNotEqual(
+            (active.get("action") or {}).get("purpose"), "pre-send"
+        )
+        tick = self.status(at)["tick"]
+        self.assertEqual(tick["observe"]["artifacts_code"], "artifact-io")
+        self.assertEqual(tick["observe"]["answered_gate_keys"], [])
+        _, inspected, _ = run("inspect", "--store", self.store, "--now", at)
+        self.assertEqual(inspected["observations"], [])
+        self.assertEqual(inspected["retry_schedule"], {})
+        self.assertEqual(inspected["unresolved_attempts"], [])
 
     def test_fresh_entry_over_pending_send_retains_reservation_and_never_replays(self) -> None:
         rid = self.register()["registration_id"]

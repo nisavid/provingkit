@@ -163,7 +163,7 @@ const binding = factory.createStructuredMonitorBinding({
             "entry": entry, "now": "2026-09-19T00:00:00+00:00", "corrupt_display": True,
             "engine_outcomes": [completed(reply) for reply in replies],
             "native_outcomes": {
-                "task_read": [{"kind": "completed", "actual_result": {"provider": "idle-ish", "observed_at": "2026-09-19T00:00:00+00:00"}, "summary": {"task_status": "idle-ish", "episode_context": "episode 4 is still waiting"}}],
+                "task_read": [{"kind": "completed", "actual_result": {"provider": "idle-ish", "observed_at": "2026-09-19T00:00:00+00:00"}, "summary": {"task_status": "idle-ish", "episode_context": "episode 4 is still waiting", "episode_matches": True}}],
                 "observe": [{"kind": "completed", "actual_result": {"exit_code": 0}}],
                 "send": [{"kind": "completed", "actual_result": {"request": "accepted-ish", "evidence": {"native_id": "n-1"}}, "summary": {"transport_status": "accepted-ish", "evidence_summary": "native request n-1"}}],
                 "emit": [{"kind": "completed", "actual_result": {"printed": True}}],
@@ -207,6 +207,145 @@ const binding = factory.createStructuredMonitorBinding({
         self.assertEqual(view["native_result_summary"], summary)
         self.assertNotIn("RAW-FORBIDDEN", json.dumps(view))
 
+    def test_native_factory_missing_episode_relation_cannot_authorize_send(self) -> None:
+        program = r'''
+const fs = require("fs");
+const factory = eval(fs.readFileSync(process.argv[1], "utf8"));
+const slots = new Map([["entry", "ab1.entry"]]);
+const engineCalls = [], taskReadCalls = [], sendCalls = [];
+const replies = [
+  {status: "action_required", registry_id: "registry", invocation_id: "invocation", generation: 7,
+   continuation: "ab1c.read", action: {kind: "task_read", purpose: "task-state",
+     arguments: {host: "local", task_id: "target", episode: "episode-雪-4"}}},
+  {status: "action_required", registry_id: "registry", invocation_id: "invocation", generation: 7,
+   continuation: "ab1c.send", action: {kind: "send", purpose: "wake",
+     arguments: {host: "local", task_id: "target", message: "must not send"}}},
+];
+const adapters = factory.createNativeAdapters({
+  taskRead: async input => {
+    taskReadCalls.push(input);
+    return {kind: "completed", actual_result: {observed_at: "2026-09-19T00:00:00+00:00"},
+      summary: {task_status: "idle", episode_context: "latest wait is a different episode"}};
+  },
+  send: async input => {
+    sendCalls.push(input);
+    return {kind: "completed", actual_result: {evidence: {accepted: true}},
+      summary: {transport_status: "accepted", evidence_summary: "accepted"}};
+  },
+});
+const binding = factory.createStructuredMonitorBinding({
+  state: {get: key => slots.get(key), put: (key, value) => slots.set(key, value)},
+  engineTransport: async argv => {
+    engineCalls.push(argv);
+    return {kind: "completed", exit_code: 0, stdout: JSON.stringify(replies.shift())};
+  },
+  nativeAdapters: adapters,
+});
+(async () => {
+  const first = await binding.advance({runKey: "run", entryKey: "entry"});
+  const second = await binding.advance({runKey: "run", entryKey: "entry",
+    classification: {decision_id: "decision-binding-7-1", choice: "idle"}});
+  process.stdout.write(JSON.stringify({first, second, engineCalls, taskReadCalls, sendCalls}));
+})().catch(error => { console.error(error.stack); process.exit(1); });
+'''
+        observed = run_javascript(program)
+        self.assertEqual(observed["taskReadCalls"], [{
+            "host": "local", "task_id": "target", "episode": "episode-雪-4",
+        }])
+        self.assertEqual(observed["first"]["status"], "needs_classification")
+        self.assertEqual(observed["second"]["status"], "needs_classification")
+        self.assertEqual(len(observed["engineCalls"]), 1)
+        self.assertEqual(observed["sendCalls"], [])
+
+    def test_native_factory_binds_matching_and_pre_send_episode_reads(self) -> None:
+        program = r'''
+const fs = require("fs");
+const factory = eval(fs.readFileSync(process.argv[1], "utf8"));
+const episode = "episode 'literal'\n雪";
+const readAction = purpose => ({kind: "task_read", purpose,
+  arguments: {host: "local literal", task_id: "task-$(literal)", episode}});
+const actionReply = (continuation, action) => ({status: "action_required",
+  registry_id: "registry", invocation_id: "invocation", generation: 7,
+  continuation, action});
+const slots = new Map([["entry", "ab1.entry"]]);
+const engineCalls = [], taskReadCalls = [], sendCalls = [];
+let engineStep = 0, readStep = 0;
+const adapters = factory.createNativeAdapters({
+  taskRead: async input => {
+    taskReadCalls.push(input);
+    readStep += 1;
+    return readStep === 1
+      ? {kind: "completed",
+         actual_result: {provider_status: "idle-literal", observed_at: "2026-09-19T00:00:01+00:00"},
+         summary: {task_status: "idle", episode_context: "the latest turn is the expected wait", episode_matches: true}}
+      : {kind: "completed",
+         actual_result: {provider_status: "idle-literal", observed_at: "2026-09-19T00:00:02+00:00"},
+         summary: {task_status: "idle", episode_context: "the latest turn is a newer wait", episode_matches: false}};
+  },
+  send: async input => {
+    sendCalls.push(input);
+    return {kind: "completed", actual_result: {evidence: {accepted: true}},
+      summary: {transport_status: "accepted", evidence_summary: "accepted"}};
+  },
+});
+const binding = factory.createStructuredMonitorBinding({
+  state: {get: key => slots.get(key), put: (key, value) => slots.set(key, value)},
+  engineTransport: async argv => {
+    engineCalls.push(argv);
+    engineStep += 1;
+    let reply;
+    if (engineStep === 1) reply = actionReply("ab1c.initial", readAction("task-state"));
+    else if (engineStep === 2) reply = actionReply("ab1c.pre-send", readAction("pre-send"));
+    else {
+      const result = JSON.parse(argv[7]);
+      reply = result.status === "idle"
+        ? actionReply("ab1c.send", {kind: "send", purpose: "wake",
+            arguments: {host: "local literal", task_id: "task-$(literal)", message: "stale wake"}})
+        : {status: "complete", invocation_id: "invocation", outcome: {}, printed_anything: false};
+    }
+    return {kind: "completed", exit_code: 0, stdout: JSON.stringify(reply)};
+  },
+  nativeAdapters: adapters,
+});
+(async () => {
+  const results = [];
+  results.push(await binding.advance({runKey: "run", entryKey: "entry"}));
+  results.push(await binding.advance({runKey: "run", entryKey: "entry",
+    classification: {decision_id: "decision-binding-7-1", choice: "idle"}}));
+  results.push(await binding.advance({runKey: "run", entryKey: "entry",
+    classification: {decision_id: "decision-binding-7-2", choice: "idle"}}));
+  results.push(await binding.advance({runKey: "run", entryKey: "entry",
+    classification: {decision_id: "decision-binding-7-2", choice: "unknown"}}));
+  process.stdout.write(JSON.stringify({episode, results, engineCalls, taskReadCalls, sendCalls}));
+})().catch(error => { console.error(error.stack); process.exit(1); });
+'''
+        observed = run_javascript(program)
+        expected_input = {
+            "host": "local literal", "task_id": "task-$(literal)",
+            "episode": observed["episode"],
+        }
+        self.assertEqual(observed["taskReadCalls"], [expected_input, expected_input])
+        self.assertEqual(
+            [result["status"] for result in observed["results"]],
+            ["needs_classification", "needs_classification", "needs_classification", "complete"],
+        )
+        pre_send_view = observed["results"][1]["view"]
+        self.assertEqual(pre_send_view["expected_episode"], observed["episode"])
+        self.assertEqual(pre_send_view["native_result_summary"], {
+            "task_status": "idle",
+            "episode_context": "the latest turn is a newer wait",
+            "episode_matches": False,
+        })
+        self.assertEqual(pre_send_view["decision_id"], "decision-binding-7-2")
+        self.assertEqual(observed["results"][2]["view"]["reason"], "invalid-classification")
+        self.assertEqual(json.loads(observed["engineCalls"][1][7]), {
+            "status": "idle", "observed_at": "2026-09-19T00:00:01+00:00",
+        })
+        self.assertEqual(json.loads(observed["engineCalls"][2][7]), {
+            "status": "unknown", "observed_at": "2026-09-19T00:00:02+00:00",
+        })
+        self.assertEqual(observed["sendCalls"], [])
+
     def test_stale_decision_id_cannot_classify_later_same_kind_action(self) -> None:
         scenario = {
             "entry": "ab1.entry", "now": "2026-09-19T00:00:00+00:00",
@@ -216,8 +355,8 @@ const binding = factory.createStructuredMonitorBinding({
                 completed(complete_reply()),
             ],
             "native_outcomes": {"task_read": [
-                {"kind": "completed", "actual_result": {"observed_at": "2026-09-19T00:00:00+00:00"}, "summary": {"episode_context": "one"}},
-                {"kind": "completed", "actual_result": {"observed_at": "2026-09-19T00:00:00+00:00"}, "summary": {"episode_context": "two"}},
+                {"kind": "completed", "actual_result": {"observed_at": "2026-09-19T00:00:00+00:00"}, "summary": {"episode_context": "one", "episode_matches": True}},
+                {"kind": "completed", "actual_result": {"observed_at": "2026-09-19T00:00:00+00:00"}, "summary": {"episode_context": "two", "episode_matches": True}},
             ]},
             "calls": [None, {"decision_id": "decision-binding-7-1", "choice": "idle"},
                       {"decision_id": "decision-binding-7-1", "choice": "idle"}],

@@ -701,10 +701,13 @@ Newest entry wins. A takeover with a pending `task_read` or `observe` retains
 the current tick and its action, refreshes the action's issue time, and returns
 the same safe action through a continuation bound to the new generation. A
 pre-send read therefore retains its proposal and reservation and reaches the
-existing rechecks normally; an observation retains its engine-owned artifact
-directory. A takeover retains an interrupted send reservation without issuing
-another send, replays durable notice or diagnostics, and recomputes the
-heartbeat write from current state. An older actor may submit only the
+existing rechecks normally; an observation retains its engine-owned plan and
+artifact directory but receives a fresh `input-<execution_id>.json` and
+`report-<execution_id>.json` pair. The active continuation reads only that
+pair, so a superseded adapter process may finish without contributing either
+artifact to the active result. A takeover retains an interrupted send
+reservation without issuing another send, replays durable notice or
+diagnostics, and recomputes the heartbeat write from current state. An older actor may submit only the
 continuation for the exact interrupted effect it was issued. A
 still-applicable result is recorded once and returns `status: stopped`,
 `reason: superseded-invocation`, and `late_result: recorded`; later reports
@@ -848,7 +851,7 @@ redacted error line, ids, times, and counts.
 | Kind | Purpose | Arguments | Restart |
 | --- | --- | --- | --- |
 | `task_read` | `task-state` (one per snapshotted registration, in sequence order) or `pre-send` | `host`, `task_id`, `registration_id`, `episode`, `attempt_id` (pre-send only), `require` (pre-send only) | `resumable` |
-| `observe` | `query` | `argv`: `python3`, the absolute path of `codex_status.py` beside the engine, `observe`, `--binding <path>` per recorded binding, `--requests <store>/ticks/<tick_id>/plan.json`, `--output .../input.json`, `--report .../report.json`, and `--now <issue time>` in supplied mode only; `cwd` null. `--task-states` is never passed. | `resumable` |
+| `observe` | `query` | `argv`: `python3`, the absolute path of `codex_status.py` beside the engine, `observe`, `--binding <path>` per recorded binding, `--requests <store>/ticks/<tick_id>/plan.json`, `--output .../input-<execution_id>.json`, `--report .../report-<execution_id>.json`, and `--now <issue time>` in supplied mode only; `cwd` null. The 24-hex execution id is shared by that output/report pair and replaced whenever takeover reissues the observation. `--task-states` is never passed. | `resumable` |
 | `send` | `wake` | `tool: send_follow_up`, `host`, `task_id`, `message` (the exact wake message built at reservation), `message_sha256`, `model_override: null`, `effort_override: null`, `attempt_id`, `registration_id`, `episode` | `abandon-only` |
 | `emit` | `notice` or `diagnostics` | `channel`, `text` (exact), `notice_id`, `replayed` | `abandon-only` |
 | `heartbeat_set` | `schedule` | `heartbeat` (the reference from `--heartbeat`), `target_at`, `delay_minutes`, `rule`, `write_number` (1 or 2), `fingerprint` (the schedule fingerprint the target was chosen from), `basis` | `abandon-only` |
@@ -868,7 +871,7 @@ does not exist for this target or heartbeat.
 | --- | --- | --- |
 | `task_read` (task-state) | `{"status": <task status>, "observed_at": <ISO with offset>}` | `task-state-recorded`; the failure form is `no-task-state` (the result cycle skips the registration as `task-unknown`) and one diagnostics line `task-read-failed`. |
 | `task_read` (pre-send) | same | idle, fresh, and still reserved: the `send` is issued; otherwise the attempt is reported `not_sent` with evidence `{"read": <status or disposition>, "reason": <null, the failure reason, task-state-stale, or gate-observation-stale>}` (`attempt-not-sent`, or `attempt-superseded` when an owner or legacy actor settled it meanwhile). |
-| `observe` | `{"exit_code": 0}` or `{"exit_code": 2, "stderr_line": "codex status: <code>: <message>"}` (the adapter's verbatim line: printable, at most 498 characters, which is the 512-character diagnostics line bound less the `step observe: ` relay prefix, so it is never truncated on relay; longer is `invalid-result`) | exit 0: `report.json` and `input.json` are read from the tick's directory, the report validated, the observations ingested, `observation-ingested`; any unreadable, non-JSON, wrong-shaped, or partially written file, or an invalid observation, rolls the ingestion back and is `query-failed` with `artifacts_code`. Exit 2 and the failure form are `query-failed` with the line kept verbatim in `failure_line` and one diagnostics line; the files are not read. |
+| `observe` | `{"exit_code": 0}` or `{"exit_code": 2, "stderr_line": "codex status: <code>: <message>"}` (the adapter's verbatim line: printable, at most 498 characters, which is the 512-character diagnostics line bound less the `step observe: ` relay prefix, so it is never truncated on relay; longer is `invalid-result`) | exit 0: the `report-<execution_id>.json` and `input-<execution_id>.json` pair bound in the active action is read, the report validated, the observations ingested, `observation-ingested`; another execution's pair is never consulted. Any unreadable, non-JSON, wrong-shaped, or partially written bound file, or an invalid observation, rolls the ingestion back and is `query-failed` with `artifacts_code`. Exit 2 and the failure form are `query-failed` with the line kept verbatim in `failure_line` and one diagnostics line; the files are not read. |
 | `send` | `{"outcome": "accepted\|not_sent\|unknown", "evidence": {optional flat scalar object}}` | `attempt-accepted`, `attempt-not-sent`, `attempt-unknown` through the same report path as legacy `report`; `not_performed` and `unavailable` are `not_sent` with `{"disposition", "reason"}` as evidence, `failed` is `unknown`; an attempt an owner rearmed or a legacy `report` settled meanwhile is `attempt-superseded`, never a tick failure. Results carry no time and are recorded whenever submitted. |
 | `emit` (notice) | `{"emitted": true}` | the notice is acknowledged (`notice-acknowledged`; `notice-acknowledged-elsewhere` when a legacy `acknowledge` got there first); the failure form leaves it pending (`notice-still-pending`, one diagnostics line `notice-unrelayed`) for the next tick to replay. |
 | `emit` (diagnostics) | `{"emitted": true}` | `diagnostics-emitted`; the failure form is `diagnostics-unemitted` and the lines are kept on the tick summary. Either completes the tick. |
@@ -956,15 +959,19 @@ attempt's; a notice `emit` only for the notice the store holds pending; a
 
 ### Artifact directory
 
-`<store>/ticks/<tick_id>/` (directory `0700`, files `0600`) holds exactly
-`plan.json` (the engine's `{"observation_requests": [...]}`), and
-`report.json` and `input.json` (the adapter's). It is created and
-`plan.json` written inside the transition that issues `observe`, before the
-save, and kept until the tick ends so a lost observe submit can be
-re-performed with the same plan. It is removed best-effort after the save
+`<store>/ticks/<tick_id>/` (directory `0700`, files `0600`) holds
+`plan.json` (the engine's `{"observation_requests": [...]}`) and one or more
+adapter result pairs named `input-<execution_id>.json` and
+`report-<execution_id>.json`. One 24-hex execution id binds each pair; a
+takeover keeps `plan.json` and binds the reissued action to a fresh pair. The
+directory is created and `plan.json` written inside the transition that issues
+`observe`, before the save, and kept until the tick ends so a lost observe
+submit can be re-performed with the same plan and isolated result paths. It is
+removed best-effort after the save
 that completes or abandons the tick, and every `tick start` sweeps every
 other `ticks/<24-hex>/` directory. The removal rule refuses a symlink or a
-non-directory, unlinks only regular files with the three known names, then
+non-directory, unlinks only regular `plan.json`, legacy `input.json` and
+`report.json`, and execution-named input/report files, then
 removes the directory; any other entry or filesystem error leaves the
 directory in place and adds `artifact-io: ticks/<id> could not be removed`
 to the current tick's diagnostics (or, at completion, to
@@ -1139,10 +1146,12 @@ authentication boundary, no hostile-same-user or distributed defence.
   assertions and never verifies them. A missing result is never a
   performed step.
 - Artifact files are not atomic with the state document. The engine's
-  `plan.json` and the adapter's `input.json` and `report.json` are
+  `plan.json` and each adapter execution's input and report files are
   sequential private writes with no transaction among themselves or with
-  `state.json`; the engine reads them only after a submitted exit 0 and
-  refuses any missing, partial, or invalid file as a failed query.
+  `state.json`; the engine reads only the pair bound in the active action after
+  a submitted exit 0 and refuses any missing, partial, or invalid file as a
+  failed query. A stale execution can leave files for cleanup but cannot
+  supply either file consumed by the active continuation.
 
 ## Error codes
 

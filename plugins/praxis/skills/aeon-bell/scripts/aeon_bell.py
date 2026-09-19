@@ -492,6 +492,10 @@ TICK_DIAGNOSTIC_MAX_CHARS = 512
 TICK_MAX_HEARTBEAT_WRITES = 2
 ARTIFACT_DIRECTORY = "ticks"
 ARTIFACT_NAMES = ("plan.json", "report.json", "input.json")
+OBSERVE_EXECUTION_ID_LENGTH = TICK_ID_LENGTH
+OBSERVE_RESULT_NAME_PATTERN = re.compile(
+    rf"^(?:input|report)-[0-9a-f]{{{OBSERVE_EXECUTION_ID_LENGTH}}}\.json$"
+)
 # The adapter's exit-2 line is fixed, value-free text that the tick relays
 # verbatim inside one diagnostics line as ``step observe: <line>``; its bound
 # is that line's bound less the relay prefix, so an accepted line is never
@@ -1326,6 +1330,9 @@ class AeonBell:
             if retained:
                 tick = current
                 assert tick is not None
+                pending = self._pending_action(tick)
+                if pending is not None and pending["kind"] == "observe":
+                    self._retarget_observe_action(tick, pending)
             else:
                 tick = self._new_tick_locked(
                     state,
@@ -3994,8 +4001,9 @@ class AeonBell:
 
     def _remove_artifacts(self, tick_id: str) -> bool:
         """Remove one tick's artifact directory by the bounded rule: refuse a
-        symlink or a non-directory, unlink only regular files with the three
-        known names, then rmdir. False leaves everything in place."""
+        symlink or a non-directory, unlink only regular plan and observation
+        result files with engine-owned names, then rmdir. False leaves
+        everything in place."""
         directory = self._artifact_directory(tick_id)
         try:
             if os.path.islink(directory):
@@ -4007,7 +4015,10 @@ class AeonBell:
             for name in os.listdir(directory):
                 path = directory / name
                 if (
-                    name not in ARTIFACT_NAMES
+                    (
+                        name not in ARTIFACT_NAMES
+                        and OBSERVE_RESULT_NAME_PATTERN.fullmatch(name) is None
+                    )
                     or os.path.islink(path)
                     or not os.path.isfile(path)
                 ):
@@ -4058,6 +4069,69 @@ class AeonBell:
         except OSError:
             return False
         return True
+
+    def _new_observe_result_paths(self, tick: dict[str, Any]) -> tuple[Path, Path]:
+        execution_id = secrets.token_hex(OBSERVE_EXECUTION_ID_LENGTH // 2)
+        directory = self._artifact_directory(tick["tick_id"])
+        return (
+            directory / f"input-{execution_id}.json",
+            directory / f"report-{execution_id}.json",
+        )
+
+    @staticmethod
+    def _replace_argv_value(argv: list[str], flag: str, value: str) -> None:
+        index = argv.index(flag)
+        argv[index + 1] = value
+
+    def _retarget_observe_action(
+        self, tick: dict[str, Any], action: dict[str, Any]
+    ) -> None:
+        """Give one reissued observe execution private result paths."""
+        if self._observe_result_paths(tick, action) is None:
+            raise AeonBellError(
+                "corrupt-store", "pending observe action has unsupported artifact paths"
+            )
+        output, report = self._new_observe_result_paths(tick)
+        argv = action["arguments"]["argv"]
+        self._replace_argv_value(argv, "--output", str(output))
+        self._replace_argv_value(argv, "--report", str(report))
+
+    def _observe_result_paths(
+        self, tick: dict[str, Any], action: dict[str, Any]
+    ) -> tuple[Path, Path] | None:
+        """Resolve only the engine-owned paths bound into this observe action."""
+        argv = action.get("arguments", {}).get("argv")
+        if not isinstance(argv, list) or not all(
+            isinstance(item, str) for item in argv
+        ):
+            return None
+        values: dict[str, Path] = {}
+        for flag in ("--output", "--report"):
+            if argv.count(flag) != 1:
+                return None
+            index = argv.index(flag)
+            if index + 1 >= len(argv):
+                return None
+            values[flag] = Path(argv[index + 1])
+        directory = self._artifact_directory(tick["tick_id"])
+        expected = {"--output": "input", "--report": "report"}
+        for flag, path in values.items():
+            legacy = path.name == f"{expected[flag]}.json"
+            current = (
+                OBSERVE_RESULT_NAME_PATTERN.fullmatch(path.name) is not None
+                and path.name.startswith(f"{expected[flag]}-")
+            )
+            if path.parent != directory or not (legacy or current):
+                return None
+        output_name, report_name = values["--output"].name, values["--report"].name
+        if (output_name, report_name) != ("input.json", "report.json") and (
+            not output_name.startswith("input-")
+            or not report_name.startswith("report-")
+            or output_name.removeprefix("input-")
+            != report_name.removeprefix("report-")
+        ):
+            return None
+        return values["--output"], values["--report"]
 
     @staticmethod
     def _tick_diagnostic(tick: dict[str, Any], line: str) -> None:
@@ -4330,6 +4404,7 @@ class AeonBell:
             self._tick_diagnostic(tick, "aeon bell: artifact-io: plan.json could not be written")
             return False
         directory = self._artifact_directory(tick["tick_id"])
+        output, report = self._new_observe_result_paths(tick)
         adapter = Path(__file__).resolve().parent / "codex_status.py"
         argv = ["python3", str(adapter), "observe"]
         for path in tick["binding_paths"]:
@@ -4338,9 +4413,9 @@ class AeonBell:
             "--requests",
             str(directory / "plan.json"),
             "--output",
-            str(directory / "input.json"),
+            str(output),
             "--report",
-            str(directory / "report.json"),
+            str(report),
         ]
         if tick["time_mode"] == "supplied":
             argv += ["--now", format_time(now)]
@@ -4609,17 +4684,21 @@ class AeonBell:
         dispatch["cursor"] += 1
 
     def _ingest_artifacts(
-        self, state: dict[str, Any], tick: dict[str, Any], now: datetime
+        self,
+        state: dict[str, Any],
+        tick: dict[str, Any],
+        action: dict[str, Any],
+        now: datetime,
     ) -> tuple[str | None, dict[str, str] | None, list[str]]:
-        """Read the adapter's report.json and input.json from the engine's own
-        directory. Any unreadable, invalid, or partial file is one artifacts
-        code with nothing applied: ingestion runs against copies and is rolled
-        back, so a failed observe never leaves half-applied state."""
-        directory = self._artifact_directory(tick["tick_id"])
+        """Read only the result paths bound to this observe execution."""
+        paths = self._observe_result_paths(tick, action)
+        if paths is None:
+            return "artifact-io", None, []
+        output_path, report_path = paths
 
-        def load(name: str, code: str) -> Any:
+        def load(path: Path, code: str) -> Any:
             try:
-                raw = (directory / name).read_bytes()
+                raw = path.read_bytes()
             except OSError:
                 return "artifact-io", None
             try:
@@ -4627,7 +4706,7 @@ class AeonBell:
             except (UnicodeDecodeError, ValueError):
                 return code, None
 
-        code, report = load("report.json", "invalid-adapter-report")
+        code, report = load(report_path, "invalid-adapter-report")
         if code is not None:
             return code, None, []
         try:
@@ -4636,7 +4715,7 @@ class AeonBell:
             return "invalid-adapter-report", None, []
         if queried is None:
             return "invalid-adapter-report", None, []
-        code, cycle_input = load("input.json", "invalid-input")
+        code, cycle_input = load(output_path, "invalid-input")
         if code is not None:
             return code, None, []
         if not isinstance(cycle_input, dict) or not isinstance(
@@ -4684,7 +4763,7 @@ class AeonBell:
             action["recorded"] = {"exit_code": 2, "answered_gate_keys": []}
         else:
             observe["exit_code"] = 0
-            code, queried, answered = self._ingest_artifacts(state, tick, now)
+            code, queried, answered = self._ingest_artifacts(state, tick, action, now)
             if code is not None:
                 observe["artifacts_code"] = code
                 self._tick_diagnostic(

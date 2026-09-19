@@ -35,8 +35,11 @@ The directed tick issues this command with exactly these arguments: every
 `--binding` it was started with, and `--requests`, `--output`, and
 `--report` inside the engine's own `<store>/ticks/<tick_id>/` directory
 (`--now` only in supplied time mode). The monitor runs the argv as printed
-and submits only the exit code; the engine reads both files from its own
-directory.
+and submits only the exit code. The engine gives each issued observation a
+matched `input-<execution_id>.json` and `report-<execution_id>.json` pair and
+reads only the pair bound in that action. A generation takeover keeps the
+same `plan.json` but issues a new pair, so a superseded process cannot supply
+either artifact consumed by the active continuation.
 
 Output files are written one after the other, `--output` first and then
 `--report`, before anything is printed, and there is no transaction across
@@ -44,9 +47,10 @@ them or with the process exit. A write that fails is `output-io`, exit 2,
 with nothing printed, and a file written earlier in the same run remains as
 it was written; an interrupted write can leave a partial file. On exit 2
 the engine reads neither file, and on exit 0 it refuses any missing,
-unreadable, non-JSON, wrong-shaped, or partially written file as a failed
-query with nothing applied, so a leftover or partial file is never taken
-for a successful observation.
+unreadable, non-JSON, wrong-shaped, or partially written file in the bound
+pair as a failed query with nothing applied. Complete files from a different
+execution are outside that pair, so neither leftovers nor overlapping stale
+writes are taken for the active observation.
 
 ## Binding config
 

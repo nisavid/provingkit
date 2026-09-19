@@ -96,7 +96,10 @@
       allowed_choices: null,
       reason: run.terminal_reason,
     };
-    if (run.action && run.action.kind === "task_read") view.allowed_choices = TASK_STATUSES;
+    if (run.action && run.action.kind === "task_read") {
+      view.expected_episode = run.action.arguments.episode;
+      view.allowed_choices = TASK_STATUSES;
+    }
     if (run.action && run.action.kind === "send") view.allowed_choices = SEND_OUTCOMES;
     return Object.assign(view, extra || {});
   }
@@ -125,7 +128,7 @@
   function boundedSummary(kind, outcome) {
     if (!plainObject(outcome.summary)) return null;
     const allowed = kind === "task_read"
-      ? ["task_status", "episode_context"]
+      ? ["task_status", "episode_context", "episode_matches"]
       : kind === "send" ? ["transport_status", "evidence_summary"] : [];
     const summary = {};
     for (const [key, value] of Object.entries(outcome.summary)) {
@@ -167,6 +170,11 @@
     const source = plainObject(native) ? (plainObject(actualValue(native)) ? actualValue(native) : native) : {};
     if (run.action.kind === "task_read") {
       if (!TASK_STATUSES.includes(classification.choice)) return null;
+      if (classification.choice === "idle" && (
+        !plainObject(run.native_result_summary) ||
+        run.native_result_summary.episode_matches !== true ||
+        typeof run.native_result_summary.episode_context !== "string"
+      )) return null;
       const observedAt = source.observed_at || source.read_at;
       if (typeof observedAt !== "string") return null;
       return {status: classification.choice, observed_at: observedAt};
@@ -416,7 +424,7 @@
   function createNativeAdapters(controls) {
     if (!plainObject(controls)) throw new TypeError("native controls are required");
     const adapters = {};
-    if (typeof controls.taskRead === "function") adapters.task_read = {invoke: ({action}) => controls.taskRead({host: action.arguments.host, task_id: action.arguments.task_id})};
+    if (typeof controls.taskRead === "function") adapters.task_read = {invoke: ({action}) => controls.taskRead({host: action.arguments.host, task_id: action.arguments.task_id, episode: action.arguments.episode})};
     if (typeof controls.runArgv === "function") adapters.observe = {invoke: ({action}) => controls.runArgv({argv: action.arguments.argv, cwd: action.arguments.cwd})};
     if (typeof controls.send === "function") adapters.send = {invoke: ({action}) => controls.send({host: action.arguments.host, task_id: action.arguments.task_id, message: action.arguments.message})};
     if (typeof controls.emit === "function") adapters.emit = {invoke: ({action}) => controls.emit(action.arguments.text)};

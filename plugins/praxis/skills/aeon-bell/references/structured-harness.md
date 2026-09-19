@@ -69,8 +69,8 @@ const result = await binding.advance({
 ```
 
 `CONFIGURED_NATIVE_CONTROLS` is built once from the harness's actual native
-interfaces. `taskRead` receives stored `host` and `task_id`; `runArgv` receives
-the stored argv array and cwd; `send` receives stored host, task id, and
+interfaces. `taskRead` receives stored `host`, `task_id`, and `episode`;
+`runArgv` receives the stored argv array and cwd; `send` receives stored host, task id, and
 message with no model or effort override; `emit` receives the stored text;
 `heartbeatSet` receives the complete frozen action and engine envelope. An
 absent control leaves that action unsupported. A synthetic application can
@@ -80,8 +80,14 @@ name or invent arguments inside the binding.
 Each control returns a transport object with `kind` equal to `completed`,
 `not_started`, or `unknown`. A completed object keeps the unmodified native
 value under `actual_result`. A completed task read also supplies an explicit
-bounded `summary` using only `task_status` and `episode_context`; a completed
-send uses only `transport_status` and `evidence_summary`. Values are printable
+bounded `summary` using only `task_status`, `episode_context`, and
+`episode_matches`; `episode_matches` is true only when the observed task's
+latest turn is still the wait for the supplied episode. The binding carries
+that exact expected episode from the engine into both `taskRead` and the
+classification view. The configured control and actor compare the bounded
+real task context cooperatively; they do not infer a native episode field the
+task interface did not supply. A completed send uses only `transport_status`
+and `evidence_summary`. Values are printable
 scalars, each string is at most 512 characters, and the whole summary is at
 most 1024 serialized characters. The binding rejects an absent or malformed
 classification summary as unresolved rather than opening raw state. Task-read
@@ -107,7 +113,11 @@ every engine transition. The result is one of:
 - `unsupported`: a required structured channel or valid stored run is absent.
 
 For `task_read`, choose only the documented Aeon Bell task status while
-judging the episode. The adapter supplies `observed_at`. For `send`, choose
+judging `expected_episode` against `episode_context` and `episode_matches` in
+the classification view. The binding accepts `idle` only when the stored
+summary has a string `episode_context` and `episode_matches` is exactly true.
+False, absent, or uncertain relation evidence requires a truthful non-idle
+choice and cannot authorize a send. The adapter supplies `observed_at`. For `send`, choose
 `accepted`, `not_sent`, or `unknown`; the adapter derives evidence from the
 stored native result. Free-form fields, stale decision ids, and opaque values
 are rejected without another native or engine effect. Display is output-only:
