@@ -6,7 +6,7 @@ tests in `tests/test_validate_source_skill_lineage.py`.
 
 ## Boundaries
 
-The retained evidence describes `nisavid/agents` candidate
+The retained evidence describes historical candidate
 `8ec465ea915c6759a3693ac8515f0ee3901b8a4f`. Its source manifest has SHA-256
 `838b6ef68103f2139ebc9728b7ad93ddc5db52dd90e92ac2293cde2a47d55896`
 and five package records: Artifact Customs, Mergecraft, Rolecasting,
@@ -31,7 +31,9 @@ On deadline expiry, reject admission, release any late-acquired lock, and emit
 the pathless lock-limit diagnostic.
 
 The refresher pins the validator's byte size and SHA-256. Update both values
-whenever the validator changes. Keep directory and non-directory recovery
+whenever the validator changes. The existing validator and historical-test
+entries in `release/provingkit/historical-identity-allowlist-v1.json` must also
+match their reviewed file bytes. Keep directory and non-directory recovery
 moves on `_move_bound_noreplace()` with typed binding callbacks. Public
 `write()` tests must reach the directory path and both non-directory quarantine
 paths. Exercise destination appearance, binding substitution, applied partial
@@ -44,6 +46,7 @@ Run the active source-lineage tests, then exercise both retained readers:
 
 ```sh
 python -m unittest tests.test_validate_source_skill_lineage
+python scripts/validate_provingkit.py .
 python scripts/validate_source_skill_lineage.py .
 python scripts/refresh_source_skill_lineage.py check .
 ```
