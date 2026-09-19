@@ -198,7 +198,7 @@ def build_grader_payload(
     }
 
 
-def load_json(root: Path, relative: str, field: str) -> dict:
+def load_json_value(root: Path, relative: str, field: str) -> object:
     def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict:
         value = {}
         for key, item in pairs:
@@ -207,9 +207,13 @@ def load_json(root: Path, relative: str, field: str) -> dict:
         return value
 
     try:
-        value = json.loads(read(root, relative), object_pairs_hook=reject_duplicate_keys)
+        return json.loads(read(root, relative), object_pairs_hook=reject_duplicate_keys)
     except json.JSONDecodeError as error:
         raise ContractError(f"{field} is not valid JSON") from error
+
+
+def load_json(root: Path, relative: str, field: str) -> dict:
+    value = load_json_value(root, relative, field)
     require(isinstance(value, dict), f"{field} must be an object")
     return value
 
@@ -617,6 +621,46 @@ def validate_delivery(root: Path) -> dict:
     return delivery
 
 
+def validate_trigger_evals(root: Path, skill: str, semantic_files: set[str]) -> None:
+    relative = f"skills/{skill}/evals/trigger-evals.json"
+    if not (root / relative).exists():
+        return
+    document = load_json_value(root, relative, f"{skill} trigger evals")
+    require(isinstance(document, list) and bool(document), f"{skill} trigger evals must be a nonempty list")
+    for position, item in enumerate(document, start=1):
+        label = f"{skill} trigger eval {position}"
+        require(
+            isinstance(item, dict) and set(item) == {"query", "should_trigger"},
+            f"{label} keys drift",
+        )
+        require(
+            isinstance(item["query"], str) and bool(item["query"].strip()),
+            f"{label} query must be a nonempty string",
+        )
+        require(isinstance(item["should_trigger"], bool), f"{label} should_trigger must be Boolean")
+    semantic_files.add(relative)
+
+
+def build_candidate_bundle(
+    root: Path, topology: dict, skill: str, bodies: dict, semantic_files: set[str]
+) -> dict[str, str]:
+    """Deliver runtime instructions for a skill and its declared call closure."""
+    pending = [skill]
+    included: set[str] = set()
+    bundle: dict[str, str] = {}
+    while pending:
+        current = pending.pop()
+        if current in included:
+            continue
+        included.add(current)
+        bundle[f"skills/{current}/SKILL.md"] = bodies[current]
+        for path in sorted(semantic_files):
+            if path.startswith(f"skills/{current}/references/"):
+                bundle[path] = read(root, path)
+        pending.extend(call["skill"] for call in topology["skills"][current]["may_call"])
+    return dict(sorted(bundle.items()))
+
+
 def validate_evals(
     root: Path,
     topology: dict,
@@ -626,6 +670,7 @@ def validate_evals(
 ) -> set[str]:
     names: set[str] = set()
     for skill in topology["skills"]:
+        validate_trigger_evals(root, skill, semantic_files)
         eval_path = f"skills/{skill}/evals/evals.json"
         document = load_json(root, eval_path, f"{skill} evals")
         semantic_files.add(eval_path)
@@ -634,11 +679,7 @@ def validate_evals(
         evals = document["evals"]
         require(isinstance(evals, list), f"{skill} evals must be a list")
         require(len(evals) >= 5, f"{skill} requires at least five behavior evals")
-        references = sorted(
-            path for path in semantic_files if path.startswith(f"skills/{skill}/references/")
-        )
-        candidate_bundle = {f"skills/{skill}/SKILL.md": bodies[skill]}
-        candidate_bundle.update({path: read(root, path) for path in references})
+        candidate_bundle = build_candidate_bundle(root, topology, skill, bodies, semantic_files)
         referenced_fixtures: set[str] = set()
         observed_ids: list[int] = []
         for position, item in enumerate(evals, start=1):

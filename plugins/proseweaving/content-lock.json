@@ -3,11 +3,21 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "30adcd47fd8c9b885666ff648e162beacdf7d967b07fb3348c67c84310a27e5f",
-    "CHANGELOG.md": "2c0998a6a499ae7578182b010ca7cfef77e0a8c01b29381bdf40b26384c7b0db",
+    "CHANGELOG.md": "53ba8e2e566df6bd77a088b14203ae6059368bf3f6cb5e5b436d8e3921354350",
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
-    "README.md": "3e3fcdc2a6deea752d9be9ecddc567ea5d3881395bc94090d401ab447b24000e",
+    "README.md": "074f9ea4c0a4908af12348b0ee996116446f1680bf78a832d8003dde7dfe7d93",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
-    "plugin.json": "6efb1cccd07a51f0f1066c95399d74da51352de826d0243e321dcf3f76bf0639",
+    "plugin.json": "0cfbca21c67f620154a5bc25b606541a5c35b724018ff00075360578b3fd9c33",
+    "skills/editing-finished-drafts/SKILL.md": "a87aad2a861233e821859cd3d99bd8efe68b7e0bf7875fadf103b337692bd3cb",
+    "skills/editing-finished-drafts/agents/openai.yaml": "f8513c011377aa3393b0834d0d3f376337f7b295fb22130cd9ce0e908b194a29",
+    "skills/editing-finished-drafts/evals/evals.json": "9881280ed178fd93b64ca9cf0a8c743f4b7f3dd7b93180401f672e6fb6129156",
+    "skills/editing-finished-drafts/evals/fixtures/batch-content-led-variation.md": "148157c08e6fb710a6fc9c9a581338b5edd3927c41412a48d5b8c032541f8888",
+    "skills/editing-finished-drafts/evals/fixtures/conversation-useful-first-person.md": "02787d38327399d5482ab3c9179406a56012ffb42c26e2215b6854ffcc7e759e",
+    "skills/editing-finished-drafts/evals/fixtures/intentional-form-and-quote.md": "04b07f1356ca897d8ededc8917a758934cf2bc13c0f3f0f6107e6a18dd666f73",
+    "skills/editing-finished-drafts/evals/fixtures/missing-material-evidence.md": "87c92cc08385c5381cfd9c28c95533d5daccecce02d16d9766edf2f50cbac313",
+    "skills/editing-finished-drafts/evals/fixtures/no-change.md": "86ba1cbc2fb2f283e1887c9739509b8a339faedb02295b44822a68ba848a7d7d",
+    "skills/editing-finished-drafts/evals/fixtures/publication-evidence-boundary.md": "38ec665f959ce2be89fa8953d2b7aacc1745e664f9b2b459e3128f81712ccf2c",
+    "skills/editing-finished-drafts/evals/trigger-evals.json": "421dda27638fb8988cc767c59f28bcfa8bd82f30e26ad3674b5e0b95ec043cc1",
     "skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",
     "skills/writing-for-people/agents/openai.yaml": "72c6e18d6871a7ad7a1eed9462b7440de0cede33708afc523f461347a1becb56",
     "skills/writing-for-people/evals/evals.json": "68418673841d92ab4240e8aedfaff52f3e578cb5f690f8b6e014a4dfac98210b",
@@ -26,6 +36,6 @@
     "skills/writing-for-people/references/edit-pass.md": "1e41696d508f2c971e2423aa2115cdf6383ea04e23f84663baf14be1258e48f5",
     "skills/writing-for-people/references/evidence-in-prose.md": "0b339282b804c7ff95700a2a95d01e4f845552d88be0182c7952fa4497e76b95",
     "skills/writing-for-people/references/threaded-conversation.md": "d6d8d4c21c8c305b2990837b4be21a99eb3879c7514595cdb182ff89d98b65fe",
-    "topology.json": "37b35752e39fde9e4753f0bf59562e0e26207d465b89026e0d58adf2de0543b5"
+    "topology.json": "2168bfcb3fd4b273b415730d32481eb9314c17522f5de2f27e40de1aa5a55313"
   }
 }
