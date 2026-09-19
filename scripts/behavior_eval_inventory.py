@@ -907,10 +907,16 @@ def _landed_row(repository, key, binding, reviewed_source, landed_source, receip
         core._correspondence_require(h_identity["sha256"] == binding["raw_sha256"]
             and h_identity["mode"] == binding["mode"], "reviewed-receipt-mismatch", "reviewed-receipt",
             "Reviewed Receipt bytes or mode differ")
-        h_descriptor = _ready_descriptor(repository, reviewed_source.revision, key)
-        h_result = core.check_correspondence(repository, candidate_revision=reviewed_source.revision,
-            descriptor=h_descriptor, receipt_bytes=h_raw, binding=binding)
+        h_result = {"status": "fail", "stage": "binding", "reason_code": "reviewed-receipt-mismatch"}
         row["reviewed_binding"] = h_result
+        try:
+            core._read_bound_receipt(repository, h_raw, binding, h_result)
+            h_result.update(status="pass", stage="complete", reason_code="complete",
+                            reason="Reviewed Receipt binding verified")
+        except core.CorrespondenceError as error:
+            h_result.update(status=error.status, stage=error.stage, reason_code=error.code, reason=str(error))
+        except core.ReceiptError as error:
+            h_result.update(reason=str(error))
         if h_result["status"] != "pass":
             return {**row, "status": h_result["status"],
                     "reason_code": h_result["reason_code"] if h_result["status"] == "error" else "reviewed-receipt-mismatch",
@@ -949,6 +955,20 @@ def check_landed(repository, *, context, landing):
         "comparisons": {"reviewed": None, "landed": None}, "selection_complete": False,
         "qualification_scope": "ordinary-receipt-correspondence", "member_qualification": "not-evaluated",
         "skills": []}
+    # An identity can be available even when the claimed relations are rejected.
+    for document, fields in ((context, ("original_base", "reviewed_head", "consumer_revision", "procedure_revision")),
+                             (landing, ("target_before", "candidate_revision"))):
+        if isinstance(document, dict):
+            for field in fields:
+                try:
+                    result[field] = core._correspondence_revision(repository, document.get(field), field)
+                except core.CorrespondenceError:
+                    pass  # Full validation below reports the invalid or unavailable value.
+    if isinstance(context, dict):
+        try:
+            result["context_sha256"] = core.document_digest(context)
+        except (TypeError, ValueError):
+            pass
     try:
         normalized = _validate_landed_context(repository, context)
         candidate = _validate_landing(repository, context, landing)

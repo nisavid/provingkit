@@ -1525,6 +1525,41 @@ def _retained_processor(files, manifest):
                 del sys.modules[key]
 
 
+def _read_bound_receipt(repository, receipt_bytes, binding, result):
+    """Verify Receipt/context binding without qualifying any containing source tree."""
+    result.update(receipt_raw_sha256=hashlib.sha256(receipt_bytes).hexdigest(), receipt_sha256=None)
+    _validate_correspondence_binding(repository, binding)
+    for field in ("evaluated_revision", "profile", "method", "producer_procedure_revision", "processing"):
+        result[field] = binding[field]
+    _correspondence_require(result["receipt_raw_sha256"] == binding["raw_sha256"],
+        "receipt-changed", "receipt", "Receipt raw digest differs from its binding")
+    result.update(stage="receipt", reason_code="receipt-malformed")
+    receipt = read_json(receipt_bytes)
+    result["receipt_sha256"] = document_digest(receipt)
+    validate(receipt)
+    method, profile = binding["method"], binding["profile"]
+    expected_method = "prepared-before-run" if method == "prepared" else "reconciled-after-run"
+    _correspondence_require(receipt.get("method", "prepared-before-run") == expected_method
+        and receipt["candidate_revision"] == binding["evaluated_revision"],
+        "processing-mismatch", "binding", "Receipt method or source differs from its binding")
+    source = receipt["candidate_revision"]
+    _correspondence_require(receipt.get("processing") == binding["processing"],
+        "processing-mismatch", "binding", "Receipt processing record differs from its binding")
+    commit, files, manifest = _profile_source(repository, profile, bool(receipt["snapshot"]["skill"].get("corpus_format")))
+    if method == "prepared":
+        processing_inputs = {path: receipt["snapshot"]["inputs"].get(path) for path in manifest}
+    else:
+        processing_inputs = receipt["processing"]["inputs"]
+    result["processing_binding"] = {
+        "basis": "source-snapshot" if method == "prepared" else "recorded-processing",
+        "revision": source if method == "prepared" else receipt["processing"]["revision"],
+        "inputs": processing_inputs,
+    }
+    _correspondence_require(processing_inputs == manifest, "processing-mismatch", "binding",
+        "Receipt processing inputs do not match the registered historical profile")
+    return receipt, commit, files, manifest
+
+
 def check_correspondence(repository, *, candidate_revision, descriptor, receipt_bytes, binding):
     """Check retained historical evidence and complete S/C input correspondence."""
     result = {
@@ -1548,37 +1583,11 @@ def check_correspondence(repository, *, candidate_revision, descriptor, receipt_
             validate(descriptor, "skill")
         except ReceiptError as error:
             raise CorrespondenceError("error", "request-malformed", "request", str(error)) from error
-        _validate_correspondence_binding(repository, binding)
-        for field in ("evaluated_revision", "profile", "method", "producer_procedure_revision", "processing"):
-            result[field] = binding[field]
-        _correspondence_require(result["receipt_raw_sha256"] == binding["raw_sha256"],
-            "receipt-changed", "receipt", "Receipt raw digest differs from its binding")
-        result.update(stage="receipt", reason_code="receipt-malformed")
-        receipt = read_json(receipt_bytes)
-        result["receipt_sha256"] = document_digest(receipt)
-        validate(receipt)
-        method, profile = binding["method"], binding["profile"]
-        expected_method = "prepared-before-run" if method == "prepared" else "reconciled-after-run"
-        _correspondence_require(receipt.get("method", "prepared-before-run") == expected_method
-            and receipt["candidate_revision"] == binding["evaluated_revision"],
-            "processing-mismatch", "binding", "Receipt method or source differs from its binding")
-        source = receipt["candidate_revision"]
+        receipt, commit, files, manifest = _read_bound_receipt(repository, receipt_bytes, binding, result)
+        source, method, profile = receipt["candidate_revision"], binding["method"], binding["profile"]
+        processing_inputs = result["processing_binding"]["inputs"]
         _correspondence_require(receipt["snapshot"]["skill"] == descriptor,
             "snapshot-mismatch", "snapshot", "Receipt descriptor differs from the authoritative descriptor")
-        _correspondence_require(receipt.get("processing") == binding["processing"],
-            "processing-mismatch", "binding", "Receipt processing record differs from its binding")
-        commit, files, manifest = _profile_source(repository, profile, bool(descriptor.get("corpus_format")))
-        if method == "prepared":
-            processing_inputs = {path: receipt["snapshot"]["inputs"].get(path) for path in manifest}
-        else:
-            processing_inputs = receipt["processing"]["inputs"]
-        result["processing_binding"] = {
-            "basis": "source-snapshot" if method == "prepared" else "recorded-processing",
-            "revision": source if method == "prepared" else receipt["processing"]["revision"],
-            "inputs": processing_inputs,
-        }
-        _correspondence_require(processing_inputs == manifest, "processing-mismatch", "binding",
-            "Receipt processing inputs do not match the registered historical profile")
         result.update(stage="snapshot", reason_code="snapshot-mismatch")
         historical_snapshot = input_closure(repository, source, descriptor, profile=profile, method=method)
         _correspondence_require(receipt["snapshot"] == historical_snapshot,

@@ -201,6 +201,35 @@ class ProfileCorrespondenceTests(unittest.TestCase):
         self.assertEqual(row["historical_validation_implementation"]["revision"], PROFILES["p957"])
         self.assertEqual(row["processing_binding"]["basis"], "source-snapshot")
 
+    def test_reviewed_head_requires_receipt_binding_not_landed_source_correspondence(self):
+        case, context, landing = self.landed_fixture()
+        case.write(case.prefix + "/SKILL.md", "Reviewed branch source differs from the landed source.\n")
+        context["reviewed_head"] = landing["reviewed_head"] = case.commit("reviewed source only")
+        landing["context_sha256"] = core.document_digest(context)
+        result = inventory.check_landed(case.repo, context=context, landing=landing)
+        self.assertEqual(result["status"], "pass", result)
+        row = result["skills"][0]
+        self.assertEqual(row["reviewed_binding"]["status"], "pass")
+        self.assertEqual(row["landed_correspondence"]["status"], "pass")
+
+    def test_rejected_landing_preserves_available_context_and_candidate_identities(self):
+        case, context, landing = self.landed_fixture()
+        landing["target_before"] = context["reviewed_head"]
+        result = inventory.check_landed(case.repo, context=context, landing=landing)
+        self.assertEqual((result["status"], result["reason_code"]), ("fail", "target-moved"))
+        for field in ("original_base", "reviewed_head", "consumer_revision", "procedure_revision"):
+            self.assertEqual(result[field], context[field])
+        for field in ("target_before", "candidate_revision"):
+            self.assertEqual(result[field], landing[field])
+        self.assertEqual(result["context_sha256"], core.document_digest(context))
+
+        landing["candidate_revision"] = "f" * 40
+        result = inventory.check_landed(case.repo, context=context, landing=landing)
+        self.assertEqual((result["status"], result["reason_code"]), ("fail", "provenance-missing"))
+        self.assertIsNone(result["candidate_revision"])
+        self.assertEqual(result["original_base"], context["original_base"])
+        self.assertEqual(result["target_before"], landing["target_before"])
+
     def test_changed_h_receipt_and_changed_c_receipt_have_distinct_failures(self):
         case, context, landing = self.landed_fixture()
         case.write("release/receipts/example/writing.json", "malformed changed evidence")
