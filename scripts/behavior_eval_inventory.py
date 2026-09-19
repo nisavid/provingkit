@@ -834,205 +834,157 @@ def check(repository, base_revision, candidate_revision, receipt_root):
 CORRESPONDENCE_CONTRACT = "provingkit.receipt-correspondence/v1"
 
 
-def _context_revision(repository, value, field):
-    try:
-        return core.revision(repository, value)
-    except core.ReceiptError as error:
-        raise InventoryError(f"{field} is not a full available commit") from error
-
-
 def _validate_landed_context(repository, context):
-    required = {
-        "contract",
-        "original_base",
-        "reviewed_head",
-        "reviewed_target",
-        "operation",
-        "consumer_revision",
-        "procedure_revision",
-        "receipt_root",
-        "receipts",
-    }
-    if not isinstance(context, dict) or set(context) != required:
-        raise InventoryError("reviewed context fields are incomplete or unknown")
-    if context["contract"] != CORRESPONDENCE_CONTRACT:
-        raise InventoryError("reviewed context contract is unsupported")
-    if context["operation"] not in ("squash", "rebase"):
-        raise InventoryError("reviewed context operation is unsupported")
-    revisions = {
-        field: _context_revision(repository, context[field], field)
-        for field in (
-            "original_base",
-            "reviewed_head",
-            "reviewed_target",
-            "consumer_revision",
-            "procedure_revision",
-        )
-    }
-    try:
-        root = core.relative_path(context["receipt_root"])
-    except (core.ReceiptError, TypeError) as error:
-        raise InventoryError("receipt root is not a normalized relative directory") from error
-    receipts = context["receipts"]
-    if not isinstance(receipts, dict):
-        raise InventoryError("reviewed Receipt bindings are not an object")
-    bindings = {}
-    for key, binding in receipts.items():
-        if not isinstance(key, str) or not re.fullmatch(r"[^/]+/[^/]+", key):
-            raise InventoryError("reviewed Receipt key is not plugin/skill")
-        try:
-            core._validate_correspondence_binding(repository, binding)
-        except core.ReceiptError as error:
-            raise InventoryError(f"reviewed Receipt binding is invalid for {key}") from error
-        expected_path = f"{root}/{key}.json"
-        if binding["path"] != expected_path:
-            raise InventoryError(f"reviewed Receipt path differs for {key}")
-        bindings[key] = binding
+    required = {"contract", "original_base", "reviewed_head", "reviewed_target", "operation",
+                "consumer_revision", "procedure_revision", "receipt_root", "receipts"}
+    core._correspondence_require(isinstance(context, dict) and set(context) == required,
+        "request-malformed", "request", "Reviewed context fields are incomplete or unknown", status="error")
+    core._correspondence_require(context["contract"] == CORRESPONDENCE_CONTRACT,
+        "request-malformed", "request", "Reviewed context contract is unsupported", status="error")
+    core._correspondence_require(isinstance(context["operation"], str),
+        "request-malformed", "request", "Operation must be a string", status="error")
+    core._correspondence_require(context["operation"] in ("squash", "rebase"),
+        "operation-unsupported", "context", "Reviewed operation is unsupported")
+    revisions = {field: core._correspondence_revision(repository, context[field], field)
+        for field in ("original_base", "reviewed_head", "reviewed_target", "consumer_revision", "procedure_revision")}
+    root = core.relative_path(context["receipt_root"])
+    bindings = context["receipts"]
+    core._correspondence_require(isinstance(bindings, dict), "request-malformed", "request",
+        "Reviewed Receipt bindings must be an object", status="error")
+    for key, binding in bindings.items():
+        core._correspondence_require(isinstance(key, str) and re.fullmatch(r"[a-z0-9-]+/[a-z0-9-]+", key),
+            "request-malformed", "request", "Receipt key must be plugin/skill", status="error")
+        core._validate_correspondence_binding(repository, binding)
+        core._correspondence_require(binding["path"] == f"{root}/{key}.json",
+            "context-mismatch", "context", f"Reviewed Receipt path differs for {key}")
     return {**revisions, "receipt_root": root, "receipts": bindings}
 
 
 def _validate_landing(repository, context, landing):
-    required = {
-        "contract",
-        "context_sha256",
-        "operation",
-        "reviewed_head",
-        "target_before",
-        "candidate_revision",
-    }
-    if not isinstance(landing, dict) or set(landing) != required:
-        raise InventoryError("actual landing fields are incomplete or unknown")
-    if landing["contract"] != CORRESPONDENCE_CONTRACT:
-        raise InventoryError("actual landing contract is unsupported")
-    if not isinstance(landing["context_sha256"], str) or not re.fullmatch(
-        r"[0-9a-f]{64}", landing["context_sha256"]
-    ):
-        raise InventoryError("actual landing context digest is invalid")
-    if landing["context_sha256"] != core.document_digest(context):
-        raise InventoryError("actual landing does not bind the reviewed context")
-    if landing["operation"] != context["operation"]:
-        raise InventoryError("actual landing operation differs from reviewed context")
-    if landing["reviewed_head"] != context["reviewed_head"]:
-        raise InventoryError("actual landing reviewed head differs from context")
-    if landing["target_before"] != context["reviewed_target"]:
-        raise InventoryError("actual landing target differs from context")
-    return {
-        "candidate_revision": _context_revision(
-            repository, landing["candidate_revision"], "candidate_revision"
-        ),
-        "target_before": _context_revision(
-            repository, landing["target_before"], "target_before"
-        ),
-    }
+    required = {"contract", "context_sha256", "operation", "reviewed_head", "target_before", "candidate_revision"}
+    core._correspondence_require(isinstance(landing, dict) and set(landing) == required,
+        "request-malformed", "request", "Landing fields are incomplete or unknown", status="error")
+    core._correspondence_require(landing["contract"] == CORRESPONDENCE_CONTRACT
+        and isinstance(landing["operation"], str)
+        and isinstance(landing["context_sha256"], str)
+        and re.fullmatch(r"[0-9a-f]{64}", landing["context_sha256"]),
+        "request-malformed", "request", "Landing contract, operation, or digest is invalid", status="error")
+    for field in ("reviewed_head", "target_before", "candidate_revision"):
+        core._correspondence_revision(repository, landing[field], field)
+    core._correspondence_require(landing["operation"] in ("squash", "rebase"),
+        "operation-unsupported", "landing", "Landing operation is unsupported")
+    core._correspondence_require(landing["context_sha256"] == core.document_digest(context)
+        and landing["operation"] == context["operation"]
+        and landing["reviewed_head"] == context["reviewed_head"],
+        "context-mismatch", "landing", "Actual landing differs from the reviewed context")
+    core._correspondence_require(landing["target_before"] == context["reviewed_target"],
+        "target-moved", "landing", "Landing target differs from the reviewed target")
+    target, candidate = landing["target_before"], landing["candidate_revision"]
+    try:
+        core.git(repository, "merge-base", "--is-ancestor", target, candidate)
+    except core.ReceiptError as error:
+        raise core.CorrespondenceError("fail", "context-mismatch", "landing",
+                                      "Landing target is not an ancestor of the candidate") from error
+    if context["operation"] == "squash":
+        parents = core.git(repository, "rev-list", "--parents", "-n", "1", candidate).decode().split()[1:]
+        core._correspondence_require(parents == [target], "context-mismatch", "landing",
+                                    "Squash landing must have only the reviewed target as parent")
+    return candidate
 
 
-def _is_ancestor(repository, older, newer, message):
-    result = core.git(repository, "merge-base", "--is-ancestor", older, newer)
-    if result is None:  # pragma: no cover - subprocess always returns bytes or raises
-        raise InventoryError(message)
+def _landed_row(repository, key, binding, reviewed_source, landed_source, receipt_root):
+    row = {"skill": key, "binding": binding, "status": "fail", "stage": "reviewed-receipt",
+           "reason_code": "reviewed-receipt-mismatch", "reviewed_receipt": None,
+           "landed_receipt": None, "reviewed_binding": None, "landed_correspondence": None}
+    if binding is None:
+        return {**row, "reason": "Required consumer has no reviewed Receipt binding"}
+    try:
+        path = binding["path"]
+        # Preserve observed blob identities before parsing or resolving descriptors.
+        h_raw = reviewed_source.read(path)
+        row["reviewed_receipt"] = {"path": path, **reviewed_source.identity(path)}
+        h_identity = row["reviewed_receipt"]
+        core._correspondence_require(h_identity["sha256"] == binding["raw_sha256"]
+            and h_identity["mode"] == binding["mode"], "reviewed-receipt-mismatch", "reviewed-receipt",
+            "Reviewed Receipt bytes or mode differ")
+        h_descriptor = _ready_descriptor(repository, reviewed_source.revision, key)
+        h_result = core.check_correspondence(repository, candidate_revision=reviewed_source.revision,
+            descriptor=h_descriptor, receipt_bytes=h_raw, binding=binding)
+        row["reviewed_binding"] = h_result
+        if h_result["status"] != "pass":
+            return {**row, "status": h_result["status"],
+                    "reason_code": h_result["reason_code"] if h_result["status"] == "error" else "reviewed-receipt-mismatch",
+                    "reason": h_result["reason"], "cause": h_result["reason_code"]}
+        row.update(stage="landed-receipt", reason_code="receipt-missing")
+        c_raw = landed_source.read(path)
+        row["landed_receipt"] = {"path": path, **landed_source.identity(path)}
+        c_identity = row["landed_receipt"]
+        core._correspondence_require(c_identity["sha256"] == binding["raw_sha256"]
+            and c_identity["mode"] == binding["mode"], "receipt-changed", "landed-receipt",
+            "Landed Receipt bytes or mode differ")
+        row.update(stage="descriptor", reason_code="descriptor-unresolved")
+        c_descriptor = _ready_descriptor(repository, landed_source.revision, key)
+        closure = core.input_closure(repository, landed_source.revision, c_descriptor,
+                                    profile=binding["profile"], method=binding["method"])
+        core._correspondence_require(not any(p == receipt_root or p.startswith(receipt_root + "/")
+            for p in closure["inputs"]), "context-mismatch", "descriptor",
+            "Receipt directory intersects the selected evaluated closure")
+        c_result = core.check_correspondence(repository, candidate_revision=landed_source.revision,
+            descriptor=c_descriptor, receipt_bytes=c_raw, binding=binding)
+        row.update(landed_correspondence=c_result, status=c_result["status"], stage=c_result["stage"],
+                   reason_code=c_result["reason_code"], reason=c_result["reason"])
+    except core.CorrespondenceError as error:
+        row.update(status=error.status, stage=error.stage, reason_code=error.code, reason=str(error))
+    except (InventoryError, core.ReceiptError) as error:
+        row.update(reason=str(error))
+    return row
 
 
 def check_landed(repository, *, context, landing):
-    """Check the complete reviewed Receipt set against an actual landed commit."""
-    normalized_context = _validate_landed_context(repository, context)
-    normalized_landing = _validate_landing(repository, context, landing)
-    base = normalized_context["original_base"]
-    reviewed_head = normalized_context["reviewed_head"]
-    target_before = normalized_landing["target_before"]
-    candidate_revision = normalized_landing["candidate_revision"]
+    """Check every authoritative consumer and report explicit incomplete outcomes."""
+    result = {"contract": CORRESPONDENCE_CONTRACT, "status": "error", "stage": "request",
+        "reason_code": "request-malformed", "original_base": None, "reviewed_head": None,
+        "target_before": None, "candidate_revision": None, "context_sha256": None,
+        "consumer_revision": None, "procedure_revision": None, "coverage_basis": "complete-inventory",
+        "comparisons": {"reviewed": None, "landed": None}, "selection_complete": False,
+        "qualification_scope": "ordinary-receipt-correspondence", "member_qualification": "not-evaluated",
+        "skills": []}
     try:
-        _is_ancestor(repository, target_before, candidate_revision, "landing target is not an ancestor")
-        if context["operation"] == "squash":
-            parents = core.git(
-                repository, "rev-list", "--parents", "-n", "1", candidate_revision
-            ).decode().split()
-            if len(parents) < 2 or parents[1] != target_before:
-                raise InventoryError("squash landing does not have the reviewed target as first parent")
+        normalized = _validate_landed_context(repository, context)
+        candidate = _validate_landing(repository, context, landing)
+        result.update({field: normalized[field] for field in ("original_base", "reviewed_head",
+                                                            "consumer_revision", "procedure_revision")})
+        result.update(status="fail", target_before=normalized["reviewed_target"], candidate_revision=candidate,
+                      context_sha256=core.document_digest(context), stage="selection", reason_code="selection-incomplete")
+        reviewed = compare(repository, normalized["original_base"], normalized["reviewed_head"])
+        landed = compare(repository, normalized["original_base"], candidate)
+        result["comparisons"] = {"reviewed": reviewed, "landed": landed}
+        expected = set(normalized["receipts"])
+        required = set(reviewed["affected_skills"]) | set(landed["affected_skills"])
+        complete = reviewed["status"] == "complete" and landed["status"] == "complete"
+        matches = set(reviewed["affected_skills"]) == expected == set(landed["affected_skills"])
+        result["selection_complete"] = complete and matches
+        result["skills"] = [{"skill": key, "status": "not-checked", "reason": "Check has not completed"}
+                            for key in sorted(required | expected)]
+        h_source, c_source = Source(repository, normalized["reviewed_head"]), Source(repository, candidate)
+        for index, key in enumerate(sorted(required | expected)):
+            result["skills"][index] = _landed_row(repository, key, normalized["receipts"].get(key),
+                                                h_source, c_source, normalized["receipt_root"])
+        errors = [row for row in result["skills"] if row["status"] == "error"]
+        failures = [row for row in result["skills"] if row["status"] != "pass"]
+        if errors:
+            result.update(status="error", stage=errors[0]["stage"], reason_code=errors[0]["reason_code"])
+        elif not complete or not matches:
+            result.update(status="fail", reason_code="selection-incomplete" if not complete else "selection-changed")
+        elif failures:
+            result.update(status="fail", stage=failures[0]["stage"], reason_code=failures[0]["reason_code"])
+        else:
+            result.update(status="pass" if result["skills"] else "not-required", stage="complete", reason_code="complete")
+    except core.CorrespondenceError as error:
+        result.update(status=error.status, stage=error.stage, reason_code=error.code, reason=str(error))
     except (InventoryError, core.ReceiptError) as error:
-        raise InventoryError(str(error)) from error
-
-    reviewed_comparison = compare(repository, base, reviewed_head)
-    landed_comparison = compare(repository, base, candidate_revision)
-    selected = set(normalized_context["receipts"])
-    if reviewed_comparison["status"] != "complete" or landed_comparison["status"] != "complete":
-        selection_complete = False
-    else:
-        selection_complete = (
-            set(reviewed_comparison["affected_skills"]) == selected
-            and set(landed_comparison["affected_skills"]) == selected
-        )
-    rows = []
-    reviewed_source = Source(repository, reviewed_head)
-    landed_source = Source(repository, candidate_revision)
-    for key in sorted(selected):
-        binding = normalized_context["receipts"][key]
-        row = {"skill": key, "binding": binding, "status": "fail"}
-        try:
-            h_descriptor = _ready_descriptor(repository, reviewed_head, key)
-            c_descriptor = _ready_descriptor(repository, candidate_revision, key)
-            path = binding["path"]
-            h_raw = reviewed_source.read(path)
-            c_raw = landed_source.read(path)
-            h_identity = reviewed_source.identity(path)
-            c_identity = landed_source.identity(path)
-            row["reviewed_receipt"] = {"path": path, **h_identity}
-            row["landed_receipt"] = {"path": path, **c_identity}
-            if h_identity["sha256"] != binding["raw_sha256"] or h_identity["mode"] != binding["mode"]:
-                row.update(reason_code="reviewed-receipt-mismatch", reason="reviewed Receipt bytes or mode differ")
-                rows.append(row)
-                continue
-            if c_identity["sha256"] != binding["raw_sha256"] or c_identity["mode"] != binding["mode"]:
-                row.update(reason_code="landed-receipt-mismatch", reason="landed Receipt bytes or mode differ")
-                rows.append(row)
-                continue
-            h_result = core.check_correspondence(
-                repository,
-                candidate_revision=reviewed_head,
-                descriptor=h_descriptor,
-                receipt_bytes=h_raw,
-                binding=binding,
-            )
-            c_result = core.check_correspondence(
-                repository,
-                candidate_revision=candidate_revision,
-                descriptor=c_descriptor,
-                receipt_bytes=c_raw,
-                binding=binding,
-            )
-            row.update(reviewed_binding=h_result, landed_correspondence=c_result)
-            if h_result["status"] != "pass":
-                row.update(status="fail", reason_code="reviewed-receipt-mismatch", reason=h_result["reason"])
-            elif c_result["status"] != "pass":
-                row.update(status="fail", reason_code=c_result["reason_code"], reason=c_result["reason"])
-            else:
-                row.update(status="pass")
-        except (InventoryError, core.ReceiptError) as error:
-            row.update(reason_code="unavailable", reason=str(error))
-        rows.append(row)
-    failed = (
-        not selection_complete
-        or any(row["status"] != "pass" for row in rows)
-    )
-    status = "fail" if failed else "pass" if rows else "not-required"
-    return {
-        "contract": CORRESPONDENCE_CONTRACT,
-        "status": status,
-        "stage": "complete" if not failed else "correspondence",
-        "reason_code": "selection-mismatch" if not selection_complete else "complete",
-        "original_base": base,
-        "reviewed_head": reviewed_head,
-        "target_before": target_before,
-        "candidate_revision": candidate_revision,
-        "context_sha256": core.document_digest(context),
-        "consumer_revision": normalized_context["consumer_revision"],
-        "procedure_revision": normalized_context["procedure_revision"],
-        "coverage_basis": "complete-inventory",
-        "comparisons": {"reviewed": reviewed_comparison, "landed": landed_comparison},
-        "selection_complete": selection_complete,
-        "qualification_scope": "ordinary-receipt-correspondence",
-        "member_qualification": "not-evaluated",
-        "skills": rows,
-    }
+        result.update(reason=str(error))
+    return result
 
 
 def proposals(repository, revision, skill):
@@ -1106,7 +1058,7 @@ def main(argv=None):
             context = core.read_json(args.context.read_bytes())
             landing = core.read_json(args.landing.read_bytes())
             result = check_landed(args.repository, context=context, landing=landing)
-            code = 1 if result["status"] == "fail" else 0
+            code = {"pass": 0, "not-required": 0, "fail": 1, "error": 2}[result["status"]]
         elif args.command == "prepare":
             result, code = prepare(args.repository, args.revision, args.skill), 0
         elif args.command == "reconcile":

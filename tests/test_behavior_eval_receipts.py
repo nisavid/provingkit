@@ -183,7 +183,7 @@ class ReceiptWorkflowTests(unittest.TestCase):
                 method="prepared",
             )
 
-    def test_check_correspondence_accepts_a_prepared_receipt_at_the_landed_commit(self):
+    def test_check_correspondence_rejects_unregistered_prepared_processing(self):
         snapshot = receipts.input_closure(
             self.repo,
             self.candidate,
@@ -215,67 +215,21 @@ class ReceiptWorkflowTests(unittest.TestCase):
             binding=binding,
         )
 
-        self.assertEqual(result["status"], "pass")
-        self.assertEqual(result["coverage_basis"], "per-receipt")
-        self.assertEqual(result["qualification_scope"], "ordinary-receipt-correspondence")
-        self.assertEqual(result["member_qualification"], "not-evaluated")
-        self.assertEqual(result["profile"], "p24")
-        self.assertEqual(result["method"], "prepared")
-        self.assertEqual(
-            result["input_identity"],
-            receipts.document_digest(
-                {
-                    "contract": "provingkit.receipt-inputs/v1",
-                    "profile": "p24",
-                    "method": "prepared",
-                    "descriptor": self.spec,
-                    "inputs": snapshot["inputs"],
-                    "processing_inputs": {
-                        path: snapshot["inputs"][path]
-                        for path in (
-                            "scripts/behavior_eval_receipts.py",
-                            "release/behavior-eval-receipt-v1.schema.json",
-                            "release/behavior-eval-policy.json",
-                        )
-                    },
-                }
-            ),
-        )
-        self.assertEqual(result["evaluated_revision"], self.candidate)
-
-    def test_check_correspondence_reports_landed_closure_mismatch(self):
-        snapshot = receipts.input_closure(
-            self.repo,
-            self.candidate,
-            self.spec,
-            profile="p24",
-            method="prepared",
-        )
-        receipt = receipts.produce(self.repo, snapshot, self.results(snapshot))
-        raw = receipts.canonical_bytes(receipt)
-        binding = {
-            "path": "receipts/example/writing.json",
-            "raw_sha256": hashlib.sha256(raw).hexdigest(),
-            "mode": "100644",
-            "evaluated_revision": self.candidate,
-            "method": "prepared",
-            "profile": "p24",
-            "processing": None,
-            "producer_procedure_revision": self.candidate,
-        }
-        self.write(self.prefix + "/SKILL.md", "A changed skill body.\n")
-        landed = self.commit("land changed skill")
-
-        result = receipts.check_correspondence(
-            self.repo,
-            candidate_revision=landed,
-            descriptor=self.spec,
-            receipt_bytes=raw,
-            binding=binding,
-        )
-
         self.assertEqual(result["status"], "fail")
-        self.assertEqual(result["reason_code"], "input-closure-mismatch")
+        self.assertIsNone(result["input_identity"])
+
+    def test_check_correspondence_retains_malformed_receipt_identity(self):
+        raw = b'{"broken":'
+        binding = {"path": "receipts/example/writing.json", "raw_sha256": hashlib.sha256(raw).hexdigest(),
+                   "mode": "100644", "evaluated_revision": self.candidate, "method": "prepared",
+                   "profile": "p24", "processing": None, "producer_procedure_revision": self.candidate}
+        result = receipts.check_correspondence(self.repo, candidate_revision=self.candidate,
+            descriptor=self.spec, receipt_bytes=raw, binding=binding)
+        self.assertEqual(result["status"], "fail")
+        self.assertEqual(result["reason_code"], "receipt-malformed")
+        self.assertEqual(result["receipt_raw_sha256"], "cbdf3b1f91ae32fe1ea292ac6cccf19222f97929f531523f0d15d885052c00c4")
+        self.assertIsNone(result["receipt_sha256"])
+        self.assertIsNone(result["input_identity"])
 
     def results(self, snapshot):
         runs = []

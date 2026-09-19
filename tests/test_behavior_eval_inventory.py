@@ -170,7 +170,9 @@ class InventoryTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "fail")
         self.assertFalse(result["selection_complete"])
-        self.assertEqual(result["reason_code"], "selection-mismatch")
+        self.assertEqual(result["reason_code"], "selection-changed")
+        self.assertEqual([row["skill"] for row in result["skills"]], ["example/writing"])
+        self.assertEqual(result["skills"][0]["status"], "fail")
 
     def test_reviewed_consumer_adoption_requires_its_phase_two_coordinate_without_changing_neighbors(self):
         _, document = self.ordinary_corpora_with_phase_two_source()

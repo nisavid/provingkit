@@ -199,7 +199,13 @@ The core records `receipt_raw_sha256` before parsing and canonical `receipt_sha2
 
 `normalize`, `descriptor`, and `proposals` return 1 for unresolved results; `compare` returns 1 for unsupported selection. Inspect their JSON, not just process success. A waiver uses `$defs.waiver`: bound S and snapshot, reason, existing operator-decision digest, `expiry.event: "next-release"` with its `after_release` anchor, and `attestation: null`. It must satisfy descriptor and freshness checks. The local checker leaves issuance and expiry verification false; no threshold or authority requirement is waived by recording it.
 
-## 5. Land a source PR and a receipt-only successor
+## 5. Legacy source landing with a receipt-only successor
+
+This section preserves the ancestry-based procedure consumed at
+[`0797623`](https://github.com/nisavid/provingkit/commit/0797623a3d8dfafb600f0cb1009e4f6d4538bb30).
+Its independently allocated consumers retain that procedure until their owners
+activate the correspondence route below. A local correspondence pass does not
+itself migrate a consumer or authorize either landing sequence.
 
 This sequence preserves the receipt gates on both PR heads and qualifies the final published revision after two squash landings. The [accepted PR-head gate](https://github.com/nisavid/provingkit/issues/29#issuecomment-5524457529) and [writer's final-publication contract](https://github.com/nisavid/provingkit/issues/26) permit this composition with consumer handoff held until completion. Other consumers must establish that their own accepted contract permits the same intermediate state and revalidate their integrated checks. A requirement that every intermediate main revision qualify needs a different landing route.
 
@@ -238,6 +244,8 @@ List every external fixture, directly consumed behavioral resource, and applicab
 
 The direct CLI reads mutable local receipt files and reports `coverage_basis: "caller-declared-complete"`. It is useful before committing, but does not establish committed receipt bytes at C or authoritative inventory coverage. Python callers supplying raw bytes retain raw and canonical digests; callers supplying JSON values have only canonical identities. Use the inventory check for the committed-Slate claim above.
 
+## Historical correspondence at the landed commit
+
 The maintained correspondence seams keep the source and caller responsibilities
 separate. `scripts/behavior_eval_receipts.py` exposes
 `input_closure(repository, revision, descriptor, profile=..., method=...)` for
@@ -265,6 +273,62 @@ each row. It reports `coverage_basis: "complete-inventory"`, preserves both
 comparison results and committed blob identities, and never treats a
 caller-supplied selected set as complete. The context and landing envelopes
 remain independently retained inputs owned by the landing workflow.
+
+Use the accepted [public interface and processor compatibility contract](https://github.com/nisavid/provingkit/blob/c6cfb8392713b86573f3b86163aec3800dcbaed1/docs/specs/receipt-correspondence-interface.md)
+for the complete context and binding shapes. Retain B (original comparison
+base), H (reviewed head), T (observed target), S (evaluated source), any P
+(reconciled processor), C (actual landed commit), V (this consumer), and each
+consumed D (procedure) independently. Both B-to-H and B-to-C are complete tree
+comparisons; B need not be an ancestor. The selected sets must equal the reviewed
+bindings. Squash requires C's sole parent to be T; rebase requires T ancestry.
+The caller establishes the actual operation and its completion separately.
+
+The registry binds `p957` to
+`957550119aca20a31a26f4e5f9a3f09a2d6bd148` and `p24` to
+`24c2d712a0be6a95958713ec80c7e06a89abdc6c`. Keep those commits and their processing
+files available in the repository. Three files bind direct descriptors; normalized
+descriptors bind five. Prepared processing inputs come from the S snapshot;
+reconciled inputs come from the recorded P. Every byte digest and Git mode must
+match the selected profile. A prepared Receipt may omit `method`; dispatch does
+not edit its original bytes. P957 also supports normalized descriptors; only P24
+supports per-case delivery declarations.
+
+Historical checking materializes the registered unchanged files, verifies bytes
+and executable modes, and invokes their public `check` at S/S with the selected
+consumer explicitly required. It uses Python 3.13 or later and `jsonschema==4.26.0`,
+and records the versions actually used. Both the historical aggregate and selected
+row must pass. The new consumer then compares the complete S/C closure. It records
+the historical implementation and runtime, full historical outcome, processing
+binding, failed-grade count, lineage, and Receipt identities separately from V.
+This local runtime is not a protected executor or an attestation service.
+
+| Result | Exit | Required caller action |
+| --- | --- | --- |
+| `pass` | 0 | Retain the C-bound ordinary result outside C; verify every separately required member result. |
+| `not-required` | 0 | Record only that both complete original comparisons require no ordinary Receipts. |
+| `fail` | 1 | Keep qualification pending and resolve the reported evidence, selection, provenance, or unsupported-operation failure. |
+| `error` | 2 | Keep qualification pending; repair the malformed request or unavailable execution machinery, then repeat the complete check. |
+
+Missing retained commits report `fail/provenance-missing`; unavailable historical
+runtime reports `error/historical-runtime-unavailable`. Never substitute the latest
+processor. Recover objects through the retention owner and retry with the same
+identities. Missing bindings retain a row for every required consumer. H and C
+Receipt failures remain distinct, and failed checks retain observed raw and
+canonical digests whenever available. A pending waiver cannot pass.
+
+Before dependent execution, load and record the reviewed published revision of
+this procedure separately from V and P. The [caller and retention work](https://github.com/nisavid/provingkit/issues/136)
+owns durable acquisition, protected execution, authenticated handoff, hosted
+squash/rebase qualification, and result delivery. The [migration work](https://github.com/nisavid/provingkit/issues/137)
+owns activation for existing consumers. This local interface does not complete
+those prerequisites, source-stage integration, or disclosure/readiness adoption.
+
+Run `python -m unittest tests.test_behavior_eval_correspondence` with both retained
+commits locally to exercise real historical code against constructed observations
+and rewritten Git histories. The suite performs no network retrieval or model
+runs. Source-only checkouts explicitly skip unavailable profiles; a skipped run
+does not qualify historical compatibility. Supply the retained objects before
+claiming a complete profile-validation pass.
 
 ## Acceptance and consumer handoff
 
