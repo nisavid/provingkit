@@ -788,6 +788,8 @@ def _canonical_github_url_paths(content: bytes) -> list[bytes]:
             token = token_match.group()
             if SPECIAL_URL_START_PATTERN.search(token) is not None:
                 continue
+            if b"\\" not in token and b"&" not in token and b"%" not in token:
+                continue
             decoded = token
             for _ in range(IDENTITY_SCAN_MAX_DECODE_PASSES):
                 syntax_decoded = _decode_identity_scan_syntax_once(decoded)
