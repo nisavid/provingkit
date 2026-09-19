@@ -156,6 +156,7 @@ def input_closure(repository, revision_value, descriptor, *, profile, method):
     """
     require(profile in SUPPORTED_PROFILES, "unsupported receipt profile")
     require(method in SUPPORTED_METHODS, "unsupported receipt method")
+    validate(descriptor, "skill")
     require(
         profile != "p957" or not descriptor.get("corpus_format"),
         "p957 does not support normalized corpus descriptors",

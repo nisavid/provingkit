@@ -173,6 +173,16 @@ class ReceiptWorkflowTests(unittest.TestCase):
                         **arguments,
                     )
 
+    def test_input_closure_rejects_a_non_object_descriptor(self):
+        with self.assertRaisesRegex(receipts.ReceiptError, "schema mismatch"):
+            receipts.input_closure(
+                self.repo,
+                self.candidate,
+                [],
+                profile="p24",
+                method="prepared",
+            )
+
     def test_check_correspondence_accepts_a_prepared_receipt_at_the_landed_commit(self):
         snapshot = receipts.input_closure(
             self.repo,
