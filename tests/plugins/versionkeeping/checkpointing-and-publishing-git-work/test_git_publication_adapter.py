@@ -266,6 +266,43 @@ class RequestTests(unittest.TestCase):
             "protocol=https\nhost=github.com\npath=nisavid/provingkit.git\n\n",
         )
 
+    def test_https_credential_preflight_uses_only_return_code(self):
+        repository = object.__new__(adapter.GitRepository)
+        repository.git_executable = "git"
+        repository.path = Path("/controlled/repository")
+        repository.env = {}
+        repository.timeout_seconds = 1
+        repository.config_profile = "hardened"
+        repository.enable_https_credentials = mock.Mock()
+        completed = (
+            subprocess.CompletedProcess(
+                ["git", "credential", "fill"], 0, "", ""
+            ),
+            subprocess.CompletedProcess(
+                ["git", "credential", "fill"], 1, None, None
+            ),
+        )
+        with mock.patch.object(
+            adapter.subprocess, "run", side_effect=completed
+        ) as run:
+            try:
+                repository.ensure_https_credentials(
+                    "https://github.com/nisavid/provingkit.git"
+                )
+            except adapter.PolicyGate as gate:
+                self.fail(f"zero return code was rejected: {gate.code}")
+
+            with self.assertRaises(adapter.PolicyGate) as raised:
+                repository.ensure_https_credentials(
+                    "https://github.com/nisavid/provingkit.git"
+                )
+
+        self.assertEqual(raised.exception.code, "HTTPS_CREDENTIALS_UNAVAILABLE")
+        for call in run.call_args_list:
+            self.assertIs(call.kwargs["check"], False)
+            self.assertIs(call.kwargs["stdout"], subprocess.DEVNULL)
+            self.assertIs(call.kwargs["stderr"], subprocess.DEVNULL)
+
     def test_cached_https_credentials_recheck_host_configuration(self):
         repository = object.__new__(adapter.GitRepository)
         repository.path = Path("/controlled/repository")
