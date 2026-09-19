@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import hashlib
 import html
 import json
@@ -2138,31 +2140,49 @@ def write_content_lock(repo_root: Path) -> None:
         anchor.close()
 
 
-def usage() -> None:
-    print(
-        "usage: validate_tricritical.py [--write-content-lock] [repo-root]",
-        file=sys.stderr,
-    )
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("repository", nargs="?", type=Path)
+    parser.add_argument("--write-content-lock", action="store_true")
+    parser.add_argument("--source-stage", action="store_true")
+    parser.add_argument("--base")
+    parser.add_argument("--candidate")
+    parser.add_argument("--receipt-root")
+    parser.add_argument("--procedure-revision")
+    arguments = parser.parse_args()
+    write_lock = arguments.write_content_lock
+    repo_root = arguments.repository or Path(__file__).parents[1]
+    context = None
+    if any(
+        value is not None
+        for value in (
+            arguments.base,
+            arguments.candidate,
+            arguments.receipt_root,
+            arguments.procedure_revision,
+        )
+    ):
+        try:
+            from behavior_eval_source_stage import check_context, prepare_context
+        except ImportError:
+            parser.error("Receipt source-stage support is unavailable")
 
-
-def main() -> None:
-    arguments = sys.argv[1:]
-    write_lock = bool(arguments and arguments[0] == "--write-content-lock")
-    if write_lock:
-        arguments = arguments[1:]
-    if len(arguments) > 1 or (arguments and arguments[0].startswith("-")):
-        usage()
-        raise SystemExit(2)
-    repo_root = Path(arguments[0]) if arguments else Path(__file__).parents[1]
+        context = prepare_context(parser, arguments, repo_root, writing=write_lock)
     try:
         if write_lock:
             write_content_lock(repo_root)
-        validate(repo_root)
+        with contextlib.redirect_stdout(
+            sys.stderr if context is not None else sys.stdout
+        ):
+            validate(repo_root)
     except Exception as error:
         fail(f"invalid plugin data: {error}")
     if write_lock:
         print("Tricritical semantic content lock updated")
+    if context is not None:
+        return check_context(context, "tricritical")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

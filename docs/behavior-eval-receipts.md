@@ -199,6 +199,63 @@ The core records `receipt_raw_sha256` before parsing and canonical `receipt_sha2
 
 `normalize`, `descriptor`, and `proposals` return 1 for unresolved results; `compare` returns 1 for unsupported selection. Inspect their JSON, not just process success. A waiver uses `$defs.waiver`: bound S and snapshot, reason, existing operator-decision digest, `expiry.event: "next-release"` with its `after_release` anchor, and `attestation: null`. It must satisfy descriptor and freshness checks. The local checker leaves issuance and expiry verification false; no threshold or authority requirement is waived by recording it.
 
+### Member source-stage invocation
+
+Use the member validator when the caller needs structural source validation and
+ordinary Receipt checking for that member at the same committed C. Load this
+procedure from the reviewed published revision D and record D separately from
+the Receipt's processing revision P. Supply all four context arguments:
+
+```sh
+python scripts/validate_proseweaving.py . --source-stage \
+  --base "$B" --candidate "$C" --receipt-root "$RECEIPTS" \
+  --procedure-revision "$D" > "$EVAL_PRIVATE/proseweaving-source-stage.json"
+```
+
+The same arguments are available in `validate_rolecasting.py`,
+`validate_tricritical.py`, `validate_versionkeeping.py`,
+`validate_mergecraft.py`, and `validate_artifact_customs.py` under `scripts/`.
+Use full commit identities for B, C, and D and a normalized repository-relative
+Receipt root. Run against the Git checkout root with HEAD at C and no tracked,
+staged, or untracked changes. Ignored files do not enter this cleanliness check;
+the member's structural validator retains its own file-inventory requirements.
+Keep the output outside that checkout. The committed procedure bytes at D must
+match the procedure accompanying the running validator.
+
+The explicit context is rejected before structural validation or writes if any
+argument is missing, `--source-stage` is absent, or a content-lock writer or
+source-preparation option is present. Without Receipt context, the existing
+structural and preparation routes retain their behavior. The prepared release
+wrapper does not gain a PR comparison from its single source snapshot.
+
+After structural success, the validator rechecks the checkout and invokes
+`behavior_eval_inventory.check_member(...)`. Full old/new Slate applicability,
+causes, diagnostics, and unsupported inputs remain in the result. An incomplete
+comparison fails every member. The `checked_skills` and per-skill `skills` rows
+cover only the named member's selected consumers; another member's missing or
+failing Receipt does not become this member's Receipt outcome. The member must
+exist in the committed old/new Slate, including a removed member whose former
+consumers remain selected. Mergecraft's structural `--skill` option does not
+narrow Receipt selection.
+
+On this route, structural messages go to stderr and the Receipt result goes to
+stdout. `pass` and `not-required` exit 0, `fail` exits 1, and malformed or
+unavailable context exits 2. Structural failure exits 1 without a Receipt pass.
+For `not-required`, the full comparison is complete but this member has no
+selected skill; other members may still require Receipts. Retain the result's
+`member`, `checked_skills`, `coverage_basis.receipt_scope: "selected-member"`,
+and `source_stage` fields, which bind the structural candidate, D, and procedure
+SHA-256. `member_qualification: "not-evaluated"` keeps stricter composed-member
+qualification with its separate owner.
+
+CI exercises the real adapter and structural routes with constructed histories.
+Those regressions do not activate a PR or landed-commit Receipt gate. Automatic
+enforcement requires the accepted, reviewed [retention and caller contract
+#136](https://github.com/nisavid/provingkit/issues/136) to supply the retained B,
+actual C, Receipt root, and D. There is no event-base default or separate manual
+qualification workflow. This prerequisite remains part of [#33](https://github.com/nisavid/provingkit/issues/33)
+alongside downstream disclosure and readiness handoff.
+
 ## 5. Legacy source landing with a receipt-only successor
 
 This section preserves the ancestry-based procedure consumed at
@@ -332,7 +389,7 @@ claiming a complete profile-validation pass.
 
 ## Acceptance and consumer handoff
 
-For adapter changes, run `python -m unittest tests.test_behavior_eval_receipts tests.test_behavior_eval_corpora tests.test_behavior_eval_inventory` and `git diff --check`. Tests construct artifacts and Git histories; they establish adapter behavior, not live evaluations or discovery. Review this procedure against the final implementation, schema, policy, and maps. Exercise positive and neighboring negative discovery separately from application success, failure, unsupported-input, waiver, and no-op branches. A constructed receipt or static review does not establish live procedure behavior.
+For adapter changes, run `python -m unittest tests.test_behavior_eval_receipts tests.test_behavior_eval_corpora tests.test_behavior_eval_inventory tests.test_member_receipt_context tests.test_member_receipt_cli` and `git diff --check`. Tests construct artifacts and Git histories; they establish adapter behavior, not live evaluations or discovery. Review this procedure against the final implementation, schema, policy, and maps. Exercise positive and neighboring negative discovery separately from application success, failure, unsupported-input, waiver, and no-op branches. A constructed receipt or static review does not establish live procedure behavior.
 
 Before dependent execution, [disclosure #28](https://github.com/nisavid/provingkit/issues/28) and [readiness #34](https://github.com/nisavid/provingkit/issues/34) must load the same reviewed, published procedure and invoke the inventory check with a matching committed processing implementation. Retain the procedure's source revision separately from the processing implementation revision, alongside B, S, C, comparison and check outputs, committed receipt identities, explicit failures or gaps, and any independently established waiver disposition. For reconciliation, bind the processing implementation to P and retain original artifact references and execution revisions, grading/adjudication lineage, model bases, and discovery limits. Disclosure consumes these identities and outcomes; readiness preserves its independent requirements and cannot treat `waiver-pending` as passing.
 

@@ -730,9 +730,31 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("repository", type=Path)
     parser.add_argument("--source-stage", action="store_true")
     parser.add_argument("--write-content-lock", action="store_true")
+    parser.add_argument("--base")
+    parser.add_argument("--candidate")
+    parser.add_argument("--receipt-root")
+    parser.add_argument("--procedure-revision")
     arguments = parser.parse_args(argv)
+    context = None
     try:
         repository = Path(os.path.abspath(arguments.repository.expanduser()))
+        if any(
+            value is not None
+            for value in (
+                arguments.base,
+                arguments.candidate,
+                arguments.receipt_root,
+                arguments.procedure_revision,
+            )
+        ):
+            try:
+                from behavior_eval_source_stage import check_context, prepare_context
+            except ImportError:
+                parser.error("Receipt source-stage support is unavailable")
+
+            context = prepare_context(
+                parser, arguments, repository, writing=arguments.write_content_lock
+            )
         if arguments.write_content_lock:
             snapshot = capture_content_lock_write_snapshot(repository)
             validate(
@@ -752,9 +774,14 @@ def main(argv: list[str] | None = None) -> int:
     ) as error:
         print(f"Artifact Customs contract failed: {error}", file=sys.stderr)
         return 1
-    print(f"Artifact Customs {validation_stage} contract passed")
+    print(
+        f"Artifact Customs {validation_stage} contract passed",
+        file=sys.stderr if context is not None else sys.stdout,
+    )
     if arguments.write_content_lock:
         print("Artifact Customs external content lock updated")
+    if context is not None:
+        return check_context(context, "artifact-customs")
     return 0
 
 
