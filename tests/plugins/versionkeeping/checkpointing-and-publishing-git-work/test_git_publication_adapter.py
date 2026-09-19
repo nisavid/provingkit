@@ -299,6 +299,7 @@ class RequestTests(unittest.TestCase):
 
         self.assertEqual(raised.exception.code, "HTTPS_CREDENTIALS_UNAVAILABLE")
         for call in run.call_args_list:
+            self.assertIs(call.kwargs["check"], False)
             self.assertIs(call.kwargs["stdout"], subprocess.DEVNULL)
             self.assertIs(call.kwargs["stderr"], subprocess.DEVNULL)
 
