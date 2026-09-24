@@ -74,6 +74,11 @@ artifact invalidates its review and the dependent evidence that relied on it.
 A fresh candidate needs fresh verification and, where required, fresh
 independent review.
 
+Actuators that publish or reconfigure run under the harness's permission
+classifier. [Binding actuator authority under a permission
+classifier](actuator-authority-binding.md) records the consent rule they
+follow and how to test a skill against it.
+
 Task Witness is deferred optional equipment for evidence that may need to cross
 harness or release stages. Ordinary plugin workflows trust the host harness and
 do not depend on it. A future witnessed route must qualify its producer, issuer,

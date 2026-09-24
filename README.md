@@ -55,6 +55,8 @@ the available validation proves.
 
 - **Understand the design:** read the [plugin system design principles](docs/plugin-system/design-principles.md)
   and [project glossary](CONTEXT.md).
+- **Publish under a permission classifier:** read [binding actuator authority](docs/plugin-system/actuator-authority-binding.md)
+  before changing a skill that pushes, opens pull requests, or files tickets.
 - **Check release and evidence limits:** see [source, preview, and release](docs/release-boundary.md)
   and [Amberbridge](docs/amberbridge.md), the release-evidence bridge.
 - **Look up the Kit's membership:** consult the [Kit definition](release/provingkit/definition-v1.json)
