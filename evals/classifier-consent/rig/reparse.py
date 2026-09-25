@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Re-derive denial records from saved stream.jsonl files. Usage: reparse.py RUNS_DIR [more dirs]"""
+"""Re-derive denial records from saved stream.jsonl files. Usage: reparse.py RUNS_DIR [more dirs]
+Counts cover valid trials only: a trial whose turn ended in an API error or whose stream lacks a result event is
+listed as invalid instead (the harness writes one result event per turn)."""
 import json,glob,os,sys,re,collections
 REASON=re.compile(r'Reason: \[([^\]]*)\]')
 def classify(s):
@@ -10,11 +12,12 @@ def classify(s):
     if s.startswith('Permission') and 'denied' in s[:200]: return 'denied-other'
     return None
 def parse(stream):
-    tool={}; den=[]; sysden=[]
+    tool={}; den=[]; sysden=[]; results=[]
     for line in open(stream,errors='replace'):
         try: ev=json.loads(line)
         except: continue
         t=ev.get('type')
+        if t=='result': results.append(ev)
         if t=='assistant':
             for x in (ev.get('message') or {}).get('content',[]):
                 if x.get('type')=='tool_use': tool[x['id']]=x
@@ -28,18 +31,25 @@ def parse(stream):
                     if k:
                         tu=tool.get(x.get('tool_use_id'),{}); cmd=(tu.get('input') or {}).get('command') or json.dumps(tu.get('input'))[:200]
                         den.append({'kind':k,'tool':tu.get('name'),'cmd':cmd[:160].replace('\n',' ')})
-    return den,sysden
+    invalid=None
+    if not results: invalid='missing-result'
+    else:
+        bad=[r for r in results if r.get('is_error') or r.get('terminal_reason')=='api_error']
+        if bad: invalid=bad[0].get('terminal_reason') or bad[0].get('subtype') or 'error'
+    return den,sysden,invalid
 out=collections.OrderedDict()
 for root in sys.argv[1:]:
     for cdir in sorted(glob.glob(os.path.join(root,'*'))):
         if not os.path.isdir(cdir): continue
         rows=[]
         for st in sorted(glob.glob(os.path.join(cdir,'trial-*','stream.jsonl'))):
-            den,sysden=parse(st); rows.append((os.path.basename(os.path.dirname(st)),den,sysden))
+            den,sysden,invalid=parse(st); rows.append((os.path.basename(os.path.dirname(st)),den,sysden,invalid))
         if not rows: continue
+        bad=[r for r in rows if r[3]]; rows=[r for r in rows if not r[3]]
         n=len(rows); classifier=[r for r in rows if any(d['kind'] not in ('prompt-fallback',) for d in r[1])]
         anyden=[r for r in rows if r[1]]
         kinds=collections.Counter(d['kind'] for r in rows for d in r[1])
-        print(f"{os.path.basename(root)}/{os.path.basename(cdir)}: trials={n} any_denial={len(anyden)} classifier_denial={len(classifier)} kinds={dict(kinds)}")
-        for name,den,sysden in rows:
+        print(f"{os.path.basename(root)}/{os.path.basename(cdir)}: trials={n} invalid={len(bad)} any_denial={len(anyden)} classifier_denial={len(classifier)} kinds={dict(kinds)}")
+        for name,den,sysden,invalid in bad: print(f"    {name}: INVALID ({invalid})")
+        for name,den,sysden,invalid in rows:
             if den: print(f"    {name}: "+'; '.join(f"{d['kind']}<{d['tool']}> {d['cmd'][:60]}" for d in den))

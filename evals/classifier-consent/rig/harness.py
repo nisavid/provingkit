@@ -2,6 +2,9 @@
 """Headless auto-mode classifier consent rig (see ../README.md).
 
 Usage: harness.py run CASE.json [--trials N] [--out DIR] [--model sonnet]
+--trials N asks for N valid trials and attempts at most 2N. A trial is invalid when any turn ends in an API error
+(for example an exhausted session limit) or lacks its result event; invalid trials are kept on disk and reported
+separately, never counted as clean.
 CASE.json fields:
   name            label
   fixture         "push" | "push-worktree" | "none" | path to a shell script taking DIR (default "push")
@@ -107,7 +110,7 @@ def run_trial(case, model, outdir, trial):
             for x in (ev.get('message') or {}).get('content',[]):
                 if isinstance(x,dict) and x.get('type')=='text' and 'AskUserQuestion' in x.get('text',''): user_texts.append(x['text'][:600])
         if t=='result':
-            results.append({'subtype':ev.get('subtype'),'result':(ev.get('result') or '')[:800],'usage':ev.get('modelUsage'),'cost':ev.get('total_cost_usd')})
+            results.append({'subtype':ev.get('subtype'),'is_error':ev.get('is_error'),'terminal_reason':ev.get('terminal_reason'),'result':(ev.get('result') or '')[:800],'usage':ev.get('modelUsage'),'cost':ev.get('total_cost_usd')})
             ti+=1
             if ti<len(turns): send(expand(turns[ti]['text'],fxdir))
             else:
@@ -123,7 +126,11 @@ def run_trial(case, model, outdir, trial):
         p,needle=exp['file_contains']; p=p.replace('$FX',fxdir)
         try: outcome['file_contains']=needle in open(p).read()
         except Exception: outcome['file_contains']=False
-    rec={'trial':trial,'init':init,'tool_uses':tool_uses,'denials':denials,'results':results,'outcome':outcome,'asks':asks,'ask_user_turns':user_texts,'cost':sum((r.get('cost') or 0) for r in results)}
+    invalid=None
+    if len(results)<len(turns): invalid='missing-result'
+    elif any(r.get('is_error') or r.get('terminal_reason')=='api_error' for r in results):
+        invalid=next((r.get('terminal_reason') or r.get('subtype') or 'error') for r in results if r.get('is_error') or r.get('terminal_reason')=='api_error')
+    rec={'trial':trial,'invalid':invalid,'init':init,'tool_uses':tool_uses,'denials':denials,'results':results,'outcome':outcome,'asks':asks,'ask_user_turns':user_texts,'cost':sum((r.get('cost') or 0) for r in results)}
     json.dump(rec,open(os.path.join(outdir,f'trial-{trial:02d}','record.json'),'w'),indent=1)
     return rec
 
@@ -133,14 +140,15 @@ def main():
     a=ap.parse_args()
     case=json.load(open(a.case)); out=a.out or tempfile.mkdtemp(prefix="rig-"); os.makedirs(out,exist_ok=True)
     json.dump(case,open(os.path.join(out,'case.json'),'w'),indent=1)
-    recs=[]
-    for i in range(a.trials):
+    recs=[]; i=0
+    while sum(1 for r in recs if not r['invalid'])<a.trials and i<2*a.trials:
         os.makedirs(os.path.join(out,f'trial-{i:02d}'),exist_ok=True)
         rec=run_trial(case,a.model,out,i); recs.append(rec)
         d=[x['reason'] for x in rec['denials']]
-        print(f"trial {i}: mode={rec['init'] and rec['init']['mode']} tool_uses={len(rec['tool_uses'])} denials={d} outcome={rec['outcome']} cost=${rec['cost']:.3f}",flush=True)
-    n=len(recs); nd=sum(1 for r in recs if r['denials']);
-    summary={'case':case['name'],'model':a.model,'trials':n,'trials_with_denial':nd,'denial_rate':nd/n if n else None,'reasons':[x['reason'] for r in recs for x in r['denials']],'total_cost':sum(r['cost'] for r in recs),'out':out}
+        print(f"trial {i}: {'INVALID('+rec['invalid']+') ' if rec['invalid'] else ''}mode={rec['init'] and rec['init']['mode']} tool_uses={len(rec['tool_uses'])} denials={d} outcome={rec['outcome']} cost=${rec['cost']:.3f}",flush=True)
+        i+=1
+    valid=[r for r in recs if not r['invalid']]; n=len(valid); nd=sum(1 for r in valid if r['denials'])
+    summary={'case':case['name'],'model':a.model,'trials':n,'invalid_trials':len(recs)-n,'trials_with_denial':nd,'denial_rate':nd/n if n else None,'reasons':[x['reason'] for r in valid for x in r['denials']],'total_cost':sum(r['cost'] for r in recs),'out':out}
     json.dump(summary,open(os.path.join(out,'summary.json'),'w'),indent=1)
     print('SUMMARY',json.dumps(summary))
 if __name__=='__main__': main()
