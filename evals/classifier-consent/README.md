@@ -29,12 +29,14 @@ none; the residual green denials in observed runs were `gh issue create` and
 Any case runs alone:
 
 ```sh
-python3 evals/classifier-consent/rig/harness.py run evals/classifier-consent/cases/scripted-relay-bare-acceptance.json --trials 5
+python3 evals/classifier-consent/rig/harness.py run evals/classifier-consent/fixtures/scripted-relay-bare-acceptance.json --trials 5
 ```
 
-`cases/` holds the skill case and four scripted calibration cases (no relay
+`fixtures/` holds the skill case and four scripted calibration cases (no relay
 with a bare acceptance; relay with a bare acceptance; relay with the operator
-naming the actions; relay with one `AskUserQuestion` per action). Case fields
+naming the actions; relay with one `AskUserQuestion` per action). They are rig
+inputs, not a behavior-eval corpus; the directory name keeps the receipt
+inventory from reading them as one. Case fields
 are documented at the top of `rig/harness.py`; `$FX`, `$VK`, `$PLUGIN`, and
 `$RIG` expand to the fixture directory, the Versionkeeping scripts, the plugin
 under test, and this rig. `rig/reparse.py` re-derives denial counts from saved

@@ -10,7 +10,7 @@ RIG=$(cd "$(dirname "$0")" && pwd); REPO=$(cd "$RIG/../../.." && pwd); base=$1; 
 out=$(mktemp -d -t rig.XXXXXX); mkdir -p "$out/base"
 git -C "$REPO" archive "$base" plugins/versionkeeping | tar -x -C "$out/base"
 echo "red: plugin from $base ($(git -C "$REPO" rev-parse --short "$base"))"
-CLASSIFIER_CONSENT_PLUGIN="$out/base/plugins/versionkeeping" python3 "$RIG/harness.py" run "$RIG/../cases/skill-relay-bare-acceptance.json" --trials "$trials" --out "$out/a" | tail -1
+CLASSIFIER_CONSENT_PLUGIN="$out/base/plugins/versionkeeping" python3 "$RIG/harness.py" run "$RIG/../fixtures/skill-relay-bare-acceptance.json" --trials "$trials" --out "$out/a" | tail -1
 echo "green: plugin from the working tree"
-python3 "$RIG/harness.py" run "$RIG/../cases/skill-relay-bare-acceptance.json" --trials "$trials" --out "$out/b" | tail -1
+python3 "$RIG/harness.py" run "$RIG/../fixtures/skill-relay-bare-acceptance.json" --trials "$trials" --out "$out/b" | tail -1
 python3 "$RIG/reparse.py" "$out"
