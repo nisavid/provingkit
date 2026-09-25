@@ -7,6 +7,7 @@ import hashlib
 import html
 import json
 import os
+import posixpath
 import re
 import stat
 import sys
@@ -1566,6 +1567,18 @@ def validate_authority_topology(root: Path, topology: dict) -> None:
         derived_calls = [target for _, target in linked_edges]
         if derived_calls != skills[skill]["calls"]:
             fail(f"{skill} executable call edges differ from topology.json")
+        # Installed skills read sibling links as their declared edges, so every
+        # link that leaves the skill root must be one of those exact edges.
+        outside_links = sorted(
+            target
+            for target in (
+                posixpath.normpath(normalize_markdown_target(raw))
+                for raw in markdown_link_targets(content)
+            )
+            if target.startswith("../")
+        )
+        if outside_links != sorted(f"../{call}/SKILL.md" for call in derived_calls):
+            fail(f"{skill} links sibling skills beyond its declared call edges")
     mutation_owners = [
         skill
         for skill, content in contents.items()

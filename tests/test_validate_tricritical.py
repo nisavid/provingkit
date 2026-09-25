@@ -907,6 +907,28 @@ class ValidateTricriticalTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("executable call edges", result.stderr)
 
+    def test_rejects_undeclared_sibling_skill_links_in_any_link_form(self):
+        cases = (
+            ("intent", "[the loop skill](../loop/SKILL.md)"),
+            ("intent", "[Loop](../loop/SKILL.md)"),
+            ("intent", "[loop](../loop/SKILL.md#completion)"),
+            ("intent", "[loop](<../loop/SKILL.md>)"),
+            ("intent", "[loop][l]\n\n[l]: ../loop/SKILL.md"),
+            ("review", "[the adjudicator](../adjudicate/SKILL.md)"),
+        )
+        for skill, link in cases:
+            with self.subTest(skill=skill, link=link):
+                skill_path = self.plugin_root / "skills" / skill / "SKILL.md"
+                original = skill_path.read_text()
+                skill_path.write_text(f"{original}\nSee {link}\n")
+                result = self.run_validator()
+                skill_path.write_text(original)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    "links sibling skills beyond its declared call edges",
+                    result.stderr,
+                )
+
     def test_rejects_readme_projection_drift(self):
         readme_path = self.plugin_root / "README.md"
         original = readme_path.read_text()

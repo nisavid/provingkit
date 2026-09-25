@@ -11,7 +11,7 @@ review when the caller or applicable policy explicitly requires authenticated
 evidence. Freeze that choice and the consumer assurance minimum before dispatch;
 unavailable witnessed evidence blocks rather than falling back to ordinary.
 
-The adapter inputs below are capability inputs the adapter supplies, not public
+`review` consumes the adapter inputs below as capability inputs, not public
 skill calls. Witnessed mode adds its authenticated inputs only for that mode.
 Both modes preserve the same review completeness, original mutation authority,
 candidate freshness, and verification requirements.
