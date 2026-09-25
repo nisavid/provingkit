@@ -1,6 +1,6 @@
 # Invocation boundary
 
-Treat `topology.json` as the sole graph authority. Invoke or delegate public skills only through the current skill's declared outgoing edges and the frozen contract. Undeclared delegation or invocation is forbidden. Dynamic risk specialists are isolated execution roles routed through `review`'s declared critic edges; they do not add public skills or reverse edges.
+A skill's declared outgoing edges are the sibling public skills its `SKILL.md` links; a skill that links none invokes no public skill. Invoke or delegate public skills only through the current skill's declared outgoing edges and the frozen contract. Undeclared delegation or invocation is forbidden. Dynamic risk specialists are isolated execution roles routed through `review`'s declared critic edges; they do not add public skills or reverse edges.
 
 ## Select assurance before dispatch
 
@@ -11,10 +11,10 @@ review when the caller or applicable policy explicitly requires authenticated
 evidence. Freeze that choice and the consumer assurance minimum before dispatch;
 unavailable witnessed evidence blocks rather than falling back to ordinary.
 
-Topology `requires` entries are adapter-supplied capability inputs, not public
-skill calls. `conditional_requires.witnessed` adds authenticated inputs only
-for that mode. Both modes preserve the same review completeness, original
-mutation authority, candidate freshness, and verification requirements.
+The adapter inputs below are capability inputs the adapter supplies, not public
+skill calls. Witnessed mode adds its authenticated inputs only for that mode.
+Both modes preserve the same review completeness, original mutation authority,
+candidate freshness, and verification requirements.
 
 ## Ordinary adapter inputs
 
