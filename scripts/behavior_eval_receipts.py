@@ -1037,7 +1037,7 @@ def _reconcile_trigger(evidence, item, expected, query, target_source, model_id,
             "reconciliation": details}
 
 
-def _original_execution(record, response, run):
+def _original_execution(record, response, run, original_revision, executor_model_id):
     """Bind supported retained execution records, not arbitrary artifact fields."""
     require(isinstance(record, dict), "original execution must be a recorded run object")
     response_digest = hashlib.sha256(response.encode()).hexdigest()
@@ -1052,10 +1052,29 @@ def _original_execution(record, response, run):
         identity, basis = identifiers[0], "recorded-thread"
         require(execution.get("response_sha256") == response_digest,
                 "original execution response digest differs")
+    elif "session_id" in record:
+        identity, basis = record["session_id"], "recorded-claude-session"
+        require(record.get("status") == "verified-transport"
+                and type(record.get("returncode")) is int and record["returncode"] == 0,
+                "original Claude session did not complete verified transport")
+        original_id = run["case_id"].get("id") if isinstance(run["case_id"], dict) else run["case_id"]
+        require((type(original_id) is int and original_id > 0)
+                or (isinstance(original_id, str) and re.fullmatch(r"[1-9][0-9]*", original_id)),
+                "original Claude session requires a positive numeric case ID")
+        require(record.get("run_id") == f"case-{int(original_id):02d}-rep-{run['repetition']}",
+                "original Claude session coordinate differs")
+        require(original_revision is not None and record.get("source_revision") == original_revision,
+                "original Claude session source revision differs")
+        require(record.get("observed_model") == executor_model_id,
+                "original Claude session observed model differs")
+        require(record.get("response_sha256") == response_digest,
+                "original Claude session response digest differs")
     else:
         identity, basis = record.get("native_agent"), "recorded-native-agent"
     require(isinstance(identity, str) and identity.strip(), "original execution identity is unavailable")
     require("native_agent" not in record or record["native_agent"] == identity,
+            "original execution identifiers disagree")
+    require("session_id" not in record or record["session_id"] == identity,
             "original execution identifiers disagree")
     require(record.get("response") == response or record.get("response_sha256") == response_digest,
             "original execution record belongs to another response")
@@ -1132,7 +1151,7 @@ def reconcile(repository, candidate_revision, skill, results_path, processing_re
         require(prompt == case["prompt"], "historical prompt differs from current case")
         response = evidence.value(run["response"])
         require(isinstance(response, str), "historical response is absent")
-        execution_identity = _original_execution(original_execution, response, run)
+        execution_identity = _original_execution(original_execution, response, run, original_revision, results["executor_model_id"])
         identity_key = execution_identity["identity_sha256"]
         require(identity_key not in identities, "one original execution cannot supply two repetitions or cases")
         identities.add(identity_key)

@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "ba30a9884ef59634beb3e1f9b517d2e43189abfa6408aefbc815964e14e54b5e"
+SOURCE_SHA256 = "e37c4a5d913059aa366ebc2f37913092eef13b0a8291454318e53a0a2cf1f9d7"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -81,6 +81,7 @@ COMMON_SUPPORT_PATHS = {
     "scripts/run_amberbridge_production_integration.py",
     "scripts/run_skill_routing_eval.py",
     "scripts/agent_plugins_standard.py",
+    "scripts/member_versions.py",
     "tests/test_evidence_transport.py",
     "tests/test_later_release_security_containment.py",
     "tests/test_amberbridge_compatibility_projection.py",
@@ -114,7 +115,10 @@ SOURCE_STAGE_COMMON_SUPPORT_PATHS = {
     "release/public-release-runtime-packages.json",
 }
 SOURCE_STAGE_COMMON_VALIDATOR_PATHS = ()
-RELEASE_CONTRACT_SUPPORT_MODULES = ("scripts/agent_plugins_standard.py",)
+RELEASE_CONTRACT_SUPPORT_MODULES = (
+    "scripts/agent_plugins_standard.py",
+    "scripts/member_versions.py",
+)
 BASE_PLUGIN_SUPPORT_PATHS = {
     "rolecasting": {
         "scripts/validate_rolecasting.py",

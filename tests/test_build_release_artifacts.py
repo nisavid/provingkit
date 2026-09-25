@@ -25,6 +25,59 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             self.assertEqual(receipt["schema"], "provingkit-artifact-receipt-v1")
             self.assertEqual(len(receipt["artifact_sha256"]), 64)
 
+    def test_assigned_local_alpha_projects_all_six_claude_versions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source"
+            source.mkdir()
+            policy = ROOT / "release/artifact-projection-policy-v1.json"
+            (source / "release").mkdir()
+            (source / "release/artifact-projection-policy-v1.json").write_bytes(
+                policy.read_bytes()
+            )
+            members = json.loads(policy.read_text())["slate"]
+            for member in members:
+                root = source / "plugins" / member
+                (root / ".claude-plugin").mkdir(parents=True)
+                manifest = {"name": member, "version": "0.1.0-alpha.2"}
+                (root / "plugin.json").write_text(json.dumps(manifest))
+                (root / ".claude-plugin/plugin.json").write_text(json.dumps(manifest))
+            subprocess.run(["git", "init", "-q"], cwd=source, check=True)
+            subprocess.run(["git", "add", "."], cwd=source, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Test",
+                    "-c",
+                    "user.email=test@example.invalid",
+                    "commit",
+                    "-qm",
+                    "test: alpha source fixture",
+                ],
+                cwd=source,
+                check=True,
+            )
+
+            output = Path(tmp) / "claude"
+            receipt = json.loads(
+                build(source, output, "claude", [], "preview", False).read_text()
+            )
+            catalog = json.loads(
+                (output / ".claude-plugin/marketplace.json").read_text()
+            )
+            self.assertEqual(
+                {entry["name"]: entry["version"] for entry in catalog["plugins"]},
+                {member: "0.1.0-alpha.2" for member in members},
+            )
+            for member in members:
+                manifest = json.loads(
+                    (
+                        output / "plugins" / member / ".claude-plugin/plugin.json"
+                    ).read_text()
+                )
+                self.assertEqual(manifest["version"], "0.1.0-alpha.2")
+            self.assertEqual(receipt["plugin_slate"], members)
+
     def test_target_adapters_are_distinct_and_do_not_leak_dev_files(self):
         for target in ("claude", "cursor"):
             for output, receipt in self.stage(target, ["proseweaving"]):

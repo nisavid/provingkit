@@ -23,6 +23,7 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from member_versions import is_supported_member_version  # noqa: E402
 from refresh_transaction import replace_generated_artifacts  # noqa: E402
 
 try:
@@ -186,7 +187,6 @@ MODEL_SELECTION_REQUIREMENT = "adapter:model-selection-record"
 WITNESSED_MODEL_REQUIREMENT = "adapter:model-selection-receipt"
 INVOCATION_TOPOLOGY_REQUIREMENT = "adapter:rolecasting-invocation-plan"
 WITNESSED_TOPOLOGY_REQUIREMENT = "adapter:rolecasting-invocation-topology-receipt"
-SEMVER = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
 STABLE_METADATA_FIELDS = (
     "st_dev",
     "st_ino",
@@ -926,8 +926,7 @@ def validate_manifests(root: Path) -> dict:
     for field in common_keys:
         if claude[field] != codex[field]:
             fail(f"Claude manifest projection drift: {field}")
-    version_pattern = re.compile(rf"{SEMVER}$")
-    if version_pattern.fullmatch(codex["version"]) is None:
+    if not is_supported_member_version(codex["version"]):
         fail("canonical manifest version is invalid")
     if codex.get("name") != "tricritical" or claude.get("name") != "tricritical":
         fail("manifest names must be tricritical")

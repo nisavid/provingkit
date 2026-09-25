@@ -1167,7 +1167,8 @@
             "basis": {
               "enum": [
                 "recorded-thread",
-                "recorded-native-agent"
+                "recorded-native-agent",
+                "recorded-claude-session"
               ]
             },
             "identity_sha256": {

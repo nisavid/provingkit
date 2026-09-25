@@ -15,6 +15,11 @@ from html import unescape as unescape_html
 from pathlib import Path
 from urllib.parse import unquote_to_bytes
 
+SCRIPT_DIRECTORY = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIRECTORY))
+
+from member_versions import is_supported_member_version  # noqa: E402
+
 try:
     import idna
 except ModuleNotFoundError:
@@ -159,14 +164,6 @@ EXPECTED_MEMBERS = (
         "plugins/proseweaving/content-lock.json",
     ),
 )
-EXPECTED_CUTOVER_MEMBER_VERSIONS = {
-    "rolecasting": "1.0.0",
-    "tricritical": "1.0.0",
-    "versionkeeping": "1.0.0",
-    "mergecraft": "1.0.0",
-    "artifact-customs": "1.0.0",
-    "proseweaving": "1.0.0",
-}
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
     "products": [
@@ -1111,6 +1108,9 @@ def _validate_definition(repository: Path) -> None:
         or membership.get("partial_selection_is_provingkit") is not False
     ):
         raise ValidationError("definition membership drift")
+    versions = [member.get("version") for member in members]
+    if any(version != versions[0] for version in versions[1:]):
+        raise ValidationError("member version drift")
     for member, expected in zip(members, EXPECTED_MEMBERS, strict=True):
         (
             member_id,
@@ -1122,8 +1122,8 @@ def _validate_definition(repository: Path) -> None:
             content_identity_relative,
         ) = expected
         version = member.get("version")
-        if version != EXPECTED_CUTOVER_MEMBER_VERSIONS[member_id]:
-            raise ValidationError("cutover member version drift")
+        if not is_supported_member_version(version):
+            raise ValidationError("unsupported member version")
         canonical_manifest = _load_json(
             repository / canonical_relative, "canonical member manifest"
         )
@@ -1131,9 +1131,7 @@ def _validate_definition(repository: Path) -> None:
             repository / claude_relative, "Claude member manifest"
         )
         if (
-            not isinstance(version, str)
-            or re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version) is None
-            or not isinstance(canonical_manifest, dict)
+            not isinstance(canonical_manifest, dict)
             or not isinstance(claude_manifest, dict)
             or canonical_manifest.get("name") != member_id
             or claude_manifest.get("name") != member_id

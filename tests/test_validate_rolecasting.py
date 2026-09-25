@@ -513,8 +513,8 @@ class ValidateRolecastingTests(unittest.TestCase):
         path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
         original = path.read_text()
         mutated = original.replace(
-            "**Astra low** (`gpt-6-astra`, `low`)",
-            "**Luna xhigh** (`gpt-5.6-luna`, `xhigh`)",
+            "Use GPT-6 Sol or Claude Opus 5.5 for ordinary demanding work",
+            "Use GPT-6 Astra or Claude Fable 5.1 for ordinary demanding work",
         )
         self.assertNotEqual(mutated, original)
         path.write_text(mutated)
@@ -535,20 +535,24 @@ class ValidateRolecastingTests(unittest.TestCase):
         self.assert_rejected("semantic content lock mismatch")
 
     def test_rejects_missing_proof_invocation_authority_boundary(self) -> None:
-        path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
-        path.write_text(
-            path.read_text().replace(
-                "Model selection does not authorize a proof invocation",
-                "Model selection may authorize a proof invocation",
-            )
+        path = (
+            self.plugin / "skills" / "choosing-agent-models" / "references"
+            / "capability-probes-and-fallbacks.md"
         )
+        original = path.read_text()
+        mutated = original.replace(
+            "Only the operator's explicit authorization for the exact proof invocation permits the attempt",
+            "Model selection permits the proof invocation",
+        )
+        self.assertNotEqual(mutated, original)
+        path.write_text(mutated)
         self.assert_rejected("semantic content lock mismatch")
 
     def test_rejects_external_invocation_authority_grant(self) -> None:
         path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
         original = path.read_text()
         mutated = original.replace(
-            "or treat selection as\ninvocation authority",
+            "or treat selection as invocation authority",
             "and treat selection as invocation authority",
         )
         self.assertNotEqual(mutated, original)
@@ -597,6 +601,39 @@ class ValidateRolecastingTests(unittest.TestCase):
             fixture_path.read_text() + "\nUnreviewed fixture drift.\n"
         )
         self.assert_rejected("semantic content lock mismatch")
+
+    def test_direct_discovery_probe_requires_boolean_and_locked_bytes(self) -> None:
+        path = (
+            self.plugin
+            / "skills"
+            / "choosing-agent-models"
+            / "evals"
+            / "trigger-evals.json"
+        )
+        original = path.read_text()
+        probes = json.loads(original)
+        probes[0]["should_trigger"] = "yes"
+        path.write_text(json.dumps(probes, indent=2) + "\n")
+        self.assert_rejected("trigger item 1 should_trigger must be Boolean")
+        path.write_text(original)
+
+        probes = json.loads(original)
+        probes[0]["query"] += " Changed."
+        path.write_text(json.dumps(probes, indent=2) + "\n")
+        self.assert_rejected("semantic content lock mismatch")
+
+    def test_delegating_discovery_requires_boolean_observations(self) -> None:
+        path = (
+            self.plugin
+            / "skills"
+            / "delegating-cross-agent-work"
+            / "evals"
+            / "trigger-evals.json"
+        )
+        probes = json.loads(path.read_text())
+        probes[0]["should_trigger"] = "yes"
+        path.write_text(json.dumps(probes, indent=2) + "\n")
+        self.assert_rejected("trigger item 1 should_trigger must be Boolean")
 
     def test_content_lock_covers_discovery_contracts(self) -> None:
         for relative_path in (

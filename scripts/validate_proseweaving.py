@@ -18,6 +18,7 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from member_versions import is_supported_member_version  # noqa: E402
 
 try:
     import yaml
@@ -27,7 +28,6 @@ except ModuleNotFoundError:
 PLUGIN_RELATIVE = Path("plugins/proseweaving")
 PLUGIN_NAME = "proseweaving"
 DISPLAY_NAME = "Proseweaving"
-RELEASE_VERSION = "1.0.0"
 TOPOLOGY_SCHEMA_VERSION = 1
 DESCRIPTION_PREFIX = "Proseweaving: "
 CODEX_CAPABILITIES = ["Writing"]
@@ -484,7 +484,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
             canonical[field], f"canonical manifest {field} must be a string"
         )
     require(canonical["name"] == PLUGIN_NAME, "canonical manifest name drift")
-    require(canonical["version"] == RELEASE_VERSION, "canonical manifest version drift")
+    require(is_supported_member_version(canonical["version"]), "canonical manifest version drift")
     require(canonical["license"] == "MIT", "canonical manifest license drift")
     require(canonical["repository"] == REPOSITORY, "canonical manifest repository drift")
     require(canonical["homepage"] == HOMEPAGE, "canonical manifest homepage drift")
@@ -572,7 +572,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
     )
     changelog = read(root, "CHANGELOG.md")
     require(
-        re.search(rf"^## {re.escape(RELEASE_VERSION)}$", changelog, re.MULTILINE)
+        re.search(rf"^## {re.escape(canonical['version'])}$", changelog, re.MULTILINE)
         is not None,
         "changelog release drift",
     )

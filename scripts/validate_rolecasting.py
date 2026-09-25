@@ -18,6 +18,7 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from member_versions import is_supported_member_version  # noqa: E402
 
 try:
     import yaml
@@ -84,7 +85,6 @@ EXPECTED_RECEIPT_CONTRACT = {
     ],
     "default_denies": ["subdelegation", "external-action"],
 }
-RELEASE_VERSION = "1.0.0"
 REFERENCE_LINK = re.compile(r"\[[^\]]+\]\((references/[^)]+\.md)\)")
 PORTABILITY_PATTERNS = (
     re.compile(r"/users/", re.IGNORECASE),
@@ -238,7 +238,9 @@ def validate_decoded_portability(value, relative: str) -> None:
             )
 
 
-def load_json(root: Path, relative: str, field: str) -> dict:
+def load_json(
+    root: Path, relative: str, field: str, *, top_type: type = dict
+) -> dict | list:
     def unique_object(pairs):
         value = {}
         for key, item in pairs:
@@ -257,7 +259,10 @@ def load_json(root: Path, relative: str, field: str) -> dict:
         )
     except json.JSONDecodeError as error:
         raise ContractError(f"invalid JSON in {relative}: {error.msg}") from error
-    require(isinstance(document, dict), f"{field} must contain an object")
+    require(
+        isinstance(document, top_type),
+        f"{field} must contain an {'object' if top_type is dict else 'array'}",
+    )
     validate_decoded_portability(document, relative)
     return document
 
@@ -610,7 +615,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
             canonical[field], f"canonical manifest {field} must be a string"
         )
     require(canonical["name"] == "rolecasting", "canonical manifest name drift")
-    require(canonical["version"] == RELEASE_VERSION, "canonical manifest version drift")
+    require(is_supported_member_version(canonical["version"]), "canonical manifest version drift")
     require(canonical["license"] == "MIT", "canonical manifest license drift")
     require(
         canonical["repository"] == "https://github.com/nisavid/provingkit",
@@ -702,7 +707,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
     )
     changelog = read(root, "CHANGELOG.md")
     require(
-        re.search(rf"^## {re.escape(RELEASE_VERSION)}$", changelog, re.MULTILINE)
+        re.search(rf"^## {re.escape(canonical['version'])}$", changelog, re.MULTILINE)
         is not None,
         "changelog release drift",
     )
@@ -1137,6 +1142,32 @@ def validate_evals(
             path.name for path in fixture_dir.iterdir() if path.is_file()
         }
         require(actual_fixtures == referenced_fixtures, f"{skill} fixture drift")
+    for skill in sorted(SKILL_NAMES):
+        trigger_path = f"skills/{skill}/evals/trigger-evals.json"
+        triggers = load_json(root, trigger_path, f"{skill} triggers", top_type=list)
+        semantic_files.add(trigger_path)
+        require(
+            isinstance(triggers, list) and len(triggers) >= 2,
+            f"{skill} triggers require positive and negative probes",
+        )
+        seen_queries = set()
+        seen_outcomes = set()
+        for position, trigger in enumerate(triggers, start=1):
+            require(
+                isinstance(trigger, dict) and set(trigger) == {"query", "should_trigger"},
+                f"trigger item {position} shape drift",
+            )
+            query = require_nonempty_string(
+                trigger["query"], f"trigger item {position} query must be nonempty"
+            )
+            require(query not in seen_queries, f"trigger item {position} duplicate query")
+            seen_queries.add(query)
+            require(
+                type(trigger["should_trigger"]) is bool,
+                f"trigger item {position} should_trigger must be Boolean",
+            )
+            seen_outcomes.add(trigger["should_trigger"])
+        require(seen_outcomes == {True, False}, "trigger probes need both outcomes")
     require(len(names) >= 10, "Rolecasting requires at least ten evals")
     return semantic_files
 

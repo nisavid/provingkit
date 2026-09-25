@@ -382,6 +382,103 @@ class ReceiptWorkflowTests(unittest.TestCase):
         path.write_text(json.dumps(result))
         return path
 
+    def claude_session_results(self):
+        """Reference original-shaped CLI records, separate from responses."""
+        path = self.retained_results()
+        manifest = json.loads(path.read_text())
+        original = json.loads((self.private / "retained.json").read_text())
+        for index, run in enumerate(manifest["runs"]):
+            response = original["runs"][index]["response"]
+            case_id = int(run["case_id"])
+            repetition = run["repetition"]
+            record = {
+                "run_id": f"case-{case_id:02d}-rep-{repetition}",
+                "source_revision": self.candidate,
+                "session_id": f"constructed-claude-session-{index}",
+                "status": "verified-transport",
+                "returncode": 0,
+                "observed_model": "test-executor-1",
+                "response_id": f"constructed-response-{index}",
+                "response_sha256": hashlib.sha256(response.encode()).hexdigest(),
+                "input_sha256": "a" * 64,
+                "stdout_sha256": "b" * 64,
+                "stderr_sha256": "c" * 64,
+            }
+            artifact = self.private / f"claude-record-{index}.json"
+            artifact.write_text(json.dumps(record))
+            run["execution_record"] = {
+                "path": artifact.name,
+                "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                "format": "json", "pointer": "",
+            }
+        path.write_text(json.dumps(manifest))
+        return path
+
+    def test_reconciliation_accepts_original_claude_session_records(self):
+        receipt = receipts.reconcile(self.repo, self.candidate, self.spec,
+                                     self.claude_session_results(), self.candidate)
+        self.assertEqual([run["reconciliation"]["execution_identity"]["basis"]
+                          for run in receipt["runs"]], ["recorded-claude-session"] * 3)
+        result = receipts.check(self.repo, self.request(), {"example/writing": receipt})
+        self.assertEqual(result["status"], "pass")
+
+    def change_claude_record(self, path, index, changes):
+        manifest = json.loads(path.read_text())
+        reference = manifest["runs"][index]["execution_record"]
+        artifact = self.private / reference["path"]
+        record = json.loads(artifact.read_text())
+        for key, value in changes.items():
+            if value is None:
+                record.pop(key, None)
+            else:
+                record[key] = value
+        artifact.write_text(json.dumps(record))
+        reference["sha256"] = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        path.write_text(json.dumps(manifest))
+
+    def test_reconciliation_rejects_invalid_claude_session_records(self):
+        changes = {
+            "missing-session": ({"session_id": None}, "identity is unavailable"),
+            "blank-session": ({"session_id": " "}, "identity is unavailable"),
+            "failed-status": ({"status": "incomplete"}, "verified transport"),
+            "failed-exit": ({"returncode": 1}, "verified transport"),
+            "boolean-exit": ({"returncode": False}, "verified transport"),
+            "wrong-response": ({"response_sha256": "0" * 64}, "response digest differs"),
+            "wrong-coordinate": ({"run_id": "case-02-rep-1"}, "coordinate differs"),
+            "wrong-case-alias": ({"case_id": "2"}, "case differs"),
+            "wrong-repetition-alias": ({"repetition": 2}, "repetition differs"),
+            "wrong-source": ({"source_revision": self.base}, "source revision differs"),
+            "wrong-model": ({"observed_model": "another-model"}, "observed model differs"),
+            "conflicting-native-agent": ({"native_agent": "different-session"}, "identifiers disagree"),
+            "conflicting-thread": ({"execution": {"completed": True, "returncode": 0,
+                "thread_ids": ["different-session"],
+                "response_sha256": hashlib.sha256(b"Constructed retained response.\n").hexdigest()}},
+                "identifiers disagree"),
+            "conflicting-response-text": ({"response": "Another response."}, "response differs"),
+        }
+        for name, (change, message) in changes.items():
+            with self.subTest(name=name):
+                path = self.claude_session_results()
+                self.change_claude_record(path, 0, change)
+                with self.assertRaisesRegex(receipts.ReceiptError, message):
+                    receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+
+    def test_reconciliation_rejects_reused_claude_session(self):
+        path = self.claude_session_results()
+        first = json.loads((self.private / "claude-record-0.json").read_text())
+        self.change_claude_record(path, 1, {"session_id": first["session_id"]})
+        with self.assertRaisesRegex(receipts.ReceiptError, "one original execution"):
+            receipts.reconcile(self.repo, self.candidate, self.spec, path, self.candidate)
+
+    def test_public_check_rejects_reused_claude_session_identity(self):
+        receipt = receipts.reconcile(self.repo, self.candidate, self.spec,
+                                     self.claude_session_results(), self.candidate)
+        receipt["runs"][1]["reconciliation"]["execution_identity"] = copy.deepcopy(
+            receipt["runs"][0]["reconciliation"]["execution_identity"])
+        result = receipts.check(self.repo, self.request(), {"example/writing": receipt})
+        self.assertEqual(result["status"], "fail")
+        self.assertIn("original execution", result["skills"][0]["reason"])
+
     def test_reconciliation_schema_accepts_optional_case_runtime_inputs(self):
         manifest = json.loads(self.retained_results().read_text())
         manifest["case_runtime_inputs"] = [

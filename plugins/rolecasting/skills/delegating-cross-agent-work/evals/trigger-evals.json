@@ -1,0 +1,10 @@
+[
+  {
+    "query": "The model is selected. Decide whether to use a bounded native subagent or create a persistent user-owned task for this review, and bind the worker's authority.",
+    "should_trigger": true
+  },
+  {
+    "query": "Delegation is settled and worker ownership is fixed. Select a supported model and effort for the assigned worker.",
+    "should_trigger": false
+  }
+]

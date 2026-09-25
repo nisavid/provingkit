@@ -21,7 +21,24 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
-    def test_rolecasting_has_exactly_thirty_one_detailed_scenarios(self) -> None:
+    def test_delegating_discovery_distinguishes_topology_from_model_choice(self) -> None:
+        probes = json.loads(
+            (
+                PLUGIN_ROOT
+                / "skills"
+                / "delegating-cross-agent-work"
+                / "evals"
+                / "trigger-evals.json"
+            ).read_text()
+        )
+        self.assertEqual(len(probes), 2)
+        self.assertEqual([probe["should_trigger"] for probe in probes], [True, False])
+        self.assertIn("user-owned task", probes[0]["query"])
+        self.assertIn("authority", probes[0]["query"])
+        self.assertIn("Delegation is settled", probes[1]["query"])
+        self.assertIn("model and effort", probes[1]["query"])
+
+    def test_rolecasting_has_exactly_thirty_six_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -43,6 +60,11 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "engineering-and-security-judgment",
                 "routing-block-diagnosis",
                 "follow-up-review-classification",
+                "jev-suitability-and-unavailability",
+                "security-classes-and-fallbacks",
+                "thread-consent-state",
+                "general-tiers-and-preferences",
+                "provider-preference-target-reconsideration",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
@@ -453,9 +475,9 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "blocked-with-probe-evidence",
                 "no-unauthorized-authority-escalation",
                 "explicit-authorization-before-retry",
-                "reviewer-astra-high-default",
+                "reviewer-astra-xhigh",
                 "clerical-luna-separation",
-                "no-unproven-review-overescalation",
+                "no-review-effort-underfit-or-max",
                 "cursor-grok-high-fit",
                 "cursor-surface-proof",
                 "foreign-review-authority-preserved",
@@ -504,12 +526,14 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             .read_text()
             .split()
         )
-        self.assertIn("help and model catalog advertise Fable", fixture)
+        self.assertIn("help and model catalog advertise Fable 5.1", fixture)
         self.assertIn("did not authorize an external invocation", fixture)
 
     def test_content_lock_pins_complete_eval_and_fixture_bytes(self) -> None:
         lock = json.loads((PLUGIN_ROOT / "content-lock.json").read_text())
         expected_paths = {f"skills/{skill}/evals/evals.json" for skill in SKILLS}
+        expected_paths.add("skills/choosing-agent-models/evals/trigger-evals.json")
+        expected_paths.add("skills/delegating-cross-agent-work/evals/trigger-evals.json")
         for skill, document in self.documents.items():
             expected_paths.update(
                 f"skills/{skill}/{item['fixture_paths'][0]}"
@@ -560,7 +584,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for item in document["evals"]
         }
         expected_fragments = {
-            "inherited-fixed-model-selection": ("no model", "environment is fixed"),
+            "inherited-fixed-model-selection": ("no model", "environment\nis fixed"),
             "unavailable-non-codex-capability": ("exits nonzero", "cannot be parsed"),
             "absent-foreign-executable-native-fallback": (
                 "not installed",
