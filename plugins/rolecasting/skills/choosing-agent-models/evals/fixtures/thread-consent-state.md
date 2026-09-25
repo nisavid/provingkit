@@ -1,8 +1,9 @@
 # Once-per-thread non-Daybreak fallback decision
 
 Jev cannot execute these complete operations. The work requires security
-judgment, Daybreak Blue is currently unavailable, and automatic fallback does
-not apply. Exact Opus 5.5 capability is proven. Fable 5.1 capability and its
+judgment. In this fictional scenario, Daybreak Blue is unavailable because
+no permitted route currently exposes its selector; no account identifier is
+needed to state that reason. Automatic fallback does not apply. Exact Opus 5.5 capability is proven. Fable 5.1 capability and its
 current successful proof are proven where it is considered. The operator may
 revise a thread decision. No safety refusal is involved.
 
