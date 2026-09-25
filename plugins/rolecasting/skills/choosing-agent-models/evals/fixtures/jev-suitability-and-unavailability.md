@@ -1,10 +1,11 @@
 # Jev suitability and availability
 
 For each bounded operation, decide whether Jev fits the complete operation and
-choose the next executable route. Jev is currently unavailable. Its documented
-interface answers typed questions over supplied state with structured values and
-probabilities; it does not generate prose. No Jev call or installation is
-authorized in this scenario.
+choose the next executable route. Jev is unavailable for A through E, and
+available with proven exact capability and invocation authority for F. Its
+documented interface answers typed questions over supplied state with structured
+values and probabilities; it does not generate prose. Do not invoke or install
+Jev in this eval.
 
 A. Classify each public support ticket into one of four known queues. The
 decision is a typed text judgment, the labels cover the task, and an uncertain
@@ -29,3 +30,9 @@ E. A typed label could flag a public report as a possible vulnerability, but
 the complete assignment must verify whether the implementation actually
 prevents unauthorized access across its call paths. Daybreak Blue is available.
 State what the partial label can and cannot establish.
+
+F. Route one public support ticket into one of four known queues. This is the
+entire bounded operation: a typed text judgment over supplied state, with an
+uncertain answer held for review. Current Jev availability, exact capability,
+and invocation authority are proven. A non-Jev route is also available. State
+the selected route without executing it.

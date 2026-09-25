@@ -11,7 +11,7 @@ Own model and effort selection after [delegating-cross-agent-work](../delegating
 
 ## Selection Order
 
-1. Consider Jev first only if the **complete narrow operation** is a suitable System One typed text judgment. [Check suitability, uncertainty, availability, and authority](references/jev-suitability.md). Unavailable Jev leads to the remaining route without a Jev call or claimed result.
+1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, exact capability, and authority pass; then stop model selection. [Check all gates](references/jev-suitability.md). Otherwise continue without a Jev call or claimed result.
 2. For actual cybersecurity work, obviously cybersecurity-related work with another primary domain, and cybersecurity-adjacent work, apply [Daybreak Blue routing and fallbacks](references/daybreak-routing.md).
 3. Otherwise use the [general tiers and preferences](references/general-tiers.md).
 
