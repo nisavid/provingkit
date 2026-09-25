@@ -11,28 +11,23 @@ plausible failure effects, and judgment needed for the claimed result. Use
 concrete task evidence; a possible security consequence of any software bug is
 not enough by itself.
 
-Cybersecurity-related work directly investigates, establishes, or changes a
-security property. Cybersecurity-adjacent work has another primary purpose but
-requires security judgment to complete it: for example, deciding whether a
-test's handling of live credentials prevents disclosure. Both use Daybreak
-routing. Security judgment includes assessing adversarial behavior,
-unauthorized access or disclosure, authorization boundaries, containment,
-vulnerabilities, and cryptographic verification.
+Classify the complete operation into one of three security classes or ordinary work. A potential security consequence of any software bug, a security-adjacent project, a syscall name, sandbox tooling, a previous Daybreak assignment, or the word "test" does not classify an operation.
 
-Ordinary engineering uses the general matrix when its result requires
-correctness, compatibility, reliability, or resource hygiene without such a
-security judgment. Keep necessary isolation, ownership checks, and cleanup in
-that work. A security-adjacent project, syscall name, sandbox tool, previous
-Daybreak assignment, or the word "test" does not determine classification.
+- **Actual cybersecurity work** directly investigates, establishes, or changes a security property: adversarial behavior, unauthorized access or disclosure, containment, vulnerability handling, or cryptographic verification.
+- **Obviously cybersecurity-related work with another primary domain** has a different main deliverable, but its complete operation visibly involves security concerns. Judge both the main work and those concerns rather than routing from the document or team label alone.
+- **Cybersecurity-adjacent work** has another primary purpose but its behavior enters a concrete security concern in certain cases. Identify the actual implication and required judgment; a merely hypothetical downstream risk is insufficient.
+- **Ordinary work** requires correctness, compatibility, reliability, resource hygiene, or settled-policy writing without a security concern in its complete claim. Keep necessary ownership, isolation, and cleanup in that work.
 
 | Current scope and claimed result | Classification |
 | --- | --- |
 | Remove a test-owned disposable directory or reap a cooperative child process with synthetic inputs; failure leaks only test resources. | Ordinary engineering. |
 | Observe whether a synthetic guest starts and reports its own metadata on another platform; report only compatibility. | Ordinary engineering; this observation does not certify containment. |
-| Decide whether hostile guest code can escape a restriction, read host credentials, expose a debugger, or attach to an unrelated process. | Security judgment. |
-| Test credential handling, access restrictions, or signature rejection as evidence that those protections hold. | Security judgment, including when fixtures are synthetic. |
-| Copyedit documentation or maintain model-routing examples under settled policy. | Writing under the general matrix. |
-| Change what an authorization boundary permits or assess whether a runtime routing control resists bypass. | Security judgment, including when the artifact is prose. |
+| Decide whether hostile guest code can escape a restriction, read host credentials, expose a debugger, or attach to an unrelated process. | Actual cybersecurity work. |
+| Edit an installation guide whose settled examples plainly cover credential-handling steps. | Obviously cybersecurity-related work with another primary domain; inspect whether the concerns are largely known, uncomplicated, and architecturally clear before an automatic fallback. |
+| Fix a routine UI error that visibly displays a token. | Cybersecurity-adjacent work; inspect whether the implication is readily recognizable and easily fixable before an automatic fallback. |
+| Test credential handling, access restrictions, or signature rejection as evidence that those protections hold. | Actual cybersecurity work, including with synthetic fixtures. |
+| Copyedit documentation or maintain model-routing examples under settled policy. | Ordinary writing. |
+| Change what an authorization boundary permits or assess whether a runtime routing control resists bypass. | Actual cybersecurity work, including when the artifact is prose. |
 
 For mixed work, separate independently useful scopes and state each result's
 limits. A compatibility observation can proceed separately from a containment

@@ -1,0 +1,26 @@
+[
+  {
+    "query": "Delegation is settled. Select a proven model and effort for this bounded implementation task.",
+    "should_trigger": true
+  },
+  {
+    "query": "Before continuing the same reviewer, classify the complete new review scope and choose its model route.",
+    "should_trigger": true
+  },
+  {
+    "query": "Daybreak Blue is unavailable for this security scope. Decide whether the thread's recorded fallback consent permits a model now.",
+    "should_trigger": true
+  },
+  {
+    "query": "The worker target and model are settled. Decide whether to delegate, create a peer task, and bind its authority.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the exact pull-request body for the reviewed commit; the model and worker are already selected.",
+    "should_trigger": false
+  },
+  {
+    "query": "Repair the unavailable Jev service and install it on this host.",
+    "should_trigger": false
+  }
+]

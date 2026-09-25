@@ -21,7 +21,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
-    def test_rolecasting_has_exactly_thirty_one_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_exactly_thirty_five_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -43,6 +43,10 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "engineering-and-security-judgment",
                 "routing-block-diagnosis",
                 "follow-up-review-classification",
+                "jev-suitability-and-unavailability",
+                "security-classes-and-fallbacks",
+                "thread-consent-state",
+                "general-tiers-and-preferences",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
@@ -504,12 +508,13 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             .read_text()
             .split()
         )
-        self.assertIn("help and model catalog advertise Fable", fixture)
+        self.assertIn("help and model catalog advertise Fable 5.1", fixture)
         self.assertIn("did not authorize an external invocation", fixture)
 
     def test_content_lock_pins_complete_eval_and_fixture_bytes(self) -> None:
         lock = json.loads((PLUGIN_ROOT / "content-lock.json").read_text())
         expected_paths = {f"skills/{skill}/evals/evals.json" for skill in SKILLS}
+        expected_paths.add("skills/choosing-agent-models/evals/trigger-evals.json")
         for skill, document in self.documents.items():
             expected_paths.update(
                 f"skills/{skill}/{item['fixture_paths'][0]}"
@@ -560,7 +565,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for item in document["evals"]
         }
         expected_fragments = {
-            "inherited-fixed-model-selection": ("no model", "environment is fixed"),
+            "inherited-fixed-model-selection": ("no model", "environment\nis fixed"),
             "unavailable-non-codex-capability": ("exits nonzero", "cannot be parsed"),
             "absent-foreign-executable-native-fallback": (
                 "not installed",

@@ -23,7 +23,7 @@ model and effort or inherited fixed-model binding, current catalog and executor
 schema observations, and existing selection authority. Record the source and
 freshness of those observations. This record establishes the selected request
 and available capability; it does not attest the model that actually executed.
-The completed plan binds this record's identity before dispatch.
+The completed plan binds this record's identity before dispatch. Do not describe opaque provider rerouting as an observed execution fact.
 
 An explicitly witnessed consumer additionally requires its authenticated
 `adapter:model-selection-receipt`. An ordinary record cannot substitute for
@@ -52,17 +52,17 @@ Use a sufficient native route only when it preserves the original task contract.
 
 For roles without a fixed effort, choose the lowest accepted effort that preserves the task's judgment margin. Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
 
-When Luna xhigh fits the task but is absent from the native-subagent schema, use accepted Astra low. If explicit selection is unavailable, inherit an appropriate fixed model. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
+When GPT-6 Luna fits but is absent from the target executor schema, choose an accepted GPT-6 Sol or Claude Opus 5.5 pair that preserves the task contract. If explicit selection is unavailable, inherit an appropriate fixed model. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
 
 For another harness, inspect its local capability surface and use only its exact supported values. Report an unavailable user-requested model rather than silently substituting.
 
 ## Prove Fable
 
-Treat Fable as unavailable unless a current proof record for the exact target surface is supplied. The proof record must contain:
+Treat Claude Fable 5.1 as unavailable unless a current proof record for the exact target surface is supplied. The proof record must contain:
 
 - harness and version;
 - exact slug and requested effort;
 - invocation result; and
 - an observable successful response.
 
-Help or catalog advertisement is insufficient. If no current successful proof exists, do not invoke Fable merely to establish one. Only the operator's explicit authorization for the exact proof invocation permits the attempt; that authorization does not itself prove availability. Until all fields are recorded after an authorized successful invocation, treat Fable as unavailable and assign it no fallback priority.
+Help or catalog advertisement is insufficient. If no current successful proof exists, do not invoke Fable merely to establish one. Only the operator's explicit authorization for the exact proof invocation permits the attempt; that authorization does not itself prove availability. Until all fields are recorded after an authorized successful invocation, treat Fable 5.1 as unavailable. A fallback consent decision authorizes only its stated scope; it is not proof that Fable ran or authority to make a proof-only invocation.
