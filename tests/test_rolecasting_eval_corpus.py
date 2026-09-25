@@ -21,6 +21,23 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
+    def test_delegating_discovery_distinguishes_topology_from_model_choice(self) -> None:
+        probes = json.loads(
+            (
+                PLUGIN_ROOT
+                / "skills"
+                / "delegating-cross-agent-work"
+                / "evals"
+                / "trigger-evals.json"
+            ).read_text()
+        )
+        self.assertEqual(len(probes), 2)
+        self.assertEqual([probe["should_trigger"] for probe in probes], [True, False])
+        self.assertIn("user-owned task", probes[0]["query"])
+        self.assertIn("authority", probes[0]["query"])
+        self.assertIn("Delegation is settled", probes[1]["query"])
+        self.assertIn("model and effort", probes[1]["query"])
+
     def test_rolecasting_has_exactly_thirty_six_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
@@ -516,6 +533,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         lock = json.loads((PLUGIN_ROOT / "content-lock.json").read_text())
         expected_paths = {f"skills/{skill}/evals/evals.json" for skill in SKILLS}
         expected_paths.add("skills/choosing-agent-models/evals/trigger-evals.json")
+        expected_paths.add("skills/delegating-cross-agent-work/evals/trigger-evals.json")
         for skill, document in self.documents.items():
             expected_paths.update(
                 f"skills/{skill}/{item['fixture_paths'][0]}"

@@ -622,6 +622,19 @@ class ValidateRolecastingTests(unittest.TestCase):
         path.write_text(json.dumps(probes, indent=2) + "\n")
         self.assert_rejected("semantic content lock mismatch")
 
+    def test_delegating_discovery_requires_boolean_observations(self) -> None:
+        path = (
+            self.plugin
+            / "skills"
+            / "delegating-cross-agent-work"
+            / "evals"
+            / "trigger-evals.json"
+        )
+        probes = json.loads(path.read_text())
+        probes[0]["should_trigger"] = "yes"
+        path.write_text(json.dumps(probes, indent=2) + "\n")
+        self.assert_rejected("trigger item 1 should_trigger must be Boolean")
+
     def test_content_lock_covers_discovery_contracts(self) -> None:
         for relative_path in (
             "README.md",
