@@ -2532,6 +2532,21 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
         self.assertEqual((snapshot / relative).read_bytes(), original)
 
+    def test_prepared_source_stage_carries_member_version_validation_dependency(self) -> None:
+        relative = "scripts/member_versions.py"
+        plugins = self.module.SOURCE_STAGE_VALIDATED_PLUGINS
+        self.assertIn(relative, self.module.all_scope_paths(plugins))
+
+        snapshot = Path(self.temporary_directory.name).resolve() / "member-version-snapshot"
+        self.module.copy_release_scope(REPOSITORY, snapshot, plugins)
+        helper = snapshot / relative
+        self.assertEqual(helper.read_bytes(), (REPOSITORY / relative).read_bytes())
+
+        before = self.module.release_contract_identity(snapshot, plugins)
+        helper.write_bytes(helper.read_bytes() + b"\n")
+        after = self.module.release_contract_identity(snapshot, plugins)
+        self.assertNotEqual(before["sha256"], after["sha256"])
+
     def test_source_stage_excludes_the_stale_source_lineage_snapshot(self) -> None:
         stale_roots = (
             "release/source-skill-lineage",
@@ -2828,17 +2843,23 @@ class ValidatePublicReleaseTests(unittest.TestCase):
                     ),
                 )
 
-    def test_release_contract_binds_shared_agent_plugins_validator(self) -> None:
+    def test_release_contract_binds_shared_validator_dependencies(self) -> None:
+        support_modules = [
+            "scripts/agent_plugins_standard.py",
+            "scripts/member_versions.py",
+        ]
         before = self.module.release_contract_identity(self.repository)
-        shared = "scripts/agent_plugins_standard.py"
-        self.assertEqual(before["support_modules"], [shared])
+        self.assertEqual(before["support_modules"], support_modules)
 
-        path = self.repository / shared
-        path.write_bytes(path.read_bytes() + b"\n")
-        after = self.module.release_contract_identity(self.repository)
-
-        self.assertNotEqual(before["sha256"], after["sha256"])
-        self.assertEqual(after["support_modules"], [shared])
+        for shared in support_modules:
+            with self.subTest(shared=shared):
+                path = self.repository / shared
+                original = path.read_bytes()
+                path.write_bytes(original + b"\n")
+                after = self.module.release_contract_identity(self.repository)
+                self.assertNotEqual(before["sha256"], after["sha256"])
+                self.assertEqual(after["support_modules"], support_modules)
+                path.write_bytes(original)
 
     def test_source_stage_rejects_live_mutation_after_snapshot_validators_start(
         self,
