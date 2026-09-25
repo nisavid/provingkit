@@ -1,6 +1,6 @@
 {
   "attestation": null,
-  "candidate_revision": "1fc147515eb37a359635919511fa382e57cf8611",
+  "candidate_revision": "16c09f29d3a6decde742d523fb0b9e5ff78fac92",
   "executor_model_id": "claude-opus-5-5",
   "grader_model_id": "gpt-6-sol",
   "kind": "evaluation",
@@ -31,7 +31,7 @@
         "sha256": "740e17694ff43711c2b191b2307923817d82e938d6c01d6586ffb869d2718355"
       }
     },
-    "revision": "1fc147515eb37a359635919511fa382e57cf8611"
+    "revision": "16c09f29d3a6decde742d523fb0b9e5ff78fac92"
   },
   "reconciliation": {
     "runtime_inputs": [
@@ -10207,7 +10207,7 @@
   "runs_per_case": 3,
   "schema_version": 1,
   "snapshot": {
-    "candidate_revision": "1fc147515eb37a359635919511fa382e57cf8611",
+    "candidate_revision": "16c09f29d3a6decde742d523fb0b9e5ff78fac92",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
