@@ -22,9 +22,14 @@ evals/classifier-consent/rig/run_red_green.sh main 5
 ```
 
 Red loads the plugin as committed at the given ref; green loads the working
-tree. Expect most red trials to draw a classifier denial and most green trials
-none; the residual green denials in observed runs were `gh issue create` and
+tree. Expect red trials to draw classifier denials and green trials none. In
+earlier runs the only green denials were on `gh issue create` and
 `gh pr create` calls, which Versionkeeping's push rule does not cover.
+
+A trial whose turn ends in an API error, such as an exhausted session limit, or
+lacks a result event is invalid: the harness keeps it on disk, reports it
+separately, and runs another, up to twice the requested count. Summaries and
+`rig/reparse.py` count denials over valid trials only.
 
 Any case runs alone:
 
