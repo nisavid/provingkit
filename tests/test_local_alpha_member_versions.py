@@ -69,14 +69,24 @@ class LocalAlphaMemberVersionTests(unittest.TestCase):
                     result = self.validate(repository, member, write=True)
                     self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_member_validator_rejects_a_leading_zero_ordinal(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.fixture(repository, "0.1.0-alpha.02")
-            result = self.validate(repository, "rolecasting")
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("canonical manifest version drift", result.stderr)
+    def test_all_six_member_validators_reject_invalid_ordinals(self) -> None:
+        diagnostics = {
+            "rolecasting": "canonical manifest version drift",
+            "tricritical": "canonical manifest version is invalid",
+            "versionkeeping": "canonical manifest version drift",
+            "mergecraft": "canonical version drift",
+            "artifact-customs": "canonical Agent Plugin manifest drift",
+            "proseweaving": "canonical manifest version drift",
+        }
+        for version in ("0.1.0-alpha.02", "0.1.0-alpha.0"):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
+                repository = Path(directory) / "repository"
+                self.fixture(repository, version)
+                for member in MEMBERS:
+                    with self.subTest(member=member):
+                        result = self.validate(repository, member)
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn(diagnostics[member], result.stderr)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,11 @@ from html import unescape as unescape_html
 from pathlib import Path
 from urllib.parse import unquote_to_bytes
 
+SCRIPT_DIRECTORY = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIRECTORY))
+
+from member_versions import is_supported_member_version  # noqa: E402
+
 try:
     import idna
 except ModuleNotFoundError:
@@ -159,9 +164,6 @@ EXPECTED_MEMBERS = (
         "plugins/proseweaving/content-lock.json",
     ),
 )
-CUTOVER_MEMBER_VERSION = "1.0.0"
-LOCAL_ALPHA_MEMBER_VERSION = re.compile(r"0\.1\.0-alpha\.[1-9][0-9]*\Z")
-
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
     "products": [
@@ -1120,10 +1122,7 @@ def _validate_definition(repository: Path) -> None:
             content_identity_relative,
         ) = expected
         version = member.get("version")
-        if not isinstance(version, str) or not (
-            version == CUTOVER_MEMBER_VERSION
-            or LOCAL_ALPHA_MEMBER_VERSION.fullmatch(version) is not None
-        ):
+        if not is_supported_member_version(version):
             raise ValidationError("unsupported member version")
         canonical_manifest = _load_json(
             repository / canonical_relative, "canonical member manifest"

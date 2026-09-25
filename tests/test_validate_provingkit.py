@@ -1284,6 +1284,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             )
 
             validator_path = Path(directory) / "validate_provingkit.py"
+            shutil.copy2(REPOSITORY / "scripts/member_versions.py", validator_path.parent)
             validator_source = VALIDATOR.read_text(encoding="utf-8")
             current_map_sha256 = (
                 "sha256:"
@@ -1479,6 +1480,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 )
 
                 validator_path = Path(directory) / "validate_provingkit.py"
+                shutil.copy2(REPOSITORY / "scripts/member_versions.py", validator_path.parent)
                 validator_source = VALIDATOR.read_text(encoding="utf-8")
                 self.assertEqual(validator_source.count(reviewed_carrier), 1)
                 self.assertEqual(validator_source.count(reviewed_carrier_envelope), 1)
