@@ -35,3 +35,9 @@ F. A UI task must decide whether a complex cross-origin interaction can expose
 tokens across several trust boundaries. The implication is not readily
 recognizable and the fix is unsettled. There is no thread consent decision.
 State the route.
+
+G. A UI task must remove a known token display from a routine error banner.
+The exposure implication is readily recognizable, but the integration spans
+unsettled UI component contracts, so the fix cannot yet be determined. The
+operation claims no independent proof that token disclosure is impossible.
+There is no thread consent decision. State the route.
