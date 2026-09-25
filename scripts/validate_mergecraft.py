@@ -25,6 +25,7 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from member_versions import is_supported_member_version  # noqa: E402
 from refresh_transaction import (  # noqa: E402
     InputEntry,
     RefreshTransactionError,
@@ -663,7 +664,6 @@ EXPECTED_ATLAS_PROSE_SHA256 = {
     "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
     "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
 }
-RELEASE_VERSION = "1.0.0"
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 PORTABILITY_MARKERS = (
     "/Users/",
@@ -2550,7 +2550,7 @@ def validate_manifests(root: Path) -> None:
             f"Claude manifest projection drift: {field}",
         )
     require(codex["name"] == "mergecraft", "canonical plugin name drift")
-    require(codex["version"] == RELEASE_VERSION, "canonical version drift")
+    require(is_supported_member_version(codex["version"]), "canonical version drift")
     require(codex["license"] == "MIT", "canonical license drift")
     require(
         codex["repository"] == "https://github.com/nisavid/provingkit",

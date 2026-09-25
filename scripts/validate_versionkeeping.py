@@ -24,6 +24,7 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from member_versions import is_supported_member_version  # noqa: E402
 from evidence_transport import run_candidate_git  # noqa: E402
 from refresh_transaction import replace_generated_artifacts  # noqa: E402
 
@@ -279,7 +280,6 @@ FORBIDDEN_OWNERS = (
     "writing-reviewable-pr-descriptions",
 )
 MACHINE_LOCAL_MARKERS = ("/Users/ivan", "chezmoi.wt", ".local/share/chezmoi")
-RELEASE_VERSION = "1.0.0"
 DIRECT_LOCAL_INTEGRATION = re.compile(
     r"(?m)^[ \t]*git[ \t]+(?:merge(?:[ \t]|$)|rebase(?:[ \t]|$)|"
     r"cherry-pick(?:[ \t]|$)|am(?:[ \t]|$))"
@@ -565,7 +565,7 @@ def validate_manifests(root: Path) -> None:
             claude[field] == codex[field], f"Claude manifest projection drift: {field}"
         )
     require(codex["name"] == "versionkeeping", "canonical manifest name drift")
-    require(codex["version"] == RELEASE_VERSION, "canonical manifest version drift")
+    require(is_supported_member_version(codex["version"]), "canonical manifest version drift")
     require(codex["license"] == "MIT", "canonical manifest license drift")
     require(
         codex["repository"] == "https://github.com/nisavid/provingkit",
@@ -609,7 +609,7 @@ def validate_manifests(root: Path) -> None:
     validate_skill_resource_links(root, discovered)
     changelog = read(root, "CHANGELOG.md")
     require(
-        re.search(rf"^## {re.escape(RELEASE_VERSION)}$", changelog, re.MULTILINE)
+        re.search(rf"^## {re.escape(codex['version'])}$", changelog, re.MULTILINE)
         is not None,
         "changelog release drift",
     )

@@ -159,14 +159,9 @@ EXPECTED_MEMBERS = (
         "plugins/proseweaving/content-lock.json",
     ),
 )
-EXPECTED_CUTOVER_MEMBER_VERSIONS = {
-    "rolecasting": "1.0.0",
-    "tricritical": "1.0.0",
-    "versionkeeping": "1.0.0",
-    "mergecraft": "1.0.0",
-    "artifact-customs": "1.0.0",
-    "proseweaving": "1.0.0",
-}
+CUTOVER_MEMBER_VERSION = "1.0.0"
+LOCAL_ALPHA_MEMBER_VERSION = re.compile(r"0\.1\.0-alpha\.[1-9][0-9]*\Z")
+
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
     "products": [
@@ -1111,6 +1106,9 @@ def _validate_definition(repository: Path) -> None:
         or membership.get("partial_selection_is_provingkit") is not False
     ):
         raise ValidationError("definition membership drift")
+    versions = [member.get("version") for member in members]
+    if any(version != versions[0] for version in versions[1:]):
+        raise ValidationError("member version drift")
     for member, expected in zip(members, EXPECTED_MEMBERS, strict=True):
         (
             member_id,
@@ -1122,8 +1120,11 @@ def _validate_definition(repository: Path) -> None:
             content_identity_relative,
         ) = expected
         version = member.get("version")
-        if version != EXPECTED_CUTOVER_MEMBER_VERSIONS[member_id]:
-            raise ValidationError("cutover member version drift")
+        if not isinstance(version, str) or not (
+            version == CUTOVER_MEMBER_VERSION
+            or LOCAL_ALPHA_MEMBER_VERSION.fullmatch(version) is not None
+        ):
+            raise ValidationError("unsupported member version")
         canonical_manifest = _load_json(
             repository / canonical_relative, "canonical member manifest"
         )
@@ -1131,9 +1132,7 @@ def _validate_definition(repository: Path) -> None:
             repository / claude_relative, "Claude member manifest"
         )
         if (
-            not isinstance(version, str)
-            or re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version) is None
-            or not isinstance(canonical_manifest, dict)
+            not isinstance(canonical_manifest, dict)
             or not isinstance(claude_manifest, dict)
             or canonical_manifest.get("name") != member_id
             or claude_manifest.get("name") != member_id

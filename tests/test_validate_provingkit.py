@@ -813,7 +813,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("member identity drift", result.stderr)
 
-    def test_cutover_member_version_rejects_a_coordinated_rewrite(self) -> None:
+    def test_member_version_rejects_a_coordinated_arbitrary_rewrite(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -821,37 +821,81 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 repository,
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            definition_path = repository / "release/provingkit/definition-v1.json"
-            definition = json.loads(definition_path.read_text(encoding="utf-8"))
-            definition["membership"]["members"][0]["version"] = "9.9.9"
-            definition_path.write_text(
-                json.dumps(definition, indent=2) + "\n", encoding="utf-8"
+            self.set_member_versions(repository, "9.9.9")
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unsupported member version", result.stderr)
+
+    def test_assigned_local_alpha_version_accepts_six_consistent_members(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_member_versions(repository, "0.1.0-alpha.2")
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_local_alpha_version_rejects_mixed_member_versions(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            for relative in (
-                "plugins/rolecasting/plugin.json",
-                "plugins/rolecasting/.claude-plugin/plugin.json",
-            ):
-                manifest_path = repository / relative
-                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-                manifest["version"] = "9.9.9"
-                manifest_path.write_text(
-                    json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
-                )
-            schema_path = (
-                repository / "release/provingkit/release-manifest-v1.schema.json"
-            )
-            schema = json.loads(schema_path.read_text(encoding="utf-8"))
-            schema["$defs"]["rolecasting"]["properties"]["version"]["const"] = (
-                "9.9.9"
-            )
-            schema_path.write_text(
-                json.dumps(schema, indent=2) + "\n", encoding="utf-8"
+            self.set_member_versions(
+                repository, "0.1.0-alpha.2", overrides={"rolecasting": "1.0.0"}
             )
 
             result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("cutover member version drift", result.stderr)
+        self.assertIn("member version drift", result.stderr)
+
+    def test_local_alpha_version_rejects_zero_ordinal(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            shutil.copytree(
+                REPOSITORY,
+                repository,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+            )
+            self.set_member_versions(repository, "0.1.0-alpha.0")
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unsupported member version", result.stderr)
+
+    @staticmethod
+    def set_member_versions(
+        repository: Path,
+        default_version: str,
+        *,
+        overrides: dict[str, str] | None = None,
+    ) -> None:
+        overrides = overrides or {}
+        definition_path = repository / "release/provingkit/definition-v1.json"
+        definition = json.loads(definition_path.read_text(encoding="utf-8"))
+        schema_path = repository / "release/provingkit/release-manifest-v1.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        for member in definition["membership"]["members"]:
+            member_id = member["id"]
+            version = overrides.get(member_id, default_version)
+            member["version"] = version
+            schema["$defs"][member_id]["properties"]["version"]["const"] = version
+            for manifest in member["identity_manifests"].values():
+                path = repository / manifest
+                document = json.loads(path.read_text(encoding="utf-8"))
+                document["version"] = version
+                path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+        definition_path.write_text(
+            json.dumps(definition, indent=2) + "\n", encoding="utf-8"
+        )
+        schema_path.write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
 
     def test_member_content_identity_binds_the_exact_review_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

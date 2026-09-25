@@ -18,6 +18,7 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from member_versions import is_supported_member_version  # noqa: E402
 
 try:
     import yaml
@@ -84,7 +85,6 @@ EXPECTED_RECEIPT_CONTRACT = {
     ],
     "default_denies": ["subdelegation", "external-action"],
 }
-RELEASE_VERSION = "1.0.0"
 REFERENCE_LINK = re.compile(r"\[[^\]]+\]\((references/[^)]+\.md)\)")
 PORTABILITY_PATTERNS = (
     re.compile(r"/users/", re.IGNORECASE),
@@ -615,7 +615,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
             canonical[field], f"canonical manifest {field} must be a string"
         )
     require(canonical["name"] == "rolecasting", "canonical manifest name drift")
-    require(canonical["version"] == RELEASE_VERSION, "canonical manifest version drift")
+    require(is_supported_member_version(canonical["version"]), "canonical manifest version drift")
     require(canonical["license"] == "MIT", "canonical manifest license drift")
     require(
         canonical["repository"] == "https://github.com/nisavid/provingkit",
@@ -707,7 +707,7 @@ def validate_manifests(root: Path, topology: dict, prompts: dict) -> None:
     )
     changelog = read(root, "CHANGELOG.md")
     require(
-        re.search(rf"^## {re.escape(RELEASE_VERSION)}$", changelog, re.MULTILINE)
+        re.search(rf"^## {re.escape(canonical['version'])}$", changelog, re.MULTILINE)
         is not None,
         "changelog release drift",
     )

@@ -23,6 +23,7 @@ from agent_plugins_standard import (  # noqa: E402
     load_agent_plugin_manifest,
     validate_skill_resource_links,
 )
+from member_versions import is_supported_member_version  # noqa: E402
 from refresh_transaction import (  # noqa: E402
     InputEntry,
     capture_input_entry,
@@ -413,7 +414,7 @@ def validate_manifests(root: Path) -> None:
     require(
         set(canonical) == identity_fields | {"$schema", "extensions"}
         and canonical["name"] == "artifact-customs"
-        and canonical["version"] == "1.0.0",
+        and is_supported_member_version(canonical["version"]),
         "canonical Agent Plugin manifest drift",
     )
     require(
