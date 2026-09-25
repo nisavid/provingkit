@@ -15,9 +15,12 @@ CASE.json fields:
   extra_args      list of extra CLI args
   env             dict of environment overrides for the claude process; $FX and $PATH expand
   expect          optional {"remote_branch": "ivan/fixture-feature"} checked after the run
-Every trial rebuilds the fixture, so nothing persists between trials. Only local bare remotes are ever pushed to.
+Every trial rebuilds the fixture, so nothing persists between trials. Pushes reach only the fixture's local bare remote, and every case
+runs with the recording gh stub first on PATH, logging to <fixture>/gh-stub.log. Without --out, runs go to a new temporary
+directory outside the checkout, named neutrally because the classifier reads paths in
+command text. The rig does not otherwise sandbox the agent.
 """
-import argparse, json, os, re, subprocess, sys, time, shutil, uuid
+import argparse, json, os, re, subprocess, sys, tempfile, time, shutil, uuid
 HERE=os.path.dirname(os.path.abspath(__file__))
 REPO=os.path.abspath(os.path.join(HERE,'..','..','..'))
 VK=os.path.join(REPO,'plugins','versionkeeping','skills','checkpointing-and-publishing-git-work','scripts')
@@ -52,6 +55,7 @@ def run_trial(case, model, outdir, trial):
     turns=case['turns']
     args+=['--max-turns',str(sum(int(t.get('max_turns',6)) for t in turns))]
     env=dict(os.environ); env.pop('CLAUDECODE',None); env.pop('CLAUDE_CODE_ENTRYPOINT',None)
+    env['PATH']=os.path.join(HERE,'stub')+os.pathsep+env.get('PATH',''); env['GH_STUB_LOG']=os.path.join(fxdir,'gh-stub.log')
     for k,v in (case.get('env') or {}).items(): env[k]=v.replace('$FX',fxdir).replace('$RIG',HERE).replace('$PATH',env.get('PATH',''))
     log=open(os.path.join(outdir,f'trial-{trial:02d}','stream.jsonl'),'w')
     proc=subprocess.Popen(args,cwd=cwd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=open(os.path.join(outdir,f'trial-{trial:02d}','err.txt'),'w'),text=True,env=env)
@@ -127,7 +131,7 @@ def main():
     ap=argparse.ArgumentParser(); sub=ap.add_subparsers(dest='cmd',required=True)
     r=sub.add_parser('run'); r.add_argument('case'); r.add_argument('--trials',type=int,default=3); r.add_argument('--out'); r.add_argument('--model',default='sonnet')
     a=ap.parse_args()
-    case=json.load(open(a.case)); out=a.out or os.path.join(HERE,'runs',case['name']+'-'+uuid.uuid4().hex[:6]); os.makedirs(out,exist_ok=True)
+    case=json.load(open(a.case)); out=a.out or tempfile.mkdtemp(prefix="rig-"); os.makedirs(out,exist_ok=True)
     json.dump(case,open(os.path.join(out,'case.json'),'w'),indent=1)
     recs=[]
     for i in range(a.trials):

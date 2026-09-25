@@ -5,7 +5,7 @@
 # Requires: Claude Code with auto mode available, a Sonnet or Opus model, git, python3. Touches only local fixtures.
 set -euo pipefail
 RIG=$(cd "$(dirname "$0")" && pwd); REPO=$(cd "$RIG/../../.." && pwd); base=$1; trials=${2:-5}
-out=$(mktemp -d -t classifier-consent.XXXXXX); mkdir -p "$out/base"
+out=$(mktemp -d -t rig.XXXXXX)  # neutral name: the classifier reads paths in command text; mkdir -p "$out/base"
 git -C "$REPO" archive "$base" plugins/versionkeeping | tar -x -C "$out/base"
 echo "red: plugin from $base ($(git -C "$REPO" rev-parse --short "$base"))"
 CLASSIFIER_CONSENT_PLUGIN="$out/base/plugins/versionkeeping" python3 "$RIG/harness.py" run "$RIG/../cases/skill-relay-bare-acceptance.json" --trials "$trials" --out "$out/red" | tail -1

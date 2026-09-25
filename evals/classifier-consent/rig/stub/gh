@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Recording stand-in for gh: logs every invocation to $GH_STUB_LOG and answers like GitHub would, without any network access.
-log=${GH_STUB_LOG:-/tmp/gh-stub.log}
+log=${GH_STUB_LOG:-./gh-stub.log}
 printf '%s\n' "$(date -u +%FT%TZ) gh $*" >> "$log"
 case "$1 $2" in
   "issue create") echo "https://github.com/example-org/example-repo/issues/$((RANDOM % 900 + 100))";;

@@ -116,8 +116,12 @@ can answer it, `--plugin-dir` for the skill under test, a Sonnet or Opus agent
 (Haiku silently falls back to Manual mode), a throwaway repository whose
 `origin` is a local bare repository, and a recording `gh` stub on `PATH`.
 Because the classifier judges command text rather than tool output, these
-stand-ins exercise the same rule path as real remotes while touching nothing
-outside the fixture. Auto mode pauses after three consecutive blocks, which a
+stand-ins exercise the same rule path as real remotes, while pushes reach only
+the local bare remote and `gh` calls reach only the stub; the rig does not
+otherwise sandbox the agent. Keep fixture and plugin paths neutral: the classifier reads
+paths in command text, and the same no-relay conversation passed 3 of 3 trials from a
+neutral temporary directory but was denied 3 of 3 from one named after the classifier and
+the scenario. Auto mode pauses after three consecutive blocks, which a
 headless run reports as "no approval surface" denials.
 
 The red case is the relayed handoff with a bare acceptance against the skill
