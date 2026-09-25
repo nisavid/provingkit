@@ -128,8 +128,8 @@ The red case is the relayed handoff with a bare acceptance against the skill
 as it was; the green case is the same conversation against the skill with the
 rule. Against the loaded Versionkeeping skill (Claude Code 2.1.281, Sonnet 5),
 the red case drew a denial in 5 of 5 trials and the green case in 1 of 5, on a
-ticket command that Versionkeeping's rule does not cover. The rig lives at
-`evals/classifier-consent/`, with a red/green runner and the scripted
+`gh pr create` call that Versionkeeping's push rule does not cover. The rig
+lives at `evals/classifier-consent/`, with a red/green runner and the scripted
 calibration cases.
 
 ## Evidence

@@ -23,8 +23,8 @@ evals/classifier-consent/rig/run_red_green.sh main 5
 
 Red loads the plugin as committed at the given ref; green loads the working
 tree. Expect most red trials to draw a classifier denial and most green trials
-none; the residual green denials in observed runs were ticket commands that
-Versionkeeping's rule does not cover.
+none; the residual green denials in observed runs were `gh issue create` and
+`gh pr create` calls, which Versionkeeping's push rule does not cover.
 
 Any case runs alone:
 
