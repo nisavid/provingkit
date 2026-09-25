@@ -8,7 +8,7 @@
     "plugin.json": "d1833e0a8d23bac7c7c32bcf67880faf28af99e459d7fe57b9eaf33b7a95de29",
     "skills/choosing-agent-models/SKILL.md": "a9558867a1edc5576f013258823b6b62c32fddfbdccb6d7c995f95812371883d",
     "skills/choosing-agent-models/agents/openai.yaml": "e1a582079fe7cb2026f9fcbe1963f65c8c04622e8d9d2354b2e2242ba9f2d7c8",
-    "skills/choosing-agent-models/evals/evals.json": "df0032fe985e5e3b119ebd66bbf758ab932345e95bb45653cfc2c2c9cb777aaa",
+    "skills/choosing-agent-models/evals/evals.json": "5fd6392aac38ab2160aa0c43687d89c85b78cef29a9216595c63f50c47abfc54",
     "skills/choosing-agent-models/evals/fixtures/cursor-grok-consequential-review.md": "46dc1af6f7d99a2747042db30693714892dd2572b26cb712e11ec7af082e96c8",
     "skills/choosing-agent-models/evals/fixtures/daybreak-route-evidence.md": "f28be2161ed017e57105683f9bbc4c8a8bfa2492b32c46f5c508dda70a4edd87",
     "skills/choosing-agent-models/evals/fixtures/daybreak-routing-matrix.md": "17fa19b8267312b12bf9fb4de65d94e7489f39ab1393b82aed5ab5018fc28a4e",
