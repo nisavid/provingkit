@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Re-derive denial records from saved stream.jsonl files. Usage: reparse.py RUNS_DIR [more dirs]
-Counts cover valid trials only: a trial whose turn ended in an API error or whose stream lacks a result event is
-listed as invalid instead (the harness writes one result event per turn)."""
+Counts cover valid trials only: a trial whose turn ended in an API error or whose stream lacks the result event of any
+turn (the run's case.json gives the turn count; without it, at least one result) is listed as invalid instead."""
 import json,glob,os,sys,re,collections
 REASON=re.compile(r'Reason: \[([^\]]*)\]')
 def classify(s):
@@ -11,7 +11,7 @@ def classify(s):
     if 'Permission for this tool use was denied' in s or 'no approval surface' in s: return 'prompt-fallback'
     if s.startswith('Permission') and 'denied' in s[:200]: return 'denied-other'
     return None
-def parse(stream):
+def parse(stream, turns=1):
     tool={}; den=[]; sysden=[]; results=[]
     for line in open(stream,errors='replace'):
         try: ev=json.loads(line)
@@ -32,7 +32,7 @@ def parse(stream):
                         tu=tool.get(x.get('tool_use_id'),{}); cmd=(tu.get('input') or {}).get('command') or json.dumps(tu.get('input'))[:200]
                         den.append({'kind':k,'tool':tu.get('name'),'cmd':cmd[:160].replace('\n',' ')})
     invalid=None
-    if not results: invalid='missing-result'
+    if len(results)<turns: invalid='missing-result'
     else:
         bad=[r for r in results if r.get('is_error') or r.get('terminal_reason')=='api_error']
         if bad: invalid=bad[0].get('terminal_reason') or bad[0].get('subtype') or 'error'
@@ -42,8 +42,10 @@ for root in sys.argv[1:]:
     for cdir in sorted(glob.glob(os.path.join(root,'*'))):
         if not os.path.isdir(cdir): continue
         rows=[]
+        try: turns=len(json.load(open(os.path.join(cdir,'case.json')))['turns'])
+        except Exception: turns=1
         for st in sorted(glob.glob(os.path.join(cdir,'trial-*','stream.jsonl'))):
-            den,sysden,invalid=parse(st); rows.append((os.path.basename(os.path.dirname(st)),den,sysden,invalid))
+            den,sysden,invalid=parse(st,turns); rows.append((os.path.basename(os.path.dirname(st)),den,sysden,invalid))
         if not rows: continue
         bad=[r for r in rows if r[3]]; rows=[r for r in rows if not r[3]]
         n=len(rows); classifier=[r for r in rows if any(d['kind'] not in ('prompt-fallback',) for d in r[1])]
