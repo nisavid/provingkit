@@ -21,7 +21,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for skill in SKILLS
         }
 
-    def test_rolecasting_has_exactly_thirty_five_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_exactly_thirty_six_detailed_scenarios(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -47,6 +47,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "security-classes-and-fallbacks",
                 "thread-consent-state",
                 "general-tiers-and-preferences",
+                "provider-preference-target-reconsideration",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
@@ -457,9 +458,9 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "blocked-with-probe-evidence",
                 "no-unauthorized-authority-escalation",
                 "explicit-authorization-before-retry",
-                "reviewer-astra-high-default",
+                "reviewer-astra-xhigh",
                 "clerical-luna-separation",
-                "no-unproven-review-overescalation",
+                "no-review-effort-underfit-or-max",
                 "cursor-grok-high-fit",
                 "cursor-surface-proof",
                 "foreign-review-authority-preserved",

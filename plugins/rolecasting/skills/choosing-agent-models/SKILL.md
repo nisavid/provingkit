@@ -17,7 +17,7 @@ Own model and effort selection after [delegating-cross-agent-work](../delegating
 
 ## General Route Summary
 
-Use GPT-6 Sol or Claude Opus 5.5 for ordinary demanding work, GPT-6 Luna for bounded inexpensive-to-correct work, and proven Grok 4.7 where it fits. Prefer Claude for UI, UX, and visual design, and GPT for review, within the agreed target. Reserve GPT-6 Astra or Claude Fable 5.1 for work that is **both high-stakes and** needs a listed exceptional cognitive capability. Astra is the more economical exceptional option; Fable is reserved for the choicest beneficial deep work. Opus 5.5 permits `xhigh` or lower, or `ultracode` where supported, never `max`. Select a supported effort for each role's actual judgment.
+Use GPT-6 Sol or Claude Opus 5.5 for ordinary demanding work, GPT-6 Luna for bounded inexpensive-to-correct work, and proven Grok 4.7 where it fits. Prefer Claude for UI, UX, and visual design, and GPT for review. Before dispatch, recommend target reconsideration to the owning delegating workflow when an authorized other-provider route better fits; select there only after its plan changes. Preserve an operator-fixed or sole eligible target and disclose the preference limit. Reserve GPT-6 Astra or Claude Fable 5.1 for work that is **both high-stakes and** needs a listed exceptional cognitive capability. Astra is the more economical exceptional option; Fable is reserved for the choicest beneficial deep work. Opus 5.5 permits `xhigh` or lower, or `ultracode` where supported, never `max`. Select a supported effort for each role's actual judgment.
 
 ## Prove Target Capability
 

@@ -2,7 +2,7 @@
 
 Use these tiers only for work outside the three security classes after checking complete-operation Jev suitability. Select the lowest-cost proven pair preserving the assignment's judgment margin. Assess worker and orchestrator needs separately, including implementers, reviewers, writers, and integrators.
 
-GPT-6 Sol and Claude Opus 5.5 handle ordinary demanding work. Start precise, recoverable implementation, debugging, analysis, and focused tests on a supported Sol `low` pair when its judgment margin suffices; raise effort with task demands. Default an independent reviewer to Sol `high` when the review is consequential but lacks the exceptional high-stakes cognitive conjunction below. Prefer Claude for UI, UX, and visual design, and GPT for review. These preferences do not change a frozen worker target or grant dispatch authority.
+GPT-6 Sol and Claude Opus 5.5 handle ordinary demanding work. Start precise, recoverable implementation, debugging, analysis, and focused tests on a supported Sol `low` pair when its judgment margin suffices; raise effort with task demands. Default an independent reviewer to Sol `high` when the review is consequential but lacks the exceptional high-stakes cognitive conjunction below. Prefer Claude for UI, UX, and visual design, and GPT for review. Before dispatch, when an eligible and authorized other-provider target would satisfy the preference, recommend target reconsideration to the owning delegating workflow and wait for its revised plan before selecting on that target. Do not silently change the settled worker target. An explicitly operator-fixed target or the sole eligible target remains in force; choose its proven pair and disclose the preference limit.
 
 | Effort | Required judgment |
 | --- | --- |

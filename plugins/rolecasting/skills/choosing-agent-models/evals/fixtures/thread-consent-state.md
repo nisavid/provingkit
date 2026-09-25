@@ -7,8 +7,8 @@ current successful proof are proven where it is considered. The operator may
 revise a thread decision. No safety refusal is involved.
 
 A. The thread has never asked for non-Daybreak fallback. This investigation
-needs deep cognition. State the question and what may execute while it awaits
-an answer.
+needs deep cognition. State the redacted unavailability disclosure, the question,
+and what may execute while it awaits an answer.
 
 B. The question from A was asked, but the operator has not replied. Another
 continuation in the same thread arrives. State whether asking was permission.

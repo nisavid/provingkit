@@ -42,7 +42,7 @@ Local/private operational state may use account IDs, account-home identifiers, o
 
 ## Unavailable Daybreak Blue
 
-When no permitted Daybreak Blue route is genuinely runnable, record each route's reason and apply the following decision. Capability failure is distinct from a safety refusal; [diagnose a refusal](classifying-security-work.md#diagnose-a-block-or-refusal) before any fallback.
+When no permitted Daybreak Blue route is genuinely runnable, record each route's reason and tell the operator in redacted terms that Daybreak is unavailable and why before asking for fallback. Do not expose account bindings or identifiers. Then apply the following decision. Capability failure is distinct from a safety refusal; [diagnose a refusal](classifying-security-work.md#diagnose-a-block-or-refusal) before any fallback.
 
 - For **actual cybersecurity work**, ask once per thread whether the operator authorizes non-Daybreak fallback: proven Claude Fable 5.1 when the operation needs deep cognition, or proven Claude Opus 5.5 otherwise. Without that authorization, wait for Daybreak Blue.
 - For **obviously cybersecurity-related work with another primary domain**, automatically use that same proven fallback only when **security and other concerns are largely known, uncomplicated, and architecturally clear**. If any predicate fails, use the once-per-thread consent route and wait without authorization.
