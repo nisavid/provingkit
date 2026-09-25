@@ -1,6 +1,6 @@
 {
   "attestation": null,
-  "candidate_revision": "b5b460ab42033db37c51a06f09c0820a5592ceda",
+  "candidate_revision": "1fc147515eb37a359635919511fa382e57cf8611",
   "executor_model_id": "claude-opus-5-5",
   "grader_model_id": "gpt-6-sol",
   "kind": "evaluation",
@@ -31,7 +31,7 @@
         "sha256": "740e17694ff43711c2b191b2307923817d82e938d6c01d6586ffb869d2718355"
       }
     },
-    "revision": "b5b460ab42033db37c51a06f09c0820a5592ceda"
+    "revision": "1fc147515eb37a359635919511fa382e57cf8611"
   },
   "reconciliation": {
     "runtime_inputs": [
@@ -8377,7 +8377,7 @@
   "runs_per_case": 3,
   "schema_version": 1,
   "snapshot": {
-    "candidate_revision": "b5b460ab42033db37c51a06f09c0820a5592ceda",
+    "candidate_revision": "1fc147515eb37a359635919511fa382e57cf8611",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -8389,7 +8389,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "91c3253079d1774ad5f17d7636b4751b7b101fa0498d2e059168619c658d3f22"
+        "sha256": "f50d6c37575a7789a91c8eb8cdd16d8637ecaffa7155c02e2edd5c9721bd7624"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -8541,7 +8541,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "ca3f0356fdb64f421bb687f319f4327689f362cfdc2999adf8285f23dcf4225a"
+        "sha256": "288cb15436146e5d6d589a22e274f6a52d0cccea23ee28264d8848632a838a55"
       }
     },
     "schema_version": 1,
