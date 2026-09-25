@@ -151,6 +151,15 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 destination / "plugins" / member,
                 dirs_exist_ok=True,
             )
+        for member in (
+            "artifact-customs",
+            "mergecraft",
+            "tricritical",
+            "versionkeeping",
+        ):
+            for manifest in ("plugin.json", ".claude-plugin/plugin.json"):
+                relative = Path("plugins") / member / manifest
+                shutil.copy2(REPOSITORY / relative, destination / relative)
         for relative in (
             "scripts/run_task_witness_qualification.py",
             "scripts/validate_task_witness.py",
