@@ -156,7 +156,7 @@ class ValidateProseweavingTests(unittest.TestCase):
 
     def test_rejects_missing_release_heading(self) -> None:
         path = self.plugin / "CHANGELOG.md"
-        path.write_text(path.read_text().replace("## 1.0.0", "## Unreleased"))
+        path.write_text(path.read_text().replace("## 0.1.0-alpha.3", "## Unreleased"))
         self.assert_rejected("changelog release drift")
 
     def test_rejects_portability_leak(self) -> None:

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "proseweaving",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.3",
   "description": "Proseweaving: house standards and verification for agent-authored human-facing prose.",
   "author": {
     "name": "Ivan D Vasin",

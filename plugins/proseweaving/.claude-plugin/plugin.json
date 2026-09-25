@@ -1,7 +1,7 @@
 {
   "name": "proseweaving",
   "displayName": "Proseweaving",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.3",
   "description": "Proseweaving: house standards and verification for agent-authored human-facing prose.",
   "author": {
     "name": "Ivan D Vasin",

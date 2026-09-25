@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tricritical",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.3",
   "description": "Tricritical: independently planned intent, runtime, and structure critics, adjudication, authority-gated revision, and one fixed-point loop.",
   "author": {
     "name": "Ivan D Vasin",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "versionkeeping",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.3",
   "description": "Versionkeeping: safe Git checkpoints, conflict resolution, exact-lease publication, provenance-aware worktree cleanup, and history-preserving fork sync.",
   "author": {
     "name": "Ivan D Vasin",

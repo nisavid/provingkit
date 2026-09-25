@@ -322,7 +322,7 @@ class ValidateRolecastingTests(unittest.TestCase):
         self.assertEqual(set(manifest), CANONICAL_MANIFEST_KEYS)
         self.assertEqual(manifest["$schema"], AGENT_PLUGIN_SCHEMA)
         self.assertEqual(manifest["name"], "rolecasting")
-        self.assertEqual(manifest["version"], "1.0.0")
+        self.assertEqual(manifest["version"], "0.1.0-alpha.3")
         self.assertEqual(set(manifest["extensions"]), {"com.openai"})
         self.assertEqual(set(manifest["extensions"]["com.openai"]), {"interface"})
         self.assertFalse((self.plugin / ".codex-plugin").exists())

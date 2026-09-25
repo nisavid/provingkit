@@ -70,6 +70,9 @@ the digest before JSON decoding or repository access. Any byte change requires
 a fresh planner run and review; never recompute the trusted digest for an edited
 plan.
 
+Invoke the executor only after publication authority is bound as `SKILL.md`
+describes (Bind Publication Authority).
+
 The executor then requires the current destination remote, full ref, endpoint
 fingerprint, default-branch ref, config digest, expected lease, and immutable
 source SHA to match.

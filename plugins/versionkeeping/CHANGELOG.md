@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.3
+
+Local unpublished alpha candidate, 2026-09-25.
+
+- Require direct operator authority for publication after a relayed request, with the retained classifier-consent corpus and evaluation cases.
+
 ## 1.0.0
 
 Initial dual-harness release, 2026-07-20:

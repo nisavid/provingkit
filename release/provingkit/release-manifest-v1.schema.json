@@ -127,7 +127,7 @@
           "const": "artifact-customs"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.3"
         },
         "identity_manifests": {
           "properties": {
@@ -221,7 +221,7 @@
           "type": "object"
         },
         "version": {
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$",
           "type": "string"
         }
       },
@@ -254,7 +254,7 @@
           "const": "mergecraft"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.3"
         },
         "identity_manifests": {
           "properties": {
@@ -296,7 +296,7 @@
           "const": "rolecasting"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.3"
         },
         "identity_manifests": {
           "properties": {
@@ -338,7 +338,7 @@
           "const": "tricritical"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.3"
         },
         "identity_manifests": {
           "properties": {
@@ -380,7 +380,7 @@
           "const": "proseweaving"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.3"
         },
         "identity_manifests": {
           "properties": {
@@ -422,7 +422,7 @@
           "const": "versionkeeping"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.3"
         },
         "identity_manifests": {
           "properties": {

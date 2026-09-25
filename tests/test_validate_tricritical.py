@@ -254,7 +254,7 @@ class ValidateTricriticalTests(unittest.TestCase):
         canonical = json.loads((self.plugin_root / "plugin.json").read_text())
         self.assertEqual(canonical["$schema"], AGENT_PLUGIN_SCHEMA)
         self.assertEqual(canonical["name"], "tricritical")
-        self.assertEqual(canonical["version"], "1.0.0")
+        self.assertEqual(canonical["version"], "0.1.0-alpha.3")
         self.assertEqual(set(canonical["extensions"]), {"com.openai"})
         self.assertEqual(set(canonical["extensions"]["com.openai"]), {"interface"})
         self.assertFalse((self.plugin_root / ".codex-plugin").exists())

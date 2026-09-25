@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.3
+
+Local unpublished alpha candidate, 2026-09-25.
+
+- Carry the landed model-selection and delegation source and its reconciled ordinary behavior receipts into this local Kit candidate.
+
 ## Unreleased
 
 - Separate ordinary same-leader invocation plans and live selection records

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "rolecasting",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.3",
   "description": "Rolecasting: portable model selection and delegation topology for agent work.",
   "author": {
     "name": "Ivan D Vasin",

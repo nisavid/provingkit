@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.3
+
+Local unpublished alpha candidate, 2026-09-25.
+
+- Assign the local alpha.3 member identity while retaining the current writing source and evaluation corpus.
+
 ## Unreleased
 
 - Choose prose register and organization for the medium, purpose, and audience,

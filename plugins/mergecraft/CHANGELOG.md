@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.3
+
+Local unpublished alpha candidate, 2026-09-25.
+
+- Assign the local alpha.3 member identity; PR lifecycle source is unchanged.
+
 ## 1.0.0
 
 - Maintain evidenced Issue–PR contribution ledgers and Development links through

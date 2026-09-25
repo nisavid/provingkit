@@ -288,7 +288,7 @@ class ValidateMergecraftTests(unittest.TestCase):
 
         self.assertEqual(canonical["$schema"], AGENT_PLUGIN_SCHEMA)
         self.assertEqual(canonical["name"], "mergecraft")
-        self.assertEqual(canonical["version"], "1.0.0")
+        self.assertEqual(canonical["version"], "0.1.0-alpha.3")
         self.assertEqual(set(canonical["extensions"]), {"com.openai"})
         self.assertEqual(set(canonical["extensions"]["com.openai"]), {"interface"})
         self.assertFalse((self.plugin / ".codex-plugin").exists())

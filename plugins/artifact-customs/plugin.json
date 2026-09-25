@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "artifact-customs",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.3",
   "description": "Clear, adopt, maintain, replace, and retire exact third-party software components under explicit policy.",
   "author": {
     "name": "Ivan D Vasin",

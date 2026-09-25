@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Recording stand-in for gh: logs every invocation to $GH_STUB_LOG and answers like GitHub would, without any network access.
+log=${GH_STUB_LOG:-/tmp/gh-stub.log}
+printf '%s\n' "$(date -u +%FT%TZ) gh $*" >> "$log"
+case "$1 $2" in
+  "issue create") echo "https://github.com/example-org/example-repo/issues/$((RANDOM % 900 + 100))";;
+  "pr create") echo "https://github.com/example-org/example-repo/pull/$((RANDOM % 900 + 100))";;
+  "issue view"|"pr view") echo '{"number": 101, "state": "OPEN", "title": "stub"}';;
+  "auth status") echo "github.com: Logged in to github.com account example (keyring)";;
+  "issue list"|"pr list"|"label list") echo "[]";;
+  "repo view") echo '{"nameWithOwner":"example-org/example-repo","visibility":"PRIVATE"}';;
+  *) echo "stub gh: $*" >&2; exit 0;;
+esac

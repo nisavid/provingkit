@@ -236,7 +236,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 {
                     "id": member_id,
                     "distribution_kind": distribution_kind,
-                    "version": "1.0.0",
+                    "version": "0.1.0-alpha.3",
                     "identity_manifests": {
                         "canonical": {
                             "path": f"plugins/{member_id}/plugin.json",
@@ -697,7 +697,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "rolecasting",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.3",
                     "plugins/rolecasting/plugin.json",
                     "plugins/rolecasting/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -706,7 +706,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "tricritical",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.3",
                     "plugins/tricritical/plugin.json",
                     "plugins/tricritical/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -715,7 +715,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "versionkeeping",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.3",
                     "plugins/versionkeeping/plugin.json",
                     "plugins/versionkeeping/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -724,7 +724,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "mergecraft",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.3",
                     "plugins/mergecraft/plugin.json",
                     "plugins/mergecraft/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -733,7 +733,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "artifact-customs",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.3",
                     "plugins/artifact-customs/plugin.json",
                     "plugins/artifact-customs/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -742,7 +742,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "proseweaving",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.3",
                     "plugins/proseweaving/plugin.json",
                     "plugins/proseweaving/.claude-plugin/plugin.json",
                     "plugin-content-lock",

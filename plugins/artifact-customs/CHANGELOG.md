@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.3
+
+Local unpublished alpha candidate, 2026-09-25.
+
+- Assign the local alpha.3 member identity; component stewardship source is unchanged.
+
 ## 1.0.0 - 2026-07-22
 
 - Adopt Agent Plugins v1 as the canonical package, retain the Claude adapter,
