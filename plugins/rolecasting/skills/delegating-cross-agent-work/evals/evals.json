@@ -213,7 +213,7 @@
         },
         {
           "id": "controller-observed-classification",
-          "text": "Classifies the observed leader-controlled session as controller-observed and leader-owned.",
+          "text": "Classifies the independently running session as a leader-owned peer with controller-observed launch and result.",
           "severity": "quality"
         },
         {
@@ -429,7 +429,7 @@
         },
         {
           "id": "specialist-byte-stable-return",
-          "text": "Requires one exact byte-stable artifact with its identity, SHA-256 digest, assumptions, and remaining fog.",
+          "text": "Requires one exact byte-stable artifact with assumptions and remaining fog, and returns its identity and SHA-256 digest outside the artifact bytes for verification over those exact bytes.",
           "severity": "safety"
         },
         {

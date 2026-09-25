@@ -8,8 +8,10 @@ specialist dispatch.
 
 Require the specialist to return one exact byte-stable artifact, its artifact
 identity and SHA-256 digest, its assumptions and remaining fog. The returned
-bytes are the specialist's decision record. A summary is not
-a substitute for that artifact.
+bytes are the specialist's decision record. Return the artifact identity
+and SHA-256 digest alongside, outside the artifact bytes. Compute the digest
+over those exact bytes before attaching that metadata. A summary is not a
+substitute for that artifact.
 
 The cheaper coordinator owns discovery, setup, status, context assembly,
 waiting, exact-byte relay or separately authorized publication,
