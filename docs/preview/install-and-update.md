@@ -398,6 +398,18 @@ them. The CLI commands above have no installation-scope selector.
 Codex documents marketplace refs, plugin installation, and
 [reinstallation followed by a new task](https://github.com/openai/codex/blob/main/codex-rs/skills/src/assets/samples/plugin-creator/references/installing-and-updating.md).
 
+For a local one-off candidate, a `provingkit` catalog in the source
+repository can shadow another local installation with the same marketplace
+name when Codex has that repository in task context. Retain the builder's
+Agent Plugins target and root receipt unchanged. Derive a second local root
+whose `.agents/plugins/marketplace.json` changes only `name` to a distinct
+value such as `provingkit-local`; record a separate local projection receipt
+binding the original receipt digest, that catalog change, unchanged member
+payloads, and source commit. Use the distinct name for native registration,
+installation, and removal. Verify six installed payloads and fresh skill
+discovery both with and without the repository in task context. A different
+member version alone does not resolve a marketplace-name collision.
+
 ### Claude Code
 
 Use the verified extracted Claude target, retaining that
