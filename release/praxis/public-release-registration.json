@@ -3,6 +3,10 @@
   "schema_version": 1,
   "source_stage_validator_flags": [],
   "support_paths": [
+    "evals/praxis/constructing-agent-policies/README.md",
+    "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json",
+    "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json",
+    "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json",
     "release/plugin-content-locks/praxis.json",
     "tests/test_policy_eval_runner.py",
     "tests/test_validate_praxis.py"

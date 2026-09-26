@@ -15,6 +15,13 @@ VALIDATOR = ROOT / "scripts/validate_praxis.py"
 SKILL = "plugins/praxis/skills/constructing-agent-policies"
 LOCK = "release/plugin-content-locks/praxis.json"
 TESTS = ("tests/test_policy_eval_runner.py", "tests/test_validate_praxis.py")
+CORPUS_ROOT = "evals/praxis/constructing-agent-policies"
+CORPORA = (
+    f"{CORPUS_ROOT}/cases/201-pagerline-overnight-alerts.json",
+    f"{CORPUS_ROOT}/cases/202-temporary-data-export.json",
+    f"{CORPUS_ROOT}/cases/203-shared-drive-retention.json",
+)
+CORPUS_DOCS = (f"{CORPUS_ROOT}/README.md",)
 RESOURCES = (
     f"{SKILL}/SKILL.md",
     f"{SKILL}/references/policy-design.md",
@@ -36,6 +43,7 @@ class PraxisContractTests(unittest.TestCase):
             target = self.repo / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / relative, target)
+        shutil.copytree(ROOT / CORPUS_ROOT, self.repo / CORPUS_ROOT)
         (self.repo / LOCK).parent.mkdir(parents=True)
 
     def run_validator(self, *flags: str, repo: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -84,15 +92,32 @@ class PraxisContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("direct-child skill inventory drift", result.stderr)
 
-    def test_declared_corpus_directory_is_optional_until_its_contract_lands(self) -> None:
+    def test_declared_corpora_and_their_readme_are_locked(self) -> None:
         self.write_lock()
+        lock = json.loads((self.repo / LOCK).read_text())
+        self.assertEqual(set(lock["files"]) & set(CORPORA + CORPUS_DOCS), set(CORPORA + CORPUS_DOCS))
         self.assertEqual(self.run_validator().returncode, 0)
-        corpus = self.repo / "evals/praxis/constructing-agent-policies"
-        corpus.mkdir(parents=True)
-        (corpus / "case.json").write_text('{"scenarios":[]}\n')
+
+    def test_undeclared_corpus_file_is_rejected(self) -> None:
+        self.write_lock()
+        (self.repo / CORPUS_ROOT / "cases/204-extra.json").write_text('{"schema":"policy-eval-case-v1"}\n')
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("eval corpus inventory needs declaration", result.stderr)
+
+    def test_missing_declared_corpus_is_rejected(self) -> None:
+        self.write_lock()
+        (self.repo / CORPORA[0]).unlink()
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("eval corpus inventory needs declaration", result.stderr)
+
+    def test_corpus_must_be_a_policy_evaluation_case(self) -> None:
+        self.write_lock()
+        (self.repo / CORPORA[0]).write_text('{"scenarios":[]}\n')
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("eval corpus must be a policy-eval-case-v1 case", result.stderr)
 
     def test_lock_rejects_changed_source(self) -> None:
         self.write_lock()

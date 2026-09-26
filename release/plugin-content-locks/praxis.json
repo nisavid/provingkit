@@ -2,6 +2,22 @@
   "algorithm": "sha256",
   "contract": "praxis-content-lock-v1",
   "files": {
+    "evals/praxis/constructing-agent-policies/README.md": {
+      "mode": 420,
+      "sha256": "931be1ceb98a8862177c0b3ed2f72ce7971eeca41847ced1b3eae3eee4363273"
+    },
+    "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json": {
+      "mode": 420,
+      "sha256": "9168180abbbebbaf43da5a9a9da7c3edda77ee07d88a9edcda746ce66e67497d"
+    },
+    "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json": {
+      "mode": 420,
+      "sha256": "8a7649f7260f6f677bebcb5afd3c12cae43fe115d817120c0b0269718f6fcccb"
+    },
+    "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json": {
+      "mode": 420,
+      "sha256": "1cdf953cbc637d8c8ddc1748a564102db09ab9d0e827315f73fbadf1d9999ad4"
+    },
     "plugins/praxis/.claude-plugin/plugin.json": {
       "mode": 420,
       "sha256": "ec2a5da3fa0934309853e56e66063abac51616b708b232a87ba8cb7a21296113"
@@ -40,11 +56,11 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/gh_stub.py": {
       "mode": 420,
-      "sha256": "7c027600aa12a8f61188995269870e6980a6337b1dd8c2babcc7ffa64b9bbfd4"
+      "sha256": "3e0bfc36576b19b529ed70da25f8127e2ffa6a1e596882d6c71708761a3c1d51"
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "26c3c655c299f4bd89025be9512c4e32e8dcad8b6b4fd7cf32618bcceeb996b6"
+      "sha256": "4018e877e1ffe8e3ae76b0d4443e7f1caf29f0a77a3f52e12224edd5126e579b"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -52,11 +68,11 @@
     },
     "tests/test_policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "d3d3ebe825ddbecb7876f699ec0cd750e6750e0d2c82c4080413c8c8cec9af03"
+      "sha256": "ff85b3b40b11d494414d8e15270dd5efc12ec6e3d827bcf694053e7b10045463"
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,
-      "sha256": "738049c7cfb39e2229339a9bfe915f561b52374d1f6cf31f0ec238ea726c5335"
+      "sha256": "6b47e8fc598272310caa946f973427a9c5cc78e19cecc078b67a1ba3938ba526"
     }
   },
   "plugin_root": "plugins/praxis",

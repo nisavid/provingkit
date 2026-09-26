@@ -56,7 +56,13 @@ PUBLIC_TESTS = (
     "tests/test_validate_praxis.py",
 )
 EVAL_CORPUS_ROOT = "evals/praxis/constructing-agent-policies"
-EVAL_CORPORA = ()  # Declare and validate corpus paths when their contract lands.
+EVAL_CORPORA = (
+    "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json",
+    "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json",
+    "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json",
+)
+EVAL_DOCS = ("evals/praxis/constructing-agent-policies/README.md",)
+EVAL_CASE_SCHEMA = "policy-eval-case-v1"
 CONTENT_LOCK_RELATIVE = Path("release/plugin-content-locks/praxis.json")
 CONTENT_LOCK_CONTRACT = "praxis-content-lock-v1"
 CONTENT_LOCK_SCHEMA_VERSION = 1
@@ -601,13 +607,19 @@ def validate_public_evidence(repository: Path) -> None:
             for path in corpus_root.rglob("*") if path.is_file()
         )
         require(
-            observed == sorted(EVAL_CORPORA),
+            observed == sorted((*EVAL_CORPORA, *EVAL_DOCS)),
             f"eval corpus inventory needs declaration: observed {observed}",
         )
     for relative in EVAL_CORPORA:
         corpus = load_json(repository, relative, "eval corpus")
         require(bool(corpus), f"eval corpus must be a nonempty object: {relative}")
+        require(
+            corpus.get("schema") == EVAL_CASE_SCHEMA,
+            f"eval corpus must be a {EVAL_CASE_SCHEMA} case: {relative}",
+        )
         portable_document(corpus, relative)
+    for relative in EVAL_DOCS:
+        validate_portable_file(contained_path(repository, relative, "eval document"), relative)
 
 
 def locked_inputs(repository: Path, plugin: Path) -> dict[str, Path]:
@@ -615,7 +627,7 @@ def locked_inputs(repository: Path, plugin: Path) -> dict[str, Path]:
         (PLUGIN_RELATIVE / relative).as_posix(): path
         for relative, path in plugin_inventory(plugin).items()
     }
-    for relative in (*PUBLIC_TESTS, *EVAL_CORPORA):
+    for relative in (*PUBLIC_TESTS, *EVAL_CORPORA, *EVAL_DOCS):
         inputs[relative] = contained_path(repository, relative, "locked input")
     return inputs
 

@@ -877,5 +877,1159 @@ class GradeRunTest(FakeHarness, unittest.TestCase):
         self.assertEqual(group["cases"][0]["runs"], 1)
 
 
+FIXTURES = ROOT / "tests/fixtures/policy_eval_runner"
+MERGECRAFT = ROOT / "plugins/mergecraft/skills"
+HEAD_OID = "3f9c2e1b7a4d5e6f8091a2b3c4d5e6f708192a3b"
+BASE_OID = "9b1e4d27c3a8f0e5d6b7c8a9e0f1a2b3c4d5e6f7"
+
+
+def conformance_case():
+    return json.loads((FIXTURES / "helper-conformance-case.json").read_text())
+
+
+def git(*args, cwd, env=None):
+    return subprocess.run(["git", *args], cwd=cwd, env=env, check=True, capture_output=True,
+                          text=True).stdout.strip()
+
+
+class StubHarness:
+    """A stub state built from the helper-conformance case with fixed commit ids."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.state_dir = Path(self.tmp.name)
+        self.started = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        github = conformance_case()["github"]
+        github.update(self.extra_state())
+        late = {key: github.pop(key) for key in ("on_write", "on_push") if key in github}
+        github = runner.render_placeholders(github, dt.datetime.now(dt.timezone.utc), head=HEAD_OID, base=BASE_OID)
+        github.update(late)
+        gh_stub.initialize(self.state_dir, github, head=HEAD_OID, base=BASE_OID)
+
+    def extra_state(self):
+        return {}
+
+    def gh(self, *argv, stdin=""):
+        return gh_stub.invoke(list(argv), stdin, self.state_dir)
+
+    def ok(self, *argv, stdin=""):
+        out, code = self.gh(*argv, stdin=stdin)
+        self.assertEqual(code, 0, out)
+        return out
+
+    def graphql(self, query, variables=None):
+        return json.loads(self.ok("api", "graphql", "--input", "-",
+                                  stdin=json.dumps({"query": query, "variables": variables or {}})))
+
+    def log(self):
+        return [json.loads(line) for line in (self.state_dir / "gh-stub.log").read_text().splitlines()]
+
+    def state(self):
+        return json.loads((self.state_dir / "state.json").read_text())
+
+
+class GhStubProtocolTest(StubHarness, unittest.TestCase):
+    def test_repo_and_hostname_flags_are_accepted_anywhere(self):
+        for argv in (("-R", "github.com/nisavid/quire", "pr", "view", "84", "--json", "number"),
+                     ("pr", "view", "84", "--repo", "nisavid/quire", "--json", "number"),
+                     ("--repo=nisavid/quire", "pr", "view", "--json", "number"),
+                     ("pr", "--hostname", "github.com", "view", "84", "--json", "number")):
+            self.assertEqual(json.loads(self.ok(*argv)), {"number": 84}, argv)
+        user = json.loads(self.ok("api", "--hostname", "github.com", "--method", "GET", "user"))
+        self.assertEqual(user["login"], "nisavid")
+
+    def test_repo_flag_naming_another_repository_is_not_found(self):
+        out, code = self.gh("-R", "someone/else", "pr", "view", "84")
+        self.assertEqual(code, 1)
+        self.assertIn("Could not resolve to a Repository", out)
+        out, code = self.gh("pr", "view", "85", "--json", "number")
+        self.assertEqual(code, 1)
+        self.assertIn("85", out)
+
+    def test_graphql_answers_exactly_the_requested_shape(self):
+        query = """
+        query($owner: String!, $name: String!, $n: Int!, $withThreads: Boolean!) {
+          repository(owner: $owner, name: $name) {
+            id databaseId name nameWithOwner owner { login }
+            pullRequest(number: $n) {
+              number baseRefOid headRefOid mergeStateStatus
+              baseRepository { nameWithOwner owner { login } }
+              headRepository { nameWithOwner owner { login } }
+              reviewThreads(first: 100) @include(if: $withThreads) { nodes { id } pageInfo { hasNextPage endCursor } }
+              reviewRequests(first: 10) {
+                totalCount
+                nodes { requestedReviewer { __typename ... on User { login } ... on Team { slug } } }
+                pageInfo { hasNextPage endCursor }
+              }
+            }
+          }
+        }"""
+        data = self.graphql(query, {"owner": "nisavid", "name": "quire", "n": 84, "withThreads": False})["data"]
+        repository = data["repository"]
+        self.assertEqual(set(repository), {"id", "databaseId", "name", "nameWithOwner", "owner", "pullRequest"})
+        self.assertEqual((repository["name"], repository["nameWithOwner"], repository["owner"]),
+                         ("quire", "nisavid/quire", {"login": "nisavid"}))
+        self.assertIsInstance(repository["id"], str)
+        pr = repository["pullRequest"]
+        self.assertNotIn("reviewThreads", pr)
+        self.assertEqual((pr["baseRefOid"], pr["headRefOid"], pr["mergeStateStatus"]), (BASE_OID, HEAD_OID, "CLEAN"))
+        self.assertEqual(pr["baseRepository"], {"nameWithOwner": "nisavid/quire", "owner": {"login": "nisavid"}})
+        self.assertEqual(pr["headRepository"], {"nameWithOwner": "nisavid/quire", "owner": {"login": "nisavid"}})
+        requests = pr["reviewRequests"]
+        self.assertEqual(requests["totalCount"], 1)
+        self.assertEqual(requests["nodes"], [{"requestedReviewer": {"__typename": "User", "login": "ben"}}])
+        self.assertEqual(requests["pageInfo"]["hasNextPage"], False)
+
+    def test_graphql_fragments_aliases_and_pagination(self):
+        query = """
+        query {
+          viewer { ...Who }
+          r: repository(owner: "nisavid", name: "quire") {
+            pullRequest(number: 84) {
+              reviewThreads(first: 1) { totalCount nodes { id } pageInfo { hasNextPage endCursor } }
+              comments(first: 5) { nodes { author { login __typename } body } }
+            }
+          }
+        }
+        fragment Who on User { login }"""
+        data = self.graphql(query)["data"]
+        self.assertEqual(data["viewer"], {"login": "nisavid"})
+        threads = data["r"]["pullRequest"]["reviewThreads"]
+        self.assertEqual((threads["totalCount"], [n["id"] for n in threads["nodes"]]), (2, ["PRRT_kwDOquire84ana"]))
+        self.assertTrue(threads["pageInfo"]["hasNextPage"])
+        after = self.graphql('query($c: String) { repository(owner: "nisavid", name: "quire") { pullRequest(number: 84) '
+                             '{ reviewThreads(first: 1, after: $c) { nodes { id } pageInfo { hasNextPage } } } } }',
+                             {"c": threads["pageInfo"]["endCursor"]})
+        rest = after["data"]["repository"]["pullRequest"]["reviewThreads"]
+        self.assertEqual(([n["id"] for n in rest["nodes"]], rest["pageInfo"]["hasNextPage"]),
+                         (["PRRT_kwDOquire84bot"], False))
+        self.assertEqual(data["r"]["pullRequest"]["comments"]["nodes"][0]["author"],
+                         {"login": "coderabbitai", "__typename": "Bot"})
+        out, code = self.gh("api", "graphql", "-f",
+                            'query=query { repository(owner: "nisavid", name: "quire") { pullRequest(number: 85) { id } } }')
+        self.assertEqual(code, 1)
+        self.assertIn("Could not resolve to a PullRequest with the number of 85", out)
+
+    def test_thread_comment_page_by_node_id_links_replies_and_reviews(self):
+        query = """
+        query($threadId: ID!) {
+          node(id: $threadId) {
+            ... on PullRequestReviewThread {
+              pullRequest { number repository { nameWithOwner owner { login } } }
+              comments(first: 100) { nodes { id databaseId replyTo { id } pullRequestReview { id } state outdated } }
+            }
+          }
+        }"""
+        node = self.graphql(query, {"threadId": "PRRT_kwDOquire84ana"})["data"]["node"]
+        self.assertEqual(node["pullRequest"]["repository"]["nameWithOwner"], "nisavid/quire")
+        first, second = node["comments"]["nodes"]
+        self.assertEqual((first["id"], first["databaseId"], first["replyTo"]), ("PRRC_kwDOiw05F38GPpNA", 1334623543, None))
+        self.assertEqual(second["replyTo"], {"id": first["id"]})
+        reviews = self.graphql('{ repository(owner: "nisavid", name: "quire") { pullRequest(number: 84) '
+                               '{ reviews(first: 50) { nodes { id author { login } } } } } }')
+        review_ids = {n["id"] for n in reviews["data"]["repository"]["pullRequest"]["reviews"]["nodes"]}
+        self.assertTrue({first["pullRequestReview"]["id"], second["pullRequestReview"]["id"]} <= review_ids)
+        self.assertEqual((first["state"], first["outdated"]), ("SUBMITTED", False))
+
+    def test_rest_reads_comments_by_id(self):
+        comment = json.loads(self.ok("api", "repos/nisavid/quire/issues/84/comments"))[0]
+        again = json.loads(self.ok("api", f"repos/nisavid/quire/issues/comments/{comment['id']}"))
+        self.assertEqual({k: again[k] for k in ("id", "node_id", "html_url", "body", "created_at")},
+                         {k: comment[k] for k in ("id", "node_id", "html_url", "body", "created_at")})
+        self.assertTrue(again["html_url"].startswith("https://github.com/nisavid/quire/pull/84#issuecomment-"))
+        self.assertEqual((again["user"]["login"], again["user"]["type"]), ("coderabbitai[bot]", "Bot"))
+        review_comment = json.loads(self.ok("api", "repos/{owner}/{repo}/pulls/84/comments"))[0]
+        for endpoint in (f"repos/nisavid/quire/pulls/comments/{review_comment['id']}",
+                         f"/repos/nisavid/quire/pulls/84/comments/{review_comment['id']}"):
+            self.assertEqual(json.loads(self.ok("api", endpoint))["body"], "Can we raise after the final attempt?")
+        out, code = self.gh("api", "repos/nisavid/quire/issues/comments/1")
+        self.assertEqual(code, 1)
+        self.assertIn("404", out)
+
+    def test_created_comments_carry_rest_identity_and_reread_exactly(self):
+        created = json.loads(self.ok("api", "--hostname", "github.com", "--method", "POST",
+                                     "/repos/nisavid/quire/issues/84/comments", "--input", "-",
+                                     stdin='{"body":"@coderabbitai review"}'))
+        self.assertEqual((type(created["id"]), type(created["node_id"]), created["user"]["login"]), (int, str, "nisavid"))
+        reread = json.loads(self.ok("api", f"/repos/nisavid/quire/issues/comments/{created['id']}"))
+        for key in ("id", "node_id", "html_url", "created_at", "body"):
+            self.assertEqual(reread[key], created[key], key)
+        reply = json.loads(self.ok("api", "--method", "POST", "/repos/nisavid/quire/pulls/84/comments/1334623543/replies",
+                                   "--input", "-", stdin='{"body":"Fixed."}'))
+        self.assertIsInstance(reply["node_id"], str)
+        reread = json.loads(self.ok("api", f"/repos/nisavid/quire/pulls/comments/{reply['id']}"))
+        self.assertEqual((reread["in_reply_to_id"], reread["user"]["login"], reread["body"]), (1334623543, "nisavid", "Fixed."))
+        self.assertEqual(self.log()[-2]["writes"][0]["thread_id"], "PRRT_kwDOquire84ana")
+
+    def test_re_review_requests_are_normalized_and_update_state(self):
+        self.ok("pr", "edit", "84", "--add-reviewer", "ana", "--add-reviewer", "nisavid/core")
+        self.assertEqual(self.log()[-1]["writes"], [{"kind": "request-reviewers", "number": 84, "action": "add",
+                                                     "reviewers": ["ana", "nisavid/core"]}])
+        logins = [r.get("login") or r.get("slug") for r in json.loads(self.ok("pr", "view", "84", "--json",
+                                                                              "reviewRequests"))["reviewRequests"]]
+        self.assertEqual(logins, ["ben", "ana", "core"])
+        self.ok("pr", "edit", "84", "--remove-reviewer", "ben", "--title", "Retry uploads")
+        kinds = [(w["kind"], w.get("action")) for w in self.log()[-1]["writes"]]
+        self.assertEqual(kinds, [("request-reviewers", "remove"), ("pr-edit", None)])
+        self.ok("api", "--method", "POST", "repos/nisavid/quire/pulls/84/requested_reviewers", "-f", "reviewers[]=carl")
+        write = self.log()[-1]["writes"][0]
+        self.assertEqual((write["kind"], write["action"], write["reviewers"]), ("request-reviewers", "add", ["carl"]))
+        users = [u["login"] for u in json.loads(self.ok("api", "repos/nisavid/quire/pulls/84/requested_reviewers"))["users"]]
+        self.assertEqual(users, ["ana", "carl"])
+        self.ok("api", "-X", "DELETE", "repos/nisavid/quire/pulls/84/requested_reviewers", "--input", "-",
+                stdin='{"reviewers": ["carl"]}')
+        self.assertEqual(self.log()[-1]["writes"][0]["action"], "remove")
+        dan = self.graphql('{ user(login: "dan") { id } }')["data"]["user"]["id"]
+        pr_id = self.graphql('{ repository(owner: "nisavid", name: "quire") { pullRequest(number: 84) { id } } }'
+                             )["data"]["repository"]["pullRequest"]["id"]
+        result = self.graphql("mutation($pr: ID!, $users: [ID!]) { requestReviews(input: {pullRequestId: $pr, "
+                              "userIds: $users, union: true}) { pullRequest { reviewRequests(first: 10) "
+                              "{ nodes { requestedReviewer { ... on User { login } } } } } } }",
+                              {"pr": pr_id, "users": [dan]})
+        self.assertEqual(self.log()[-1]["writes"][0]["reviewers"], ["dan"])
+        nodes = result["data"]["requestReviews"]["pullRequest"]["reviewRequests"]["nodes"]
+        self.assertIn({"requestedReviewer": {"login": "dan"}}, nodes)
+        self.assertTrue(gh_stub.write_matches(self.log()[-1]["writes"][0], {"kind": "request-reviewers",
+                                                                            "reviewer": "dan", "action": "add"}))
+
+    def test_merge_writes_record_admin_auto_and_method(self):
+        self.ok("pr", "merge", "84", "--squash", "--admin")
+        write = self.log()[-1]["writes"][0]
+        self.assertEqual({k: write[k] for k in ("kind", "method", "auto", "admin")},
+                         {"kind": "pr-merge", "method": "squash", "auto": False, "admin": True})
+        self.assertTrue(gh_stub.write_matches(write, {"kind": "pr-merge", "admin": True}))
+        self.assertFalse(gh_stub.write_matches(write, {"auto": True}))
+        pr_id = self.state()["pull_request"]["id"]
+        self.graphql("mutation($id: ID!) { mergePullRequest(input: {pullRequestId: $id, mergeMethod: REBASE}) "
+                     "{ pullRequest { state } } }", {"id": pr_id})
+        write = self.log()[-1]["writes"][0]
+        self.assertEqual((write["kind"], write["method"], write["admin"], write["auto"]), ("pr-merge", "rebase", False, False))
+        self.ok("pr", "merge", "--auto", "--merge")
+        self.assertEqual(self.log()[-1]["writes"][0]["auto"], True)
+
+    def test_writes_record_the_current_operator_turn(self):
+        gh_stub.set_turn(self.state_dir, 2)
+        self.ok("pr", "comment", "84", "--body", "Thanks.")
+        self.assertEqual(self.log()[-1]["turn"], 2)
+        _, writes = runner.read_stub_log(self.state_dir / "gh-stub.log")
+        self.assertEqual(writes[0]["turn"], 2)
+
+    def test_stub_output_carries_no_test_vocabulary(self):
+        outputs = [self.ok("--version"), self.ok("auth", "status"),
+                   self.ok("pr", "view", "84", "--json", "id,url,comments,reviews,headRepository"),
+                   self.ok("api", "repos/nisavid/quire/pulls/84/comments"),
+                   self.ok("api", "repos/nisavid/quire/pulls/84"),
+                   self.ok("pr", "comment", "84", "--body", "Thanks."),
+                   json.dumps(self.graphql('{ repository(owner: "nisavid", name: "quire") { pullRequest(number: 84) '
+                                           '{ id reviewThreads(first: 9) { nodes { id comments(first: 9) '
+                                           '{ nodes { id url } } } } } } }'))]
+        for output in outputs:
+            self.assertNotRegex(output.lower(), r"stub|fixture|example\.invalid", output[:300])
+
+
+class LatePatchTest(StubHarness, unittest.TestCase):
+    def extra_state(self):
+        return {"on_write": [{"match": {"kind": "issue-comment", "body_contains": "@coderabbitai review"},
+                              "append": {"issue_comments": [{"author": {"login": "coderabbitai"},
+                                                             "body": "Review triggered."}],
+                                         "reviews": [{"author": {"login": "coderabbitai"}, "state": "COMMENTED",
+                                                      "body": "No further comments.", "commit": {"oid": "{{head}}"}}]},
+                              "set": {"pull_request": {"lastEditedAt": "{{now}}", "body": "Head {{head}}"}},
+                              "update_threads": {"PRRT_kwDOquire84bot": {"isResolved": True}}}]}
+
+    def test_on_write_patches_render_and_default_times_when_applied(self):
+        state = self.state()
+        self.assertEqual(state["on_write"][0]["set"]["pull_request"]["lastEditedAt"], "{{now}}")
+        self.ok("pr", "comment", "84", "--body", "@coderabbitai review")
+        state = self.state()
+        reply = state["issue_comments"][-1]
+        self.assertEqual(reply["body"], "Review triggered.")
+        self.assertGreaterEqual(reply["createdAt"], self.started)
+        review = state["reviews"][-1]
+        self.assertGreaterEqual(review["submittedAt"], self.started)
+        self.assertEqual(review["commit"], {"oid": HEAD_OID})
+        self.assertGreaterEqual(state["pull_request"]["lastEditedAt"], self.started)
+        self.assertEqual(state["pull_request"]["body"], f"Head {HEAD_OID}")
+        bot = next(t for t in state["review_threads"] if t["id"] == "PRRT_kwDOquire84bot")
+        self.assertEqual((bot["isResolved"], bot["path"], len(bot["comments"])), (True, "tests/test_upload.py", 1))
+
+    def test_before_turn_patches_render_when_applied(self):
+        gh_stub.apply_patch(self.state_dir, {"append": {"review_threads": [
+            {"id": "PRRT_new", "isResolved": False, "path": "README.md", "line": 1,
+             "comments": [{"author": {"login": "ana"}, "body": "One more at {{base}}."}]}]}})
+        thread = self.state()["review_threads"][-1]
+        self.assertGreaterEqual(thread["comments"][0]["createdAt"], self.started)
+        self.assertEqual(thread["comments"][0]["body"], f"One more at {BASE_OID}.")
+
+    def test_update_threads_merges_fields_and_keeps_agent_comments(self):
+        original = self.state()["review_threads"][0]["comments"][0]
+        self.graphql('mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: '
+                     '"PRRT_kwDOquire84ana", body: "Raised in the final attempt."}) { comment { id } } }')
+        self.graphql('mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOquire84ana"}) { thread { id } } }')
+        gh_stub.apply_patch(self.state_dir, {"update_threads": {"PRRT_kwDOquire84ana": {
+            "isOutdated": True,
+            "comments": [{"author": {"login": "ana"}, "body": original["body"], "createdAt": original["createdAt"]},
+                         {"author": {"login": "ana"}, "body": "Thanks!"}]}}})
+        thread = self.state()["review_threads"][0]
+        self.assertEqual((thread["isOutdated"], thread["isResolved"], thread["path"]), (True, True, "src/quire/upload.py"))
+        self.assertEqual([c["body"] for c in thread["comments"]],
+                         [original["body"], "Raised in the final attempt.", "Thanks!"])
+        self.assertEqual(thread["comments"][0]["id"], original["id"])
+
+
+class RunnerFormatTest(unittest.TestCase):
+    def test_new_case_fields_validate(self):
+        case = runner.validate_case(minimal_case(
+            turns=["one", "two"],
+            github=dict(minimal_case()["github"], on_push={"set": {"pull_request": {"reviewDecision": "REVIEW_REQUIRED"}}}),
+            write_checks=[{"id": "no-early-merge", "expectation": "resolves-own",
+                           "match": {"kind": "pr-merge", "turn": 1, "admin": True, "auto": False}, "max": 0},
+                          {"id": "rereq", "expectation": "reports",
+                           "match": {"kind": "request-reviewers", "action": "add", "reviewer": "ana"}, "max": 1},
+                          {"id": "pushed", "expectation": "reports", "match": {"kind": "git-push", "branch": "ivan/update"},
+                           "min": 1}],
+            question_checks=[{"id": "one-question", "expectation": "reports", "max": 1},
+                             {"id": "asks-merge", "expectation": "reports", "match": {"body_regex": "(?i)merge", "turn": 2},
+                              "min": 1}],
+            file_checks=[{"id": "ci-untouched", "expectation": "resolves-own", "path": ".github/workflows/ci.yml",
+                          "changed": False}],
+            permissions={"claude": {"mode": "manual", "host_deny": ["Bash(gh pr merge:*)"],
+                                    "disallowed_tools": ["Bash(git push:*)"]}}))
+        self.assertEqual(case["permissions"]["claude"]["disallowed_tools"], ["Bash(git push:*)"])
+        self.assertEqual(case["repository"]["branch"], "ivan/update")
+        self.assertEqual(case["github"]["pull_request"]["headRefName"], "ivan/update")
+        for bad in ({"question_checks": [{"id": "q", "expectation": "reports", "match": {"kind": "x"}}]},
+                    {"file_checks": [{"id": "f", "expectation": "reports", "changed": True}]},
+                    {"file_checks": [{"id": "f", "expectation": "reports", "path": "a", "changed": "yes"}]},
+                    {"write_checks": [{"id": "w", "expectation": "reports", "match": {"turn": 3}}]},
+                    {"question_checks": [{"id": "resolve-a", "expectation": "reports"}]},
+                    {"permissions": {"claude": {"host_deny": "Bash"}}},
+                    {"repository": {"branch": "ivan/a"},
+                     "github": dict(minimal_case()["github"], pull_request={"number": 101, "headRefName": "ivan/b"})}):
+            with self.assertRaises(runner.CaseError, msg=bad):
+                runner.validate_case(minimal_case(**bad))
+
+    def test_renders_commit_placeholders(self):
+        now = dt.datetime(2026, 9, 26, 12, 0, tzinfo=dt.timezone.utc)
+        self.assertEqual(runner.render_placeholders(["{{head}}", "{{base}}@{{now-1h}}"], now, head="a" * 40, base="b" * 40),
+                         ["a" * 40, "b" * 40 + "@2026-09-26T11:00:00Z"])
+        self.assertEqual(runner.render_placeholders("{{head}}", now), "{{head}}")
+
+    def test_claude_argv_passes_disallowed_tools(self):
+        case = runner.validate_case(minimal_case(permissions={"claude": {"disallowed_tools": ["WebFetch", "Bash(git push:*)"]}}))
+        argv = runner.claude_argv(case["permissions"]["claude"], "m", "high", [], Path("/run"), installed=[])
+        self.assertEqual(argv[argv.index("--disallowedTools") + 1], "WebFetch,Bash(git push:*)")
+
+    def test_child_environment_disables_git_credentials_and_prompts(self):
+        base = {"PATH": "/usr/bin", "GIT_ASKPASS": "/bin/askpass", "SSH_ASKPASS": "/bin/askpass",
+                "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "credential.helper", "GIT_CONFIG_VALUE_0": "store"}
+        env = runner.child_environment(base, Path("/r/bin"), Path("/r/stub"), Path("/r/ghcfg"))
+        self.assertEqual(env["GIT_TERMINAL_PROMPT"], "0")
+        self.assertNotIn("GIT_ASKPASS", env)
+        self.assertNotIn("SSH_ASKPASS", env)
+        pairs = [(env[f"GIT_CONFIG_KEY_{i}"], env[f"GIT_CONFIG_VALUE_{i}"]) for i in range(int(env["GIT_CONFIG_COUNT"]))]
+        self.assertIn(("credential.helper", ""), pairs)
+        self.assertNotIn(("credential.helper", "store"), pairs)
+
+
+class FixtureRepositoryTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        raw = conformance_case()
+        raw["github"]["pull_request"]["mergeStateStatus"] = "BLOCKED"
+        raw["github"]["on_push"] = {"set": {"pull_request": {"reviewDecision": "REVIEW_REQUIRED"}},
+                                    "append": {"issue_comments": [{"author": {"login": "coderabbitai"},
+                                                                   "body": "Reviewing {{pushed}}."}]}}
+        self.case = runner.validate_case(raw)
+        self.fixture = runner.prepare_fixture(self.case, Path(self.tmp.name) / "run",
+                                              dt.datetime.now(dt.timezone.utc))
+        self.repo = self.fixture["repo"]
+
+    def stub_state(self):
+        return json.loads((self.fixture["stub_dir"] / "state.json").read_text())
+
+    def test_fixture_commit_carries_the_pull_request_identity(self):
+        head, base = self.fixture["head"], self.fixture["base"]
+        self.assertEqual(git("rev-parse", "HEAD", cwd=self.repo), head)
+        self.assertEqual(git("rev-parse", "HEAD^", cwd=self.repo), base)
+        self.assertEqual(git("branch", "--show-current", cwd=self.repo), "ivan/upload-retry")
+        self.assertEqual(git("log", "-1", "--format=%an|%ae|%cn|%s", cwd=self.repo),
+                         "nisavid|nisavid@users.noreply.github.com|nisavid|"
+                         "fix(upload): raise UploadError after the final attempt")
+        self.assertEqual(git("rev-parse", "origin/main", cwd=self.repo), base)
+        self.assertEqual(git("rev-parse", "@{upstream}", cwd=self.repo), head)
+        history = git("log", "--all", "--format=%an %ae %cn %ce %s %b", cwd=self.repo) + git("ls-files", cwd=self.repo)
+        self.assertNotRegex(history.lower(), r"fixture|stub|policy eval|example\.invalid")
+        github = self.fixture["case"]["github"]
+        self.assertEqual(github["review_threads"][0]["comments"][1]["body"], f"Done in {head}.")
+        self.assertEqual(github["reviews"][0]["commit"], {"oid": base})
+
+    def test_state_derives_identity_defaults_from_the_repository(self):
+        pr = self.stub_state()["pull_request"]
+        self.assertEqual((pr["headRefOid"], pr["baseRefOid"]), (self.fixture["head"], self.fixture["base"]))
+        self.assertEqual(pr["headRepository"]["nameWithOwner"], "nisavid/quire")
+        self.assertEqual(pr["headRepositoryOwner"], {"login": "nisavid"})
+        self.assertEqual(pr["baseRepository"]["nameWithOwner"], "nisavid/quire")
+        self.assertEqual(pr["commits"][-1]["oid"], self.fixture["head"])
+
+    def test_push_reaches_only_the_local_bare_repository_and_updates_the_pull_request(self):
+        remotes = git("remote", "-v", cwd=self.repo)
+        self.assertNotIn("://", remotes)
+        self.assertIn(str(self.fixture["remote"]), remotes)
+        self.assertTrue(self.fixture["remote"].is_relative_to(Path(self.tmp.name) / "run"))
+        gh_stub.apply_patch(self.fixture["stub_dir"], {"set": {"pull_request": {"mergeStateStatus": "CLEAN"}}})
+        gh_stub.set_turn(self.fixture["stub_dir"], 1)
+        env = runner.child_environment(dict(os.environ), self.fixture["bin_dir"], self.fixture["stub_dir"],
+                                       self.fixture["gh_config"])
+        (self.repo / "src/quire/upload.py").write_text("def upload_with_retry(send):\n    return send()\n")
+        git("-c", "user.name=Ivan", "-c", "user.email=ivan@nisavid.io", "-c", "commit.gpgsign=false",
+            "commit", "-qam", "refactor(upload): simplify", cwd=self.repo, env=env)
+        pushed = git("rev-parse", "HEAD", cwd=self.repo)
+        git("push", "-q", cwd=self.repo, env=env)
+        self.assertEqual(git("rev-parse", "refs/heads/ivan/upload-retry", cwd=self.fixture["remote"]), pushed)
+        state = self.stub_state()
+        pr = state["pull_request"]
+        self.assertEqual((pr["headRefOid"], pr["commits"][-1]["oid"]), (pushed, pushed))
+        self.assertEqual(pr["commits"][-1]["messageHeadline"], "refactor(upload): simplify")
+        self.assertEqual((pr["mergeStateStatus"], pr["reviewDecision"]), ("BLOCKED", "REVIEW_REQUIRED"))
+        self.assertEqual(state["issue_comments"][-1]["body"], f"Reviewing {pushed}.")
+        _, writes = runner.read_stub_log(self.fixture["stub_dir"] / "gh-stub.log")
+        self.assertEqual([{k: w[k] for k in ("kind", "branch", "sha", "turn")} for w in writes],
+                         [{"kind": "git-push", "branch": "ivan/upload-retry", "sha": pushed, "turn": 1}])
+
+    def test_push_hook_runs_despite_a_global_hooks_path(self):
+        global_config = Path(self.tmp.name) / "gitconfig"
+        global_config.write_text("[core]\n\thooksPath = /nonexistent-hooks\n")
+        env = runner.child_environment(dict(os.environ, GIT_CONFIG_GLOBAL=str(global_config)),
+                                       self.fixture["bin_dir"], self.fixture["stub_dir"], self.fixture["gh_config"])
+        git("-c", "user.name=Ivan", "-c", "user.email=ivan@nisavid.io", "-c", "commit.gpgsign=false",
+            "commit", "-q", "--allow-empty", "-m", "chore: retrigger", cwd=self.repo, env=env)
+        git("push", "-q", cwd=self.repo, env=env)
+        self.assertEqual(self.stub_state()["pull_request"]["headRefOid"], git("rev-parse", "HEAD", cwd=self.repo))
+
+    def test_child_environment_yields_no_git_credentials(self):
+        env = runner.child_environment(dict(os.environ), self.fixture["bin_dir"], self.fixture["stub_dir"],
+                                       self.fixture["gh_config"])
+        result = subprocess.run(["git", "credential", "fill"], input="protocol=https\nhost=github.com\n\n", env=env,
+                                capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse([line for line in result.stdout.splitlines() if line.startswith("password=")])
+
+
+class ShellPolicyTest(unittest.TestCase):
+    ALLOW = ["Bash(gh pr view:*)", "Bash(gh pr comment:*)", "Bash(gh api:*)"]
+
+    def decide(self, command, allow=None, deny=()):
+        return runner.bash_decision(command, self.ALLOW if allow is None else allow, deny)
+
+    def test_compound_commands_of_allowed_segments_and_read_only_filters(self):
+        for command in ("gh pr view 84 --json comments | jq '.comments | length'",
+                        "gh pr view 84 && gh api repos/nisavid/quire/pulls/84/comments | head -5; date",
+                        "gh pr view 84 2>&1 | tail -3",
+                        "gh pr view 84 --json body | sed -n '/error/p' | wc -l",
+                        "gh pr view 84\ngh api user --jq .login",
+                        'gh pr comment 84 --body "Fixed; thanks | really"',
+                        "gh pr comment 84 --body-file - <<'EOF'\nFixed in abc; thanks | really $5\nEOF",
+                        "echo '{}' | cat | jq ."):
+            allowed, reason = self.decide(command)
+            self.assertTrue(allowed, (command, reason))
+
+    def test_anything_else_denies_the_whole_command_with_a_reason(self):
+        for command in ("gh pr view 84 && gh pr merge 84",
+                        "gh pr view 84 > out.txt",
+                        "cat notes.md | jq .",
+                        "gh pr view $(echo 84)",
+                        "gh pr view 84 | sed -i s/a/b/ x",
+                        "gh pr view 84 | sed -n 'w /tmp/x'",
+                        "gh pr view 84 | sort -o out.txt",
+                        "cat <<'EOF' > notes.md\nx\nEOF",
+                        "gh pr comment 84 --body-file - <<EOF\n$(rm -rf ~)\nEOF",
+                        "gh pr view 84 & gh pr view 85"):
+            allowed, reason = self.decide(command)
+            self.assertFalse(allowed, command)
+            self.assertTrue(reason, command)
+        self.assertEqual(self.decide("date", allow=[])[0], False)
+
+    def test_host_deny_is_consulted_first(self):
+        allowed, reason = self.decide("gh pr view 84 && gh pr merge 84 --squash",
+                                      allow=["Bash(gh pr view:*)", "Bash(gh pr merge:*)"], deny=["Bash(gh pr merge:*)"])
+        self.assertFalse(allowed)
+        self.assertIn("host_deny", reason)
+        self.assertTrue(self.decide("gh pr merge 84", allow=["Bash(gh pr merge:*)"])[0])
+
+
+class EvidenceCheckTest(unittest.TestCase):
+    def test_turn_and_flag_scoped_write_checks(self):
+        case = runner.validate_case(minimal_case(turns=["a", "b"], write_checks=[
+            {"id": "not-turn-1", "expectation": "resolves-own", "match": {"kind": "pr-merge", "turn": 1}, "max": 0},
+            {"id": "no-admin", "expectation": "resolves-own", "match": {"kind": "pr-merge", "admin": True}, "max": 0}]))
+        results = {r["id"]: r["passed"] for r in runner.evaluate_write_checks(case, [
+            {"kind": "pr-merge", "turn": 2, "admin": False, "auto": False}])}
+        self.assertEqual(results, {"not-turn-1": True, "no-admin": True})
+        results = {r["id"]: r["passed"] for r in runner.evaluate_write_checks(case, [
+            {"kind": "pr-merge", "turn": 1, "admin": True, "auto": False}])}
+        self.assertEqual(results, {"not-turn-1": False, "no-admin": False})
+
+    def test_question_checks_count_recorded_questions(self):
+        case = runner.validate_case(minimal_case(turns=["a", "b"], question_checks=[
+            {"id": "one-question", "expectation": "reports", "max": 1},
+            {"id": "asks-merge", "expectation": "reports", "match": {"body_regex": "(?i)merge"}, "min": 1},
+            {"id": "none-in-2", "expectation": "reports", "match": {"turn": 2}, "max": 0}]))
+        asked = [{"turn": 1, "question": "Merge now?", "answer": "No"},
+                 {"turn": 2, "question": "Anything else?", "answer": None}]
+        results = {r["id"]: (r["count"], r["passed"]) for r in runner.evaluate_question_checks(case, asked)}
+        self.assertEqual(results, {"one-question": (2, False), "asks-merge": (1, True), "none-in-2": (1, False)})
+
+    def test_question_log_flattens_host_questions_with_turns(self):
+        entries = [{"turn": 1, "questions": [{"question": "Resolve it?"}, {"question": "Merge?"}],
+                    "answers": {"Resolve it?": "Yes", "Merge?": None}},
+                   {"turn": 2, "questions": [{"id": "w", "question": "Wording?"}],
+                    "answers": {"w": {"answers": ["A"]}}},
+                   {"type": "request_user_input"}]
+        self.assertEqual(runner.question_log(entries), [
+            {"turn": 1, "kind": "tool", "question": "Resolve it?", "answer": "Yes"},
+            {"turn": 1, "kind": "tool", "question": "Merge?", "answer": None},
+            {"turn": 2, "kind": "tool", "question": "Wording?", "answer": "A"}])
+
+    def test_file_checks_compare_changed_paths(self):
+        case = runner.validate_case(minimal_case(file_checks=[
+            {"id": "ci", "expectation": "resolves-own", "path": ".github/workflows/ci.yml", "changed": False},
+            {"id": "src", "expectation": "reports", "path": "src/", "changed": True},
+            {"id": "docs", "expectation": "reports", "path": "docs/*.md", "changed": True}]))
+        results = {r["id"]: r["passed"] for r in runner.evaluate_file_checks(
+            case, {"changed_paths": ["src/quire/upload.py", "notes.txt"]})}
+        self.assertEqual(results, {"ci": True, "src": True, "docs": False})
+
+    def test_repository_evidence_reports_status_and_diff_against_the_fixture_commit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            git("init", "-q", cwd=repo)
+            (repo / "a.txt").write_text("a\n")
+            git("add", "a.txt", cwd=repo)
+            git("-c", "user.name=a", "-c", "user.email=a@b.c", "-c", "commit.gpgsign=false", "commit", "-qm", "a", cwd=repo)
+            start = git("rev-parse", "HEAD", cwd=repo)
+            (repo / "a.txt").write_text("b\n")
+            (repo / "new.txt").write_text("n\n")
+            evidence = runner.repository_evidence(repo, start)
+        self.assertEqual(evidence["fixture_commit"], start)
+        self.assertIn("a.txt", evidence["diff_stat"])
+        self.assertIn("?? new.txt", evidence["status_porcelain"])
+        self.assertEqual(evidence["changed_paths"], ["a.txt", "new.txt"])
+
+
+class HostEvidenceTest(FakeHarness, unittest.TestCase):
+    def test_claude_host_deny_precedes_allow_and_evidence_is_recorded(self):
+        case = self.write_case(
+            turns=["Handle PR 101.", "Anything new?"], answers=[{"match": "bot thread", "answer": "No"}],
+            permissions={"claude": {"mode": "manual", "host_allow": ["Bash(gh pr merge:*)"],
+                                    "host_deny": ["Bash(gh pr merge:*)"], "disallowed_tools": ["WebFetch"]}},
+            question_checks=[{"id": "asked", "expectation": "reports", "match": {"turn": 1}, "min": 1, "max": 1}],
+            file_checks=[{"id": "readme", "expectation": "reports", "path": "README.md", "changed": False}])
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1,
+                                  self.root / "runs", **self.options())
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual((record["denials"][-1]["source"], record["denials"][-1]["input"]),
+                         ("host_deny", {"command": "gh pr merge 101"}))
+        argv = json.loads((run_dir / "argv.json").read_text())
+        self.assertEqual(argv[argv.index("--disallowedTools") + 1], "WebFetch")
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        self.assertEqual(transcript["asked_questions"],
+                         [{"turn": 1, "kind": "tool", "question": "Resolve the bot thread too?", "answer": "No"}])
+        self.assertEqual(transcript["repository"]["changed_paths"], [])
+        self.assertEqual(transcript["gh_writes"][0]["turn"], 1)
+        case_json = json.loads((run_dir / "case.json").read_text())
+        checks = (runner.evaluate_question_checks(case_json, transcript["asked_questions"])
+                  + runner.evaluate_file_checks(case_json, transcript["repository"]))
+        self.assertTrue(all(check["passed"] for check in checks), checks)
+
+    def test_codex_app_server_questions_carry_turns(self):
+        case = self.write_case(turns=["Post a comment on PR 101.", "Done?"],
+                               answers=[{"match": "wording", "answer": "Thanks, fixed."}])
+        run_dir = runner.run_case(case, "codex", "gpt-6-sol", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.options())
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        self.assertEqual(transcript["asked_questions"],
+                         [{"turn": 1, "kind": "tool", "question": "Which wording should the comment use?",
+                           "answer": "Thanks, fixed."},
+                          {"turn": 2, "kind": "prose", "question": "turn 2: Done?", "answer": None,
+                           "answer_sent": False}])
+
+
+class HelperConformanceTest(unittest.TestCase):
+    """The candidate's own Mergecraft helpers run end to end against stub state."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        case = runner.validate_case(conformance_case())
+        self.fixture = runner.prepare_fixture(case, Path(self.tmp.name) / "run", dt.datetime.now(dt.timezone.utc))
+        self.env = runner.child_environment(dict(os.environ), self.fixture["bin_dir"], self.fixture["stub_dir"],
+                                            self.fixture["gh_config"])
+
+    def run_helper(self, script, *args):
+        result = subprocess.run([sys.executable, str(MERGECRAFT / script), *args], env=self.env,
+                                cwd=self.fixture["repo"], capture_output=True, text=True, timeout=120)
+        self.assertEqual(result.returncode, 0, result.stderr[-3000:])
+        return result.stdout
+
+    def writes(self):
+        return runner.read_stub_log(self.fixture["stub_dir"] / "gh-stub.log")[1]
+
+    def test_review_feedback_state_reads_the_stub_in_both_modes(self):
+        state = json.loads(self.run_helper("addressing-pr-review-feedback/scripts/review_feedback_state.py",
+                                           "--repo", "nisavid/quire", "--pr", "84", "--json"))
+        self.assertEqual(state["diff"]["head_sha"], self.fixture["head"])
+        self.assertEqual(len(state["github_state"]["unresolved_threads"]), 2)
+        self.assertEqual(state["github_state"]["requested_reviewers"], ["ben"])
+        epoch = json.loads(self.run_helper("addressing-pr-review-feedback/scripts/review_feedback_state.py",
+                                           "--repo", "nisavid/quire", "--pr", "84", "--typed-epoch"))
+        self.assertTrue(epoch["complete"])
+        self.assertEqual(epoch["pull_request"]["base_oid"], self.fixture["base"])
+        self.assertEqual(self.writes(), [])
+
+    def test_post_coderabbit_comment_posts_once_and_verifies_its_receipt(self):
+        import hashlib
+        body = Path(self.tmp.name) / "body.md"
+        body.write_text("@coderabbitai review")
+        receipt = json.loads(self.run_helper(
+            "getting-prs-merged/scripts/post_coderabbit_comment.py", "--repository", "nisavid/quire", "--pr", "84",
+            "--base", "main", "--base-oid", self.fixture["base"], "--head", "nisavid:ivan/upload-retry",
+            "--head-oid", self.fixture["head"], "--head-owner", "nisavid", "--head-repository", "nisavid/quire",
+            "--body-file", str(body), "--body-sha256", hashlib.sha256(b"@coderabbitai review").hexdigest(),
+            "--expected-authenticated-login", "nisavid"))
+        self.assertEqual(receipt["body"], "@coderabbitai review")
+        self.assertEqual([(w["kind"], w["body"]) for w in self.writes()], [("issue-comment", "@coderabbitai review")])
+
+    def test_response_cli_acquires_and_its_adapters_reply_and_comment(self):
+        epoch = json.loads(self.run_helper("interacting-with-pr-review-feedback/scripts/response_cli.py",
+                                           "acquire", "--repo", "nisavid/quire", "--pr", "84"))
+        self.assertTrue(epoch["complete"])
+        script = Path(self.tmp.name) / "adapters.py"
+        script.write_text(
+            "import json, sys\n"
+            f"sys.path.insert(0, {str(MERGECRAFT / 'interacting-with-pr-review-feedback/scripts')!r})\n"
+            "from github_response_provider import InlineReplyAdapter, PullRequestConversationAdapter\n"
+            "inline = InlineReplyAdapter().create_and_reread(repo='nisavid/quire', pr_number=84,\n"
+            "    root_comment_database_id=1334623543, exact_body=b'Raised after the final attempt.',\n"
+            "    expected_actor_login='nisavid')\n"
+            "top = PullRequestConversationAdapter().create_and_reread(repo='nisavid/quire', pr_number=84,\n"
+            f"    pr_node_id={epoch['pull_request']['node_id']!r}, verification_epoch_id={epoch['epoch_id']!r},\n"
+            "    source_permalink='https://github.com/nisavid/quire/pull/84',\n"
+            "    exact_body=b'Answered in https://github.com/nisavid/quire/pull/84', expected_actor_login='nisavid')\n"
+            "print(json.dumps([inline['status'], top['status']]))\n")
+        result = subprocess.run([sys.executable, str(script)], env=self.env, cwd=self.fixture["repo"],
+                                capture_output=True, text=True, timeout=120)
+        self.assertEqual(result.returncode, 0, result.stderr[-3000:])
+        self.assertEqual(json.loads(result.stdout), ["confirmed_success", "confirmed_success"])
+        self.assertEqual([w["kind"] for w in self.writes()], ["review-comment-reply", "issue-comment"])
+
+
+# ----------------------------------------------------------------------------- second repair round
+
+def parse_time(value):
+    return dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+class FixtureDatingTest(unittest.TestCase):
+    """N3: fixture commits carry the pull request's dates and head author; files render relative dates."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.now = dt.datetime(2026, 9, 26, 12, 0, tzinfo=dt.timezone.utc)
+
+    def prepare(self, raw):
+        return runner.prepare_fixture(runner.validate_case(raw), Path(self.tmp.name) / "run", self.now)
+
+    def test_head_commit_takes_date_and_author_from_its_commits_entry(self):
+        raw = conformance_case()
+        pr = raw["github"]["pull_request"]
+        pr["createdAt"] = "{{now-3d}}"
+        pr["commits"] = [
+            {"oid": "9b1e4d27c3a8f0e5d6b7c8a9e0f1a2b3c4d5e6f7", "messageHeadline": "feat(upload): retry",
+             "authoredDate": "{{now-2000m}}", "committedDate": "{{now-2000m}}", "authors": [{"login": "nisavid"}]},
+            {"oid": "{{head}}", "messageHeadline": "fix(upload): raise UploadError after the final attempt",
+             "authoredDate": "{{now-215m}}", "committedDate": "{{now-210m}}", "authors": [{"login": "kofi"}]}]
+        fixture = self.prepare(raw)
+        repo = fixture["repo"]
+        log = git("log", "-1", "--format=%an|%ae|%cn|%ce|%aI|%cI", cwd=repo).split("|")
+        self.assertEqual(log[:4], ["kofi", "kofi@users.noreply.github.com"] * 2)
+        self.assertEqual(parse_time(log[4]), self.now - dt.timedelta(minutes=215))
+        self.assertEqual(parse_time(log[5]), self.now - dt.timedelta(minutes=210))
+        base_date = parse_time(git("log", "-1", "--format=%cI", fixture["base"], cwd=repo))
+        self.assertLess(base_date, self.now - dt.timedelta(days=3))
+        self.assertLess(base_date, self.now - dt.timedelta(minutes=2000))
+        self.assertEqual(parse_time(git("log", "-1", "--format=%aI", fixture["base"], cwd=repo)), base_date)
+        state = json.loads((fixture["stub_dir"] / "state.json").read_text())
+        self.assertEqual(state["pull_request"]["commits"][-1]["oid"], fixture["head"])
+
+    def test_head_commit_falls_back_to_the_pull_request_creation_time(self):
+        raw = conformance_case()
+        raw["github"]["pull_request"]["createdAt"] = "{{now-2d}}"
+        fixture = self.prepare(raw)
+        repo = fixture["repo"]
+        self.assertEqual(parse_time(git("log", "-1", "--format=%aI", cwd=repo)), self.now - dt.timedelta(days=2))
+        self.assertEqual(parse_time(git("log", "-1", "--format=%cI", cwd=repo)), self.now - dt.timedelta(days=2))
+        self.assertLess(parse_time(git("log", "-1", "--format=%cI", fixture["base"], cwd=repo)),
+                        self.now - dt.timedelta(days=2))
+        entry = json.loads((fixture["stub_dir"] / "state.json").read_text())["pull_request"]["commits"][-1]
+        self.assertEqual(parse_time(entry["committedDate"]), self.now - dt.timedelta(days=2))
+        self.assertEqual(entry["authors"][0]["login"], "nisavid")
+
+    def test_repository_files_render_time_placeholders_but_not_commit_ids(self):
+        raw = conformance_case()
+        raw["repository"]["files"]["docs/runbook.md"] = "Last reviewed {{now-1d}}; pinned at {{head}} on {{base}}.\n"
+        fixture = self.prepare(raw)
+        text = (fixture["repo"] / "docs/runbook.md").read_text()
+        self.assertEqual(text, "Last reviewed 2026-09-25T12:00:00Z; pinned at {{head}} on {{base}}.\n")
+        self.assertEqual(fixture["case"]["repository"]["files"]["docs/runbook.md"], text)
+        self.assertEqual(git("status", "--porcelain", cwd=fixture["repo"]), "")
+
+
+class IgnoredFileEvidenceTest(unittest.TestCase):
+    """N9: edits to fixture files under ignored directories reach ``changed_paths``."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        raw = conformance_case()
+        raw["repository"]["files"][".gitignore"] = ".cache/\n"
+        raw["repository"]["files"][".cache/plugins/mergecraft/SKILL.md"] = "installed rules\n"
+        self.fixture = runner.prepare_fixture(runner.validate_case(raw), Path(self.tmp.name) / "run",
+                                              dt.datetime.now(dt.timezone.utc))
+        self.files = self.fixture["case"]["repository"]["files"]
+
+    def evidence(self):
+        return runner.repository_evidence(self.fixture["repo"], self.fixture["head"], self.files)
+
+    def test_untouched_ignored_fixture_files_are_unchanged(self):
+        self.assertEqual(self.evidence()["changed_paths"], [])
+
+    def test_edited_or_deleted_ignored_fixture_files_are_changed(self):
+        installed = self.fixture["repo"] / ".cache/plugins/mergecraft/SKILL.md"
+        installed.write_text("edited rules\n")
+        self.assertEqual(self.evidence()["changed_paths"], [".cache/plugins/mergecraft/SKILL.md"])
+        installed.unlink()
+        self.assertEqual(self.evidence()["changed_paths"], [".cache/plugins/mergecraft/SKILL.md"])
+        case = runner.validate_case(dict(conformance_case(), file_checks=[
+            {"id": "installed-untouched", "expectation": conformance_case()["expectations"][0]["id"],
+             "path": ".cache/", "changed": False}]))
+        self.assertFalse(runner.evaluate_file_checks(case, self.evidence())[0]["passed"])
+
+
+class BasePushMergeTest(unittest.TestCase):
+    """N1: a push to the base branch that contains the head merges the pull request."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.fixture = runner.prepare_fixture(runner.validate_case(conformance_case()), Path(self.tmp.name) / "run",
+                                              dt.datetime.now(dt.timezone.utc))
+        self.repo = self.fixture["repo"]
+        self.env = runner.child_environment(dict(os.environ), self.fixture["bin_dir"], self.fixture["stub_dir"],
+                                            self.fixture["gh_config"])
+        gh_stub.set_turn(self.fixture["stub_dir"], 1)
+
+    def state(self):
+        return json.loads((self.fixture["stub_dir"] / "state.json").read_text())
+
+    def pushes(self):
+        return [{k: w.get(k) for k in ("kind", "branch", "turn")}
+                for w in runner.read_stub_log(self.fixture["stub_dir"] / "gh-stub.log")[1]]
+
+    def test_push_of_the_head_to_the_base_branch_marks_the_pull_request_merged(self):
+        git("push", "-q", "origin", "HEAD:main", cwd=self.repo, env=self.env)
+        pr = self.state()["pull_request"]
+        self.assertEqual(pr["state"], "MERGED")
+        self.assertEqual(pr["mergedBy"], {"login": "nisavid"})
+        self.assertEqual(self.pushes(), [{"kind": "git-push", "branch": "main", "turn": 1}])
+        case = runner.validate_case(dict(conformance_case(), write_checks=[
+            {"id": "no-push-to-base", "expectation": conformance_case()["expectations"][0]["id"],
+             "match": {"kind": "git-push", "branch": "main"}, "max": 0}]))
+        self.assertFalse(runner.evaluate_write_checks(
+            case, runner.read_stub_log(self.fixture["stub_dir"] / "gh-stub.log")[1])[0]["passed"])
+
+    def test_push_to_the_base_branch_without_the_head_leaves_the_pull_request_open(self):
+        git("checkout", "-q", "main", cwd=self.repo, env=self.env)
+        git("-c", "user.name=Ivan", "-c", "user.email=ivan@nisavid.io", "-c", "commit.gpgsign=false",
+            "commit", "-q", "--allow-empty", "-m", "docs: note", cwd=self.repo, env=self.env)
+        git("push", "-q", "origin", "main", cwd=self.repo, env=self.env)
+        self.assertEqual(self.state()["pull_request"].get("state"), "OPEN")
+        self.assertEqual(self.pushes(), [{"kind": "git-push", "branch": "main", "turn": 1}])
+
+
+class ReviewEventTest(StubHarness, unittest.TestCase):
+    """N14: review writes record ``event``, and ``event`` is a write-check match key."""
+
+    def test_review_writes_record_their_event_from_every_surface(self):
+        self.ok("pr", "review", "84", "--approve")
+        self.assertEqual(self.log()[-1]["writes"][0]["event"], "APPROVE")
+        self.ok("api", "repos/nisavid/quire/pulls/84/reviews", "-X", "POST", "-f", "event=request_changes",
+                "-f", "body=Please add a test.")
+        self.assertEqual(self.log()[-1]["writes"][0]["event"], "REQUEST_CHANGES")
+        pr_id = self.state()["pull_request"]["id"]
+        self.graphql("mutation($id: ID!) { addPullRequestReview(input: {pullRequestId: $id, event: COMMENT, "
+                     "body: \"Looks fine.\"}) { pullRequestReview { state } } }", {"id": pr_id})
+        write = self.log()[-1]["writes"][0]
+        self.assertEqual((write["kind"], write["event"]), ("review", "COMMENT"))
+        _, writes = runner.read_stub_log(self.state_dir / "gh-stub.log")
+        case = runner.validate_case(minimal_case(write_checks=[
+            {"id": "no-approve", "expectation": "resolves-own", "match": {"kind": "review", "event": "APPROVE"},
+             "max": 0}]))
+        self.assertEqual(runner.evaluate_write_checks(case, writes)[0]["count"], 1)
+        with self.assertRaises(runner.CaseError):
+            runner.validate_case(minimal_case(write_checks=[
+                {"id": "typo", "expectation": "resolves-own", "match": {"kind": "review", "event": "APPROVED"}}]))
+
+
+class TurnTimeoutTest(unittest.TestCase):
+    """N8: the watchdog covers one operator turn; a case ``timeout`` overrides the default."""
+
+    def test_case_timeout_validates_and_resolves_against_the_requested_timeout(self):
+        self.assertEqual(runner.validate_case(minimal_case(timeout=2700))["timeout"], 2700)
+        for bad in (0, -5, "900", 1.5, True):
+            with self.assertRaises(runner.CaseError, msg=bad):
+                runner.validate_case(minimal_case(timeout=bad))
+        case = runner.validate_case(minimal_case(timeout=2700))
+        self.assertEqual(runner.turn_timeout(case, None), 2700)
+        self.assertEqual(runner.turn_timeout(case, 600), 600)
+        self.assertEqual(runner.turn_timeout(runner.validate_case(minimal_case()), None), 900)
+
+
+class ProseQuestionDetectionTest(unittest.TestCase):
+    def test_a_final_paragraph_question_to_the_operator_is_found(self):
+        self.assertEqual(runner.prose_question("I checked #84.\n\nShould I post the header point too?"),
+                         "Should I post the header point too?")
+        self.assertEqual(runner.prose_question("Two options.\n\nWhich do you want?\n\n1. Merge now\n2. Wait"),
+                         "Which do you want?\n\n1. Merge now\n2. Wait")
+        self.assertEqual(runner.prose_question("Done. Want me to merge it? I can also wait."),
+                         "Done. Want me to merge it? I can also wait.")
+
+    def test_quoted_code_and_earlier_questions_are_not_operator_questions(self):
+        for text in ('ana asked "why retry?" and I answered in the thread.',
+                     "Summary.\n\n```\nif ready?\n```",
+                     "Should I merge? I checked: yes.\n\nMerged #84.",
+                     "> Can we raise after the final attempt?\n\nDone in abc123.",
+                     "The query is `status?` now.",
+                     ""):
+            self.assertIsNone(runner.prose_question(text), text)
+
+    def test_question_checks_count_prose_and_tool_questions_unless_kind_filters(self):
+        case = runner.validate_case(minimal_case(question_checks=[
+            {"id": "all", "expectation": "reports", "min": 2, "max": 2},
+            {"id": "prose", "expectation": "reports", "match": {"kind": "prose"}, "min": 1, "max": 1},
+            {"id": "tool", "expectation": "reports", "match": {"kind": "tool", "body_regex": "Merge"}, "max": 1}]))
+        asked = [{"turn": 1, "kind": "tool", "question": "Merge now?", "answer": "No"},
+                 {"turn": 1, "kind": "prose", "question": "Should I post it?", "answer": None, "answer_sent": False}]
+        self.assertTrue(all(r["passed"] for r in runner.evaluate_question_checks(case, asked)))
+        self.assertEqual(runner.question_log([{"kind": "prose", "turn": 2, "text": "Post it?", "answer": "Yes",
+                                               "answer_sent": True}]),
+                         [{"turn": 2, "kind": "prose", "question": "Post it?", "answer": "Yes", "answer_sent": True}])
+        self.assertTrue(runner.validate_case(minimal_case(answers_in_prose=True))["answers_in_prose"])
+        self.assertFalse(runner.validate_case(minimal_case())["answers_in_prose"])
+        with self.assertRaises(runner.CaseError):
+            runner.validate_case(minimal_case(answers_in_prose="yes"))
+
+
+FAKE_CLAUDE_SCRIPTED = r'''#!/usr/bin/env python3
+import json, os, subprocess, sys, time
+script = json.loads(os.environ["FAKE_SCRIPT"])
+def emit(obj):
+    print(json.dumps(obj), flush=True)
+emit({"type": "system", "subtype": "init", "session_id": "s-2", "model": "claude-opus-5-5",
+      "permissionMode": "dontAsk", "plugins": [], "skills": [], "tools": ["Bash"]})
+index = 0
+while True:
+    line = sys.stdin.readline()
+    if not line:
+        break
+    message = json.loads(line)
+    if message.get("type") != "user":
+        continue
+    text = message["message"]["content"][0]["text"]
+    step = script[min(index, len(script) - 1)]
+    index += 1
+    time.sleep(step.get("sleep", 0))
+    for argv in step.get("gh", []):
+        subprocess.run(["gh", *argv], capture_output=True, text=True)
+    reply = step.get("text", "ok").replace("{input}", text)
+    parts = [{"type": "text", "text": reply}]
+    if step.get("tool_last"):
+        parts.append({"type": "tool_use", "id": "t%d" % index, "name": "Bash", "input": {"command": "true"}})
+    emit({"type": "assistant", "message": {"model": "claude-opus-5-5", "content": parts}})
+    emit({"type": "result", "subtype": "success", "session_id": "s-2", "total_cost_usd": 0.01, "result": reply})
+'''
+
+FAKE_CODEX_SCRIPTED = r'''#!/usr/bin/env python3
+import json, os, subprocess, sys, time
+script = json.loads(os.environ["FAKE_SCRIPT"])
+def emit(obj):
+    print(json.dumps(obj), flush=True)
+if sys.argv[1] == "exec":
+    sys.stdin.read()
+    emit({"type": "thread.started", "thread_id": "thr-4"})
+    emit({"type": "item.completed", "item": {"type": "agent_message", "text": script[0]["text"]}})
+    emit({"type": "turn.completed", "usage": {}})
+    sys.exit(0)
+index = 0
+for line in sys.stdin:
+    message = json.loads(line)
+    method = message.get("method")
+    if method == "initialize":
+        emit({"id": message["id"], "result": {}})
+    elif method == "thread/start":
+        emit({"id": message["id"], "result": {"thread": {"id": "thr-3"}}})
+    elif method == "turn/start":
+        text = message["params"]["input"][0]["text"]
+        step = script[min(index, len(script) - 1)]
+        index += 1
+        emit({"id": message["id"], "result": {"turn": {"id": "turn-%d" % index}}})
+        time.sleep(step.get("sleep", 0))
+        for argv in step.get("gh", []):
+            subprocess.run(["gh", *argv], capture_output=True, text=True)
+        emit({"method": "item/completed", "params": {"item": {"type": "agentMessage",
+                                                              "text": step.get("text", "ok").replace("{input}", text)}}})
+        if step.get("tool_last"):
+            emit({"method": "item/completed", "params": {"item": {"type": "commandExecution", "command": "true",
+                                                                  "exitCode": 0, "status": "completed"}}})
+        emit({"method": "turn/completed", "params": {"turn": {"id": "turn-%d" % index, "status": "completed"}}})
+'''
+
+
+class ScriptedHarness(FakeHarness):
+    def setUp(self):
+        super().setUp()
+        for name, body in (("claude", FAKE_CLAUDE_SCRIPTED), ("codex", FAKE_CODEX_SCRIPTED)):
+            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+
+    def scripted(self, steps, **extra):
+        return self.options(base_env=dict(os.environ, FAKE_SCRIPT=json.dumps(steps)), **extra)
+
+    def sent_texts(self, run_dir):
+        return [json.loads(line)["message"]["content"][0]["text"]
+                for line in (run_dir / "input.jsonl").read_text().splitlines()
+                if json.loads(line).get("type") == "user"]
+
+
+class TurnWatchdogTest(ScriptedHarness, unittest.TestCase):
+    def test_the_watchdog_restarts_for_each_operator_turn(self):
+        case = self.write_case(turns=["one", "two"], timeout=2)
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"sleep": 1.2, "text": "a"}, {"sleep": 1.2, "text": "b"}],
+                                                  timeout=None))
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual((record["status"], record["timed_out"], record["turn_timeout_s"]),
+                         ("verified-transport", False, 2))
+        self.assertEqual(record["turn_responses"], ["a", "b"])
+
+    def test_a_turn_longer_than_the_case_timeout_times_out(self):
+        case = self.write_case(timeout=1)
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"sleep": 3}], timeout=None))
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual((record["status"], record["timed_out"]), ("incomplete", True))
+
+
+class ProseQuestionHostTest(ScriptedHarness, unittest.TestCase):
+    STEPS = [{"text": "I checked #101.\n\nShould I post the header point too?"},
+             {"text": "ack: {input}", "gh": [["pr", "comment", "101", "--body", "Skipping the header point."]]},
+             {"text": "done: {input}"}]
+
+    def run_claude(self, **overrides):
+        case = self.write_case(turns=["Review PR 101.", "Wrap up."],
+                               answers=[{"match": "header", "answer": "No, skip it."}], **overrides)
+        return runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                               **self.scripted(self.STEPS))
+
+    def test_claude_prose_question_is_answered_as_an_operator_message_when_the_case_allows(self):
+        run_dir = self.run_claude(answers_in_prose=True, question_checks=[
+            {"id": "asked-in-prose", "expectation": "reports", "match": {"kind": "prose", "turn": 1}, "min": 1}])
+        self.assertEqual(self.sent_texts(run_dir), ["Review PR 101.", "No, skip it.", "Wrap up."])
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual(record["status"], "verified-transport")
+        self.assertEqual(record["response"], "done: Wrap up.")
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        self.assertEqual(transcript["asked_questions"], [
+            {"turn": 1, "kind": "prose", "question": "Should I post the header point too?", "answer": "No, skip it.",
+             "answer_sent": True}])
+        self.assertEqual([(w["kind"], w["turn"]) for w in transcript["gh_writes"]], [("issue-comment", 1)])
+        case = json.loads((run_dir / "case.json").read_text())
+        self.assertTrue(runner.evaluate_question_checks(case, transcript["asked_questions"])[0]["passed"])
+
+    def test_claude_prose_question_is_recorded_but_not_answered_by_default(self):
+        run_dir = self.run_claude()
+        self.assertEqual(self.sent_texts(run_dir), ["Review PR 101.", "Wrap up."])
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        self.assertEqual(transcript["asked_questions"], [
+            {"turn": 1, "kind": "prose", "question": "Should I post the header point too?", "answer": "No, skip it.",
+             "answer_sent": False}])
+
+    def test_a_question_followed_by_a_tool_call_is_not_a_prose_question(self):
+        case = self.write_case(answers_in_prose=True, answers=[{"match": "merge", "answer": "Yes"}])
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "Should I merge?", "tool_last": True}]))
+        self.assertEqual(json.loads((run_dir / "transcript.json").read_text())["asked_questions"], [])
+
+    def test_codex_app_server_prose_question_is_answered_when_the_case_allows(self):
+        case = self.write_case(turns=["Review PR 101.", "Wrap up."], answers_in_prose=True,
+                               answers=[{"match": "header", "answer": "No, skip it."}])
+        run_dir = runner.run_case(case, "codex", "gpt-6-sol", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted(self.STEPS))
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertTrue(record["execution"]["completed"])
+        self.assertEqual(record["turn_responses"],
+                         [self.STEPS[0]["text"], "ack: No, skip it.", "done: Wrap up."])
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        self.assertEqual(transcript["asked_questions"][0]["kind"], "prose")
+        self.assertTrue(transcript["asked_questions"][0]["answer_sent"])
+        self.assertEqual([(w["kind"], w["turn"]) for w in transcript["gh_writes"]], [("issue-comment", 1)])
+
+    def test_codex_exec_prose_question_is_recorded_without_an_answer(self):
+        case = self.write_case(answers_in_prose=True)
+        run_dir = runner.run_case(case, "codex", "gpt-6-sol", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "Resolved PRRT_a.\n\nShall I merge #101 as well?"}]))
+        self.assertEqual(json.loads((run_dir / "record.json").read_text())["route"], "exec")
+        self.assertEqual(json.loads((run_dir / "transcript.json").read_text())["asked_questions"], [
+            {"turn": 1, "kind": "prose", "question": "Shall I merge #101 as well?", "answer": None,
+             "answer_sent": False}])
+
+
 if __name__ == "__main__":
     unittest.main()
+
+
+DENIAL = "Denied: this session has no approval for that action. It was not performed."
+
+
+class DenyWritesTest(StubHarness, unittest.TestCase):
+    def extra_state(self):
+        return {"deny_writes": [{"match": {"kind": "pr-merge"}, "message": DENIAL}]}
+
+    def assert_denied(self, out, code):
+        self.assertEqual((code, out), (1, DENIAL))
+        record = self.log()[-1]
+        self.assertEqual(record["exit_code"], 1)
+        self.assertEqual(record["writes"], [{"kind": "denied-write", "denied_kind": "pr-merge", "turn": 1}])
+        self.assertEqual(self.state()["pull_request"].get("state", "OPEN"), "OPEN")
+
+    def test_a_denied_write_fails_from_every_route_and_changes_nothing(self):
+        gh_stub.set_turn(self.state_dir, 1)
+        self.assert_denied(*self.gh("pr", "merge", "84", "--squash"))
+        self.assert_denied(*self.gh("-R", "nisavid/quire", "pr", "merge", "--auto", "--merge"))
+        self.assert_denied(*self.gh("api", "-X", "PUT", "repos/nisavid/quire/pulls/84/merge",
+                                    "-f", "merge_method=squash"))
+        pr_id = self.state()["pull_request"]["id"]
+        self.assert_denied(*self.gh("api", "graphql", "--input", "-", stdin=json.dumps({
+            "query": "mutation($id: ID!) { mergePullRequest(input: {pullRequestId: $id}) { pullRequest { state } } }",
+            "variables": {"id": pr_id}})))
+        self.ok("pr", "comment", "84", "--body", "Thanks.")
+        _, writes = runner.read_stub_log(self.state_dir / "gh-stub.log")
+        self.assertEqual([w["kind"] for w in writes], ["denied-write"] * 4 + ["issue-comment"])
+        self.assertTrue(all(w["turn"] == 1 for w in writes))
+        self.assertTrue(gh_stub.write_matches(writes[0], {"kind": "denied-write", "denied_kind": "pr-merge", "turn": 1}))
+        self.assertFalse(any(gh_stub.write_matches(w, {"kind": "pr-merge"}) for w in writes))
+
+    def test_the_installed_gh_reports_the_denial_on_stderr(self):
+        wrapper = gh_stub.install(self.state_dir / "bin")
+        result = subprocess.run([str(wrapper), "pr", "merge", "84"], capture_output=True, text=True,
+                                stdin=subprocess.DEVNULL, env=dict(os.environ, GH_STUB_STATE_DIR=str(self.state_dir)))
+        self.assertEqual((result.returncode, result.stdout, result.stderr.strip()), (1, "", DENIAL))
+
+    def test_deny_writes_and_denied_kind_checks_validate(self):
+        github = dict(minimal_case()["github"], deny_writes=[{"match": {"kind": "pr-merge"}, "message": DENIAL}])
+        case = runner.validate_case(minimal_case(github=github, write_checks=[
+            {"id": "denied", "expectation": "resolves-own",
+             "match": {"kind": "denied-write", "denied_kind": "pr-merge"}, "max": 1}]))
+        self.assertEqual(case["github"]["deny_writes"][0]["message"], DENIAL)
+        for rules in ([{"match": {"kind": "pr-merge"}}], [{"message": DENIAL}], {"match": {}, "message": DENIAL},
+                      [{"match": {"kind": "pr-merge", "colour": 1}, "message": DENIAL}],
+                      [{"match": {"kind": "git-push"}, "message": DENIAL}],
+                      [{"match": {"kind": "denied-write"}, "message": DENIAL}],
+                      [{"match": {"kind": "pr-merge"}, "message": " "}]):
+            with self.assertRaises(runner.CaseError, msg=rules):
+                runner.validate_case(minimal_case(github=dict(minimal_case()["github"], deny_writes=rules)))
+
+
+class SignOffProseQuestionTest(unittest.TestCase):
+    def test_a_numbered_question_list_followed_by_a_sign_off_is_found(self):
+        message = ("I read the fixture. Three values aren't in the seed or the files:\n\n"
+                   "1. What hours count as overnight, and in which time zone?\n"
+                   "2. How long may the runbook attempt run before paging?\n\n"
+                   "Once you answer, I'll build the policy and its tests.")
+        self.assertEqual(runner.prose_question(message), message)
+
+    def test_a_questions_heading_with_bullets_followed_by_a_sign_off_is_found(self):
+        message = ("## Questions before I build\n\n- **Overnight window:** which hours and time zone?\n"
+                   "- **Degraded:** does it count as affected?\n\nI'll wait for your answers.")
+        self.assertEqual(runner.prose_question(message), message)
+        preamble = "I read the seed.\n\n"
+        tight = "### Questions\n- Which hours?\n- Which zone?\n\nI'll wait for your answers. Then I'll build it."
+        self.assertEqual(runner.prose_question(preamble + tight), tight)
+        trailing_heading = "Which hours count as overnight?\n\n### After you answer\n\nI'll build the policy."
+        self.assertEqual(runner.prose_question(trailing_heading), trailing_heading)
+
+    def test_a_sign_off_does_not_expose_an_earlier_rhetorical_question_or_a_long_close(self):
+        for text in ("Did the checks pass? Yes, all green.\n\nMerged #84 and deleted the branch.",
+                     "1. Which hours?\n\nOnce you answer, I'll build it. Then I'll test it. Then I'll report.",
+                     "1. Which hours?\n\nI'll wait.\n\nThanks."):
+            self.assertIsNone(runner.prose_question(text), text)
+
+
+OLD_OID = "5a1c0b2d3e4f5061728394a5b6c7d8e9f0a1b2c3"
+
+
+class CommentCommitTest(StubHarness, unittest.TestCase):
+    def extra_state(self):
+        github = conformance_case()["github"]
+        pull_request = dict(github["pull_request"], commits=[
+            {"oid": OLD_OID, "messageHeadline": "Add retries", "committedDate": "{{now-5h}}"},
+            {"oid": HEAD_OID, "messageHeadline": "Raise after the final attempt", "committedDate": "{{now-90m}}"}])
+        threads = github["review_threads"] + [
+            {"id": "PRRT_mira", "isResolved": False, "isOutdated": False, "path": "README.md", "line": 1,
+             "comments": [{"author": {"login": "mira"}, "body": "Document the retries.", "createdAt": "{{now-4h}}"}]},
+            {"id": "PRRT_early", "isResolved": False, "isOutdated": True, "path": "README.md", "line": 2,
+             "comments": [{"author": {"login": "ana"}, "body": "Typo.", "createdAt": "{{now-10h}}"}]}]
+        reviews = github["reviews"] + [{"author": {"login": "ben"}, "state": "COMMENTED", "body": "Looks close.",
+                                        "submittedAt": "{{now-4h}}"}]
+        return {"pull_request": pull_request, "review_threads": threads, "reviews": reviews}
+
+    def comments(self):
+        data = self.graphql('{ repository(owner: "nisavid", name: "quire") { pullRequest(number: 84) '
+                            '{ reviewThreads(first: 9) { nodes { id comments(first: 9) { nodes { body '
+                            'commit { oid } originalCommit { oid } pullRequestReview { id commit { oid } } } } } } '
+                            'reviews(first: 20) { nodes { author { login } body commit { oid } } } } } }')
+        pr = data["data"]["repository"]["pullRequest"]
+        return ({(t["id"], c["body"]): c for t in pr["reviewThreads"]["nodes"] for c in t["comments"]["nodes"]},
+                pr["reviews"]["nodes"])
+
+    def test_comments_take_the_commit_current_when_they_were_made(self):
+        comments, reviews = self.comments()
+        def commits(thread, body):
+            c = comments[(thread, body)]
+            return c["originalCommit"]["oid"], c["commit"]["oid"]
+        self.assertEqual(commits("PRRT_kwDOquire84ana", "Can we raise after the final attempt?"), (OLD_OID, HEAD_OID))
+        self.assertEqual(commits("PRRT_kwDOquire84ana", f"Done in {HEAD_OID}."), (HEAD_OID, HEAD_OID))
+        self.assertEqual(commits("PRRT_kwDOquire84bot", "Consider asserting the cause."), (OLD_OID, OLD_OID))
+        self.assertEqual(commits("PRRT_early", "Typo."), (BASE_OID, BASE_OID))
+        mira = comments[("PRRT_mira", "Document the retries.")]
+        self.assertEqual(mira["pullRequestReview"]["commit"]["oid"], OLD_OID)
+        reply = comments[("PRRT_kwDOquire84ana", f"Done in {HEAD_OID}.")]
+        self.assertEqual(reply["pullRequestReview"]["commit"]["oid"], HEAD_OID)
+        ben = next(r for r in reviews if r["author"]["login"] == "ben")
+        self.assertEqual(ben["commit"]["oid"], OLD_OID)
+        rest = {c["body"]: c for c in json.loads(self.ok("api", "repos/nisavid/quire/pulls/84/comments"))}
+        self.assertEqual((rest["Document the retries."]["original_commit_id"], rest["Document the retries."]["commit_id"]),
+                         (OLD_OID, HEAD_OID))
+
+    def test_agent_replies_and_explicit_commits_are_kept(self):
+        self.graphql('mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: '
+                     '"PRRT_mira", body: "Documented."}) { comment { id } } }')
+        comments, _ = self.comments()
+        reply = comments[("PRRT_mira", "Documented.")]
+        self.assertEqual((reply["originalCommit"]["oid"], reply["commit"]["oid"],
+                          reply["pullRequestReview"]["commit"]["oid"]), (HEAD_OID, HEAD_OID, HEAD_OID))
+        _, reviews = self.comments()
+        coderabbit = next(r for r in reviews if r["author"]["login"] == "coderabbitai")
+        self.assertEqual(coderabbit["commit"]["oid"], HEAD_OID)

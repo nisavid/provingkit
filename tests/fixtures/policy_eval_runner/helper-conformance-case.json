@@ -1,0 +1,63 @@
+{
+  "schema": "policy-eval-case-v1",
+  "id": 90,
+  "title": "Mergecraft helpers read a representative pull request",
+  "repository": {
+    "files": {
+      "README.md": "# quire\n",
+      "src/quire/upload.py": "def upload_with_retry(send, attempts=3):\n    for attempt in range(attempts):\n        try:\n            return send()\n        except TimeoutError as error:\n            last = error\n    raise UploadError('upload failed') from last\n",
+      "tests/test_upload.py": "def test_retry():\n    assert True\n"
+    }
+  },
+  "github": {
+    "login": "nisavid",
+    "repo": "nisavid/quire",
+    "pull_request": {
+      "number": 84,
+      "title": "Retry transient upload failures",
+      "author": {"login": "nisavid"},
+      "headRefName": "ivan/upload-retry",
+      "baseRefName": "main",
+      "headCommitMessage": "fix(upload): raise UploadError after the final attempt",
+      "state": "OPEN",
+      "isDraft": false,
+      "body": "Adds bounded retries to `upload_with_retry`.",
+      "reviewDecision": "REVIEW_REQUIRED",
+      "mergeable": "MERGEABLE",
+      "files": [{"path": "src/quire/upload.py"}, {"path": "tests/test_upload.py"}],
+      "reviewRequests": [{"__typename": "User", "login": "ben"}],
+      "labels": [{"name": "priority: urgent"}]
+    },
+    "requested_reviewers": {"users": [{"login": "ben"}], "teams": []},
+    "review_threads": [
+      {"id": "PRRT_kwDOquire84ana", "isResolved": false, "isOutdated": false, "path": "src/quire/upload.py", "line": 6,
+       "comments": [
+         {"author": {"login": "ana"}, "body": "Can we raise after the final attempt?", "createdAt": "{{now-3h}}",
+          "id": "PRRC_kwDOiw05F38GPpNA", "databaseId": 1334623543},
+         {"author": {"login": "nisavid"}, "body": "Done in {{head}}.", "createdAt": "{{now-1h}}"}
+       ]},
+      {"id": "PRRT_kwDOquire84bot", "isResolved": false, "isOutdated": true, "path": "tests/test_upload.py", "line": 2,
+       "comments": [
+         {"author": {"login": "coderabbitai"}, "authorType": "Bot", "body": "Consider asserting the cause.", "createdAt": "{{now-2h}}"}
+       ]}
+    ],
+    "reviews": [
+      {"author": {"login": "ana"}, "state": "COMMENTED", "body": "", "submittedAt": "{{now-3h}}", "commit": {"oid": "{{base}}"},
+       "authorAssociation": "COLLABORATOR"},
+      {"author": {"login": "coderabbitai"}, "state": "COMMENTED", "body": "**Actionable comments posted: 1**", "submittedAt": "{{now-2h}}",
+       "commit": {"oid": "{{head}}"}}
+    ],
+    "issue_comments": [
+      {"author": {"login": "coderabbitai"}, "authorType": "Bot", "body": "Walkthrough: retries uploads.", "createdAt": "{{now-2h}}"}
+    ],
+    "checks": [
+      {"__typename": "CheckRun", "name": "test", "status": "COMPLETED", "conclusion": "SUCCESS", "state": "SUCCESS", "bucket": "pass"},
+      {"__typename": "StatusContext", "context": "CodeRabbit", "state": "SUCCESS", "bucket": "pass", "name": "CodeRabbit"}
+    ],
+    "branch_protection": null
+  },
+  "turns": ["Where does PR 84 stand?"],
+  "expectations": [
+    {"id": "reads", "severity": "quality", "text": "Reads the pull request state."}
+  ]
+}
