@@ -1132,9 +1132,29 @@ def validate_public_skill_boundaries(root: Path, skill: str) -> None:
     bundle = resolve_candidate_skill_bundle(root, skill)
     if f"skills/{skill}/references/invocation-boundary.md" not in bundle:
         fail(f"{skill} bundle omits the invocation policy")
-    # Release projections omit topology.json, so installed skills cannot read it.
-    if any(b"topology.json" in read_regular_bytes(root, path) for path in bundle):
-        fail(f"{skill} bundle cites the source-stage topology")
+    # An installed skill root is self-contained: release projections omit
+    # topology.json, and only SKILL.md may leave the root, via declared edges.
+    for relative_path in sorted(expected_skill_files(skill)):
+        content = read_regular_bytes(root, f"skills/{skill}/{relative_path}")
+        if b"topology.json" in content:
+            fail(f"{skill} skill root cites the source-stage topology")
+        if relative_path == "SKILL.md" or Path(relative_path).suffix.casefold() not in {
+            ".json",
+            ".md",
+            ".txt",
+            ".yaml",
+            ".yml",
+        }:
+            continue
+        for raw_target in markdown_link_targets(content.decode("utf-8")):
+            target = normalize_markdown_target(raw_target)
+            if not target or re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
+                continue
+            resolved = posixpath.normpath(
+                posixpath.join(posixpath.dirname(relative_path), target)
+            )
+            if resolved == ".." or resolved.startswith(("../", "/")):
+                fail(f"{skill} {relative_path} links outside its skill root")
 
 
 def validate_input_boundaries(root: Path) -> None:

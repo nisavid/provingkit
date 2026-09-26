@@ -622,14 +622,49 @@ class ValidateTricriticalTests(unittest.TestCase):
                 )
                 self.assertNotIn("topology.json", descriptor)
 
-    def test_rejects_skill_bundle_citing_source_stage_topology(self):
-        rubric = self.plugin_root / "skills" / "intent" / "references" / "rubric.md"
-        rubric.write_text(rubric.read_text() + "\nConsult `topology.json`.\n")
+    def test_rejects_skill_root_citing_source_stage_topology(self):
+        for relative_path, addition in (
+            ("references/rubric.md", "\nConsult `topology.json`.\n"),
+            ("agents/openai.yaml", "# Consult topology.json.\n"),
+        ):
+            with self.subTest(path=relative_path):
+                path = self.plugin_root / "skills" / "intent" / relative_path
+                original = path.read_text()
+                path.write_text(original + addition)
+                result = self.run_validator()
+                path.write_text(original)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    "intent skill root cites the source-stage topology", result.stderr
+                )
 
-        result = self.run_validator()
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("bundle cites the source-stage topology", result.stderr)
+    def test_rejects_reference_links_outside_the_skill_root(self):
+        cases = (
+            ("intent", "references/rubric.md", "[loop](../../loop/SKILL.md)"),
+            ("intent", "references/rubric.md", "[the loop skill](../../loop/SKILL.md)"),
+            (
+                "review",
+                "references/completeness-and-synthesis.md",
+                "[revise](../../revise/SKILL.md)",
+            ),
+            (
+                "intent",
+                "references/rubric.md",
+                "[shared](../../../references/invocation-boundary.md)",
+            ),
+        )
+        for skill, relative_path, link in cases:
+            with self.subTest(skill=skill, link=link):
+                path = self.plugin_root / "skills" / skill / relative_path
+                original = path.read_text()
+                path.write_text(f"{original}\nSee {link}\n")
+                result = self.run_validator()
+                path.write_text(original)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    f"{skill} {relative_path} links outside its skill root",
+                    result.stderr,
+                )
 
     def test_rejects_missing_skill_local_shared_resource_projection(self):
         projection = (
