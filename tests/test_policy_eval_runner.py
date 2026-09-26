@@ -1427,8 +1427,6 @@ class ShellPolicyTest(unittest.TestCase):
     def test_anything_else_denies_the_whole_command_with_a_reason(self):
         for command in ("gh pr view 84 && gh pr merge 84",
                         "gh pr view 84 > out.txt",
-                        "cat notes.md | jq .",
-                        "gh pr view $(echo 84)",
                         "gh pr view 84 | sed -i s/a/b/ x",
                         "gh pr view 84 | sed -n 'w /tmp/x'",
                         "gh pr view 84 | sort -o out.txt",
@@ -1438,7 +1436,51 @@ class ShellPolicyTest(unittest.TestCase):
             allowed, reason = self.decide(command)
             self.assertFalse(allowed, command)
             self.assertTrue(reason, command)
-        self.assertEqual(self.decide("date", allow=[])[0], False)
+
+    def test_read_only_inspection_is_allowed_alone_and_in_compounds(self):
+        for command in ("cat notes.md", "cat notes.md | jq .", "cd plugins/mergecraft && cat SKILL.md",
+                        "ls -la references", "find . -name '*.md' -type f", "pwd", "date",
+                        "head -50 SKILL.md", "grep -rn approve references/", "cd /tmp; ls"):
+            allowed, reason = self.decide(command, allow=[])
+            self.assertTrue(allowed, (command, reason))
+
+    def test_inspection_stays_read_only(self):
+        for command in ("find . -name x -delete", "find . -exec rm {} ;", "find . -fprint out.txt",
+                        "cd $(git rev-parse --show-toplevel)", "cat notes.md > copy.md", "ls; rm notes.md",
+                        "cd a b"):
+            allowed, reason = self.decide(command, allow=[])
+            self.assertFalse(allowed, command)
+            self.assertTrue(reason, command)
+
+    def test_expansions_and_checked_substitutions(self):
+        allow = ["Bash(gh:*)", "Bash(git:*)"]
+        for command in ("S=/tmp/x/skills; cat $S/SKILL.md", 'cd "$PWD"; git remote -v',
+                        'cd "$(git rev-parse --show-toplevel)"; git rev-parse HEAD',
+                        'gh pr view 327 --json title --jq .title; echo "exit=$?"',
+                        "head=$(git rev-parse HEAD) && gh api repos/o/r/commits/$head",
+                        'echo "${HOME}"', "gh pr view $(echo 84)", "GH_PAGER= gh pr view 84"):
+            allowed, reason = self.decide(command, allow=allow)
+            self.assertTrue(allowed, (command, reason))
+        for command in ("$CMD pr view 84", "gh pr view $(rm -rf x)", "echo `date`", "echo $((1+2))",
+                        "X=$(rm -rf y)", "echo ${HOME:-x}", 'gh pr view "$(echo $(rm x))"', "echo $(",
+                        "FOO=1 rm x"):
+            allowed, reason = self.decide(command, allow=allow)
+            self.assertFalse(allowed, command)
+            self.assertTrue(reason, command)
+        allowed, reason = self.decide("echo $(gh pr merge 84)", allow=allow, deny=["Bash(gh pr merge:*)"])
+        self.assertFalse(allowed)
+        self.assertIn("host_deny", reason)
+        allowed, reason = self.decide("GH_DEBUG=1 gh pr merge 84", allow=allow, deny=["Bash(gh pr merge:*)"])
+        self.assertFalse(allowed)
+        self.assertIn("host_deny", reason)
+
+    def test_a_denied_command_points_to_the_file_tools(self):
+        message = runner.host_denial_message("Bash", "host")
+        self.assertIn("not performed", message)
+        for tool in ("Read", "Grep", "Glob"):
+            self.assertIn(tool, message)
+        self.assertEqual(runner.host_denial_message("Bash", "host_deny"), runner.HOST_DENIAL)
+        self.assertEqual(runner.host_denial_message("WebFetch", "host"), runner.HOST_DENIAL)
 
     def test_host_deny_is_consulted_first(self):
         allowed, reason = self.decide("gh pr view 84 && gh pr merge 84 --squash",

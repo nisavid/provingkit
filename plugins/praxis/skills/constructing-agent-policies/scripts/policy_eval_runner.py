@@ -136,21 +136,30 @@ Prose questions       A turn whose final agent message closes with a question
                       prompts: a tool matching ``host_deny`` is denied first;
                       then questions are answered; then a tool matching
                       ``host_allow`` is allowed, and anything else is denied.
-                      Every denial is recorded with its reason. A Bash command
-                      is split on unquoted ``|``, ``||``, ``&&``, ``;`` and
-                      newlines; it is allowed when every segment matches
-                      ``host_allow`` (``Bash(prefix:*)`` compares whole
-                      words) or, in a compound command, is a read-only filter:
+                      Every denial is recorded with its reason; a refused Bash
+                      command's message names the Read, Grep and Glob tools.
+                      A Bash command is split on unquoted ``|``, ``||``,
+                      ``&&``, ``;`` and newlines; it is allowed when every
+                      segment matches ``host_allow`` (``Bash(prefix:*)``
+                      compares whole words) or is a read-only command:
                       ``jq``, ``head``, ``tail``, ``grep``, ``sed -n``
                       (without in-place, ``w``, ``r`` or ``e``), ``wc``,
                       ``sort`` (without ``-o``), ``uniq`` (one operand at
-                      most), ``cut``, ``tr``, ``cat`` (stdin only), ``echo``,
-                      ``printf``, ``date`` (without ``-s``). A heredoc may only
+                      most), ``cut``, ``tr``, ``cat``, ``echo``, ``printf``,
+                      ``date`` (without ``-s``), ``cd`` (one directory at
+                      most), ``ls``, ``pwd``, ``find`` (without ``-exec``,
+                      ``-execdir``, ``-ok``, ``-okdir``, ``-delete``,
+                      ``-fprint``, ``-fprint0``, ``-fprintf`` or ``-fls``).
+                      A heredoc may only
                       feed ``gh ... --body-file -`` or ``--input -`` (an
                       unquoted delimiter's body may not contain ``$`` or a
-                      backtick). ``2>&1`` and ``2>/dev/null`` are accepted;
-                      any other redirection, substitution, expansion, or
-                      background ``&`` denies the whole command. A
+                      backtick). ``2>&1`` and ``2>/dev/null`` are accepted.
+                      ``$NAME``, ``${NAME}`` and ``$?`` expand as text but
+                      may not name the command; leading ``NAME=value``
+                      assignments are skipped when matching; a ``$(...)``
+                      substitution is allowed when its own command would be.
+                      Any other redirection, backticks, other expansions, or
+                      background ``&`` deny the whole command. A
                       ``host_deny`` Bash rule denies a command when any
                       segment matches it. ``codex``: ``{route:
                       exec|app-server, sandbox, approval_policy, rules:
@@ -1308,39 +1317,96 @@ def rule_allows(rule, tool, tool_input):
 
 
 READ_ONLY_FILTERS = frozenset(("jq", "head", "tail", "grep", "sed", "wc", "sort", "uniq", "cut", "tr", "cat",
-                               "echo", "printf", "date"))
+                               "echo", "printf", "date", "cd", "ls", "pwd", "find"))
+FIND_ACTIONS = ("-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fprint0", "-fprintf", "-fls")
 STDERR_REDIRECTS = ("2>&1", "2>/dev/null")
 RULE = re.compile(r"([A-Za-z_]\w*)(?:\((.*)\))?", re.S)
 
 
-class ShellSegment:
-    """One simple command of a compound Bash command."""
+EXPANSION = re.compile(r"\$(?:\{[A-Za-z_][A-Za-z0-9_]*\}|[A-Za-z_][A-Za-z0-9_]*|[?$#0-9])")
+ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
+SUBSTITUTION_MARK = "$(…)"
 
-    def __init__(self, text, heredoc=False):
-        self.text, self.heredoc = text.strip(), heredoc
+
+class ShellSegment:
+    """One simple command of a compound Bash command.
+
+    ``substitutions`` holds the inner commands of its ``$(...)`` substitutions, which stand in the text as
+    ``$(…)``; ``command_words`` are its words after any leading ``NAME=value`` assignments.
+    """
+
+    def __init__(self, text, heredoc=False, substitutions=()):
+        self.text, self.heredoc, self.substitutions = text.strip(), heredoc, list(substitutions)
         self.words = shlex.split(self.text)
+        index = 0
+        while index < len(self.words) and ASSIGNMENT.match(self.words[index]):
+            index += 1
+        self.command_words = self.words[index:]
+
+
+def _substitution_end(command, start):
+    """The index just past the ``)`` closing the ``$(`` at ``start``, or ``None``."""
+    index, quote = start + 2, None
+    while index < len(command):
+        char = command[index]
+        if quote == "'":
+            quote = None if char == "'" else quote
+        elif char == "\\":
+            index += 1
+        elif command.startswith("$(", index):
+            end = _substitution_end(command, index)
+            if end is None:
+                return None
+            index = end
+            continue
+        elif quote == '"':
+            quote = None if char == '"' else quote
+        elif char in "'\"":
+            quote = char
+        elif char == ")":
+            return index + 1
+        index += 1
+    return None
 
 
 def split_shell_command(command):
     """Split a Bash command on unquoted ``|``, ``||``, ``&&``, ``;`` and newlines.
 
     Returns ``(segments, problem)``; ``problem`` names the first construct this host does not allow
-    (redirection, substitution, expansion, background ``&``, or an unsafe heredoc).
+    (redirection, backticks, arithmetic or other expansions than ``$NAME``, ``${NAME}`` and ``$?``, background
+    ``&``, or an unsafe heredoc). ``$(...)`` substitutions are kept on their segment for the caller to check.
     """
     segments, current, heredocs, problem = [], [], [], None
-    state = {"heredoc": False}
+    state = {"heredoc": False, "substitutions": []}
     index, size, quote = 0, len(command), None
 
     def finish():
         text = "".join(current)
         if text.strip():
             try:
-                segments.append(ShellSegment(text, state["heredoc"]))
+                segments.append(ShellSegment(text, state["heredoc"], state["substitutions"]))
             except ValueError as error:
                 return f"unparseable command: {error}"
         current.clear()
-        state["heredoc"] = False
+        state.update(heredoc=False, substitutions=[])
         return None
+
+    def dollar(start):
+        """Take the expansion at ``start``: ``(end, None)`` or ``(None, problem)``."""
+        if command.startswith("$((", start):
+            return None, "arithmetic expansion is not allowed here"
+        if command.startswith("$(", start):
+            end = _substitution_end(command, start)
+            if end is None:
+                return None, "unterminated command substitution"
+            state["substitutions"].append(command[start + 2:end - 1])
+            current.append(SUBSTITUTION_MARK)
+            return end, None
+        match = EXPANSION.match(command, start)
+        if not match:
+            return None, "shell syntax '$' is not allowed here"
+        current.append(match.group(0))
+        return match.end(), None
 
     while index < size:
         char = command[index]
@@ -1354,8 +1420,13 @@ def split_shell_command(command):
                 current.append(command[index:index + 2])
                 index += 2
                 continue
-            if char in "`$":
-                return segments, "command substitution or expansion inside double quotes"
+            if char == "`":
+                return segments, "backticks are not allowed here"
+            if char == "$":
+                index, trouble = dollar(index)
+                if trouble:
+                    return segments, trouble
+                continue
             current.append(char)
             quote = None if char == '"' else quote
             index += 1
@@ -1419,7 +1490,12 @@ def split_shell_command(command):
             current.append(redirect)
             index += len(redirect)
             continue
-        if char in "<>&`()$":
+        if char == "$":
+            index, trouble = dollar(index)
+            if trouble:
+                return segments, trouble
+            continue
+        if char in "<>&`()":
             return segments, f"shell syntax {char!r} is not allowed here"
         current.append(char)
         index += 1
@@ -1439,7 +1515,7 @@ def _segment_matches(spec, segment):
     """A ``Bash(...)`` rule body against one segment, comparing whole words."""
     if spec is None:
         return True
-    words = [w for w in segment.words if w not in STDERR_REDIRECTS]
+    words = [w for w in segment.command_words if w not in STDERR_REDIRECTS]
     try:
         if spec.endswith(":*"):
             prefix = shlex.split(spec[:-2])
@@ -1500,8 +1576,10 @@ def _read_only_filter(words):
     name, args = words[0], [w for w in words[1:] if w not in STDERR_REDIRECTS]
     short = "".join(a[1:] for a in args if a.startswith("-") and not a.startswith("--") and a != "-")
     operands = [a for a in args if not a.startswith("-") or a == "-"]
-    if name == "cat":
-        return all(a == "-" for a in operands)
+    if name == "cd":
+        return len(operands) <= 1
+    if name == "find":
+        return not any(a in FIND_ACTIONS for a in args)
     if name == "sed":
         if ("n" not in short and not {"--quiet", "--silent"} & set(args)) or "i" in short \
                 or any(a.startswith("--in-place") for a in args):
@@ -1545,6 +1623,11 @@ def bash_denial(command, deny_rules):
         if tool == "Bash" and (spec is None or any(_segment_matches(spec, s) for s in segments)
                                or (spec.endswith(":*") and (command or "").strip().startswith(spec[:-2]))):
             return rule
+    for segment in segments:
+        for inner in segment.substitutions:
+            denied = bash_denial(inner, deny_rules)
+            if denied:
+                return denied
     return None
 
 
@@ -1559,17 +1642,34 @@ def bash_decision(command, allow_rules, deny_rules=()):
     if not segments:
         return False, "empty command"
     bash_rules = [spec for tool, spec in map(_rule_parts, allow_rules) if tool == "Bash"]
-    compound = len(segments) > 1
     for segment in segments:
-        if segment.heredoc and not _heredoc_feeds_gh(segment.words):
+        if segment.heredoc and not _heredoc_feeds_gh(segment.command_words):
             return False, "a heredoc may only feed gh --body-file - or --input -"
+        for inner in segment.substitutions:
+            allowed, reason = bash_decision(inner, allow_rules)
+            if not allowed:
+                return False, f"substitution `$({inner})`: {reason}"
+        if not segment.command_words:
+            continue
+        if segment.command_words[0].startswith("$"):
+            return False, f"segment `{segment.text}` takes its command from an expansion"
         if any(_segment_matches(spec, segment) for spec in bash_rules):
             continue
-        if compound and _read_only_filter(segment.words):
+        if _read_only_filter(segment.command_words):
             continue
-        return False, (f"segment `{segment.text}` matches no host_allow rule"
-                       + (" and is not a read-only filter" if compound else ""))
+        return False, f"segment `{segment.text}` matches no host_allow rule and is not a read-only command"
     return True, None
+
+
+HOST_DENIAL = "Denied: this session has no approval for that action. It was not performed."
+
+
+def host_denial_message(tool, source):
+    """What the agent is told when this host refuses a tool; a refused command points to the file tools."""
+    if tool == "Bash" and source == "host":
+        return ("Denied: this session does not allow that command. It was not performed. The Read, Grep and Glob "
+                "tools can read files.")
+    return HOST_DENIAL
 
 
 def host_decision(permissions, tool, tool_input):
@@ -1824,8 +1924,7 @@ def _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout):
                     if source == "host_deny":
                         host["denials"].append({"source": source, "tool": tool, "input": tool_input,
                                                 "reason": reason, "turn": turn})
-                        response = {"behavior": "deny", "message": "Denied: this session has no approval for "
-                                                                   "that action. It was not performed."}
+                        response = {"behavior": "deny", "message": host_denial_message(tool, source)}
                     elif tool == "AskUserQuestion":
                         questions = tool_input.get("questions") or []
                         answers = {q.get("question", ""): answer_for(case, q.get("question", "")) for q in questions}
@@ -1841,8 +1940,7 @@ def _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout):
                     else:
                         host["denials"].append({"source": source, "tool": tool, "input": tool_input,
                                                 "reason": reason, "turn": turn})
-                        response = {"behavior": "deny", "message": "Denied: this session has no approval for "
-                                                                   "that action. It was not performed."}
+                        response = {"behavior": "deny", "message": host_denial_message(tool, source)}
                 send({"type": "control_response", "response": {"subtype": "success",
                                                                "request_id": event.get("request_id"),
                                                                "response": response}})
