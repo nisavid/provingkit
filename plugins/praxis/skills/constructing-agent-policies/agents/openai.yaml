@@ -1,0 +1,4 @@
+interface:
+  display_name: "Constructing Agent Policies"
+  short_description: "Build, test, and maintain situational agent policies"
+  default_prompt: "Use $praxis:constructing-agent-policies to turn this situational intent into an agent policy placed with its owner and proven on the target models."
