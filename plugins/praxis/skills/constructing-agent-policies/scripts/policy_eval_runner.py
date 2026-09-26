@@ -162,6 +162,15 @@ Prose questions       A turn whose final agent message closes with a question
                       allowlist, and Codex on-request approvals routed to its
                       automatic reviewer. Records carry ``condition`` and
                       summaries group by it.
+``condition_overrides`` Optional ``{real: {...}}``: what a ``real`` run grades
+                      differently, since a harness denial there can make a
+                      question correct. ``expectations``, ``write_checks``,
+                      ``question_checks`` and ``file_checks`` entries replace
+                      the case's entries with the same ``id`` and otherwise
+                      add to them; ``answers`` are tried before the case's
+                      own; ``answers_in_prose`` and ``default_answer``
+                      replace the case's. The run directory's ``case.json``
+                      holds the merged case.
 ``expectations``      ``[{id, severity: safety|quality, text}]`` for the
                       grader.
 ``write_checks``      ``[{id, expectation, match?, min?, max?}]``: the count of
@@ -412,7 +421,39 @@ def validate_case(raw):
                  "codex rules must be [{pattern, decision, justification}]")
     permissions.update(claude=claude, codex=codex)
     case["permissions"] = permissions
+    overrides = case.get("condition_overrides", {})
+    _require(isinstance(overrides, dict) and set(overrides) <= set(CONDITIONS) - {"isolating"},
+             "condition_overrides may only name the real condition")
+    for condition, override in overrides.items():
+        _require(isinstance(override, dict) and set(override) <= OVERRIDE_FIELDS,
+                 f"condition_overrides.{condition} may only set {', '.join(sorted(OVERRIDE_FIELDS))}")
+        validate_case(_merge_override(raw, override))
     return case
+
+
+OVERRIDE_FIELDS = frozenset({"expectations", "write_checks", "question_checks", "file_checks", "answers",
+                             "answers_in_prose", "default_answer"})
+
+
+def _merge_override(case, override):
+    merged = {key: value for key, value in case.items() if key != "condition_overrides"}
+    for field, value in override.items():
+        if field in ("expectations", "write_checks", "question_checks", "file_checks"):
+            _require(isinstance(value, list) and all(isinstance(v, dict) for v in value), f"{field} must be a list")
+            replaced = {item.get("id"): item for item in value}
+            kept = [replaced.pop(item.get("id"), item) for item in merged.get(field, [])]
+            merged[field] = kept + list(replaced.values())
+        elif field == "answers":
+            _require(isinstance(value, list), "answers must be [{match, answer}]")
+            merged["answers"] = value + list(merged.get("answers", []))
+        else:
+            merged[field] = value
+    return merged
+
+
+def apply_condition_overrides(case, condition):
+    """The case as a run under ``condition`` grades it: its overrides for that condition merged in, then validated."""
+    return validate_case(_merge_override(case, case.get("condition_overrides", {}).get(condition, {})))
 
 
 def render_placeholders(value, now, head=None, base=None):
@@ -2059,7 +2100,9 @@ def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_roo
     """
     if harness not in GRADERS:
         raise RunError(f"unknown harness {harness}")
-    case = validate_case(json.loads(Path(case_path).read_text()))
+    raw = json.loads(Path(case_path).read_text())
+    validate_case(raw)
+    case = apply_condition_overrides(raw, condition)
     case["permissions"][harness] = condition_permissions(case["permissions"][harness], harness, condition)
     timeout = turn_timeout(case, timeout)
     now = now or dt.datetime.now(dt.timezone.utc)
@@ -2286,7 +2329,8 @@ def load_entries(paths):
 def summary_markdown(summary):
     lines = []
     for group in summary["groups"]:
-        lines.append(f"## {group['harness']} {group['model']} ({group['effort']}): {group['status']}")
+        lines.append(f"## {group['harness']} {group['model']} ({group['effort']}, "
+                     f"{group.get('condition', 'isolating')} condition): {group['status']}")
         lines.append(f"Cost ${group['cost_usd']:.4f} (Claude-reported USD only), wall {group['wall_s']}s")
         for case in group["cases"]:
             lines.append(f"- Case {case['case_id']} {case['title']}: {case['status']} "
