@@ -60,7 +60,7 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "4018e877e1ffe8e3ae76b0d4443e7f1caf29f0a77a3f52e12224edd5126e579b"
+      "sha256": "a890ab708d521590ed79809836bebf9cea0c72c7fb1fc8d4f2b67d27596b7531"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -68,7 +68,7 @@
     },
     "tests/test_policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "ff85b3b40b11d494414d8e15270dd5efc12ec6e3d827bcf694053e7b10045463"
+      "sha256": "948dce78f2b3a00829d4418cacbb79f8d785796a8bb436c850f309b0e2549a1b"
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,

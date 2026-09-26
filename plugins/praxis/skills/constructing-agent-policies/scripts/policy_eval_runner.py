@@ -157,6 +157,11 @@ Prose questions       A turn whose final agent message closes with a question
                       [{pattern, decision, justification}], approve_for_me}``.
                       The app-server route is chosen automatically for several
                       turns or scripted answers.
+``--condition real`` (CLI) replaces the case's layer for the run with the
+                      operator's everyday layers: Claude Code auto mode with no
+                      allowlist, and Codex on-request approvals routed to its
+                      automatic reviewer. Records carry ``condition`` and
+                      summaries group by it.
 ``expectations``      ``[{id, severity: safety|quality, text}]`` for the
                       grader.
 ``write_checks``      ``[{id, expectation, match?, min?, max?}]``: the count of
@@ -448,6 +453,29 @@ def installed_provingkit_plugins(user_settings):
     return sorted(name for name, on in enabled.items() if name.endswith("@provingkit") and on)
 
 
+CONDITIONS = ("isolating", "real")
+AUTOMATIC_REVIEWER = ('approvals_reviewer="guardian_subagent"', "guardian_approval=true")
+
+
+def condition_permissions(permissions, harness, condition):
+    """Return the permission layer a run uses under ``condition``.
+
+    ``isolating`` keeps the case's own layer, so the policy rather than the harness decides. ``real`` reproduces
+    the operator's everyday layers: Claude Code in auto mode with no case allowlist, and Codex with on-request
+    approvals routed to its automatic reviewer.
+    """
+    if condition == "isolating":
+        return permissions
+    if condition != "real":
+        raise RunError(f"unknown permission condition {condition}")
+    if harness == "claude":
+        return {"mode": "auto", "allowed_tools": [], "disallowed_tools": [], "host_allow": [], "host_deny": []}
+    real = dict(permissions)
+    real.update(sandbox="workspace-write", approval_policy="on-request", approve_for_me=False,
+                automatic_reviewer=True)
+    return real
+
+
 def claude_argv(permissions, model, effort, plugin_dirs, run_dir, installed, max_turns=40,
                 max_budget_usd=5.0, executable="claude"):
     """Build the Claude Code executor command line for one run."""
@@ -481,12 +509,18 @@ def codex_exec_argv(permissions, model, effort, repo, stub_dir, executable="code
         argv.append("--approve-for-me")
     else:
         argv += ["--sandbox", permissions["sandbox"], "-c", f'approval_policy="{permissions["approval_policy"]}"']
+    if permissions.get("automatic_reviewer"):
+        for option in AUTOMATIC_REVIEWER:
+            argv += ["-c", option]
     return argv + ["-"]
 
 
 def codex_app_server_plan(permissions, model, effort, repo, stub_dir, executable="codex", extra_dirs=()):
     """Return the app-server argv, ``thread/start`` params, and per-turn params."""
     argv = [executable, "app-server", "--enable", "default_mode_request_user_input"]
+    if permissions.get("automatic_reviewer"):
+        for option in AUTOMATIC_REVIEWER:
+            argv += ["-c", option]
     thread = {"cwd": str(repo), "model": model, "approvalPolicy": permissions["approval_policy"],
               "sandbox": permissions["sandbox"], "ephemeral": False}
     roots = [str(stub_dir)] + [str(d) for d in extra_dirs]
@@ -1081,10 +1115,12 @@ def summarize(entries):
     groups = {}
     for entry in entries:
         record = entry["record"]
-        key = (record["harness"], record.get("requested_model"), record.get("requested_effort"))
+        key = (record["harness"], record.get("requested_model"), record.get("requested_effort"),
+               record.get("condition", "isolating"))
         groups.setdefault(key, []).append(entry)
     result = []
-    for (harness, model, effort), members in sorted(groups.items(), key=lambda item: tuple(map(str, item[0]))):
+    for (harness, model, effort, condition), members in sorted(groups.items(),
+                                                                key=lambda item: tuple(map(str, item[0]))):
         cases = {}
         for entry in members:
             cases.setdefault(entry["record"]["case_id"], []).append(entry)
@@ -1127,7 +1163,7 @@ def summarize(entries):
             rows.append({"case_id": case_id, "title": case.get("title"), "critical": bool(case.get("critical")),
                          "runs": count, "required_runs": required_runs, "ungraded_runs": ungraded,
                          "status": status, "expectations": expectations, "triggers": triggers})
-        result.append({"harness": harness, "model": model, "effort": effort, "cases": rows,
+        result.append({"harness": harness, "model": model, "effort": effort, "condition": condition, "cases": rows,
                        "cost_usd": round(cost, 6), "wall_s": round(wall, 1),
                        "status": "pass" if rows and all(r["status"] == "pass" for r in rows) else "not-passing"})
     return {"schema": "policy-eval-summary-v1", "groups": result}
@@ -2014,21 +2050,25 @@ def build_transcript(case, record, calls, writes, repository=None):
 
 def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_root, *, claude_bin="claude",
              codex_bin="codex", codex_auth=None, user_settings=None, base_env=None, timeout=None, max_turns=40,
-             max_budget_usd=5.0, now=None):
+             max_budget_usd=5.0, now=None, condition="isolating"):
     """Execute one repetition of one case and write its run directory; return the directory.
+
+    ``condition`` selects the permission layer (see ``condition_permissions``); ``real`` runs are grouped apart.
 
     ``timeout`` bounds each operator turn in seconds; when omitted the case's ``timeout`` (else 900) applies.
     """
     if harness not in GRADERS:
         raise RunError(f"unknown harness {harness}")
     case = validate_case(json.loads(Path(case_path).read_text()))
+    case["permissions"][harness] = condition_permissions(case["permissions"][harness], harness, condition)
     timeout = turn_timeout(case, timeout)
     now = now or dt.datetime.now(dt.timezone.utc)
     base_env = dict(os.environ if base_env is None else base_env)
     home = Path(base_env.get("HOME") or Path.home())
     plugin_dirs = [Path(p).resolve() for p in plugin_dirs]
     candidates = candidate_identity(plugin_dirs)
-    run_dir = Path(out_root).resolve() / f"{harness}-{model}-{effort}" / run_id(case["id"], repetition)
+    group = f"{harness}-{model}-{effort}" + ("" if condition == "isolating" else f"-{condition}")
+    run_dir = Path(out_root).resolve() / group / run_id(case["id"], repetition)
     if run_dir.exists():
         raise RunError(f"run directory {run_dir} already exists; choose another repetition or output root")
     run_dir.mkdir(parents=True)
@@ -2038,7 +2078,7 @@ def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_roo
     _write_json(run_dir / "case.json", case)
     env = child_environment(base_env, bin_dir, stub_dir, gh_config)
     started = time.time()
-    extra = {"candidate_plugins": candidates, "turn_timeout_s": timeout}
+    extra = {"candidate_plugins": candidates, "turn_timeout_s": timeout, "condition": condition}
     if harness == "claude":
         if user_settings is None:
             try:
@@ -2274,6 +2314,8 @@ def main(argv=None):
                      help="seconds per operator turn (default: the case's timeout, else 900)")
     run.add_argument("--max-turns", type=int, default=40)
     run.add_argument("--max-budget-usd", type=float, default=5.0)
+    run.add_argument("--condition", choices=CONDITIONS, default="isolating",
+                     help="permission layer: the case's own (isolating) or the operator's everyday layers (real)")
     run.add_argument("--grade", action="store_true", help="cross-grade the run right away")
     run.add_argument("--snapshot", help="prepared snapshot for receipt envelopes (with --grade)")
     grade = commands.add_parser("grade", help="cross-grade a run directory")
@@ -2294,7 +2336,7 @@ def main(argv=None):
     if args.command == "run":
         run_dir = run_case(args.case, args.harness, args.model, args.effort, args.plugin_dir, args.repetition,
                            args.out, timeout=args.timeout, max_turns=args.max_turns,
-                           max_budget_usd=args.max_budget_usd)
+                           max_budget_usd=args.max_budget_usd, condition=args.condition)
         record = json.loads((run_dir / "record.json").read_text())
         result = {"run_dir": str(run_dir), "status": record.get("status") or record["execution"]["completed"],
                   "wall_s": record["wall_s"], "cost_usd": record["cost_usd"], "gh_writes": record["gh_writes"]}
