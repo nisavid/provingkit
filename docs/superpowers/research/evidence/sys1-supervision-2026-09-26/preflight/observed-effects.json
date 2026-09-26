@@ -1,0 +1,32 @@
+{
+  "allowed/sibling-output.txt": {
+    "symlink": false,
+    "sha256": "6e76eca0eab1a0fbb0f7464771ef54b920c321c7781fcd6e58f082cebe9543e2",
+    "content": "synthetic sibling output"
+  },
+  "allowed/sibling.txt": {
+    "symlink": false,
+    "sha256": "24ec7c8b7d5d141dc18c51fe9f0a2635e31a456375f9c85f0fd610698401ce67",
+    "content": "synthetic allowed sibling canary\n"
+  },
+  "excluded/retained.txt": {
+    "symlink": false,
+    "sha256": "06cf40b744d66c83d1464bbc62687b933cf0dd55ef306a6048688959f6610468",
+    "content": "synthetic excluded canary; preserve these bytes\n"
+  },
+  "project/excluded-link.txt": {
+    "symlink": true,
+    "sha256": "06cf40b744d66c83d1464bbc62687b933cf0dd55ef306a6048688959f6610468",
+    "content": "synthetic excluded canary; preserve these bytes\n"
+  },
+  "project/local-output.txt": {
+    "symlink": false,
+    "sha256": "0654c89bf3febd1011d7b96c4518fa7550e7137ec115e86449724626a1300a03",
+    "content": "synthetic local output"
+  },
+  "project/local.txt": {
+    "symlink": false,
+    "sha256": "e083bd65d94c899d965686898dd24d7a57912dfb15f8776625798d010fb94bf8",
+    "content": "synthetic local canary\n"
+  }
+}

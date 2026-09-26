@@ -1,0 +1,20 @@
+{
+  "reviewer": "native child sys1_research_review",
+  "requested_model": "gpt-6-astra",
+  "requested_effort": "high",
+  "dispatch_binding": "37d5b59fa15cfa62de14eb48cf76ed43f66ebc4b91201464b17cc9add6523d52",
+  "verdict": "clean within frozen pre-execution intent/runtime scope",
+  "identities": {
+    "pilot-v2.py": "a847cbd471bde06dd9cfe9fe25346b6cf77f043a3d3240e82f54a0764bc09cff",
+    "pilot-hook.mjs": "67df94a469fc45a3890f77c68bb29716736af88aed20872f013fd5c59a711be2",
+    "native-preflight-v283-qualification.json": "c190d86059ace26bb014a0403c8254d4afccafa3fab5d5cfa0dd6b67658f8a93",
+    "supervision-wording-preregistration.md": "4ffb9d86b68f0b44684e8538bf74e2ac919b961a2c0eff102913fe5f2f6cd21c"
+  },
+  "remaining": [
+    "freeze prepared manifest",
+    "adjudicate raw runtime delivery and controls",
+    "classify questions and file effects"
+  ],
+  "execution": "not run",
+  "assurance": "same-leader tool-observed response; no independent session attestation"
+}

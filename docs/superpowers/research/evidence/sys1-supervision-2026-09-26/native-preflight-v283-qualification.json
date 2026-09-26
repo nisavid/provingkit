@@ -1,0 +1,35 @@
+{
+  "qualified": true,
+  "claude_version": "2.1.283",
+  "scope": "Restricted built-in file-tool controls for synthetic project pilot; no process-wide isolation or independent symlink-write boundary claim",
+  "observations": {
+    "allowed_operations": 4,
+    "restricted_path_denials": 3,
+    "earlier_read_before_write_failure": 1,
+    "retained_canary_unchanged": true,
+    "excluded_output_absent": true,
+    "tools": [
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "model": "claude-opus-5-5",
+    "permission_mode": "auto"
+  },
+  "script": {
+    "path": "{scratch}/native-preflight-v283.py",
+    "sha256": "891a1f8328c43be5bad405450cc4f486af4a32439c670fb4b6c68fd6d3fa5ed3"
+  },
+  "manifest": {
+    "path": "{scratch}/native-preflight-v283/manifest.json",
+    "sha256": "43cbfd413efe3078a9fc1367d50217fb55e09cde08a0ed5e4dcf04e473fcab23"
+  },
+  "stdout": {
+    "path": "{scratch}/native-preflight-v283/stdout.jsonl",
+    "sha256": "69147765b0c6c5eb17b796b1b904e421be1711a1794bb180df1d07f357fcd6a2"
+  },
+  "effects": {
+    "path": "{scratch}/native-preflight-v283/observed-effects.json",
+    "sha256": "801c408feb572cef895a5b786f97359db0d85c1170d350bc4135a2e71023d79a"
+  }
+}

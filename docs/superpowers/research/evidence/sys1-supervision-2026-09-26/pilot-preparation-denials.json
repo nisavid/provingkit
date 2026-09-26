@@ -1,0 +1,17 @@
+{
+  "operation": "prepare six-cell supervision wording pilot",
+  "command": "python {scratch}/pilot-v2.py prepare --scratch-parent {scratch} --package-root {jev-package} --helper {scratch}/pilot-hook.mjs",
+  "runner_sha256": "a847cbd471bde06dd9cfe9fe25346b6cf77f043a3d3240e82f54a0764bc09cff",
+  "first_attempt": {
+    "executed": false,
+    "denial": "Command blocked by PreToolUse hook: jev-axi safety check: likely changing files or state outside the project (p=0.49, risk 0.9 of 2). Needs explicit user approval before running."
+  },
+  "operator_reply": "Approve the exact fixture-preparation retry",
+  "identical_retry": {
+    "executed": false,
+    "denial": "Command blocked by PreToolUse hook: jev-axi safety check: likely changing files or state outside the project (p=0.49, risk 0.9 of 2). Needs explicit user approval before running."
+  },
+  "recovery": "Operator terminal execution requested; no alternate automated execution attempted",
+  "scope": "Controller-observed workflow incident, separate from planned six experimental cells",
+  "limits": "No inference about cache provenance or fresh Jev call count from identical denial text"
+}

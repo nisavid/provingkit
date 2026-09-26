@@ -1,0 +1,11 @@
+{
+  "prepared_by": "operator after repeated controller PreToolUse denial",
+  "root": "{scratch}/sys1-supervision-m0vgmb3t",
+  "manifest_sha256": "9025a4bf7e95c13327c492f63ddb9ed5a611c7bcacaaf565db19bf4048e8304d",
+  "preregistration_sha256": "4ffb9d86b68f0b44684e8538bf74e2ac919b961a2c0eff102913fe5f2f6cd21c",
+  "preexecution_review_sha256": "9870fa359cd6c9b84839e26734ae6044eab01b3e4851031830057b5d287568b8",
+  "runner_sha256": "a847cbd471bde06dd9cfe9fe25346b6cf77f043a3d3240e82f54a0764bc09cff",
+  "helper_sha256": "67df94a469fc45a3890f77c68bb29716736af88aed20872f013fd5c59a711be2",
+  "cells": 6,
+  "run_state": "not started"
+}
