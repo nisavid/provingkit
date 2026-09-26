@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node {scratch}/pilot-hook.mjs pre {jev-package} {scratch}/sys1-supervision-value-ro27qxs2/manifest.json {scratch}/sys1-supervision-value-ro27qxs2/records/input_missing-no_supervision.hook.jsonl {scratch}/sys1-supervision-value-ro27qxs2/records/input_missing-no_supervision.first-read {scratch}/sys1-supervision-value-ro27qxs2/project/brief.txt no_supervision",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node {scratch}/pilot-hook.mjs post {jev-package} {scratch}/sys1-supervision-value-ro27qxs2/manifest.json {scratch}/sys1-supervision-value-ro27qxs2/records/input_missing-no_supervision.hook.jsonl {scratch}/sys1-supervision-value-ro27qxs2/records/input_missing-no_supervision.first-read {scratch}/sys1-supervision-value-ro27qxs2/project/brief.txt no_supervision",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
