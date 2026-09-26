@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.build_release_artifacts import build
+from scripts.build_release_artifacts import _build_snapshot, build
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +25,7 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             self.assertEqual(receipt["schema"], "provingkit-artifact-receipt-v1")
             self.assertEqual(len(receipt["artifact_sha256"]), 64)
 
-    def test_assigned_local_alpha_projects_all_six_claude_versions(self):
+    def test_assigned_local_alpha_projects_all_seven_claude_versions(self):
         with tempfile.TemporaryDirectory() as tmp:
             source = Path(tmp) / "source"
             source.mkdir()
@@ -101,6 +101,30 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             r2 = json.loads(build(ROOT, second, "cursor", ["proseweaving"], "preview", False).read_text())
             self.assertEqual(r1["artifact_sha256"], r2["artifact_sha256"])
             self.assertEqual(r1["files"], r2["files"])
+
+    def test_praxis_slate_and_runtime_projection(self):
+        policy = json.loads((ROOT / "release/artifact-projection-policy-v1.json").read_text())
+        definition = json.loads((ROOT / "release/provingkit/definition-v1.json").read_text())
+        self.assertEqual(policy["slate"], [m["id"] for m in definition["membership"]["members"]])
+        runtime = (
+            "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py",
+            "plugins/praxis/skills/constructing-agent-policies/scripts/gh_stub.py",
+        )
+        adapter = "plugins/praxis/skills/constructing-agent-policies/agents/openai.yaml"
+        for target in ("agent-plugins", "claude", "cursor"):
+            with self.subTest(target=target):
+                with tempfile.TemporaryDirectory() as directory:
+                    output = Path(directory) / target
+                    receipt_path = _build_snapshot(
+                        ROOT, output, target, ["praxis"], "preview", False,
+                        "0" * 40, "0" * 12,
+                    )
+                    receipt = json.loads(receipt_path.read_text())
+                    self.assertEqual(receipt["plugin_slate"], ["praxis"])
+                    self.assertFalse((output / "plugins/praxis/topology.json").exists())
+                    for path in runtime:
+                        self.assertTrue((output / path).is_file(), path)
+                    self.assertEqual((output / adapter).is_file(), target == "agent-plugins")
 
     def test_code_only_member_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

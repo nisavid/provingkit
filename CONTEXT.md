@@ -65,7 +65,7 @@ _Avoid_: Writer, generic GitHub client
 ### Kit and release
 
 **Provingkit**:
-The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. *The Kit* is its shorthand. Task Witness is optional future equipment, outside the current Slate; any resurrection must define a fresh contract and adapter.
+The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Praxis. *The Kit* is its shorthand. Task Witness is optional future equipment, outside the current Slate; any resurrection must define a fresh contract and adapter.
 _Avoid_: Suite, bundle, the six
 
 **Amberbridge**:
@@ -103,6 +103,15 @@ _Avoid_: Build, snapshot
 **Receipt**:
 A recorded, independently checkable result of a release or deployment step, bound to the exact inputs it covers.
 _Avoid_: Log, report
+
+### Work stewardship
+
+**Praxis**:
+The plugin for work stewardship: shaping, conducting, recovering, and completing agentic efforts and improving how they run. Its object is an effort's intent, work graph, participants, context, artifacts, and obligations.
+
+**Agent policy**:
+A situational decision rule that tells an agent when and how to act: the facts it must establish, the operator values it applies, the gates it respects, and when it stops or asks. It lives with the component whose work it governs.
+_Avoid_: Guardrail, rule set, policy (bare)
 
 ### Source and evidence
 

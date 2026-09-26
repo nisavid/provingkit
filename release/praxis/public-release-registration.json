@@ -1,0 +1,10 @@
+{
+  "production_eligible": true,
+  "schema_version": 1,
+  "source_stage_validator_flags": [],
+  "support_paths": [
+    "release/plugin-content-locks/praxis.json",
+    "tests/test_policy_eval_runner.py",
+    "tests/test_validate_praxis.py"
+  ]
+}

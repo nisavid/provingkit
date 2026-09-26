@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "skills": {
+    "constructing-agent-policies": {
+      "owns": [
+        "agent-policy-construction",
+        "agent-policy-evaluation"
+      ],
+      "may_call": []
+    }
+  }
+}

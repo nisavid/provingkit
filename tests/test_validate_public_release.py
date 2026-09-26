@@ -1280,13 +1280,23 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         self.assertIn("proseweaving", self.module.SKILL_PLUGINS)
         self.assertEqual(
             self.module.PUBLIC_RELEASE_REGISTERED_SKILL_PLUGINS,
-            ("proseweaving",),
+            ("praxis", "proseweaving"),
         )
         self.assertNotIn("proseweaving", self.module.PRODUCTION_RUNTIME_PACKAGES)
         self.assertEqual(
             self.module.MARKETPLACE_PLUGINS["proseweaving"],
             "./plugins/proseweaving",
         )
+
+    def test_praxis_registration_binds_constructor_tests(self) -> None:
+        praxis = self.module.PUBLIC_RELEASE_REGISTRATIONS["praxis"]
+        self.assertEqual(praxis["package_kind"], "skill-plugin")
+        self.assertEqual(praxis["validator_path"], "scripts/validate_praxis.py")
+        self.assertIn("tests/test_policy_eval_runner.py", praxis["support_paths"])
+        self.assertIn("tests/test_validate_praxis.py", praxis["support_paths"])
+        self.assertNotIn("evals/praxis", praxis["support_paths"])
+        self.assertIn("praxis", self.module.SOURCE_STAGE_VALIDATED_PLUGINS)
+        self.assertEqual(self.module.MARKETPLACE_PLUGINS["praxis"], "./plugins/praxis")
 
     def test_public_release_registration_projection_is_immutable(self) -> None:
         runtime_package = next(iter(self.module.PUBLIC_RELEASE_REGISTRATIONS))
@@ -2425,14 +2435,14 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             self.module.run_source_stage_validators(snapshot)
 
         expected = [
+            (relative, self.module.SOURCE_STAGE_COMMON_VALIDATOR_FLAGS.get(relative, ()))
+            for relative in self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS
+        ] + [
             (
                 self.module.VALIDATOR_PATHS[plugin],
                 self.module.SOURCE_STAGE_VALIDATOR_FLAGS[plugin],
             )
             for plugin in self.module.SOURCE_STAGE_VALIDATED_PLUGINS
-        ] + [
-            (relative, ())
-            for relative in self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS
         ]
         self.assertEqual(run.call_count, len(expected))
         for (relative, flags), call in zip(
@@ -2558,7 +2568,10 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             self.module.SOURCE_STAGE_VALIDATED_PLUGINS
         )
 
-        self.assertEqual(self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS, ())
+        self.assertEqual(
+            self.module.SOURCE_STAGE_COMMON_VALIDATOR_PATHS,
+            ("scripts/validate_provingkit.py",),
+        )
         for stale_root in stale_roots:
             with self.subTest(stale_root=stale_root):
                 self.assertFalse(
@@ -4003,6 +4016,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             "mergecraft",
             "artifact_customs",
             "proseweaving",
+            "praxis",
         ):
             self.assertIn(f"validate_{member}.py", contributing)
         self.assertIn("pinned unsigned preview", normalized_readme)

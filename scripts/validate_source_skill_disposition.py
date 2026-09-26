@@ -134,6 +134,11 @@ DISTRIBUTION_IDENTITIES = [
         "plugin_root": "plugins/mergecraft",
     },
     {
+        "id": "praxis",
+        "identity_artifact_paths": ["release/plugin-content-locks/praxis.json"],
+        "plugin_root": "plugins/praxis",
+    },
+    {
         "id": "rolecasting",
         "identity_artifact_paths": ["plugins/rolecasting/content-lock.json"],
         "plugin_root": "plugins/rolecasting",
@@ -273,7 +278,7 @@ DEPENDENCY_EDGES = [
     },
 ]
 DISTRIBUTION_CLOSURE_SHA256 = (
-    "sha256:f1965ac4ae8dba705e6aea937a2df6e5d5a8b8fcb6f43e759a33a9cb0ee98f61"
+    "sha256:f1e79026b150646f9d532f4c1fd3fe6ac833d5700df2655f2989e6e8904cc649"
 )
 TRIGGER_CHANGE_CLASSES = {
     "candidate-identity-artifact": ["identity-artifact-change"],
@@ -383,6 +388,11 @@ DISTRIBUTION_REGENERATION = [
         "conditional_regenerate_paths": [],
         "id": "mergecraft",
         "regenerate_paths": ["release/plugin-content-locks/mergecraft.json"],
+    },
+    {
+        "conditional_regenerate_paths": [],
+        "id": "praxis",
+        "regenerate_paths": ["release/plugin-content-locks/praxis.json"],
     },
     {
         "conditional_regenerate_paths": [],
@@ -1347,6 +1357,8 @@ def validate_refresh_contract(
         ]
         paths = [distribution["manifest_path"], distribution["package_root"]]
         for field in path_fields:
+            if field == "evaluation_paths" and distribution[field] == []:
+                continue
             paths.extend(string_list(distribution[field], "distribution closure path drift"))
         for relative in paths:
             target = repository / relative

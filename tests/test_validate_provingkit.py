@@ -126,17 +126,21 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/provingkit/release-manifest-v1.schema.json",
             "release/plugin-content-locks/artifact-customs.json",
             "release/plugin-content-locks/mergecraft.json",
+            "release/plugin-content-locks/praxis.json",
             "release/plugin-content-locks/versionkeeping.json",
             "plugins/tricritical/content-lock.json",
             "release/source-skill-lineage/source-manifest.json",
             "release/source-skill-disposition/disposition-ledger.json",
             "release/source-skill-disposition/release-refresh-contract.json",
+            "release/praxis/public-release-registration.json",
             "tests/plugins/mergecraft/writing-reviewable-pr-descriptions/test_review_input.py",
         ):
+            (destination / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(REPOSITORY / relative, destination / relative)
         expected_members = {
             "artifact-customs",
             "mergecraft",
+            "praxis",
             "proseweaving",
             "rolecasting",
             "tricritical",
@@ -145,7 +149,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         for stale_member in (destination / "plugins").iterdir():
             if stale_member.is_dir() and stale_member.name not in expected_members:
                 shutil.rmtree(stale_member)
-        for member in ("rolecasting", "proseweaving"):
+        for member in ("rolecasting", "proseweaving", "praxis"):
             shutil.copytree(
                 REPOSITORY / "plugins" / member,
                 destination / "plugins" / member,
@@ -230,6 +234,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "agent-plugin",
                 "plugin-content-lock",
                 "plugins/proseweaving/content-lock.json",
+            ),
+            (
+                "praxis",
+                "agent-plugin",
+                "plugin-content-lock",
+                "release/plugin-content-locks/praxis.json",
             ),
         ):
             members.append(
@@ -530,11 +540,36 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             lock_commands,
         )
 
-    def test_human_docs_state_the_current_six_plugin_source_set(self) -> None:
+    def test_praxis_source_job_and_derived_lock_are_covered(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        source_commands = "\n".join(
+            step.get("run", "") for step in workflow["jobs"]["praxis"]["steps"]
+        )
+        lock_commands = "\n".join(
+            step.get("run", "") for step in workflow["jobs"]["derived-locks"]["steps"]
+        )
+        self.assertIn("python -m unittest tests.test_validate_praxis", source_commands)
+        self.assertIn("python -m unittest tests.test_policy_eval_runner", source_commands)
+        self.assertIn("python scripts/validate_praxis.py .", source_commands)
+        self.assertIn(
+            "python scripts/validate_praxis.py --write-content-lock .",
+            lock_commands,
+        )
+        self.assertNotIn("actions/setup-node@", str(workflow["jobs"]["praxis"]))
+        kit_commands = "\n".join(
+            step.get("run", "")
+            for step in workflow["jobs"]["provingkit-source"]["steps"]
+        )
+        self.assertIn(
+            "python scripts/validate_provingkit.py . --definitions-only",
+            kit_commands,
+        )
+
+    def test_human_docs_state_the_current_seven_plugin_source_set(self) -> None:
         expected = {
-            "README.md": "six coordinated Agent Plugins",
-            "CONTRIBUTING.md": "six Agent Plugins",
-            ".github/pull_request_template.md": "six Agent Plugin members",
+            "README.md": "seven coordinated Agent Plugins",
+            "CONTRIBUTING.md": "seven Agent Plugins",
+            ".github/pull_request_template.md": "seven Agent Plugin members",
         }
         for relative, phrase in expected.items():
             with self.subTest(relative=relative):
@@ -542,7 +577,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 normalized = " ".join(content.split())
                 self.assertIn(phrase, normalized)
                 self.assertIn("Proseweaving", normalized)
-                self.assertNotIn("seven source members", normalized)
+                self.assertIn("Praxis", normalized)
 
     def test_agent_guidance_describes_member_specific_content_identity_writers(
         self,
@@ -551,7 +586,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertIn("Use `--write-content-lock` only where", guidance)
         self.assertIn(
-            "Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write "
+            "Rolecasting, Versionkeeping, Mergecraft, Artifact Customs, and Praxis write "
             "only their content locks",
             guidance,
         )
@@ -748,6 +783,15 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "plugin-content-lock",
                     "plugins/proseweaving/content-lock.json",
                 ),
+                (
+                    "praxis",
+                    "agent-plugin",
+                    "1.0.0",
+                    "plugins/praxis/plugin.json",
+                    "plugins/praxis/.claude-plugin/plugin.json",
+                    "plugin-content-lock",
+                    "release/plugin-content-locks/praxis.json",
+                ),
             ],
         )
         self.assertEqual(
@@ -828,7 +872,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unsupported member version", result.stderr)
 
-    def test_assigned_local_alpha_version_accepts_six_consistent_members(self) -> None:
+    def test_assigned_local_alpha_version_accepts_seven_consistent_members(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             self.clone_with_history(repository)
@@ -1750,7 +1794,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("excluded source present", result.stderr)
 
-    def test_marketplace_is_the_exact_six_agent_plugin_source_projection(self) -> None:
+    def test_marketplace_is_the_exact_seven_agent_plugin_source_projection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -3041,7 +3085,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 7),
+            ("maxItems", 8),
             ("items", {}),
         )
         for key, value in mutations:

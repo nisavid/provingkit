@@ -1,0 +1,64 @@
+{
+  "algorithm": "sha256",
+  "contract": "praxis-content-lock-v1",
+  "files": {
+    "plugins/praxis/.claude-plugin/plugin.json": {
+      "mode": 420,
+      "sha256": "ec2a5da3fa0934309853e56e66063abac51616b708b232a87ba8cb7a21296113"
+    },
+    "plugins/praxis/CHANGELOG.md": {
+      "mode": 420,
+      "sha256": "dfd5d5683936eedbda8997dc26109d2686457ae485bb7226d4fccb9162e5b9c9"
+    },
+    "plugins/praxis/LICENSE": {
+      "mode": 420,
+      "sha256": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8"
+    },
+    "plugins/praxis/README.md": {
+      "mode": 420,
+      "sha256": "c1a353129fb370d5db5bc0b5bd27dd49dd1f23f6fff1d6396f4cc8b852626d58"
+    },
+    "plugins/praxis/plugin.json": {
+      "mode": 420,
+      "sha256": "083ecf5d15bb564b467492a8fc6ea1f973b5124ab17a9f51910fa609299d403b"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/SKILL.md": {
+      "mode": 420,
+      "sha256": "ab399ffd3ba7409600d3465fddfb3984747ec9f77378a524796307ed293deb04"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/agents/openai.yaml": {
+      "mode": 420,
+      "sha256": "63d1dc2b97f50a5c51b22bd36e92c9e6cfaab646459d39556d924d7cf23a9f0b"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/references/evaluation.md": {
+      "mode": 420,
+      "sha256": "811c45774e5e2e87e44d87ed2f57866d41a0d4e50bc2430443b07e11c0b3e327"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/references/policy-design.md": {
+      "mode": 420,
+      "sha256": "fdbb4f4053aa97a79b48eeaca5ae2748c161f2637e510a006469b3e223b5e114"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/scripts/gh_stub.py": {
+      "mode": 420,
+      "sha256": "7c027600aa12a8f61188995269870e6980a6337b1dd8c2babcc7ffa64b9bbfd4"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
+      "mode": 420,
+      "sha256": "26c3c655c299f4bd89025be9512c4e32e8dcad8b6b4fd7cf32618bcceeb996b6"
+    },
+    "plugins/praxis/topology.json": {
+      "mode": 420,
+      "sha256": "ec9f2c5c941408e9429c4f355f3904b1df035bd9c0684ace3385df3569235905"
+    },
+    "tests/test_policy_eval_runner.py": {
+      "mode": 420,
+      "sha256": "d3d3ebe825ddbecb7876f699ec0cd750e6750e0d2c82c4080413c8c8cec9af03"
+    },
+    "tests/test_validate_praxis.py": {
+      "mode": 420,
+      "sha256": "738049c7cfb39e2229339a9bfe915f561b52374d1f6cf31f0ec238ea726c5335"
+    }
+  },
+  "plugin_root": "plugins/praxis",
+  "schema_version": 1
+}

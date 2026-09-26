@@ -30,8 +30,8 @@ Each member under `plugins/` is a package whose README names its validator
 (`scripts/validate_<plugin>.py`), tests, evals, governed content identity, and
 supported regeneration commands. Edit canonical source first. Use
 `--write-content-lock` only where the member's validator documents that mode;
-Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write only their
-content locks, while Tricritical also regenerates its per-skill reference
+Rolecasting, Versionkeeping, Mergecraft, Artifact Customs, and Praxis write only
+their content locks, while Tricritical also regenerates its per-skill reference
 projections. Task Witness uses an independently reviewed source-shape identity,
 has no mechanical writer, and must never be rebaselined as an ordinary content
 lock.

@@ -14,6 +14,7 @@ PREPARED_RELEASE_ENTRYPOINT = (
 EXPECTED_MEMBER_IDENTITIES = {
     "artifact-customs",
     "mergecraft",
+    "praxis",
     "rolecasting",
     "proseweaving",
     "tricritical",

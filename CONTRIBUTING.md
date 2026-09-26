@@ -5,10 +5,10 @@ consistent, and explicit about what their validation proves.
 
 ## Scope
 
-Current changes stay within the six Agent Plugins: Rolecasting, Tricritical,
-Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. Task Witness is
-shelved optional equipment; its historical records remain available for future
-reassessment.
+Current changes stay within the seven Agent Plugins: Rolecasting, Tricritical,
+Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Praxis. Task
+Witness is shelved optional equipment; its historical records remain available
+for future reassessment.
 Hindsight, Base Loadout, personal tools, and unrelated experiments belong
 elsewhere.
 
@@ -58,10 +58,18 @@ python scripts/validate_artifact_customs.py . --source-stage
 
 python -m unittest tests.test_validate_proseweaving
 python scripts/validate_proseweaving.py .
+
+python -m unittest tests.test_validate_praxis
+python -m unittest tests.test_policy_eval_runner
+python scripts/validate_praxis.py .
 ```
 
 These commands validate public source contracts. They do not grant release,
-installation, runtime, or host-mutation authority.
+installation, runtime, or host-mutation authority. The Praxis check binds the
+[member's governed inputs](plugins/praxis/README.md#validation) to
+`release/plugin-content-locks/praxis.json`; it does not run a model or assert
+live behavior. `tests.test_policy_eval_runner` exercises the constructor's
+runner against fake harnesses and recording tool stubs.
 
 ### Prepared source-stage containment
 
@@ -84,7 +92,7 @@ explains the additional controls required for release and live qualification.
 
 ## Repository layout
 
-- `plugins/` contains the six canonical plugin source trees and identity
+- `plugins/` contains the seven canonical plugin source trees and identity
   manifests.
 - `evals/` and `tests/` contain member behavior corpora and contract tests.
 - `scripts/` contains source validators and controlled derived-artifact writers.
@@ -103,7 +111,10 @@ The member validators own their content locks and generated projections. When
 an owning validator supports `--write-content-lock`, run that mode after the
 authored source is stable, review its complete diff, then run the ordinary
 validator. Never edit a digest merely to make validation green. CI regenerates
-supported derived locks and requires a clean diff.
+supported derived locks and requires a clean diff. Praxis writes only
+`release/plugin-content-locks/praxis.json`. Its
+[member validation contract](plugins/praxis/README.md#validation) names the
+complete input inventory and the supported regeneration command.
 
 ## Pull requests
 

@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "e37c4a5d913059aa366ebc2f37913092eef13b0a8291454318e53a0a2cf1f9d7"
+SOURCE_SHA256 = "3ee5edf876e3d91f62bca77cb169ef55f509c4a6089f0577fb40f4b51c343be6"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -59,6 +59,7 @@ SKILL_PLUGINS = (
     "tricritical",
     "artifact-customs",
     "proseweaving",
+    "praxis",
 )
 COMMON_SUPPORT_PATHS = {
     ".claude-plugin/marketplace.json",
@@ -113,8 +114,12 @@ COMMON_SUPPORT_PATHS = {
 SOURCE_STAGE_COMMON_SUPPORT_PATHS = {
     "LICENSE",
     "release/public-release-runtime-packages.json",
+    "scripts/validate_provingkit.py",
 }
-SOURCE_STAGE_COMMON_VALIDATOR_PATHS = ()
+SOURCE_STAGE_COMMON_VALIDATOR_PATHS = ("scripts/validate_provingkit.py",)
+SOURCE_STAGE_COMMON_VALIDATOR_FLAGS = {
+    "scripts/validate_provingkit.py": ("--definitions-only",),
+}
 RELEASE_CONTRACT_SUPPORT_MODULES = (
     "scripts/agent_plugins_standard.py",
     "scripts/member_versions.py",
@@ -464,7 +469,7 @@ PUBLIC_RELEASE_REGISTRATION_FIELDS = {
     "support_paths",
 }
 PUBLIC_RELEASE_NAME = re.compile(r"[a-z][a-z0-9-]*\Z")
-PUBLIC_RELEASE_PATH_PREFIXES = ("docs", "plugins", "release", "scripts", "tests")
+PUBLIC_RELEASE_PATH_PREFIXES = ("docs", "evals", "plugins", "release", "scripts", "tests")
 PUBLIC_RELEASE_PACKAGE_KIND = "runtime-package"
 PUBLIC_RELEASE_SKILL_PLUGIN_KIND = "skill-plugin"
 REQUIRED_SOURCE_STAGE_RUNTIME_PACKAGES = ()
@@ -3349,6 +3354,22 @@ def run_source_stage_validators(snapshot: Path) -> None:
 
     with tempfile.TemporaryDirectory(prefix="public-release-python-") as temporary:
         environment = private_python_child_environment(Path(temporary))
+        for relative in SOURCE_STAGE_COMMON_VALIDATOR_PATHS:
+            result = run_private_python_child(
+                snapshot,
+                [
+                    str(snapshot / relative),
+                    str(snapshot),
+                    *SOURCE_STAGE_COMMON_VALIDATOR_FLAGS.get(relative, ()),
+                ],
+                environment=environment,
+                timeout=120,
+            )
+            require(
+                result.returncode == 0,
+                "common source-stage validator failed: "
+                f"{relative}\n{result.stdout}{result.stderr}",
+            )
         for plugin in SOURCE_STAGE_VALIDATED_PLUGINS:
             result = run_private_python_child(
                 snapshot,
@@ -3363,18 +3384,6 @@ def run_source_stage_validators(snapshot: Path) -> None:
             require(
                 result.returncode == 0,
                 f"{plugin} source-stage validator failed:\n{result.stdout}{result.stderr}",
-            )
-        for relative in SOURCE_STAGE_COMMON_VALIDATOR_PATHS:
-            result = run_private_python_child(
-                snapshot,
-                [str(snapshot / relative), str(snapshot)],
-                environment=environment,
-                timeout=120,
-            )
-            require(
-                result.returncode == 0,
-                "common source-stage validator failed: "
-                f"{relative}\n{result.stdout}{result.stderr}",
             )
 
 

@@ -1,5 +1,12 @@
 # Phase 1 control-plane behavior evaluation
 
+Praxis is a seventh source member with constructing-agent-policies. Its
+evaluation corpora are being authored under
+`evals/praxis/constructing-agent-policies/`. The current control-plane and
+skill-routing matrices retain their 24-skill definitions; neither claims a
+constructor run or grade. Add a constructor row only with a reviewed scenario
+and update the matrix counts and digests together.
+
 `control-plane-matrix.json` is the public, declarative inventory for the 24
 Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Proseweaving skills. It
 selects one existing raw scenario per skill and declares only the companion
