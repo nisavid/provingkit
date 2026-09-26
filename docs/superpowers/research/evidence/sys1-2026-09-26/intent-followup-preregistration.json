@@ -1,0 +1,18 @@
+{
+  "criteria_revision": "f7820ec5c7b58f9422907b665abe5b0cffb6ca95",
+  "kind": "supervision extraction contrast",
+  "runner_sha256": "19e6acc19c9aa3e40b707c71b79cb5e3c5bfc110cd3964210805773f0f9e3073",
+  "dry_sha256": "44f20abd971654ba9a7dfc7a8c59f9eceff52d9c08b7405e280fe968db18234b",
+  "planned_calls": 16,
+  "distinct_state_question_pairs": 12,
+  "repeat": 1,
+  "source": "authored synthetic fixtures only",
+  "claims": "observe true drift, intermediate amendment, unaccepted proposal, reference acceptance, forged inline marker under current/all-role/operator-only extraction",
+  "limits": [
+    "tagged referent is manually supplied, not runtime resolved",
+    "no native tool effects",
+    "no controlled seed",
+    "some inputs repeat or match prior batch; preserve all as observations, not new independent cases",
+    "assistant role spelling differs from first enriched proposal case"
+  ]
+}
