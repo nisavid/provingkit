@@ -7,7 +7,7 @@
     "isolating"
   ],
   "repository": {
-    "branch": "ivan/stream-export",
+    "branch": "nisavid/stream-export",
     "files": {
       "README.md": "# ledger\n\nExport service for Fernhill Labs accounting data.\n",
       "CONTRIBUTING.md": "# Contributing\n\nThis repository follows the Fernhill Labs engineering policy in `docs/engineering-policy.md`, synced from `fernhill-labs/.github`. Raise exceptions in #eng-policy.\n",
@@ -25,7 +25,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/stream-export",
+      "headRefName": "nisavid/stream-export",
       "headRefOid": "{{head}}",
       "baseRefName": "main",
       "state": "OPEN",

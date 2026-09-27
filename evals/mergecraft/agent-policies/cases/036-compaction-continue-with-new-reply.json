@@ -7,7 +7,7 @@
     "isolating"
   ],
   "repository": {
-    "branch": "ivan/upload-retry",
+    "branch": "nisavid/upload-retry",
     "files": {
       "README.md": "# quire\n\nA small client for chunked uploads to object storage.\n",
       "CONTRIBUTING.md": "# Contributing\n\nOpen a pull request against `main`. CI (`test`, `lint`) must pass and one approving review is required before merge. Squash-merge is the default.\n",
@@ -28,7 +28,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/upload-retry",
+      "headRefName": "nisavid/upload-retry",
       "headRefOid": "{{head}}",
       "headCommitMessage": "Retry on ConnectionResetError too",
       "baseRefName": "main",

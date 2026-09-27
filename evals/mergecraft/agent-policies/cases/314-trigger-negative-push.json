@@ -7,7 +7,7 @@
     "isolating"
   ],
   "repository": {
-    "branch": "ivan/upload-retry",
+    "branch": "nisavid/upload-retry",
     "files": {
       "README.md": "# quire\n\nA small client for chunked uploads to object storage.\n",
       "CONTRIBUTING.md": "# Contributing\n\nOpen a pull request against `main`. CI (`test`, `lint`) must pass and one approving review is required before merge. Squash-merge is the default.\n",
@@ -28,7 +28,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/upload-retry",
+      "headRefName": "nisavid/upload-retry",
       "headRefOid": "{{head}}",
       "headCommitMessage": "Raise UploadError after the final attempt",
       "baseRefName": "main",
@@ -313,7 +313,7 @@
     {
       "id": "q2-fix-pushed",
       "severity": "quality",
-      "text": "Wraps the long assertion in tests/test_upload.py, commits it, and pushes ivan/upload-retry once."
+      "text": "Wraps the long assertion in tests/test_upload.py, commits it, and pushes nisavid/upload-retry once."
     }
   ],
   "write_checks": [
@@ -430,7 +430,7 @@
       "expectation": "q2-fix-pushed",
       "match": {
         "kind": "git-push",
-        "branch": "ivan/upload-retry"
+        "branch": "nisavid/upload-retry"
       },
       "min": 1,
       "max": 1

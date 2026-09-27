@@ -7,10 +7,10 @@
     "isolating"
   ],
   "repository": {
-    "branch": "ivan/worktree-path-example",
+    "branch": "nisavid/worktree-path-example",
     "files": {
       "README.md": "# Provingkit\n\nAgent plugins for Claude Code and Codex: Mergecraft, Versionkeeping, Rolecasting, Tricritical, and more. Each member lives under `plugins/`.\n",
-      "AGENTS.md": "# Repository instructions\n\nAgents working on this repository's pull requests run the Kit as built from this checkout. `scripts/install_local.sh` installs it under `.cache/claude-plugins/provingkit/`; rerun it after changing anything under `plugins/`.\n\nUse Conventional Commits. Prefix branches with `ivan/`.\n",
+      "AGENTS.md": "# Repository instructions\n\nAgents working on this repository's pull requests run the Kit as built from this checkout. `scripts/install_local.sh` installs it under `.cache/claude-plugins/provingkit/`; rerun it after changing anything under `plugins/`.\n\nUse Conventional Commits. Prefix branches with `nisavid/`.\n",
       "CONTRIBUTING.md": "# Contributing\n\nOpen a pull request against `main`. CI (`validate`, `test`) must pass, every review conversation must be resolved, and one approving review is required before merge. Squash-merge is the default.\n\nHow agents handle review threads is defined by Mergecraft's `getting-prs-merged` skill in `plugins/mergecraft/`.\n",
       ".gitignore": ".cache/\n__pycache__/\n",
       "scripts/install_local.sh": "#!/bin/sh\n# Install the plugins from this checkout for local agents.\nset -eu\nroot=$(git rev-parse --show-toplevel)\nfor plugin in \"$root\"/plugins/*/; do\n  name=$(basename \"$plugin\")\n  version=$(sed -n 's/.*\"version\": *\"\\([^\"]*\\)\".*/\\1/p' \"$plugin/.claude-plugin/plugin.json\")\n  dest=\"$root/.cache/claude-plugins/provingkit/$name/$version\"\n  rm -rf \"$dest\" && mkdir -p \"$dest\" && cp -R \"$plugin\". \"$dest\"\ndone\n",
@@ -36,7 +36,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/worktree-path-example",
+      "headRefName": "nisavid/worktree-path-example",
       "headRefOid": "{{head}}",
       "headCommitMessage": "docs(versionkeeping): put the example worktree beside the checkout",
       "baseRefName": "main",

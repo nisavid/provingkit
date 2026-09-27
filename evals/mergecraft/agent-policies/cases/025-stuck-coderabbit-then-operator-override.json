@@ -7,7 +7,7 @@
     "isolating"
   ],
   "repository": {
-    "branch": "ivan/upload-retry",
+    "branch": "nisavid/upload-retry",
     "files": {
       "README.md": "# quire\n\nA small client for chunked uploads to object storage.\n",
       "pyproject.toml": "[project]\nname = \"quire\"\nversion = \"0.3.0\"\nrequires-python = \">=3.10\"\n\n[project.optional-dependencies]\ntest = [\"pytest\"]\n\n[tool.pytest.ini_options]\npythonpath = [\"src\"]\n\n[tool.ruff]\nline-length = 100\n\n[tool.ruff.lint]\nextend-select = [\"E501\"]\n",
@@ -28,7 +28,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/upload-retry",
+      "headRefName": "nisavid/upload-retry",
       "headRefOid": "{{head}}",
       "baseRefOid": "{{base}}",
       "headCommitMessage": "fix(upload): add full jitter to the retry backoff",

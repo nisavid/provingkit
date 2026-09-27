@@ -8,7 +8,7 @@
     "real"
   ],
   "repository": {
-    "branch": "ivan/retire-agent-rules",
+    "branch": "nisavid/retire-agent-rules",
     "files": {
       "README.md": "# dotfiles\n\nIvan's dotfiles, managed with chezmoi.\n",
       "dot_config/agents/AGENTS.md": "# Agent instructions\n\nUse Conventional Commits. Prefer verified repository facts over guesses.\n",
@@ -25,7 +25,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/retire-agent-rules",
+      "headRefName": "nisavid/retire-agent-rules",
       "headRefOid": "{{head}}",
       "baseRefName": "main",
       "state": "OPEN",
