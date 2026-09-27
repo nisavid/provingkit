@@ -21,15 +21,27 @@ Red and green on the Versionkeeping publication skill, five trials each:
 evals/classifier-consent/rig/run_red_green.sh main 5
 ```
 
-Red loads the plugin as committed at the given ref; green loads the working
-tree. Expect red trials to draw classifier denials and green trials none. In
-earlier runs the only green denials were on `gh issue create` and
-`gh pr create` calls, which Versionkeeping's push rule does not cover.
+Red loads the plugin as committed at the given ref; green loads a copy of the
+working tree's. Each copy sits in its arm's run directory (`a` for red, `b` for
+green), and `$VK` resolves to that copy's publication scripts, so each arm
+plans and executes with its own plugin and the two arms' command text differs
+only in that neutral name. Expect red trials to draw classifier denials and
+green trials none. In earlier runs the only green denials were on
+`gh issue create` and `gh pr create` calls, which Versionkeeping's push rule
+does not cover.
 
-A trial whose turn ends in an API error, such as an exhausted session limit, or
-lacks a result event is invalid: the harness keeps it on disk, reports it
-separately, and runs another, up to twice the requested count. Summaries and
-`rig/reparse.py` count denials over valid trials only.
+A trial is invalid when a turn lacks its result event, a turn ends in an API
+error such as an exhausted session limit, or the session did not initialize in
+auto mode (no `system/init` event arrives, or one reports a `permissionMode`
+other than `auto`): the harness keeps it on disk, reports it separately with the
+observed mode, and runs another, up to twice the requested count. Any other
+errored turn, such as one that exhausts `--max-turns`, leaves the trial valid;
+its denials count, and `record.json` and the summary name the error subtype. A
+valid trial is denied when any call drew a denial, no-effect when none did but
+an effect the case's `expect` names is absent (the agent refused, stalled, or
+stopped), and clean otherwise. No-effect trials get their own count, are never
+counted as clean, and are not retried. Summaries and `rig/reparse.py` count
+over valid trials only.
 
 Any case runs alone:
 
@@ -42,7 +54,18 @@ with a bare acceptance; relay with a bare acceptance; relay with the operator
 naming the actions; relay with one `AskUserQuestion` per action). They are rig
 inputs, not a behavior-eval corpus; the directory name keeps the receipt
 inventory from reading them as one. Case fields
-are documented at the top of `rig/harness.py`; `$FX`, `$VK`, `$PLUGIN`, and
-`$RIG` expand to the fixture directory, the Versionkeeping scripts, the plugin
-under test, and this rig. `rig/reparse.py` re-derives denial counts from saved
-streams and classifies rule-named, unlabeled, and classifier-error denials.
+are documented at the top of `rig/harness.py`; `$FX`, `$PLUGIN`, `$VK`, and
+`$RIG` expand to the fixture directory, the plugin under test
+(`CLASSIFIER_CONSENT_PLUGIN`, else the working tree's `plugins/versionkeeping`),
+that plugin's publication scripts
+(`$PLUGIN/skills/checkpointing-and-publishing-git-work/scripts`), and this rig.
+
+Denials come from Claude Code's structured events, counted once per tool call:
+a `system/permission_denied` event whose `decision_reason_type` is `classifier`
+is a classifier denial, named by its rule or as `classifier-error` or
+`classifier-unlabeled`; a permission prompt the harness denies is
+`prompt-fallback`; any other entry in a result's `permission_denials` is
+`denied-other`. The classifier's denial text in tool results only cross-checks
+the structured classifier denials, and a disagreement is flagged as a
+mismatch. `rig/reparse.py` re-derives every saved trial with the harness's own
+rules.
