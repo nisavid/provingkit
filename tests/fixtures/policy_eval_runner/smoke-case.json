@@ -4,7 +4,7 @@
   "title": "Reply to and resolve one addressed human review thread",
   "critical": false,
   "repository": {
-    "branch": "ivan/widget-count",
+    "branch": "nisavid/widget-count",
     "files": {
       "README.md": "# widget\n",
       "src/widget.py": "def total(items):\n    count = 0\n    for item in items:\n        count += item\n    return count\n"
@@ -18,7 +18,7 @@
       "number": 101,
       "title": "Rename the widget accumulator",
       "author": {"login": "nisavid"},
-      "headRefName": "ivan/widget-count",
+      "headRefName": "nisavid/widget-count",
       "headRefOid": "abc1234def5678abc1234def5678abc1234def56",
       "body": "Renames the accumulator in `total`."
     },

@@ -16,7 +16,7 @@
       "number": 84,
       "title": "Retry transient upload failures",
       "author": {"login": "nisavid"},
-      "headRefName": "ivan/upload-retry",
+      "headRefName": "nisavid/upload-retry",
       "baseRefName": "main",
       "headCommitMessage": "fix(upload): raise UploadError after the final attempt",
       "state": "OPEN",

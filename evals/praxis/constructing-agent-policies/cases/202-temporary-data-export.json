@@ -4,7 +4,7 @@
   "title": "Constructor transfer: temporary data export links",
   "critical": false,
   "repository": {
-    "branch": "ivan/data-export",
+    "branch": "nisavid/data-export",
     "files": {
       "AGENTS.md": "# Agent instructions\n\nData-desk automation. Policies live in `policies/`.\n\n- [Expense approvals](policies/expense-approvals.md)\n",
       "policies/expense-approvals.md": "# Expense approvals\n\nAgents may file expense reports under $200 without review. Anything larger goes to finance@ for approval.\n",
@@ -39,7 +39,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/data-export",
+      "headRefName": "nisavid/data-export",
       "baseRefName": "main",
       "headCommitMessage": "Add dataset catalog and link API notes",
       "createdAt": "{{now}}",

@@ -4,8 +4,8 @@
 The runner executes one case at one model and effort with candidate plugins
 loaded, a recording ``gh`` stub first on ``PATH``, scripted answers to the
 agent's questions, and retained evidence. It grades each run with the other
-harness's model plus deterministic GitHub-write checks, and summarizes pass
-rates against the acceptance bar.
+harness's model, or a panel of graders, plus deterministic GitHub-write
+checks, and summarizes pass rates against the acceptance bar.
 
 Case format (``policy-eval-case-v1``, one JSON object per file)
 --------------------------------------------------------------
@@ -19,7 +19,7 @@ Case format (``policy-eval-case-v1``, one JSON object per file)
                       (see Receipts below).
 ``repository``        ``{branch?, files: {path: text}}``: the fixture
                       repository. ``branch`` defaults to, and must equal,
-                      ``pull_request.headRefName`` (default ``ivan/update``).
+                      ``pull_request.headRefName`` (default ``nisavid/update``).
                       The runner commits a parent on ``baseRefName`` (default
                       ``main``) holding every file not listed in
                       ``pull_request.files`` (message ``Initial commit``, by the
@@ -117,17 +117,20 @@ Placeholders          Strings may use ``{{now}}``, ``{{now-2h}}``,
                       "operator unavailable".
 Prose questions       A turn whose final agent message closes with a question
                       to the operator (the last paragraph, extended back over
-                      trailing list paragraphs, holds a sentence-ending ``?``
-                      outside code, ``>`` quotes and double quotes) with no
-                      tool call after it records a prose question ``{kind:
-                      "prose", text, turn}``. Only ``answers`` (never
-                      ``default_answer``) answer it. ``answers_in_prose``
-                      (default ``false``): when ``true`` and an answer matches,
-                      the answer is sent as the next operator message, part of
-                      the same numbered turn (no ``before_turn``; at most 3 per
-                      turn), before the next scripted turn; otherwise the
-                      match is only recorded and the next scripted turn
-                      follows. The Codex exec route records but never answers.
+                      trailing list paragraphs and their indented
+                      continuations, holds a sentence-ending ``?`` outside
+                      code, ``>`` quotes and double quotes; or a question list
+                      ends the message before one short sign-off, see
+                      ``prose_question``) with no tool call after it records a
+                      prose question ``{kind: "prose", text, turn}``. Only
+                      ``answers`` (never ``default_answer``) answer it.
+                      ``answers_in_prose`` (default ``false``): when ``true``
+                      and an answer matches, the answer is sent as the next
+                      operator message, part of the same numbered turn (no
+                      ``before_turn``; at most 3 per turn), before the next
+                      scripted turn; otherwise the match is only recorded and
+                      the next scripted turn follows. The Codex exec route
+                      records but never answers.
 ``permissions``       Per harness. ``claude``: ``{mode: dontAsk|manual|auto,
                       allowed_tools: [...], disallowed_tools: [...],
                       host_allow: [...], host_deny: [...]}``.
@@ -226,6 +229,24 @@ Prose questions       A turn whose final agent message closes with a question
                       ``plugin:skill`` was invoked, observed on every run and
                       scored by ``summarize``. They are never receipt
                       observations and take no ``receipt_coordinate``.
+
+Grader panels
+-------------
+
+By default the other harness's model grades a run. ``--grader-panel`` on
+``grade`` and ``run --grade`` names several graders instead, as
+``harness:model:effort`` items separated by commas (for example
+``claude:claude-opus-5-5:medium,codex:gpt-6-sol:medium``). Each grades the run
+in its own session, with its artifacts under
+``grader/<harness>-<model>-<effort>/``. ``grading.json`` then has ``grader:
+null`` and ``panel``, one entry per grader: its identity, ``cost_usd``,
+``wall_s``, ``directory``, ``error``, and ``expectations`` ``[{id, passed,
+rationale}]``. An expectation passes only when its deterministic checks pass
+and every panel grader passes it, at either severity. Each ``final`` row
+records ``agreement``: ``pass`` when every grader passed it, ``fail`` when none
+did, else ``split``. If any grader returns no parseable grade, ``final`` is
+``null`` and the run is ungraded. A receipt binds one grader model, so a panel
+refuses ``--snapshot``. ``summarize`` counts every panel grader's cost and time.
 
 Receipts
 --------
@@ -959,7 +980,12 @@ FENCE = re.compile(r"^\s*(```|~~~)")
 LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 OPERATOR_QUESTION = re.compile(r"\?(?=[)\]*_]*(?:\s|$))")
 LINE_END_QUESTION = re.compile(r"\?[)\]*_]*[ \t]*$", re.M)
+# A list item whose bold lead-in is a question: ``1. **Which hours?** The repo doesn't say.``
+LEAD_IN_QUESTION = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*(?:(?!\*\*).)*\?\*\*|__(?:(?!__).)*\?__)", re.M)
 HEADING = re.compile(r"^\s{0,3}#{1,6}(?:\s|$)")
+# A sentence ends at ``.`` or ``!`` and any closing marks, before whitespace and a word that does not start in lower
+# case. Dots inside file names and versions, and abbreviations such as "e.g.", end nothing.
+SENTENCE_END = re.compile(r"(?<=[.!])[\"')\]*_\u201d]*\s+(?![\sa-z])")
 
 
 def _paragraphs(text):
@@ -990,31 +1016,51 @@ def _is_heading(line):
     return bool(HEADING.match(line))
 
 
+def _in_list(paragraphs):
+    """Per paragraph, whether it belongs to a list.
+
+    A list paragraph starts with a list item and every later line is an item or indented. A wholly indented paragraph
+    that follows a list paragraph continues its last item.
+    """
+    flags = []
+    for paragraph in paragraphs:
+        lines = [line for line in paragraph.split("\n") if line.strip()]
+        nested = all(LIST_ITEM.match(line) or line[:1].isspace() for line in lines[1:])
+        flags.append(bool(lines) and nested and bool(
+            LIST_ITEM.match(lines[0]) or (flags and flags[-1] and lines[0][:1].isspace())))
+    return flags
+
+
 def _sign_off(paragraph):
-    """Whether a paragraph is a short closing remark: prose of at most two sentences with no ``?``."""
+    """Whether a paragraph is a short closing remark: prose of at most two sentences with no ``?``.
+
+    Code spans, block quotes, and double-quoted text are left out, and sentences end at :data:`SENTENCE_END`.
+    """
     lines = [line for line in paragraph.split("\n") if line.strip()]
     if not lines or any(FENCE.match(line) or LIST_ITEM.match(line) or _is_heading(line) for line in lines):
         return False
-    text = " ".join(line.strip() for line in lines)
-    if "?" in _unquoted(text):
+    text = _unquoted(" ".join(line.strip() for line in lines))
+    if "?" in text:
         return False
-    return len([part for part in re.split(r"(?<=[.!])\s+", text) if part.strip()]) <= 2
+    return len([part for part in SENTENCE_END.split(text) if part.strip()]) <= 2
 
 
 def prose_question(message):
     """The closing block of a final message when it asks the operator something, else ``None``.
 
-    The block is the last paragraph, extended backwards over trailing list paragraphs (options). It asks when it
-    holds a ``?`` that ends a sentence outside code, block quotes, and double-quoted text. Failing that, trailing
-    heading-only paragraphs and at most one sign-off (:func:`_sign_off`) are stepped over, the block is extended
-    backwards over list paragraphs and heading lines to its section heading, and it asks when a ``?`` there ends a
-    line; the returned block then runs to the end of the message.
+    The block is the last paragraph, extended backwards over trailing list paragraphs (options), including an item's
+    indented continuation paragraphs (:func:`_in_list`). It asks when it holds a ``?`` that ends a sentence outside
+    code, block quotes, and double-quoted text. Failing that, trailing heading-only paragraphs and at most one
+    sign-off (:func:`_sign_off`) are stepped over, the block is extended backwards over list paragraphs and heading
+    lines to its section heading, and it asks when a ``?`` there ends a line or a list item's bold lead-in; the
+    returned block then runs to the end of the message.
     """
     paragraphs = _paragraphs((message or "").strip())
     if not paragraphs:
         return None
+    listed = _in_list(paragraphs)
     start = len(paragraphs) - 1
-    while start > 0 and all(LIST_ITEM.match(line) or not line.strip() for line in paragraphs[start].split("\n")):
+    while start > 0 and listed[start]:
         start -= 1
     block = "\n\n".join(paragraphs[start:])
     if OPERATOR_QUESTION.search(_unquoted(block)):
@@ -1031,11 +1077,12 @@ def prose_question(message):
     if end == len(paragraphs) - 1:
         return None
     start = end
-    while start > 0 and not any(_is_heading(line) for line in paragraphs[start].split("\n")) and all(
-            LIST_ITEM.match(line) or not line.strip() for line in paragraphs[start].split("\n")):
+    while start > 0 and listed[start] and not any(_is_heading(line) for line in paragraphs[start].split("\n")):
         start -= 1
-    asked = "\n\n".join(paragraphs[start:end + 1])
-    return "\n\n".join(paragraphs[start:]) if LINE_END_QUESTION.search(_unquoted(asked)) else None
+    asked = _unquoted("\n\n".join(paragraphs[start:end + 1]))
+    if LINE_END_QUESTION.search(asked) or LEAD_IN_QUESTION.search(asked):
+        return "\n\n".join(paragraphs[start:])
+    return None
 
 
 def prose_answer(case, question):
@@ -1165,6 +1212,21 @@ def combine_grades(case, grade, checks):
     return rows
 
 
+def combine_panel_grades(case, grades, checks):
+    """Final rows for a panel: an expectation passes only when its checks pass and every grader passes it."""
+    rows = []
+    for expectation in case["expectations"]:
+        mine = [c for c in checks if c["expectation"] == expectation["id"]]
+        deterministic = all(c["passed"] for c in mine) if mine else None
+        verdicts = [grade[expectation["id"]]["passed"] for grade in grades]
+        agreement = "pass" if all(verdicts) else ("fail" if not any(verdicts) else "split")
+        rows.append({"id": expectation["id"], "severity": expectation["severity"],
+                     "passed": all(verdicts) and deterministic is not False,
+                     "grader_passed": all(verdicts), "deterministic_passed": deterministic,
+                     "agreement": agreement, "checks": [c["id"] for c in mine]})
+    return rows
+
+
 def codex_grader_argv(model, effort, workdir, schema_path, last_message_path, executable="codex"):
     return [executable, "exec", "--json", "--ignore-user-config", "--skip-git-repo-check", "-m", model,
             "-c", f'model_reasoning_effort="{effort}"', "-C", str(workdir), "--sandbox", "read-only",
@@ -1218,8 +1280,9 @@ def summarize(entries):
                 if not grading or grading.get("final") is None:
                     ungraded += 1
                     continue
-                cost += (grading.get("grader") or {}).get("cost_usd") or 0.0
-                wall += (grading.get("grader") or {}).get("wall_s") or 0.0
+                for grader in grading.get("panel") or [grading.get("grader") or {}]:
+                    cost += grader.get("cost_usd") or 0.0
+                    wall += grader.get("wall_s") or 0.0
                 for row in grading["final"]:
                     if row["id"] not in severity:
                         order.append(row["id"])
@@ -2357,12 +2420,105 @@ def _run_grader(argv, env, cwd, prompt, timeout):
     return stdout, stderr, returncode, round(time.time() - started, 1)
 
 
-def grade_run(run_dir, *, grader_model=None, grader_effort="medium", snapshot=None, claude_bin="claude",
-              codex_bin="codex", codex_auth=None, base_env=None, timeout=600):
-    """Cross-grade one run and apply its deterministic checks; write and return ``grading.json``.
+GRADER_TOKEN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$")
+PANEL_RECEIPT_REFUSAL = ("a receipt binds one grader model, so a panel-graded run writes no receipt envelopes: "
+                         "use --snapshot or --grader-panel, not both")
 
-    With ``snapshot``, also write the run's receipt envelopes; the snapshot is checked before the grader runs.
+
+def grader_panel(value):
+    """Validated ``(harness, model, effort)`` graders from ``harness:model:effort,...`` text or a list of triples."""
+    items = [item.split(":") for item in value.split(",")] if isinstance(value, str) else [list(v) for v in value]
+    panel = []
+    for item in items:
+        if not (len(item) == 3 and all(isinstance(part, str) and GRADER_TOKEN.match(part) for part in item)
+                and item[0] in GRADERS):
+            raise RunError(f"a panel grader is harness:model:effort with harness claude or codex, not {item!r}")
+        if tuple(item) in panel:
+            raise RunError(f"the panel names {':'.join(item)} twice")
+        panel.append(tuple(item))
+    if not panel:
+        raise RunError("a grader panel needs at least one grader")
+    return panel
+
+
+def _grading_panel(panel, snapshot, single_grader_options=False):
+    """The validated panel, or ``None`` for the single cross-harness grader; refuse options a panel excludes."""
+    if panel is None:
+        return None
+    if snapshot is not None:
+        raise RunError(PANEL_RECEIPT_REFUSAL)
+    if single_grader_options:
+        raise RunError("--grader-model and --grader-effort set the single grader; a panel names each grader's own")
+    return grader_panel(panel)
+
+
+def _parsed_grade(response, expectation_ids):
+    try:
+        return parse_grade(response, expectation_ids), None
+    except GradeError as failure:
+        return None, str(failure)
+
+
+def _invoke_grader(harness, model, effort, grader_dir, prompt, schema, env, home, *, claude_bin, codex_bin,
+                   codex_auth, timeout):
+    """Run one grader session with its artifacts under ``grader_dir``; return its record and raw response."""
+    work = grader_dir / "work"
+    work.mkdir(parents=True)
+    (grader_dir / "prompt.txt").write_text(prompt)
+    env = dict(env)
+    grader = {"harness": harness, "model_id": model, "requested_effort": effort, "observed_model": None,
+              "cost_usd": None}
+    if harness == "codex":
+        codex_home = grader_dir / "codex-home"
+        codex_home.mkdir()
+        env["CODEX_HOME"] = str(codex_home)
+        schema_path = grader_dir / "schema.json"
+        _write_json(schema_path, schema)
+        last = grader_dir / "response.txt"
+        argv = codex_grader_argv(model, effort, work, schema_path, last, executable=codex_bin)
+        auth = Path(codex_auth) if codex_auth else home / ".codex" / "auth.json"
+        try:
+            if not auth.is_file():
+                raise RunError(f"Codex credentials are unavailable at {auth}")
+            shutil.copy2(auth, codex_home / "auth.json")
+            (codex_home / "auth.json").chmod(0o600)
+            stdout, stderr, returncode, wall = _run_grader(argv, env, work, prompt, timeout)
+            rollouts = _collect_rollouts(codex_home, grader_dir / "rollouts")
+        finally:
+            (codex_home / "auth.json").unlink(missing_ok=True)
+            shutil.rmtree(codex_home, ignore_errors=True)
+        (grader_dir / "events.jsonl").write_bytes(stdout)
+        contexts = [c for path in rollouts for c in parse_rollout(path.read_text().splitlines())["turn_contexts"]]
+        grader["observed_model"] = contexts[-1]["model"] if contexts else None
+        grader["observed_effort"] = contexts[-1]["effort"] if contexts else None
+        grader["usage"] = parse_codex_events(stdout.decode("utf-8", "replace").splitlines())["usage"]
+        response = last.read_text() if last.exists() else ""
+    else:
+        argv = claude_grader_argv(model, effort, schema, executable=claude_bin)
+        stdout, stderr, returncode, wall = _run_grader(argv, env, work, prompt, timeout)
+        (grader_dir / "output.json").write_bytes(stdout)
+        try:
+            output = json.loads(stdout.decode("utf-8", "replace").strip().splitlines()[-1])
+        except (ValueError, IndexError):
+            output = {}
+        response = output.get("structured_output") or output.get("result") or ""
+        grader["cost_usd"] = output.get("total_cost_usd")
+        grader["observed_model"] = next(iter(output.get("modelUsage") or {}), None)
+        grader["session_id"] = output.get("session_id")
+    (grader_dir / "stderr.txt").write_bytes(stderr)
+    grader.update(argv=argv, returncode=returncode, wall_s=wall)
+    return grader, response
+
+
+def grade_run(run_dir, *, grader_model=None, grader_effort="medium", panel=None, snapshot=None, claude_bin="claude",
+              codex_bin="codex", codex_auth=None, base_env=None, timeout=600):
+    """Grade one run and apply its deterministic checks; write and return ``grading.json``.
+
+    Without ``panel`` the other harness's model grades the run. ``panel`` is a list of ``(harness, model, effort)``
+    graders (see :func:`grader_panel`), each graded in its own session. With ``snapshot``, also write the run's
+    receipt envelopes; the snapshot is checked before the grader runs, and a panel refuses it.
     """
+    panel = _grading_panel(panel, snapshot, grader_model is not None)
     run_dir = Path(run_dir).resolve()
     record = json.loads((run_dir / "record.json").read_text())
     case = json.loads((run_dir / "case.json").read_text())
@@ -2383,71 +2539,45 @@ def grade_run(run_dir, *, grader_model=None, grader_effort="medium", snapshot=No
     grader_dir = run_dir / "grader"
     if grader_dir.exists():
         raise RunError(f"{grader_dir} already exists; this run was already graded")
-    work = grader_dir / "work"
-    work.mkdir(parents=True)
     ids = [e["id"] for e in case["expectations"]]
     schema = grading_schema(ids)
     prompt = grader_prompt(case, transcript)
-    (grader_dir / "prompt.txt").write_text(prompt)
     env = child_environment(base_env, run_dir / "bin", run_dir / "stub", run_dir / "ghcfg")
-    grader = {"harness": grader_harness, "model_id": model, "requested_effort": grader_effort,
-              "observed_model": None, "cost_usd": None}
-    if grader_harness == "codex":
-        codex_home = grader_dir / "codex-home"
-        codex_home.mkdir()
-        env["CODEX_HOME"] = str(codex_home)
-        schema_path = grader_dir / "schema.json"
-        _write_json(schema_path, schema)
-        last = grader_dir / "response.txt"
-        argv = codex_grader_argv(model, grader_effort, work, schema_path, last, executable=codex_bin)
-        auth = Path(codex_auth) if codex_auth else home / ".codex" / "auth.json"
-        try:
-            if not auth.is_file():
-                raise RunError(f"Codex credentials are unavailable at {auth}")
-            shutil.copy2(auth, codex_home / "auth.json")
-            (codex_home / "auth.json").chmod(0o600)
-            stdout, stderr, returncode, wall = _run_grader(argv, env, work, prompt, timeout)
-            rollouts = _collect_rollouts(codex_home, grader_dir / "rollouts")
-        finally:
-            (codex_home / "auth.json").unlink(missing_ok=True)
-            shutil.rmtree(codex_home, ignore_errors=True)
-        (grader_dir / "events.jsonl").write_bytes(stdout)
-        contexts = [c for path in rollouts for c in parse_rollout(path.read_text().splitlines())["turn_contexts"]]
-        grader["observed_model"] = contexts[-1]["model"] if contexts else None
-        grader["observed_effort"] = contexts[-1]["effort"] if contexts else None
-        grader["usage"] = parse_codex_events(stdout.decode("utf-8", "replace").splitlines())["usage"]
-        response = last.read_text() if last.exists() else ""
-    else:
-        argv = claude_grader_argv(model, grader_effort, schema, executable=claude_bin)
-        stdout, stderr, returncode, wall = _run_grader(argv, env, work, prompt, timeout)
-        (grader_dir / "output.json").write_bytes(stdout)
-        try:
-            output = json.loads(stdout.decode("utf-8", "replace").strip().splitlines()[-1])
-        except (ValueError, IndexError):
-            output = {}
-        response = output.get("structured_output") or output.get("result") or ""
-        grader["cost_usd"] = output.get("total_cost_usd")
-        grader["observed_model"] = next(iter(output.get("modelUsage") or {}), None)
-        grader["session_id"] = output.get("session_id")
-    (grader_dir / "stderr.txt").write_bytes(stderr)
-    grader.update(argv=argv, returncode=returncode, wall_s=wall)
+    invocation = {"claude_bin": claude_bin, "codex_bin": codex_bin, "codex_auth": codex_auth, "timeout": timeout}
     calls, writes = read_stub_log(run_dir / "gh-stub.log")
     checks = (evaluate_write_checks(case, writes)
               + evaluate_question_checks(case, transcript.get("asked_questions") or [])
               + evaluate_file_checks(case, transcript.get("repository")))
-    try:
-        grade, error = parse_grade(response, ids), None
-    except GradeError as failure:
-        grade, error = None, str(failure)
-    final = combine_grades(case, grade, checks) if grade else None
+    if panel is None:
+        grader, response = _invoke_grader(grader_harness, model, grader_effort, grader_dir, prompt, schema, env, home,
+                                          **invocation)
+        grade, error = _parsed_grade(response, ids)
+        final = combine_grades(case, grade, checks) if grade else None
+        graders = {"grader": grader, "grader_expectations": grade, "grader_error": error}
+    else:
+        entries, grades, errors = [], [], []
+        for harness, panel_model, effort in panel:
+            name = f"{harness}-{panel_model}-{effort}"
+            grader, response = _invoke_grader(harness, panel_model, effort, grader_dir / name, prompt, schema, env,
+                                              home, **invocation)
+            grade, error = _parsed_grade(response, ids)
+            grader.update(directory=f"grader/{name}", error=error,
+                          expectations=[{"id": i, **grade[i]} for i in ids] if grade else None)
+            entries.append(grader)
+            grades.append(grade)
+            if error:
+                errors.append(f"{harness}:{panel_model}:{effort}: {error}")
+        final = None if errors else combine_panel_grades(case, grades, checks)
+        graders = {"grader": None, "panel": entries, "grader_expectations": None,
+                   "grader_error": "; ".join(errors) or None}
     grading = {"schema": "policy-eval-grading-v1", "case_id": record["case_id"], "repetition": record["repetition"],
                "run_id": record["run_id"],
                "executor": {"harness": record["harness"], "requested_model": record["requested_model"],
                             "observed_model": record.get("observed_model"),
                             "requested_effort": record["requested_effort"]},
                "executor_artifact": {"path": "transcript.json", "sha256": sha256_bytes(transcript_bytes)},
-               "grader": grader, "grader_expectations": grade, "grader_error": error,
-               "deterministic": checks, "final": final, "triggers": record.get("triggers", []), "receipt": None}
+               **graders, "deterministic": checks, "final": final, "triggers": record.get("triggers", []),
+               "receipt": None}
     if coordinate is not None and final is not None:
         snapshot_sha = document_digest(snapshot_document)
         paths = write_receipt_envelopes(run_dir / "receipt", snapshot_sha256=snapshot_sha, coordinate=coordinate,
@@ -2589,6 +2719,10 @@ def summary_markdown(summary):
     return "\n".join(lines) + "\n"
 
 
+PANEL_HELP = ("grade with these graders instead of the other harness's model: comma-separated "
+              "harness:model:effort, e.g. claude:claude-opus-5-5:medium,codex:gpt-6-sol:medium")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
@@ -2608,10 +2742,12 @@ def main(argv=None):
                      help="permission layer: the case's own (isolating) or the operator's everyday layers (real)")
     run.add_argument("--grade", action="store_true", help="cross-grade the run right away")
     run.add_argument("--snapshot", help="prepared snapshot for receipt envelopes (with --grade)")
+    run.add_argument("--grader-panel", help=PANEL_HELP)
     grade = commands.add_parser("grade", help="cross-grade a run directory")
     grade.add_argument("run_dir")
     grade.add_argument("--grader-model")
-    grade.add_argument("--grader-effort", default="medium")
+    grade.add_argument("--grader-effort", help="the single grader's effort (default: medium)")
+    grade.add_argument("--grader-panel", help=PANEL_HELP)
     grade.add_argument("--snapshot")
     grade.add_argument("--timeout", type=int, default=600)
     probe = commands.add_parser("probe", help="send one trigger-corpus query and observe whether the skill fires")
@@ -2636,6 +2772,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if args.command == "run":
+        if args.grader_panel is not None and not args.grade:
+            raise RunError("--grader-panel needs --grade")
+        panel = _grading_panel(args.grader_panel, args.snapshot)
         run_dir = run_case(args.case, args.harness, args.model, args.effort, args.plugin_dir, args.repetition,
                            args.out, timeout=args.timeout, max_turns=args.max_turns,
                            max_budget_usd=args.max_budget_usd, condition=args.condition)
@@ -2643,12 +2782,14 @@ def main(argv=None):
         result = {"run_dir": str(run_dir), "status": record.get("status") or record["execution"]["completed"],
                   "wall_s": record["wall_s"], "cost_usd": record["cost_usd"], "gh_writes": record["gh_writes"]}
         if args.grade:
-            result["grading"] = str(grade_run(run_dir, snapshot=args.snapshot))
+            result["grading"] = str(grade_run(run_dir, snapshot=args.snapshot, panel=panel))
         print(json.dumps(result, indent=1))
         return 0
     if args.command == "grade":
-        path = grade_run(args.run_dir, grader_model=args.grader_model, grader_effort=args.grader_effort,
-                         snapshot=args.snapshot, timeout=args.timeout)
+        panel = _grading_panel(args.grader_panel, args.snapshot,
+                               args.grader_model is not None or args.grader_effort is not None)
+        path = grade_run(args.run_dir, grader_model=args.grader_model, grader_effort=args.grader_effort or "medium",
+                         panel=panel, snapshot=args.snapshot, timeout=args.timeout)
         grading = json.loads(path.read_text())
         print(json.dumps({"grading": str(path), "final": grading["final"], "error": grading["grader_error"]},
                          indent=1))

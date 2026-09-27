@@ -4,7 +4,7 @@
   "title": "Constructor transfer: shared-drive retention",
   "critical": false,
   "repository": {
-    "branch": "ivan/drive-retention",
+    "branch": "nisavid/drive-retention",
     "files": {
       "AGENTS.md": "# Agent instructions\n\nShared-drive housekeeping. Policies live in `policies/`.\n\n- [Expense approvals](policies/expense-approvals.md)\n",
       "policies/expense-approvals.md": "# Expense approvals\n\nAgents may file expense reports under $200 without review. Anything larger goes to finance@ for approval.\n",
@@ -42,7 +42,7 @@
       "author": {
         "login": "nisavid"
       },
-      "headRefName": "ivan/drive-retention",
+      "headRefName": "nisavid/drive-retention",
       "baseRefName": "main",
       "headCommitMessage": "Add drive inventory, active roadmap, and executive list",
       "createdAt": "{{now}}",

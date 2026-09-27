@@ -8,15 +8,15 @@
     },
     "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json": {
       "mode": 420,
-      "sha256": "9168180abbbebbaf43da5a9a9da7c3edda77ee07d88a9edcda746ce66e67497d"
+      "sha256": "a08adb070cd63275114829e89dec1a37ad932392ac71796413f73377846e102f"
     },
     "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json": {
       "mode": 420,
-      "sha256": "8a7649f7260f6f677bebcb5afd3c12cae43fe115d817120c0b0269718f6fcccb"
+      "sha256": "27e35f44d08167b4e5680d7d515b5f291ffc5836071c94c11281cff72f6e3c71"
     },
     "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json": {
       "mode": 420,
-      "sha256": "1cdf953cbc637d8c8ddc1748a564102db09ab9d0e827315f73fbadf1d9999ad4"
+      "sha256": "becf24631c9da8c774148d90af6c398f331148ed1369c501b163222faa7aff0c"
     },
     "plugins/praxis/.claude-plugin/plugin.json": {
       "mode": 420,
@@ -60,11 +60,11 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/gh_stub.py": {
       "mode": 420,
-      "sha256": "3e0bfc36576b19b529ed70da25f8127e2ffa6a1e596882d6c71708761a3c1d51"
+      "sha256": "48a64063af8d64d0bea131e98657d8b808c4a8f9e0c3311f2b7224d2930fe266"
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "5d9df68212796c8e34db46344b0ffa2f319321f8f70465a5e7a40de09488ea24"
+      "sha256": "b536531f6a1ed37b025b7a0eb4f645b353ee1f03ccde06998afd4f90eca5a6a5"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -72,7 +72,7 @@
     },
     "tests/test_policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "aae86dc801b628db5ec3747a1089040d60e89f067cc31584175f9140ac36f026"
+      "sha256": "99adef652f463250b866d0f32f26727371f16a655d30ed2414a9333ee69bbcbc"
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,

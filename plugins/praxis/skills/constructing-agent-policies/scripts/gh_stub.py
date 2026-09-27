@@ -75,7 +75,7 @@ BOOLEAN_OVERRIDES = {"pr review": {"--comment", "-c", "--approve", "-a", "--requ
                      "pr close": {"--comment", "-c", "--delete-branch", "-d"}}
 PLACEHOLDER = re.compile(r"\{\{(?:now(?:([+-])(\d+)([smhd]))?|(head|base|pushed))\}\}")
 UNITS = {"s": "seconds", "m": "minutes", "h": "hours", "d": "days"}
-DEFAULT_HEAD_BRANCH = "ivan/update"
+DEFAULT_HEAD_BRANCH = "nisavid/update"
 KNOWN_BOTS = frozenset(("coderabbitai", "copilot-pull-request-reviewer", "github-actions", "dependabot",
                         "renovate", "sonarcloud", "codecov", "vercel", "netlify", "gemini-code-assist",
                         "sourcery-ai", "greptile-apps", "cursor", "chatgpt-codex-connector", "claude"))
