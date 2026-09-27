@@ -103,9 +103,11 @@ configuration, question or option text, or a message to another agent.
 
 ## Plan And Execute Publication
 
-Before planning/executing, bind publication authority as above and read
+Before planning/executing, read
 [publication execution](references/publication-execution.md)
 for script routes, effects, trusted handoff, transport, push, and verification.
+Run and review the planner first; then bind publication authority as above to
+the reviewed `ready` plan's push before invoking the executor.
 The adapter uses the host-compatible Git configuration profile by default and
 supports an explicit `VERSIONKEEPING_GIT_CONFIG_PROFILE=hardened` profile for
 closed-environment publication. Both profiles reject command-valued local/worktree
