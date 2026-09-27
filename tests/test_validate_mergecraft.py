@@ -38,6 +38,12 @@ MARKDOWN_AUTHORING_PROJECTIONS = {
     ),
     "getting-prs-merged": Path("references/github-markdown-authoring.md"),
 }
+PR_PARTICIPATION_SOURCE = Path(
+    "skills/getting-prs-merged/references/pr-participation.md"
+)
+PR_PARTICIPATION_PROJECTION = Path(
+    "skills/interacting-with-pr-review-feedback/references/pr-participation.md"
+)
 AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 CANONICAL_IDENTITY_FIELDS = (
     "name",
@@ -531,6 +537,98 @@ class ValidateMergecraftTests(unittest.TestCase):
                     before_input + b"\nConcurrent input change.\n",
                 )
                 changed_input.write_bytes(before_input)
+
+    def test_rejects_pr_participation_projection_byte_drift(self) -> None:
+        projection = self.plugin / PR_PARTICIPATION_PROJECTION
+        projection.write_bytes(projection.read_bytes() + b"\nDrift.\n")
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "PR participation projection drift: interacting-with-pr-review-feedback",
+            result.stderr,
+        )
+
+    def test_rejects_pr_participation_projection_link_drift(self) -> None:
+        for skill, expected in (
+            ("getting-prs-merged", "canonical PR participation link drift"),
+            (
+                "interacting-with-pr-review-feedback",
+                "PR participation projection link drift: "
+                "interacting-with-pr-review-feedback",
+            ),
+        ):
+            with self.subTest(skill=skill):
+                path = self.plugin / "skills" / skill / "SKILL.md"
+                original = path.read_text(encoding="utf-8")
+                path.write_text(
+                    original.replace(
+                        "(references/pr-participation.md)",
+                        "(references/participation.md)",
+                    ),
+                    encoding="utf-8",
+                )
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, expected
+                ):
+                    VALIDATE_MERGECRAFT.validate_pr_participation_projections(
+                        self.plugin
+                    )
+                path.write_text(original, encoding="utf-8")
+
+    def test_rejects_pr_participation_projection_discovery_drift(self) -> None:
+        for skill, reference, expected in (
+            (
+                "getting-prs-merged",
+                PR_PARTICIPATION_SOURCE,
+                "canonical PR participation discovery drift",
+            ),
+            (
+                "interacting-with-pr-review-feedback",
+                PR_PARTICIPATION_PROJECTION,
+                "PR participation projection discovery drift: "
+                "interacting-with-pr-review-feedback",
+            ),
+        ):
+            with self.subTest(skill=skill):
+                topology_path = self.plugin / "topology.json"
+                original = topology_path.read_text(encoding="utf-8")
+                topology = json.loads(original)
+                component = next(
+                    item for item in topology["skills"] if item["name"] == skill
+                )
+                component["references"].remove(reference.as_posix())
+                self.write_json("topology.json", topology)
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError, expected
+                ):
+                    VALIDATE_MERGECRAFT.validate_pr_participation_projections(
+                        self.plugin
+                    )
+                topology_path.write_text(original, encoding="utf-8")
+
+    def test_write_markdown_projections_refreshes_pr_participation(self) -> None:
+        canonical = self.plugin / PR_PARTICIPATION_SOURCE
+        projection = self.plugin / PR_PARTICIPATION_PROJECTION
+        canonical.write_bytes(canonical.read_bytes() + b"\nCanonical extension.\n")
+        projection.chmod(0o640)
+        markdown_projections = {
+            self.plugin / "skills" / skill / relative: (
+                self.plugin / "skills" / skill / relative
+            ).read_bytes()
+            for skill, relative in MARKDOWN_AUTHORING_PROJECTIONS.items()
+        }
+
+        result = self.run_validator("--write-markdown-projections")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(projection.read_bytes(), canonical.read_bytes())
+        self.assertEqual(stat.S_IMODE(projection.stat().st_mode), 0o640)
+        for path, content in markdown_projections.items():
+            with self.subTest(path=path.relative_to(self.repo)):
+                self.assertEqual(path.read_bytes(), content)
+        VALIDATE_MERGECRAFT.validate_pr_participation_projections(self.plugin)
 
     def test_markdown_authoring_eval_corpus_has_a_blind_executor_boundary(self) -> None:
         VALIDATE_MERGECRAFT.validate_markdown_authoring_eval_corpus(self.plugin)
@@ -2010,6 +2108,33 @@ class ValidateMergecraftTests(unittest.TestCase):
         path = self.plugin / "skills/getting-prs-merged/references/gh-fix-ci-adapter.md"
         path.write_text(path.read_text().replace("merge actuation", "merge handling"))
         self.assert_rejected("gh-fix-ci adapter authority drift")
+
+    def test_rejects_gh_fix_ci_adapter_merge_request_scope_drift(self) -> None:
+        path = self.plugin / "skills/getting-prs-merged/references/gh-fix-ci-adapter.md"
+        original = path.read_text(encoding="utf-8")
+        VALIDATE_MERGECRAFT.validate_runtime_contracts(self.plugin)
+        for old, new in (
+            (
+                "failure that the pull request's own changes caused",
+                "failure on the pull request",
+            ),
+            ("does not reproduce on the base branch", "fails on the pull request"),
+            (
+                "newly scoped work that needs the operator's explicit approval",
+                "carried by the merge request as well",
+            ),
+        ):
+            with self.subTest(old=old):
+                self.assertIn(old, " ".join(original.split()))
+                path.write_text(
+                    " ".join(original.split()).replace(old, new), encoding="utf-8"
+                )
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "gh-fix-ci adapter authority drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_runtime_contracts(self.plugin)
+                path.write_text(original, encoding="utf-8")
 
     def test_rejects_merge_actuator_broadening(self) -> None:
         path = self.plugin / "skills/getting-prs-merged/references/merge-actuator.md"

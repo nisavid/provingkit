@@ -32,8 +32,8 @@ Apply these continuations when their handoff occurs:
 - **Focused CI:** the adapter owns only its authorized inspection, rerun, or
   scoped repair. If a verified source fix still needs a checkpoint or push,
   the caller invokes `versionkeeping:checkpointing-and-publishing-git-work`
-  under separate Git authority, then refreshes the head and checks before
-  resuming recovery or merge. The CI adapter does not publish Git refs.
+  under the Git authority its task carries, then refreshes the head and checks
+  before resuming recovery or merge. The CI adapter does not publish Git refs.
 - **Changed PR facts:** after a feedback or CI source fix, the caller routes
   the current pushed diff and changed title/body facts to
   `writing-reviewable-pr-descriptions`, then invokes `publishing-reviewable-prs`

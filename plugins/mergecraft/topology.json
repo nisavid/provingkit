@@ -257,6 +257,8 @@
       "calls": [
         "operation:feedback-acquisition",
         "operation:feedback-interaction",
+        "operation:reviewer-rerequest",
+        "operation:github:review-thread-resolution",
         "operation:finding-adjudication",
         "operation:source-revision",
         "operation:git-ref-push"
@@ -278,6 +280,7 @@
           "typed-source-epoch",
           "finding-dispositions",
           "response-outcome-bundle",
+          "notice-and-wait-report",
           "verified-feedback-outcome"
         ],
         "forbidden_reverse_calls": [
@@ -294,7 +297,8 @@
       "interface": "skills/interacting-with-pr-review-feedback/agents/openai.yaml",
       "references": [
         "skills/interacting-with-pr-review-feedback/references/interaction-authority.md",
-        "skills/interacting-with-pr-review-feedback/references/github-markdown-authoring.md"
+        "skills/interacting-with-pr-review-feedback/references/github-markdown-authoring.md",
+        "skills/interacting-with-pr-review-feedback/references/pr-participation.md"
       ],
       "scripts": [
         "skills/interacting-with-pr-review-feedback/scripts/response_cli.py"
@@ -309,13 +313,14 @@
       "calls": [
         "operation:github-markdown-content",
         "operation:feedback-inline-response",
-        "operation:feedback-conversation-response"
+        "operation:feedback-conversation-response",
+        "operation:coderabbit-top-level-comment"
       ],
       "conditional_calls": {},
       "operations": ["feedback-interaction"],
       "contract": {
         "trigger": "authorized-single-feedback-response-or-reconciliation",
-        "modes": ["respond", "reconcile", "read-outcomes"],
+        "modes": ["respond", "reconcile", "read-outcomes", "top-level-comment"],
         "authority": "one exact typed source revision and independently authorized response intent",
         "inputs": [
           "bound-repository-pr-head",
@@ -325,7 +330,7 @@
           "exact-writer-body-and-policy-identities",
           "durable-response-outcome-store"
         ],
-        "outputs": ["authoritative-leaf-receipt", "append-only-response-outcome", "epoch-drift-or-reconciliation-state"],
+        "outputs": ["authoritative-leaf-receipt", "append-only-response-outcome", "epoch-drift-or-reconciliation-state", "top-level-comment-receipt"],
         "forbidden_reverse_calls": [
           "addressing-pr-review-feedback",
           "resuming-reviewed-prs",
@@ -431,7 +436,9 @@
         "skills/getting-prs-merged/references/caller-continuation.md",
         "skills/getting-prs-merged/references/gh-fix-ci-adapter.md",
         "skills/getting-prs-merged/references/github-markdown-authoring.md",
-        "skills/getting-prs-merged/references/merge-actuator.md"
+        "skills/getting-prs-merged/references/merge-actuator.md",
+        "skills/getting-prs-merged/references/pr-participation.md",
+        "skills/getting-prs-merged/references/review-thread-resolution.md"
       ],
       "scripts": [
         "skills/getting-prs-merged/scripts/post_coderabbit_comment.py",
@@ -449,6 +456,7 @@
         "operation:merge-inspection",
         "operation:merge-actuation",
         "operation:coderabbit-top-level-comment",
+        "operation:github:review-thread-resolution",
         "operation:issue-pr-relations"
       ],
       "conditional_calls": {},
@@ -466,7 +474,7 @@
           "merge-method-authority",
           "retained-task-relation-context-or-explicit-absence"
         ],
-        "outputs": ["verified-merge-receipt", "feedback-handoff", "cleanup-handoff", "deployment-handoff", "retained-task-relation-context-or-explicit-absence"],
+        "outputs": ["verified-merge-receipt", "urgency-tier-and-review-thread-report", "feedback-handoff", "cleanup-handoff", "deployment-handoff", "retained-task-relation-context-or-explicit-absence"],
         "forbidden_reverse_calls": ["resuming-reviewed-prs"],
         "loop_owner": null,
         "terminal_handoffs": [
@@ -864,7 +872,7 @@
       "implementation": "skills/getting-prs-merged/references/gh-fix-ci-adapter.md",
       "import": null,
       "access": "write",
-      "authority": "exact failed GitHub Actions target and separately authorized scoped rerun or repair",
+      "authority": "exact failed GitHub Actions target and a scoped rerun or repair the task carries",
       "callers": ["getting-prs-merged"],
       "disposition": "internal-helper"
     },
@@ -900,8 +908,8 @@
       "implementation": "skills/getting-prs-merged/scripts/post_coderabbit_comment.py",
       "import": null,
       "access": "write",
-      "authority": "separately bound authority for coderabbit-top-level-comment",
-      "callers": ["getting-prs-merged"],
+      "authority": "one top-level PR comment or bot command that passes PR participation, bound to exact PR/head, login, and body bytes",
+      "callers": ["getting-prs-merged", "interacting-with-pr-review-feedback"],
       "disposition": "internal-helper"
     },
     {
@@ -913,7 +921,7 @@
       "import": null,
       "access": "write",
       "authority": "one re-review request to a reviewer who submitted a review, bound to PR, head, login, and that reviewer's latest review",
-      "callers": [],
+      "callers": ["addressing-pr-review-feedback"],
       "disposition": "internal-helper"
     },
     {
@@ -1170,7 +1178,7 @@
       "import": null,
       "access": "write",
       "authority": "one thread resolved under review-thread resolution, bound to thread, PR, head, login, and last evaluated comment",
-      "callers": [],
+      "callers": ["addressing-pr-review-feedback", "getting-prs-merged"],
       "disposition": "internal-helper"
     },
     {

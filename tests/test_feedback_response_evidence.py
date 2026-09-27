@@ -303,7 +303,9 @@ class RetainedEvidenceTests(unittest.TestCase):
     def test_executor_gets_content_without_fixture_or_candidate_path_labels(self):
         request = module.strict_json(self.document["records"][0]["request"])
         self.assertEqual(request["fixture"], ["source"])
-        self.assertEqual(request["candidate_bundle"], ["source"] * 3)
+        self.assertEqual(
+            request["candidate_bundle"], ["source"] * len(module.CANDIDATE_PATHS)
+        )
         self.assertNotIn("fixtures/example.md", self.document["records"][0]["request"])
 
     def test_identity_helper_is_source_evidence_not_executor_prompt_content(self):
@@ -1089,10 +1091,15 @@ class RetainedEvidenceTests(unittest.TestCase):
                 if record["variant"] == "with_skill"
             )["request"]
         )
-        self.assertEqual(old_request["candidate_bundle"], ["source"] * 3)
+        self.assertEqual(
+            old_request["candidate_bundle"], ["source"] * len(module.CANDIDATE_PATHS)
+        )
         self.assertEqual(
             new_request["candidate_bundle"],
-            ["current source 0", "current source 1", "current source 2"],
+            [
+                f"current source {index}"
+                for index in range(len(module.CANDIDATE_PATHS))
+            ],
         )
         self.assertEqual(second["history"]["prior_document"], first_text)
         self.assertEqual(third["history"]["prior_document"], second_text)

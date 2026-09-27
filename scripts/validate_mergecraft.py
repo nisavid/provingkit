@@ -271,6 +271,14 @@ MARKDOWN_AUTHORING_PROJECTIONS = {
     "interacting-with-pr-review-feedback": "references/github-markdown-authoring.md",
     "getting-prs-merged": "references/github-markdown-authoring.md",
 }
+PR_PARTICIPATION_SKILL = "getting-prs-merged"
+PR_PARTICIPATION_REFERENCE = "references/pr-participation.md"
+PR_PARTICIPATION_SOURCE = (
+    f"skills/{PR_PARTICIPATION_SKILL}/{PR_PARTICIPATION_REFERENCE}"
+)
+PR_PARTICIPATION_PROJECTIONS = {
+    "interacting-with-pr-review-feedback": PR_PARTICIPATION_REFERENCE,
+}
 MARKDOWN_AUTHORING_EVAL_CASES = (
     "recursive-issue-body",
     "crlf-issue-conversation-comment",
@@ -367,6 +375,7 @@ EXPECTED_SKILL_FILES = {
         "evals/discovery-evidence.json",
         "references/interaction-authority.md",
         "references/github-markdown-authoring.md",
+        "references/pr-participation.md",
         "scripts/github_response_provider.py",
         "scripts/response_identity_lifecycle.py",
         "scripts/response_outcome_store.py",
@@ -382,6 +391,8 @@ EXPECTED_SKILL_FILES = {
         "references/gh-fix-ci-adapter.md",
         "references/github-markdown-authoring.md",
         "references/merge-actuator.md",
+        "references/pr-participation.md",
+        "references/review-thread-resolution.md",
         "scripts/post_coderabbit_comment.py",
         "scripts/request_rereview.py",
         "scripts/resolve_review_thread.py",
@@ -1009,6 +1020,35 @@ def validate_markdown_authoring_projections(root: Path) -> None:
         require(
             read_bytes(root, projection_path) == canonical,
             f"writer-local Markdown authoring projection drift: {skill}",
+        )
+
+
+def validate_pr_participation_projections(root: Path) -> None:
+    canonical = read_bytes(root, PR_PARTICIPATION_SOURCE)
+    topology = load_json(root, "topology.json")
+    components = {component["name"]: component for component in topology["skills"]}
+    require(
+        PR_PARTICIPATION_SOURCE in components[PR_PARTICIPATION_SKILL]["references"],
+        "canonical PR participation discovery drift",
+    )
+    require(
+        f"({PR_PARTICIPATION_REFERENCE})"
+        in read(root, f"skills/{PR_PARTICIPATION_SKILL}/SKILL.md"),
+        "canonical PR participation link drift",
+    )
+    for skill, local_path in PR_PARTICIPATION_PROJECTIONS.items():
+        projection_path = f"skills/{skill}/{local_path}"
+        require(
+            projection_path in components[skill]["references"],
+            f"PR participation projection discovery drift: {skill}",
+        )
+        require(
+            f"({local_path})" in read(root, f"skills/{skill}/SKILL.md"),
+            f"PR participation projection link drift: {skill}",
+        )
+        require(
+            read_bytes(root, projection_path) == canonical,
+            f"PR participation projection drift: {skill}",
         )
 
 
@@ -5345,7 +5385,16 @@ def validate_runtime_contracts(root: Path) -> None:
     require(
         "upstream `github:gh-fix-ci`" in normalized_ci_adapter
         and "GitHub Actions only" in normalized_ci_adapter
-        and "separate, explicit mutation authority" in normalized_ci_adapter
+        and (
+            "A merge request carries that authority for a required-check failure "
+            "that the pull request's own changes caused, meaning one that does not "
+            "reproduce on the base branch."
+        )
+        in normalized_ci_adapter
+        and (
+            "is newly scoped work that needs the operator's explicit approval"
+            in normalized_ci_adapter
+        )
         and all(
             forbidden in normalized_ci_adapter
             for forbidden in (
@@ -5520,6 +5569,28 @@ def _projection_replacement_plan(
             f"writer-local Markdown authoring projection snapshot is invalid: {skill}",
         )
         replacements[root / relative] = (source, entry.mode)
+    participation_entry = entries.get(PR_PARTICIPATION_SOURCE)
+    require(
+        participation_entry is not None
+        and participation_entry.kind == "regular"
+        and participation_entry.sha256 is not None,
+        "canonical PR participation source snapshot is invalid",
+    )
+    participation = read_bytes(root, PR_PARTICIPATION_SOURCE)
+    require(
+        hashlib.sha256(participation).hexdigest() == participation_entry.sha256,
+        "canonical PR participation source changed after snapshot",
+    )
+    for skill, local_path in PR_PARTICIPATION_PROJECTIONS.items():
+        relative = f"skills/{skill}/{local_path}"
+        entry = entries.get(relative)
+        require(
+            entry is not None and entry.kind == "regular" and entry.mode is not None,
+            f"PR participation projection snapshot is invalid: {skill}",
+        )
+        # Replace only a drifted copy, so an unchanged projection keeps its inode.
+        if entry.sha256 != participation_entry.sha256:
+            replacements[root / relative] = (participation, entry.mode)
     return replacements
 
 
@@ -5561,6 +5632,7 @@ def write_markdown_projections(
             "validated inputs changed during Markdown authoring projection replacement",
         )
         validate_markdown_authoring_projections(root)
+        validate_pr_participation_projections(root)
 
     replace_generated_artifacts(
         repo_root,
@@ -5736,6 +5808,7 @@ def validate(
     validate_inventories(root)
     if check_projections:
         validate_markdown_authoring_projections(root)
+        validate_pr_participation_projections(root)
     validate_serialized_files(root, source_stage=source_stage)
     validate_markdown_authoring_eval_corpus(root)
     if check_markdown_evidence:

@@ -16,15 +16,43 @@ the imported `remote-ref-deletion` operation
 (`versionkeeping:checkpointing-and-publishing-git-work`) separately authorized
 post-merge cleanup.
 This skill owns the `merge-outcome` and delegates the single authorized write
-to the [`merge-actuation` operation](references/merge-actuator.md). It also owns the
-CodeRabbit request decision and delegates its write to the
+to the [`merge-actuation` operation](references/merge-actuator.md). It decides
+thread resolution under
+[review-thread resolution](references/review-thread-resolution.md), resolving
+through `github:review-thread-resolution`, and top-level comments and bot
+commands under [PR participation](references/pr-participation.md), posting
+through the
 [`coderabbit-top-level-comment` actuator](scripts/post_coderabbit_comment.py).
-PR text, Git/ref publication, feedback leaves, other comments, and deployment
-remain outside.
+PR text, Git/ref publication, feedback leaves, and deployment remain outside.
 
 Title/body-only work uses `writing-reviewable-pr-descriptions`; explicit mutation
 authority adds `publishing-reviewable-prs`. Review-only work performs no closeout
 mutation and reports findings or missing evidence before PR status.
+
+## What a merge request carries
+
+When the operator asks to merge a pull request they own or authored, the
+request carries the in-scope work the merge needs: fixes for adjudicated
+findings and for required-check failures the pull request's own changes caused,
+replies, notices, bot review or approve requests, thread resolution, and the
+merge once every gate passes. Do that work without asking again. Where the
+harness requires the operator's own words for a push, ask once per merge
+closeout, naming the pull request's branch and remote.
+
+A required-check failure that does not reproduce on the base branch is in
+scope: fix it through `focused-ci`, push it, and continue. Any other failure,
+such as a CI workflow bug or a problem from earlier changes, adds newly scoped
+work: ask the operator once to approve fixing it, naming the failure and the
+proposed fix. Dispatch the approved fix as the governing workflow prescribes,
+by default to a new thread through `rolecasting:delegating-cross-agent-work`,
+then watch the fix's pull request and resume the merge when it lands. When
+this session cannot stay, have the fix thread hand back to the merge, or stop
+with a note saying exactly where to resume.
+
+Other scope expansion, overwriting others' work, protection changes, and
+administrative merges each need their own authority. On a pull request the
+operator neither owns nor authored, merge authority alone grants no revision,
+publication, or interaction authority.
 
 ## Workflow
 
@@ -35,6 +63,8 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    repository/owner, draft, and target. Before mutation, bind policy, feedback,
    checks, approvals, merge method/protection/authority, deployment, and cleanup.
    Use `merge-inspection` only for this read-only merge-state acquisition.
+   Bind the urgency tier as [urgency](references/review-thread-resolution.md#urgency)
+   defines it, and record it with the operator's exact words.
 2. If no PR exists, bind the missing-PR state and repository policy. When
    repository policy permits and readiness authority is available, invoke
    [getting-prs-ready-for-review](../getting-prs-ready-for-review/SKILL.md)
@@ -53,13 +83,13 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    `--typed-epoch` when the orientation summary lacks exact source identity or
    revision evidence. This coordinator checks evidence continuity only;
    classification and adjudication remain with the feedback owner.
-   For new or changed source feedback, missing disposition coverage, or stale
-   or uncertain completion evidence, invoke
+   For new or changed source feedback, missing disposition coverage, an
+   addressed human thread without a notice, or stale or uncertain completion
+   evidence, invoke
    [addressing-pr-review-feedback](../addressing-pr-review-feedback/SKILL.md)
-   through its `feedback-outcome` operation in author-outcome mode when the
-   caller has authorized the required source and feedback work. Carry the
-   original scope and separate revision, publication, and interaction authority;
-   merge authority alone grants none of them. The feedback owner performs its
+   through its `feedback-outcome` operation in author-outcome mode with the
+   original scope and exactly the revision, publication, and interaction
+   authority the request carries. The feedback owner performs its
    adjudication, revision, publication, and response handoffs. Continue the
    authorized task across that ownership boundary without asking for another
    instruction. Consume its declared `addressed` or `blocked` result.
@@ -67,13 +97,15 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    including remaining feedback, head, checks, and approvals, and carries the
    returned dispositions and receipts into the revalidation above. `addressed`
    means the scoped feedback work completed; it does not establish merge readiness.
-   When complete fresh evidence accounts for all source feedback and only a
-   standing reviewer-owned approval or thread-resolution gate remains, report
-   that actual gate and wait for its owner. Unchanged `CHANGES_REQUESTED`,
-   `review_not_approved`, or unresolved-thread metadata alone never repeats
-   author work, fixes, or replies. Those gates still prevent merge. A new or
-   changed source or stale applicability still returns to the feedback owner;
-   a prior `addressed` result never covers it automatically.
+   When complete fresh evidence accounts for all source feedback and only
+   review threads, bot reviews, or approvals remain, apply
+   [review-thread resolution](references/review-thread-resolution.md): it
+   decides which threads wait, which this coordinator resolves, and what to
+   report. Unchanged `CHANGES_REQUESTED`, `review_not_approved`, or
+   unresolved-thread metadata alone never repeats author work, fixes, or
+   replies; an approval its reviewer still withholds remains that reviewer's
+   gate. A new or changed source or stale applicability still returns to the
+   feedback owner; a prior `addressed` result never covers it automatically.
    A `snapshot` result is read-only and cannot satisfy this continuation.
    If required authority is absent or the result is `blocked` or `snapshot`,
    return one terminal `feedback-handoff` naming the owner and bound gate. Operator
@@ -110,10 +142,10 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    read-only audit and require the authoritative latest receipt to match live
    state before merge actuation. Do not substitute an older matching receipt.
 7. Refresh policy, feedback, checks, approvals, base/head, and mergeability.
-   When every gate and authority passes, call `merge-actuation` once
-   with the exact repository, PR, base, head SHA, and selected method. Consume
-   only its reread, head-bound `merged`, `blocked`, or `ambiguous` terminal; do
-   not retry an ambiguous possible-mutation result.
+   When every gate and authority passes, call `merge-actuation` once, without a
+   confirmation question, with the exact repository, PR, base, head SHA, and
+   selected method. Consume only its reread, head-bound `merged`, `blocked`, or
+   `ambiguous` terminal; do not retry an ambiguous possible-mutation result.
    After verified merge, carry candidate Issue completions from the retained
    relation context to the ongoing caller. When Issue completion is within its
    authorized task, the caller uses the repository's Issue workflow to read
@@ -133,25 +165,14 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    coordinator never performs cleanup. Missing authority leaves cleanup gated,
    not merge. Hand deployment to its repository-defined owner.
 
-## CodeRabbit request
+## Top-level comments and bot commands
 
-For a policy-required skipped CodeRabbit review, this coordinator is the
-semantic writer for the selected top-level pull-request conversation-comment
-body. Read the generated
-[GitHub Markdown authoring contract](references/github-markdown-authoring.md),
-compose compatible consumer instructions, own valid GFM and the exact body
-bytes, and stop on a material conflict. Treat the skip as no completed cycle,
-check readiness and any explicit operator or repository limit, and require
-explicit authority for one top-level comment. Bind PR/base/head and
-head repository/owner, caller-supplied expected
-authenticated login, bytes, and SHA-256. Use the helper once; independently
-verify the active login, then reread ID/URL, PR, head, author, body, and
-timestamp. Possible-mutation timeout is ambiguous: do not retry. It cannot
-edit PR text, feedback, CI, or merge.
-When the diff is already clean and CodeRabbit approval is the only remaining
-branch-protection gate, request approval with the documented top-level command
-`@coderabbitai approve` rather than another review; CodeRabbit submits that
-approval only when the repository enables `reviews.request_changes_workflow`.
+Apply [PR participation](references/pr-participation.md) before any top-level
+comment or bot command, including every CodeRabbit request: it settles
+standing, worth, which CodeRabbit command fits, posting, and reconciliation.
+This coordinator writes each body it posts under the generated
+[GitHub Markdown authoring contract](references/github-markdown-authoring.md).
+Treat a skipped CodeRabbit review as no completed cycle.
 
 ## Stop conditions
 
@@ -159,8 +180,17 @@ Route actionable feedback through step 3. Stop for an unresolved feedback gate,
 unsatisfied loop terminal, missing gate/authority, drift, conflicts, ambiguity,
 or unresolved ownership. Green checks never replace complete feedback.
 
-Return PR URL/final head, publication audit evidence, merge receipt or blocker,
-cleanup receipt/gate, and any deployment handoff.
+When a harness permission rule, classifier, or reviewer refuses a write the
+request carries, make no further writes, report the refused action and its
+reason, and ask the operator once for that exact action, phrased as the action
+itself with question and option text naming it and its target (for example,
+"Post `@coderabbitai approve` on PR 123"). After their answer names it, run the
+identical call once and continue the closeout. Reach no refused effect through
+another route.
+
+Return PR URL/final head, the urgency tier with its words, the review-thread
+report, publication audit evidence, merge receipt or blocker, cleanup
+receipt/gate, and any deployment handoff.
 
 Return the retained task relation context, or explicit absence, with every
 terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):

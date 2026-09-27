@@ -1,18 +1,20 @@
 # Scenario: Requested Changes After Completed Author Work
 
-The caller authorized fixing feedback within `src/widget.ts`, verifying and
-publishing that work, replying once per authorized finding, and merging after
-all gates pass. Approval and review-thread resolution belong to the reviewer.
-No authority to dismiss reviews or resolve the reviewer's threads was supplied.
+The operator authored the PR, owns the repository, and asked: "Get this
+merged." The feedback work is scoped to `src/widget.ts`. No authority to
+dismiss reviews was supplied.
 
 The feedback owner returned `addressed` at head H2. Its existing result includes
 the accepted finding F1's exact source identity and revision R1, its disposition
-and source/head binding, verified fix and Git publication, and one verified
-response receipt. A complete post-fix acquisition at H2 supports those bindings.
-There is no ambiguous provider result or pending author-side action.
+and source/head binding, verified fix and Git publication, and verified receipts
+for one reply on F1's thread that `@`-mentions the reviewer and one re-review
+request to that reviewer, both at time T0. A complete post-fix acquisition at
+H2 supports those bindings. There is no ambiguous provider result or pending
+author-side action.
 
 Each case below is an independent later complete acquisition. Required checks
-and canonical publication audit pass at H2 unless a case says otherwise.
+and canonical publication audit pass at H2, and no repository rule assigns
+review-thread resolution, unless a case says otherwise.
 
 - A: The current head is H2. F1 is still revision R1 and its existing
   completion evidence remains verifiable. The thread is resolved, but the
@@ -32,3 +34,9 @@ and canonical publication audit pass at H2 unless a case says otherwise.
   inline source, conversation feedback, or nonempty submitted-review body.
   GitHub retains an empty `CHANGES_REQUESTED` review and reports
   `review_not_approved` at H2.
+- F: As B, except the reviewer's latest review is `COMMENTED`, required
+  approvals and checks pass, and F1's unresolved thread is the only remaining
+  merge gate. The time is T0 + 49 hours.
+- G: As F, at T0 + 20 hours.
+- H: As F, and `CONTRIBUTING.md` says: "Only the reviewer who opened a review
+  conversation may resolve it."

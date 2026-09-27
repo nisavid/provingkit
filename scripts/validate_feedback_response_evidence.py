@@ -13,6 +13,7 @@ CANDIDATE_PATHS = (
     f"{SKILL}/SKILL.md",
     f"{SKILL}/references/interaction-authority.md",
     f"{SKILL}/references/github-markdown-authoring.md",
+    f"{SKILL}/references/pr-participation.md",
 )
 SOURCE_GLOBS = (
     f"{SKILL}/scripts/*.py",

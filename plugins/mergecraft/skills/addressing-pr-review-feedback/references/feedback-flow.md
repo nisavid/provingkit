@@ -10,6 +10,7 @@
 | Commit and push                               | `versionkeeping:checkpointing-and-publishing-git-work`                 | verified Git state                                                                                                                                                                                                                    |
 | Changed PR facts                              | lifecycle caller                                                       | route to the selected content/publication owner                                                                                                                                                                                       |
 | One semantic response                        | [response owner](../../interacting-with-pr-review-feedback/SKILL.md) | exact source correlation, writer bytes, selected Provingkit leaf receipt, and append-only semantic outcome |
+| Notice, re-review, bot-thread resolution | feedback coordinator under [review-thread resolution](../../getting-prs-merged/references/review-thread-resolution.md) | one `@`-mention reply through the response owner, one re-review request, bot threads without auto-resolution resolved once; each wait reported |
 
 Every frozen-contract field must be present. Treat pagination failure,
 repository/PR ambiguity, a missing input, and changed base, head, or source
@@ -87,8 +88,9 @@ replacement, wrong-attempt reconciliation, conflicting reservation, or invalid
 supersession or conversion fails closed without migration or repair.
 Invoke the response owner once per independently authorized intent. Unknown
 outcomes freeze dependent or conflicting work without claiming rollback of
-completed responses. Reaction, thread resolution, and review submission remain
-separate operations outside this response flow.
+completed responses. Reactions and review submission remain separate
+operations outside this response flow; notices and thread resolution follow
+review-thread resolution.
 
 Before each invocation, load and record the reviewed revision of the response
 procedure, preserve the exact intent's original key, and supply its complete

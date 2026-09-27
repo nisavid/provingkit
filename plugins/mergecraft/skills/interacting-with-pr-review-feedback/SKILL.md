@@ -1,6 +1,6 @@
 ---
 name: interacting-with-pr-review-feedback
-description: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result.
+description: Use when composing and posting one authorized response to an exact pull request review comment, conversation comment, or submitted-review body, or reconciling that response's uncertain result; also when posting a top-level pull request comment or bot command, such as asking CodeRabbit to re-review.
 ---
 
 # Interacting With PR Review Feedback
@@ -24,8 +24,8 @@ leaf actuator. Perform exactly one authorized response intent per invocation.
    thread is outdated or resolved. A PR conversation comment or submitted-review
    body receives a new top-level PR conversation comment. Keep a review body and
    its inline comments separate; a duplicate disposition may require no response.
-3. Compose the response using the selected Mergecraft review-voice and Tidesmith
-   writing policy before fixing its bytes. Record the selected policy sources
+3. Compose the response using the selected Mergecraft review-voice and
+   Proseweaving writing policy before fixing its bytes. Record the selected policy sources
    and any unavailable route. Where the selected register policy is unavailable,
    the client's ambient writing instructions govern; do not claim that missing
    policy was loaded or evaluated. Policy shapes wording and never selects the
@@ -129,6 +129,15 @@ evidence and reconcile before any further write for that intent. Credit an
 exactly verified response even when post-write drift ends the epoch; report the
 drift without claiming that all feedback is addressed.
 
+## Top-level comments and bot commands
+
+A top-level pull-request comment that answers no exact source comment,
+including a bot command such as a CodeRabbit re-review request, bypasses steps
+1–7: follow [PR participation](references/pr-participation.md), which settles
+standing and worth, the body's authoring contract, and posting through the
+`coderabbit-top-level-comment` actuator. Report its reread receipt or
+reconciliation in place of an `Intent handoff`.
+
 ## Completion and handoff
 
 End every executed, proposed, or blocked invocation with one compact `Intent
@@ -186,6 +195,7 @@ Each `Intent handoff` accounts for:
 
 This response capability performs no reaction, thread resolution or reopening,
 review creation or submission, approval, request-changes submission, review edit
-or dismissal, bot-review request, source edit, PR publication, ready transition,
-merge, or Issue lifecycle operation. GitHub's shared IssueComment endpoint is
-plumbing for a verified PR target; it exposes no generic Issue-comment operation.
+or dismissal, source edit, PR publication, ready transition, merge, or Issue
+lifecycle operation. A top-level comment or bot command with no source comment
+follows the section above. GitHub's shared IssueComment endpoint is plumbing for
+a verified PR target; it exposes no generic Issue-comment operation.

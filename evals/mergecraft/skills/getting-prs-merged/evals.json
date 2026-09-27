@@ -93,13 +93,13 @@
       "id": 6,
       "name": "coderabbit-skipped-review",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Get this PR merged. The latest checks are green, but CodeRabbit skipped review and branch protection still wants review.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
-      "expected_output": "The agent does not treat a skipped CodeRabbit check as completed review evidence; after local readiness and authority gates pass, it comments on the PR to request CodeRabbit explicitly, refreshes PR state, and merges only after approval and branch-protection gates pass.",
+      "expected_output": "The agent does not treat a skipped CodeRabbit check as completed review evidence. After local readiness gates pass, it applies PR participation: the merge request on the operator's own PR carries one `@coderabbitai review` request for the unreviewed head, because the PR body's mention never triggered a review, and the agent posts it through the coderabbit-top-level-comment actuator without asking for permission first. It refreshes PR state, requests `@coderabbitai approve` only after a clean review of the current head leaves CodeRabbit's approval as the last gate, and merges only after approval and branch-protection gates pass.",
       "files": ["getting-prs-merged/fixtures/coderabbit-skipped-review.md"],
       "expectations": [
         "The agent recognizes that a skipped CodeRabbit review is not a completed external review cycle.",
-        "The agent checks local readiness, current review authority, and any explicit operator or repository limits before requesting CodeRabbit again.",
-        "The agent requires explicit authority and uses an ordinary operation-specific top-level PR-comment actuator for the CodeRabbit request, not interacting-with-pr-review-feedback.",
-        "The agent requests CodeRabbit approval explicitly when approval is the only remaining gate after clean evidence.",
+        "The agent checks local readiness and any explicit operator or repository limits before requesting CodeRabbit again.",
+        "The merge request on the operator's own PR carries one CodeRabbit review request: the agent applies PR participation and posts it through the coderabbit-top-level-comment actuator, not interacting-with-pr-review-feedback, without asking for permission first.",
+        "The agent first requests `@coderabbitai review` for the unreviewed current head, and requests `@coderabbitai approve` only after that review of the current head is clean and CodeRabbit's approval is the last gate.",
         "The agent retains the comment actuator receipt and rereads the comment by ID or URL to verify PR, head, author, exact body, timestamp, and URL.",
         "The agent refreshes PR state after CodeRabbit responds before merging."
       ]
@@ -206,15 +206,18 @@
       "id": 14,
       "name": "persistent-request-changes-after-addressed",
       "prompt": "Using the independent fresh acquisitions in the provided fixture, give the next owner or gate for each case after the feedback owner returned addressed. Do not use live Git or forge tools. Describe what evidence is reused, revalidated, or no longer applicable and whether author work or merge can proceed.",
-      "expected_output": "The merge caller revalidates the feedback owner's existing dispositions, source/head bindings, and receipts against fresh complete acquisition. Unchanged reviewer-owned approval or resolution state remains a merge gate without another feedback-outcome invocation or repeated reply. New or changed feedback and stale or uncertain disposition coverage return to the feedback owner under the existing scope; the merge coordinator does not adjudicate them or merge from a prior addressed result.",
+      "expected_output": "The merge caller revalidates the feedback owner's existing dispositions, source/head bindings, and receipts against fresh complete acquisition. An approval the reviewer still withholds remains that reviewer's merge gate, with no further feedback-outcome invocation, reply, or notice. Once the addressed thread is the last gate, review-thread resolution governs it: the notice at T0 starts the nonurgent 48-hour wait, the coordinator resolves the thread once after that wait ends and then merges, and a written ownership rule keeps the thread with its reviewer. New or changed feedback and stale or uncertain disposition coverage return to the feedback owner under the existing scope; the merge coordinator does not adjudicate them or merge from a prior addressed result.",
       "files": ["getting-prs-merged/fixtures/persistent-request-changes-after-addressed.md"],
       "expectations": [
         "For A and B, the response carries forward and freshly validates the existing owner dispositions and receipts against the exact current source identities, revisions, and head; a matching orientation summary alone is insufficient.",
         "For A, unchanged CHANGES_REQUESTED and review_not_approved remain a reviewer approval gate; the response does not invoke feedback-outcome again, repeat a fix or reply, or merge.",
-        "For B, unchanged CHANGES_REQUESTED remains a reviewer approval gate and the unchanged reviewer-owned unresolved thread remains a separate resolution gate after verified author completion; the response neither repeats author work nor resolves another owner's thread or merges.",
+        "For B, unchanged CHANGES_REQUESTED remains the reviewer's approval gate, so the unresolved thread is not the last gate; the response repeats no author work, fix, reply, notice, or re-review request, resolves nothing, does not merge, and reports the notice time T0, the nonurgent tier with the operator's words, and the thread's 48-hour wait from T0.",
         "For C, the response routes the new source and edited finding to addressing-pr-review-feedback under the existing scope, with no merge-side classification or adjudication and no automatic coverage from the earlier addressed result.",
         "For D, the changed head and unavailable completion proof make the old disposition applicability uncertain; the response routes revalidation and any adjudication to the feedback owner without reusing stale completion or blindly replaying a provider write.",
-        "For E, complete acquisition contains no source feedback to adjudicate; the empty requested-changes review remains an approval gate rather than author work, and merge remains blocked."
+        "For E, complete acquisition contains no source feedback to adjudicate; the empty requested-changes review remains an approval gate rather than author work, and merge remains blocked.",
+        "For F, the nonurgent 48-hour wait from the T0 notice has ended and the thread is the last gate the coordinator cannot clear itself; the response resolves it once through github:review-thread-resolution after a fresh read of the thread and head, then merges once.",
+        "For G, the response reports the nonurgent tier with the operator's words, the T0 notice time, and about 28 hours remaining; it makes no write, sends no second notice, and does not merge.",
+        "For H, the CONTRIBUTING rule is a hard ownership rule: the response resolves nothing, does not merge, reports the rule and the thread as the gate, and asks at most one question, only about an exception."
       ]
     }
   ]
