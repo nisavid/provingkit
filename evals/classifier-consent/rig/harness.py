@@ -4,7 +4,9 @@
 Usage: harness.py run CASE.json [--trials N] [--out DIR] [--model sonnet]
 --trials N asks for N valid trials and attempts at most 2N. A trial is invalid when any turn ends in an API error
 (for example an exhausted session limit) or lacks its result event; invalid trials are kept on disk and reported
-separately, never counted as clean.
+separately, never counted as clean. A watchdog bounds every trial by TRIAL_TOTAL_LIMIT (900 s) and TRIAL_IDLE_LIMIT (300 s
+without a stream line), killing the claude process group; the kill is recorded as the trial's `killed` diagnostic
+('total-limit' or 'idle-limit') while `invalid` stays derived from the stream alone.
 CASE.json fields:
   name            label
   fixture         "push" | "push-worktree" | "none" | path to a shell script taking DIR (default "push")
@@ -18,18 +20,28 @@ CASE.json fields:
   extra_args      list of extra CLI args
   env             dict of environment overrides for the claude process; $FX and $PATH expand
   expect          optional {"remote_branch": "ivan/fixture-feature"} checked after the run
+  ask_policy      optional {"select": "affirmative"}: enables the stdio permission-prompt surface and auto-answers each AskUserQuestion with the first affirmative-reading option label; only "affirmative" is supported
 Every trial rebuilds the fixture, so nothing persists between trials. Pushes reach only the fixture's local bare remote, and every case
 runs with the recording gh stub first on PATH, logging to <fixture>/gh-stub.log. Without --out, runs go to a new temporary
 directory outside the checkout, named neutrally because the classifier reads paths in
 command text. The rig does not otherwise sandbox the agent.
 """
-import argparse, json, os, re, subprocess, sys, tempfile, time, shutil, uuid
+import argparse, json, os, re, signal, subprocess, sys, tempfile, threading, time, shutil, uuid
 HERE=os.path.dirname(os.path.abspath(__file__))
 REPO=os.path.abspath(os.path.join(HERE,'..','..','..'))
 VK=os.path.join(REPO,'plugins','versionkeeping','skills','checkpointing-and-publishing-git-work','scripts')
 PLUGIN=os.environ.get('CLASSIFIER_CONSENT_PLUGIN', os.path.join(REPO,'plugins','versionkeeping'))
 def expand(text,fxdir): return text.replace('$FX',fxdir).replace('$VK',VK).replace('$PLUGIN',PLUGIN).replace('$RIG',HERE)
 DENY_RE=re.compile(r'denied by the Claude Code auto mode classifier\. Reason: \[([^\]]*)\]')
+TRIAL_TOTAL_LIMIT=900  # seconds per trial before the watchdog kills the claude process group
+TRIAL_IDLE_LIMIT=300   # seconds without a stream line before the watchdog kills it
+WATCHDOG_POLL=2        # longest pause between watchdog checks; it wakes sooner when a limit is nearer
+
+def check_ask_policy(case):
+    """Exit before any run directory, trial directory, or fixture exists when ask_policy asks for an unsupported selection."""
+    pol=case.get('ask_policy')
+    if pol and (not isinstance(pol,dict) or pol.get('select')!='affirmative'):
+        sys.exit(f"harness: unsupported ask_policy {json.dumps(pol)}; only {{\"select\": \"affirmative\"}} is supported")
 
 def build_fixture(kind, fxdir):
     if os.path.exists(fxdir): shutil.rmtree(fxdir)
@@ -61,18 +73,32 @@ def run_trial(case, model, outdir, trial):
     env['PATH']=os.path.join(HERE,'stub')+os.pathsep+env.get('PATH',''); env['GH_STUB_LOG']=os.path.join(fxdir,'gh-stub.log')
     for k,v in (case.get('env') or {}).items(): env[k]=v.replace('$FX',fxdir).replace('$RIG',HERE).replace('$PATH',env.get('PATH',''))
     log=open(os.path.join(outdir,f'trial-{trial:02d}','stream.jsonl'),'w')
-    proc=subprocess.Popen(args,cwd=cwd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=open(os.path.join(outdir,f'trial-{trial:02d}','err.txt'),'w'),text=True,env=env)
+    proc=subprocess.Popen(args,cwd=cwd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=open(os.path.join(outdir,f'trial-{trial:02d}','err.txt'),'w'),text=True,env=env,start_new_session=True)
     events=[]; tool_uses=[]; denials=[]; results=[]; init=None; asks=[]; user_texts=[]
-    def send(text):
-        proc.stdin.write(json.dumps({'type':'user','message':{'role':'user','content':[{'type':'text','text':text}]}})+'\n'); proc.stdin.flush()
+    def write_line(obj):
+        try: proc.stdin.write(json.dumps(obj)+'\n'); proc.stdin.flush()
+        except BrokenPipeError: pass  # the child exited or was killed; the read loop ends at stdout EOF
+    def send(text): write_line({'type':'user','message':{'role':'user','content':[{'type':'text','text':text}]}})
     if case.get('ask_policy'):
-        proc.stdin.write(json.dumps({'type':'control_request','request_id':'init-1','request':{'subtype':'initialize'}})+'\n'); proc.stdin.flush()
-    ti=0; send(expand(turns[0]['text'],fxdir)); t0=time.time(); tlast=time.time()
+        write_line({'type':'control_request','request_id':'init-1','request':{'subtype':'initialize'}})
+    ti=0; send(expand(turns[0]['text'],fxdir)); t0=time.time(); tlast={'t':t0}; killed={'v':None}; finished=threading.Event()
+    def kill_group(reason):
+        killed['v']=reason
+        try: os.killpg(proc.pid,signal.SIGKILL)  # the whole session, so a grandchild cannot keep stdout open
+        except ProcessLookupError: pass
+        proc.kill()
+    def watchdog():
+        while True:
+            now=time.time(); total_left=TRIAL_TOTAL_LIMIT-(now-t0); idle_left=TRIAL_IDLE_LIMIT-(now-tlast['t'])
+            if total_left<=0: kill_group('total-limit'); return
+            if idle_left<=0: kill_group('idle-limit'); return
+            if finished.wait(max(0.05,min(WATCHDOG_POLL,total_left,idle_left))): return
+    threading.Thread(target=watchdog,daemon=True).start()
     while True:
         line=proc.stdout.readline()
         if not line:
             break
-        log.write(line); log.flush(); tlast=time.time()
+        log.write(line); log.flush(); tlast['t']=time.time()
         try: ev=json.loads(line)
         except: continue
         events.append(ev); t=ev.get('type')
@@ -105,7 +131,7 @@ def run_trial(case, model, outdir, trial):
                 resp={'type':'control_response','response':{'subtype':'success','request_id':rid,'response':{'behavior':'deny','message':'Permission for this tool use was denied. It requires approval, and this session has no approval surface; the action was NOT performed. Do not retry it.'}}}
             else:
                 resp={'type':'control_response','response':{'subtype':'success','request_id':rid,'response':{}}}
-            proc.stdin.write(json.dumps(resp)+'\n'); proc.stdin.flush()
+            write_line(resp)
         if t=='user':
             for x in (ev.get('message') or {}).get('content',[]):
                 if isinstance(x,dict) and x.get('type')=='text' and 'AskUserQuestion' in x.get('text',''): user_texts.append(x['text'][:600])
@@ -114,9 +140,9 @@ def run_trial(case, model, outdir, trial):
             ti+=1
             if ti<len(turns): send(expand(turns[ti]['text'],fxdir))
             else:
-                proc.stdin.close()
-        if time.time()-t0>900 or time.time()-tlast>300: proc.kill(); break
-    proc.wait(); log.close()
+                try: proc.stdin.close()
+                except BrokenPipeError: pass
+    proc.wait(); finished.set(); log.close()
     outcome={}
     exp=case.get('expect') or {}
     if exp.get('remote_branch'):
@@ -130,7 +156,7 @@ def run_trial(case, model, outdir, trial):
     if len(results)<len(turns): invalid='missing-result'
     elif any(r.get('is_error') or r.get('terminal_reason')=='api_error' for r in results):
         invalid=next((r.get('terminal_reason') or r.get('subtype') or 'error') for r in results if r.get('is_error') or r.get('terminal_reason')=='api_error')
-    rec={'trial':trial,'invalid':invalid,'init':init,'tool_uses':tool_uses,'denials':denials,'results':results,'outcome':outcome,'asks':asks,'ask_user_turns':user_texts,'cost':sum((r.get('cost') or 0) for r in results)}
+    rec={'trial':trial,'invalid':invalid,'killed':killed['v'],'init':init,'tool_uses':tool_uses,'denials':denials,'results':results,'outcome':outcome,'asks':asks,'ask_user_turns':user_texts,'cost':sum((r.get('cost') or 0) for r in results)}
     json.dump(rec,open(os.path.join(outdir,f'trial-{trial:02d}','record.json'),'w'),indent=1)
     return rec
 
@@ -138,14 +164,15 @@ def main():
     ap=argparse.ArgumentParser(); sub=ap.add_subparsers(dest='cmd',required=True)
     r=sub.add_parser('run'); r.add_argument('case'); r.add_argument('--trials',type=int,default=3); r.add_argument('--out'); r.add_argument('--model',default='sonnet')
     a=ap.parse_args()
-    case=json.load(open(a.case)); out=a.out or tempfile.mkdtemp(prefix="rig-"); os.makedirs(out,exist_ok=True)
+    case=json.load(open(a.case)); check_ask_policy(case)
+    out=a.out or tempfile.mkdtemp(prefix="rig-"); os.makedirs(out,exist_ok=True)
     json.dump(case,open(os.path.join(out,'case.json'),'w'),indent=1)
     recs=[]; i=0
     while sum(1 for r in recs if not r['invalid'])<a.trials and i<2*a.trials:
         os.makedirs(os.path.join(out,f'trial-{i:02d}'),exist_ok=True)
         rec=run_trial(case,a.model,out,i); recs.append(rec)
         d=[x['reason'] for x in rec['denials']]
-        print(f"trial {i}: {'INVALID('+rec['invalid']+') ' if rec['invalid'] else ''}mode={rec['init'] and rec['init']['mode']} tool_uses={len(rec['tool_uses'])} denials={d} outcome={rec['outcome']} cost=${rec['cost']:.3f}",flush=True)
+        print(f"trial {i}: {'INVALID('+rec['invalid']+') ' if rec['invalid'] else ''}{'killed='+rec['killed']+' ' if rec['killed'] else ''}mode={rec['init'] and rec['init']['mode']} tool_uses={len(rec['tool_uses'])} denials={d} outcome={rec['outcome']} cost=${rec['cost']:.3f}",flush=True)
         i+=1
     valid=[r for r in recs if not r['invalid']]; n=len(valid); nd=sum(1 for r in valid if r['denials'])
     summary={'case':case['name'],'model':a.model,'trials':n,'invalid_trials':len(recs)-n,'trials_with_denial':nd,'denial_rate':nd/n if n else None,'reasons':[x['reason'] for r in valid for x in r['denials']],'total_cost':sum(r['cost'] for r in recs),'out':out}
