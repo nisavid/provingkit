@@ -54,7 +54,8 @@ The canonical manifest is plugin.json. The Claude manifest projects its
 identity, and topology.json records this one-skill roster and its ownership.
 The installed skill carries SKILL.md, two references, two Python scripts, and
 agents/openai.yaml. Runtime resources are in the skill tree so each target
-projection can carry them.
+projection can carry them. The skill tree also holds evals/trigger-evals.json,
+the skill's trigger corpus, which builds leave out.
 
 ## Validation
 
@@ -64,7 +65,8 @@ From the repository root:
     python scripts/validate_praxis.py .
 
 The validator checks the manifests, topology, exact skill roster, required
-resources, public test sources, portability, and the content lock.
+resources, trigger corpus shape, public test sources, portability, and the
+content lock.
 tests/test_validate_praxis.py exercises this source contract with isolated
 fixtures; tests/test_policy_eval_runner.py exercises the runner with fake
 harnesses and a recording GitHub stub. These checks make no live provider or
@@ -75,9 +77,9 @@ test modules. The validator is its only writer:
 
     python scripts/validate_praxis.py --write-content-lock .
 
-The constructor's evaluation corpora are authored under
-evals/praxis/constructing-agent-policies/. Their filenames and validation
-contract must be declared in the validator when they land, then included in
-the content lock and Kit definition digest. No corpus is required by this
-one-skill shell. Source membership grants no release, installation, or live
-qualification authority.
+The constructor's evaluation cases are authored under
+evals/praxis/constructing-agent-policies/ and declared in the validator. Its
+trigger corpus is skills/constructing-agent-policies/evals/trigger-evals.json:
+exact {query, should_trigger} items with unique queries and both outcomes. The
+content lock and the Kit definition digest include both. Source membership
+grants no release, installation, or live qualification authority.

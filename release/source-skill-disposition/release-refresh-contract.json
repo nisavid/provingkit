@@ -78,7 +78,7 @@
       "path": "release/source-skill-lineage/source-manifest.json"
     }
   },
-  "content_sha256": "sha256:c1f59cefe7f9eacf26bda71ce8a02d1081475eaf168f333b92383f4cfb08851e",
+  "content_sha256": "sha256:a9b9df05dc1b0b00f2497562b4e2571867a6e96079002a525cf3e349f30cb158",
   "contract": "coordinated-source-skill-release-refresh-v1",
   "disposition_ledger": {
     "path": "release/source-skill-disposition/disposition-ledger.json",
@@ -315,7 +315,8 @@
             "evals/praxis/constructing-agent-policies/README.md",
             "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json",
             "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json",
-            "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json"
+            "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json",
+            "plugins/praxis/skills/constructing-agent-policies/evals"
           ],
           "id": "praxis",
           "identity_artifact_paths": [

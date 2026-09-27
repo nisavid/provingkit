@@ -22,6 +22,7 @@ CORPORA = (
     f"{CORPUS_ROOT}/cases/203-shared-drive-retention.json",
 )
 CORPUS_DOCS = (f"{CORPUS_ROOT}/README.md",)
+TRIGGERS = f"{SKILL}/evals/trigger-evals.json"
 RESOURCES = (
     f"{SKILL}/SKILL.md",
     f"{SKILL}/references/policy-design.md",
@@ -118,6 +119,23 @@ class PraxisContractTests(unittest.TestCase):
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("eval corpus must be a policy-eval-case-v1 case", result.stderr)
+
+    def test_trigger_corpus_is_locked_and_needs_both_outcomes(self) -> None:
+        self.write_lock()
+        self.assertIn(TRIGGERS, json.loads((self.repo / LOCK).read_text())["files"])
+        for items, message in (
+            ([{"query": "One.", "should_trigger": True}, {"query": "Two.", "should_trigger": True}],
+             "trigger probes need both outcomes"),
+            ([{"query": "One.", "should_trigger": True, "id": 1}, {"query": "Two.", "should_trigger": False}],
+             "trigger item 1 shape drift"),
+            ([{"query": "One.", "should_trigger": True}, {"query": "One.", "should_trigger": False}],
+             "trigger item 2 duplicate query"),
+        ):
+            with self.subTest(message=message):
+                (self.repo / TRIGGERS).write_text(json.dumps(items) + "\n")
+                result = self.run_validator()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
 
     def test_lock_rejects_changed_source(self) -> None:
         self.write_lock()

@@ -374,6 +374,23 @@ def _inspect_document(path, source, raw, plugin):
             or "evidence_kind" in raw and ("bound_evidence_sha256" in raw or "retained_runs" in raw)):
         result.update(format="retained-result", role="retained-evidence")
         result["records"].append(_record(source, "", raw, "retained-evidence"))
+    elif isinstance(raw, dict) and raw.get("schema") == "policy-eval-case-v1":
+        # One case per file (policy_eval_runner.py docstring). "/turns" locates the case's
+        # operator input because receipt case pointers must match ^/.
+        result.update(format="policy-eval-case", role="application")
+        turns, triggers = raw.get("turns"), raw.get("triggers", [])
+        if not isinstance(turns, list) or not turns or not all(isinstance(turn, str) for turn in turns):
+            raise ValueError("turns must be a nonempty array of strings")
+        if not isinstance(triggers, list) or not all(isinstance(trigger, dict) for trigger in triggers):
+            raise ValueError("triggers must be an array of objects")
+        owners = []
+        for trigger in triggers:
+            if trigger.get("expected") is True:
+                owners += [owner for owner in _owner(trigger.get("skill"), plugin) if owner not in owners]
+        record = _record(source, "/turns", raw, "application", owners)
+        record.update(name=raw.get("title"), prompt=turns[0])
+        record["expectations"] = _expectations(raw, "")
+        result["records"].append(record)
     elif isinstance(raw, list) and all(isinstance(item, dict) and "should_trigger" in item and "query" in item for item in raw):
         result.update(format="trigger-array", role="trigger")
         for index, case in enumerate(raw):

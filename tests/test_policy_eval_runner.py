@@ -13,6 +13,7 @@ import io
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -644,12 +645,15 @@ class SummaryTest(unittest.TestCase):
         self.assertEqual(case["status"], "fail")
 
 
+def receipt_schema_validator():
+    import jsonschema
+    schema = json.loads((ROOT / "release/behavior-eval-receipt-v1.schema.json").read_text())
+    return lambda name, value: jsonschema.validate(value, {"$ref": f"#/$defs/{name}", "$defs": schema["$defs"]})
+
+
 class ReceiptEnvelopeTest(unittest.TestCase):
     def setUp(self):
-        import jsonschema
-        schema = json.loads((ROOT / "release/behavior-eval-receipt-v1.schema.json").read_text())
-        self.validate = lambda name, value: jsonschema.validate(
-            value, {"$ref": f"#/$defs/{name}", "$defs": schema["$defs"]})
+        self.validate = receipt_schema_validator()
         receipts = importlib.util.spec_from_file_location("behavior_eval_receipts",
                                                           ROOT / "scripts/behavior_eval_receipts.py")
         self.receipts = importlib.util.module_from_spec(receipts)
@@ -667,8 +671,8 @@ class ReceiptEnvelopeTest(unittest.TestCase):
             paths = runner.write_receipt_envelopes(
                 out, snapshot_sha256=digest, coordinate=coordinate, repetition=1,
                 executor_model_id="claude-opus-5-5", grader_model_id="gpt-6-sol", response="Done.",
-                final=[{"id": "resolves-own", "passed": True}, {"id": "reports", "passed": False}],
-                triggers=[{"id": "t", "triggered": True, "receipt_coordinate": "trigger-1"}])
+                final=[{"id": "resolves-own", "passed": True}, {"id": "reports", "passed": False}])
+            self.assertEqual(set(paths), {"executor_output", "grading"})
             execution = json.loads(paths["executor_output"].read_text())
             grading = json.loads(paths["grading"].read_text())
             self.validate("execution", execution)
@@ -676,10 +680,14 @@ class ReceiptEnvelopeTest(unittest.TestCase):
             self.assertEqual(grading["executor_output_sha256"],
                              runner.sha256_bytes(paths["executor_output"].read_bytes()))
             self.assertEqual(grading["model_id"], "gpt-6-sol")
-            self.validate("triggerObservation", json.loads(paths["triggers"][0].read_text()))
+            trigger = {"source": "plugins/p/skills/s/evals/trigger-evals.json", "pointer": "/0", "id": None}
+            observation = runner.write_trigger_observation(
+                out / "trigger.json", snapshot_sha256=digest, coordinate=trigger, model_id="claude-opus-5-5",
+                triggered=True)
+            self.validate("triggerObservation", json.loads(observation.read_text()))
             manifest = runner.results_manifest(out, digest, "claude-opus-5-5", "gpt-6-sol",
                                                [(coordinate, 1, paths["executor_output"], paths["grading"])],
-                                               [("trigger-1", paths["triggers"][0])])
+                                               [(trigger, observation)])
             self.validate("results", manifest)
             self.assertFalse(manifest["runs"][0]["executor_output"].startswith("/"))
 
@@ -912,13 +920,17 @@ print(json.dumps({"type": "result", "subtype": "success", "result": "", "total_c
 '''
 
 
-class GradeRunTest(FakeHarness, unittest.TestCase):
+class GraderHarness(FakeHarness):
+    """Fake harnesses plus fake cross-graders."""
+
     def setUp(self):
         super().setUp()
         for name, body in (("codex-grader", FAKE_CODEX_GRADER), ("claude-grader", FAKE_CLAUDE_GRADER)):
             (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
             (self.bin / name).chmod(0o755)
 
+
+class GradeRunTest(GraderHarness, unittest.TestCase):
     def test_claude_run_is_cross_graded_by_codex_and_bound_to_the_transcript(self):
         case = self.write_case(turns=["Handle PR 101.", "Anything new?"],
                                answers=[{"match": ".", "answer": "No"}], permissions={"claude": {"mode": "manual"}})
@@ -940,15 +952,19 @@ class GradeRunTest(FakeHarness, unittest.TestCase):
                                   **self.options())
         snapshot = self.root / "snapshot.json"
         snapshot.write_text(json.dumps({"skill": "x"}))
+        with self.assertRaisesRegex(runner.RunError, "prepared receipt snapshot"):
+            runner.grade_run(run_dir, claude_bin=str(self.bin / "claude-grader"), base_env=dict(os.environ),
+                             timeout=60, snapshot=snapshot)
+        self.assertFalse((run_dir / "grader").exists())
         path = runner.grade_run(run_dir, claude_bin=str(self.bin / "claude-grader"), base_env=dict(os.environ),
-                                timeout=60, snapshot=snapshot)
+                                timeout=60)
         grading = json.loads(path.read_text())
         self.assertEqual((grading["grader"]["harness"], grading["grader"]["model_id"]), ("claude", "claude-opus-5-5"))
         self.assertEqual(grading["grader"]["cost_usd"], 0.03)
         final = {r["id"]: r for r in grading["final"]}
         self.assertEqual((final["resolves-own"]["grader_passed"], final["resolves-own"]["passed"]), (True, False))
         self.assertEqual(grading["deterministic"][0]["count"], 0)
-        self.assertEqual(grading["receipt"], None)  # the case has no receipt_coordinate
+        self.assertEqual(grading["receipt"], None)
 
     def test_cli_summarizes_graded_runs(self):
         case = self.write_case()
@@ -963,6 +979,195 @@ class GradeRunTest(FakeHarness, unittest.TestCase):
         group = summary["groups"][0]
         self.assertEqual((code, group["harness"], group["cases"][0]["status"]), (1, "codex", "fail"))
         self.assertEqual(group["cases"][0]["runs"], 1)
+
+
+class ReceiptCoordinateTest(unittest.TestCase):
+    def test_receipt_coordinate_is_derived_from_the_snapshot_case_selection(self):
+        cases, triggers = "evals/p/cases/1-seed.json", "plugins/p/skills/s/evals/trigger-evals.json"
+        snapshot = {"skill": {"case_selection": [{"source": cases, "pointer": "/turns"},
+                                                 {"source": "evals/p/cases/2-other.json", "pointer": "/turns"},
+                                                 {"source": triggers, "pointer": "/0"}]},
+                    "inputs": {cases: {"sha256": "a" * 64}, "evals/p/cases/2-other.json": {"sha256": "b" * 64},
+                               triggers: {"sha256": "c" * 64}}}
+        derived = {"source": cases, "pointer": "/turns", "id": 1}
+        self.assertEqual(runner.snapshot_coordinate(snapshot, "a" * 64, runner.CASE_POINTER, 1), derived)
+        self.assertEqual(runner.snapshot_coordinate(snapshot, "c" * 64, "/0", None),
+                         {"source": triggers, "pointer": "/0", "id": None})
+        for digest, pointer in (("d" * 64, "/turns"), ("c" * 64, "/turns")):
+            with self.assertRaisesRegex(runner.RunError, "selects 0 coordinates"):
+                runner.snapshot_coordinate(snapshot, digest, pointer, 1)
+        self.assertEqual(runner.case_coordinate({"id": 1, "receipt_coordinate": derived}, snapshot, "a" * 64),
+                         derived)
+        for declared in ("case-1", dict(derived, pointer="/turns/0"), dict(derived, id="1")):
+            with self.assertRaisesRegex(runner.RunError, "receipt_coordinate"):
+                runner.case_coordinate({"id": 1, "receipt_coordinate": declared}, snapshot, "a" * 64)
+        snapshot["inputs"]["evals/p/cases/2-other.json"]["sha256"] = "a" * 64
+        with self.assertRaisesRegex(runner.RunError, "selects 2 coordinates"):
+            runner.snapshot_coordinate(snapshot, "a" * 64, runner.CASE_POINTER, 1)
+        with self.assertRaisesRegex(runner.RunError, "prepared receipt snapshot"):
+            runner.snapshot_coordinate({"skill": "x"}, "a" * 64, runner.CASE_POINTER, 1)
+
+    def test_runner_case_pointer_matches_the_inventory_adapter(self):
+        specification = importlib.util.spec_from_file_location("behavior_eval_corpora",
+                                                               ROOT / "scripts/behavior_eval_corpora.py")
+        corpora = importlib.util.module_from_spec(specification)
+        specification.loader.exec_module(corpora)
+        case = minimal_case(triggers=[{"id": "t", "skill": "cand:handling-threads", "expected": True}])
+        records = corpora.inspect_document("evals/cand/cases/7.json", json.dumps(case).encode())["records"]
+        self.assertEqual([(r["pointer"], r["id"], r["owners"]) for r in records],
+                         [(runner.CASE_POINTER, case["id"], ["cand:handling-threads"])])
+
+
+FAKE_CLAUDE_PROBE = r'''#!/usr/bin/env python3
+import json, sys
+def emit(obj):
+    print(json.dumps(obj), flush=True)
+emit({"type": "system", "subtype": "init", "session_id": "s-p", "model": "claude-opus-5-5",
+      "permissionMode": "dontAsk", "plugins": [], "skills": [], "tools": ["Skill"]})
+for line in sys.stdin:
+    message = json.loads(line)
+    if message.get("type") != "user":
+        continue
+    parts = [{"type": "text", "text": "Done."}]
+    if "review feedback" in message["message"]["content"][0]["text"]:
+        parts.insert(0, {"type": "tool_use", "id": "k1", "name": "Skill", "input": {"skill": "cand:handling-threads"}})
+    emit({"type": "assistant", "message": {"model": "claude-opus-5-5", "content": parts}})
+    emit({"type": "result", "subtype": "success", "session_id": "s-p", "total_cost_usd": 0.01, "result": "Done."})
+'''
+
+CASE_SOURCE = "evals/cand/cases/7-resolve.json"
+TRIGGER_SOURCE = "plugins/cand/skills/handling-threads/evals/trigger-evals.json"
+SKILL = "cand:handling-threads"
+
+
+class ReceiptRunTest(GraderHarness, unittest.TestCase):
+    """Receipt envelopes and trigger probes against fake harnesses and graders."""
+
+    def setUp(self):
+        super().setUp()
+        probe = self.bin / "claude-probe"
+        probe.write_text(FAKE_CLAUDE_PROBE.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+        probe.chmod(0o755)
+        self.validate = receipt_schema_validator()
+        self.triggers = self.root / "trigger-evals.json"
+        self.triggers.write_text(json.dumps([{"query": "Handle the review feedback on PR 101.", "should_trigger": True},
+                                             {"query": "What time is it?", "should_trigger": False}]))
+
+    def snapshot(self, **rows):
+        """A prepared-snapshot stand-in selecting ``source=(bytes, pointers)`` rows."""
+        rows = {{"case": CASE_SOURCE, "triggers": TRIGGER_SOURCE}[key]: value for key, value in rows.items()}
+        document = {"schema_version": 1, "candidate_revision": "0" * 40,
+                    "skill": {"case_selection": [{"source": source, "pointer": pointer}
+                                                 for source, (_, pointers) in rows.items() for pointer in pointers]},
+                    "inputs": {source: {"sha256": runner.sha256_bytes(content), "mode": "100644"}
+                               for source, (content, _) in rows.items()}}
+        path = self.root / "snapshot.json"
+        path.write_text(json.dumps(document))
+        return path
+
+    def execute(self, case, repetition, harness="claude", out="runs", **extra):
+        model = "claude-opus-5-5" if harness == "claude" else "gpt-6-sol"
+        return runner.run_case(case, harness, model, "medium", [self.plugin], repetition, self.root / out,
+                               **self.options(claude_bin=str(self.bin / "claude-probe"), **extra))
+
+    def grade(self, run_dir, snapshot):
+        path = runner.grade_run(run_dir, snapshot=snapshot, codex_bin=str(self.bin / "codex-grader"),
+                                codex_auth=self.auth, base_env=dict(os.environ), timeout=60)
+        return json.loads(path.read_text())
+
+    def probe(self, index, snapshot, harness="claude", out="probes"):
+        model = "claude-opus-5-5" if harness == "claude" else "gpt-6-sol"
+        return runner.probe_trigger(self.triggers, index, SKILL, harness, model, "medium", [self.plugin],
+                                    self.root / out, snapshot=snapshot,
+                                    **self.options(claude_bin=str(self.bin / "claude-probe")))
+
+    def test_run_records_the_case_source_digest(self):
+        case = self.write_case()
+        record = json.loads((self.execute(case, 1) / "record.json").read_text())
+        self.assertEqual(record["case_source_sha256"], runner.sha256_bytes(case.read_bytes()))
+
+    def test_grade_writes_envelopes_only_for_isolating_repetitions_one_to_three(self):
+        case = self.write_case()
+        snapshot = self.snapshot(case=(case.read_bytes(), ["/turns"]))
+        for repetition, condition in ((4, "isolating"), (1, "real")):
+            run_dir = self.execute(case, repetition, condition=condition)
+            with self.subTest(repetition=repetition, condition=condition):
+                with self.assertRaisesRegex(runner.RunError, "isolating runs at repetitions 1 to 3"):
+                    self.grade(run_dir, snapshot)
+                self.assertFalse((run_dir / "grader").exists())
+        run_dir = self.execute(case, 3)
+        receipt = self.grade(run_dir, snapshot)["receipt"]
+        self.assertEqual(receipt["case_id"], {"source": CASE_SOURCE, "pointer": "/turns", "id": 7})
+        execution = json.loads((run_dir / receipt["executor_output"]).read_text())
+        self.validate("execution", execution)
+        self.validate("grading", json.loads((run_dir / receipt["grading"]).read_text()))
+        self.assertEqual((execution["case_id"], execution["repetition"]), (receipt["case_id"], 3))
+
+    def test_case_triggers_never_become_receipt_observations(self):
+        trigger = {"id": "t", "skill": SKILL, "expected": True}
+        with self.assertRaisesRegex(runner.CaseError, "receipt_coordinate"):
+            runner.validate_case(minimal_case(triggers=[dict(trigger, receipt_coordinate="trigger-1")]))
+        case = self.write_case(triggers=[trigger])
+        run_dir = self.execute(case, 1)
+        grading = self.grade(run_dir, self.snapshot(case=(case.read_bytes(), ["/turns"])))
+        self.assertEqual(grading["triggers"], [dict(trigger, triggered=True)])
+        self.assertEqual(set(grading["receipt"]), {"snapshot_sha256", "case_id", "executor_output", "grading"})
+        self.assertEqual(sorted(path.name for path in (run_dir / "receipt").iterdir()),
+                         ["executor-output.json", "grading.json"])
+
+    def test_probe_records_one_trigger_observation_per_coordinate(self):
+        snapshot = self.snapshot(triggers=(self.triggers.read_bytes(), ["/0", "/1"]))
+        for index, expected in ((0, True), (1, False)):
+            with self.subTest(index=index):
+                run_dir = self.probe(index, snapshot)
+                probe = json.loads((run_dir / "probe.json").read_text())
+                self.assertEqual((probe["expected"], probe["triggered"]), (expected, expected))
+                observation = json.loads((run_dir / probe["receipt"]["observation"]).read_text())
+                self.validate("triggerObservation", observation)
+                self.assertEqual(observation["case_id"], {"source": TRIGGER_SOURCE, "pointer": f"/{index}", "id": None})
+                self.assertEqual((observation["triggered"], observation["model_id"]), (expected, "claude-opus-5-5"))
+                self.assertEqual(observation["snapshot_sha256"], runner.document_digest(json.loads(snapshot.read_text())))
+        broken = self.bin / "claude-broken"
+        broken.write_text(f"#!{sys.executable}\nimport sys\nsys.exit(1)\n")
+        broken.chmod(0o755)
+        run_dir = runner.probe_trigger(self.triggers, 1, SKILL, "claude", "claude-opus-5-5", "medium", [self.plugin],
+                                       self.root / "broken", snapshot=snapshot, **self.options(claude_bin=str(broken)))
+        probe = json.loads((run_dir / "probe.json").read_text())
+        self.assertEqual((probe["completed"], probe["triggered"], probe["receipt"]), (False, False, None))
+        self.assertFalse((run_dir / "receipt").exists())
+        self.triggers.write_text(json.dumps([{"query": "Handle it.", "should_trigger": True, "id": 1}]))
+        with self.assertRaisesRegex(runner.CaseError, "query and should_trigger"):
+            self.probe(0, None, out="invalid")
+        self.triggers.write_text(json.dumps([{"query": "Handle it.", "should_trigger": True}]))
+        with self.assertRaisesRegex(runner.RunError, "selects 0 coordinates"):
+            self.probe(0, snapshot, out="stale")
+        self.assertFalse((self.root / "stale").exists())
+
+    def test_manifest_has_one_row_per_case_repetition_and_trigger_coordinate(self):
+        case = self.write_case(triggers=[{"id": "t", "skill": SKILL, "expected": True}])
+        snapshot = self.snapshot(case=(case.read_bytes(), ["/turns"]), triggers=(self.triggers.read_bytes(), ["/0", "/1"]))
+        for repetition in (1, 2, 3):
+            self.grade(self.execute(case, repetition), snapshot)
+        for index in (0, 1):
+            self.probe(index, snapshot)
+        out = self.root / "results.json"
+        runner.write_results_manifest([self.root / "runs", self.root / "probes"], snapshot, out)
+        manifest = json.loads(out.read_text())
+        self.validate("results", manifest)
+        self.assertEqual((manifest["executor_model_id"], manifest["grader_model_id"]), ("claude-opus-5-5", "gpt-6-sol"))
+        self.assertEqual(sorted((row["case_id"]["pointer"], row["repetition"]) for row in manifest["runs"]),
+                         [("/turns", 1), ("/turns", 2), ("/turns", 3)])
+        self.assertEqual(sorted(row["case_id"]["pointer"] for row in manifest["triggers"]), ["/0", "/1"])
+        for copied, message in (("runs", "two runs cover"), ("probes", "two probes cover")):
+            shutil.copytree(self.root / copied, self.root / f"{copied}-again")
+            with self.subTest(copied=copied), self.assertRaisesRegex(runner.RunError, message):
+                runner.write_results_manifest([self.root / "runs", self.root / "probes", self.root / f"{copied}-again"],
+                                              snapshot, self.root / "duplicate.json")
+            shutil.rmtree(self.root / f"{copied}-again")
+        self.probe(0, snapshot, harness="codex", out="codex-probes")
+        with self.assertRaisesRegex(runner.RunError, "one executor model"):
+            runner.write_results_manifest([self.root / "runs", self.root / "codex-probes"], snapshot,
+                                          self.root / "mixed.json")
 
 
 FIXTURES = ROOT / "tests/fixtures/policy_eval_runner"

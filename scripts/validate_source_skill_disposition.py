@@ -278,7 +278,7 @@ DEPENDENCY_EDGES = [
     },
 ]
 DISTRIBUTION_CLOSURE_SHA256 = (
-    "sha256:d27edb095054f4fe4458a4be9fa679ec533212734b4e26d3635ddc8604822f64"
+    "sha256:4a988d1112e299e5a592d76387453aedf2e6a48b70bcd912ace76de84aaac487"
 )
 TRIGGER_CHANGE_CLASSES = {
     "candidate-identity-artifact": ["identity-artifact-change"],

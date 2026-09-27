@@ -61,9 +61,18 @@ it. Validate every case without running a model:
 python3 -c 'import json,sys; sys.path.insert(0,"plugins/praxis/skills/constructing-agent-policies/scripts"); import policy_eval_runner as r; [r.validate_case(json.load(open(p))) for p in sys.argv[1:]]; print("valid", len(sys.argv)-1)' evals/praxis/constructing-agent-policies/cases/*.json
 ```
 
-The runner's `run`, `grade`, `summarize`, and `manifest` subcommands execute a
-case, cross-grade a run, score runs against the bar, and write the results
-manifest. See `policy_eval_runner.py <subcommand> --help` for their options.
+The receipt inventory reads each file as one application case at coordinate
+`{source, pointer: "/turns", id}`. Its owner is the `plugin:skill` of each
+trigger with `expected: true`. The case's `triggers` are internal to the
+runner: every run observes them and `summarize` scores them, but they are not
+receipt observations. The skill's receipt trigger corpus is
+[`evals/trigger-evals.json`](../../../plugins/praxis/skills/constructing-agent-policies/evals/trigger-evals.json)
+in the skill tree.
+
+The runner's `run`, `grade`, `probe`, `summarize`, and `manifest` subcommands
+execute a case, cross-grade a run, observe one trigger-corpus item, score runs
+against the bar, and write the results manifest. See
+`policy_eval_runner.py <subcommand> --help` for their options.
 
 ## Acceptance bar
 

@@ -192,7 +192,9 @@ def read_text(root: Path, relative: str | Path, *, field: str = "file") -> str:
         raise ContractError(f"{field} is not UTF-8 text: {relative}") from error
 
 
-def load_json(root: Path, relative: str | Path, field: str) -> dict:
+def load_json(
+    root: Path, relative: str | Path, field: str, *, top_type: type = dict
+) -> dict | list:
     def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict:
         value: dict = {}
         for key, item in pairs:
@@ -211,7 +213,10 @@ def load_json(root: Path, relative: str | Path, field: str) -> dict:
         )
     except json.JSONDecodeError as error:
         raise ContractError(f"{field} is not valid JSON") from error
-    require(isinstance(value, dict), f"{field} must be an object")
+    require(
+        isinstance(value, top_type),
+        f"{field} must be an {'object' if top_type is dict else 'array'}",
+    )
     return value
 
 
@@ -412,6 +417,34 @@ def validate_skills(root: Path, topology: dict) -> None:
                 f"topology call is not projected in skill body: {skill} -> {target}",
             )
         validate_codex_skill_adapter(root, skill)
+        validate_trigger_corpus(root, skill)
+
+
+def validate_trigger_corpus(root: Path, skill: str) -> None:
+    relative = f"skills/{skill}/evals/trigger-evals.json"
+    triggers = load_json(root, relative, f"{skill} triggers", top_type=list)
+    portable_document(triggers, relative)
+    require(len(triggers) >= 2, f"{skill} triggers require positive and negative probes")
+    seen_queries = set()
+    seen_outcomes = set()
+    for position, trigger in enumerate(triggers, start=1):
+        require(
+            isinstance(trigger, dict) and set(trigger) == {"query", "should_trigger"},
+            f"trigger item {position} shape drift",
+        )
+        query = trigger["query"]
+        require(
+            isinstance(query, str) and bool(query.strip()),
+            f"trigger item {position} query must be nonblank",
+        )
+        require(query not in seen_queries, f"trigger item {position} duplicate query")
+        seen_queries.add(query)
+        require(
+            type(trigger["should_trigger"]) is bool,
+            f"trigger item {position} should_trigger must be Boolean",
+        )
+        seen_outcomes.add(trigger["should_trigger"])
+    require(seen_outcomes == {True, False}, "trigger probes need both outcomes")
 
 
 def validate_manifests(root: Path) -> None:

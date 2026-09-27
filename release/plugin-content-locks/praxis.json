@@ -4,7 +4,7 @@
   "files": {
     "evals/praxis/constructing-agent-policies/README.md": {
       "mode": 420,
-      "sha256": "931be1ceb98a8862177c0b3ed2f72ce7971eeca41847ced1b3eae3eee4363273"
+      "sha256": "b48c7d8572c3f4b045e65b609d3119118c3b2bcd3403108d7ed48471113bdcb2"
     },
     "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json": {
       "mode": 420,
@@ -32,7 +32,7 @@
     },
     "plugins/praxis/README.md": {
       "mode": 420,
-      "sha256": "c1a353129fb370d5db5bc0b5bd27dd49dd1f23f6fff1d6396f4cc8b852626d58"
+      "sha256": "b888fe97f579d2dd44550f429a16bc28a48fddf4ea374ff062cdc71403835ba2"
     },
     "plugins/praxis/plugin.json": {
       "mode": 420,
@@ -45,6 +45,10 @@
     "plugins/praxis/skills/constructing-agent-policies/agents/openai.yaml": {
       "mode": 420,
       "sha256": "63d1dc2b97f50a5c51b22bd36e92c9e6cfaab646459d39556d924d7cf23a9f0b"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/evals/trigger-evals.json": {
+      "mode": 420,
+      "sha256": "53ab9c61421d9d18fe5d51f088a7023be1b2ae8143fda161c48a463920b8fea3"
     },
     "plugins/praxis/skills/constructing-agent-policies/references/evaluation.md": {
       "mode": 420,
@@ -60,7 +64,7 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "25002ca93c7eff62efe8436b75d0b9d85abcaff871f0bd88012402b7ca59e59e"
+      "sha256": "5d9df68212796c8e34db46344b0ffa2f319321f8f70465a5e7a40de09488ea24"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -68,11 +72,11 @@
     },
     "tests/test_policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "e7f772b82d382c880eab04b2542bad7cdfd69a50c51ccc1d70e15e79b4e8f3e8"
+      "sha256": "aae86dc801b628db5ec3747a1089040d60e89f067cc31584175f9140ac36f026"
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,
-      "sha256": "6b47e8fc598272310caa946f973427a9c5cc78e19cecc078b67a1ba3938ba526"
+      "sha256": "188130029d882c6a9fc88c84878feabc41ce413218fdee1991420410674ee2b5"
     }
   },
   "plugin_root": "plugins/praxis",

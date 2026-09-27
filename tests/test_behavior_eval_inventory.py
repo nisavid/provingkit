@@ -1,6 +1,7 @@
 """Immutable source discovery and affected consumers; no model executions."""
 
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -1596,6 +1597,102 @@ class InventoryTests(unittest.TestCase):
         candidate = self.commit("new projection consumer")
         self.assertEqual(inventory.compare(self.repo, base, candidate)["affected_skills"],
                          ["artifact-customs/adopting", "artifact-customs/maintaining"])
+
+    def policy_eval_case(self, triggers=({"id": "writing", "skill": "example:writing", "expected": True},),
+                         turns=("Write the rule.",)):
+        path = "evals/example/writing/cases/1-seed.json"
+        self.write(path, {"schema": "policy-eval-case-v1", "id": 1, "title": "Seed rule", "turns": list(turns),
+                          "expectations": [{"id": "keep-meaning", "severity": "safety",
+                                            "text": "Keep the seed's meaning."}],
+                          "triggers": list(triggers)})
+        return path
+
+    def test_policy_eval_cases_and_skill_local_triggers_form_a_ready_descriptor(self):
+        self.current_corpus()
+        case = self.policy_eval_case()
+        revision = self.commit("policy evaluation case")
+        described = inventory.descriptor(self.repo, revision, "example/writing")
+        self.assertEqual(described["status"], "ready", described["diagnostics"])
+        self.assertIn({"source": case, "pointer": "/turns"}, described["descriptor"]["case_selection"])
+        self.assertIn(1, [row["case_id"]["id"] for row in described["cases"]])
+        self.assertIn(case, described["descriptor"]["behavior_inputs"])
+
+    def test_unowned_policy_eval_case_is_unresolved_for_its_plugin(self):
+        self.current_corpus()
+        self.policy_eval_case(triggers=[{"id": "writing", "skill": "example:writing", "expected": False}])
+        revision = self.commit("unowned policy evaluation case")
+        for skill in ("example/writing", "example/editing"):
+            with self.subTest(skill=skill):
+                described = inventory.descriptor(self.repo, revision, skill)
+                self.assertEqual(described["status"], "unresolved")
+                self.assertIn("unresolved-owner", [row["code"] for row in described["diagnostics"]])
+
+    def test_policy_eval_case_change_selects_only_its_owner(self):
+        self.current_corpus()
+        self.policy_eval_case()
+        base = self.commit("policy evaluation case")
+        self.policy_eval_case(turns=["Write the rule and its tests."])
+        candidate = self.commit("changed policy evaluation case")
+        compared = inventory.compare(self.repo, base, candidate)
+        self.assertEqual(compared["status"], "complete", compared)
+        self.assertEqual(compared["affected_skills"], ["example/writing"])
+        self.assertEqual(compared["unsupported"], [])
+
+    def test_policy_eval_runner_envelopes_produce_and_check_a_prepared_receipt(self):
+        runner = load_runner()
+        self.current_corpus()
+        self.processing_sources()
+        case = self.policy_eval_case()
+        revision = self.commit("prepared policy evaluation case")
+        snapshot = inventory.prepare(self.repo, revision, "example/writing")
+        digest = inventory.core.document_digest(snapshot)
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        private = Path(temporary.name)
+        source = lambda path: hashlib.sha256((self.repo / path).read_bytes()).hexdigest()  # noqa: E731
+        cases = [(runner.snapshot_coordinate(snapshot, source(case), runner.CASE_POINTER, 1), "keep-meaning"),
+                 (runner.snapshot_coordinate(snapshot, source("plugins/example/skills/writing/evals/evals.json"),
+                                             "/evals/0", 0), "keep")]
+        runs = []
+        for number, (coordinate, expectation) in enumerate(cases):
+            for repetition in (1, 2, 3):
+                paths = runner.write_receipt_envelopes(
+                    private / f"{number}-{repetition}", snapshot_sha256=digest, coordinate=coordinate,
+                    repetition=repetition, executor_model_id="test-executor", grader_model_id="test-grader",
+                    response="Done.", final=[{"id": expectation, "passed": True}])
+                runs.append((coordinate, repetition, paths["executor_output"], paths["grading"]))
+        trigger_source = source("plugins/example/skills/writing/evals/trigger-evals.json")
+        triggers = []
+        for index, triggered in enumerate((True, False)):
+            coordinate = runner.snapshot_coordinate(snapshot, trigger_source, f"/{index}", None)
+            triggers.append((coordinate, runner.write_trigger_observation(
+                private / f"trigger-{index}.json", snapshot_sha256=digest, coordinate=coordinate,
+                model_id="test-executor", triggered=triggered)))
+        results = private / "results.json"
+        results.write_text(json.dumps(runner.results_manifest(private, digest, "test-executor", "test-grader",
+                                                              runs, triggers)))
+        receipt = inventory.core.produce(self.repo, snapshot, results)
+        checked = inventory.core.check(self.repo, {"schema_version": 1, "base_revision": revision,
+            "candidate_revision": revision, "skills": [snapshot["skill"]], "changed_skills": ["example/writing"],
+            "inventory_complete": True}, {"example/writing": json.dumps(receipt).encode()})
+        self.assertEqual(checked["skills"][0]["status"], "pass", checked)
+        case_trigger = {"source": case, "pointer": "/triggers/0", "id": "writing"}
+        per_run = [(case_trigger, runner.write_trigger_observation(
+            private / f"case-trigger-{repetition}.json", snapshot_sha256=digest, coordinate=case_trigger,
+            model_id="test-executor", triggered=True)) for repetition in (1, 2, 3)]
+        results.write_text(json.dumps(runner.results_manifest(private, digest, "test-executor", "test-grader",
+                                                              runs, triggers + per_run)))
+        with self.assertRaisesRegex(inventory.core.ReceiptError, "trigger coverage differs from the corpus"):
+            inventory.core.produce(self.repo, snapshot, results)
+
+
+def load_runner():
+    path = (Path(__file__).resolve().parents[1]
+            / "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py")
+    specification = importlib.util.spec_from_file_location("policy_eval_runner", path)
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    return module
 
 
 if __name__ == "__main__":

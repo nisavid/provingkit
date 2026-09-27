@@ -611,7 +611,8 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
             ],
         )
         # The evaluation corpora and README the Praxis validator declares and
-        # locks seed the praxis closure the same way.
+        # locks, and the skill's trigger corpus directory, seed the praxis
+        # closure the same way.
         self.assertEqual(
             praxis_closure["evaluation_paths"],
             [
@@ -619,6 +620,7 @@ class SourceSkillDispositionValidatorTests(unittest.TestCase):
                 "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json",
                 "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json",
                 "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json",
+                "plugins/praxis/skills/constructing-agent-policies/evals",
             ],
         )
         self.assertIn(

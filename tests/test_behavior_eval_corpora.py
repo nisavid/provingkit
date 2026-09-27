@@ -138,6 +138,12 @@ class CorpusTests(unittest.TestCase):
             (b'{"evals":[{"expectations":"not an array"}]}', "malformed-source"),
             (b'{"future_corpus":[{"id":0}]}', "unsupported-format"),
             (b'[{"query":"Go.","should_trigger":1}]', "malformed-source"),
+            (b'{"schema":"policy-eval-case-v1","id":1,"turns":"Go."}', "malformed-source"),
+            (b'{"schema":"policy-eval-case-v1","id":1,"turns":[]}', "malformed-source"),
+            (b'{"schema":"policy-eval-case-v1","id":1,"turns":[1]}', "malformed-source"),
+            (b'{"schema":"policy-eval-case-v1","id":1,"turns":["Go."],"triggers":{}}', "malformed-source"),
+            (b'{"schema":"policy-eval-case-v1","id":1,"turns":["Go."],"expectations":"x"}', "malformed-source"),
+            (b'{"schema":"policy-eval-case-v2","id":1,"turns":["Go."]}', "unsupported-format"),
         ):
             with self.subTest(content=content):
                 result = corpora.inspect_document("evals/example.json", content)
@@ -405,6 +411,79 @@ class CorpusTests(unittest.TestCase):
         self.assertIsNone(first["expectations"][0]["severity"])
         self.assertIsNone(first["expectations"][0]["id"])
         self.assertEqual(first["fixtures"][0]["path"], "evals/mergecraft/skills/getting-prs-ready-for-review/fixtures/ready-after-verified-checkpoint.md")
+
+    def test_policy_eval_case_is_one_application_case_owned_by_its_expected_triggers(self):
+        path = "evals/p/writing/cases/201-seed.json"
+        document = policy_case(triggers=[
+            {"id": "own", "skill": "p:writing", "expected": True},
+            {"id": "bare", "skill": "writing", "expected": True},
+            {"id": "other", "skill": "p:other", "expected": False}])
+        result = corpora.inspect_document(path, json.dumps(document).encode(), plugin="p")
+        self.assertEqual((result["format"], result["role"]), ("policy-eval-case", "application"))
+        self.assertEqual(result["diagnostics"], [])
+        self.assertEqual(len(result["records"]), 1)
+        record = result["records"][0]
+        self.assertEqual((record["pointer"], record["role"], record["id"], record["key"]), ("/turns", "application", 201, None))
+        self.assertIs(type(record["id"]), int)
+        self.assertEqual((record["fixtures"], record["raw"]), ([], document))
+        self.assertEqual((record["prompt"], record["name"]), ("Turn the seed into a rule.", "Constructor transfer"))
+        self.assertEqual(record["owners"], ["p:writing"])
+        self.assertEqual([(e["pointer"], e["original"], e["id"], e["severity"]) for e in record["expectations"]],
+                         [(f"/expectations/{index}", item, item["id"], item["severity"])
+                          for index, item in enumerate(document["expectations"])])
+        self.assertNotIn("query", record)
+
+    def test_policy_eval_case_normalizes_ready_with_resolvable_expectation_pointers(self):
+        path = "evals/p/writing/cases/201-seed.json"
+        document = policy_case()
+        content = json.dumps(document).encode()
+        records = corpora.inspect_document(path, content, plugin="p")["records"]
+        result = corpora.normalize_records(records, {"schema_version": 1, "entries": []}, {path: content})
+        self.assertEqual(result["diagnostics"], [])
+        self.assertEqual(result["triggers"], [])
+        case = result["cases"][0]
+        self.assertEqual(case["status"], "ready")
+        self.assertEqual(case["case_id"], {"source": path, "pointer": "/turns", "id": 201})
+        for expectation in case["expectations"]:
+            self.assertEqual(corpora._at_pointer(document, expectation["pointer"]), expectation["original"])
+
+    def test_policy_eval_case_without_expected_trigger_has_no_owner(self):
+        absent = policy_case()
+        del absent["triggers"]
+        declined = policy_case(triggers=[{"id": "other", "skill": "p:writing", "expected": False}])
+        for document in (absent, declined):
+            with self.subTest(document=document):
+                result = corpora.inspect_document("evals/p/cases/1.json", json.dumps(document).encode(), plugin="p")
+                self.assertEqual(result["role"], "application")
+                self.assertEqual(result["records"][0]["owners"], [])
+
+    def test_retained_names_precede_policy_eval_cases(self):
+        result = corpora.inspect_document("evals/p/grading.json", json.dumps(policy_case()).encode(), plugin="p")
+        self.assertEqual((result["format"], result["role"]), ("retained-result", "retained-evidence"))
+
+    def test_committed_constructor_cases_are_owned_application_cases(self):
+        cases = sorted((ROOT / "evals/praxis/constructing-agent-policies/cases").glob("*.json"))
+        self.assertEqual(len(cases), 3)
+        for source in cases:
+            path = source.relative_to(ROOT).as_posix()
+            with self.subTest(path=path):
+                content = source.read_bytes()
+                records = corpora.inspect_document(path, content, plugin="praxis")["records"]
+                self.assertEqual(len(records), 1)
+                self.assertEqual(records[0]["owners"], ["praxis:constructing-agent-policies"])
+                self.assertTrue(all(e["id"] and e["severity"] in ("safety", "quality") for e in records[0]["expectations"]))
+                normalized = corpora.normalize_records(records, {"schema_version": 1, "entries": []}, {path: content})
+                self.assertEqual((normalized["diagnostics"], normalized["cases"][0]["status"]), ([], "ready"))
+
+
+def policy_case(**overrides):
+    case = {"schema": "policy-eval-case-v1", "id": 201, "title": "Constructor transfer",
+            "turns": ["Turn the seed into a rule.", "Now test it."],
+            "expectations": [{"id": "s1-meaning", "severity": "safety", "text": "Keep the seed's meaning."},
+                             {"id": "q1-batch", "severity": "quality", "text": "Ask value questions once."}],
+            "write_checks": [], "triggers": [{"id": "own", "skill": "p:writing", "expected": True}]}
+    case.update(overrides)
+    return case
 
 
 if __name__ == "__main__":
