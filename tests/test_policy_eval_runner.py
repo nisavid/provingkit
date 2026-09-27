@@ -1546,6 +1546,38 @@ class HelperConformanceTest(unittest.TestCase):
         self.assertEqual(receipt["body"], "@coderabbitai review")
         self.assertEqual([(w["kind"], w["body"]) for w in self.writes()], [("issue-comment", "@coderabbitai review")])
 
+    def test_resolve_review_thread_resolves_once_against_stub(self):
+        state = json.loads((self.fixture["stub_dir"] / "state.json").read_text())
+        thread = next(t for t in state["review_threads"] if t["id"] == "PRRT_kwDOquire84ana")
+        receipt = json.loads(self.run_helper(
+            "getting-prs-merged/scripts/resolve_review_thread.py", "--repository", "nisavid/quire", "--pr", "84",
+            "--head-oid", self.fixture["head"], "--thread-id", "PRRT_kwDOquire84ana",
+            "--expected-last-comment-id", thread["comments"][-1]["id"], "--expected-authenticated-login", "nisavid"))
+        self.assertEqual((receipt["status"], receipt["live"]["resolved_by"]), ("verified", "nisavid"))
+        self.assertEqual([(w["kind"], w["thread_id"]) for w in self.writes()],
+                         [("review-thread-resolve", "PRRT_kwDOquire84ana")])
+
+    def test_request_rereview_requests_once_against_stub(self):
+        state = json.loads((self.fixture["stub_dir"] / "state.json").read_text())
+        review = next(r for r in state["reviews"] if r["author"]["login"] == "ana")
+        receipt = json.loads(self.run_helper(
+            "getting-prs-merged/scripts/request_rereview.py", "--repository", "nisavid/quire", "--pr", "84",
+            "--head-oid", self.fixture["head"], "--reviewer", "ana", "--expected-review-id", review["id"],
+            "--expected-authenticated-login", "nisavid"))
+        self.assertEqual((receipt["status"], receipt["live"]["requested"]), ("verified", True))
+        self.assertEqual([(w["kind"], w["action"], w["reviewers"]) for w in self.writes()],
+                         [("request-reviewers", "add", ["ana"])])
+
+    def test_request_rereview_blocks_reviewer_without_review(self):
+        result = subprocess.run(
+            [sys.executable, str(MERGECRAFT / "getting-prs-merged/scripts/request_rereview.py"),
+             "--repository", "nisavid/quire", "--pr", "84", "--head-oid", self.fixture["head"], "--reviewer", "ben",
+             "--expected-review-id", "PRR_kwDOnoreview", "--expected-authenticated-login", "nisavid"],
+            env=self.env, cwd=self.fixture["repo"], capture_output=True, text=True, timeout=120)
+        self.assertEqual(result.returncode, 1, result.stderr[-3000:])
+        self.assertEqual(json.loads(result.stdout)["status"], "blocked")
+        self.assertEqual(self.writes(), [])
+
     def test_response_cli_acquires_and_its_adapters_reply_and_comment(self):
         epoch = json.loads(self.run_helper("interacting-with-pr-review-feedback/scripts/response_cli.py",
                                            "acquire", "--repo", "nisavid/quire", "--pr", "84"))

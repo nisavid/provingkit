@@ -133,6 +133,7 @@ skill is not evidence that the capability is available.
 | merge-inspection | merge-inspection | github | read | bound repository, PR, base, head, mergeability, and repository merge policy | internal-helper | internal:merge-actuator | skills/getting-prs-merged/references/merge-actuator.md | getting-prs-merged |
 | merge-actuation | merge-write | github | write | exact repository, PR, base, head, merge method, passed gates, and merge authority | internal-helper | internal:merge-actuator | skills/getting-prs-merged/references/merge-actuator.md | getting-prs-merged |
 | coderabbit-top-level-comment | bot-review-request, top-level-comment-write | github | write | separately bound authority for coderabbit-top-level-comment | internal-helper | internal:coderabbit-top-level-comment | skills/getting-prs-merged/scripts/post_coderabbit_comment.py | getting-prs-merged |
+| reviewer-rerequest | review-request-write | github | write | one re-review request to a reviewer who submitted a review, bound to PR, head, login, and that reviewer's latest review | internal-helper | internal:reviewer-rerequest | skills/getting-prs-merged/scripts/request_rereview.py | - |
 | merge-outcome | - | workflow | coordinate | merge-outcome coordination with separately bound leaf authorities | public-skill | getting-prs-merged | skills/getting-prs-merged/SKILL.md | getting-prs-merged |
 | stack-fixup | - | workflow | coordinate | task-owned fixup paths and intended stack only | public-skill | stacking-pr-fixups | skills/stacking-pr-fixups/SKILL.md | stacking-pr-fixups |
 | conflict-resolution | - | workflow | write | authority defined by imported owner versionkeeping:resolving-merge-conflicts | imported-operation | versionkeeping:resolving-merge-conflicts | versionkeeping:resolving-merge-conflicts | - |
@@ -153,7 +154,7 @@ skill is not evidence that the capability is available.
 | github:labels-write | labels-write | github | write | exact target and label set | ordinary-tool | internal:github-label-write | ordinary operation-specific GitHub label actuator | - |
 | github:reactions-read | reactions-read | github | read | bound feedback or comment identity | ordinary-tool | internal:github-read | ordinary operation-specific GitHub read tool | - |
 | github:feedback-reaction | reactions-write | github | write | separate exact feedback reaction authority; unavailable to response routing | ordinary-tool | internal:github-feedback-reaction | ordinary operation-specific GitHub reaction actuator | - |
-| github:review-thread-resolution | review-thread-resolution | github | write | separate exact thread-resolution authority and repository/operator identity policy; unavailable to response routing | ordinary-tool | internal:github-review-thread-resolution | ordinary operation-specific GitHub thread-resolution actuator | - |
+| github:review-thread-resolution | review-thread-resolution | github | write | one thread resolved under review-thread resolution, bound to thread, PR, head, login, and last evaluated comment | internal-helper | internal:github-review-thread-resolution | skills/getting-prs-merged/scripts/resolve_review_thread.py | - |
 | github:review-submit-comment | review-submit-comment | github | write | bound PR head and exact review body | ordinary-tool | internal:github-review-submit | ordinary operation-specific GitHub review actuator | - |
 | github:review-submit-approve | review-submit-approve | github | write | bound PR head and explicit approval authority | ordinary-tool | internal:github-review-submit | ordinary operation-specific GitHub review actuator | - |
 | github:review-submit-request-changes | review-submit-request-changes | github | write | bound PR head and explicit request-changes authority | ordinary-tool | internal:github-review-submit | ordinary operation-specific GitHub review actuator | - |
@@ -232,6 +233,8 @@ From the package root:
     python3 skills/getting-prs-merged/scripts/post_coderabbit_comment.py --help
     python3 skills/addressing-pr-review-feedback/scripts/review_feedback_state.py --help
     python3 skills/interacting-with-pr-review-feedback/scripts/response_cli.py --help
+    python3 skills/getting-prs-merged/scripts/resolve_review_thread.py --help
+    python3 skills/getting-prs-merged/scripts/request_rereview.py --help
 
 Repository release validation additionally runs scripts/validate_mergecraft.py
 and the repository-owned unit suites. Canonical development and release

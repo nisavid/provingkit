@@ -433,7 +433,11 @@
         "skills/getting-prs-merged/references/github-markdown-authoring.md",
         "skills/getting-prs-merged/references/merge-actuator.md"
       ],
-      "scripts": ["skills/getting-prs-merged/scripts/post_coderabbit_comment.py"],
+      "scripts": [
+        "skills/getting-prs-merged/scripts/post_coderabbit_comment.py",
+        "skills/getting-prs-merged/scripts/request_rereview.py",
+        "skills/getting-prs-merged/scripts/resolve_review_thread.py"
+      ],
       "modules": [],
       "calls": [
         "operation:publication-audit",
@@ -901,6 +905,18 @@
       "disposition": "internal-helper"
     },
     {
+      "semantic_id": "reviewer-rerequest",
+      "github_aliases": ["review-request-write"],
+      "surface": "github",
+      "owner": "internal:reviewer-rerequest",
+      "implementation": "skills/getting-prs-merged/scripts/request_rereview.py",
+      "import": null,
+      "access": "write",
+      "authority": "one re-review request to a reviewer who submitted a review, bound to PR, head, login, and that reviewer's latest review",
+      "callers": [],
+      "disposition": "internal-helper"
+    },
+    {
       "semantic_id": "merge-outcome",
       "github_aliases": [],
       "surface": "workflow",
@@ -1150,12 +1166,12 @@
       "github_aliases": ["review-thread-resolution"],
       "surface": "github",
       "owner": "internal:github-review-thread-resolution",
-      "implementation": "ordinary operation-specific GitHub thread-resolution actuator",
+      "implementation": "skills/getting-prs-merged/scripts/resolve_review_thread.py",
       "import": null,
       "access": "write",
-      "authority": "separate exact thread-resolution authority and repository/operator identity policy; unavailable to response routing",
+      "authority": "one thread resolved under review-thread resolution, bound to thread, PR, head, login, and last evaluated comment",
       "callers": [],
-      "disposition": "ordinary-tool"
+      "disposition": "internal-helper"
     },
     {
       "semantic_id": "github:review-submit-comment",

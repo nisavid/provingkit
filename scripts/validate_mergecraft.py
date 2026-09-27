@@ -251,6 +251,7 @@ GITHUB_ALIAS_ACCESS = {
     "review-submit-approve": "write",
     "review-submit-request-changes": "write",
     "review-thread-resolution": "write",
+    "review-request-write": "write",
     "check-inspection": "read",
     "check-rerun": "write",
     "bot-review-request": "write",
@@ -382,6 +383,8 @@ EXPECTED_SKILL_FILES = {
         "references/github-markdown-authoring.md",
         "references/merge-actuator.md",
         "scripts/post_coderabbit_comment.py",
+        "scripts/request_rereview.py",
+        "scripts/resolve_review_thread.py",
     },
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
@@ -3859,6 +3862,7 @@ import json
 import os
 import re
 import sqlite3
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -3885,6 +3889,8 @@ import required_review
 import audit_reviewable_pr as audit
 import create_reviewable_pr as create
 import post_coderabbit_comment as comments
+import request_rereview as rerequests
+import resolve_review_thread as resolutions
 import publication_support as support
 import reviewable_pr_state as state
 import review_feedback_state as feedback
@@ -5036,6 +5042,114 @@ with tempfile.TemporaryDirectory() as raw_directory:
     )
     assert comment_receipt["id"] == 91
     assert comment_receipt["body"] == comment_body
+
+    # The thread and re-review actuators read GraphQL, which the fake gh cannot
+    # route, so their reads and single write are patched; the PR reread still
+    # goes through the fake gh.
+    set_states(created)
+    thread_resolved = [False, True]
+    thread_writes = []
+
+    def thread_read(arguments, *, input_text=None):
+        resolved = thread_resolved.pop(0)
+        node = {
+            "__typename": "PullRequestReviewThread",
+            "id": "PRRT_probe",
+            "isResolved": resolved,
+            "viewerCanResolve": not resolved,
+            "resolvedBy": {"login": "probe-user"} if resolved else None,
+            "repository": {"nameWithOwner": "acme/app"},
+            "pullRequest": {
+                "number": 7,
+                "url": "https://github.com/acme/app/pull/7",
+                "headRefOid": "b" * 40,
+            },
+            "comments": {"nodes": [{"id": "PRRC_probe"}]},
+        }
+        output = json.dumps({"data": {"node": node}})
+        return subprocess.CompletedProcess(arguments, 0, output, "")
+
+    def thread_write(arguments, *, input_text=None):
+        thread_writes.append(json.loads(input_text))
+        thread = {
+            "id": "PRRT_probe",
+            "isResolved": True,
+            "resolvedBy": {"login": "probe-user"},
+        }
+        output = json.dumps({"data": {"resolveReviewThread": {"thread": thread}}})
+        return subprocess.CompletedProcess(arguments, 0, output, "")
+
+    resolutions._run_read = thread_read
+    resolutions._run_mutation = thread_write
+    resolutions._active_login = lambda: "probe-user"
+    resolution = resolutions.resolve_thread(
+        repository="acme/app",
+        pr_number=7,
+        head_oid="b" * 40,
+        thread_id="PRRT_probe",
+        expected_last_comment_id="PRRC_probe",
+        expected_authenticated_login="probe-user",
+    )
+    assert resolution["status"] == "verified"
+    assert resolution["mutation_attempted"] is True
+    assert len(thread_writes) == 1
+    assert "resolveReviewThread" in thread_writes[0]["query"]
+    assert thread_writes[0]["variables"] == {"thread": "PRRT_probe"}
+
+    set_states(created)
+    review_writes = []
+
+    def review_read(arguments, *, input_text=None):
+        if input_text is None:
+            value = {"users": [{"login": "probe-reviewer"}], "teams": []}
+        else:
+            review = {
+                "id": "PRR_probe",
+                "state": "COMMENTED",
+                "submittedAt": "2026-08-20T12:00:00Z",
+                "author": {"__typename": "User", "login": "probe-reviewer"},
+            }
+            pull_request = {
+                "url": "https://github.com/acme/app/pull/7",
+                "headRefOid": "b" * 40,
+                "author": {"login": "probe-user"},
+                "reviewRequests": {"pageInfo": {"hasNextPage": False}, "nodes": []},
+                "reviews": {"nodes": [review]},
+            }
+            value = {"data": {"repository": {"pullRequest": pull_request}}}
+        return subprocess.CompletedProcess(arguments, 0, json.dumps(value), "")
+
+    def review_write(arguments, *, input_text=None):
+        review_writes.append((arguments, json.loads(input_text)))
+        value = {
+            "number": 7,
+            "html_url": "https://github.com/acme/app/pull/7",
+            "head": {"sha": "b" * 40},
+            "requested_reviewers": [{"login": "probe-reviewer"}],
+        }
+        return subprocess.CompletedProcess(arguments, 0, json.dumps(value), "")
+
+    rerequests._run_read = review_read
+    rerequests._run_mutation = review_write
+    rerequests._active_login = lambda: "probe-user"
+    rerequest = rerequests.request_rereview(
+        repository="acme/app",
+        pr_number=7,
+        head_oid="b" * 40,
+        reviewer="probe-reviewer",
+        expected_review_id="PRR_probe",
+        expected_authenticated_login="probe-user",
+    )
+    assert rerequest["status"] == "verified"
+    assert rerequest["mutation_attempted"] is True
+    assert len(review_writes) == 1
+    assert review_writes[0][0][-4:] == [
+        "POST",
+        "repos/acme/app/pulls/7/requested_reviewers",
+        "--input",
+        "-",
+    ]
+    assert review_writes[0][1] == {"reviewers": ["probe-reviewer"]}
 
     set_states(created)
     request = {

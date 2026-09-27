@@ -1820,6 +1820,7 @@ class ValidateMergecraftTests(unittest.TestCase):
             "review-submit-approve",
             "review-submit-request-changes",
             "review-thread-resolution",
+            "review-request-write",
             "check-inspection",
             "check-rerun",
             "bot-review-request",
@@ -2458,6 +2459,24 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         comment.write_text(
             comment.read_text() + "\npost_comment = lambda **kwargs: {'accepted': True}\n"
+        )
+        self.assert_rejected("candidate runtime behavior")
+
+    def test_rejects_thread_resolution_actuator_behavior_drift(self) -> None:
+        actuator = (
+            self.plugin / "skills/getting-prs-merged/scripts/resolve_review_thread.py"
+        )
+        actuator.write_text(
+            actuator.read_text()
+            + "\nresolve_thread = lambda **kwargs: {'status': 'verified'}\n"
+        )
+        self.assert_rejected("candidate runtime behavior")
+
+    def test_rejects_rereview_actuator_behavior_drift(self) -> None:
+        actuator = self.plugin / "skills/getting-prs-merged/scripts/request_rereview.py"
+        actuator.write_text(
+            actuator.read_text()
+            + "\nrequest_rereview = lambda **kwargs: {'status': 'verified'}\n"
         )
         self.assert_rejected("candidate runtime behavior")
 

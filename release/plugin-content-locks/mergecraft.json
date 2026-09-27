@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "79c2bb6cd2abc643ecd905e76510610d0acd008930ae5752184d57c1c78f0fbb",
-    "README.md": "73e3b50b0be042b4abdf65cdcf604319c9933ef3e2618964a149b20eb78079bf",
+    "README.md": "71842d5fde1c4d62b94e1a0ee038ba2af2f05f9fa7de467fcbf16cbf598a8adf",
     "plugin.json": "5d54cc740544d4fa3e63794d6a7d86950829f1b565ae4fec842d3f4da7f1bbcc",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
     "skills/addressing-pr-review-feedback/agents/openai.yaml": "2496f90c970648152cda7b94f40047baab0426c19b47954b87aa6baac563c39c",
@@ -16,6 +16,8 @@
     "skills/getting-prs-merged/references/github-markdown-authoring.md": "3e477f3d7607a594eb9f2850fa8a49f61552fc26be5844de49124bc17a486577",
     "skills/getting-prs-merged/references/merge-actuator.md": "54413ec09c1dba17b159b5681ec146431e4f5dfce6cc07aac07b5212ff84c331",
     "skills/getting-prs-merged/scripts/post_coderabbit_comment.py": "d5ad631c46ff303e2011b52423c9b51f9e80eaf96727e369399761d1dab0d3cb",
+    "skills/getting-prs-merged/scripts/request_rereview.py": "0f820ec65273375be154c73800b4a63dce300750746a67b89021d5bee3afb01f",
+    "skills/getting-prs-merged/scripts/resolve_review_thread.py": "9bb80b16e9d9bc3fa84d0eb223aedd1a80a04b9bbd8cfce3aec53987c7355496",
     "skills/getting-prs-ready-for-review/SKILL.md": "2985d269678d66d67e45a8b6be28882a2d99e6c127b58f17cfd0c8c637e0e2db",
     "skills/getting-prs-ready-for-review/agents/openai.yaml": "7c68f326623e8f7a36878250784679d34250f8fac1360c2f624df1596e7d0740",
     "skills/graphite/SKILL.md": "093ffb2c9aca11e4ba2dec2245288c366269c0dbef47ac66140246c35d333951",
@@ -104,6 +106,6 @@
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py": "ca1fd7b3210320967e47ed5696dc3fb12d1005f3cbbbd4214845247b5a895bf6",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py": "e4e8b796b02e469050a9b29e2bf13e8385edace1c3fd00fa180e8a112b1c1411",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_relation_ledger.py": "fb398f6580a998c95e1fc6d197e4f4eb5712775ae86963722dda950d682b865c",
-    "topology.json": "75116df2420572fbd1d14adfa57de4ee206fe70ecf59fa6fba7dd471779247e1"
+    "topology.json": "2289ea7e0d2a594e78e7d31da45de40324178242c02ea509a03ef8a7b1e3a483"
   }
 }
