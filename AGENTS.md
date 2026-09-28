@@ -38,16 +38,9 @@ lock.
 
 ## Git and validation
 
-This is a personal `nisavid` project. Use `Ivan D Vasin <ivan@nisavid.io>` for
-Git work and the `nisavid` GitHub account for repository mutations. Prefix
-branches with `ivan/`. Use Conventional Commits for commits and pull request
-titles; Cocogitto enforces them through the `commit-msg` and `pre-push` hooks
-that `cog install-hook --all` installs.
-
-Keep the primary checkout on `main` and do branch work in a persistent
-sibling worktree under `<checkout>.wt/`. For every Git-backed task, use
-`checkpointing-and-publishing-git-work` at the start, at clean checkpoints,
-and before stopping. Every change requires `git diff --check`.
+Use Conventional Commits for commits and pull request titles; Cocogitto
+enforces them through the `commit-msg` and `pre-push` hooks that
+`cog install-hook --all` installs. Every change requires `git diff --check`.
 
 Before publication, run the validation that owns the touched surface:
 `python scripts/validate_<plugin>.py .` and the plugin's tests through
