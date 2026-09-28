@@ -1009,6 +1009,10 @@ class ValidateVersionkeepingTests(unittest.TestCase):
         (self.repo / "plugins/versionkeeping/extra.md").write_text("unexpected\n")
         self.assert_rejected("plugin root file inventory drift")
 
+    def test_rejects_missing_developer_page(self) -> None:
+        (self.repo / "plugins/versionkeeping/DEVELOPING.md").unlink()
+        self.assert_rejected("plugin root file inventory drift")
+
     def test_rejects_adapter_prompt_without_namespace(self) -> None:
         path = self.repo / "plugins/versionkeeping/plugin.json"
         manifest = json.loads(path.read_text())

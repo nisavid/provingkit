@@ -26,7 +26,10 @@ Agent Plugins term and a Claude equivalent, the Agent Plugins term is the
 repository's word. Keep `README.md` as the verified human entrypoint and keep
 detailed contracts, research, and specs under `docs/`.
 
-Each member under `plugins/` is a package whose README names its validator
+Each member under `plugins/` is a package. Its README is the front page for
+people using the plugin and ships in installed copies, so it links only files
+the release projection includes. Its developer page, `DEVELOPING.md` where the
+member has one and otherwise the README, names its validator
 (`scripts/validate_<plugin>.py`), tests, evals, governed content identity, and
 supported regeneration commands. Edit canonical source first. Use
 `--write-content-lock` only where the member's validator documents that mode;

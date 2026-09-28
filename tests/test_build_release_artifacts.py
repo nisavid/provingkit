@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import tempfile
 import unittest
@@ -8,6 +9,8 @@ from scripts.build_release_artifacts import build
 
 
 ROOT = Path(__file__).resolve().parents[1]
+TARGETS = ("agent-plugins", "claude", "cursor")
+MARKDOWN_LINK = re.compile(r"\[[^\]]*\]\((?P<target>[^)\s]+)(?:\s+[^)]*)?\)")
 
 
 class ReleaseArtifactBuilderTests(unittest.TestCase):
@@ -92,6 +95,27 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             manifest = json.loads((output / "plugins/rolecasting/.cursor-plugin/plugin.json").read_text())
             self.assertEqual(manifest["skills"], "./skills/")
             self.assertNotIn("agents", manifest)
+
+    def test_shipped_readmes_link_only_shipped_files(self):
+        for target in TARGETS:
+            for output, receipt in self.stage(target):
+                readmes = sorted(output.glob("plugins/*/README.md"))
+                self.assertEqual([path.parent.name for path in readmes], sorted(receipt["plugin_slate"]))
+                for readme in readmes:
+                    for match in MARKDOWN_LINK.finditer(readme.read_text(encoding="utf-8")):
+                        link = match.group("target").removeprefix("<").removesuffix(">").split("#", 1)[0]
+                        if not link or ":" in link.split("/", 1)[0]:
+                            continue
+                        with self.subTest(target=target, readme=readme.relative_to(output).as_posix(), link=link):
+                            self.assertTrue((readme.parent / link).is_file())
+
+    def test_developer_pages_stay_in_source(self):
+        members = ["mergecraft", "versionkeeping"]
+        for member in members:
+            self.assertTrue((ROOT / "plugins" / member / "DEVELOPING.md").is_file())
+        for target in TARGETS:
+            for output, _ in self.stage(target, members):
+                self.assertFalse(any(p.name == "DEVELOPING.md" for p in output.rglob("*")))
 
     def test_staging_is_deterministic(self):
         with tempfile.TemporaryDirectory() as tmp:

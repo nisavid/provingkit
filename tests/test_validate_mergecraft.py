@@ -2053,6 +2053,31 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         self.assert_rejected("README skill projection")
 
+    def test_rejects_missing_developer_page(self) -> None:
+        (self.plugin / "DEVELOPING.md").unlink()
+        self.assert_rejected("plugin root file inventory drift")
+
+    def test_rejects_developer_page_operation_registry_drift(self) -> None:
+        path = self.plugin / "DEVELOPING.md"
+        content = path.read_text()
+        self.assertIn("| pr-creation |", content)
+        path.write_text(content.replace("| pr-creation |", "| pr-opening |", 1))
+        self.assert_rejected("developer page operation registry stale projection")
+
+        path.write_text(
+            content.replace("<!-- END GENERATED OPERATION REGISTRY -->", "", 1)
+        )
+        self.assert_rejected("developer page operation registry markers drift")
+
+    def test_rejects_operation_registry_in_readme(self) -> None:
+        path = self.plugin / "README.md"
+        path.write_text(
+            path.read_text()
+            + "\n<!-- BEGIN GENERATED OPERATION REGISTRY -->\n"
+            + "<!-- END GENERATED OPERATION REGISTRY -->\n"
+        )
+        self.assert_rejected("README carries the operation registry")
+
     def test_rejects_broken_relative_skill_link(self) -> None:
         path = self.plugin / "skills/graphite/SKILL.md"
         path.write_text(
