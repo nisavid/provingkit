@@ -66,7 +66,7 @@ _Avoid_: Writer, generic GitHub client
 
 **Provingkit**:
 The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Praxis. *The Kit* is its shorthand. Task Witness is optional future equipment, outside the current Slate; any resurrection must define a fresh contract and adapter.
-_Avoid_: Suite, bundle, the six
+_Avoid_: Suite, bundle, the six, the seven
 
 **Amberbridge**:
 The release-evidence bridge that binds a public candidate to verified private deployment evidence and public checks. Its contracts are present in the source stage; live release routes remain unavailable. See `docs/amberbridge.md`.
