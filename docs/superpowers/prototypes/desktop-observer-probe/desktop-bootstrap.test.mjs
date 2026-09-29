@@ -23,6 +23,15 @@ import { bootDesktopObserver } from './desktop-adapter.mjs';
 const sha256 = bytes =>
   createHash('sha256').update(bytes).digest('hex');
 
+const canonicalFlatJson = value =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.entries(value).sort(([left], [right]) =>
+        left < right ? -1 : left > right ? 1 : 0,
+      ),
+    ),
+  );
+
 const delay = milliseconds =>
   new Promise(resolve => setTimeout(resolve, milliseconds));
 
@@ -191,7 +200,7 @@ async function makeFixture(root, name) {
     pollIntervalMs: 10,
   };
 
-  await writeFile(configPath, JSON.stringify(config), {
+  await writeFile(configPath, canonicalFlatJson(config), {
     flag: 'wx',
     mode: 0o600,
   });
@@ -259,6 +268,10 @@ test(
         bootstrap.copiedAsarSha256,
         fixture.config.copiedAsarSha256,
       );
+      assert.equal(
+        bootstrap.configSha256,
+        sha256(await readFile(fixture.configPath)),
+      );
       assert.deepEqual(fixture.calls.getters, []);
       assert.ok(fixture.calls.selectedTaskIds.length > 0);
       assert.ok(
@@ -290,7 +303,7 @@ test(
 
       await writeFile(
         join(fixture.runDirectory, 'arm.json'),
-        JSON.stringify(arm),
+        `${canonicalFlatJson(arm)}\n`,
         {
           flag: 'wx',
           mode: 0o600,
@@ -418,6 +431,101 @@ test(
       await rm(root, {
         recursive: true,
         force: true,
+      });
+    }
+  },
+);
+
+test(
+  'public Desktop boot rejects noncanonical configuration bytes before receiver selection',
+  { timeout: 10_000 },
+  async t => {
+    const root = await mkdtemp(join(tmpdir(), 'desktop-config-bytes-'));
+    const previousConfigPath =
+      process.env.PROVINGKIT_OBSERVER_CONFIG;
+
+    t.after(async () => {
+      if (previousConfigPath === undefined) {
+        delete process.env.PROVINGKIT_OBSERVER_CONFIG;
+      } else {
+        process.env.PROVINGKIT_OBSERVER_CONFIG =
+          previousConfigPath;
+      }
+
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
+    });
+
+    const scenarios = [
+      {
+        name: 'reordered members',
+        bytes: config => JSON.stringify(config),
+      },
+      {
+        name: 'trailing whitespace',
+        bytes: config => `${canonicalFlatJson(config)}\n`,
+      },
+      {
+        name: 'duplicate member',
+        bytes: config =>
+          canonicalFlatJson(config).replace(
+            `"schema":"${CONFIG_SCHEMA}"`,
+            `"schema":"${CONFIG_SCHEMA}","schema":"${CONFIG_SCHEMA}"`,
+          ),
+      },
+    ];
+
+    for (const [index, scenario] of scenarios.entries()) {
+      await t.test(scenario.name, async () => {
+        const fixture = await makeFixture(
+          root,
+          `invalid-config-${index}`,
+        );
+
+        await writeFile(
+          fixture.configPath,
+          scenario.bytes(fixture.config),
+        );
+        process.env.PROVINGKIT_OBSERVER_CONFIG =
+          fixture.configPath;
+
+        const completion = fixture.boot();
+        const firstOutcome = await Promise.race([
+          completion.then(result => ({
+            kind: 'completion',
+            result,
+          })),
+          waitForJson(
+            join(fixture.runDirectory, 'bootstrap.json'),
+            1000,
+          ).then(bootstrap => ({
+            kind: 'bootstrap',
+            bootstrap,
+          })),
+        ]);
+
+        if (firstOutcome.kind === 'bootstrap') {
+          await writeFile(
+            join(fixture.runDirectory, 'arm.json'),
+            `${canonicalFlatJson({ schema: 'invalid' })}\n`,
+            {
+              flag: 'wx',
+              mode: 0o600,
+            },
+          );
+          await completion;
+        }
+
+        assert.equal(
+          firstOutcome.kind,
+          'completion',
+          'invalid configuration reached bootstrap',
+        );
+        assert.equal(firstOutcome.result, false);
+        assert.deepEqual(fixture.calls.getters, []);
+        assert.deepEqual(fixture.calls.selectedTaskIds, []);
       });
     }
   },

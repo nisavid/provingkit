@@ -1,8 +1,21 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { chmod, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+
+const canonicalFlatJson = value =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.entries(value).sort(([left], [right]) =>
+        left < right ? -1 : left > right ? 1 : 0,
+      ),
+    ),
+  );
+
+const sha256 = bytes =>
+  createHash('sha256').update(bytes).digest('hex');
 
 test('public adapter bootstraps disarmed, accepts an exact arm, and exports one allowlisted unqualified sample', async t => {
   const runDirectory = await mkdtemp(
@@ -157,6 +170,7 @@ test('public adapter bootstraps disarmed, accepts an exact arm, and exports one 
 
   const attaching = adapter.attachProbe({
     config,
+    configSha256: sha256(canonicalFlatJson(config)),
     selectReceiver,
     approvedHostProjection: adapter.projectApprovedHost,
     processIdentity: {
@@ -218,7 +232,7 @@ test('public adapter bootstraps disarmed, accepts an exact arm, and exports one 
 
   await writeFile(
     join(runDirectory, 'arm.json'),
-    `${JSON.stringify(arm)}\n`,
+    `${canonicalFlatJson(arm)}\n`,
     { flag: 'wx', mode: 0o600 },
   );
 

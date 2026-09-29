@@ -31,13 +31,15 @@ that source and its maintenance checks before installing durable equipment.
 
 Independent review of this increment must cover the procedure's entry
 conditions, exact inputs, clean-environment construction, current-profile
-branch, named-profile no-refresh condition, password-store argv variants,
-post-launch route attestation, stop branches, restoration, and consumer
-pointers. Execution invokes the same captured route checks before both
-launches and before candidate arming or restored acceptance. No new skill
-package is created or submitted to a skill evaluator. This capture supports
-the bounded experiment; broader installation and reusable-skill evaluation
-remain with the later adoption work.
+branch, existing configuration-directory identity, complete private
+account/organization/user-data/launch-file bindings, canonical configuration
+and arm encodings, named-profile no-refresh condition, password-store argv
+variants, post-launch route attestation, stop branches, restoration, and
+consumer pointers. Execution invokes the same captured route checks before
+both launches and before candidate arming or restored acceptance. No new
+skill package is created or submitted to a skill evaluator. This capture
+supports the bounded experiment; broader installation and reusable-skill
+evaluation remain with the later adoption work.
 
 From this prototype directory, run
 `node --test application-operation-launch-environment.test.mjs` when reviewing

@@ -33,6 +33,7 @@ import {
   MONOTONIC_CLOCK_ID,
   SAMPLE_SCHEMA,
   isValidLinuxBootId,
+  parseCanonicalJsonBytes,
   SELECTED_EXECUTOR_REPORT_BASIS,
   SELECTED_EXECUTOR_REPORT_KEYS,
   UNKNOWN_CLAIMS,
@@ -196,7 +197,7 @@ function optionalFlags(value) {
   return result;
 }
 
-function validateConfig(input) {
+function validateConfig(input, suppliedConfigSha256) {
   exactKeys(input, [
     'schema',
     'runDirectory',
@@ -273,9 +274,16 @@ function validateConfig(input) {
     invalid('config exceeds size limit');
   }
 
+  if (
+    !/^[a-f0-9]{64}$/u.test(suppliedConfigSha256) ||
+    suppliedConfigSha256 !== sha256(serialized)
+  ) {
+    invalid('config byte digest mismatch');
+  }
+
   return Object.freeze({
     ...normalized,
-    configSha256: sha256(serialized),
+    configSha256: suppliedConfigSha256,
   });
 }
 
@@ -406,8 +414,7 @@ async function readPrivateJson(path, uid, maximumBytes) {
       invalid('input path changed while reading');
     }
 
-    const serialized = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    return JSON.parse(serialized);
+    return parseCanonicalJsonBytes(bytes, true);
   } catch {
     invalid('invalid private input file');
   } finally {
@@ -982,6 +989,7 @@ async function invokeBounded(
 
 export async function attachProbe({
   config: suppliedConfig,
+  configSha256,
   selectReceiver,
   approvedHostProjection,
   processIdentity: suppliedProcessIdentity,
@@ -989,7 +997,7 @@ export async function attachProbe({
   monotonicNow = () =>
     Number(process.hrtime.bigint() / 1_000_000n),
 }) {
-  const config = validateConfig(suppliedConfig);
+  const config = validateConfig(suppliedConfig, configSha256);
   const processIdentity = validateProcessIdentity(suppliedProcessIdentity);
 
   if (typeof selectReceiver !== 'function') {

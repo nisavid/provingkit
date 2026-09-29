@@ -21,6 +21,7 @@ import {
   MIN_SAMPLE_INTERVAL_MS,
   MONOTONIC_CLOCK_ID,
   isValidLinuxBootId,
+  parseCanonicalJsonBytes,
 } from './observer-contract.mjs';
 import {
   attachProbe,
@@ -97,9 +98,8 @@ async function readPrivateConfig(path, uid) {
       throw new Error('invalid observer config');
     }
 
-    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
     return {
-      value: JSON.parse(text),
+      value: parseCanonicalJsonBytes(bytes, false),
       sha256: createHash('sha256').update(bytes).digest('hex'),
     };
   } catch {
@@ -728,6 +728,7 @@ async function runDesktopObserver({
   try {
     const probe = await attachProbe({
       config,
+      configSha256: confirmedConfig.sha256,
       selectReceiver: adapter.selectReceiver,
       approvedHostProjection: projectApprovedHost,
       processIdentity,

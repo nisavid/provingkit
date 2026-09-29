@@ -90,11 +90,14 @@ a later adoption decision.
 
 The private packet binds the launcher's digest and owner, group, mode, device,
 inode, link count, and size. It also binds the exact one-argument NUL launch
-file, clean launch environment, current-profile branch, flags file or absence,
-readable `44.4.3` version file, executable and adjacent-resources route, and
-the exact source-derived effective-argv variants. The ordinary password-store
-detector remains active when current state selects it, so that branch admits
-only its two source-bounded argv results.
+file path, digest, and identity; the selected account, organization, and
+Electron user-data root; the clean launch environment; the current-profile
+branch and existing configuration-directory identity; the flags file or
+absence; the readable `44.4.3` version file; the executable and
+adjacent-resources route; and the exact source-derived effective-argv
+variants. The ordinary password-store detector remains active when current
+state selects it, so that branch admits only its two source-bounded argv
+results.
 
 An absent named-profile executable remains absent and uses canonical fallback.
 An existing named executable must pass the exact no-refresh checks; otherwise
@@ -102,6 +105,12 @@ the run returns for a decision before the launcher can replace it or maintain
 shared sibling links. The procedure does not change profiles, force a password
 store, authorize stale-lock cleanup, or read the selected profile's diagnostic
 configuration.
+
+The selected profile configuration directory must already exist as the bound
+same-UID non-symlink directory before both launches. Recheck its identity
+before and after each launch. This makes the launcher's `mkdir -p` operation a
+no-op; absence or drift returns for a decision and supplies no authority to
+create or clean up that directory.
 
 Revalidate the package, protected assets, root-owned launcher ancestry,
 launcher, launch file, environment, flags, profile state, no-refresh
@@ -213,6 +222,14 @@ candidate and sidecar digests from the reviewed build receipt, the two verified
 fixture IDs, a unique run ID, a 60-second setup deadline, and a 100-millisecond
 setup poll interval. Supply its absolute configuration path as
 `PROVINGKIT_OBSERVER_CONFIG` only for the experimental launch.
+
+The Desktop adapter accepts only the exact canonical configuration encoding
+with no final LF and supplies the SHA-256 of those accepted file bytes to the
+probe. The probe requires that digest to equal the canonical validated object
+before publishing it in the bootstrap. It does not replace the accepted byte
+digest with a separately normalized digest. Arm input uses the same canonical
+byte comparison but requires exactly one final LF. Reordered, alternate-
+whitespace, or duplicate-bearing inputs are rejected before acceptance.
 
 After bootstrap, compare every binding value with the granted fixture, reviewed
 bytes, configuration digest, selected clock domain, and private run record.

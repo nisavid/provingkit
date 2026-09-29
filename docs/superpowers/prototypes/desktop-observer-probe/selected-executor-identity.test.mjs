@@ -31,6 +31,11 @@ import {
 
 const LINUX_BOOT_ID = '11111111-2222-4333-8444-555555555555';
 
+const canonicalFlatJson = value => JSON.stringify(
+  Object.fromEntries(Object.entries(value).sort(([left], [right]) =>
+    left < right ? -1 : left > right ? 1 : 0)),
+);
+
 const unknownSample = {
   state: 'unknown',
   reason: 'selected-sample-unavailable-or-changed',
@@ -868,19 +873,22 @@ test('an unknown process root is rejected without I/O and a valid fixture uses o
       taskId === record.taskId ? record : null;
 
     let clock = 2000;
+    const config = {
+      schema: 'desktop-observer.probe-config.v1',
+      runDirectory,
+      runId: 'fixture-run',
+      targetTaskId: record.taskId,
+      targetCodeSessionId: record.codeSessionId,
+      getterSetId: GETTER_SET_ID,
+      moduleSha256: '0'.repeat(64),
+      copiedAsarSha256: '1'.repeat(64),
+      setupDeadlineMs: 1000,
+      pollIntervalMs: 10,
+    };
     const probe = await attachProbe({
-      config: {
-        schema: 'desktop-observer.probe-config.v1',
-        runDirectory,
-        runId: 'fixture-run',
-        targetTaskId: record.taskId,
-        targetCodeSessionId: record.codeSessionId,
-        getterSetId: GETTER_SET_ID,
-        moduleSha256: '0'.repeat(64),
-        copiedAsarSha256: '1'.repeat(64),
-        setupDeadlineMs: 1000,
-        pollIntervalMs: 10,
-      },
+      config,
+      configSha256: createHash('sha256')
+        .update(canonicalFlatJson(config)).digest('hex'),
       selectReceiver,
       approvedHostProjection: projectApprovedHost,
       processIdentity: {
@@ -897,7 +905,7 @@ test('an unknown process root is rejected without I/O and a valid fixture uses o
     const binding = probe.bootstrap;
     await writeFile(
       join(runDirectory, 'arm.json'),
-      JSON.stringify({
+      `${canonicalFlatJson({
         schema: ARM_SCHEMA,
         runId: binding.runId,
         configSha256: binding.configSha256,
@@ -916,7 +924,7 @@ test('an unknown process root is rejected without I/O and a valid fixture uses o
         minIntervalMs: 5000,
         observationWindowMs: 30000,
         perGetterTimeoutMs: 1000,
-      }),
+      })}\n`,
       { flag: 'wx', mode: 0o600 },
     );
 

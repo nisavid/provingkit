@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import {
   chmod,
   mkdtemp,
@@ -12,6 +13,18 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import * as adapter from './observer-probe.mjs';
+
+const canonicalFlatJson = value =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.entries(value).sort(([left], [right]) =>
+        left < right ? -1 : left > right ? 1 : 0,
+      ),
+    ),
+  );
+
+const sha256 = bytes =>
+  createHash('sha256').update(bytes).digest('hex');
 
 const settle = promise =>
   promise.then(
@@ -87,19 +100,22 @@ async function createFixture(
     host: {},
   };
 
+  const config = {
+    schema: adapter.CONFIG_SCHEMA,
+    runDirectory,
+    runId: 'synthetic-run',
+    targetTaskId: record.taskId,
+    targetCodeSessionId: record.codeSessionId,
+    getterSetId: adapter.GETTER_SET_ID,
+    moduleSha256: 'a'.repeat(64),
+    copiedAsarSha256: 'b'.repeat(64),
+    setupDeadlineMs: 500,
+    pollIntervalMs: 5,
+  };
+
   const probe = await adapter.attachProbe({
-    config: {
-      schema: adapter.CONFIG_SCHEMA,
-      runDirectory,
-      runId: 'synthetic-run',
-      targetTaskId: record.taskId,
-      targetCodeSessionId: record.codeSessionId,
-      getterSetId: adapter.GETTER_SET_ID,
-      moduleSha256: 'a'.repeat(64),
-      copiedAsarSha256: 'b'.repeat(64),
-      setupDeadlineMs: 500,
-      pollIntervalMs: 5,
-    },
+    config,
+    configSha256: sha256(canonicalFlatJson(config)),
     selectReceiver: taskId =>
       taskId === record.taskId ? record : null,
     approvedHostProjection: adapter.projectApprovedHost,
@@ -147,7 +163,7 @@ async function createFixture(
     writeFile(armPath, text, { flag: 'wx', mode: 0o600 });
 
   if (arm) {
-    await writeArmText(`${JSON.stringify(armDocument)}\n`);
+    await writeArmText(`${canonicalFlatJson(armDocument)}\n`);
     await probe.acceptArm();
   }
 
@@ -534,10 +550,45 @@ test('arm path, read, and schema faults are terminal', async t => {
       name: 'invalid schema',
       prepare: fixture =>
         fixture.writeArmText(
-          `${JSON.stringify({
+          `${canonicalFlatJson({
             ...fixture.armDocument,
             schema: 'invalid-schema',
           })}\n`,
+        ),
+    },
+    {
+      name: 'noncanonical key order',
+      prepare: fixture =>
+        fixture.writeArmText(
+          `${JSON.stringify(
+            Object.fromEntries(
+              Object.entries(fixture.armDocument).reverse(),
+            ),
+          )}\n`,
+        ),
+    },
+    {
+      name: 'missing final LF',
+      prepare: fixture =>
+        fixture.writeArmText(
+          canonicalFlatJson(fixture.armDocument),
+        ),
+    },
+    {
+      name: 'extra whitespace',
+      prepare: fixture =>
+        fixture.writeArmText(
+          `${canonicalFlatJson(fixture.armDocument)} \n`,
+        ),
+    },
+    {
+      name: 'duplicate member',
+      prepare: fixture =>
+        fixture.writeArmText(
+          `${canonicalFlatJson(fixture.armDocument).replace(
+            `"schema":"${adapter.ARM_SCHEMA}"`,
+            `"schema":"${adapter.ARM_SCHEMA}","schema":"${adapter.ARM_SCHEMA}"`,
+          )}\n`,
         ),
     },
   ];

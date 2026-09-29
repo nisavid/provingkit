@@ -32,13 +32,14 @@ expansion, or paths copied from this committed document:
 - `LINUX_OBSERVATION_FILE`, a private path outside the run directory whose
   basename is exactly `selected-linux-executor-observation.json`.
 - `PROBE_LAUNCHER`, its SHA-256 as `PROBE_LAUNCHER_SHA256`, and its reviewed device, inode, owner, group, mode, link count, and size as `PROBE_LAUNCHER_STAT`.
-- The reviewed NUL-delimited `PROBE_LAUNCH_ARGV_FILE`, its reconstructed NUL-delimited SHA-256 as `PROBE_LAUNCH_ARGV_SHA256`, and its device, inode, owner, group, mode, link count, and size as `PROBE_LAUNCH_ARGV_STAT`.
+- The reviewed NUL-delimited `PROBE_LAUNCH_ARGV_FILE`, its reconstructed NUL-delimited SHA-256 as `PROBE_LAUNCH_ARGV_SHA256`, and its device, inode, owner, group, mode, link count, and size as `PROBE_LAUNCH_ARGV_STAT`. These are recorded as `launchRoute.launchArgumentFile` in the private record.
 - `PROBE_PROFILE`, exactly `default` or the current named-profile token;
   `PROBE_PROFILE_KIND`, exactly `default` or `named`; and `PROBE_HOME`.
 - The ordered in-memory `PROBE_LAUNCH_ENV` array reconstructed from the
   private record, and its NUL-delimited `name=value` SHA-256 as
   `PROBE_LAUNCH_ENV_SHA256`.
-- `PROBE_CONFIG_DIR`, `PROBE_LOCK_PATH_PRIMARY`,
+- `PROBE_CONFIG_DIR`, its existing directory identity as
+  `PROBE_CONFIG_DIR_STAT`, `PROBE_LOCK_PATH_PRIMARY`,
   `PROBE_LOCK_PATH_3P`, `PROBE_FLAGS_PATH`, and `PROBE_FLAGS_STATE`.
 - `PROBE_EXPECTED_ELECTRON`, `PROBE_EXPECTED_ELECTRON_SHA256`,
   `PROBE_VERSION_FILE`, `PROBE_VERSION_FILE_SHA256`,
@@ -49,7 +50,7 @@ expansion, or paths copied from this committed document:
 - The exact source-derived effective-argv variant or variants recorded under
   `launchRoute.execution.effectiveArgvVariants` in the private record.
 - `PROTECTED_ASSET_MANIFEST`, its SHA-256, and the exact main-executable, complete native-asset, and `chrome-sandbox` inventory.
-- The current profile, account, organization, new local Code task, new empty
+- The current profile, account, organization, Electron user-data root, new local Code task, new empty
   non-Git project directory, any app-created dedicated worktree and its approved
   expected entries, task ID, Code ID, constructed metadata path, approved
   process bindings, and task-restoration expectations.
@@ -356,6 +357,21 @@ The selected paths are derived exactly as follows:
   launcher exports `PROBE_HOME/.claude-<profile>`. The procedure does not
   alter deployment mode or infer an app data root from an absent lock.
 
+`PROBE_CONFIG_DIR` must already exist before either launch. Require the exact
+path to be a non-symlink directory owned by the selected Desktop UID and not
+group- or world-writable. Open the final component with
+`O_DIRECTORY|O_NOFOLLOW`, compare its device, inode, UID, GID, and mode with
+`PROBE_CONFIG_DIR_STAT`, and require the path still resolves to that opened
+identity. Recheck the same identity immediately before and after both
+launches. Do not enumerate the directory beyond the two separately authorized
+lock paths.
+
+The named-profile launcher executes `mkdir -p` for this directory. Because
+the reviewed route requires the exact directory to exist first, that command
+has no authorized creation effect. Absence or identity drift stops before
+launch; the procedure does not create, restore, or remove the directory, and
+it is not a cleanup resource.
+
 The current launcher may read only the selected profile's
 `claude-desktop-extra.jsonc` and `claude-desktop-extra.json` for saved
 native-titlebar and window-control diagnostics. Do not read those files for
@@ -465,8 +481,9 @@ here without a named shell function is a manual route check against those
 bindings, not a call to an omitted function.
 
 Immediately before each launch, repeat the package, target, protected-asset,
-launcher, one-argument launch-file, clean-environment, flags, profile branch,
-no-refresh, version, executable, resources, archive, and absent-lock checks.
+launcher, one-argument launch-file, clean-environment, exact existing
+configuration-directory identity, flags, profile branch, no-refresh, version,
+executable, resources, archive, and absent-lock checks.
 Any mismatch stops before execution. `systemd-run` or `setsid` wrapping does
 not change the expected inner Electron array; runtime disagreement is a failed
 attestation, not successful routing.
@@ -494,7 +511,8 @@ match. Do not retain raw command-line or lock-target bytes. Resolve
 `resources/app.asar` from the attested executable directory and require its
 stable descriptor to identify `TARGET`, with the candidate digest during the
 candidate cycle and pristine digest during the restored cycle. Recheck the
-flags state and applicable named-profile state after launch.
+configuration-directory identity, flags state, and applicable named-profile
+state after launch.
 
 For the candidate cycle, complete the selected-process, argv, adjacent-archive,
 flags, and profile checks before waiting for bootstrap. Once bootstrap is
@@ -548,7 +566,8 @@ required=(RUN_ID PROBE_INSTALL_ROOT CANDIDATE_ARCHIVE
   PROBE_LAUNCHER PROBE_LAUNCHER_SHA256 PROBE_LAUNCHER_STAT
   LINUX_OBSERVATION_FILE PROBE_LAUNCH_ARGV_FILE PROBE_LAUNCH_ARGV_SHA256 PROBE_LAUNCH_ARGV_STAT
   PROBE_PROFILE PROBE_PROFILE_KIND PROBE_HOME PROBE_LAUNCH_ENV_SHA256
-  PROBE_CONFIG_DIR PROBE_LOCK_PATH_PRIMARY PROBE_LOCK_PATH_3P
+  PROBE_CONFIG_DIR PROBE_CONFIG_DIR_STAT
+  PROBE_LOCK_PATH_PRIMARY PROBE_LOCK_PATH_3P
   PROBE_FLAGS_PATH PROBE_FLAGS_STATE PROBE_NAMED_BINARY_STATE
   PROBE_EXPECTED_ELECTRON PROBE_EXPECTED_ELECTRON_SHA256
   PROBE_VERSION_FILE PROBE_VERSION_FILE_SHA256 PROBE_VERSION_FILE_STAT
@@ -573,6 +592,14 @@ else
     "$PROBE_NAMED_BINARY_STATE" = "ready"
   ]]
 fi
+
+test -d "$PROBE_CONFIG_DIR"
+test ! -L "$PROBE_CONFIG_DIR"
+test "$(stat -c '%d:%i:%u:%g:%a' -- "$PROBE_CONFIG_DIR")" = \
+  "$PROBE_CONFIG_DIR_STAT"
+test "$(stat -c '%u' -- "$PROBE_CONFIG_DIR")" = "$(id -u)"
+config_dir_mode=$(stat -c '%a' -- "$PROBE_CONFIG_DIR") || exit 1
+(( (8#$config_dir_mode & 0022) == 0 ))
 
 TARGET_DIR="$PROBE_INSTALL_ROOT/resources"
 TARGET="$TARGET_DIR/app.asar"

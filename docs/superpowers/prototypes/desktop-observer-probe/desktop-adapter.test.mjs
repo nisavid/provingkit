@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import {
   chmod,
   mkdtemp,
@@ -27,6 +28,18 @@ import {
 } from './desktop-adapter.mjs';
 
 const LINUX_BOOT_ID = '11111111-2222-4333-8444-555555555555';
+
+const canonicalFlatJson = value =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.entries(value).sort(([left], [right]) =>
+        left < right ? -1 : left > right ? 1 : 0,
+      ),
+    ),
+  );
+
+const sha256 = bytes =>
+  createHash('sha256').update(bytes).digest('hex');
 
 test('selected Desktop receiver remains guarded until arm and invalidates on record replacement', async () => {
   const root = await mkdtemp(join(tmpdir(), 'desktop-adapter-'));
@@ -256,6 +269,7 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
 
     const probe = await attachProbe({
       config,
+      configSha256: sha256(canonicalFlatJson(config)),
       selectReceiver: adapter.selectReceiver,
       approvedHostProjection: projectApprovedHost,
       processIdentity: {
@@ -296,7 +310,7 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
 
     await writeFile(
       join(runDirectory, 'arm.json'),
-      JSON.stringify(arm),
+      `${canonicalFlatJson(arm)}\n`,
       {
         flag: 'wx',
         mode: 0o600,

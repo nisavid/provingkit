@@ -43,6 +43,56 @@ export const MAX_ARRAY_ITEMS = 32;
 export const MAX_TEXT_BYTES = 256;
 export const MAX_CWD_BYTES = 1024;
 
+const isPlainJsonObject = value => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+};
+
+const canonicalizeJson = value => {
+  if (Array.isArray(value)) return value.map(canonicalizeJson);
+
+  if (isPlainJsonObject(value)) {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map(key => [key, canonicalizeJson(value[key])]),
+    );
+  }
+
+  return value;
+};
+
+export function parseCanonicalJsonBytes(bytes, finalLf) {
+  if (!(bytes instanceof Uint8Array) || typeof finalLf !== 'boolean') {
+    throw new Error('invalid canonical JSON input');
+  }
+
+  const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+
+  if (finalLf && !text.endsWith('\n')) {
+    throw new Error('missing final LF');
+  }
+
+  const jsonText = finalLf ? text.slice(0, -1) : text;
+  const value = JSON.parse(jsonText);
+  const canonical =
+    `${JSON.stringify(canonicalizeJson(value))}${finalLf ? '\n' : ''}`;
+  const expected = new TextEncoder().encode(canonical);
+
+  if (
+    expected.length !== bytes.length ||
+    expected.some((byte, index) => byte !== bytes[index])
+  ) {
+    throw new Error('noncanonical JSON bytes');
+  }
+
+  return value;
+}
+
 export const UNKNOWN_CLAIMS = Object.freeze([
   'current-account-route',
   'current-model-freshness',

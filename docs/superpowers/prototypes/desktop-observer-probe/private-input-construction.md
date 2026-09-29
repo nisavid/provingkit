@@ -45,9 +45,20 @@ The populated record must contain no angle-bracket placeholder.
     "moduleSha256": "<receipt sidecar SHA-256>"
   },
   "launchRoute": {
+    "accountId": "<exact current account identity>",
+    "organizationId": "<exact current organization identity>",
+    "userDataRoot": {
+      "path": "<exact absolute Electron userData directory>",
+      "stat": "<device:inode:uid:gid:mode>"
+    },
     "launcher": {
       "path": "/usr/bin/claude-desktop",
       "sha256": "015f5232d3c2c40f04f5529d44058d3fd0a80cdce0eddf91dc08688f0a8c867e",
+      "stat": "<device:inode:uid:gid:mode:links:size>"
+    },
+    "launchArgumentFile": {
+      "path": "<exact absolute PROBE_LAUNCH_ARGV_FILE>",
+      "sha256": "<lowercase SHA-256 of its exact NUL-delimited bytes>",
       "stat": "<device:inode:uid:gid:mode:links:size>"
     },
     "profile": {
@@ -55,6 +66,7 @@ The populated record must contain no angle-bracket placeholder.
       "name": "<default or exact current named profile>",
       "home": "<exact absolute HOME>",
       "configDirectory": "<exact launcher-selected config_dir>",
+      "configDirectoryStat": "<device:inode:uid:gid:mode>",
       "claudeConfigDirectory": {
         "state": "<absent|present>",
         "value": "<omit only when absent; preserve an empty or nonempty value exactly>"
@@ -151,6 +163,30 @@ lowercase hexadecimal characters. Every required archive-evidence check hashes
 the current bytes at that path and compares them with the bound digest; neither
 value may be independently substituted.
 
+Require `launchRoute.accountId` and `launchRoute.organizationId` to be the
+exact nonempty values already established for the selected current fixture.
+They must contain no control character or placeholder and must equal the
+values used in the selected metadata-path derivation and later fixture record.
+Do not perform another account, organization, profile, or private-data read to
+populate them.
+
+Require `launchRoute.userDataRoot.path` to be the exact absolute Electron
+`userData` root already established for the selected profile. Open that exact
+directory without following the final component, require a same-UID directory
+that is not group- or world-writable, compare its device, inode, UID, GID, and
+mode with `launchRoute.userDataRoot.stat`, and require the path still names
+that opened identity. The selected metadata path must be the exact join of
+this root, `claude-code-sessions`, the bound account ID, the bound organization
+ID, and the bound task filename.
+
+Require `launchRoute.launchArgumentFile` to equal the reviewed
+`PROBE_LAUNCH_ARGV_FILE`, `PROBE_LAUNCH_ARGV_SHA256`, and
+`PROBE_LAUNCH_ARGV_STAT` bindings. Validate it through the stable-descriptor
+procedure in `application-operation.md`: it is a non-symlink regular
+single-link file whose exact bytes are one NUL-terminated
+`/usr/bin/claude-desktop` argument. No additional read or inferred argv source
+may populate this fragment.
+
 ## Launch-routing inputs
 
 Construct `launchRoute` only through the bounded observations and derivation in
@@ -191,6 +227,17 @@ materialize it. For an existing named executable, record `ready` only after
 the exact no-refresh predicates, byte equality with the canonical executable,
 resource-link target, and bounded sibling-symlink inventory pass. Any refresh
 predicate returns for a decision and must not be represented as `ready`.
+
+The selected `configDirectory` must already exist before either launch. Open
+the exact path with directory and no-follow semantics, require the final path
+to be a non-symlink same-UID directory that is not group- or world-writable,
+and record its device, inode, UID, GID, and mode as
+`configDirectoryStat`. Recheck that identity immediately before and after
+each launch without enumerating the directory. The launcher may execute
+`mkdir -p` for this path, but the existence precondition makes that operation
+a no-op. An absent or changed directory stops before launch; do not create,
+replace, repair, or later remove it. This pre-existing profile directory is
+not a cleanup-manifest resource.
 
 Derive `effectiveArgvVariants` only from the inspected launcher revision,
 reviewed environment, profile branch, and exact flags tokens. Apply the ordered
@@ -323,6 +370,10 @@ no BOM, indentation, trailing spaces, or final newline.
 Compute `configSha256` over those exact bytes. Strictly decode the bytes as
 UTF-8, parse them as JSON, repeat the validation and canonical serialization,
 and require byte-for-byte equality before creating `PROBE_CONFIG`.
+That equality check rejects reordered members, alternate whitespace and number
+spellings, escapes that do not match canonical serialization, and duplicate
+member names. Parsing collapses duplicate names, so duplicate-bearing input
+cannot reproduce its original bytes and needs no separate generalized parser.
 
 Create the exact final path once with
 `O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW` and mode `0600`. Write all bytes through
@@ -385,7 +436,9 @@ derive or substitute a binding value from another source.
 Recursively sort the populated arm keys, serialize once with `JSON.stringify`,
 encode as strict UTF-8, and append exactly one LF byte. Strictly decode, parse,
 validate exact keys and values, remove the LF for canonical reserialization,
-and require byte equality before creation.
+and require byte equality before creation. Apply the same duplicate rejection
+property as configuration validation. Configuration accepts no final LF; arm
+acceptance requires exactly one final LF.
 
 Immediately before creation, require the exact run-directory identity and an
 inventory containing only `bootstrap.json`. Create `arm.json` directly and

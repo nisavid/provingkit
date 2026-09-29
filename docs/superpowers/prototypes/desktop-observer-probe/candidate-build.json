@@ -78,9 +78,9 @@
     "qualification": "complete observed package-file inventory for the selected installed runtime dependency closure; Node and host OS are trusted baseline"
   },
   "sourceInputs": {
-    "desktop-adapter.mjs": "1b0cce2b59df281839e65eecf48591c67b5e578e5f817e2d8861d3714f68527d",
-    "observer-contract.mjs": "42428d0d0c956124a3fbfd0c4517d1f662bafec157e2f815689ca5bfc6aef2b5",
-    "observer-probe.mjs": "4b0a0db021cc87ce6abb1929d6470cad0930e4ce0aa56778c3c92621223d9f22",
+    "desktop-adapter.mjs": "f350158a880cc68eed629953698511496b8e075b2b3b53a5de92a01e242c64c1",
+    "observer-contract.mjs": "69fe0e048ac50e82d336aa5565297b76f588f7f5d91073f4d61fb1054c585485",
+    "observer-probe.mjs": "5c272a700a024fdaee80b53acdf51bd1955830fc8ccf8beed8c76c153820ce46",
     "manager-patch.json": "525439920c7eec08d7f1c7bea1d224acbfb9470a756491d13921eaf01bd08ce2",
     "archive.mjs": "28f199c0efbd27f88b68cf63a2666391a5798e1ea5c79f4fff33f0db05ef9af5",
     "build-dependency-identity.mjs": "e2d9bd5e349e18e1ad54658bbee64d5c8b3c1bfab25072a9cf2af22c7a29f002",
@@ -88,8 +88,8 @@
     "build-candidate.mjs": "a7eeb8af97c2e427fa4c5fcd7ef8e4544a04bc8a1346db61d410eab80f60c394"
   },
   "pristineSha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
-  "candidateSha256": "ca7a8f9687819368973d97ec8542b6c8df75eb6dff70219c114e08f9fa86ffe0",
-  "sidecarSha256": "d7e9f14547e979d2a2c7a118c5a8258f549350ba6c9e30aaa8719641ac66b4d3",
+  "candidateSha256": "08035aee33b3fe1a8eacee63c6fd9b527f79b3ca9c65a96a23057a41fd0a2a07",
+  "sidecarSha256": "6d8404169ce414668d5422746c6aa69930ab3af16a0972e08beb4d529f1cbaec",
   "managerSha256": "7bbdd7f7056ac20060c501997323e55058361928d7d224118716f63e5e92e617",
   "runtimeExecuted": false
 }
