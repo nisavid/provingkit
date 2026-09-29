@@ -1,0 +1,90 @@
+{
+  "archive_sha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
+  "package": "@ant/desktop 2.9939.4",
+  "sources": [
+    {
+      "file": "index.chunk-B9SZqsi8.js",
+      "archive_path": ".vite/build/index.chunk-B9SZqsi8.js",
+      "sha256": "bd2144a3653bb843f4b75fe652124a4e478f273b5f6c2e10a2139fa3a9a3152f",
+      "anchors": [
+        {
+          "purpose": "existing-query",
+          "byte_offset": 1441311,
+          "text": "liveQueryOf(e){return this.sessions.get(e)?.query??null}"
+        },
+        {
+          "purpose": "available-query",
+          "byte_offset": 1440661,
+          "text": "async readContextUsage(e,n){let r=this.sessions.get(e),i=r?.query;if(!r||!i||pk(r))"
+        },
+        {
+          "purpose": "install",
+          "byte_offset": 1270602,
+          "text": "noteQueryInstalled(e,n){"
+        },
+        {
+          "purpose": "teardown",
+          "byte_offset": 1036578,
+          "text": "teardownQuery(e,r=\"exited\",i){"
+        },
+        {
+          "purpose": "rewind-code-id",
+          "byte_offset": 1202739,
+          "text": "i.cliSessionId=o,i.unarchivedCliSessionId=void 0"
+        },
+        {
+          "purpose": "resume-code-id",
+          "byte_offset": 1208753,
+          "text": "r.cliSessionId=i,r.unarchivedCliSessionId=void 0"
+        },
+        {
+          "purpose": "clear-code-id",
+          "byte_offset": 1292808,
+          "text": "e.cliSessionId=void 0,i&&(e.isFirstTurn=!1)"
+        },
+        {
+          "purpose": "init-code-id",
+          "byte_offset": 1521336,
+          "text": "i.cliSessionId=g,n.wc(\"ccd\",i,{trigger:\"init\"})"
+        },
+        {
+          "purpose": "init-mode",
+          "byte_offset": 1522323,
+          "text": "a&&!x&&b&&this.takeCliPermissionMode(i,b,\"cli_init\")"
+        },
+        {
+          "purpose": "status-mode",
+          "byte_offset": 1567235,
+          "text": "if(p&&!m&&f&&f!==o.permissionMode&&o.query===e){"
+        },
+        {
+          "purpose": "singleton",
+          "byte_offset": 1595508,
+          "text": "var sF=new aF(t.By);t._B(sF);"
+        }
+      ]
+    },
+    {
+      "file": "index.chunk-DuaKZOPP.js",
+      "archive_path": ".vite/build/index.chunk-DuaKZOPP.js",
+      "sha256": "f160a24940ee11cea6a788a9038e95c14fb150889977dcfa331fd9b07aba0c96",
+      "anchors": [
+        {
+          "purpose": "effective-apps",
+          "byte_offset": 3692522,
+          "text": "function Kqn(e,t=Date.now()){"
+        },
+        {
+          "purpose": "effective-flags",
+          "byte_offset": 3692739,
+          "text": "function Jqn(e,t=Date.now()){"
+        },
+        {
+          "purpose": "app-grant-shape",
+          "byte_offset": 3685273,
+          "text": "function BKn(e,t,n){let r=new Map((e.cuAllowedApps??[]).map((e=>[e.bundleId,e])))"
+        }
+      ]
+    }
+  ]
+}

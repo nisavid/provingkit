@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop observer experiment</title>
+<style>
+:root{color-scheme:light;--ink:#22322f;--muted:#536660;--accent:#286d58;--line:#cedbd5;--paper:#f5f8f5}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,sans-serif}main{max-width:1120px;margin:auto;padding:34px 24px 80px}h1{font-size:32px;line-height:1.2;margin:10px 0}h2{font-size:21px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}p{margin:8px 0 18px}.muted,small{color:var(--muted)}.tag{display:inline-block;border:1px solid var(--accent);border-radius:20px;padding:3px 12px;font-size:13px;color:var(--accent)}section{margin:22px 0;padding:24px;background:white;border:1px solid var(--line);border-radius:12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{border-top:2px solid var(--line);padding-top:10px;overflow-wrap:anywhere}dl{margin:0}dt{color:var(--muted);font-size:13px}dd{margin:0 0 9px}button{font:inherit;color:var(--accent);background:white;border:1px solid var(--line);border-radius:7px;padding:8px 12px;cursor:pointer}button:hover,button[aria-selected=true]{background:#e7f2eb;border-color:var(--accent)}button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}button:disabled{opacity:.5;cursor:wait}.buttons{display:flex;gap:8px;flex-wrap:wrap}#notice{border-left:4px solid var(--accent);padding:8px 14px;min-height:48px;background:#edf5ef}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:480px;overflow:auto}summary{cursor:pointer}ol{padding-left:24px}li{margin:8px 0}code{font-size:.9em}#walkthrough button{margin-right:8px}.gap{font-size:14px}header{max-width:850px}.value{white-space:pre-wrap}#result-heading{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+</style>
+<main>
+<header><span class="tag">Synthetic inputs · every result unqualified</span>
+<h1>Observing one existing Desktop task</h1>
+<p>Can an observer collect useful facts from one existing query and export them without hiding missing evidence or mixing task identities? Try the awkward cases before deciding on an app modification.</p>
+<p class="muted">This file runs entirely in your browser. Its task, query responses, and permission changes are fake. It has no connection to Claude Desktop or ChatGPT.</p></header>
+<section><h2>Fixture state</h2><div id="fixture" class="grid"></div></section>
+<div id="notice" role="status" aria-live="polite">Observe the fixture, or start a walkthrough below.</div>
+<section><div id="result-heading"><h2>Export reader</h2><span id="reader-state" class="tag">No sample yet</span></div>
+<p id="sample-summary" class="muted">A valid export can contain partial observations. It cannot qualify the route.</p>
+<div id="fields" class="grid"></div>
+<h3 style="margin-top:20px">Still unresolved</h3><p class="gap">Fresh account route · model freshness · active permission mode · complete applied permissions · current cwd · native inbox binding · external delivery and acknowledgment.</p>
+<details><summary>Exported envelope and reader result</summary><pre id="raw">No sample yet.</pre></details></section>
+<section><h2>Free play</h2><p class="muted">Changes persist until Reset. Observe again to see what the observer can establish.</p><div id="actions" class="buttons"></div></section>
+<section><h2>Guided walkthroughs</h2><div id="tabs" class="buttons" role="tablist" aria-label="Walkthroughs"></div><div id="walkthrough" role="tabpanel" style="margin-top:18px"></div></section>
+<footer class="muted"><small>The source comparison and insertion plan accompany this demo in <code>docs/superpowers/prototypes/desktop-runtime-observer/</code>. Accepting this experiment leaves installation, private fixture reads, and live sends at their separate gates.</small></footer>
+</main>
+<script>
+/*__OBSERVER__*/
+/*__FIXTURE__*/
+
+let fixture, observer, sample, reader, serialized = '', offset = 0, compatibility = {};
+const el = id => document.getElementById(id);
+const showValue = value => value === null || value === undefined ? 'Unknown / not supplied' : typeof value === 'object' ? JSON.stringify(value) : String(value);
+const line = (parent, label, value) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = label; dd.textContent = showValue(value); parent.append(dt, dd); };
+function card(parent, heading, rows) { const div = document.createElement('div'); div.className = 'card'; const h = document.createElement('h3'); h.textContent = heading; const dl = document.createElement('dl'); for (const [k,v] of rows) line(dl,k,v); div.append(h,dl); parent.append(div); }
+function reset() { fixture = createFixture(); offset = 0; compatibility = {}; observer = createObserver({selectReceiver:fixture.selectReceiver, now:()=>Date.now()+offset}); sample = reader = null; serialized = ''; render(); }
+function inspect() { if (sample) reader = inspectEnvelope(serialized, fixture.binding, {now:Date.now()+offset}); }
+async function observe() { sample = await observer.observeReceiver(fixture.binding,{timeoutMs:25, compatibility}); serialized = JSON.stringify(sample); inspect(); }
+function render() {
+  el('fixture').replaceChildren(); const r = fixture.record, h = r.host;
+  card(el('fixture'),'Selected identity',[['Desktop task',fixture.binding.taskId],['Expected Code session',fixture.binding.codeSessionId],['Current Code session',r.codeSessionId],['Expected / current generation',`${fixture.binding.generation} / ${r.generation}`],['App start',r.appStartId]]);
+  card(el('fixture'),'Receiver and settings',[['Turn',r.turn],['Existing query',r.query?'Present':'Absent'],['Manager mode',h.permissionMode],['Last Code event',h.modeEvent??null],['Manager cwd',h.harnessCwd],['Stored permission update types',h.sessionPermissionUpdates.map(u=>u.type)],['Flag push pending marker',h.flagScopeSyncPending],['Complete pending/failed history','Unavailable in the inspected producer']]);
+  card(el('fixture'),'Host grants and dependencies',[['Allowed reasons',h.alwaysAllowedReasons],['Raw computer-use flags',h.cuGrantFlags],['Effective computer-use flags',h.effectiveCuGrantFlags],['Model dependency',compatibility.model??'Unassessed'],['Rule dependency',compatibility.rules??'Unassessed']]);
+  el('fields').replaceChildren();
+  el('reader-state').textContent = reader ? (reader.state==='usable-partial'?'Fresh partial evidence':`Unknown: ${reader.reason}`) : 'No sample yet';
+  el('sample-summary').textContent = sample ? `Collection: ${sample.collection.state}. Sample ${sample.sequence}. Host change during reads: ${showValue(sample.collection.hostChangedDuringRead)}. Every claim remains unqualified.` : 'A valid export can contain partial observations. It cannot qualify the route.';
+  const fields = reader?.state==='usable-partial' ? reader.envelope.fields : {};
+  for (const [key,title] of [['account','Account initialization'],['model','Model report'],['rules','Code permission rules'],['hostBefore','Host state before reads'],['hostAfter','Host state after reads']]) {
+    const f=fields[key]; if(!f) continue;
+    const rows=[['Result',f.state],['Origin',f.source],['Age / coverage',f.freshness??f.reason],['Read interval',`${f.startedAt}–${f.endedAt}`]];
+    if(f.state==='observed') {
+      if(key==='model') rows.push(['Reported model',f.value]);
+      else if(key==='account') rows.push(['Provider and source',f.value]);
+      else if(key==='rules') rows.push(['Rules',f.value.rules],['Additional directories',f.value.workspaceDirectories],['Original cwd (not current cwd)',f.value.originalCwd],['Managed only',f.value.managedOnly],['Skipped-settings errors',f.value.settingsErrorCount]);
+      else for (const [label,k] of [['Spawn route (retained)','spawnRoute'],['Manager mode','permissionMode'],['Last Code event (retained)','modeEvent'],['Manager cwd','harnessCwd'],['Allowed reasons','alwaysAllowedReasons'],['Raw apps','cuAllowedApps'],['Raw flags','cuGrantFlags'],['Effective apps','effectiveCuAllowedApps'],['Effective flags','effectiveCuGrantFlags'],['Stored update types','sessionPermissionUpdateTypes'],['Flag pending marker','flagScopeSyncPending'],['Mode requests in flight','modeRequestsInFlight'],['Pending coverage','pendingCoverage']]) rows.push([label,f.value[k]]);
+    }
+    card(el('fields'),title,rows);
+  }
+  el('raw').textContent=sample?JSON.stringify({exported:sample,reader},null,2):'No sample yet.';
+}
+const actions = {
+  'Observe': async()=>{await observe();return 'Collected from the selected existing query. Read the per-field limits.';},
+  'Make receiver busy':()=>{fixture.record.turn='busy';return 'The fake turn is busy. The same query remains available; Observe still uses it.';},
+  'Park query':()=>{fixture.record.query=null;return 'The query is absent. Observe must return unavailable without waking it.';},
+  'Replace during read':async()=>{if(!fixture.record.query)return 'Reset to restore a query first.';fixture.record.query.getContextUsage=async()=>{fixture.replaceQuery();return {model:'old-query-model'};};await observe();return 'The query and lineage changed during collection. All fields from that sample were discarded.';},
+  'Delay reply':async()=>{if(!fixture.record.query)return 'Reset to restore a query first.';fixture.delayModel();await observe();fixture.releaseLate();return 'The model reply missed the deadline. Releasing it now leaves the exported sample unchanged.';},
+  'Unsupported rules':()=>{if(fixture.record.query)fixture.record.query.listPermissionRules=async()=>{throw new Error('unsupported control');};return 'The fake receiver will reject the rules control. Other reads can still return evidence.';},
+  'Settings parse error':()=>{if(fixture.record.query)fixture.record.query.listPermissionRules=async()=>({state:{rules:[],workspaceDirectories:[],originalCwd:'/fixture/original',managedOnly:false,errors:[{message:'synthetic skipped settings'}]}});return 'One fake settings source was skipped. An empty rule list must not imply complete permissions.';},
+  'Queue permission update':()=>{fixture.record.host.sessionPermissionUpdates.push({type:'addDirectories'});fixture.record.host.flagScopeSyncPending=true;fixture.record.host.modeRequestsInFlight=1;return 'A stored update and pending markers are visible; they do not prove that the executor applied them.';},
+  'Fail permission push':()=>{fixture.record.host.flagScopeSyncPending=false;fixture.record.host.modeRequestsInFlight=0;return 'We constructed a failed push. The available flag is false and has no failure history, so the observer must keep pending coverage unknown.';},
+  'Change host grant':()=>{fixture.record.host.alwaysAllowedReasons.push('fixture-host-grant');fixture.record.host.cuGrantFlags.clipboardRead=true;fixture.record.host.effectiveCuGrantFlags.clipboardRead=true;return 'Host grants changed while fake Code rules stayed equal. Observe again to see the separate grants.';},
+  'Conflicting mode event':()=>{fixture.record.host.modeEvent={mode:'plan',at:Date.now()+offset,generation:fixture.record.generation};return 'The last Code event says plan while the manager says default. Neither establishes fresh applied mode.';},
+  'Expire export':()=>{if(sample){offset=sample.collection.expiresAt-Date.now()+1;inspect();}return 'The reader will not reuse expired observations.';},
+  'Truncate export':()=>{if(sample){serialized=serialized.slice(0,-8);inspect();}return 'A truncated export is unknown. No partial JSON is used.';},
+  'Carry rules evidence forward':()=>{compatibility.rules={state:'carried-forward',basis:'Synthetic unchanged producer comparison.'};return 'Prior rule compatibility evidence is carried forward in this scenario. Missing values and live qualification remain separate.';},
+  'Model dependency incompatible':()=>{compatibility.model={state:'incompatible',basis:'Synthetic demonstrated failure of the model producer.'};return 'Only the model read is disabled. A new version without a demonstrated failure would remain unassessed.';},
+  'Reset':()=>{reset();return 'Reset to the original synthetic identity, query, and permissions.';},
+};
+async function run(name){document.querySelectorAll('button').forEach(b=>b.disabled=true);try{el('notice').textContent=await actions[name]();render();}catch(error){el('notice').textContent=`Experiment error: ${error.message}`;}finally{document.querySelectorAll('button').forEach(b=>b.disabled=false);}}
+for(const name of Object.keys(actions)){const b=document.createElement('button');b.textContent=name;b.onclick=()=>run(name);el('actions').append(b);}
+const walkthroughs=[
+  {title:'Existing task',description:'Compare idle and busy observations, then remove the query. Read attempts never create a replacement.',steps:['Observe','Make receiver busy','Observe','Park query','Observe']},
+  {title:'Permission gaps',description:'Compare host grants with unchanged Code rules. A false pending flag cannot distinguish success from an unrecorded failure.',steps:['Observe','Change host grant','Queue permission update','Observe','Fail permission push','Conflicting mode event','Observe']},
+  {title:'Races and stale files',description:'A collection that crosses a query replacement is discarded. A valid earlier sample still expires.',steps:['Replace during read','Reset','Delay reply','Expire export']},
+  {title:'Compatibility',description:'Start unassessed, carry justified evidence forward, then demonstrate a failure of one producer. None of these states qualifies the live route.',steps:['Observe','Carry rules evidence forward','Model dependency incompatible','Unsupported rules','Observe']},
+];
+function openWalkthrough(index){reset();el('notice').textContent='Walkthrough reset. Press the numbered steps in order.';document.querySelectorAll('[role=tab]').forEach((b,i)=>b.setAttribute('aria-selected',String(i===index)));const w=walkthroughs[index];el('walkthrough').replaceChildren();const p=document.createElement('p');p.textContent=w.description;el('walkthrough').append(p);w.steps.forEach((step,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${step}`;b.onclick=()=>run(step);el('walkthrough').append(b);});}
+walkthroughs.forEach((w,i)=>{const b=document.createElement('button');b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.textContent=w.title;b.onclick=()=>openWalkthrough(i);el('tabs').append(b);});
+reset();
+</script></html>
