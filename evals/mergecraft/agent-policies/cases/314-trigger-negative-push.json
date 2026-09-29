@@ -308,7 +308,7 @@
     {
       "id": "q1-routing",
       "severity": "quality",
-      "text": "Loads none of the three skills."
+      "text": "Loads none of getting-prs-merged, addressing-pr-review-feedback, or interacting-with-pr-review-feedback."
     },
     {
       "id": "q2-fix-pushed",
