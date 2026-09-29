@@ -201,12 +201,22 @@ The observed result has exactly this shape:
 }
 ```
 
-In `observed-partial`, `cliPidAtMs` is independently either JSON `null` or the
-actual nonnegative safe integer reported by the producer.
+In the producer projection, a missing or null selected fact is preserved as
+JSON `null` and recorded as an `unavailable` gap. This includes
+`selectedExecutorReport.cliPidAtMs` and
+`selectedExecutorReport.cliReportedVersion`. The producer's `complete` or
+`partial` result follows the actual projected-field statuses and gap lists; a
+null fallback does not erase its gap or establish runtime knowledge.
+
+The helper may still return a valid `observed-partial` result carrying these
+nulls. In that result, `cliPidAtMs` is independently either JSON `null` or the
+actual nonnegative safe integer reported by the producer, and
 `cliReportedVersion` is independently either JSON `null` or the actual
-nonempty bounded text reported by the producer. Preserve either null exactly.
-Do not invent a timestamp or version, borrow one from another producer, or
-reclassify an otherwise valid observation because either field is null.
+nonempty bounded text reported by the producer. Preserve the producer value
+exactly. Do not invent or borrow a value, suppress an existing gap, or reject
+or reclassify an otherwise valid partial helper result merely because either
+field is null. The producer emits, and the reader requires, every
+`UNKNOWN_CLAIMS` value and the unqualified outcome.
 
 ## Fixture preparation
 
@@ -303,6 +313,91 @@ duplicate path or additional row. Its path set must equal the complete
 package-derived inventory approved by issue 279. Completeness is established
 during review of that inventory; a runtime scan must not invent or enlarge it.
 The approved manifest hash binds the reviewed set.
+
+## Manual phase supervision and shell recovery
+
+This remains a manually supervised procedure. The operator, or an autonomous
+control surface explicitly covered by the later grant, is the external phase
+supervisor. The supervisor runs outside the shell that uses
+`set -euo pipefail`; that shell is a supervised child process, not the holder
+of recovery state. A shell exit therefore returns control to the supervisor.
+
+The supervised phase boundaries are preflight, staging, exchange, candidate
+launch and collection, candidate shutdown and quiescence, restoration and
+restored verification, package cleanup, and cleanup-manifest creation. Before
+each boundary, record the applicable existing failure-phase token and only the
+resource identities, mutations, and absence checks already established. Use
+the normative cleanup-manifest status, restoration, and package-cleanup fields;
+this phase record does not define another schema.
+
+On any nonzero command result, unexpected shell exit, or failed UI step, the
+supervisor must:
+
+1. Record the earliest failure without replacing an earlier `firstFailure`,
+   stop the remaining commands in that phase, and stop collection. Do not retry
+   a failed prompt, arm, getter, helper invocation, launch, exchange, deletion,
+   or retained-file operation.
+2. If Desktop may be running, request its normal UI shutdown, verify the
+   selected PID has exited where that can be established, and establish current
+   profile quiescence before any recovery action. No shell trap can establish
+   application quiescence. If the authorized autonomous control surface is
+   unavailable, stop and escalate to the human operator.
+3. Retain every resource whose current state is known or uncertain. Do not
+   reread configuration, output, sample, helper-result, or retained-evidence
+   contents merely to reconstruct lost shell state.
+4. If candidate exchange did not occur, establish whether the original archive
+   bytes are unchanged and whether Desktop availability requires recovery.
+   When unchanged bytes are established, perform no archive exchange. If
+   Desktop remains closed, use the single restored launch only when covered by
+   the later restoration-cycle grant, after the pristine, package, launcher,
+   and quiescence checks pass. Record restoration as `not-required` only when
+   no application or archive recovery obligation remains. If needed recovery
+   is not covered, available, completed, or verified, record `incomplete` with
+   status `recovery-required`. A changed or ambiguous archive, or an earlier
+   launch with an ambiguous result, stops for a decision and does not
+   authorize a retry. If exchange occurred or may have occurred, enter the
+   already authorized restoration cycle only after quiescence. Recovery within
+   that cycle does not authorize another candidate cycle or any launch or
+   restart beyond its single grant.
+
+A recovery shell is a fresh Bash process with `set -euo pipefail` and
+`LC_ALL=C`. Before it performs any package mutation, the supervisor must:
+
+1. Verify that the procedure revision is the immutable revision named by the
+   grant. Manually repopulate the required variables from the existing
+   validated private binding record and authorization packet. Do not use
+   `source`, `eval`, shell-generated assignments, or newly acquired private
+   data.
+2. Repeat the required-variable, `RUN_ID`, absolute-path, component, no-symlink,
+   and root-owned-ancestor validations from preflight. Reconstruct exactly
+   `TARGET_DIR`, `TARGET`, `STAGE`, `BACKUP_RUN_ROOT`, `BACKUP`,
+   `OUTPUT_RUN_ROOT`, and `PRISTINE_SHA256` from their reviewed definitions.
+3. Re-enter verbatim from the reviewed revision the definitions of
+   `hash_file`, `check_no_xattrs`, `check_root_archive_file`,
+   `check_root_owned_directory`, `check_root_owned_ancestors`,
+   `check_root_owned_parent_ancestors`,
+   `check_reviewed_archive_verification`,
+   `validate_protected_asset_manifest`, `check_reviewed_launcher`, and
+   `load_reviewed_launch_argv`. Do not execute the rest of preflight as a
+   definitions loader.
+4. Re-establish `CANDIDATE_SIZE` only after the current candidate archive again
+   matches `CANDIDATE_SHA256`. Recheck the current package version and
+   ownership, protected-asset manifest and its bound hash, reviewed
+   archive-verification record, and the exact target, stage, and backup
+   identities applicable to the last verified phase.
+5. Follow the restoration prechecks and remaining restoration steps from the
+   first step not already verified. Never repeat a verified exchange or launch.
+   A changed package, upgrade, ownership change, protected-asset change,
+   missing archive, uncertain exchange state, identity mismatch, or failed
+   restoration command stops recovery. Record `recovery-required`, retain all
+   package and private resources, and return for the operational-restoration
+   decision.
+
+After a successful restoration exchange, or when unchanged archive bytes are
+established but Desktop availability requires recovery, the one restored
+launch authorized by the applicable restoration-cycle grant and its checks
+remain necessary. No failure authorizes an extra launch. Package cleanup
+remains prohibited until restoration is fully verified.
 
 ## Preflight
 
@@ -549,6 +644,22 @@ check_no_xattrs() {
   test -z "$output"
 }
 
+check_root_archive_file() {
+  local path="$1" expected_sha256="$2" expected_size="$3"
+  local actual acl
+
+  [[ "$expected_sha256" =~ ^[0-9a-f]{64}$ ]]
+  [[ "$expected_size" =~ ^(0|[1-9][0-9]*)$ ]]
+  sudo test -f "$path"
+  sudo test ! -L "$path"
+  actual=$(sudo stat -c '%u:%g:%a:%h:%s' -- "$path") || return 1
+  test "$actual" = "0:0:644:1:$expected_size"
+  acl=$(sudo getfacl -cp -- "$path") || return 1
+  test "$acl" = $'user::rw-\ngroup::r--\nother::r--'
+  check_no_xattrs "$path"
+  test "$(hash_file "$path")" = "$expected_sha256"
+}
+
 check_reviewed_launcher() {
   local actual mode
   check_root_owned_parent_ancestors "$PROBE_LAUNCHER"
@@ -646,6 +757,8 @@ done
 check_reviewed_archive_verification
 cmp -s -- "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT"
 test "$(hash_file "$CANDIDATE_ARCHIVE")" = "$CANDIDATE_SHA256"
+CANDIDATE_SIZE=$(stat -c '%s' -- "$CANDIDATE_ARCHIVE") || exit 1
+[[ "$CANDIDATE_SIZE" =~ ^(0|[1-9][0-9]*)$ ]]
 test "$(hash_file "$PROTECTED_ASSET_MANIFEST")" = \
   "$PROTECTED_ASSET_MANIFEST_SHA256"
 validate_protected_asset_manifest \
@@ -692,14 +805,8 @@ install -d -m 0700 -- "$OUTPUT_RUN_ROOT"
 sudo install -d -o 0 -g 0 -m 0700 -- "$BACKUP_RUN_ROOT"
 sudo cp --preserve=all --reflink=never -- "$TARGET" "$BACKUP"
 
-sudo test -f "$BACKUP"
-sudo test ! -L "$BACKUP"
-test "$(sudo stat -c '%u:%g:%a:%h:%s' -- "$BACKUP")" = \
-  "0:0:644:1:54910454"
-test "$(hash_file "$BACKUP")" = "$PRISTINE_SHA256"
-backup_acl=$(sudo getfacl -cp -- "$BACKUP") || exit 1
-test "$backup_acl" = $'user::rw-\ngroup::r--\nother::r--'
-check_no_xattrs "$BACKUP"
+check_root_archive_file \
+  "$BACKUP" "$PRISTINE_SHA256" "54910454"
 sudo cmp -s -- "$TARGET" "$BACKUP"
 ```
 
@@ -714,13 +821,8 @@ cmp -s -- "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT"
 test "$(hash_file "$CANDIDATE_ARCHIVE")" = "$CANDIDATE_SHA256"
 
 sudo install -o 0 -g 0 -m 0644 -- "$CANDIDATE_ARCHIVE" "$STAGE"
-sudo test -f "$STAGE"
-sudo test ! -L "$STAGE"
-test "$(sudo stat -c '%u:%g:%a:%h' -- "$STAGE")" = "0:0:644:1"
-test "$(hash_file "$STAGE")" = "$CANDIDATE_SHA256"
-stage_acl=$(sudo getfacl -cp -- "$STAGE") || exit 1
-test "$stage_acl" = $'user::rw-\ngroup::r--\nother::r--'
-check_no_xattrs "$STAGE"
+check_root_archive_file \
+  "$STAGE" "$CANDIDATE_SHA256" "$CANDIDATE_SIZE"
 sudo sync -f -- "$STAGE"
 ```
 
@@ -905,17 +1007,19 @@ repeat the exact `STAGE` candidate identity and `BACKUP` pristine identity,
 metadata, ACL, xattr, and comparison checks.
 
 ```bash
-test "$(hash_file "$STAGE")" = "$CANDIDATE_SHA256"
-test "$(sudo stat -c '%u:%g:%a:%h' -- "$STAGE")" = "0:0:644:1"
-test "$(hash_file "$BACKUP")" = "$PRISTINE_SHA256"
-test "$(sudo stat -c '%u:%g:%a:%h:%s' -- "$BACKUP")" = \
-  "0:0:644:1:54910454"
+check_root_archive_file \
+  "$BACKUP" "$PRISTINE_SHA256" "54910454"
 sudo cmp -s -- "$TARGET" "$BACKUP"
 
+check_root_archive_file \
+  "$STAGE" "$CANDIDATE_SHA256" "$CANDIDATE_SIZE"
 sudo rm -- "$STAGE"
 sudo test ! -e "$STAGE"
 sudo test ! -L "$STAGE"
 
+check_root_archive_file \
+  "$BACKUP" "$PRISTINE_SHA256" "54910454"
+sudo cmp -s -- "$TARGET" "$BACKUP"
 sudo rm -- "$BACKUP"
 sudo test ! -e "$BACKUP"
 sudo test ! -L "$BACKUP"
@@ -1026,7 +1130,19 @@ sample record is assigned to the corresponding `bootstrap`, `arm`, or
 `sample` phase. This classification does not change the established metadata
 or Linux observation schemas.
 
-When no candidate exchange occurred, restoration is:
+When no candidate exchange occurred and unchanged archive bytes are
+established, perform no archive exchange. If no application or archive
+recovery obligation remains, restoration is
+`{state:not-required,recoveryRecord:{state:absent}}`. If Desktop availability
+requires recovery, the single restored launch may proceed only under the later
+restoration-cycle grant and after the required checks; after complete
+restoration checks pass, state is `verified`. If required recovery is not
+covered, available, completed, or verified, state is `incomplete` and status
+is `recovery-required`; deletion remains prohibited. A changed or ambiguous
+archive, or an earlier launch with an ambiguous result, requires a decision
+and prohibits retry.
+
+The `not-required` variant is:
 
 ```json
 {

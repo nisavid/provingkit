@@ -71,8 +71,20 @@ that duration as a scheduling unknown, let the operator choose a suitable
 window and contingency for the listed work, and permit refusal to start when
 the available window is unsuitable. Do not present a numerical total as
 observed evidence or as a deadline accepted by the user. A failed attempt does
-not authorize another arm or restart cycle. Routine version changes do not
-automatically require another live window, and notification sends do not each
+not authorize another arm or restart cycle.
+
+The manual phase supervisor defined in `application-operation.md` remains
+outside the `set -euo pipefail` shell. A shell exit returns control to that
+supervisor, which records the earliest failure, stops collection, establishes
+Desktop quiescence, and either resumes the already authorized restoration cycle
+from immutable reviewed definitions and the existing private binding record or
+reports `recovery-required`. It does not retry failed actuation, reread extra
+private evidence, restore across package drift, or add another launch cycle.
+When the authorized autonomous control surface is unavailable, the supervisor
+returns control to the human operator.
+
+Routine version changes do not automatically require another live window, and
+notification sends do not each
 require a restart. Maintained observer installation and upgrade behavior remain
 a later adoption decision.
 
@@ -208,14 +220,23 @@ with the independently checked binding and a maximum age no greater than 30
 seconds. Every result remains unqualified. Preserve a failed or missing sample
 as such.
 
-The collection producer's `sample.result` state `complete` means only that
-every projected field has no `unavailable` status and the producer reported no
-field gaps. `partial` means at least one projected field is unavailable or a
-field gap was reported. A complete collection result does not establish any
-member of `UNKNOWN_CLAIMS`: the strict reader still requires the exact unknown
-values and always returns `usable-partial` with qualification `unqualified`.
-A nullable projected value may be a fully reported value; nullability neither
-establishes full runtime knowledge nor, by itself, makes collection partial.
+The collection producer sets `sample.result` to `partial` when at least one
+projected field has status `unavailable`, or when an available projected value
+contains a nonempty `gaps` list. It sets `complete` only when neither condition
+is present. `projectApprovedHost` records missing or null selected facts,
+including `selectedExecutorReport.cliPidAtMs` and
+`selectedExecutorReport.cliReportedVersion`, as `unavailable` gaps while
+preserving JSON `null` as the projected fallback. A null report member is
+therefore a valid shape, but it neither establishes runtime knowledge nor
+overrides the producer's status or gap evidence.
+
+The helper may accept such a sample and return `observed-partial` with those
+nulls. Preserve the values and gaps exactly; do not invent fields or
+independently reject or reclassify a valid partial helper result merely because
+a nullable member is null. Neither producer result state establishes any
+member of `UNKNOWN_CLAIMS`: the producer emits those exact unknown values, and
+the strict reader requires them and always returns `usable-partial` with
+qualification `unqualified`.
 
 Each of the initial and final selected-executor sample acquisitions reads the
 nonsecret Linux boot identifier once from the single path

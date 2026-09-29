@@ -34,13 +34,19 @@ selected receiver projection and concrete insertion points, with bounded
 collection and exclusive file publication. Every observation remains partial
 and unqualified. No notification, delivery, or acknowledgment is tested here.
 
-The producer may label `sample.result` as `complete`; that means only that every
-projected field has no `unavailable` status and no field gap was reported.
-`partial` means at least one projected field is unavailable or a field gap was
-reported. Neither state establishes any member of `UNKNOWN_CLAIMS`. The strict
-reader still requires the exact unknown values and always returns
-`usable-partial` / `unqualified`. A reported nullable value is not itself a
-field gap and does not imply full runtime knowledge.
+The producer sets `sample.result` to `partial` when a projected field is
+unavailable or an available projected value reports a gap, and to `complete`
+only when neither condition exists. `projectApprovedHost` preserves missing or
+null selected facts as JSON `null` while recording `unavailable` gaps,
+including for `cliPidAtMs` and `cliReportedVersion`. Null is therefore a valid
+report shape, but it neither proves runtime knowledge nor erases the actual gap
+evidence.
+
+The helper can return `observed-partial` with those nulls and must not invent
+values or reclassify the valid partial result merely because they are null.
+Neither producer state establishes any member of `UNKNOWN_CLAIMS`; the producer
+emits those exact unknown values, and the strict reader requires them and
+always returns `usable-partial` / `unqualified`.
 
 ## Source layout
 
