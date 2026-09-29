@@ -4,6 +4,26 @@ import { createHash } from 'node:crypto';
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const blockSize = 4 * 1024 * 1024;
 
+export function patchManager(source, { sourceSha256, replacements }) {
+  if (sha256(source) !== sourceSha256) throw new Error('unassessed manager: source hash changed');
+  const edits = replacements.map(({ before, after }) => {
+    const anchor = Buffer.from(before);
+    const at = source.indexOf(anchor);
+    if (!anchor.length || at < 0 || source.indexOf(anchor, at + 1) !== -1)
+      throw new Error('patch anchor must be unique');
+    return { at, end: at + anchor.length, bytes: Buffer.from(after) };
+  }).sort((a, b) => a.at - b.at);
+  const chunks = [];
+  let end = 0;
+  for (const edit of edits) {
+    if (edit.at < end) throw new Error('patch anchors overlap');
+    chunks.push(source.subarray(end, edit.at), edit.bytes);
+    end = edit.end;
+  }
+  chunks.push(source.subarray(end));
+  return Buffer.concat(chunks);
+}
+
 function integrity(bytes) {
   const blocks = [];
   for (let offset = 0; offset < bytes.length; offset += blockSize)

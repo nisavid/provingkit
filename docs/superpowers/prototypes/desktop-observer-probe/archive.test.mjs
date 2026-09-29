@@ -4,11 +4,29 @@ import { mkdtemp, mkdir, writeFile, readFile, rm, cp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { appendMembers } from './archive.mjs';
+import { appendMembers, patchManager } from './archive.mjs';
 
 // The caller supplies an independently installed @electron/asar 4.3.0 reader.
 const asar = await import(process.env.PROBE_ASAR_READER);
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+
+test('a manager patch applies only to its inspected source and unique nonoverlapping anchors', () => {
+  const source = Buffer.from('"use strict";function example(){return 1;}');
+  const patch = { sourceSha256: sha(source), replacements: [
+    { before: '"use strict";', after: '"use strict";const fixture = true;' },
+    { before: 'return 1;', after: 'return 2;' },
+  ] };
+  assert.equal(patchManager(source, patch).toString(),
+    '"use strict";const fixture = true;function example(){return 2;}');
+  assert.equal(source.toString(), '"use strict";function example(){return 1;}');
+  assert.throws(() => patchManager(Buffer.from('changed'), patch), /unassessed/);
+  assert.throws(() => patchManager(source, { ...patch,
+    replacements: [{ before: 'absent', after: 'x' }] }), /unique/);
+  assert.throws(() => patchManager(source, { ...patch,
+    replacements: [{ before: ';', after: 'x' }] }), /unique/);
+  assert.throws(() => patchManager(source, { ...patch,
+    replacements: [{ before: 'return 1;', after: 'x' }, { before: '1;', after: 'y' }] }), /overlap/);
+});
 
 test('a copied archive changes only selected members and remains readable by Electron tooling', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'observer-archive-'));
