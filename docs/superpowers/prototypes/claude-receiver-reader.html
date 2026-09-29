@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desktop evidence reader · synthetic prototype</title>
+<style>
+  :root { color-scheme: light dark; font: 16px/1.5 system-ui,sans-serif; --accent:#2763c4; }
+  body { max-width:1120px; margin:40px auto; padding:0 24px 48px; }
+  h1 { font-size:2rem; line-height:1.2; margin-bottom:12px; } h2 { font-size:1.15rem; }
+  p { max-width:85ch; } .eyebrow { color:var(--accent); font-weight:650; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  section { border:1px solid #8c8c8c55; padding:20px; border-radius:10px; margin:20px 0; }
+  section h2 { margin-top:0; } button { font:inherit; padding:8px 12px; border:1px solid #8888; border-radius:6px; background:transparent; cursor:pointer; }
+  button:hover,button:focus-visible { border-color:var(--accent); outline:2px solid #2763c433; }
+  button[aria-selected=true] { color:white; background:var(--accent); border-color:var(--accent); }
+  .buttons,.tabs { display:flex; flex-wrap:wrap; gap:8px; } .tabs button { font-size:.9rem; }
+  #step { margin-top:12px; background:var(--accent); color:white; }
+  dl { display:grid; grid-template-columns:140px 1fr; gap:8px 16px; } dt { color:#888; } dd { margin:0; overflow-wrap:anywhere; }
+  code,pre { font:13px/1.5 ui-monospace,monospace; } pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:440px; overflow:auto; }
+  .status { font-size:1.25rem; font-weight:650; } .note { font-size:.92rem; color:#777; }
+  table { border-collapse:collapse; width:100%; font-size:.9rem; } th,td { text-align:left; border-bottom:1px solid #8884; padding:8px; overflow-wrap:anywhere; }
+  summary { cursor:pointer; font-weight:600; } a { color:var(--accent); }
+  @media(max-width:760px) { .grid { grid-template-columns:1fr; gap:0; } dl { grid-template-columns:110px 1fr; } }
+</style>
+<header>
+  <p class="eyebrow">Throwaway prototype · synthetic inputs only</p>
+  <h1>What can a Desktop evidence reader actually tell us?</h1>
+  <p>Explore whether pinned task metadata and transcript records can produce useful evidence candidates without turning a missing record, stored setting, or matching phrase into proof. Every input here is constructed. Nothing reads Desktop, sends messages, or accesses private files.</p>
+  <p class="note">Based on the <a href="../research/2026-09-28-claude-desktop-receiver-evidence.md">source investigation</a>. This exercises parsing and decision logic. It does not demonstrate live file access, native-address binding, persistence timing, or runtime qualification.</p>
+</header>
+<section aria-labelledby="walkthrough-title">
+  <h2 id="walkthrough-title">Guided walkthroughs</h2>
+  <div class="tabs" role="tablist" aria-label="Scenarios" id="tabs"></div>
+  <p id="scenario-description"></p>
+  <p id="scenario-progress" class="note"></p>
+  <button id="step"></button>
+</section>
+<div class="grid">
+  <section aria-labelledby="result-title" aria-live="polite">
+    <h2 id="result-title">Reader result</h2>
+    <p class="status" id="status"></p>
+    <p id="reason"></p>
+    <dl>
+      <dt>Runtime claim</dt><dd>Unqualified in every scenario</dd>
+      <dt>Notification text</dt><dd id="notification"></dd>
+      <dt>ACK text</dt><dd id="ack"></dd>
+      <dt>Negative evidence</dt><dd>Not established; absence remains unknown</dd>
+      <dt>Resend</dt><dd>Never authorized by this reader</dd>
+    </dl>
+    <p class="note">The sample ACK rule accepts only a whole assistant text body equal to <code>ACK demo-notice-001</code>. It is an illustrative fixture convention, not the future notification interface. A match still requires evidence of receiver origin and intended acknowledgment.</p>
+  </section>
+  <section aria-labelledby="input-title">
+    <h2 id="input-title">Selected synthetic task</h2>
+    <dl id="binding"></dl>
+    <p class="note">The native-address mapping is supplied by the fixture. This prototype does not discover or verify it against a running task. The declared build is also fixture data, not a measured running binary.</p>
+    <table><caption>Stored settings: baseline / latest</caption><thead><tr><th>Field</th><th>Baseline</th><th>Latest</th></tr></thead><tbody id="settings"></tbody></table>
+    <p class="note">Equal stored fields do not establish preservation of effective account route, model, permissions, or worktree. The account route has no observer in this prototype.</p>
+  </section>
+</div>
+<section>
+  <h2>Try a change</h2>
+  <div class="buttons" id="actions"></div>
+  <p class="note" id="change"></p>
+</section>
+<section>
+  <h2>Evidence still needed</h2>
+  <ul id="gaps"></ul>
+</section>
+<details><summary>Inspect the synthetic metadata, transcript bytes, and full result</summary><pre id="raw"></pre></details>
+<script id="reader-model">
+// Pure source experiment. No DOM, network, private-file, or messaging access.
+const ReaderPrototype = (() => {
+  const build = '6f669e85b82c8cf8a028fe77b6e869baec1f23961d8bec62b38bcbfc498b6d7c';
+  const taskId = 'local_11111111-1111-4111-8111-111111111111';
+  const cliId = '22222222-2222-4222-8222-222222222222';
+  const id = 'demo-notice-001';
+  const clone = x => JSON.parse(JSON.stringify(x));
+  const text = row => {
+    const c = row.message?.content;
+    if (typeof c === 'string') return c;
+    if (Array.isArray(c) && c.every(x => x && x.type === 'text' && typeof x.text === 'string')) return c.map(x => x.text).join('\n');
+    return null;
+  };
+  const gaps = [
+    'Bind the native sender address, consented Desktop task, running executor, and transcript lineage with real evidence.',
+    'Observe the external native SendMessage path’s receiver record; Desktop’s own peer receipt flags are insufficient.',
+    'Observe an explicit receiver acknowledgment and its correlation ID; an example text match is only a candidate.',
+    'Establish read freshness and coverage for delayed, held, refused, or unknown outcomes. Two stable reads alone do not prove completeness.',
+    'Observe effective account route, model, permissions, and worktree before and after; stored metadata is insufficient.',
+    'Record busy-task continuity as diagnostic evidence through the separately authorized fixture.'
+  ];
+  function initial() {
+    const metadata = {sessionId:taskId, cliSessionId:cliId, cwd:'demo-project', originCwd:'demo-project', worktreePath:'demo-worktree', model:'demo-model', permissionMode:'default', priorCliSessionIds:[], transcriptCuts:[]};
+    const snapshot = {metadata, transcript:'', fileIdentity:'fixture-inode-1', mtime:1};
+    return {declaredBuild:build, selection:{taskId,cliId,nativeRef:'demo-r1',correlationId:id,senderRef:'demo-sender'}, binding:{taskId,cliId,nativeRef:'demo-r1'}, before:clone(snapshot), after:clone(snapshot), baseline:clone(metadata), baselineFileIdentity:snapshot.fileIdentity, ambiguity:false, coverageLost:false};
+  }
+  function inspect(s) {
+    const result = {status:'unknown', reason:'No matching record is visible. Missing evidence does not distinguish delay, hold, refusal, or absence.', qualification:'unqualified', notificationCandidates:[], acknowledgmentCandidates:[], gaps:[...gaps]};
+    const stop = (status,reason) => ({...result,status,reason,notificationCandidates:[],acknowledgmentCandidates:[]});
+    if (s.declaredBuild !== build) return stop('unsupported','The declared fixture build is not the inspected archive. No schema fallback is attempted.');
+    if (s.ambiguity) return stop('unknown','More than one transcript candidate exists. The reader does not choose the newest or largest.');
+    if (!s.binding || s.binding.taskId !== s.selection.taskId || s.binding.cliId !== s.selection.cliId || s.binding.nativeRef !== s.selection.nativeRef) return stop('unknown','The supplied synthetic address mapping changed. Re-establish the exact peer binding.');
+    for (const snapshot of [s.before,s.after]) {
+      if (snapshot.metadata.sessionId !== s.selection.taskId || snapshot.metadata.cliSessionId !== s.selection.cliId) return stop('unknown','Task or transcript identity does not match the selection.');
+    }
+    if (s.before.fileIdentity !== s.after.fileIdentity || s.after.fileIdentity !== s.baselineFileIdentity) return stop('unknown','The transcript was replaced. Coverage from the earlier observation is not established.');
+    if (JSON.stringify(s.before.metadata) !== JSON.stringify(s.after.metadata) || s.before.transcript !== s.after.transcript) return stop('unknown','The bytes or metadata changed during the constructed read window. This observation is incomplete.');
+    if (JSON.stringify(s.after.metadata) !== JSON.stringify(s.baseline)) return stop('unknown','Stored settings or lineage changed since the baseline. Effective preservation is unresolved.');
+    const bytes = s.after.transcript;
+    if (bytes && !bytes.endsWith('\n')) return stop('unknown','The final JSONL record is incomplete. A parseable prefix is not complete evidence.');
+    let rows;
+    try { rows = (bytes ? bytes.slice(0,-1).split('\n') : []).map(line => JSON.parse(line)); }
+    catch { return stop('unknown','A transcript line is malformed. No partial success is reported.'); }
+    if (rows.some(r => !r || typeof r !== 'object' || Array.isArray(r) || r.sessionId !== s.selection.cliId)) return stop('unknown','A transcript record has an unsupported shape or a different session identity.');
+    if (s.coverageLost || rows.some(r => r.isCompactSummary)) return stop('unknown','Compaction or missing history makes coverage incomplete. A summary cannot substitute for the original receipt.');
+    const seen = new Set();
+    for (const [index,r] of rows.entries()) {
+      if (!['user','assistant'].includes(r.type)) continue;
+      if (typeof r.uuid !== 'string' || seen.has(r.uuid)) return stop('unknown','A message ID is missing or duplicated. Record identity is ambiguous.');
+      seen.add(r.uuid);
+      if (r.isMeta || r.isSidechain || r.teamName || r.parent_tool_use_id) continue;
+      if (r.message?.role !== r.type) return stop('unknown','Outer message type and inner role are inconsistent. No role is inferred.');
+      const content = text(r);
+      if (content === null) return stop('unknown','The text-only fixture reader does not support this content shape.');
+      if (r.type === 'user' && r.origin?.kind === 'peer' && r.origin.from === s.selection.senderRef && content === `Notification ${s.selection.correlationId}: demo context changed.`) result.notificationCandidates.push({uuid:r.uuid,text:content,index});
+      if (r.type === 'assistant' && content === `ACK ${s.selection.correlationId}`) result.acknowledgmentCandidates.push({uuid:r.uuid,text:content,index});
+    }
+    if (result.notificationCandidates.length && result.acknowledgmentCandidates.length) {
+      if (result.acknowledgmentCandidates.some(a => result.notificationCandidates.some(n => n.index < a.index))) {
+        result.status = 'candidate pair'; result.reason = 'The constructed text rules match with the notification before the ACK. Transcript order alone does not prove causality, receiver origin, or acknowledgment meaning.';
+      } else {
+        result.status = 'unpaired candidates'; result.reason = 'The matching ACK text appears before the notification. These records do not form a candidate pair.';
+      }
+    } else if (result.notificationCandidates.length || result.acknowledgmentCandidates.length) {
+      result.status = 'partial candidates'; result.reason = 'Only part of the constructed evidence pair is present. No delivery or acknowledgment conclusion follows.';
+    }
+    return result;
+  }
+  const row = (type,content,uuid,extra={}) => ({type,uuid,sessionId:cliId,message:{role:type,content},...extra});
+  const append = (s,r) => {s.after.transcript += JSON.stringify(r)+'\n';s.after.mtime++;s.before=clone(s.after);};
+  function apply(state,action) {
+    const s=clone(state);
+    switch(action) {
+      case 'reset': return initial();
+      case 'notice': append(s,row('user',`Notification ${id}: demo context changed.`,'notice-row',{origin:{kind:'peer',from:'demo-sender'}})); break;
+      case 'ack': append(s,row('assistant',`ACK ${id}`,'ack-row')); break;
+      case 'echo': append(s,row('user',`ACK ${id}`,'echo-row')); break;
+      case 'quote': append(s,row('assistant',`> ACK ${id}`,'quoted-row')); break;
+      case 'roles': append(s,{...row('assistant',`ACK ${id}`,'roles-row'),message:{role:'user',content:`ACK ${id}`}});break;
+      case 'content': append(s,row('assistant',[null],'content-row'));break;
+      case 'partial': s.after.transcript += '{"type":"assistant"';s.before=clone(s.after);break;
+      case 'racing': s.after.transcript += JSON.stringify(row('assistant',`ACK ${id}`,'racing-row'))+'\n';break;
+      case 'replace': s.after.fileIdentity='fixture-inode-2';s.before=clone(s.after);break;
+      case 'compact': s.coverageLost=true;s.after.transcript=JSON.stringify(row('assistant','A synthetic summary mentions the notification.','summary-row',{isCompactSummary:true}))+'\n';s.before=clone(s.after);break;
+      case 'peer': s.binding.nativeRef='another-demo-peer';break;
+      case 'lineage': s.after.metadata.cliSessionId='33333333-3333-4333-8333-333333333333';s.before=clone(s.after);break;
+      case 'model': s.after.metadata.model='another-demo-model';s.before=clone(s.after);break;
+      case 'upgrade': s.declaredBuild='uninspected-demo-build';break;
+      case 'ambiguous': s.ambiguity=true;break;
+      case 'mtime': s.after.mtime++;s.before=clone(s.after);break;
+      default: throw Error('Unknown prototype action');
+    }
+    return s;
+  }
+  return {initial,inspect,apply};
+})();
+</script>
+<script>
+const actions = {
+  reset:'Reset inputs', notice:'Add notification text', ack:'Add plain ACK', echo:'Echo ACK as user', quote:'Quote ACK as assistant',
+  roles:'Mix message roles', content:'Add malformed content', partial:'Leave a partial line', racing:'Append during read', replace:'Replace transcript file', compact:'Compact history',
+  peer:'Change address mapping', lineage:'Change transcript ID', model:'Change stored model', upgrade:'Change declared build', ambiguous:'Add duplicate candidate', mtime:'Touch modification time'
+};
+const scenarios = [
+  {name:'Candidate pair',description:'A positive text pair can be useful without proving the route. Add each half and inspect the remaining obligations.',steps:['notice','ack']},
+  {name:'Echoes and quotes',description:'The correlation ID alone is not acknowledgment. The sample rule rejects user echoes and a quoted assistant line.',steps:['notice','echo','quote','ack']},
+  {name:'Order and schema',description:'An earlier ACK does not pair with a later notification. Conflicting roles, malformed content, and repeated message IDs leave no provisional candidates.',steps:['ack','notice','reset','roles','reset','content','reset','notice','notice']},
+  {name:'Incomplete read',description:'A valid prefix cannot establish complete evidence when the final line is partial or the snapshot changes during the read.',steps:['notice','partial','reset','notice','racing']},
+  {name:'Identity and history',description:'A new address, transcript identity, or file requires renewed binding or coverage evidence.',steps:['notice','ack','peer','reset','lineage','reset','replace','reset','compact']},
+  {name:'Upgrade and settings',description:'A build mismatch is unsupported. Equal stored settings are not effective settings; a changed stored model is an explicit gap.',steps:['notice','ack','upgrade','reset','model']},
+  {name:'Absence and ambiguity',description:'A touched timestamp does not create a receipt. Multiple candidates cannot be resolved by choosing the newest file.',steps:['mtime','ambiguous']}
+];
+let state=ReaderPrototype.initial(),scenarioIndex=0,stepIndex=0,freePlay=false;
+const byId=id=>document.getElementById(id);
+const write=(id,value)=>byId(id).textContent=value;
+function field(parent,label,value) {const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;parent.append(dt,dd);}
+function render(change='Initial synthetic snapshot') {
+  const r=ReaderPrototype.inspect(state);write('status',r.status);write('reason',r.reason);write('change',change);
+  write('notification',r.notificationCandidates.length?`${r.notificationCandidates.length} candidate(s)`:'No candidate');
+  write('ack',r.acknowledgmentCandidates.length?`${r.acknowledgmentCandidates.length} candidate(s)`:'No candidate');
+  const b=byId('binding');b.replaceChildren();field(b,'Native reference',state.binding.nativeRef);field(b,'Desktop task',state.after.metadata.sessionId);field(b,'Code transcript',state.after.metadata.cliSessionId);field(b,'Correlation ID',state.selection.correlationId);field(b,'Declared build',state.declaredBuild);field(b,'File identity',state.after.fileIdentity);field(b,'Modification time',String(state.after.mtime));
+  const table=byId('settings');table.replaceChildren();for(const key of ['model','permissionMode','worktreePath']){const tr=document.createElement('tr');for(const value of [key,state.baseline[key],state.after.metadata[key]]){const td=document.createElement('td');td.textContent=value;tr.append(td);}table.append(tr);}
+  const ul=byId('gaps');ul.replaceChildren();for(const gap of r.gaps){const li=document.createElement('li');li.textContent=gap;ul.append(li);}
+  write('raw',JSON.stringify({syntheticInputs:state,result:r},null,2));
+  const scenario=scenarios[scenarioIndex];write('scenario-description',scenario.description);write('scenario-progress',freePlay?'Free play. Restart the walkthrough to resume its guided sequence.':`Step ${stepIndex} of ${scenario.steps.length}. Selecting a walkthrough resets the inputs.`);
+  write('step',!freePlay && stepIndex<scenario.steps.length?`Next: ${actions[scenario.steps[stepIndex]]}`:'Restart this walkthrough');
+  [...byId('tabs').children].forEach((b,i)=>b.setAttribute('aria-selected',String(i===scenarioIndex)));
+}
+for(const [action,label] of Object.entries(actions)){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{freePlay=true;state=ReaderPrototype.apply(state,action);render(label+' · free play');};byId('actions').append(b);}
+scenarios.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.name;b.setAttribute('role','tab');b.onclick=()=>{scenarioIndex=i;stepIndex=0;freePlay=false;state=ReaderPrototype.initial();render();};byId('tabs').append(b);});
+byId('step').onclick=()=>{const steps=scenarios[scenarioIndex].steps;if(freePlay || stepIndex===steps.length){freePlay=false;stepIndex=0;state=ReaderPrototype.initial();render();return;}const a=steps[stepIndex++];state=ReaderPrototype.apply(state,a);render(actions[a]);};
+render();
+</script>
+</html>
