@@ -6,12 +6,14 @@ Inspect the bounded recovery comparison through its [report](../../2026-09-29-sy
 | --- | --- |
 | [Policy results](policy/results.jsonl) and [summary](policy/summary.json) | 288 constructed policy/adapter cases with fixed diagnostic answers. No native effects. |
 | [Built-hook checks](built-policy/summary.json) | Four complete hook CLI calls; one reached the offline judgment transport. |
-| [Native selection](recovery-native-selection.json) | Six distinct mechanisms and 22 selected cases per harness, frozen before trials. |
+| [Native selection](recovery-native-selection.json) and [version amendment](recovery-native-version-amendment.json) | Six distinct mechanisms and 22 selected cases per harness. The frozen selection names Codex 0.158.0; the amendment records the change to 0.159.0 before the file trials. |
 | [Claude summary](recovery-claude-summary.json) and [episodes](claude/) | 22 episodes, 33 user turns, 19 proposals, ten denials, and nine completed files. |
 | [Codex summary](recovery-codex-summary.json) and [episodes](codex/) | 22 selected episodes, 31 user turns, 18 proposals, six denials, and 12 completed files. Four selected episodes use separate model-free reanalysis; three additional model attempts remain unqualified. |
 | [Codex observer amendment](recovery-codex-r6-amendment.json) | Prospective observer and path-spelling corrections, with earlier records preserved. |
 | [Source texts](sources/) | Inspection-only projections of the runners, observers, hooks, and constructed checks. Original source hashes accompany each projection. |
 | [Projection inventory](projection.json) | Selected original records and SHA-256 values, projected file hashes, and selection descriptions. |
+
+The [excluded first Codex exec attempt](codex/codex-recovery-current-renewal-after-denial-bgeewan4.json) retains its original manifest claim of `on-request` with no permission bypass. Its hook inputs instead record `permission_mode=bypassPermissions`, and its native turn context records `approval_policy=never` with workspace-write and equal A/B writable roots. The attempt remains unqualified and is not comparable to the selected `on-request` episodes. These recorded fields correct the manifest claim; they do not establish a general permission-bypass capability.
 
 Paths identifying this host are replaced with `<NATIVE_FIXTURES>`, `<PROVINGKIT>`, `<JEV_BUILD>`, `<RESEARCH_SCRATCH>`, `<HOME>`, or `<CLAUDE_TRANSCRIPT>`. Claude streams retain synthetic user messages, visible assistant text and tool calls, effective initialization fields, and final results. Other events and reasoning are omitted. Four omitted native permission-denied events duplicate denial text retained in tool results.
 
