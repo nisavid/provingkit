@@ -40,7 +40,7 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/SKILL.md": {
       "mode": 420,
-      "sha256": "ab399ffd3ba7409600d3465fddfb3984747ec9f77378a524796307ed293deb04"
+      "sha256": "622bd32b1edf5bdc9e10b20e773dfe4dd862843d24cff12c133166a917d6949f"
     },
     "plugins/praxis/skills/constructing-agent-policies/agents/openai.yaml": {
       "mode": 420,
@@ -52,11 +52,11 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/references/evaluation.md": {
       "mode": 420,
-      "sha256": "811c45774e5e2e87e44d87ed2f57866d41a0d4e50bc2430443b07e11c0b3e327"
+      "sha256": "4bdde9be3b853c17a3af4b5b422e9269df3bded896df22eed2b047d1f25b0311"
     },
     "plugins/praxis/skills/constructing-agent-policies/references/policy-design.md": {
       "mode": 420,
-      "sha256": "fdbb4f4053aa97a79b48eeaca5ae2748c161f2637e510a006469b3e223b5e114"
+      "sha256": "67b43ff5c8e7259210c3f4d10ed79d97829f84e667432b0c353d37074987450f"
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/gh_stub.py": {
       "mode": 420,

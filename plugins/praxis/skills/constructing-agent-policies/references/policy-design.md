@@ -2,7 +2,7 @@
 
 ## The decision structure
 
-Map the seed into these rows. Every seed sentence lands in at least one row; a row with no seed sentence behind it is an invention to confirm with the operator.
+Map the seed into these rows. Every seed sentence lands in at least one row with its conditions and reach as stated. Every hold, gate, and condition traces to a seed sentence or an operator answer; any other is an invention to put to the operator. A default fills only a gap the operator delegates to you: mark it in the policy as one the operator can change, and keep it within what the seed lets the agent do. When two seed rules collide, ask the operator which wins, recommending the reading that keeps both as written.
 
 | Row | Record |
 | --- | --- |
@@ -15,6 +15,8 @@ Map the seed into these rows. Every seed sentence lands in at least one row; a r
 
 A question is a **fact** when the environment can answer it: files, APIs, history, documentation, a probe. It is a **value** when competent colleagues holding every fact could still choose differently. Establish facts yourself; put only values to the operator.
 
+Resolve each object the seed names against the environment's own catalog: an exact name is that object, and a lookalike is a different object unless a source links them. Record the reading as a fact with its source. A seed word the rules hinge on, such as "reviewed" when it could mean approved or only commented on, is a value whenever the facts allow more than one reading, even when a data column fits one of them. A fact comes from a source you have read, so a value the policy would defer to a source you have not found, such as a release calendar, is still open.
+
 ## Scope and authority
 
 - **Scope.** A rule binds only inside its declared scope: its repository, organization, actor, or platform. Read the enclosing heading and qualifiers; a sentence lifted from a section scoped to one organization governs nothing else.
@@ -26,7 +28,7 @@ A question is a **fact** when the environment can answer it: files, APIs, histor
 
 ## Time and re-entry
 
-- **Clocks are facts.** Name the event that starts each clock (a notice the other party receives), what ends it early (explicit acceptance), what never restarts it, and what opens a separate clock (someone else reraising the issue). Record clock starts from observable timestamps.
+- **Clock starts are facts; lengths and thresholds are values.** Name the event that starts each clock (a notice the other party receives), what ends it early (explicit acceptance), what never restarts it, and what opens a separate clock (someone else reraising the issue). Record clock starts from observable timestamps. Ask, with a recommended default, for each length or threshold the policy's decisions depend on and neither the seed nor another source states, such as how long one step may run before the next begins.
 - **Re-entry.** Every revisit re-establishes the facts that can change: the revision, checks, new comments, permissions, and prior writes. A clean earlier pass is stale once its dependencies change. Memory can point at a possible gate; current instructions and evidence decide whether it applies.
 
 ## Acting once
@@ -37,18 +39,18 @@ A question is a **fact** when the environment can answer it: files, APIs, histor
 
 ## Asking
 
-Put the whole answerable frontier to the operator in one round. Each question names the actors and objects plainly, gives two to four candidate answers with a recommendation, and includes the scenario that makes the choice matter. Coined shorthand from your own analysis costs the operator a round trip; describe what happened instead. State the return contract: which answer unblocks which work.
+Each question item asks for one value. It names the actors and objects plainly, includes the scenario that makes the choice matter, and gives two to four candidate answers, each consistent with the facts you established, with one recommended. Where the seed's own words support a reading, recommend it, and offer a reading that widens or narrows a seed rule as a further candidate. Coined shorthand from your own analysis costs the operator a round trip; describe what happened instead. State the return contract: which answer unblocks which work. In prose, number the questions and close with at most a one-line sign-off.
 
 ## Placement
 
-Choose the smallest shape that covers every branch, in this order:
+Compare shapes on invocation reliability, token cost, maintenance, and behavioral coverage. From smallest to largest:
 
-1. text in the owning skill;
+1. text in the owner's existing instructions: its skill, its instruction file (such as `AGENTS.md`), or a policy file that instruction file links;
 2. a shared reference inside the owning plugin, used by the skills that need it, with any required copies checked by the plugin's validator;
-3. an operation or actuator change, when the policy needs a new effect that must be bound and verified;
+3. a script, hook, or actuator change, when the policy needs a new effect that must be bound and verified, or a check that must run the same way every time;
 4. a new skill, only for a distinct request that deserves direct invocation.
 
-Keep one source of truth and the owner's existing discovery path: its skill description or a link from its steps. Remove the contradicting text in the same change. A policy belongs with its owner, never in this skill.
+Unless the policy sits in the always-loaded instruction file, it has one entrypoint with a trigger description saying when to load it, linked from the owner's instruction file. A skill every target harness already lists, such as a plugin skill, needs no link; its description is its trigger. Keep one source of truth, and remove the contradicting text in the same change. A policy belongs with its owner, never in this skill.
 
 ## Failure patterns
 
@@ -56,7 +58,7 @@ Design scenarios against each of these, because keyword-level encodings fall int
 
 - **Permission ritual**: asking before every comment or write the request already covers.
 - **Scope leakage**: applying a rule outside its declared scope.
-- **Keyword inference**: treating a bot-shaped account name as bot behavior, or a label as urgency.
+- **Keyword inference**: deciding membership or intent from a name that resembles a category, such as a directory named like a protected one, a bot-shaped account name, or a label read as urgency, instead of from the fact that defines it: real location, the member list, or evidence.
 - **Partial aggregate**: acting on the first expired item when the rule is about the whole set.
 - **Stale snapshot**: acting on state read before a newer revision or comment.
 - **Duplicate write**: reposting because an earlier result was uncertain.
