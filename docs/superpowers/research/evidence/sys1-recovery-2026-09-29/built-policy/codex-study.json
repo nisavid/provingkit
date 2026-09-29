@@ -1,0 +1,17 @@
+{
+  "id": "codex-study",
+  "input": {
+    "hook_event_name": "PreToolUse",
+    "tool_name": "apply_patch",
+    "cwd": "/study/recovery/project",
+    "session_id": "constructed-only",
+    "tool_use_id": "codex-study",
+    "operator_approval": "Synthetic extra field for extraction check",
+    "tool_input": {
+      "command": "*** Begin Patch\n*** Add File: /study/recovery/A/report.txt\n+Synthetic recovery artifact.\n*** End Patch"
+    }
+  },
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": ""
+}

@@ -1,0 +1,8 @@
+{
+  "root": "<RESEARCH_SCRATCH>/recovery-built-policy-ih4q0beo",
+  "cases": 4,
+  "API_requests": 1,
+  "extra_approval_field_not_in_request": true,
+  "claim": "full built CLI extraction and adapter with constructed inputs, no native invocation or effect",
+  "preload_sha256": "e0a705333b77303fed32866e5571f88f765640e4f22fc976d2dc7c407ab64360"
+}

@@ -1,0 +1,235 @@
+#!/usr/bin/env python3
+"""Prepare, discover, and run one native Codex recovery episode."""
+from pathlib import Path
+import argparse
+import hashlib
+import importlib.util
+import json
+import os
+import shlex
+import subprocess
+import tempfile
+import time
+
+HERE=Path(__file__).resolve().parent
+PINS={'recovery-native-claude.py':'4053d2462a01af28df416d928dac15c092d0abce4a43b0f3377487dec5703f14',
+      'recovery-native-hook.py':'5a81a34aaefc82da21e05415022e51df9fbb434f8bd6c5b8977ab6ad27438212',
+      'recovery-current-preload.mjs':'e0a705333b77303fed32866e5571f88f765640e4f22fc976d2dc7c407ab64360',
+      'recovery-claude-message-probe.py':'e72ba846595eea099ba3bd1b30f9507336e0cca19c38a990f671c49515cfc5db',
+      'recovery-codex-message-probe.py':'f0fd836a9382c7f164b819db61b468c5ae4c22ffaced1b1c89b7eda8dc9ab641',
+      'recovery-codex-discovery.py':'0e8a4dd38b75e608130d5e6809bf9e6584cb9723d8393876afeb0c91194012df'}
+MODEL='gpt-6-sol'
+VERSION='codex-cli 0.159.0'
+
+def sha(data):return hashlib.sha256(data).hexdigest()
+def check(condition,message):
+    if not condition:raise RuntimeError(message)
+def save(path,value):
+    with path.open('x') as f:json.dump(value,f,indent=2);f.write('\n')
+def load_module(name):
+    path=HERE/name
+    check(sha(path.read_bytes())==PINS[name],'dependency changed: '+name)
+    spec=importlib.util.spec_from_file_location(name.replace('-','_'),path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
+def tree(path):
+    result={}
+    for p in sorted(path.rglob('*')):
+        check(not p.is_symlink(),'fixture symlink')
+        if p.is_file():result[str(p.relative_to(path))]=sha(p.read_bytes())
+        else:check(p.is_dir(),'unexpected fixture entry')
+    return result
+def verify_sources(sources):
+    for path,expected in sources.items():check(sha(Path(path).read_bytes())==expected,'episode source drift: '+path)
+
+def prepare(args,root,transport,fixture):
+    for name in ('project','A','B','git-template'):(root/name).mkdir()
+    project=root/'project'
+    result=subprocess.run(['git','-c','init.defaultBranch=main','-c','init.templateDir='+str(root/'git-template'),'init','-q',str(project)],capture_output=True,text=True,timeout=10)
+    save(root/'git-init.json',{'code':result.returncode,'stdout':result.stdout,'stderr':result.stderr})
+    check(result.returncode==0,'fixture Git initialization failed')
+    targets=[str(root/name/'report.txt') for name in ('A','B')]
+    messages=fixture.messages(args.case,targets)
+    for message in messages:message['text']=message['text'].replace('native Write tool','native apply_patch tool')
+    retained=Path('<PROVINGKIT>/docs/superpowers/research/evidence/sys1-2026-09-26/safety-live.jsonl')
+    check(sha(retained.read_bytes())=='a44c7677cac5d90f68e6d55bac625e02950eef6cb4ee099cf680c7fd03e75bbe','retained judgment changed')
+    judgment=json.loads(retained.read_bytes().splitlines()[0])
+    dist=tree(args.package/'dist')
+    check(len(dist)==78 and sha(json.dumps(list(dist.items()),separators=(',',':')).encode())=='05b4d30c315c1a9b3a86ff428ce5577dc660c54cb5ae89551f329a3b14c47fe4','built source differs')
+    config={'project':str(project),'control':str(root),'destinations':targets,'content':fixture.CONTENT,
+        'arm':args.arm,'agent':'codex','messages':messages,'source_sha256':PINS['recovery-native-hook.py'],
+        'package':str(args.package),'dist_files':dist,'preload':str(HERE/'recovery-current-preload.mjs'),
+        'preload_sha256':PINS['recovery-current-preload.mjs'],'answers':judgment['raw_answers']}
+    save(root/'config.json',config)
+    hook_command=shlex.join(['python',str(HERE/'recovery-native-hook.py'),str(root),sha((root/'config.json').read_bytes())])
+    (project/'.codex').mkdir()
+    hooks={'hooks':{name:[{'hooks':[{'type':'command','command':hook_command,'timeout':20}]}] for name in ('UserPromptSubmit','PreToolUse')}}
+    save(project/'.codex/hooks.json',hooks)
+    version,code=transport.collect(['codex','--version'],project,root,'version',time.monotonic()+10)
+    check(code==0 and version.decode().strip()==VERSION,'Codex version differs')
+    discovery=load_module('recovery-codex-discovery.py').discover(project,root,hook_command,transport.collect)
+    save(root/'discovery.json',discovery)
+    prefix=['codex','--no-daemon','-C',str(project),'-s','workspace-write','-a','on-request',
+            '--add-dir',str(root/'A'),'--add-dir',str(root/'B'),'exec']
+    common=['--ignore-user-config','--strict-config','--skip-git-repo-check','--json','-m',MODEL,'--enable','hooks']
+    for feature in ['multi_agent','plugins','apps','shell_snapshot','shell_tool','memories','skill_search','browser_use','computer_use','image_generation','view_image','sleep_tool']:
+        common+=['--disable',feature]
+    for setting in ['model_reasoning_effort="high"','web_search="disabled"','project_doc_max_bytes=0','mcp_servers={}',
+                    'shell_environment_policy={inherit="none",set={LANG="C",LC_ALL="C"}}',
+                    'projects={'+json.dumps(str(project))+'={trust_level="trusted"}}',discovery['override']]:
+        common+=['-c',setting]
+    sources={str(HERE/name):digest for name,digest in PINS.items()}
+    for path in (Path(__file__),retained,root/'config.json',root/'discovery.json',project/'.codex/hooks.json'):sources[str(path)]=sha(path.read_bytes())
+    manifest={'arm':args.arm,'case':args.case,'config':config,'prefix':prefix,'common':common,
+        'sources':sources,'project_baseline':tree(project),'model':MODEL,'version':VERSION,'effort':'high',
+        'storage':str(Path(os.environ.get('CODEX_HOME') or (Path.home()/'.codex')).resolve()),
+        'native_permissions':'workspace-write/on-request with equal A/B writable grants; no permission bypass',
+        'discovery_limit':'app-server metadata cannot ignore user config; actual exec receipts are required',
+        'deadline_seconds':240,'claim':'bounded hook and file-effect episode, not host-wide containment or production authorization parsing'}
+    save(root/'manifest.json',manifest)
+    return manifest
+
+def effects(root,manifest):
+    check(tree(root/'project')==manifest['project_baseline'],'fixture project changed')
+    result={};config=manifest['config']
+    for name in ('A','B'):
+        for path in (root/name).rglob('*'):
+            check(path.is_file() and not path.is_symlink() and str(path) in config['destinations'],'unexpected fixture effect')
+            check(path.read_bytes()==config['content'].encode(),'fixture content differs')
+            result[name]=sha(path.read_bytes())
+    check(len(result)<=1,'multiple fixture creations')
+    return result
+
+def records(root):
+    path=root/'events.jsonl'
+    check(path.exists(),'no native hook receipts')
+    rows=[json.loads(line) for line in path.read_text().splitlines()]
+    state=json.loads((root/'state.json').read_text())
+    check(not state.get('fatal') and state['events']==rows,'hook guard failed or record drift')
+    return rows
+
+def rollout(manifest,session,root,index):
+    paths=list((Path(manifest['storage'])/'sessions').glob('*/*/*/*-'+session+'.jsonl'))
+    check(len(paths)==1,'native rollout missing or ambiguous')
+    data=paths[0].read_bytes();check(data.endswith(b'\n'),'incomplete native rollout')
+    with (root/('turn-'+str(index)+'-rollout.jsonl')).open('xb') as f:f.write(data)
+    return [json.loads(line) for line in data.splitlines()]
+
+def verify_persistence(transcript,stderr):
+    check(not stderr.strip(),'native stderr requires adjudication; persistence unqualified')
+    contexts=[(i,r['payload']['turn_id']) for i,r in enumerate(transcript) if r.get('type')=='turn_context']
+    check(contexts,'no native turn context')
+    for n,(start,turn_id) in enumerate(contexts):
+        end=contexts[n+1][0] if n+1<len(contexts) else len(transcript)
+        terminals=[i for i in range(start+1,end) if transcript[i].get('type')=='event_msg' and
+                   transcript[i].get('payload',{}).get('type')=='task_complete' and
+                   transcript[i]['payload'].get('turn_id')==turn_id]
+        check(len(terminals)==1,'native terminal task_complete missing or duplicated')
+        check(not any(r.get('type')=='response_item' for r in transcript[terminals[0]+1:end]),'native response follows terminal task_complete')
+    return {'completed_turns':[turn_id for _,turn_id in contexts]}
+
+def native_denial(rows,transcript,turn_id):
+    denies=[r for r in rows if r['input'].get('turn_id')==turn_id and r['outcome'].get('decision') in {'deny','ask'}]
+    outputs=[r['payload'] for r in transcript if r.get('type')=='response_item' and
+             r.get('payload',{}).get('type') in {'function_call_output','custom_tool_call_output'} and
+             r.get('payload',{}).get('internal_chat_message_metadata_passthrough',{}).get('turn_id')==turn_id]
+    reasons=sorted({json.loads(row['output'])['hookSpecificOutput']['permissionDecisionReason'] for row in denies})
+    feedback=[];missing=[]
+    for reason in reasons:
+        matching=sorted({output['call_id'] for output in outputs if reason in json.dumps(output.get('output'),ensure_ascii=False)})
+        if matching:feedback.append({'reason':reason,'outer_call_ids':matching})
+        else:missing.append(reason)
+    return {'status':('no-hook-denial' if not denies else 'feedback-unavailable' if missing else 'turn-feedback-observed'),
+            'denied_invocations':[r['input']['tool_use_id'] for r in denies],
+            'feedback':feedback,'missing_reasons':missing,
+            'claim':'turn-level denial feedback; inner-to-outer pairing unavailable'}
+
+def run(root,manifest,transport,delivery):
+    verify_sources(manifest['sources'])
+    check(not any(root.glob('turn-*-command.json')),'attempt already contains a native turn')
+    with (root/'run-reservation.json').open('x') as f:json.dump({'manifest_sha256':sha((root/'manifest.json').read_bytes())},f)
+    config=manifest['config'];project=root/'project';deadline=time.monotonic()+manifest['deadline_seconds']
+    raw,code=transport.collect(['codex','debug','models'],project,root,'catalog',min(deadline,time.monotonic()+30))
+    check(code==0,'catalog failed')
+    models=json.loads(raw)['models'];selected=[m for m in models if m.get('slug')==MODEL]
+    check(len(selected)==1 and any(e.get('effort')=='high' for e in selected[0].get('supported_reasoning_levels',[])),'requested model/effort unavailable')
+    session=None;turns=[];sent=[];denial_evidence=[]
+    for index,message in enumerate(config['messages']):
+        command=manifest['prefix']+(['resume'] if index else [])+manifest['common']+([session] if index else [])+[message['text']]
+        save(root/('turn-'+str(index)+'-command.json'),command)
+        raw,code=transport.collect(command,project,root,'turn-'+str(index),deadline)
+        check(code==0 and raw.endswith(b'\n'),'native turn failed or incomplete')
+        events=[json.loads(line) for line in raw.splitlines()]
+        starts=[e['thread_id'] for e in events if e.get('type')=='thread.started']
+        check(len(starts)==1,'one native session start required')
+        if session is None:session=starts[0]
+        check(starts==[session],'native resume selected another session')
+        check(len([e for e in events if e.get('type')=='turn.completed'])==1,'one completed turn required')
+        sent.append(message['text'])
+        transcript=rollout(manifest,session,root,index)
+        persistence=verify_persistence(transcript,(root/('turn-'+str(index)+'-stderr.log')).read_bytes())
+        metadata=[r['payload'] for r in transcript if r.get('type')=='session_meta']
+        check(len(metadata)==1 and metadata[0].get('id')==session and metadata[0].get('cli_version')=='0.159.0','native transcript identity differs')
+        users,other=delivery.native_user_messages(transcript)
+        check([u['message'] for _,u in users]==sent,'native user history differs')
+        contexts=[r['payload'] for r in transcript if r.get('type')=='turn_context']
+        check(len(contexts)==index+1,'native turn count differs')
+        check(len({c.get('turn_id') for c in contexts})==len(contexts),'native turn id reused')
+        for context in contexts:
+            check(context.get('model')==MODEL and context.get('effort')=='high' and context.get('cwd')==str(project) and context.get('approval_policy')=='on-request','model/effort/permission context differs')
+            policy=context.get('sandbox_policy',{})
+            check(policy.get('type')=='workspace-write' and policy.get('network_access') is False,'native sandbox differs')
+            check(set(policy.get('writable_roots',[]))=={str(root/'A'),str(root/'B')},'native writable roots differ')
+        hook_rows=records(root)
+        user_rows=[r for r in hook_rows if r['outcome'].get('kind')=='user']
+        check(len(user_rows)==index+1,'UserPromptSubmit receipt count differs')
+        for n,row in enumerate(user_rows):
+            check(row['input'].get('session_id')==session and row['input'].get('turn_id')==contexts[n]['turn_id'] and row['input'].get('prompt')==sent[n],'native prompt identity differs')
+        allowed_turns={c['turn_id'] for c in contexts}
+        for row in hook_rows:
+            check(row['input'].get('session_id')==session and row['input'].get('turn_id') in allowed_turns,'hook belongs to another turn/session')
+            if row['outcome'].get('kind')=='proposal':
+                prior=[u for u in user_rows if u['sequence']<row['sequence']]
+                check(prior and row['input']['turn_id']==prior[-1]['input']['turn_id'],'proposal reused another user turn')
+        proposals=[r for r in hook_rows if r['outcome'].get('kind')=='proposal'];check(len(proposals)<=4,'proposal bound exceeded')
+        observed=effects(root,manifest)
+        evidence=native_denial(hook_rows,transcript,contexts[-1]['turn_id']);denial_evidence.append(evidence)
+        completed=[e['item'] for e in events if e.get('type')=='item.completed']
+        check(all(i.get('type') in {'agent_message','reasoning','file_change'} for i in completed),'unexpected native completed item')
+        turns.append({'turn_id':contexts[-1]['turn_id'],'native_user_record':users[-1][0],
+            'native_context':contexts[-1],'items':completed,'denial_evidence':evidence,'persistence':persistence})
+        if index==0 and manifest['case'].endswith('after-denial'):
+            check(evidence['status']!='feedback-unavailable','native denial feedback unavailable; continuation not qualified')
+            if observed or evidence['status']=='no-hook-denial':break
+    verify_sources(manifest['sources'])
+    check(tree(Path(config['package'])/'dist')==config['dist_files'],'built source changed')
+    hook_rows=records(root)
+    return {'status':'observed','session':session,'native_user_turns':len(sent),'turns':turns,
+        'effects':effects(root,manifest),'proposals':[r['outcome'] for r in hook_rows if r['outcome'].get('kind')=='proposal'],
+        'denial_evidence':denial_evidence,'claim':manifest['claim']}
+
+def main():
+    parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='mode',required=True)
+    prep=sub.add_parser('prepare');prep.add_argument('arm');prep.add_argument('case');prep.add_argument('--parent',required=True,type=Path);prep.add_argument('--package',required=True,type=Path)
+    execute=sub.add_parser('run');execute.add_argument('root',type=Path)
+    args=parser.parse_args();fixture=load_module('recovery-native-claude.py');transport=load_module('recovery-claude-message-probe.py')
+    if args.mode=='prepare':
+        check(args.arm in fixture.ARMS and args.case in fixture.CASES,'unsupported episode')
+        check(args.parent.is_dir() and args.parent.resolve()==args.parent and not args.parent.is_relative_to(Path('/tmp')),'non-temporary canonical parent required')
+        root=Path(tempfile.mkdtemp(prefix='codex-recovery-'+args.arm+'-'+args.case+'-',dir=args.parent))
+        status={'status':'failed','root':str(root)}
+        try:
+            prepare(args,root,transport,fixture);status['status']='prepared'
+        except Exception as error:status['error']=type(error).__name__+': '+str(error)
+        save(root/'prepare-observation.json',status)
+    else:
+        root=args.root.resolve(strict=True);status={'status':'failed','root':str(root)}
+        check(not (root/'observation.json').exists(),'attempt already has an observation')
+        try:
+            manifest=json.loads((root/'manifest.json').read_text())
+            status.update(run(root,manifest,transport,load_module('recovery-codex-message-probe.py')))
+        except Exception as error:status['error']=type(error).__name__+': '+str(error)
+        save(root/'observation.json',status)
+    print(json.dumps({k:v for k,v in status.items() if k not in {'turns','proposals'}}))
+    return 0 if status['status'] in {'prepared','observed'} else 1
+
+if __name__=='__main__':raise SystemExit(main())

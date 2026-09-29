@@ -1,0 +1,34 @@
+from pathlib import Path
+import importlib.util, json, unittest
+spec=importlib.util.spec_from_file_location('observer',Path(__file__).with_name('recovery-native-codex.py'))
+m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+
+def denied(call,turn='turn-1'):
+    return {'input':{'turn_id':turn,'tool_use_id':call},'outcome':{'decision':'deny'},'output':json.dumps({'hookSpecificOutput':{'permissionDecisionReason':'Fixture denied.'}})}
+def output(turn='turn-1'):
+    return {'type':'response_item','payload':{'type':'custom_tool_call_output','call_id':'outer-1','output':'Fixture denied.','internal_chat_message_metadata_passthrough':{'turn_id':turn}}}
+
+class EvidenceTests(unittest.TestCase):
+    def test_repeated_inner_denials_do_not_fabricate_outer_pairings(self):
+        observed=m.native_denial([denied('inner-1'),denied('inner-2')],[output()],'turn-1')
+        self.assertEqual(observed,{'status':'turn-feedback-observed','denied_invocations':['inner-1','inner-2'],'feedback':[{'reason':'Fixture denied.','outer_call_ids':['outer-1']}],'missing_reasons':[],'claim':'turn-level denial feedback; inner-to-outer pairing unavailable'})
+
+    def test_incomplete_rollout_cannot_qualify_observed_turn(self):
+        with self.assertRaisesRegex(RuntimeError,'terminal'):
+            m.verify_persistence([{'type':'turn_context','payload':{'turn_id':'t'}}],b'')
+
+    def test_persistence_warning_prevents_qualified_observation(self):
+        transcript=[{'type':'turn_context','payload':{'turn_id':'t'}},{'type':'event_msg','payload':{'type':'task_complete','turn_id':'t'}}]
+        with self.assertRaisesRegex(RuntimeError,'stderr'):
+            m.verify_persistence(transcript,b'WARN: rollout flush failed')
+
+    def test_absent_feedback_differs_from_absent_denial(self):
+        self.assertEqual(m.native_denial([denied('inner')],[],'turn-1')['status'],'feedback-unavailable')
+        self.assertEqual(m.native_denial([],[],'turn-1')['status'],'no-hook-denial')
+        self.assertEqual(m.native_denial([denied('inner')],[output('other')],'turn-1')['status'],'feedback-unavailable')
+
+    def test_complete_persisted_turn_is_accepted(self):
+        transcript=[{'type':'turn_context','payload':{'turn_id':'t'}},{'type':'event_msg','payload':{'type':'task_complete','turn_id':'t'}}]
+        self.assertEqual(m.verify_persistence(transcript,b''),{'completed_turns':['t']})
+
+if __name__=='__main__':unittest.main()

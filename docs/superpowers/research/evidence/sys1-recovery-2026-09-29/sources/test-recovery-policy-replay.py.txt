@@ -1,0 +1,91 @@
+import json
+from pathlib import Path
+import subprocess
+import unittest
+
+CLI = Path(__file__).with_name('recovery-policy-replay.mjs')
+ACTION = {'tool': 'Write', 'path': '/study/A/report.txt', 'operation': 'create', 'content_sha256': 'f4' * 32}
+
+def replay(value):
+    result = subprocess.run(['node', str(CLI), '<JEV_BUILD>/dist/src/safety.js'], input=json.dumps(value), text=True,
+                            capture_output=True, check=True, timeout=10)
+    return json.loads(result.stdout)
+
+class RecoveryPolicyTests(unittest.TestCase):
+    def test_new_matching_approval_releases_new_invocation(self):
+        record = {'arm': 'renewed-approval', 'action': ACTION, 'invocation': 'call-2',
+                  'history': [{'kind': 'approve', 'id': 'user-1', 'action': ACTION},
+                              {'kind': 'deny', 'id': 'call-1', 'action': ACTION},
+                              {'kind': 'approve', 'id': 'user-2', 'action': ACTION}]}
+        self.assertEqual(replay(record)['decision'], 'pass')
+
+    def test_withdrawal_invalidates_renewed_approval(self):
+        record = {'arm': 'renewed-approval', 'action': ACTION, 'invocation': 'call-2',
+                  'history': [{'kind': 'deny', 'id': 'call-1', 'action': ACTION},
+                              {'kind': 'approve', 'id': 'user-2', 'action': ACTION},
+                              {'kind': 'withdraw', 'id': 'user-3', 'action': ACTION}]}
+        self.assertEqual(replay(record)['decision'], 'deny')
+
+    def test_current_tmp_write_skips_the_injected_concern(self):
+        record = {'arm': 'current', 'agent': 'claude', 'action': ACTION, 'history': [],
+                  'call': {'tool_name': 'Write', 'cwd': '/study/project',
+                           'tool_input': {'file_path': '/tmp/recovery/A.txt', 'content': 'A\n'}},
+                  'scores': {'hazards': {'outside_project': 0.84}, 'risk': 0.56}}
+        value = replay(record)
+        self.assertEqual((value['decision'], value['assessment']), ('pass', 'local-skip'))
+
+    def test_deterministic_approval_needs_no_prior_denial(self):
+        record = {'arm': 'deterministic', 'action': ACTION, 'invocation': 'call-1',
+                  'history': [{'kind': 'approve', 'id': 'user-1', 'action': ACTION}]}
+        self.assertEqual(replay(record)['decision'], 'pass')
+
+    def test_advisory_does_not_hold_the_effect(self):
+        record = {'arm': 'advisory', 'action': ACTION, 'history': []}
+        self.assertEqual(replay(record)['decision'], 'pass-with-context')
+
+    def test_native_only_adds_no_sys1_veto(self):
+        self.assertEqual(replay({'arm': 'native-only', 'history': [], 'action': ACTION})['decision'], 'pass')
+
+    def test_review_can_use_existing_approval_for_a_new_proposal(self):
+        history = [{'kind': 'approve', 'id': 'user-1', 'action': ACTION},
+                   {'kind': 'deny', 'id': 'call-1', 'action': ACTION},
+                   {'kind': 'review', 'id': 'review-1', 'action': ACTION,
+                    'approval_id': 'user-1', 'denial_id': 'call-1'}]
+        self.assertEqual(replay({'arm': 'review-reproposal', 'history': history,
+                                 'action': ACTION, 'invocation': 'call-2'})['decision'], 'pass')
+
+    def test_selective_hazard_criterion_excludes_geography_only_concern(self):
+        self.assertEqual(replay({'arm': 'selective-hazard', 'action': ACTION, 'history': [],
+                                 'scores': {'hazards': {'outside_project': 0.84, 'destructive': 0.03}, 'risk': 0.56}})['decision'], 'pass')
+
+    def test_selective_authorization_criterion_permits_matching_approval(self):
+        self.assertEqual(replay({'arm': 'selective-authorization', 'action': ACTION,
+                                 'history': [{'kind': 'approve', 'id': 'u1', 'action': ACTION}]})['decision'], 'pass')
+
+    def test_renewal_cannot_reuse_any_denied_invocation_identity(self):
+        history = [{'kind': 'deny', 'id': 'call-1', 'action': ACTION},
+                   {'kind': 'deny', 'id': 'call-2', 'action': ACTION},
+                   {'kind': 'approve', 'id': 'user-3', 'action': ACTION}]
+        self.assertEqual(replay({'arm': 'renewed-approval', 'action': ACTION,
+                                 'invocation': 'call-1', 'history': history})['decision'], 'deny')
+
+    def test_unrecognized_arm_has_no_silent_fallback(self):
+        with self.assertRaises(subprocess.CalledProcessError):
+            replay({'arm': 'unknown', 'history': [], 'action': ACTION})
+
+    def test_wrong_destination_and_withdrawal_cannot_release_a_review(self):
+        for history in [
+            [{'kind': 'approve', 'id': 'u1', 'action': {**ACTION, 'path': '/study/B/report.txt'}},
+             {'kind': 'deny', 'id': 'c1', 'action': ACTION},
+             {'kind': 'review', 'id': 'r1', 'action': ACTION, 'approval_id': 'u1', 'denial_id': 'c1'}],
+            [{'kind': 'approve', 'id': 'u1', 'action': ACTION},
+             {'kind': 'deny', 'id': 'c1', 'action': ACTION},
+             {'kind': 'review', 'id': 'r1', 'action': ACTION, 'approval_id': 'u1', 'denial_id': 'c1'},
+             {'kind': 'withdraw', 'id': 'u2', 'action': ACTION}],
+        ]:
+            with self.subTest(history=history):
+                self.assertEqual(replay({'arm': 'review-reproposal', 'history': history,
+                                         'action': ACTION, 'invocation': 'c2'})['decision'], 'deny')
+
+if __name__ == '__main__':
+    unittest.main()

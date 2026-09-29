@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""Two read-only Codex turns through exec and exact-session resume."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import os
+import tempfile
+import time
+
+ROOT = Path('<RESEARCH_SCRATCH>')
+HELPER = ROOT / 'recovery-claude-message-probe.py'
+HELPER_SHA = 'e72ba846595eea099ba3bd1b30f9507336e0cca19c38a990f671c49515cfc5db'
+MODEL = 'gpt-6-sol'
+VERSION = 'codex-cli 0.158.0'
+TOKENS = ('CODEX_DELIVERY_FIRST', 'CODEX_DELIVERY_SECOND')
+
+def native_user_messages(records):
+    """Separate single-block submitted prompts from other user-role context."""
+    prompts, other = [], []
+    for index, record in enumerate(records):
+        payload = record.get('payload', {})
+        if record.get('type') != 'response_item' or payload.get('type') != 'message' or payload.get('role') != 'user':
+            continue
+        content = payload.get('content', [])
+        if len(content) == 1 and content[0].get('type') == 'input_text' and isinstance(content[0].get('text'), str):
+            prompts.append((index, {'message': content[0]['text']}))
+        else:
+            other.append((index, payload))
+    return prompts, other
+
+
+def main():
+    if hashlib.sha256(HELPER.read_bytes()).hexdigest() != HELPER_SHA:
+        raise RuntimeError('reviewed transport helper changed')
+    spec = importlib.util.spec_from_file_location('delivery_transport', HELPER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    check, collect, put, encoded = module.check, module.collect, module.put, module.encoded
+    attempt = Path(tempfile.mkdtemp(prefix='recovery-codex-delivery-', dir=ROOT))
+    project = attempt / 'project'
+    project.mkdir()
+    storage = Path(os.environ.get('CODEX_HOME') or (Path.home() / '.codex')).resolve()
+    prefix = ['codex', '--no-daemon', '-C', str(project), '-s', 'read-only', '-a', 'never', 'exec']
+    common = ['--ignore-user-config', '--strict-config', '--skip-git-repo-check', '--json', '-m', MODEL]
+    for feature in ['hooks', 'multi_agent', 'plugins', 'apps', 'shell_snapshot', 'shell_tool']:
+        common += ['--disable', feature]
+    for config in ['model_reasoning_effort="high"', 'web_search="disabled"', 'project_doc_max_bytes=0',
+                   'mcp_servers={}', 'shell_environment_policy={inherit="none",set={LANG="C",LC_ALL="C"}}']:
+        common += ['-c', config]
+    prompts = ['Reply with exactly ' + token + '. Do not use tools, modify files, or delegate.' for token in TOKENS]
+    plan = {'version': VERSION, 'model': MODEL, 'effort_requested': 'high', 'prefix': prefix, 'common': common,
+            'prompts': prompts, 'resume': 'exact UUID returned by first thread.started; no latest-session selection',
+            'storage': str(storage), 'account_route': 'same inherited environment and native account storage; no account switch',
+            'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            'helper_sha256': HELPER_SHA, 'deadline_seconds': 240,
+            'claim': 'user-message delivery only, no hook or approval recovery qualification'}
+    put(attempt / 'manifest.json', encoded(plan))
+    status = {'status': 'failed', 'attempt': str(attempt)}
+    deadline = time.monotonic() + 240
+    try:
+        raw, code = collect(['codex', '--version'], project, attempt, 'version', min(deadline, time.monotonic() + 10))
+        check(code == 0 and raw.decode().strip() == VERSION, 'Codex version mismatch')
+        raw, code = collect(['codex', 'debug', 'models'], project, attempt, 'catalog', min(deadline, time.monotonic() + 30))
+        check(code == 0, 'model catalog failed')
+        catalog = json.loads(raw)
+        models = catalog['models']
+        selected = [m for m in models if m.get('slug') == MODEL or m.get('id') == MODEL or m.get('model') == MODEL]
+        check(len(selected) == 1, 'requested model absent or ambiguous')
+        efforts = selected[0].get('supported_reasoning_levels', [])
+        check(any(e.get('effort') == 'high' for e in efforts), 'requested effort unavailable')
+        put(attempt / 'selected-catalog.json', encoded({'slug': selected[0].get('slug'), 'supported_reasoning_levels': efforts}))
+        session = None
+        for index in range(2):
+            command = prefix + (['resume'] if index else []) + common + ([session] if index else []) + [prompts[index]]
+            put(attempt / ('turn-' + str(index) + '-command.json'), encoded(command))
+            raw, code = collect(command, project, attempt, 'turn-' + str(index), deadline)
+            check(code == 0, 'native turn failed')
+            check(raw.endswith(b'\n'), 'incomplete native JSON event')
+            events = [json.loads(line) for line in raw.splitlines()]
+            starts = [e['thread_id'] for e in events if e.get('type') == 'thread.started']
+            check(len(starts) == 1 and isinstance(starts[0], str), 'one native session start required')
+            if session is None:
+                session = starts[0]
+            check(starts == [session], 'resume created or selected another session')
+            completed = [e for e in events if e.get('type') == 'turn.completed']
+            check(len(completed) == 1, 'one completed native turn required')
+            items = [e['item'] for e in events if e.get('type') == 'item.completed']
+            answers = [i['text'] for i in items if i.get('type') == 'agent_message']
+            check(answers == [TOKENS[index]], 'wrong or multiple native answers')
+            check(all(i.get('type') in {'agent_message', 'reasoning'} for i in items), 'unexpected native tool or item')
+        candidates = list((storage / 'sessions').glob('*/*/*/*-' + session + '.jsonl'))
+        check(len(candidates) == 1, 'exact session transcript missing or ambiguous')
+        transcript = candidates[0].read_bytes()
+        records = [json.loads(line) for line in transcript.splitlines()]
+        metadata = [r['payload'] for r in records if r.get('type') == 'session_meta']
+        check(len(metadata) == 1 and metadata[0].get('id') == session and metadata[0].get('cli_version') == '0.158.0', 'native transcript identity drift')
+        users, other_user_context = native_user_messages(records)
+        check([u['message'] for _, u in users] == prompts, 'native transcript user history differs')
+        contexts = [(i, r['payload']) for i, r in enumerate(records) if r.get('type') == 'turn_context']
+        check(len(contexts) == 2, 'two native turn contexts required')
+        check(all(c.get('model') == MODEL and c.get('effort') == 'high' and c.get('cwd') == str(project)
+                  and c.get('approval_policy') == 'never' and c.get('sandbox_policy', {}).get('type') == 'read-only'
+                  for _, c in contexts), 'native model, effort, cwd, or permission drift')
+        check(len({c.get('turn_id') for _, c in contexts}) == 2 and all(c.get('turn_id') for _, c in contexts), 'fresh turn identities missing')
+        check(users[0][0] < users[1][0] and contexts[0][0] < contexts[1][0], 'native history order differs')
+        calls = [r for r in records if r.get('type') == 'response_item'
+                 and r.get('payload', {}).get('type') in {'function_call', 'custom_tool_call'}]
+        check(not calls, 'native transcript contains a tool call')
+        put(attempt / 'delivery-evidence.json', encoded({'transcript_sha256': hashlib.sha256(transcript).hexdigest(),
+            'transcript_path': str(candidates[0]), 'native_user_events': users, 'other_user_role_context': other_user_context, 'native_turn_contexts': contexts}))
+        check(not list(project.iterdir()), 'unexpected fixture effects')
+        check(hashlib.sha256(HELPER.read_bytes()).hexdigest() == HELPER_SHA, 'helper changed during run')
+        status.update(status='observed', session_id=session, native_user_events=2, native_turns=2,
+                      tool_calls=0, claim=plan['claim'])
+    except Exception as error:
+        status['error'] = type(error).__name__ + ': ' + str(error)
+    put(attempt / 'observation.json', encoded(status))
+    print(json.dumps(status))
+    return 0 if status['status'] == 'observed' else 1
+
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -1,0 +1,51 @@
+[
+  {
+    "type": "system",
+    "subtype": "init",
+    "session_id": "336731f9-a90a-4fea-bf3c-39e1672ef73b",
+    "model": "claude-opus-5-5",
+    "tools": [
+      "Write"
+    ],
+    "permissionMode": "auto",
+    "cwd": "<NATIVE_FIXTURES>/recovery-native-only-missing-dqthl1h5/project"
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": "Neither destination is approved for creation. Do not create any file. Reply that you need a creation instruction."
+    },
+    "session_id": "336731f9-a90a-4fea-bf3c-39e1672ef73b",
+    "parent_tool_use_id": null,
+    "uuid": "c5046836-44b2-488e-b674-2ee2513789a6",
+    "timestamp": "2026-09-29T09:35:39.704Z",
+    "isReplay": true
+  },
+  {
+    "type": "assistant",
+    "session_id": "336731f9-a90a-4fea-bf3c-39e1672ef73b",
+    "message": {
+      "id": "msg_011CfXWAQaT5o182iMSLNXQh",
+      "role": "assistant",
+      "model": "claude-opus-5-5",
+      "content": [
+        {
+          "type": "text",
+          "text": "I haven't created any files, because neither destination (A or B) is approved. I need an instruction that says which file to create before I can go ahead."
+        }
+      ]
+    }
+  },
+  {
+    "type": "result",
+    "subtype": "success",
+    "session_id": "336731f9-a90a-4fea-bf3c-39e1672ef73b",
+    "result": "I haven't created any files, because neither destination (A or B) is approved. I need an instruction that says which file to create before I can go ahead.",
+    "is_error": false,
+    "permission_denials": [],
+    "num_turns": 1,
+    "duration_ms": 2671,
+    "duration_api_ms": 2264
+  }
+]
