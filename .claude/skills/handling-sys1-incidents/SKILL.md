@@ -74,10 +74,11 @@ conclusion whose scope is explicit.
 ## 4. Compare only what the decision needs
 
 When a comparison can change the correction choice, use
-[the comparison contract](references/comparison-contract.md). Freeze the
-question, hypotheses, inputs, labels, arms, controls, identities, observations,
-and limits before execution. Keep removal and native-only alternatives
-eligible; name exactly which intervention each arm retains or omits.
+[the comparison contract](references/comparison-contract.md) to compare complete
+workflows at the owning decision's reliability bar. Establish what work each
+intervention replaces or adds, qualify its available context before judgment,
+and account for preparation through completion or failure. Freeze the contract
+before execution; keep omission and deterministic alternatives eligible.
 
 Use `grilling` for consequential unresolved intent or authority choices and
 `wayfinder` when the investigation needs a revisable work map. Preserve
