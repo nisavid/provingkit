@@ -3,6 +3,7 @@ import { writeFile, rename, unlink } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 
 export async function replaceExport(selectedFile, envelope) {
+  if (envelope.compatibility.export.state === 'incompatible') throw new Error('incompatible export dependency');
   const temporary = `${selectedFile}.${randomUUID()}.tmp`;
   try {
     await writeFile(temporary, JSON.stringify(envelope), { flag: 'wx', mode: 0o600 });

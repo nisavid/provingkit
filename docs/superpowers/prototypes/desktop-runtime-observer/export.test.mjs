@@ -23,5 +23,10 @@ test('a selected synthetic file is replaced by complete newer JSON and read thro
     assert.deepEqual(result.envelope.fields.hostAfter.value.alwaysAllowedReasons, ['fixture-change']);
     assert.equal((await stat(file)).mode & 0o777, 0o600);
     assert.deepEqual(await readdir(directory), ['observation.json']);
+    const incompatible = await observer.observeReceiver(f.binding, {compatibility:{
+      export:{state:'incompatible',basis:'Synthetic exporter failure.'},
+    }});
+    await assert.rejects(replaceExport(file, incompatible), /incompatible export/);
+    assert.equal(JSON.parse(await readFile(file,'utf8')).sequence, second.sequence);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });

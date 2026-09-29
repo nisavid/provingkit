@@ -19,14 +19,30 @@ function validateBinding(binding) {
   for (const key of ['taskId', 'codeSessionId', 'appStartId']) text(binding[key]);
   if (!Number.isSafeInteger(binding.generation) || binding.generation < 1) throw new Error('invalid generation');
 }
-function assess(input = {}) {
-  return Object.fromEntries(['binding', 'account', 'model', 'rules', 'host'].map(key => {
-    const item = input[key] ?? { state: 'unassessed', basis: 'No dependency assessment supplied.' };
-    if (!['unassessed', 'carried-forward', 'compatible', 'incompatible'].includes(item.state)) throw new Error('invalid assessment');
-    return [key, { state: item.state, basis: text(item.basis) }];
-  }));
+function exactKeys(value, keys) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) ||
+    canonical(Object.keys(value).sort()) !== canonical([...keys].sort())) throw new Error('invalid keys');
 }
-function projectHost(host, generation) {
+const UNASSESSED = { state: 'unassessed', basis: 'No dependency assessment supplied.' };
+const HOST_PARTS = {
+  spawnAccount: ['spawnRoute'], permissionMode: ['permissionMode', 'modeEvent', 'modeRequestsInFlight'],
+  cwd: ['harnessCwd'], pendingChanges: ['sessionPermissionUpdates', 'flagScopeSyncPending'],
+  hostGrants: ['alwaysAllowedReasons', 'cuAllowedApps', 'cuGrantFlags', 'effectiveCuAllowedApps', 'effectiveCuGrantFlags'],
+};
+function assessment(item = UNASSESSED) {
+  exactKeys(item, ['state', 'basis']);
+  if (!['unassessed', 'carried-forward', 'compatible', 'incompatible'].includes(item.state)) throw new Error('invalid assessment');
+  return { state: item.state, basis: text(item.basis) };
+}
+function assess(input = {}) {
+  const keys = ['binding', 'account', 'model', 'rules', ...Object.keys(HOST_PARTS), 'export'];
+  if (Object.keys(input).some(key => !keys.includes(key))) throw new Error('unknown dependency');
+  return Object.fromEntries(keys.map(key => [key, assessment(input[key])]));
+}
+function projectHost(input, generation, compatibility) {
+  const host = {};
+  for (const [dependency, keys] of Object.entries(HOST_PARTS))
+    if (compatibility[dependency].state !== 'incompatible') for (const key of keys) host[key] = input[key];
   const flags = values => values === undefined ? null : Object.fromEntries(
     ['clipboardRead', 'clipboardWrite', 'systemKeyCombos'].filter(key => values[key] !== undefined)
       .map(key => [key, boolean(values[key])]));
@@ -39,6 +55,7 @@ function projectHost(host, generation) {
       mode: text(host.modeEvent.mode), at: number(host.modeEvent.at), generation,
     } : null,
     harnessCwd: host.harnessCwd === undefined ? null : text(host.harnessCwd),
+    cwdEventProvenance: 'unavailable',
     alwaysAllowedReasons: strings(host.alwaysAllowedReasons),
     cuAllowedApps: apps(host.cuAllowedApps), cuGrantFlags: flags(host.cuGrantFlags),
     effectiveCuAllowedApps: apps(host.effectiveCuAllowedApps), effectiveCuGrantFlags: flags(host.effectiveCuGrantFlags),
@@ -105,9 +122,7 @@ export function createObserver({ selectReceiver, now = Date.now }) {
       const query = record.query, inputStream = record.inputStream;
       const hostSnapshot = () => {
         const began = now();
-        if (compatibility.host.state === 'incompatible') return { state: 'unavailable', reason: 'incompatible-dependency',
-          source: 'Desktop manager projection', startedAt: began, endedAt: now(), completeness: 'missing' };
-        try { return observed(projectHost(record.host, binding.generation), 'Desktop manager projection',
+        try { return observed(projectHost(record.host, binding.generation, compatibility), 'Desktop manager projection',
           'manager-snapshot; spawn and event values are retained', began, now()); }
         catch { return { state: 'unknown', reason: 'malformed-host-projection', source: 'Desktop manager projection',
           startedAt: began, endedAt: now(), completeness: 'missing' }; }
@@ -150,33 +165,42 @@ export function createObserver({ selectReceiver, now = Date.now }) {
 }
 
 // Reads synthetic exported bytes. A valid envelope is still partial and unqualified.
-export function inspectEnvelope(serialized, expectedBinding, { now = Date.now(), afterSequence = 0 } = {}) {
+export function inspectEnvelope(serialized, expectedBinding, { now = Date.now(), afterSequence = 0,
+  readerAssessment = UNASSESSED, exportAssessment } = {}) {
   const unknown = reason => ({ state: 'unknown', reason, qualification: 'unqualified' });
   try {
     validateBinding(expectedBinding);
+    const readerCompatibility = assessment(readerAssessment);
+    if (readerCompatibility.state === 'incompatible') return unknown('incompatible-reader-dependency');
+    if (exportAssessment && assessment(exportAssessment).state === 'incompatible') return unknown('incompatible-export-dependency');
     number(now);
     if (!Number.isSafeInteger(afterSequence) || afterSequence < 0 || typeof serialized !== 'string' || serialized.length > 1000000) throw new Error();
-    const e = JSON.parse(serialized);
-    validateBinding(e.binding);
-    if (e.schema !== SCHEMA || e.qualification !== 'unqualified' || e.adapter !== 'synthetic-observer-v1' ||
-      e.build !== 'synthetic-fixture' || !Number.isSafeInteger(e.sequence) || e.sequence < 1 ||
-      !Array.isArray(e.gaps) || e.gaps.length !== GAPS.length || !GAPS.every(gap => e.gaps.includes(gap))) throw new Error();
-    if (canonical(assess(e.compatibility)) !== canonical(e.compatibility)) throw new Error();
-    const c = e.collection;
-    for (const key of ['startedAt', 'endedAt', 'expiresAt']) number(c[key]);
-    if (c.startedAt > c.endedAt || c.expiresAt <= c.endedAt || c.expiresAt - c.endedAt > 60000 ||
-      !['collected', 'unavailable', 'discarded'].includes(c.state)) throw new Error();
-    if (!e.fields || typeof e.fields !== 'object' || Array.isArray(e.fields)) throw new Error();
+    const envelope = JSON.parse(serialized);
+    exactKeys(envelope, ['schema', 'qualification', 'binding', 'sequence', 'compatibility', 'adapter', 'build', 'collection', 'fields', 'gaps']);
+    exactKeys(envelope.binding, ['taskId', 'codeSessionId', 'appStartId', 'generation']);
+    validateBinding(envelope.binding);
+    if (envelope.schema !== SCHEMA || envelope.qualification !== 'unqualified' || envelope.adapter !== 'synthetic-observer-v1' ||
+      envelope.build !== 'synthetic-fixture' || !Number.isSafeInteger(envelope.sequence) || envelope.sequence < 1 ||
+      !Array.isArray(envelope.gaps) || envelope.gaps.length !== GAPS.length || !GAPS.every(gap => envelope.gaps.includes(gap))) throw new Error();
+    if (canonical(assess(envelope.compatibility)) !== canonical(envelope.compatibility)) throw new Error();
+    const collection = envelope.collection;
+    exactKeys(collection, ['state', 'startedAt', 'endedAt', 'expiresAt', collection.state === 'collected' ? 'hostChangedDuringRead' : 'reason']);
+    for (const key of ['startedAt', 'endedAt', 'expiresAt']) number(collection[key]);
+    if (collection.startedAt > collection.endedAt || collection.expiresAt <= collection.endedAt || collection.expiresAt - collection.endedAt > 60000 ||
+      !['collected', 'unavailable', 'discarded'].includes(collection.state)) throw new Error();
+    if (!envelope.fields || typeof envelope.fields !== 'object' || Array.isArray(envelope.fields)) throw new Error();
     const keys = ['account', 'model', 'rules', 'hostBefore', 'hostAfter'];
-    if (c.state !== 'collected') {
-      if (Object.keys(e.fields).length) throw new Error();
-      text(c.reason);
+    if (collection.state !== 'collected') {
+      if (Object.keys(envelope.fields).length) throw new Error();
+      text(collection.reason);
     } else {
-      if (Object.keys(e.fields).length !== keys.length) throw new Error();
+      if (Object.keys(envelope.fields).length !== keys.length) throw new Error();
       for (const key of keys) {
-        const field = e.fields[key];
+        const field = envelope.fields[key];
+        exactKeys(field, ['state', 'source', 'startedAt', 'endedAt', 'completeness',
+          ...(field.state === 'observed' ? ['value', 'freshness'] : ['reason'])]);
         number(field.startedAt); number(field.endedAt); text(field.source);
-        if (field.startedAt < c.startedAt || field.endedAt < field.startedAt || field.endedAt > c.endedAt) throw new Error();
+        if (field.startedAt < collection.startedAt || field.endedAt < field.startedAt || field.endedAt > collection.endedAt) throw new Error();
         if (field.state !== 'observed') {
           if (!['unknown', 'unavailable'].includes(field.state) || field.completeness !== 'missing' || 'value' in field) throw new Error();
           text(field.reason); continue;
@@ -197,15 +221,16 @@ export function inspectEnvelope(serialized, expectedBinding, { now = Date.now(),
           // Null means the adapter has no value; do not coerce it to an empty grant.
           const host = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null));
           host.sessionPermissionUpdates = host.sessionPermissionUpdateTypes?.map(type => ({ type }));
-          if (canonical(projectHost(host, e.binding.generation)) !== canonical(value)) throw new Error();
+          if (canonical(projectHost(host, envelope.binding.generation, envelope.compatibility)) !== canonical(value)) throw new Error();
         }
       }
     }
-    if (!sameBinding(e.binding, expectedBinding)) return unknown('binding-mismatch');
-    if (now < c.endedAt) return unknown('clock-before-observation');
-    if (now >= c.expiresAt) return unknown('expired');
-    if (e.sequence <= afterSequence) return unknown('not-newer');
-    if (c.state !== 'collected') return unknown(c.reason);
-    return { state: 'usable-partial', qualification: 'unqualified', envelope: e };
+    if (envelope.compatibility.export.state === 'incompatible') return unknown('incompatible-export-dependency');
+    if (!sameBinding(envelope.binding, expectedBinding)) return unknown('binding-mismatch');
+    if (now < collection.endedAt) return unknown('clock-before-observation');
+    if (now >= collection.expiresAt) return unknown('expired');
+    if (envelope.sequence <= afterSequence) return unknown('not-newer');
+    if (collection.state !== 'collected') return unknown(collection.reason);
+    return { state: 'usable-partial', qualification: 'unqualified', readerCompatibility, envelope: envelope };
   } catch { return unknown('invalid-envelope'); }
 }

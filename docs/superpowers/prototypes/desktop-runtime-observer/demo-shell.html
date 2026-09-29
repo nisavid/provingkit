@@ -48,7 +48,7 @@ function render() {
       if(key==='model') rows.push(['Reported model',f.value]);
       else if(key==='account') rows.push(['Provider and source',f.value]);
       else if(key==='rules') rows.push(['Rules',f.value.rules],['Additional directories',f.value.workspaceDirectories],['Original cwd (not current cwd)',f.value.originalCwd],['Managed only',f.value.managedOnly],['Skipped-settings errors',f.value.settingsErrorCount]);
-      else for (const [label,k] of [['Spawn route (retained)','spawnRoute'],['Manager mode','permissionMode'],['Last Code event (retained)','modeEvent'],['Manager cwd','harnessCwd'],['Allowed reasons','alwaysAllowedReasons'],['Raw apps','cuAllowedApps'],['Raw flags','cuGrantFlags'],['Effective apps','effectiveCuAllowedApps'],['Effective flags','effectiveCuGrantFlags'],['Stored update types','sessionPermissionUpdateTypes'],['Flag pending marker','flagScopeSyncPending'],['Mode requests in flight','modeRequestsInFlight'],['Pending coverage','pendingCoverage']]) rows.push([label,f.value[k]]);
+      else for (const [label,k] of [['Spawn route (retained)','spawnRoute'],['Manager mode','permissionMode'],['Last Code event (retained)','modeEvent'],['Manager cwd','harnessCwd'],['Cwd event provenance','cwdEventProvenance'],['Allowed reasons','alwaysAllowedReasons'],['Raw apps','cuAllowedApps'],['Raw flags','cuGrantFlags'],['Effective apps','effectiveCuAllowedApps'],['Effective flags','effectiveCuGrantFlags'],['Stored update types','sessionPermissionUpdateTypes'],['Flag pending marker','flagScopeSyncPending'],['Mode requests in flight','modeRequestsInFlight'],['Pending coverage','pendingCoverage']]) rows.push([label,f.value[k]]);
     }
     card(el('fields'),title,rows);
   }
@@ -69,6 +69,7 @@ const actions = {
   'Expire export':()=>{if(sample){offset=sample.collection.expiresAt-Date.now()+1;inspect();}return 'The reader will not reuse expired observations.';},
   'Truncate export':()=>{if(sample){serialized=serialized.slice(0,-8);inspect();}return 'A truncated export is unknown. No partial JSON is used.';},
   'Carry rules evidence forward':()=>{compatibility.rules={state:'carried-forward',basis:'Synthetic unchanged producer comparison.'};return 'Prior rule compatibility evidence is carried forward in this scenario. Missing values and live qualification remain separate.';},
+  'Mode dependency incompatible':()=>{compatibility.permissionMode={state:'incompatible',basis:'Synthetic mode producer failure.'};return 'The mode projection is disabled. Observe to see that cwd and host grants remain available.';},
   'Model dependency incompatible':()=>{compatibility.model={state:'incompatible',basis:'Synthetic demonstrated failure of the model producer.'};return 'Only the model read is disabled. A new version without a demonstrated failure would remain unassessed.';},
   'Reset':()=>{reset();return 'Reset to the original synthetic identity, query, and permissions.';},
 };
@@ -78,7 +79,7 @@ const walkthroughs=[
   {title:'Existing task',description:'Compare idle and busy observations, then remove the query. Read attempts never create a replacement.',steps:['Observe','Make receiver busy','Observe','Park query','Observe']},
   {title:'Permission gaps',description:'Compare host grants with unchanged Code rules. A false pending flag cannot distinguish success from an unrecorded failure.',steps:['Observe','Change host grant','Queue permission update','Observe','Fail permission push','Conflicting mode event','Observe']},
   {title:'Races and stale files',description:'A collection that crosses a query replacement is discarded. A valid earlier sample still expires.',steps:['Replace during read','Reset','Delay reply','Expire export']},
-  {title:'Compatibility',description:'Start unassessed, carry justified evidence forward, then demonstrate a failure of one producer. None of these states qualifies the live route.',steps:['Observe','Carry rules evidence forward','Model dependency incompatible','Unsupported rules','Observe']},
+  {title:'Compatibility',description:'Start unassessed, carry justified evidence forward, then demonstrate a failure of one producer. None of these states qualifies the live route.',steps:['Observe','Carry rules evidence forward','Mode dependency incompatible','Model dependency incompatible','Unsupported rules','Observe']},
 ];
 function openWalkthrough(index){reset();el('notice').textContent='Walkthrough reset. Press the numbered steps in order.';document.querySelectorAll('[role=tab]').forEach((b,i)=>b.setAttribute('aria-selected',String(i===index)));const w=walkthroughs[index];el('walkthrough').replaceChildren();const p=document.createElement('p');p.textContent=w.description;el('walkthrough').append(p);w.steps.forEach((step,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${step}`;b.onclick=()=>run(step);el('walkthrough').append(b);});}
 walkthroughs.forEach((w,i)=>{const b=document.createElement('button');b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.textContent=w.title;b.onclick=()=>openWalkthrough(i);el('tabs').append(b);});

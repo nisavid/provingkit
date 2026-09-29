@@ -24,9 +24,16 @@ enough to prepare a disposable probe. Every prototype result is unqualified.
    deadline, expire an export, or truncate it. The reader leaves those results
    unknown; old values are not presented as usable evidence.
 4. **Compatibility:** an unassessed dependency permits partial read-only
-   observations in this synthetic experiment. Carry prior rule evidence forward,
-   or mark a demonstrated model dependency failure. Only the affected read is
-   disabled. None of these settings supplies initial live qualification.
+  observations in this synthetic experiment. Carry prior rule evidence forward,
+  or mark a demonstrated model dependency failure. Only the affected read is
+  disabled. None of these settings supplies initial live qualification.
+
+Host spawn account, permission mode, cwd, grants, and pending-change projections
+have separate assessments. A failed mode dependency leaves cwd and grants
+available. Export compatibility is separate from collection; the reader also
+accepts its own assessment and a current export assessment, so a previously
+written file cannot override a known dependency failure. External message
+representation has no producer in this prototype and remains an explicit gap.
 
 The free-play actions persist until Reset. Walkthrough tabs reset the fixture.
 The fixture panel shows constructed state, while the reader panel shows only
@@ -70,7 +77,9 @@ One observer instance owns the sequence for one app start. Each replacement or
 relevant identity transition requires a generation bump in the proposed adapter.
 
 Each exported field has its own interval and origin. Host values have before and
-after snapshots; spawn identity and Code events remain retained facts. Code
+after snapshots; spawn identity and Code mode events remain retained facts.
+The cwd's event provenance is explicitly unavailable; the host snapshot time
+does not date the underlying cwd report. Code
 rules include inactive markers and a count of settings errors. The prototype
 omits error text, unselected response fields, raw manager objects, and tokens.
 The reader checks binding, schema, field shape, expiry, and optional sequence

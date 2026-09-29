@@ -106,7 +106,7 @@ record. All current callers supply synthetic records.
 | `host.effectiveCuAllowedApps`, `host.effectiveCuGrantFlags` | Existing `t.qC(record)` and `t.JC(record)`, exported from the companion chunk's `Kqn`/`Jqn` | Applies source-defined grant expiry for relevant child sessions; other applicable host permission stores remain a gap |
 | `host.sessionPermissionUpdates` | Stored update inputs; project only each `type` | A stored request is not proof of application |
 | `host.flagScopeSyncPending` | Existing Boolean marker | Covers a held flag-scope push, not every in-flight or failed push; exported pending coverage always remains unknown |
-| `host.harnessCwd` | `record.harnessCwd`, also projected by `formatSessionForEvent` | Last manager-observed cwd; not fresh arbitrary executor cwd |
+| `host.harnessCwd` | `record.harnessCwd`, also projected by `formatSessionForEvent` | Last manager-observed cwd; not fresh arbitrary executor cwd. `cwdEventProvenance` is explicitly unavailable: no underlying event/time is invented from snapshot time |
 
 The source supports a concrete counterexample to a complete permission claim:
 `addDirectories` records an update and returns while
@@ -161,6 +161,11 @@ may overwrite the patch; never reapply a stale offset patch automatically.
 
 Assess the consumed behavior separately: query selection/lifecycle, each
 getter, host grant inventory/projection, mode-event capture, export, and reader.
+The prototype separates host spawn account, mode, cwd, grants, and pending-change
+dependencies; failure of one suppresses its selected values only. Export failure
+prevents replacement, and a reader or current export failure prevents use of
+retained files. External message representation has no implemented producer here;
+its compatibility must be assessed separately when that producer is introduced.
 A changed build is unassessed. Start with release notes, artifact comparisons,
 and synthetic contract checks, then inspect changed producers and repeat only
 the affected live checks where cheaper evidence leaves uncertainty. Carry
