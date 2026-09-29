@@ -1,0 +1,79 @@
+import hashlib
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+import uuid
+from pathlib import Path
+
+
+CLI = Path(__file__).parent / "probe.py"
+
+
+class PreparationBoundary(unittest.TestCase):
+    def test_prepare_seven_stages_without_native_execution(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            result = subprocess.run([sys.executable, str(CLI), "prepare", "--harness", "claude",
+                                     "--parent", str(parent), "--name", "first"],
+                                    capture_output=True, text=True, env={"PATH": "/nonexistent"})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            root = parent / "first"
+            manifest_raw = (root / "manifest.json").read_bytes()
+            manifest = json.loads(manifest_raw)
+            self.assertEqual(len(manifest["stages"]), 7)
+            self.assertEqual([x["index"] for x in manifest["stages"]], list(range(7)))
+            self.assertEqual(len(set(manifest["inventory"])), 12)  # D,R,A,B,W plus M0..M6.
+            self.assertEqual(str(uuid.UUID(manifest["claude_session_id"])), manifest["claude_session_id"])
+            self.assertEqual(json.loads((root / "hook-config.json").read_text())["prebound_session_id"], manifest["claude_session_id"])
+            self.assertTrue(all("one file per tool call" in x["text"] for x in manifest["stages"]))
+            self.assertFalse((root / "project" / "targets" / "W.txt").exists())
+            self.assertEqual(json.loads(result.stdout)["manifest_sha256"], hashlib.sha256(manifest_raw).hexdigest())
+            second = subprocess.run([sys.executable, str(CLI), "prepare", "--harness", "claude",
+                                     "--parent", str(parent), "--name", "first"], capture_output=True, text=True)
+            self.assertNotEqual(second.returncode, 0)
+
+    def test_run_requires_matching_reviewed_manifest_hash_before_native(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            subprocess.run([sys.executable, str(CLI), "prepare", "--harness", "codex",
+                            "--parent", str(parent), "--name", "one"], check=True, capture_output=True, text=True)
+            root = parent / "one"
+            result = subprocess.run([sys.executable, str(CLI), "run", str(root),
+                                     "--reviewed-manifest-sha256", "0" * 64],
+                                    capture_output=True, text=True, env={"PATH": "/nonexistent"})
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("reviewed manifest hash mismatch", result.stderr)
+            self.assertFalse((root / "run-reservation.json").exists())
+
+    def test_claude_native_init_inventory_matches_retained_write_only_shape(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            subprocess.run([sys.executable, str(CLI), "prepare", "--harness", "claude",
+                            "--parent", str(parent), "--name", "one"], check=True, capture_output=True, text=True)
+            manifest_path = parent / "one" / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            init = {"type": "system", "subtype": "init", "model": "claude-opus-5-5",
+                    "cwd": manifest["project"], "session_id": manifest["claude_session_id"],
+                    "claude_code_version": "2.1.284", "permissionMode": "auto",
+                    "tools": ["Write"], "mcp_servers": [],
+                    "plugins": [{"name": "agents-md", "path": "builtin", "source": "agents-md@builtin"},
+                                {"name": "telemetry", "path": "builtin", "source": "telemetry@builtin"}],
+                    "skills": [],
+                    "agents": ["claude", "Explore", "general-purpose", "Plan", "statusline-setup"]}
+            source = parent / "init.json"
+            def check(record):
+                source.write_text(json.dumps(record))
+                return subprocess.run([sys.executable, str(CLI), "verify-init", "--manifest", str(manifest_path),
+                                       "--input", str(source)], capture_output=True, text=True)
+            self.assertEqual(check(init).returncode, 0)
+            self.assertNotEqual(check({**init, "plugins": init["plugins"] + [{"name": "unrelated"}]}).returncode, 0)
+            self.assertNotEqual(check({key: value for key, value in init.items() if key != "skills"}).returncode, 0)
+            self.assertNotEqual(check({**init, "agents": init["agents"] + ["unexpected"]}).returncode, 0)
+            self.assertNotEqual(check({**init, "tools": ["Write", "Agent"]}).returncode, 0)
+            self.assertNotEqual(check({**init, "session_id": str(uuid.uuid4())}).returncode, 0)
+
+
+if __name__ == "__main__":
+    unittest.main()

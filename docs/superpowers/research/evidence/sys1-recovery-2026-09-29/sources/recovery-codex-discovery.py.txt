@@ -1,0 +1,159 @@
+"""Discover two project hooks through Codex metadata without starting a turn.
+
+This inventory is not proof that the exec process loads the same hook stack.
+"""
+
+from hashlib import sha256
+import json
+from pathlib import Path
+import time
+from uuid import uuid4
+
+
+def _require(condition, message):
+    if not condition:
+        raise RuntimeError(message)
+
+
+def _save(path, value):
+    with path.open("xb") as stream:
+        stream.write((json.dumps(value, sort_keys=True, indent=2) + "\n").encode("utf-8"))
+
+
+def _exchange(command, project, attempt, label, collect):
+    replies = {}
+
+    def begin(send):
+        send({"id": 1, "method": "initialize", "params": {
+            "clientInfo": {"name": "recovery-hook-discovery", "version": "1"}}})
+
+    def on_line(message, send):
+        ident = message.get("id")
+        if ident == 1:
+            _require("initialize" not in replies, "duplicate initialize reply")
+            _require("error" not in message and isinstance(message.get("result"), dict),
+                     "initialize failed")
+            replies["initialize"] = message["result"]
+            send({"method": "initialized"})
+            send({"id": 2, "method": "hooks/list", "params": {"cwds": [str(project)]}})
+        elif ident == 2:
+            _require("initialize" in replies and "list" not in replies,
+                     "unexpected hooks/list reply")
+            _require("error" not in message and isinstance(message.get("result"), dict),
+                     "hooks/list failed")
+            replies["list"] = message["result"]
+            return True
+        return False
+
+    collect(command, project, attempt, label, time.monotonic() + 20,
+            on_line=on_line, begin=begin)
+    _require(set(replies) == {"initialize", "list"}, "metadata exchange incomplete")
+    _save(attempt / (label + "-parsed.json"), replies)
+    return replies["list"]
+
+
+def _inventory(result, project, source, hook_command):
+    data = result.get("data")
+    _require(isinstance(data, list) and len(data) == 1, "hooks/list cwd count differs")
+    entry = data[0]
+    _require(entry.get("cwd") == str(project) and entry.get("errors") == [],
+             "hooks/list cwd or errors differ")
+    hooks = entry.get("hooks")
+    _require(isinstance(hooks, list), "hooks/list has no hook inventory")
+    by_key = {}
+    for hook in hooks:
+        _require(isinstance(hook, dict), "malformed hook record")
+        key, digest = hook.get("key"), hook.get("currentHash")
+        _require(isinstance(key, str) and key and key not in by_key,
+                 "missing or repeated hook key")
+        _require(isinstance(digest, str) and digest.startswith("sha256:")
+                 and len(digest) == 71, "missing or malformed currentHash")
+        by_key[key] = hook
+    candidates = [h for h in hooks if h.get("sourcePath") == source]
+    _require(len(candidates) == 2, "project candidate count differs")
+    expected = {"userPromptSubmit", "preToolUse"}
+    _require({h.get("eventName") for h in candidates} == expected,
+             "project candidate events differ")
+    for hook in candidates:
+        _require(hook.get("source") == "project" and
+                 hook.get("handlerType") == "command" and
+                 hook.get("command") == hook_command and
+                 hook.get("matcher") in (None, ""),
+                 "project candidate identity differs")
+    return by_key, {h["key"] for h in candidates}
+
+
+def discover(project: Path, attempt: Path, hook_command: str, collect) -> dict:
+    stage = "codex-hooks-preflight-" + uuid4().hex
+    try:
+        project = project.resolve(strict=True)
+        attempt = attempt.resolve(strict=True)
+        source = str(project / ".codex" / "hooks.json")
+        _require(project.is_dir() and attempt.is_dir() and hook_command,
+                 "project, attempt, or hook command missing")
+        config_bytes = Path(source).read_bytes()
+        config = json.loads(config_bytes)
+        groups = config.get("hooks")
+        _require(isinstance(groups, dict) and set(groups) ==
+                 {"UserPromptSubmit", "PreToolUse"}, "fixture hook events differ")
+        for entries in groups.values():
+            _require(isinstance(entries, list) and len(entries) == 1 and
+                     isinstance(entries[0], dict) and
+                     entries[0].get("matcher") in (None, "") and
+                     isinstance(entries[0].get("hooks"), list) and
+                     len(entries[0]["hooks"]) == 1 and
+                     isinstance(entries[0]["hooks"][0], dict) and
+                     entries[0]["hooks"][0].get("type") == "command" and
+                     entries[0]["hooks"][0].get("command") == hook_command,
+                     "fixture hook command or matcher differs")
+
+        trust = "projects={" + json.dumps(str(project)) + '={trust_level="trusted"}}'
+        command = ["codex", "--no-daemon", "--enable", "hooks",
+                   "--disable", "apps", "--disable", "plugins",
+                   "--disable", "multi_agent", "app-server", "--stdio",
+                   "--strict-config", "-c", "mcp_servers={}",
+                   "-c", 'web_search="disabled"', "-c", trust]
+        first_label = "codex-hooks-first-" + uuid4().hex
+        second_label = "codex-hooks-second-" + uuid4().hex
+        stage = first_label
+        first = _exchange(command, project, attempt, first_label, collect)
+        before, candidates = _inventory(first, project, source, hook_command)
+        entries = []
+        for key, hook in sorted(before.items()):
+            state = "enabled=true,trusted_hash=" + json.dumps(hook["currentHash"]) if key in candidates else "enabled=false"
+            entries.append(json.dumps(key) + "={" + state + "}")
+        override = "hooks.state={" + ",".join(entries) + "}"
+        stage = second_label
+        second = _exchange(command + ["-c", override], project, attempt,
+                           second_label, collect)
+        after, verified_candidates = _inventory(second, project, source, hook_command)
+        _require(candidates == verified_candidates and set(before) == set(after),
+                 "hook identities changed after override")
+        for key, old in before.items():
+            new = after[key]
+            stable = ("sourcePath", "source", "eventName", "handlerType",
+                      "command", "matcher", "currentHash")
+            _require(all(old.get(field) == new.get(field) for field in stable),
+                     "hook identity or hash changed after override")
+            _require(isinstance(new.get("enabled"), bool),
+                     "required hooks/list enabled field unavailable")
+            if key in candidates:
+                _require(isinstance(new.get("trustStatus"), str),
+                         "required hooks/list trustStatus field unavailable")
+                _require(new["enabled"] is True and
+                         new["trustStatus"] == "trusted",
+                         "candidate is not enabled and trusted")
+            else:
+                _require(new["enabled"] is False,
+                         "noncandidate hook remains enabled")
+        _require(sha256(Path(source).read_bytes()).digest() == sha256(config_bytes).digest(),
+                 "fixture hooks.json changed during discovery")
+        return {"override": override, "candidate_keys": sorted(candidates),
+                "first_label": first_label, "second_label": second_label,
+                "claim": "metadata discovery only; not proof of the exec hook stack"}
+    except Exception as error:
+        if isinstance(attempt, Path) and attempt.is_dir():
+            _save(attempt / (stage + "-failure.json"),
+                  {"error": type(error).__name__ + ": " + str(error),
+                   "stage": stage, "claim": "metadata discovery failed; raw records retained"})
+        raise

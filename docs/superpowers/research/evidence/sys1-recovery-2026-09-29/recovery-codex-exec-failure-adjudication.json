@@ -1,0 +1,33 @@
+{
+  "attempt": "codex-recovery-current-renewal-after-denial-bgeewan4",
+  "status": "unqualified native trial",
+  "runner_sha256": "665adb106531d2307dd4a33949172344ef7e754737c7a3c55749fcf74db06114",
+  "session": "01a0ec94-eb5c-7d02-b26d-680187d62cd1",
+  "observed_approval_policy": "never",
+  "requested_approval_policy": "on-request",
+  "observed_sandbox": {
+    "type": "workspace-write",
+    "writable_roots": [
+      "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/A",
+      "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/B"
+    ],
+    "network_access": false,
+    "exclude_tmpdir_env_var": false,
+    "exclude_slash_tmp": false
+  },
+  "effects": {
+    "A/report.txt": "f5588505ac067ef9de14564163026c223fb9d25e28b6feb4d02b8cb37113bec7"
+  },
+  "hook_result": "pass through pinned current apply_patch local skip",
+  "denial_or_recovery": false,
+  "failure": "native stderr reported failed rollout flush after terminal event; requested permission policy was also not effective",
+  "next_route": "model-free app-server metadata observed on-request/user and equal A/B roots; native turn/persistence qualification outstanding",
+  "files": {
+    "manifest.json": "4eb6b270f221df4f4f808a9eae10ca7a38c9072c97b9d5b2e8cfffa2438def4a",
+    "observation.json": "f5cb355800f3b1d801c9a7219dff15feea2b2c859d0e0066f3c92e444f12c163",
+    "turn-0-stdout.log": "5c25b9a6133f4c9cdcc612e54dcb547e81eca980b9cf082188318b423b74e28e",
+    "turn-0-stderr.log": "2c32186819aaafa9953c6772dc7af4d9df3d885c0cf28f36db1516c593141ab9",
+    "turn-0-rollout.jsonl": "365cedc0c33b20f066f3c01045362e702b45ad751e4ee88f4499502973ad216d",
+    "events.jsonl": "c3582ee821802daffd371c063e31a48cc2bb2deef58592970558c083a57b3226"
+  }
+}

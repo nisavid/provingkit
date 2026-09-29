@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-review-reproposal-withdrawal-after-denial-1vslytbj 8ee83bb0b6b12aa98e37d6cbbeec3f62adff3ac4183888bcee9f5e1b9eb5847e",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-review-reproposal-withdrawal-after-denial-1vslytbj 8ee83bb0b6b12aa98e37d6cbbeec3f62adff3ac4183888bcee9f5e1b9eb5847e",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}

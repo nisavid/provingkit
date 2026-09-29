@@ -370,12 +370,264 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(checked["status"], "fail")
         self.assertEqual(checked["inventory_diagnostics"], compared["inventory_diagnostics"])
 
-    def prepared_receipt(self, revision):
-        snapshot = inventory.prepare(self.repo, revision, "example/writing")
+    def second_member(self):
+        self.write(inventory.DEFINITION, {"membership": {"members": [
+            {"id": member, "content_identity": {
+                "path": f"release/plugin-content-locks/{member}.json"}}
+            for member in ("example", "second")]}})
+        self.write("release/plugin-content-locks/second.json", {})
+        self.write("plugins/second/topology.json", {"skills": {"reviewing": {"calls": []}}})
+        for suffix in ("SKILL.md", "evals/evals.json", "evals/trigger-evals.json"):
+            original = (self.repo / f"plugins/example/skills/writing/{suffix}").read_text()
+            self.write(f"plugins/second/skills/reviewing/{suffix}", original.replace("writing", "reviewing"))
+
+    def test_member_check_preserves_full_selection_but_only_requires_own_receipts(self):
+        self.current_corpus()
+        self.second_member()
+        self.processing_sources()
+        base = self.commit("two member corpora")
+        self.write("plugins/example/skills/writing/SKILL.md", "Write accurately.\n")
+        self.write("plugins/second/skills/reviewing/SKILL.md", "Review accurately.\n")
+        source = self.commit("both members change")
+        self.write("release/receipts/example/writing.json", self.prepared_receipt(source))
+        candidate = self.commit("only example receipt")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "example")
+
+        self.assertEqual(result["status"], "pass", result)
+        self.assertEqual(result["member"], "example")
+        self.assertEqual(result["affected_skills"], ["example/writing", "second/reviewing"])
+        self.assertEqual(result["checked_skills"], ["example/writing"])
+        self.assertEqual([row["skill"] for row in result["skills"]], ["example/writing"])
+        self.assertEqual(result["coverage_basis"]["receipt_scope"], "selected-member")
+        compared = inventory.compare(self.repo, base, candidate)
+        for field in ("affected_skills", "changed_paths", "selection_complete", "causes", "unsupported",
+                      "inventory_diagnostics", "inventory_summary"):
+            self.assertEqual(result[field], compared[field])
+        self.assertEqual(inventory.check(self.repo, base, candidate, "release/receipts")["status"], "fail")
+
+    def test_member_check_rejects_identities_outside_both_committed_slates(self):
+        for member in ("exam", "example/writing", "second", "", None, ["example"]):
+            with self.subTest(member=member):
+                with self.assertRaisesRegex(inventory.InventoryError, "member.*committed.*Slate"):
+                    inventory.check_member(self.repo, self.base, self.base, "release/receipts", member)
+
+    def test_member_check_accepts_new_slate_member_and_requires_its_selected_receipt(self):
+        self.current_corpus()
+        base = self.commit("one member corpus")
+        self.second_member()
+        candidate = self.commit("add second member")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "second")
+
+        self.assertEqual(result["status"], "fail", result)
+        self.assertEqual(result["checked_skills"], ["second/reviewing"])
+        self.assertIn("committed regular input is unavailable", result["skills"][0]["reason"])
+
+    def test_member_check_recognizes_slate_member_without_a_skill_prefix(self):
+        self.current_corpus()
+        self.second_member()
+        self.commit("two member corpora")
+        self.write("plugins/second/topology.json", {"skills": {}})
+        self.git("rm", "-r", "plugins/second/skills")
+        candidate = self.commit("declared member with empty roster")
+
+        result = inventory.check_member(self.repo, candidate, candidate, "release/receipts", "second")
+
+        self.assertEqual(result["status"], "not-required", result)
+        self.assertEqual(result["checked_skills"], [])
+        self.assertEqual(result["member"], "second")
+
+    def test_member_check_unknown_ownership_fails_every_member_without_narrowing_diagnostics(self):
+        self.current_corpus()
+        self.second_member()
+        base = self.commit("two member corpora")
+        self.write("evals/unknown.json", {"skill_name": "missing", "evals": [
+            {"id": 0, "prompt": "Unknown owner.", "expectations": []}]})
+        candidate = self.commit("unknown ordinary owner")
+        compared = inventory.compare(self.repo, base, candidate)
+        for member in ("example", "second"):
+            with self.subTest(member=member):
+                result = inventory.check_member(self.repo, base, candidate, "release/receipts", member)
+                self.assertEqual(result["status"], "fail", result)
+                self.assertFalse(result["selection_complete"])
+                self.assertEqual(result["checked_skills"], [])
+                self.assertEqual(result["skills"], [])
+                self.assertTrue(result["unsupported"])
+                self.assertEqual(result["unsupported"], compared["unsupported"])
+                self.assertEqual(result["inventory_diagnostics"], compared["inventory_diagnostics"])
+
+    def test_member_check_incomplete_other_roster_cannot_become_not_required(self):
+        self.current_corpus()
+        self.second_member()
+        base = self.commit("two member corpora")
+        self.git("rm", "plugins/second/skills/reviewing/SKILL.md")
+        candidate = self.commit("incomplete other roster")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "example")
+
+        self.assertEqual(result["status"], "fail", result)
+        self.assertFalse(result["selection_complete"])
+        self.assertEqual(result["checked_skills"], [])
+        self.assertTrue(any(row.get("kind") == "roster-mismatch"
+                            for row in result["inventory_diagnostics"]["candidate"]))
+
+    def test_member_check_transferred_input_keeps_old_and_new_consumers(self):
+        self.current_corpus()
+        self.second_member()
+        self.write("evals/example/shared.json", {"cases": [{"id": "shared"}]})
+        self.write("evals/example/shared.md", "Shared input.\n")
+        self.write(inventory.INPUT_MAP, {"schema_version": 1,
+            "entries": [self.accepted_input(["example/writing"])]})
+        base = self.commit("original input owner")
+        self.write(inventory.INPUT_MAP, {"schema_version": 1,
+            "entries": [self.accepted_input(["second/reviewing"])]})
+        candidate = self.commit("transferred input owner")
+        for member, skill in (("example", "writing"), ("second", "reviewing")):
+            with self.subTest(member=member):
+                result = inventory.check_member(self.repo, base, candidate, "release/receipts", member)
+                self.assertEqual(result["affected_skills"], ["example/writing", "second/reviewing"])
+                self.assertEqual(result["checked_skills"], [f"{member}/{skill}"])
+                self.assertEqual([row["skill"] for row in result["skills"]], [f"{member}/{skill}"])
+                self.assertEqual(result["status"], "fail")
+                self.assertTrue(any(row["kind"] == "operative-mapping-change"
+                                    for row in result["causes"][f"{member}/{skill}"]))
+
+    def test_member_check_removed_member_keeps_its_selected_skill_failure(self):
+        self.current_corpus()
+        self.second_member()
+        base = self.commit("two member corpora")
+        self.write(inventory.DEFINITION, {"membership": {"members": [
+            {"id": "example", "content_identity": {
+                "path": "release/plugin-content-locks/example.json"}}]}})
+        self.git("rm", "-r", "plugins/second")
+        candidate = self.commit("remove second member")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "second")
+
+        self.assertEqual(result["status"], "fail", result)
+        self.assertEqual(result["checked_skills"], ["second/reviewing"])
+        self.assertEqual(result["skills"][0]["skill"], "second/reviewing")
+        self.assertEqual(result["skills"][0]["status"], "fail")
+        self.assertIn({"code": "removed-or-renamed-skill", "skill": "second/reviewing"}, result["unsupported"])
+        self.assertEqual(result["skills"][0]["diagnostics"][0]["code"], "unknown-skill")
+
+    def test_member_check_ignores_other_threshold_failures_and_preserves_own_failure(self):
+        self.current_corpus()
+        self.second_member()
+        self.processing_sources()
+        base = self.commit("two member corpora")
+        self.write("plugins/example/skills/writing/SKILL.md", "Write accurately.\n")
+        self.write("plugins/second/skills/reviewing/SKILL.md", "Review accurately.\n")
+        source = self.commit("both members change")
+        self.write("release/receipts/example/writing.json", self.prepared_receipt(source))
+        self.write("release/receipts/second/reviewing.json",
+                   self.prepared_receipt(source, "second/reviewing", failed_repetitions=(2, 3)))
+        candidate = self.commit("passing and failing receipts")
+
+        passing = inventory.check_member(self.repo, base, candidate, "release/receipts", "example")
+        failing = inventory.check_member(self.repo, base, candidate, "release/receipts", "second")
+        complete = inventory.check(self.repo, base, candidate, "release/receipts")
+
+        self.assertEqual(passing["status"], "pass", passing)
+        self.assertEqual(failing["status"], "fail", failing)
+        self.assertEqual(failing["skills"][0]["reason"], "threshold failed")
+        self.assertEqual(complete["skills"], passing["skills"] + failing["skills"])
+        self.assertNotIn("member", complete)
+        self.assertNotIn("checked_skills", complete)
+        self.assertEqual(complete["coverage_basis"], {
+            "selection": "committed-inventory-comparison",
+            "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
+            "freshness": "evaluated-source-to-containing-commit"})
+
+    def test_member_check_uses_committed_receipt_bytes_and_reports_missing_committed_receipt(self):
+        self.current_corpus()
+        self.processing_sources()
+        base = self.commit("initial corpus")
+        self.write("plugins/example/skills/writing/SKILL.md", "Write accurately.\n")
+        source = self.commit("evaluated behavior")
+        receipt = self.prepared_receipt(source)
+        path = "release/receipts/example/writing.json"
+        raw = json.dumps(receipt, indent=4) + "\n"
+        self.write(path, raw)
+        candidate = self.commit("committed receipt")
+        self.write(path, "Uncommitted invalid replacement.")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "example")
+        missing = inventory.check_member(self.repo, base, source, "release/receipts", "example")
+
+        self.assertEqual(result["status"], "pass", result)
+        row = result["skills"][0]
+        self.assertEqual(row["evaluated_revision"], source)
+        self.assertEqual(row["receipt_raw_sha256"], hashlib.sha256(raw.encode()).hexdigest())
+        self.assertEqual(row["receipt_sha256"], inventory.core.document_digest(receipt))
+        self.assertEqual(row["receipt_source"]["path"], path)
+        self.assertEqual(missing["status"], "fail")
+        self.assertIn("committed regular input is unavailable", missing["skills"][0]["reason"])
+
+    def test_member_check_preserves_stale_source_failure(self):
+        self.current_corpus()
+        self.processing_sources()
+        base = self.commit("initial corpus")
+        self.write("plugins/example/skills/writing/SKILL.md", "Write accurately.\n")
+        source = self.commit("evaluated behavior")
+        self.write("release/receipts/example/writing.json", self.prepared_receipt(source))
+        self.write("plugins/example/skills/writing/SKILL.md", "Write with different behavior.\n")
+        candidate = self.commit("source changes after evaluation")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "example")
+
+        self.assertEqual(result["status"], "fail", result)
+        self.assertEqual(result["skills"][0]["reason"], "stale evaluated input closure")
+
+    def test_member_check_keeps_waiver_pending(self):
+        self.current_corpus()
+        self.processing_sources()
+        base = self.commit("initial corpus")
+        self.write("plugins/example/skills/writing/SKILL.md", "Write accurately.\n")
+        source = self.commit("evaluated behavior")
+        receipt = self.prepared_receipt(source)
+        waiver = {key: receipt[key] for key in (
+            "schema_version", "candidate_revision", "snapshot", "attestation")}
+        waiver.update(kind="waiver", reason="Constructed exception awaiting verification.",
+            operator_decision={"issued_by": "operator", "decision_sha256": "a" * 64},
+            expiry={"event": "next-release", "after_release": "test-release-1"})
+        self.write("release/receipts/example/writing.json", waiver)
+        candidate = self.commit("pending waiver")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "example")
+
+        self.assertEqual(result["status"], "fail", result)
+        self.assertEqual(result["skills"][0]["status"], "waiver-pending")
+        self.assertFalse(result["skills"][0]["operator_authority_verified"])
+        self.assertFalse(result["skills"][0]["expiry_verified"])
+
+    def test_member_check_noop_does_not_claim_other_selected_receipts_pass(self):
+        self.current_corpus()
+        self.second_member()
+        base = self.commit("two member corpora")
+        self.write("plugins/second/skills/reviewing/SKILL.md", "Review accurately.\n")
+        candidate = self.commit("only second member changes")
+
+        result = inventory.check_member(self.repo, base, candidate, "release/receipts", "example")
+
+        self.assertEqual(result["status"], "not-required", result)
+        self.assertEqual(result["affected_skills"], ["second/reviewing"])
+        self.assertEqual(result["checked_skills"], [])
+        self.assertEqual(result["skills"], [])
+        self.assertTrue(result["selection_complete"])
+        self.assertEqual(result["member"], "example")
+        self.assertEqual(result["coverage_basis"]["receipt_scope"], "selected-member")
+        self.assertEqual(inventory.check(self.repo, base, candidate, "release/receipts")["status"], "fail")
+
+    def prepared_receipt(self, revision, skill="example/writing", *, failed_repetitions=(3,)):
+        snapshot = inventory.prepare(self.repo, revision, skill)
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         private = Path(temporary.name)
-        coordinate = {"source": "plugins/example/skills/writing/evals/evals.json", "pointer": "/evals/0", "id": 0}
+        plugin, name = skill.split("/")
+        prefix = f"plugins/{plugin}/skills/{name}/evals"
+        coordinate = {"source": f"{prefix}/evals.json", "pointer": "/evals/0", "id": 0}
         snapshot_hash = inventory.core.document_digest(snapshot)
         runs = []
         for repetition in (1, 2, 3):
@@ -385,12 +637,12 @@ class InventoryTests(unittest.TestCase):
             (private / f"grade-{repetition}.json").write_text(json.dumps({
                 "snapshot_sha256": snapshot_hash, "case_id": coordinate, "repetition": repetition,
                 "model_id": "test-grader", "executor_output_sha256": hashlib.sha256(output).hexdigest(),
-                "expectations": [{"id": "keep", "passed": repetition != 3}]}))
+                "expectations": [{"id": "keep", "passed": repetition not in failed_repetitions}]}))
             runs.append({"case_id": coordinate, "repetition": repetition,
                          "executor_output": f"output-{repetition}.json", "grading": f"grade-{repetition}.json"})
         triggers = []
         for index, triggered in enumerate((True, False)):
-            trigger = {"source": "plugins/example/skills/writing/evals/trigger-evals.json", "pointer": f"/{index}", "id": None}
+            trigger = {"source": f"{prefix}/trigger-evals.json", "pointer": f"/{index}", "id": None}
             (private / f"trigger-{index}.json").write_text(json.dumps({
                 "snapshot_sha256": snapshot_hash, "case_id": trigger, "model_id": "test-executor",
                 "observation_kind": "recorded-invocation", "triggered": triggered}))

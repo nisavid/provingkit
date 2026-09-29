@@ -1,0 +1,34 @@
+{
+  "round": "initial-final",
+  "case": "pending_permission",
+  "candidate_sha256": "dec24ab2bea14c2250271350bcdf70c25bc40e9729e9bc81541e580af7bb143a",
+  "source_pins": {
+    "SKILL.md": "697fadfe90e71c80e464f4cfcf71ba79129734a4217f26032336a078207b5784",
+    "references/evidence-record.md": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+    "references/comparison-contract.md": "d17b3027879e3cc92fa7fbfee2498fe821a78ffffc6e253ceb7100f66e14581a"
+  },
+  "runner_sha256": "4483706ed9948419c211c588ef9478afe05af2dac2dba72354eab0724ccbae3d",
+  "prompt": "The harness is waiting on my ordinary approval for a file write, and I have not answered it. No hook has denied anything. Tell me what decision is currently pending; do not investigate an incident or change anything.",
+  "expected_invocation": false,
+  "harness": "2.1.284",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "high",
+  "native_model_observed": "claude-opus-5-5",
+  "tools_observed": [
+    "Read",
+    "Skill"
+  ],
+  "exit": {
+    "code": 0,
+    "timed_out": false
+  },
+  "tool_uses": [],
+  "native_skill_results": [],
+  "loaded_source_observations": [],
+  "handback": [
+    "I can't see the request you're describing, so I can't tell you what it is. I haven't made any tool calls in this conversation, including file writes. Permission prompts show up in your harness UI, not in my context, so I don't know the file path or contents of the write that's waiting.\n\nIn general terms, the decision is ordinary: approve the write or deny it. No hook has blocked it, so nothing about it is an incident. It will just wait until you answer.\n\nThe prompt itself should show the target path and the proposed content or diff. If it came from another session or agent, that session is the one that made the request. If you paste the prompt's details here, I can help you decide whether to approve it. As you asked, I haven't investigated or changed anything."
+  ],
+  "raw_stdout_sha256": "6a8bd3205348a34db3c6993430b2a89856c2ce614fdb764a2161d37854c653b5",
+  "raw_stdout_bytes": 9715,
+  "execution_plan_sha256": "c85b00a6572d25dfbb4d8d42ada17b25eae1d4bc8e05e0d25779ecd98b2724e2"
+}

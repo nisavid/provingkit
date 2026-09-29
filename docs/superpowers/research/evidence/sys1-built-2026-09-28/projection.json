@@ -1,0 +1,141 @@
+{
+  "kind": "selected evidence projection",
+  "source_commit": "ed5e7c94248d2a639d471b6cbd427ba08abef773",
+  "dist_count": 78,
+  "dist_inventory_sha256": "05b4d30c315c1a9b3a86ff428ce5577dc660c54cb5ae89551f329a3b14c47fe4",
+  "sources": [
+    {
+      "label": "jev-native-built-s3fcadh1/supplied/records/summary.json",
+      "sha256": "426bdb04d5869a929a80426e73fcbb9879142d2787a9133cfd8b300c3dcb60b7",
+      "bytes": 38308
+    },
+    {
+      "label": "jev-native-built-s3fcadh1/missing/records/summary.json",
+      "sha256": "15b28180789050468b39088ad0eb169f38deb358519cbddd46f3743ec95948a3",
+      "bytes": 20968
+    },
+    {
+      "label": "jev-codex-native-v2ip_kq8/supplied-reanalysis-edd_n8m5/summary.json",
+      "sha256": "f69da370c864902294726e570c90a411a72ba9afe17d01e00998b1f50bd3e76b",
+      "bytes": 28459
+    },
+    {
+      "label": "claude-built-pair-adjudication.json",
+      "sha256": "399cacb3d7b2bdd02ef4d003d6798f925ec866f3a11b006e59d4dc067c16d1c8",
+      "bytes": 2741
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/result.json",
+      "sha256": "345d9fb834d03dbb1cbdfba42eaca37ccf84ae1241472efe4db65acbd6ccad8e",
+      "bytes": 105
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-human/cli-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-human/cli-stdout.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-human/cli-stderr.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-mixed/cli-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-mixed/cli-stdout.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-mixed/cli-stderr.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-steer/cli-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-steer/cli-stdout.bin",
+      "sha256": "b42326f1cf5eb9b6182e114b20f1f3939f8409f62d79b84b2344dbdd023079b6",
+      "bytes": 274
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-steer/cli-stderr.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/stop-verify/cli-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/stop-verify/cli-stdout.bin",
+      "sha256": "9a1d05719fe543d1f6bdf772ba3d9be36bd48702d9c4d3d12df2ea0b91a40107",
+      "bytes": 112
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/stop-verify/cli-stderr.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-explain/cli-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-explain/cli-stdout.bin",
+      "sha256": "20b368a8e7bdc5184807e1ef3c868fcaf78481731d6ab3020587d69b0fa89a1d",
+      "bytes": 191
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-explain/cli-stderr.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-human/xdg/config/jev-axi/stats/supervise.jsonl",
+      "sha256": "60754456a4e60b6a74c4f88cfcd9983b71bf6dcad52a44d51b6b2d5a2c353995",
+      "bytes": 332
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-mixed/xdg/config/jev-axi/stats/supervise.jsonl",
+      "sha256": "59dbc41047c7c8b5c55d3b44a6921871f13ea9a15346facecf81d3cb363548a5",
+      "bytes": 334
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/post-steer/xdg/config/jev-axi/stats/supervise.jsonl",
+      "sha256": "0ba87e34eea1d817d6b71af215e259d37545e0bb9641e79b46a7e068050cd1ed",
+      "bytes": 360
+    },
+    {
+      "label": "jev-built-qualification-85s_9t5p/stop-verify/xdg/config/jev-axi/stats/supervise.jsonl",
+      "sha256": "cce3315eac20c2b1d46f12515687d6cb11398359aadd9836c95e27d96e84f778",
+      "bytes": 358
+    }
+  ],
+  "transformations": [
+    "Selected only synthetic task outputs, hook results, assessment metadata, and effects.",
+    "Replaced machine paths with role placeholders.",
+    "Decoded selected hook output and synthetic effect bytes.",
+    "Omitted original hook payloads, full request state/job/events, HTTP headers, full native transcripts, initialization/account metadata, and unrelated context.",
+    "Retained source SHA-256 digests; state digests use sorted compact JSON, not original transport bytes."
+  ],
+  "limits": [
+    "Injected needs_human judgments test integration, not model accuracy.",
+    "One episode per cell, not outcome rates.",
+    "Native Codex 0.157.1 missing-input attempt remained incomplete after a question and timeout; separately recorded.",
+    "Default Jev Codex matcher does not cover apply_patch; these Codex observations use a research adapter."
+  ]
+}

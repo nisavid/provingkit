@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-renewed-approval-withdrawal-after-denial-t52jsau4 e54ade2a85973499589f846771f161d9981b9fc28d6f9352d44d7cabe26bab09",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-renewed-approval-withdrawal-after-denial-t52jsau4 e54ade2a85973499589f846771f161d9981b9fc28d6f9352d44d7cabe26bab09",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}

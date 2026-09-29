@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import hashlib
 import html
 import json
@@ -24,6 +26,11 @@ from agent_plugins_standard import (  # noqa: E402
     validate_skill_resource_links,
 )
 from member_versions import is_supported_member_version  # noqa: E402
+from member_source_stage_cli import (  # noqa: E402
+    add_context_arguments,
+    check_context_if_requested,
+    prepare_context_if_requested,
+)
 from refresh_transaction import replace_generated_artifacts  # noqa: E402
 
 try:
@@ -2137,31 +2144,33 @@ def write_content_lock(repo_root: Path) -> None:
         anchor.close()
 
 
-def usage() -> None:
-    print(
-        "usage: validate_tricritical.py [--write-content-lock] [repo-root]",
-        file=sys.stderr,
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("repository", nargs="?", type=Path)
+    parser.add_argument("--write-content-lock", action="store_true")
+    add_context_arguments(parser)
+    arguments = parser.parse_args()
+    write_lock = arguments.write_content_lock
+    repo_root = arguments.repository or Path(__file__).parents[1]
+    context = None
+    context = prepare_context_if_requested(
+        parser, arguments, repo_root, writing=write_lock
     )
-
-
-def main() -> None:
-    arguments = sys.argv[1:]
-    write_lock = bool(arguments and arguments[0] == "--write-content-lock")
-    if write_lock:
-        arguments = arguments[1:]
-    if len(arguments) > 1 or (arguments and arguments[0].startswith("-")):
-        usage()
-        raise SystemExit(2)
-    repo_root = Path(arguments[0]) if arguments else Path(__file__).parents[1]
     try:
         if write_lock:
             write_content_lock(repo_root)
-        validate(repo_root)
+        with contextlib.redirect_stdout(
+            sys.stderr if context is not None else sys.stdout
+        ):
+            validate(repo_root)
     except Exception as error:
         fail(f"invalid plugin data: {error}")
     if write_lock:
         print("Tricritical semantic content lock updated")
+    if context is not None:
+        return check_context_if_requested(context, "tricritical")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

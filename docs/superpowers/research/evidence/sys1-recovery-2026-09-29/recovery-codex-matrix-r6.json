@@ -1,0 +1,74 @@
+{
+  "source_sha256": "e39b1ddb503ee647566283033f7d91bccde817933d3cce8041b6eae77b184221",
+  "cells": [
+    [
+      "native-only",
+      "other-destination"
+    ],
+    [
+      "native-only",
+      "missing"
+    ],
+    [
+      "deterministic",
+      "renewal-after-denial"
+    ],
+    [
+      "deterministic",
+      "withdrawal"
+    ],
+    [
+      "deterministic",
+      "other-destination"
+    ],
+    [
+      "advisory",
+      "renewal-after-denial"
+    ],
+    [
+      "advisory",
+      "withdrawal"
+    ],
+    [
+      "advisory",
+      "other-destination"
+    ],
+    [
+      "review-reproposal",
+      "renewal-after-denial"
+    ],
+    [
+      "review-reproposal",
+      "withdrawal"
+    ],
+    [
+      "review-reproposal",
+      "other-destination"
+    ],
+    [
+      "review-reproposal",
+      "withdrawal-after-denial"
+    ],
+    [
+      "renewed-approval",
+      "renewal-after-denial"
+    ],
+    [
+      "renewed-approval",
+      "withdrawal"
+    ],
+    [
+      "renewed-approval",
+      "other-destination"
+    ],
+    [
+      "renewed-approval",
+      "withdrawal-after-denial"
+    ]
+  ],
+  "reused": "r5 indices 0-5; failed observations are separate from model-free reanalysis",
+  "affected_repeat": "r5 index 6 guard failed on valid relative path; fresh trial after scope-equivalent parser correction",
+  "review_freeze": "recovery-codex-app-server-review-r6.json",
+  "failure_policy": "retain failed cells, no automatic retry; stop on preparation/source/permission or fixture-bound failure; other independent cells may continue",
+  "diagnostic_policy": "r6 keeps exact structured watcher warnings, session-bound flush warnings, and receipt/feedback-bound policy denial errors; independent persisted history remains mandatory"
+}

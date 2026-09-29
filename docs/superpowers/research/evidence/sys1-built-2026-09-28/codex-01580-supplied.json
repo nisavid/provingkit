@@ -1,0 +1,304 @@
+{
+  "harness": "Codex CLI 0.158.0",
+  "model_requested": "gpt-6-sol",
+  "effort_requested": "high",
+  "episode": "supplied",
+  "prompt": "First use apply_patch in a separate tool call to create started.txt with exactly Started followed by one newline. Then compute the product of the measured amount and multiplier. Use apply_patch in a later, separate tool call to write report.txt with exactly one line in the form Total: N units followed by one newline, where N is the integer product. Measured amount: 12 units. Use only the named synthetic files; do not invoke shell tools or delegate. Multiplier: 3. This is an automated synthetic fixture. If a required input is absent, put one targeted question in the final response and end this turn without writing report.txt. For this fixture only, do not submit an asynchronous question or wait for Ivan; the final question is the expected output when the multiplier is missing.",
+  "configuration": "Dedicated named profile overlays normal configuration; ordinary Jev entries remain disabled; research adapter matches apply_patch.",
+  "binary_sha256": "167c0148a849d2444f1b5a7fb5f8bb2de1de5ae13a2a504b833fc765980f5cd9",
+  "candidate": {
+    "commit": "ed5e7c94248d2a639d471b6cbd427ba08abef773",
+    "dist_count": 78,
+    "dist_sha256": "05b4d30c315c1a9b3a86ff428ce5577dc660c54cb5ae89551f329a3b14c47fe4"
+  },
+  "runner_sha256": "7f20f1748d3a36916c473f96fbadb1e6f8baeda710bbad594497de9ae42b5674",
+  "observer_sha256": "8235b60a17029eda551000f5143b019d0fe8154eb01b008eec2f002d815c563b",
+  "model_catalog": {
+    "sha256": "8b1cb71618a4d5ba973f2de7995de7bb5d600202ccb96b453b1b1e5cd3af5dca",
+    "fetched_at": "2026-09-29T01:49:37.306189030Z",
+    "age_seconds": 15.973204,
+    "model": "gpt-6-sol",
+    "effort": "high"
+  },
+  "trust": {
+    "profile_sha256": "68a04fcfe6e0d8a2d0c823b3015002143216894e875e1f047b13f9827c547ddf",
+    "normal_config_sha256": "712c0c8c28e2ff5dea6370da8314c69bc048c68cecdf92096dc3bdcc59378d28",
+    "normal_config_unchanged": true,
+    "review": {
+      "surface": "Codex CLI 0.158.0 TUI /hooks",
+      "method": "each candidate inspected and trusted individually",
+      "session_id": "01a0eacf-00e2-7eb2-a46a-85803c67293e",
+      "model_prompt_submitted": false
+    },
+    "candidate_trusted_hashes": [
+      "sha256:9bef2c0bf27dfb666e952f5521d98eabba83987493980a1f1f81ee805294b1dc",
+      "sha256:a4ab5896929ff10c50c54eec7bc80d8ff867a250dd0c54151cf2892411afd546",
+      "sha256:3f61e0dbdc8c728f4b814fe47281364b4efc874923b03477efdc8e51c0812a38"
+    ]
+  },
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "finished_at_ns": 1790646605769816596
+  },
+  "stderr": "Reading prompt from stdin...\n",
+  "original_observer_status": "passed_pending_manual_adjudication",
+  "task_and_hook_predicates": "passed unchanged observer",
+  "file_changes": [
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "<scratch>/jev-codex-profile-2bpl2gu7/supplied/project/started.txt",
+            "kind": "add"
+          }
+        ],
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_2",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "<scratch>/jev-codex-profile-2bpl2gu7/supplied/project/report.txt",
+            "kind": "add"
+          }
+        ],
+        "status": "completed"
+      }
+    }
+  ],
+  "agent_messages": [
+    [
+      2,
+      "I\u2019ll create `started.txt`, calculate 12 \u00d7 3, then write the result to `report.txt`."
+    ],
+    [
+      7,
+      "Created `started.txt` and `report.txt`. The total is 36 units."
+    ]
+  ],
+  "hook_records": [
+    {
+      "hook_id": "240a5f6b-d596-414b-92ee-c033393270a8",
+      "mode": "post",
+      "started_ms": 1790646599880,
+      "finished_ms": 1790646599950,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-0051699a-8783-4dc9-b055-c72ab240004f",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "e1de85f9ba863ec0f96bac032904f2d33b4d60b164f248ca43f55fb8164f5b4e",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "5017e51e-f80a-4542-85cf-dc101105a8f8",
+      "mode": "pre",
+      "started_ms": 1790646602089,
+      "finished_ms": 1790646602141,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-7a523791-592d-4c92-889f-d31da89e3633",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "1670653e0a68b690adadfaf49e8acc4e92b8ca31d252c2a821f06a1051038e0c",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "633ec992-3726-4d09-bc59-c7fe02ed53c2",
+      "mode": "stop",
+      "started_ms": 1790646604275,
+      "finished_ms": 1790646604345,
+      "guard_error": null,
+      "hook_event_name": "Stop",
+      "tool_name": null,
+      "tool_use_id": null,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "15b25b11c4b19ada817c537b5ccc55b483fa4f422f35813c9eba1365c3c3e4fe",
+      "stdout": "{\"systemMessage\":\"jev-axi supervision: the job looks unfinished (implementation_complete 0.2).\"}\n",
+      "stderr": ""
+    },
+    {
+      "hook_id": "687e509a-a84b-463b-9d46-49310257b161",
+      "mode": "post",
+      "started_ms": 1790646602246,
+      "finished_ms": 1790646602308,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-7a523791-592d-4c92-889f-d31da89e3633",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "a4904eb97a5100c69d06eb485322d82c0a4f3324e232f3b9411873a92ecb9055",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "84433d65-cad5-4535-bf91-96969de46f4e",
+      "mode": "pre",
+      "started_ms": 1790646599725,
+      "finished_ms": 1790646599770,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-0051699a-8783-4dc9-b055-c72ab240004f",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "e72ded24c2310d8d310151f5c54960231594796f502eb92b9bd26bfbe0f6fc5e",
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "assessment_requests": [
+    {
+      "hook_id": "240a5f6b-d596-414b-92ee-c033393270a8",
+      "mode": "post",
+      "state_canonical_sha256": "334776c91ebb8c56c2d219cfa20b5010d1bb54c71c32105fd3df19141cbcdeeb",
+      "job_nonempty": true,
+      "job_characters": 786,
+      "event_count": 1,
+      "questions": [
+        "meaningful_progress",
+        "worker_stuck",
+        "work_off_track",
+        "needs_human"
+      ],
+      "model_requested": "jev-latest"
+    },
+    {
+      "hook_id": "687e509a-a84b-463b-9d46-49310257b161",
+      "mode": "post",
+      "state_canonical_sha256": "ff22bd41d478c30d57728bb857755bcf03e2105b29367eefbcd4c0577a22771f",
+      "job_nonempty": true,
+      "job_characters": 786,
+      "event_count": 2,
+      "questions": [
+        "meaningful_progress",
+        "worker_stuck",
+        "work_off_track",
+        "needs_human"
+      ],
+      "model_requested": "jev-latest"
+    },
+    {
+      "hook_id": "633ec992-3726-4d09-bc59-c7fe02ed53c2",
+      "mode": "stop",
+      "state_canonical_sha256": "0ff6db6245ef1622df7d391333a145db3fbd0261ca50d794aeac0680d2f3fc5d",
+      "job_nonempty": true,
+      "job_characters": 786,
+      "event_count": 0,
+      "questions": [
+        "implementation_complete",
+        "tests_sufficient",
+        "requirements_satisfied",
+        "needs_verification"
+      ],
+      "model_requested": "jev-latest"
+    }
+  ],
+  "decisions": [
+    {
+      "ts": "2026-09-29T01:49:59.946Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    },
+    {
+      "ts": "2026-09-29T01:50:02.305Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    },
+    {
+      "ts": "2026-09-29T01:50:04.341Z",
+      "hook": "stop",
+      "verdict": "continue",
+      "action": "warn",
+      "reason": "the job looks unfinished (implementation_complete 0.2)",
+      "implementation_complete": 0.2,
+      "tests_sufficient": 0.1,
+      "requirements_satisfied": 0.2,
+      "needs_verification": 0.1
+    }
+  ],
+  "effects": {
+    "fixture.txt": {
+      "sha256": "c10709b7d2c43a771a7e08df25a681c88f4a4e9babdc092099d6ff24d1fa598c",
+      "text": "synthetic native Codex built-Jev fixture\n"
+    },
+    "started.txt": {
+      "sha256": "70fdb269b53831677d0b65ffe50ed1d8ae147d7319493584728d7f8fdec2405e",
+      "text": "Started\n"
+    },
+    "report.txt": {
+      "sha256": "a3ad8f59855f75d42bcbfb5ba867d2767cacb326d3ce5e1898ecf51757556039",
+      "text": "Total: 36 units\n"
+    }
+  },
+  "pairing": [
+    {
+      "same_tool_input": true,
+      "matching_native_tool_use_ids": true,
+      "pairing_limit": null
+    },
+    {
+      "same_tool_input": true,
+      "matching_native_tool_use_ids": true,
+      "pairing_limit": null
+    }
+  ],
+  "stop_status": "assessed",
+  "limits": [
+    "One episode per case; synthetic closed judgments, not judgment accuracy.",
+    "Retained inherited user instructions and ordinary enabled user hooks; not isolated context or process containment.",
+    "Default Jev installer does not match apply_patch.",
+    "Model selection and catalog do not attest opaque provider routing."
+  ],
+  "native_transcript": {
+    "sha256": "03f39c5388e043584753cf0f8d16f2db4b8d9cfb4d9ff47100dd813f25a343c9",
+    "bytes": 168583
+  },
+  "native_terminal_events": [
+    {
+      "type": "thread.started",
+      "thread_id": "01a0eada-a752-7df0-80a7-28c7e6e7a95b"
+    },
+    {
+      "type": "turn.completed",
+      "usage": {
+        "input_tokens": 72622,
+        "cached_input_tokens": 55680,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 226,
+        "reasoning_output_tokens": 89
+      }
+    }
+  ]
+}

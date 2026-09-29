@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""Fixture containment and public, non-authoritative accounting projection."""
+
+import argparse
+import json
+import os
+import re
+import stat
+from pathlib import Path
+
+
+FIELDS = ("inputTokens", "cachedInputTokens", "outputTokens", "reasoningOutputTokens", "totalTokens")
+
+
+def parsed_effect(hook):
+    name = hook.get("tool_name")
+    data = hook.get("tool_input")
+    if not isinstance(data, dict):
+        return None, "malformed_input"
+    if name == "Write":
+        path, content = data.get("file_path"), data.get("content")
+    elif name == "apply_patch":
+        command = data.get("command")
+        if not isinstance(command, str) or len(command.encode()) > 4096:
+            return None, "unsupported_patch"
+        match = re.fullmatch(r"\*\*\* Begin Patch\n\*\*\* Add File: ([^\n]+)\n((?:\+[^\n]*\n)+)\*\*\* End Patch\n?", command)
+        if not match:
+            return None, "unsupported_patch"
+        path = match.group(1)
+        content = "".join(line[1:] + "\n" for line in match.group(2).splitlines())
+    else:
+        return None, "unsupported_tool"
+    if not isinstance(path, str) or not isinstance(content, str) or not path or "\x00" in path:
+        return None, "malformed_input"
+    return {"path": path, "content": content}, None
+
+
+def guard(payload):
+    hook = payload.get("hook", {})
+    cwd = payload.get("cwd")
+    inventory = payload.get("inventory")
+    def deny(reason):
+        return {"schema": "sys1-fixture-containment/v1", "containment": "denied", "reason": reason, "effect": None}
+    if not isinstance(cwd, str) or not Path(cwd).is_absolute() or hook.get("cwd") != cwd:
+        return deny("cwd_mismatch")
+    if not isinstance(inventory, dict) or not inventory:
+        return deny("invalid_inventory")
+    effect, reason = parsed_effect(hook)
+    if reason:
+        return deny(reason)
+    raw = Path(effect["path"])
+    if ".." in raw.parts or "." in raw.parts:
+        return deny("unsafe_path")
+    destination = raw if raw.is_absolute() else Path(cwd) / raw
+    destination = Path(os.path.abspath(destination))
+    try:
+        relative = destination.relative_to(cwd)
+    except ValueError:
+        return deny("outside_fixture")
+    if str(destination) not in inventory or inventory[str(destination)] != effect["content"]:
+        return deny("outside_inventory")
+    parent = destination.parent
+    if not parent.is_dir() or parent.resolve() != parent:
+        return deny("unsafe_parent")
+    try:
+        target = destination.lstat()
+    except FileNotFoundError:
+        target = None
+    if target is not None:
+        return deny("symlink_target" if stat.S_ISLNK(target.st_mode) else "existing_target")
+    return {"schema": "sys1-fixture-containment/v1", "containment": "within_fixture", "reason": None,
+            "effect": {"relative_path": str(relative), "content_bytes": len(effect["content"].encode())}}
+
+
+def raw_claude_usage(events):
+    rows = []
+    for index, event in enumerate(events):
+        if not isinstance(event, dict):
+            continue
+        usage = event.get("message", {}).get("usage") if event.get("type") == "assistant" else event.get("usage")
+        if event.get("type") in {"assistant", "result"} and isinstance(usage, dict):
+            rows.append({"event_index": index, "event_type": event["type"],
+                         "fields": {key: value for key, value in usage.items()
+                                    if isinstance(value, (int, float)) and not isinstance(value, bool)}})
+    return rows
+
+
+def accounting(payload):
+    harness, events = payload.get("harness"), payload.get("events", [])
+    if harness == "claude":
+        results = [event for event in events if isinstance(event, dict) and event.get("type") == "result"]
+        turn_outputs = [event.get("usage", {}).get("output_tokens") for event in results]
+        observed = sum(turn_outputs) if results and all(isinstance(value, int) for value in turn_outputs) else None
+        model_usage = []
+        for index, event in enumerate(events):
+            if isinstance(event, dict) and event.get("type") == "result" and isinstance(event.get("modelUsage"), dict):
+                fields = {name: {key: value for key, value in row.items() if isinstance(value, int)}
+                          for name, row in event["modelUsage"].items() if isinstance(row, dict)}
+                model_usage.append({"event_index": index, "fields": fields})
+        return {"status": "unknown", "reason": "claude_usage_nesting_unqualified",
+                "raw_usage": raw_claude_usage(events), "raw_model_usage": model_usage,
+                "observed_completed_turn_output_tokens": observed, "episode_total_tokens": None,
+                "billing_claim": None}
+    if harness != "codex":
+        return {"status": "unknown", "reason": "unsupported_harness", "episode_total_tokens": None}
+    rows = []
+    for index, event in enumerate(events):
+        if not isinstance(event, dict) or event.get("method") != "thread/tokenUsage/updated":
+            continue
+        params = event.get("params", {})
+        total = params.get("tokenUsage", {}).get("total", {})
+        if all(isinstance(total.get(key), int) and total[key] >= 0 for key in FIELDS):
+            rows.append({"event_index": index, "turn_index_label": str(params.get("turnId", "")),
+                         "total": {key: total[key] for key in FIELDS}})
+    result = {"status": "unknown", "reason": None, "episode_total_tokens": None,
+              "raw_notification_count": len(rows), "duplicate_total_count": 0,
+              "observed_cumulative_delta_tokens": None, "component_deltas": None,
+              "raw_cumulative_totals": [row["total"] for row in rows], "billing_claim": None}
+    baseline = payload.get("baseline")
+    if not isinstance(baseline, dict) or baseline.get("kind") not in {"verified_empty_thread", "observed_pre_start"}:
+        result["reason"] = "missing_pre_episode_baseline"
+        return result
+    start = baseline.get("total", {})
+    if not all(isinstance(start.get(key), int) and start[key] >= 0 for key in FIELDS):
+        result["reason"] = "malformed_baseline"
+        return result
+    if baseline["kind"] == "verified_empty_thread" and any(start[key] for key in FIELDS):
+        result["reason"] = "nonzero_empty_thread_baseline"
+        return result
+    if not rows:
+        result["reason"] = "missing_usage_endpoint"
+        return result
+    prior = start
+    for row in rows:
+        total = row["total"]
+        if total == prior:
+            result["duplicate_total_count"] += 1
+        if any(total[key] < prior[key] for key in FIELDS):
+            result["reason"] = "cumulative_regression"
+            return result
+        prior = total
+    final = rows[-1]["total"]
+    result["observed_cumulative_delta_tokens"] = final["totalTokens"] - start["totalTokens"]
+    result["component_deltas"] = {key: final[key] - start[key] for key in FIELDS if key != "totalTokens"}
+    terminal = payload.get("terminal")
+    if not isinstance(terminal, dict) or terminal.get("status") != "completed":
+        result["reason"] = "missing_terminal"
+    else:
+        result["reason"] = "codex_native_exposure_and_synthetic_fills_unqualified"
+    return result
+
+
+def grade(payload):
+    result = {"schema": "sys1-public-grading/v1", "accounting": accounting(payload),
+              "cost_scope": "reported tokens only; no billing, quota, or Jev cost claim",
+              "manual_effort": "not_timed", "jev_request_cost": "unknown_not_measured",
+              "one_time_prepare_duration_ns": payload.get("one_time_prepare_duration_ns"),
+              "operator_requests_observed": payload.get("operator_requests_observed")}
+    stages = []
+    for index, stage in enumerate(payload.get("stages", [])):
+        captures = stage.get("captures", [])
+        first = captures[0].get("primary", {}) if captures else None
+        stages.append({"stage_index": index, "sent_user_turn": bool(stage.get("sent_user_turn")),
+                       "native_terminal_status": stage.get("native_terminal_status"),
+                       "hook_count": len(captures),
+                       "first_context_availability": first.get("availability") if first else None,
+                       "current_user_turn_on_first_read": stage.get("current_user_turn_on_first_read"),
+                       "assistant_referent_on_first_read": stage.get("assistant_referent_on_first_read"),
+                       "primary_read_duration_ns": stage.get("primary_read_duration_ns"),
+                       "hook_total_duration_ns": stage.get("hook_total_duration_ns"),
+                       "artificial_second_read_delay_ms": stage.get("artificial_second_read_delay_ms"),
+                       "later_hook_context_availability": stage.get("later_hook_context_availability", []),
+                       "later_hook_current_user_turn": stage.get("later_hook_current_user_turn", []),
+                       "later_context_availability": [c.get("secondary_timing_probe", {}).get("availability") for c in captures],
+                       "proposal_observed": bool(stage.get("proposal_observed")),
+                       "target_exists": stage.get("target_exists"),
+                       "marker_exists": stage.get("marker_exists")})
+    result["stages"] = stages
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", choices=["guard", "grade"])
+    parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    payload = json.loads(args.input.read_text())
+    result = guard(payload) if args.mode == "guard" else grade(payload)
+    with args.output.open("x") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({"status": result.get("containment", result.get("accounting", {}).get("status"))}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,48 @@
+{
+  "source_revision": "23c3f865f36aa3c727d33cf6d10fab3c1967a5d0",
+  "publication_revision": "ff3959be648d73a894bcf61b1726b9ac58fc4b30",
+  "source_review": "Independent r3 intent and procedure-structure review: no findings; six source/projection hashes matched.",
+  "behavior_review": "Independent controlled-consumer adjudication: no current source-contract finding blocking publication as an intake aid.",
+  "source_identity": {
+    ".agents/skills/handling-sys1-incidents/SKILL.md": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac",
+    ".agents/skills/handling-sys1-incidents/references/evidence-record.md": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+    ".agents/skills/handling-sys1-incidents/references/comparison-contract.md": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+    ".claude/skills/handling-sys1-incidents/SKILL.md": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac",
+    ".claude/skills/handling-sys1-incidents/references/evidence-record.md": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+    ".claude/skills/handling-sys1-incidents/references/comparison-contract.md": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981"
+  },
+  "adjudication": [
+    {
+      "candidate": "r1",
+      "finding": "Accounting omitted maintenance and amortization assumptions.",
+      "disposition": "Fixed in r2."
+    },
+    {
+      "candidate": "r1",
+      "finding": "Handback did not require per-case and per-harness reporting before aggregates.",
+      "disposition": "Fixed in r2."
+    },
+    {
+      "candidate": "r2",
+      "finding": "Consumer omitted maintenance and missing case-level breakdowns despite the source correction.",
+      "disposition": "r3 makes handback completeness explicit; fresh consumer exposed those gaps."
+    }
+  ],
+  "limits": [
+    "Baseline and r1 consumers also requested context/cost evidence and selected ordinary harness behavior; no attributable behavioral improvement established.",
+    "One application per candidate to two authored cases; no generalized compliance or population reliability claim.",
+    "r3 consumer did not mention amortization; it made no amortized cost claim. Consumer handling of amortization remains unproven.",
+    "Catalog-assisted routing and one negative ENOSPC probe do not qualify native automatic skill triggering.",
+    "The ENOSPC probe used the unchanged catalog/description from r1; its discovery inputs match r3.",
+    "Actual execution model/authority enforcement are not product-attested by the native subagent interface.",
+    "Procedure timing, tokens, and quota were not measured."
+  ],
+  "validation": {
+    "plugin_eval": "r3: zero failure/warning checks; static inspection only",
+    "quick_validate": "passed",
+    "provingkit_source_validator": "passed before source commit and after main integration",
+    "diff_check": "passed",
+    "claude_projection": "three files byte-identical",
+    "installation": "repo-carried source and Claude projection only; no global skill or hook installation"
+  }
+}

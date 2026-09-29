@@ -1,0 +1,17 @@
+{
+  "qualification": "{scratch}/native-preflight-v283-qualification.json",
+  "qualified_hashes": {
+    "script": "891a1f8328c43be5bad405450cc4f486af4a32439c670fb4b6c68fd6d3fa5ed3",
+    "manifest": "43cbfd413efe3078a9fc1367d50217fb55e09cde08a0ed5e4dcf04e473fcab23",
+    "stdout": "69147765b0c6c5eb17b796b1b904e421be1711a1794bb180df1d07f357fcd6a2",
+    "effects": "801c408feb572cef895a5b786f97359db0d85c1170d350bc4135a2e71023d79a"
+  },
+  "source_hashes": {
+    "dist/src/client.js": "613e02005bea1c8fb22ce01a9e89d4e9a9bd0bd3ad97a90f9af7531ae77891e6",
+    "dist/src/config.js": "349b6b0c950a6e3f868d22eb969cfc681610a9d805ea66dc949f64babba66eec",
+    "dist/src/safety.js": "cac12dd160ebe9b236d5af7c206e8aeaa6b14802d3f783bd4818c474c45c3554",
+    "dist/src/supervise.js": "b88e9452a01c2d2b2383c6a8c4457cf350e9dbc0bb29aa6d5d07bf0a53fc13df",
+    "dist/src/commands/hook.js": "882c2d8888b588ab8380dba244ab60d3ca3b501473e554161f259b20876c65e7",
+    "dist/src/recipes/questions.js": "8b17c50672d50241383d8052284db22617aecd93d2e1ce50f693d70ab0ae2bcd"
+  }
+}

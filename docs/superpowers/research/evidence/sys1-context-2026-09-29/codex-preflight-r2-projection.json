@@ -1,0 +1,29 @@
+{
+  "schema": "sys1-codex-preflight-observation/v1",
+  "harness": "Codex CLI 0.159.0 dedicated app-server",
+  "model": "gpt-6-sol",
+  "effort": "high",
+  "status": "stopped_before_first_user_turn",
+  "error": "Codex sandbox differs",
+  "observed_sandbox": {
+    "type": "workspaceWrite",
+    "writableRoots": [],
+    "networkAccess": false,
+    "excludeTmpdirEnvVar": false,
+    "excludeSlashTmp": false
+  },
+  "cwd_matches_fixture": true,
+  "approval_policy": "on-request",
+  "approvals_reviewer": "user",
+  "user_turns_submitted": 0,
+  "hook_records_observed": 0,
+  "cause": "preflight required an explicit cwd additional-root entry; the versioned source includes cwd implicitly",
+  "raw_sha256": {
+    "manifest.json": "fbea353b4e3d0970b2de3b1f66679eac158f0f27cc15e3b7f4a9bdefa7a8104e",
+    "native-stdout.log": "1aefd21a5ac7b07848948679c8191408edcf16d3ef23094b63897e97e64ee30b",
+    "private/run-status.json": "332ef938103a4886b22c75370ab0fb23127bb2936a5b0f5ea43876bde444da6f",
+    "private/timeline.json": "dd78de533c5177ba4e792c7c47b8395056ca0218520d8ea499d3c044d9aa8e73"
+  },
+  "usage": "no model turn submitted; no provider-usage observation",
+  "preserved_for_accounting": true
+}

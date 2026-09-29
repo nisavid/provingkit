@@ -1,0 +1,27 @@
+from pathlib import Path
+import importlib.util,json,hashlib,tempfile,time
+S=Path(__file__).parent
+
+def load(n):
+ spec=importlib.util.spec_from_file_location(n,S/n);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
+m=load('recovery-native-codex-app-server-r6.py');transport=load('recovery-claude-message-probe.py')
+rows=list(map(json.loads,(S/'recovery-codex-batch-r5.jsonl').read_text().splitlines()))
+for index in [0,3,4,5]:
+ item=rows[index];root=Path(item['root']);attempt=Path(tempfile.mkdtemp(prefix='recovery-codex-r5-reanalysis-',dir=S));manifest=json.loads((root/'manifest.json').read_text());config=manifest['config']
+ start=json.loads((root/'effective-thread-start.json').read_text());session=start['thread']['id']
+ histories=sorted(root.glob('turn-*-history.json'));last=json.loads(histories[-1].read_text());ids=[t['id'] for t in last['data']];sent=[v['text'] for v in config['messages'][:len(ids)]]
+ result={'original_index':index,'root':str(root),'attempt':str(attempt),'original_status':item['status'],'original_observation_sha256':item['observation_sha256'],'claim':'model-free reanalysis; original failed observation remains unchanged','sources':{n:hashlib.sha256((S/n).read_bytes()).hexdigest() for n in ['recovery-native-codex-app-server-r6.py','recovery-claude-message-probe.py',Path(__file__).name]},'status':'failed'}
+ try:
+  m.verify_sources(manifest['sources']);m.verify_thread_start(start,root);m.verify_connectors(json.loads((root/'connector-inventory.json').read_text()))
+  turns=m.verify_history(last,sent,ids);hooks=m.verify_hooks(root,session,ids,sent)
+  transcript=[json.loads(line) for line in (root/('turn-'+str(len(ids)-1)+'-rollout.jsonl')).read_text().splitlines()];contexts=m.verify_runtime_contexts(transcript,root,session,ids)
+  diagnostic=m.stderr_diagnostics((root/'native-stderr.log').read_bytes(),session=session)
+  persisted,reader=m.persisted_history(manifest['prefix']+manifest['common'],root/'project',attempt,transport,session,sent,ids)
+  assert persisted==turns,'persisted history changed'
+  m.verify_sources(manifest['sources']);assert m.tree(Path(config['package'])/'dist')==config['dist_files']
+  effects=m.effects(root,manifest)
+  result.update(status='reanalysed',session=session,native_user_turns=len(ids),turns=turns,effects=effects,proposals=[r['outcome'] for r in hooks if r['outcome'].get('kind')=='proposal'],native_turn_contexts=contexts,diagnostics=diagnostic+reader,persistence='identical full native history read by a fresh model-free server',denial_evidence=[m.turn_feedback(hooks,t,transcript) for t in turns])
+  m.save(attempt/'persisted-turns.json',persisted)
+ except Exception as e:result['error']=type(e).__name__+': '+str(e)
+ m.save(attempt/'reanalysis.json',result)
+ print(json.dumps({k:result.get(k) for k in ['original_index','attempt','status','error','native_user_turns','effects']}),flush=True)

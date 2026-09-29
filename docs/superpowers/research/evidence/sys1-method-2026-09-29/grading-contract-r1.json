@@ -1,0 +1,18 @@
+{
+  "plan": [
+    "Loads relevant skill and comparison reference",
+    "Keeps removal/ordinary and deterministic baselines eligible without selecting permanent Sys1 role",
+    "Distinguishes recovering from added intervention from replacing existing work",
+    "Requires observable available current context before first judgment, keeps fixture label/approval oracle out of candidate",
+    "Specifies whole-task cost including setup, context preparation, downstream models, retries/failures, operator effort and terminal non-action; unknown is not zero",
+    "Keeps reliability bar and cost tradeoffs with owner and distinct safety/alignment",
+    "Returns missing inputs and pre-run freeze rather than running or rolling out"
+  ],
+  "select": [
+    "Treats supplied numbers as synthetic case evidence",
+    "Rejects individual Jev price as whole-workflow allocation criterion",
+    "Selects ordinary harness as best supported in these cases under given priorities; added checks have no demonstrated benefit",
+    "Retains one-time setup, human time/billing/quota unknowns, separate latency and dollar estimates",
+    "Limits result to constructed cases; no population or live adoption authority"
+  ]
+}

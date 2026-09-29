@@ -800,9 +800,35 @@ def check(repository, base_revision, candidate_revision, receipt_root):
     """
     receipt_root = core.relative_path(receipt_root)
     comparison = compare(repository, base_revision, candidate_revision)
+    return _check_selected(repository, candidate_revision, receipt_root, comparison,
+                           comparison["affected_skills"])
+
+
+def check_member(repository, base_revision, candidate_revision, receipt_root, member):
+    """Check one member's selected receipts while retaining full Slate applicability.
+
+    A pass covers only checked_skills. Global selection failures still fail this
+    call; receipt outcomes from other members are outside its receipt scope.
+    """
+    receipt_root = core.relative_path(receipt_root)
+    comparison = compare(repository, base_revision, candidate_revision)
+    members = set()
+    for side in ("base", "candidate"):
+        source = Source(repository, comparison["inventory_summary"][side]["revision"])
+        members.update(row["id"] for row in source.json(DEFINITION)["membership"]["members"])
+    if not isinstance(member, str) or member not in members:
+        raise InventoryError("member is outside the committed old/new Slate")
+    selected = [key for key in comparison["affected_skills"] if key.split("/", 1)[0] == member]
+    result = _check_selected(repository, candidate_revision, receipt_root, comparison, selected)
+    result.update(member=member, checked_skills=selected)
+    result["coverage_basis"]["receipt_scope"] = "selected-member"
+    return result
+
+
+def _check_selected(repository, candidate_revision, receipt_root, comparison, selected):
     source = Source(repository, candidate_revision)
     results = []
-    for key in comparison["affected_skills"]:
+    for key in selected:
         described = descriptor(repository, candidate_revision, key)
         row = {"skill": key, "diagnostics": described["diagnostics"]}
         if described["status"] != "ready":
@@ -821,7 +847,7 @@ def check(repository, base_revision, candidate_revision, receipt_root):
         results.append(row)
     failed = comparison["status"] != "complete" or any(row["status"] != "pass" for row in results)
     return {"schema_version": 1, "status": "fail" if failed else "pass" if results else "not-required",
-            "base_revision": base_revision, "candidate_revision": candidate_revision, "receipt_root": receipt_root,
+            "base_revision": comparison["base_revision"], "candidate_revision": candidate_revision, "receipt_root": receipt_root,
             "coverage_basis": {"selection": "committed-inventory-comparison",
                 "core_check": "candidate-as-both-revisions-with-explicit-selected-skill",
                 "freshness": "evaluated-source-to-containing-commit"},

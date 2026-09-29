@@ -1,0 +1,79 @@
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+CLI = Path(__file__).parent / "probe.py"
+PROJECT = "/synthetic/project"
+OBSERVED = {"cwd": PROJECT, "approvalPolicy": "on-request", "approvalsReviewer": "user",
+            "sandbox": {"type": "workspaceWrite", "writableRoots": [], "networkAccess": False,
+                        "excludeTmpdirEnvVar": False, "excludeSlashTmp": False}}
+
+
+def verify(surface, record):
+    with tempfile.TemporaryDirectory() as temporary:
+        path = Path(temporary) / "record.json"
+        path.write_text(json.dumps(record))
+        return subprocess.run([sys.executable, str(CLI), "verify-codex-sandbox", "--surface", surface,
+                               "--project", PROJECT, "--input", str(path)], capture_output=True, text=True)
+
+
+class CodexSandboxBoundary(unittest.TestCase):
+    def test_literal_observed_thread_start_and_explicit_project_root(self):
+        self.assertEqual(verify("thread-start", OBSERVED).returncode, 0)
+        with_root = {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "writableRoots": [PROJECT]}}
+        self.assertEqual(verify("thread-start", with_root).returncode, 0)
+
+    def test_equivalent_effective_settings_and_persisted_context(self):
+        settings = {"cwd": PROJECT, "sandboxPolicy": {**OBSERVED["sandbox"]}}
+        context = {"cwd": PROJECT, "sandbox_policy": {"type": "workspace-write", "writable_roots": [],
+                   "network_access": False, "exclude_tmpdir_env_var": False, "exclude_slash_tmp": False}}
+        self.assertEqual(verify("settings", settings).returncode, 0)
+        self.assertEqual(verify("settings", {**settings, "sandboxPolicy": {
+                         key: value for key, value in settings["sandboxPolicy"].items()
+                         if key != "writableRoots"}}).returncode, 0)
+        self.assertEqual(verify("persisted", context).returncode, 0)
+        self.assertEqual(verify("persisted", {**context, "sandbox_policy": {
+                         key: value for key, value in context["sandbox_policy"].items()
+                         if key != "writable_roots"}}).returncode, 0)
+        self.assertEqual(verify("persisted", {**context, "sandbox_policy": {
+                         "type": "workspace-write"}}).returncode, 0)
+        self.assertEqual(verify("persisted", {**context, "sandbox_policy": {**context["sandbox_policy"],
+                         "writable_roots": [PROJECT]}}).returncode, 0)
+
+    def test_rejects_extra_roots_wrong_cwd_type_network_and_tmp_flags(self):
+        variants = [
+            {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "writableRoots": ["/synthetic/extra"]}},
+            {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "writableRoots": [PROJECT, "/synthetic/extra"]}},
+            {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "writableRoots": [PROJECT, PROJECT]}},
+            {**OBSERVED, "cwd": "/synthetic/other"},
+            {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "type": "dangerFullAccess"}},
+            {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "networkAccess": True}},
+            {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "excludeTmpdirEnvVar": True}},
+            {**OBSERVED, "sandbox": {**OBSERVED["sandbox"], "excludeSlashTmp": True}},
+        ]
+        for record in variants:
+            self.assertNotEqual(verify("thread-start", record).returncode, 0, record)
+        context = {"cwd": PROJECT, "sandbox_policy": {"type": "workspace-write", "writable_roots": [],
+                   "network_access": False, "exclude_tmpdir_env_var": False, "exclude_slash_tmp": False}}
+        settings = {"cwd": PROJECT, "sandboxPolicy": {**OBSERVED["sandbox"]}}
+        for surface, baseline, policy_key, roots_key, network_key, tmpdir_key, slash_tmp_key in (
+            ("settings", settings, "sandboxPolicy", "writableRoots", "networkAccess",
+             "excludeTmpdirEnvVar", "excludeSlashTmp"),
+            ("persisted", context, "sandbox_policy", "writable_roots", "network_access",
+             "exclude_tmpdir_env_var", "exclude_slash_tmp"),
+        ):
+            self.assertNotEqual(verify(surface, {**baseline, "cwd": "/synthetic/other"}).returncode, 0)
+            for field, value in ((roots_key, ["/synthetic/extra"]),
+                                 (roots_key, [PROJECT, "/synthetic/extra"]),
+                                 (network_key, True), (tmpdir_key, True), (slash_tmp_key, True),
+                                 ("type", "dangerFullAccess")):
+                changed = {**baseline, policy_key: {**baseline[policy_key], field: value}}
+                self.assertNotEqual(verify(surface, changed).returncode, 0, (surface, field, value))
+
+
+if __name__ == "__main__":
+    unittest.main()

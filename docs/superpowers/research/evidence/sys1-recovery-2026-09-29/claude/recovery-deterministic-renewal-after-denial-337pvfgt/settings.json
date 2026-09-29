@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-deterministic-renewal-after-denial-337pvfgt c3ca2673525218f0c781fd8b6db629c1ead2658db73eb1665b3f9af1cdb7cc88",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-deterministic-renewal-after-denial-337pvfgt c3ca2673525218f0c781fd8b6db629c1ead2658db73eb1665b3f9af1cdb7cc88",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}
