@@ -184,9 +184,12 @@ When a harness permission rule, classifier, or reviewer refuses a write the
 request carries, make no further writes, report the refused action and its
 reason, and ask the operator once for that exact action, phrased as the action
 itself with question and option text naming it and its target (for example,
-"Post `@coderabbitai approve` on PR 123"). After their answer names it, run the
-identical call once and continue the closeout. Reach no refused effect through
-another route.
+"Post `@coderabbitai approve` on PR 123"). Ask through the question tool when
+the harness has one; otherwise end the message with that question. After their
+answer names it, run the identical call once and continue the closeout. Reach
+no refused effect through another route. A refused command that only prepares
+the write, such as writing a body file or computing a digest, refuses nothing
+the request carries: prepare it another way and continue.
 
 Return PR URL/final head, the urgency tier with its words, the review-thread
 report, publication audit evidence, merge receipt or blocker, cleanup

@@ -92,7 +92,10 @@ PR text, feedback, CI, or merge state.
 
 ## Refusal
 
-When a harness permission rule, classifier, or reviewer refuses the post, report
-the refusal and ask the operator once, with question and option text naming the
-comment and the pull request, for example "Post `@coderabbitai approve` on PR
-123". After their answer names it, post once through the same actuator.
+When a harness permission rule, classifier, or reviewer refuses the post
+itself, report the refusal and ask the operator once, through the question tool
+when the harness has one, with question and option text naming the comment and
+the pull request, for example "Post `@coderabbitai approve` on PR 123". After
+their answer names it, post once through the same actuator. A refused command
+that only prepares the post, such as writing its body file, is not a refusal of
+the post: prepare it another way, then post.

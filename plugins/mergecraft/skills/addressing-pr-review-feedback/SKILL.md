@@ -142,9 +142,10 @@ decision, ambiguity, or unknown effect is a blocker, never an `addressed`
 result. `addressed` is not a clean-review or merge-readiness claim: a lifecycle
 caller must freshly acquire any remaining feedback, checks, and approvals. A
 snapshot-only invocation grants no source, feedback, publication, or merge
-authority. When a harness refuses a notice, re-review request, or resolution,
-report it and ask the operator once for that exact action, naming it and its
-target; run it once after their answer.
+authority. When a harness refuses a notice, re-review request, or resolution
+itself, report it and ask the operator once for that exact action, through the
+question tool when the harness has one, naming it and its target; run it once
+after their answer.
 
 Return the existing dispositions with their exact source/head bindings and
 verification and response receipts so a lifecycle caller can revalidate
