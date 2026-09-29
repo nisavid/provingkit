@@ -607,7 +607,12 @@ function validateRules(value) {
 function validateField(
   field,
   collection,
-  { source, freshness, validateValue },
+  {
+    source,
+    freshness,
+    failureStage,
+    validateValue,
+  },
 ) {
   exactKeys(field, [
     'source',
@@ -651,7 +656,7 @@ function validateField(
     field.status !== 'unavailable' ||
     field.value !== null ||
     !FAILURE_CLASS_SET.has(field.failureClass) ||
-    !FAILURE_STAGE_SET.has(field.failureStage)
+    field.failureStage !== failureStage
   ) {
     invalid();
   }
@@ -703,18 +708,21 @@ function validateObservation(observation, binding, observedAt) {
   validateField(fields.accountInfo, collection, {
     source: 'Query.accountInfo',
     freshness: 'initialization-cache',
+    failureStage: 'accountInfo',
     validateValue: validateAccount,
   });
 
   validateField(fields.getContextUsageSummary, collection, {
     source: 'Query.getContextUsage(summary)',
     freshness: 'query-report; freshness unproven',
+    failureStage: 'getContextUsageSummary',
     validateValue: value => text(value),
   });
 
   validateField(fields.listPermissionRules, collection, {
     source: 'Query.listPermissionRules',
     freshness: 'query-report; permission coverage partial',
+    failureStage: 'listPermissionRules',
     validateValue: validateRules,
   });
 
@@ -725,8 +733,14 @@ function validateObservation(observation, binding, observedAt) {
     validateValue: value => validateHost(value, binding),
   };
 
-  validateField(fields.hostBefore, collection, hostDescriptor);
-  validateField(fields.hostAfter, collection, hostDescriptor);
+  validateField(fields.hostBefore, collection, {
+    ...hostDescriptor,
+    failureStage: 'hostBefore',
+  });
+  validateField(fields.hostAfter, collection, {
+    ...hostDescriptor,
+    failureStage: 'hostAfter',
+  });
 
   if (
     fields.hostBefore.status === 'available' &&

@@ -7,6 +7,7 @@ import {
 import { TextDecoder } from 'node:util';
 
 import {
+  FIELD_NAMES,
   MAX_CWD_BYTES,
   MAX_OBSERVATION_WINDOW_MS,
   MAX_SAMPLES,
@@ -192,11 +193,36 @@ function selectSample(acquisition) {
 }
 
 function sampleEvidence(sample) {
+  const fieldOutcomes = Object.fromEntries(
+    FIELD_NAMES.map(name => {
+      const field = sample.observation.fields[name];
+      const gaps =
+        field.status === 'available' &&
+        Array.isArray(field.value?.gaps)
+          ? field.value.gaps.map(gap => ({
+              field: gap.field,
+              failureClass: gap.failureClass,
+            }))
+          : [];
+
+      return [
+        name,
+        {
+          status: field.status,
+          failureClass: field.failureClass,
+          failureStage: field.failureStage,
+          gaps,
+        },
+      ];
+    }),
+  );
+
   return {
     binding: { ...sample.binding },
     sequence: sample.sequence,
     observedAt: sample.observedAt,
     observedAtMonotonicMs: sample.observedAtMonotonicMs,
+    result: sample.result,
     collection: {
       startedAt: sample.observation.collection.startedAt,
       endedAt: sample.observation.collection.endedAt,
@@ -205,6 +231,7 @@ function sampleEvidence(sample) {
       endedAtMonotonicMs:
         sample.observation.collection.endedAtMonotonicMs,
     },
+    fieldOutcomes,
   };
 }
 

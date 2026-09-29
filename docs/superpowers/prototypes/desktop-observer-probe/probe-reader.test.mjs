@@ -382,6 +382,72 @@ test('a bounded public sample round-trips through the strict reader', async t =>
     unknown('invalid-sample'),
   );
 
+  const unavailableStageCases = [
+    {
+      field: 'accountInfo',
+      expectedStage: 'accountInfo',
+      tamperedStage: 'hostAfter',
+      clearsHostComparison: false,
+    },
+    {
+      field: 'hostBefore',
+      expectedStage: 'hostBefore',
+      tamperedStage: 'accountInfo',
+      clearsHostComparison: true,
+    },
+  ];
+
+  for (const fixture of unavailableStageCases) {
+    const legitimate = JSON.parse(serialized);
+    Object.assign(
+      legitimate.observation.fields[fixture.field],
+      {
+        status: 'unavailable',
+        failureClass: 'rejected',
+        failureStage: fixture.expectedStage,
+        value: null,
+      },
+    );
+
+    if (fixture.clearsHostComparison) {
+      legitimate.observation.collection
+        .hostChangedDuringRead = null;
+    }
+
+    const legitimateInspection = inspectProbeSample(
+      JSON.stringify(legitimate),
+      expectedBinding,
+      inspectionOptions(),
+    );
+
+    assert.equal(
+      legitimateInspection.state,
+      'usable-partial',
+    );
+    assert.equal(
+      legitimateInspection.sample.observation.fields[
+        fixture.field
+      ].failureStage,
+      fixture.expectedStage,
+    );
+
+    const tampered = JSON.parse(
+      JSON.stringify(legitimate),
+    );
+    tampered.observation.fields[
+      fixture.field
+    ].failureStage = fixture.tamperedStage;
+
+    assert.deepEqual(
+      inspectProbeSample(
+        JSON.stringify(tampered),
+        expectedBinding,
+        inspectionOptions(),
+      ),
+      unknown('invalid-sample'),
+    );
+  }
+
   const withoutRequiredGap = JSON.parse(serialized);
 
   for (const name of ['hostBefore', 'hostAfter']) {

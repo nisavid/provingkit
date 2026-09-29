@@ -93,6 +93,7 @@ function usableInspection({
       sequence,
       observedAt,
       observedAtMonotonicMs,
+      result: 'complete',
       observation: {
         collection: {
           startedAt: observedAt,
@@ -102,14 +103,40 @@ function usableInspection({
           hostChangedDuringRead: false,
         },
         fields: {
+          accountInfo: {
+            status: 'available',
+            failureClass: null,
+            failureStage: null,
+            value: {},
+          },
+          getContextUsageSummary: {
+            status: 'available',
+            failureClass: null,
+            failureStage: null,
+            value: 'fixture-model',
+          },
+          listPermissionRules: {
+            status: 'available',
+            failureClass: null,
+            failureStage: null,
+            value: {},
+          },
           hostBefore: {
+            status: 'available',
+            failureClass: null,
+            failureStage: null,
             value: {
               selectedExecutorReport: beforeReport,
+              gaps: [],
             },
           },
           hostAfter: {
+            status: 'available',
+            failureClass: null,
+            failureStage: null,
             value: {
               selectedExecutorReport: afterReport,
+              gaps: [],
             },
           },
         },
@@ -830,8 +857,8 @@ test('an unknown process root is rejected without I/O and a valid fixture uses o
         selectedExecutorReport: {
           taskId: 'fixture-task',
           cliPid: pid,
-          cliPidAtMs: 1700000000000,
-          cliReportedVersion: 'fixture-version',
+          cliPidAtMs: null,
+          cliReportedVersion: null,
           currentCodeSessionId: 'fixture-code',
         },
       },
@@ -964,12 +991,67 @@ test('an unknown process root is rejected without I/O and a valid fixture uses o
     const selectedReport =
       sample.observation.fields.hostAfter.value
         .selectedExecutorReport;
+    const expectedFieldOutcomes = Object.fromEntries(
+      Object.entries(sample.observation.fields).map(
+        ([name, field]) => [
+          name,
+          {
+            status: field.status,
+            failureClass: field.failureClass,
+            failureStage: field.failureStage,
+            gaps:
+              (
+                name === 'hostBefore' ||
+                name === 'hostAfter'
+              ) &&
+              field.status === 'available'
+                ? field.value.gaps
+                : [],
+          },
+        ],
+      ),
+    );
 
     assert.deepEqual(
       sample.observation.fields.hostBefore.value
         .selectedExecutorReport,
       selectedReport,
     );
+    assert.deepEqual(
+      {
+        cliPidAtMs: selectedReport.cliPidAtMs,
+        cliReportedVersion:
+          selectedReport.cliReportedVersion,
+      },
+      {
+        cliPidAtMs: null,
+        cliReportedVersion: null,
+      },
+    );
+
+    for (const name of ['hostBefore', 'hostAfter']) {
+      assert.deepEqual(
+        sample.observation.fields[name].value.gaps.filter(
+          gap =>
+            gap.field ===
+              'selectedExecutorReport.cliPidAtMs' ||
+            gap.field ===
+              'selectedExecutorReport.cliReportedVersion',
+        ),
+        [
+          {
+            field: 'selectedExecutorReport.cliPidAtMs',
+            failureClass: 'unavailable',
+          },
+          {
+            field:
+              'selectedExecutorReport.cliReportedVersion',
+            failureClass: 'unavailable',
+          },
+        ],
+      );
+    }
+
     const descriptorRoot =
       `/proc/self/fd/${processDirectoryDescriptor}`;
 
@@ -1002,6 +1084,7 @@ test('an unknown process root is rejected without I/O and a valid fixture uses o
         sequence: sample.sequence,
         observedAt: sample.observedAt,
         observedAtMonotonicMs: sample.observedAtMonotonicMs,
+        result: sample.result,
         collection: {
           startedAt: sample.observation.collection.startedAt,
           endedAt: sample.observation.collection.endedAt,
@@ -1010,6 +1093,7 @@ test('an unknown process root is rejected without I/O and a valid fixture uses o
           endedAtMonotonicMs:
             sample.observation.collection.endedAtMonotonicMs,
         },
+        fieldOutcomes: expectedFieldOutcomes,
       },
       selectedReport,
       linuxIdentity: {
