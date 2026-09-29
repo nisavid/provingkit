@@ -11,7 +11,10 @@ import {
   MAX_OBSERVATION_WINDOW_MS,
   MAX_SAMPLE_BYTES,
   MAX_TEXT_BYTES,
+  MONOTONIC_CLOCK_ID,
   SAMPLE_SCHEMA,
+  SELECTED_EXECUTOR_REPORT_BASIS,
+  SELECTED_EXECUTOR_REPORT_KEYS,
   UNKNOWN_CLAIMS,
 } from './observer-contract.mjs';
 
@@ -317,6 +320,16 @@ function validateBinding(binding) {
   }
 
   if (binding.getterSetId !== GETTER_SET_ID) invalid();
+
+  if (
+    binding.monotonicClockId !== MONOTONIC_CLOCK_ID ||
+    typeof binding.linuxBootId !== 'string' ||
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u
+      .test(binding.linuxBootId)
+  ) {
+    invalid();
+  }
+
   return binding;
 }
 
@@ -345,17 +358,7 @@ function validateApps(value) {
 }
 
 function validateSelectedExecutorReport(value, binding) {
-  exactKeys(value, [
-    'taskId',
-    'cliPid',
-    'cliPidAtMs',
-    'cliReportedVersion',
-    'currentCodeSessionId',
-    'queryGeneration',
-    'historicProvenance',
-    'queryToOsAssociation',
-    'reportBasis',
-  ]);
+  exactKeys(value, SELECTED_EXECUTOR_REPORT_KEYS);
 
   nullableText(value.taskId);
 
@@ -389,8 +392,7 @@ function validateSelectedExecutorReport(value, binding) {
     ) ||
     value.historicProvenance !== 'unknown' ||
     value.queryToOsAssociation !== 'unknown' ||
-    value.reportBasis !==
-      'manager-retained-report; not independent OS association'
+    value.reportBasis !== SELECTED_EXECUTOR_REPORT_BASIS
   ) {
     invalid();
   }
@@ -592,11 +594,15 @@ function validateObservation(observation, binding, observedAt) {
   exactKeys(collection, [
     'startedAt',
     'endedAt',
+    'startedAtMonotonicMs',
+    'endedAtMonotonicMs',
     'hostChangedDuringRead',
   ]);
 
   timestamp(collection.startedAt);
   timestamp(collection.endedAt);
+  timestamp(collection.startedAtMonotonicMs);
+  timestamp(collection.endedAtMonotonicMs);
 
   if (collection.hostChangedDuringRead !== null) {
     boolean(collection.hostChangedDuringRead);
@@ -606,6 +612,16 @@ function validateObservation(observation, binding, observedAt) {
     collection.startedAt !== observedAt ||
     collection.endedAt < collection.startedAt ||
     collection.endedAt - collection.startedAt >
+      MAX_OBSERVATION_WINDOW_MS
+  ) {
+    invalid();
+  }
+
+  if (
+    collection.endedAtMonotonicMs <
+      collection.startedAtMonotonicMs ||
+    collection.endedAtMonotonicMs -
+      collection.startedAtMonotonicMs >
       MAX_OBSERVATION_WINDOW_MS
   ) {
     invalid();
@@ -682,6 +698,9 @@ export function inspectProbeSample(
   expectedBinding,
   {
     now = Date.now(),
+    monotonicNow,
+    monotonicClockId,
+    linuxBootId,
     afterSequence = 0,
     maximumAgeMs,
   } = {},
@@ -698,6 +717,10 @@ export function inspectProbeSample(
       Buffer.byteLength(serialized, 'utf8') > MAX_SAMPLE_BYTES ||
       !Number.isSafeInteger(now) ||
       now < 0 ||
+      !Number.isSafeInteger(monotonicNow) ||
+      monotonicNow < 0 ||
+      typeof monotonicClockId !== 'string' ||
+      typeof linuxBootId !== 'string' ||
       !Number.isSafeInteger(afterSequence) ||
       afterSequence < 0 ||
       !Number.isSafeInteger(maximumAgeMs) ||
@@ -714,6 +737,7 @@ export function inspectProbeSample(
       'schema',
       'sequence',
       'observedAt',
+      'observedAtMonotonicMs',
       'state',
       'binding',
       'result',
@@ -732,6 +756,7 @@ export function inspectProbeSample(
     }
 
     timestamp(sample.observedAt);
+    timestamp(sample.observedAtMonotonicMs);
     validateBinding(sample.binding);
 
     if (
@@ -742,6 +767,13 @@ export function inspectProbeSample(
       return unknown('binding-mismatch');
     }
 
+    if (
+      monotonicClockId !== sample.binding.monotonicClockId ||
+      linuxBootId !== sample.binding.linuxBootId
+    ) {
+      return unknown('incomparable-clock');
+    }
+
     if (sample.sequence <= afterSequence) {
       return unknown('not-newer');
     }
@@ -750,7 +782,15 @@ export function inspectProbeSample(
       return unknown('clock-before-observation');
     }
 
-    if (now - sample.observedAt > maximumAgeMs) {
+    if (monotonicNow < sample.observedAtMonotonicMs) {
+      return unknown('monotonic-clock-before-observation');
+    }
+
+    if (
+      now - sample.observedAt > maximumAgeMs ||
+      monotonicNow - sample.observedAtMonotonicMs >
+        maximumAgeMs
+    ) {
       return unknown('expired');
     }
 
@@ -790,8 +830,19 @@ export function inspectProbeSample(
       invalid();
     }
 
+    if (
+      collection.startedAtMonotonicMs !==
+      sample.observedAtMonotonicMs
+    ) {
+      invalid();
+    }
+
     if (now < collection.endedAt) {
       return unknown('clock-before-observation');
+    }
+
+    if (monotonicNow < collection.endedAtMonotonicMs) {
+      return unknown('monotonic-clock-before-observation');
     }
 
     return {

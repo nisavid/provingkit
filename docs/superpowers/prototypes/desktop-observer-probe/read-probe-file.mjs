@@ -73,6 +73,9 @@ export async function readProbeSample(input) {
       expectedBinding,
       now,
       afterSequence,
+      monotonicNow,
+      monotonicClockId,
+      linuxBootId,
       maximumAgeMs,
     } = input;
 
@@ -216,6 +219,9 @@ export async function readProbeSample(input) {
     return inspectProbeSample(serialized, expectedBinding, {
       now,
       afterSequence,
+      monotonicNow,
+      monotonicClockId,
+      linuxBootId,
       maximumAgeMs,
     });
   } catch {

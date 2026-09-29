@@ -6,22 +6,17 @@ import {
 } from 'node:path';
 import { TextDecoder } from 'node:util';
 
+import {
+  MAX_OBSERVATION_WINDOW_MS,
+  MONOTONIC_CLOCK_ID,
+  SELECTED_EXECUTOR_REPORT_BASIS,
+  SELECTED_EXECUTOR_REPORT_KEYS,
+} from './observer-contract.mjs';
+
 const MAX_STAT_BYTES = 4096;
 const MAX_EXECUTABLE_BYTES = 256 * 1024 * 1024;
 const HASH_BUFFER_BYTES = 64 * 1024;
 const MAX_TEXT_BYTES = 256;
-
-const REPORT_KEYS = Object.freeze([
-  'taskId',
-  'cliPid',
-  'cliPidAtMs',
-  'cliReportedVersion',
-  'currentCodeSessionId',
-  'queryGeneration',
-  'historicProvenance',
-  'queryToOsAssociation',
-  'reportBasis',
-]);
 
 const unknownSample = () => ({
   state: 'unknown',
@@ -75,7 +70,7 @@ function isNullableText(value) {
 
 function normalizeReport(value) {
   if (
-    !hasExactKeys(value, REPORT_KEYS) ||
+    !hasExactKeys(value, SELECTED_EXECUTOR_REPORT_KEYS) ||
     !isNullableText(value.taskId) ||
     (
       value.cliPid !== null &&
@@ -97,8 +92,7 @@ function normalizeReport(value) {
     value.queryGeneration < 1 ||
     value.historicProvenance !== 'unknown' ||
     value.queryToOsAssociation !== 'unknown' ||
-    value.reportBasis !==
-      'manager-retained-report; not independent OS association'
+    value.reportBasis !== SELECTED_EXECUTOR_REPORT_BASIS
   ) {
     return null;
   }
@@ -112,8 +106,7 @@ function normalizeReport(value) {
     queryGeneration: value.queryGeneration,
     historicProvenance: 'unknown',
     queryToOsAssociation: 'unknown',
-    reportBasis:
-      'manager-retained-report; not independent OS association',
+    reportBasis: SELECTED_EXECUTOR_REPORT_BASIS,
   };
 }
 
@@ -189,11 +182,55 @@ function sampleEvidence(sample) {
     binding: { ...sample.binding },
     sequence: sample.sequence,
     observedAt: sample.observedAt,
+    observedAtMonotonicMs: sample.observedAtMonotonicMs,
     collection: {
       startedAt: sample.observation.collection.startedAt,
       endedAt: sample.observation.collection.endedAt,
+      startedAtMonotonicMs:
+        sample.observation.collection.startedAtMonotonicMs,
+      endedAtMonotonicMs:
+        sample.observation.collection.endedAtMonotonicMs,
     },
   };
+}
+
+function isFreshAt(
+  sample,
+  maximumAgeMs,
+  wallNow,
+  monotonicNow,
+) {
+  const collection = sample?.observation?.collection;
+  const values = [
+    maximumAgeMs,
+    wallNow,
+    monotonicNow,
+    sample?.observedAt,
+    sample?.observedAtMonotonicMs,
+    collection?.endedAt,
+    collection?.endedAtMonotonicMs,
+  ];
+
+  if (
+    !values.every(
+      value =>
+        Number.isSafeInteger(value) && value >= 0,
+    ) ||
+    maximumAgeMs < 1 ||
+    maximumAgeMs > MAX_OBSERVATION_WINDOW_MS
+  ) {
+    return false;
+  }
+
+  return (
+    wallNow >= sample.observedAt &&
+    wallNow >= collection.endedAt &&
+    monotonicNow >= sample.observedAtMonotonicMs &&
+    monotonicNow >= collection.endedAtMonotonicMs &&
+    wallNow - sample.observedAt <= maximumAgeMs &&
+    monotonicNow - sample.observedAtMonotonicMs <=
+      maximumAgeMs
+  );
 }
 
 function validateExecutableState(state) {
@@ -216,6 +253,8 @@ export function createSelectedLinuxExecutorObserver({
   constants = fsConstants,
   getuid,
   now,
+  monotonicNow,
+  readLinuxBootId,
 }) {
   if (
     typeof processRoot !== 'string' ||
@@ -224,9 +263,24 @@ export function createSelectedLinuxExecutorObserver({
     typeof lstat !== 'function' ||
     typeof open !== 'function' ||
     typeof getuid !== 'function' ||
-    typeof now !== 'function'
+    typeof now !== 'function' ||
+    typeof monotonicNow !== 'function' ||
+    typeof readLinuxBootId !== 'function'
   ) {
     throw new TypeError('invalid selected executor I/O seam');
+  }
+
+  function isFreshNow(sample, maximumAgeMs) {
+    try {
+      return isFreshAt(
+        sample,
+        maximumAgeMs,
+        now(),
+        monotonicNow(),
+      );
+    } catch {
+      return false;
+    }
   }
 
   async function readOwnedProcessDirectory(
@@ -381,14 +435,37 @@ export function createSelectedLinuxExecutorObserver({
   }
 
   async function acquire(input) {
-    return readProbeSample({
+    const linuxBootId = await readLinuxBootId();
+    const acquisitionNow = now();
+    const acquisitionMonotonicNow = monotonicNow();
+    const acquisition = await readProbeSample({
       runDirectory: input.runDirectory,
       sequence: input.sequence,
       expectedBinding: input.expectedBinding,
-      now: now(),
+      now: acquisitionNow,
+      monotonicNow: acquisitionMonotonicNow,
+      monotonicClockId: MONOTONIC_CLOCK_ID,
+      linuxBootId,
       afterSequence: input.afterSequence,
       maximumAgeMs: input.maximumAgeMs,
     });
+
+    const selected = selectSample(acquisition);
+
+    if (
+      !selected ||
+      selected.sample.binding.monotonicClockId !==
+        MONOTONIC_CLOCK_ID ||
+      selected.sample.binding.linuxBootId !== linuxBootId ||
+      !isFreshNow(
+        selected.sample,
+        input.maximumAgeMs,
+      )
+    ) {
+      return null;
+    }
+
+    return selected;
   }
 
   return async function observeSelectedLinuxExecutor(input) {
@@ -403,7 +480,13 @@ export function createSelectedLinuxExecutorObserver({
     }
 
     const expectedUid = BigInt(input.expectedUid);
-    const selected = selectSample(await acquire(input));
+    let selected;
+
+    try {
+      selected = await acquire(input);
+    } catch {
+      return unknownSample();
+    }
 
     if (!selected) return unknownSample();
 
@@ -419,6 +502,13 @@ export function createSelectedLinuxExecutorObserver({
         processDirectory,
         expectedUid,
       );
+
+      if (
+        !isFreshNow(selected.sample, input.maximumAgeMs)
+      ) {
+        return unknownSample();
+      }
+
       const startBefore = await readStartTicks(
         statPath,
         selected.report.cliPid,
@@ -487,7 +577,13 @@ export function createSelectedLinuxExecutorObserver({
         return unknownLinuxIdentity();
       }
 
-      const revalidated = selectSample(await acquire(input));
+      let revalidated;
+
+      try {
+        revalidated = await acquire(input);
+      } catch {
+        return unknownSample();
+      }
 
       if (
         !revalidated ||

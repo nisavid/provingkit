@@ -1,6 +1,24 @@
 export const GETTER_SET_ID =
   'desktop-query.readonly.v1:accountInfo,getContextUsage-summary,listPermissionRules';
 
+export const MONOTONIC_CLOCK_ID = 'linux-clock-monotonic.v1';
+export const LINUX_BOOT_ID_PATH = '/proc/sys/kernel/random/boot_id';
+
+export const SELECTED_EXECUTOR_REPORT_BASIS =
+  'manager-retained-report; not independent OS association';
+
+export const SELECTED_EXECUTOR_REPORT_KEYS = Object.freeze([
+  'taskId',
+  'cliPid',
+  'cliPidAtMs',
+  'cliReportedVersion',
+  'currentCodeSessionId',
+  'queryGeneration',
+  'historicProvenance',
+  'queryToOsAssociation',
+  'reportBasis',
+]);
+
 export const CONFIG_SCHEMA = 'desktop-observer.probe-config.v1';
 export const BOOTSTRAP_SCHEMA = 'desktop-observer.bootstrap.v1';
 export const ARM_SCHEMA = 'desktop-observer.arm.v1';
@@ -41,6 +59,8 @@ export const BINDING_KEYS = Object.freeze([
   'targetCodeSessionId',
   'queryGeneration',
   'getterSetId',
+  'monotonicClockId',
+  'linuxBootId',
 ]);
 
 export const ARM_KEYS = Object.freeze([

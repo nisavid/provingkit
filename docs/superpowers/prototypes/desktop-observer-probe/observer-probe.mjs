@@ -30,7 +30,10 @@ import {
   MAX_SETUP_DEADLINE_MS,
   MAX_TEXT_BYTES,
   MIN_SAMPLE_INTERVAL_MS,
+  MONOTONIC_CLOCK_ID,
   SAMPLE_SCHEMA,
+  SELECTED_EXECUTOR_REPORT_BASIS,
+  SELECTED_EXECUTOR_REPORT_KEYS,
   UNKNOWN_CLAIMS,
 } from './observer-contract.mjs';
 
@@ -276,7 +279,13 @@ function validateConfig(input) {
 }
 
 function validateProcessIdentity(input) {
-  exactKeys(input, ['pid', 'processStartTicks', 'uid']);
+  exactKeys(input, [
+    'pid',
+    'processStartTicks',
+    'uid',
+    'monotonicClockId',
+    'linuxBootId',
+  ]);
 
   if (!Number.isSafeInteger(input.pid) || input.pid < 1) {
     invalid('invalid pid');
@@ -293,10 +302,21 @@ function validateProcessIdentity(input) {
     invalid('invalid uid');
   }
 
+  if (
+    input.monotonicClockId !== MONOTONIC_CLOCK_ID ||
+    typeof input.linuxBootId !== 'string' ||
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u
+      .test(input.linuxBootId)
+  ) {
+    invalid('invalid monotonic clock domain');
+  }
+
   return Object.freeze({
     pid: input.pid,
     processStartTicks: input.processStartTicks,
     uid: input.uid,
+    monotonicClockId: input.monotonicClockId,
+    linuxBootId: input.linuxBootId,
   });
 }
 
@@ -524,8 +544,7 @@ export function projectApprovedHost(input, generation) {
       queryGeneration: generation,
       historicProvenance: 'unknown',
       queryToOsAssociation: 'unknown',
-      reportBasis:
-        'manager-retained-report; not independent OS association',
+      reportBasis: SELECTED_EXECUTOR_REPORT_BASIS,
     },
     harnessCwd: project(
       'harnessCwd',
@@ -596,6 +615,14 @@ function validateProjectedHost(value) {
   ) {
     throw new DataFault('shape_invalid');
   }
+
+  exactKeys(
+    value.selectedExecutorReport,
+    SELECTED_EXECUTOR_REPORT_KEYS,
+    () => {
+      throw new DataFault('shape_invalid');
+    },
+  );
 
   if (
     !Array.isArray(value.gaps) ||
@@ -845,6 +872,7 @@ function buildBootstrap(binding, config) {
 function buildEnvelope({
   sequence,
   observedAt,
+  observedAtMonotonicMs,
   binding,
   result,
   failureClass,
@@ -855,6 +883,7 @@ function buildEnvelope({
     schema: SAMPLE_SCHEMA,
     sequence,
     observedAt,
+    observedAtMonotonicMs,
     state: 'unqualified',
     binding: { ...binding },
     result,
@@ -1007,6 +1036,8 @@ export async function attachProbe({
     targetCodeSessionId: config.targetCodeSessionId,
     queryGeneration: candidate.generation,
     getterSetId: GETTER_SET_ID,
+    monotonicClockId: processIdentity.monotonicClockId,
+    linuxBootId: processIdentity.linuxBootId,
   });
 
   const ownedEntries = new Set();
@@ -1148,6 +1179,7 @@ export async function attachProbe({
   const failAttempt = async (
     sequence,
     observedAt,
+    observedAtMonotonicMs,
     failureClass,
     failureStage,
   ) => {
@@ -1156,6 +1188,7 @@ export async function attachProbe({
     const envelope = buildEnvelope({
       sequence,
       observedAt,
+      observedAtMonotonicMs,
       binding,
       result: 'failed',
       failureClass,
@@ -1233,7 +1266,11 @@ export async function attachProbe({
       armedAtElapsed = acceptedAtElapsed;
       ownedEntries.add('arm.json');
 
-      return { state: 'armed', binding: { ...binding } };
+      return {
+        state: 'armed',
+        binding: { ...binding },
+        limits: { ...armLimits },
+      };
     } catch {
       terminal = true;
       invalid('arm acceptance failed');
@@ -1250,7 +1287,8 @@ export async function attachProbe({
 
     try {
       const observedAt = wallClock();
-      const sampleStartedAtElapsed = elapsedClock();
+      const observedAtMonotonicMs = elapsedClock();
+      const sampleStartedAtElapsed = observedAtMonotonicMs;
       const sequence = attempts + 1;
 
       if (attempts >= armLimits.maxSamples) {
@@ -1272,6 +1310,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           'limit_exceeded',
           'lifecycle',
         );
@@ -1389,6 +1428,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           lifecycleFailure,
           'hostBefore',
         );
@@ -1400,6 +1440,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           'shape_invalid',
           'wallClock',
         );
@@ -1411,6 +1452,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           lifecycleFailure,
           'hostBefore',
         );
@@ -1450,6 +1492,7 @@ export async function attachProbe({
           return await failAttempt(
             sequence,
             observedAt,
+            observedAtMonotonicMs,
             beforeFailure,
             getter.fieldName,
           );
@@ -1473,6 +1516,7 @@ export async function attachProbe({
             return await failAttempt(
               sequence,
               observedAt,
+              observedAtMonotonicMs,
               'shape_invalid',
               'wallClock',
             );
@@ -1486,6 +1530,7 @@ export async function attachProbe({
             return await failAttempt(
               sequence,
               observedAt,
+              observedAtMonotonicMs,
               outcome.failureClass,
               getter.fieldName,
             );
@@ -1508,6 +1553,7 @@ export async function attachProbe({
           return await failAttempt(
             sequence,
             observedAt,
+            observedAtMonotonicMs,
             afterFailure,
             getter.fieldName,
           );
@@ -1521,6 +1567,7 @@ export async function attachProbe({
             return await failAttempt(
               sequence,
               observedAt,
+              observedAtMonotonicMs,
               'shape_invalid',
               'wallClock',
             );
@@ -1540,6 +1587,7 @@ export async function attachProbe({
             return await failAttempt(
               sequence,
               observedAt,
+              observedAtMonotonicMs,
               'shape_invalid',
               'wallClock',
             );
@@ -1564,6 +1612,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           lifecycleFailure,
           'hostAfter',
         );
@@ -1575,6 +1624,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           'shape_invalid',
           'wallClock',
         );
@@ -1586,6 +1636,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           lifecycleFailure,
           'hostAfter',
         );
@@ -1594,11 +1645,18 @@ export async function attachProbe({
       fields.hostBefore = hostBefore.field;
       fields.hostAfter = hostAfter.field;
       const collectionEndedAt = wallClock();
+      const collectionEndedAtMonotonicMs = elapsedClock();
 
-      if (!validWallInterval(observedAt, collectionEndedAt)) {
+      if (
+        !validWallInterval(observedAt, collectionEndedAt) ||
+        collectionEndedAtMonotonicMs < observedAtMonotonicMs ||
+        collectionEndedAtMonotonicMs - observedAtMonotonicMs >
+          MAX_OBSERVATION_WINDOW_MS
+      ) {
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           'shape_invalid',
           'wallClock',
         );
@@ -1610,6 +1668,7 @@ export async function attachProbe({
         return await failAttempt(
           sequence,
           observedAt,
+          observedAtMonotonicMs,
           beforePublicationFailure,
           'publication',
         );
@@ -1623,6 +1682,8 @@ export async function attachProbe({
         collection: {
           startedAt: observedAt,
           endedAt: collectionEndedAt,
+          startedAtMonotonicMs: observedAtMonotonicMs,
+          endedAtMonotonicMs: collectionEndedAtMonotonicMs,
           hostChangedDuringRead:
             hostsComparable
               ? JSON.stringify(
@@ -1648,6 +1709,7 @@ export async function attachProbe({
       let envelope = buildEnvelope({
         sequence,
         observedAt,
+        observedAtMonotonicMs,
         binding,
         result: isPartial ? 'partial' : 'complete',
         failureClass: null,
@@ -1673,6 +1735,7 @@ export async function attachProbe({
           envelope = await failAttempt(
             sequence,
             observedAt,
+            observedAtMonotonicMs,
             error.kind,
             'publication',
           );

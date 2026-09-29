@@ -16,12 +16,17 @@ import {
   projectApprovedHost,
 } from './observer-probe.mjs';
 import {
+  MONOTONIC_CLOCK_ID,
+} from './observer-contract.mjs';
+import {
   createDesktopAdapter,
   noteCodeSessionId,
   noteQueryInstalled,
   recordModeEvent,
   teardownQuery,
 } from './desktop-adapter.mjs';
+
+const LINUX_BOOT_ID = '11111111-2222-4333-8444-555555555555';
 
 test('selected Desktop receiver remains guarded until arm and invalidates on record replacement', async () => {
   const root = await mkdtemp(join(tmpdir(), 'desktop-adapter-'));
@@ -256,8 +261,11 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
         pid: process.pid,
         processStartTicks: '1',
         uid: process.getuid(),
+        monotonicClockId: MONOTONIC_CLOCK_ID,
+        linuxBootId: LINUX_BOOT_ID,
       },
       now: () => 2000,
+      monotonicNow: () => 3000,
     });
 
     assert.deepEqual(queryCalls, []);
@@ -277,6 +285,8 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
       targetCodeSessionId: binding.targetCodeSessionId,
       queryGeneration: binding.queryGeneration,
       getterSetId: binding.getterSetId,
+      monotonicClockId: binding.monotonicClockId,
+      linuxBootId: binding.linuxBootId,
       maxSamples: 1,
       minIntervalMs: 5000,
       observationWindowMs: 30000,

@@ -19,13 +19,16 @@ import {
   attachProbe,
   projectApprovedHost,
 } from './observer-probe.mjs';
+import {
+  MONOTONIC_CLOCK_ID,
+  SELECTED_EXECUTOR_REPORT_BASIS,
+} from './observer-contract.mjs';
 import { readProbeSample } from './read-probe-file.mjs';
 import {
   createSelectedLinuxExecutorObserver,
 } from './selected-executor-linux-identity-internal.mjs';
 
-const REPORT_BASIS =
-  'manager-retained-report; not independent OS association';
+const LINUX_BOOT_ID = '11111111-2222-4333-8444-555555555555';
 
 const unknownSample = {
   state: 'unknown',
@@ -48,7 +51,7 @@ const reportFor = ({
   queryGeneration: generation,
   historicProvenance: 'unknown',
   queryToOsAssociation: 'unknown',
-  reportBasis: REPORT_BASIS,
+  reportBasis: SELECTED_EXECUTOR_REPORT_BASIS,
 });
 
 const bindingFor = ({
@@ -67,6 +70,8 @@ const bindingFor = ({
   targetCodeSessionId: codeSessionId,
   queryGeneration: generation,
   getterSetId: GETTER_SET_ID,
+  monotonicClockId: MONOTONIC_CLOCK_ID,
+  linuxBootId: LINUX_BOOT_ID,
 });
 
 function usableInspection({
@@ -76,6 +81,8 @@ function usableInspection({
   sequence = 1,
   observedAt = 1000,
   endedAt = 1010,
+  observedAtMonotonicMs = 5000,
+  endedAtMonotonicMs = 5010,
 } = {}) {
   return {
     state: 'usable-partial',
@@ -84,10 +91,13 @@ function usableInspection({
       binding,
       sequence,
       observedAt,
+      observedAtMonotonicMs,
       observation: {
         collection: {
           startedAt: observedAt,
           endedAt,
+          startedAtMonotonicMs: observedAtMonotonicMs,
+          endedAtMonotonicMs,
           hostChangedDuringRead: false,
         },
         fields: {
@@ -130,6 +140,8 @@ test('foreign process owner is rejected before any process file is opened', asyn
     readProbeSample: async () => inspection,
     getuid: () => process.getuid(),
     now: () => 1020,
+    monotonicNow: () => 5020,
+    readLinuxBootId: async () => LINUX_BOOT_ID,
     lstat: async path => {
       assert.equal(path, '/synthetic-proc/4321');
 
@@ -198,6 +210,8 @@ test('sample binding, report mismatch, and stale acquisition failures perform ze
         readProbeSample: async () => fixture.acquisition,
         getuid: () => process.getuid(),
         now: () => 1020,
+        monotonicNow: () => 5020,
+        readLinuxBootId: async () => LINUX_BOOT_ID,
         lstat: async () => {
           processReads += 1;
           throw new Error('process directory must not be read');
@@ -213,6 +227,115 @@ test('sample binding, report mismatch, and stale acquisition failures perform ze
         unknownSample,
       );
       assert.equal(processReads, 0);
+    });
+  }
+});
+
+test('partial wall rollback cannot permit selected process reads after monotonic expiry', async () => {
+  let processReads = 0;
+  let acquisitions = 0;
+
+  const observer = createSelectedLinuxExecutorObserver({
+    processRoot: '/synthetic-proc',
+    readProbeSample: async input => {
+      acquisitions += 1;
+      assert.equal(input.now, 1050);
+      assert.equal(input.monotonicNow, 5200);
+      assert.equal(input.monotonicClockId, MONOTONIC_CLOCK_ID);
+      assert.equal(input.linuxBootId, LINUX_BOOT_ID);
+      return {
+        state: 'unknown',
+        reason: 'expired',
+        qualification: 'unqualified',
+      };
+    },
+    getuid: () => process.getuid(),
+    now: () => 1050,
+    monotonicNow: () => 5200,
+    readLinuxBootId: async () => LINUX_BOOT_ID,
+    lstat: async () => {
+      processReads += 1;
+      throw new Error('process directory must not be read');
+    },
+    open: async () => {
+      processReads += 1;
+      throw new Error('process file must not be opened');
+    },
+  });
+
+  assert.deepEqual(
+    await observer(acquisitionInput()),
+    unknownSample,
+  );
+  assert.equal(acquisitions, 1);
+  assert.equal(processReads, 0);
+});
+
+test('delayed acquisition and owner check reject expiry before process-file opens', async t => {
+  const cases = [
+    {
+      name: 'acquisition delay',
+      wallTimes: [1020, 2001],
+      monotonicTimes: [5020, 6001],
+      expectedDirectoryReads: 0,
+    },
+    {
+      name: 'owner-check delay',
+      wallTimes: [1020, 1020, 2001],
+      monotonicTimes: [5020, 5020, 6001],
+      expectedDirectoryReads: 1,
+    },
+  ];
+
+  for (const fixture of cases) {
+    await t.test(fixture.name, async () => {
+      const wallTimes = [...fixture.wallTimes];
+      const monotonicTimes = [...fixture.monotonicTimes];
+      let processDirectoryReads = 0;
+      let processFileOpens = 0;
+
+      const observer = createSelectedLinuxExecutorObserver({
+        processRoot: '/synthetic-proc',
+        readProbeSample: async input => {
+          assert.equal(input.now, 1020);
+          assert.equal(input.monotonicNow, 5020);
+          assert.equal(
+            input.monotonicClockId,
+            MONOTONIC_CLOCK_ID,
+          );
+          assert.equal(input.linuxBootId, LINUX_BOOT_ID);
+          return usableInspection();
+        },
+        getuid: () => process.getuid(),
+        now: () => wallTimes.shift(),
+        monotonicNow: () => monotonicTimes.shift(),
+        readLinuxBootId: async () => LINUX_BOOT_ID,
+        lstat: async path => {
+          processDirectoryReads += 1;
+          assert.equal(path, '/synthetic-proc/4321');
+          return {
+            uid: BigInt(process.getuid()),
+            isDirectory: () => true,
+            isSymbolicLink: () => false,
+          };
+        },
+        open: async () => {
+          processFileOpens += 1;
+          throw new Error('process file must not be opened');
+        },
+      });
+
+      assert.deepEqual(
+        await observer(acquisitionInput()),
+        unknownSample,
+      );
+      assert.equal(
+        processDirectoryReads,
+        fixture.expectedDirectoryReads,
+      );
+      assert.equal(processFileOpens, 0);
+      assert.deepEqual(wallTimes, []);
+      assert.deepEqual(monotonicTimes, []);
     });
   }
 });
@@ -314,8 +437,11 @@ test('a validated fixture sample observes only its selected synthetic process an
         pid: process.pid,
         processStartTicks: '1',
         uid: process.getuid(),
+        monotonicClockId: MONOTONIC_CLOCK_ID,
+        linuxBootId: LINUX_BOOT_ID,
       },
       now: () => clock++,
+      monotonicNow: () => clock++,
     });
 
     const binding = probe.bootstrap;
@@ -334,6 +460,8 @@ test('a validated fixture sample observes only its selected synthetic process an
         targetCodeSessionId: binding.targetCodeSessionId,
         queryGeneration: binding.queryGeneration,
         getterSetId: binding.getterSetId,
+        monotonicClockId: binding.monotonicClockId,
+        linuxBootId: binding.linuxBootId,
         maxSamples: 1,
         minIntervalMs: 5000,
         observationWindowMs: 30000,
@@ -346,6 +474,8 @@ test('a validated fixture sample observes only its selected synthetic process an
     const sample = await probe.sample();
     let acquisitionNow =
       sample.observation.collection.endedAt + 1;
+    let acquisitionMonotonicNow =
+      sample.observation.collection.endedAtMonotonicMs + 1;
     const processPaths = [];
     const processOpenPaths = [];
 
@@ -354,6 +484,8 @@ test('a validated fixture sample observes only its selected synthetic process an
       readProbeSample,
       getuid: () => process.getuid(),
       now: () => acquisitionNow++,
+      monotonicNow: () => acquisitionMonotonicNow++,
+      readLinuxBootId: async () => LINUX_BOOT_ID,
       lstat: async (...args) => {
         processPaths.push(args[0]);
         return lstat(...args);
@@ -405,9 +537,14 @@ test('a validated fixture sample observes only its selected synthetic process an
         binding: sample.binding,
         sequence: sample.sequence,
         observedAt: sample.observedAt,
+        observedAtMonotonicMs: sample.observedAtMonotonicMs,
         collection: {
           startedAt: sample.observation.collection.startedAt,
           endedAt: sample.observation.collection.endedAt,
+          startedAtMonotonicMs:
+            sample.observation.collection.startedAtMonotonicMs,
+          endedAtMonotonicMs:
+            sample.observation.collection.endedAtMonotonicMs,
         },
       },
       selectedReport,

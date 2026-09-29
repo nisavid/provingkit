@@ -163,6 +163,8 @@ test('public adapter bootstraps disarmed, accepts an exact arm, and exports one 
       pid: 4242,
       processStartTicks: '123456',
       uid: process.getuid(),
+      monotonicClockId: 'linux-clock-monotonic.v1',
+      linuxBootId: '11111111-2222-4333-8444-555555555555',
     },
   });
 
@@ -206,6 +208,8 @@ test('public adapter bootstraps disarmed, accepts an exact arm, and exports one 
     targetCodeSessionId: bootstrap.targetCodeSessionId,
     queryGeneration: bootstrap.queryGeneration,
     getterSetId: bootstrap.getterSetId,
+    monotonicClockId: bootstrap.monotonicClockId,
+    linuxBootId: bootstrap.linuxBootId,
     maxSamples: 1,
     minIntervalMs: 5000,
     observationWindowMs: 30_000,
@@ -260,6 +264,10 @@ test('public adapter bootstraps disarmed, accepts an exact arm, and exports one 
 
   assert.equal(collection.hostChangedDuringRead, false);
   assert.equal(collection.startedAt, envelope.observedAt);
+  assert.equal(
+    collection.startedAtMonotonicMs,
+    envelope.observedAtMonotonicMs,
+  );
 
   for (const field of Object.values(fields)) {
     assert.equal(field.status, 'available');

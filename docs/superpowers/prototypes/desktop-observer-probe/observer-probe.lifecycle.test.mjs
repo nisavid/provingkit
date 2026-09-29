@@ -107,6 +107,8 @@ async function createFixture(
       pid: 4242,
       processStartTicks: '123456',
       uid: process.getuid(),
+      monotonicClockId: 'linux-clock-monotonic.v1',
+      linuxBootId: '11111111-2222-4333-8444-555555555555',
     },
     now: () => wallTime,
     monotonicNow: () => elapsedTime,
@@ -124,6 +126,8 @@ async function createFixture(
     'targetCodeSessionId',
     'queryGeneration',
     'getterSetId',
+    'monotonicClockId',
+    'linuxBootId',
   ];
 
   const armDocument = {

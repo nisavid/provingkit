@@ -10,7 +10,7 @@
       "purpose": "require-insertion",
       "occurrences": 1,
       "before": "\"use strict\";(function(){try{var e=typeof window<\"u\"?window:typeof global<\"u\"?global:typeof globalThis<\"u\"?globalThis:typeof self<\"u\"?self:{};e.SENTRY_RELEASE={",
-      "after": "\"use strict\";const PROVINGKIT_OBSERVER_278=require(\"./desktopRuntimeObserver.js\");(function(){try{var e=typeof window<\"u\"?window:typeof global<\"u\"?global:typeof globalThis<\"u\"?globalThis:typeof self<\"u\"?self:{};e.SENTRY_RELEASE={"
+      "after": "\"use strict\";const PROVINGKIT_OBSERVER_278=(()=>{const e=Object.freeze({modulePath:null,noteQueryInstalled:()=>!1,teardownQuery:()=>!1,noteCodeSessionId:()=>!1,recordModeEvent:()=>!1,bootDesktopObserver:()=>!1});if(!process.env.PROVINGKIT_OBSERVER_CONFIG)return e;try{const t=require.resolve(\"./desktopRuntimeObserver.js\"),r=require(t),o=[\"noteQueryInstalled\",\"teardownQuery\",\"noteCodeSessionId\",\"recordModeEvent\",\"bootDesktopObserver\"];if(!r||o.some(e=>typeof r[e]!=\"function\"))return e;return Object.freeze({modulePath:t,...Object.fromEntries(o.map(e=>[e,r[e]]))})}catch{return e}})();(function(){try{var e=typeof window<\"u\"?window:typeof global<\"u\"?global:typeof globalThis<\"u\"?globalThis:typeof self<\"u\"?self:{};e.SENTRY_RELEASE={"
     },
     {
       "purpose": "query-install-generation",
@@ -64,7 +64,7 @@
       "purpose": "singleton-attachment",
       "occurrences": 1,
       "before": "var sF=new aF(t.By);t._B(sF);",
-      "after": "var sF=new aF(t.By);t._B(sF);process.env.PROVINGKIT_OBSERVER_CONFIG&&PROVINGKIT_OBSERVER_278.bootDesktopObserver({manager:sF,isUnavailable:pk,effectiveCuAllowedApps:t.qC,effectiveCuGrantFlags:t.JC,modulePath:require.resolve(\"./desktopRuntimeObserver.js\"),copiedAsarPath:require(\"node:path\").join(process.resourcesPath,\"app.asar\")});"
+      "after": "var sF=new aF(t.By);t._B(sF);PROVINGKIT_OBSERVER_278.modulePath&&PROVINGKIT_OBSERVER_278.bootDesktopObserver({manager:sF,isUnavailable:pk,effectiveCuAllowedApps:t.qC,effectiveCuGrantFlags:t.JC,modulePath:PROVINGKIT_OBSERVER_278.modulePath,copiedAsarPath:require(\"node:path\").join(process.resourcesPath,\"app.asar\")});"
     }
   ]
 }

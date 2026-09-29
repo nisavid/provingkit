@@ -15,9 +15,11 @@ import {
 
 import {
   ARM_DEADLINE_MS,
+  LINUX_BOOT_ID_PATH,
   MAX_CONFIG_BYTES,
   MAX_SAMPLES,
   MIN_SAMPLE_INTERVAL_MS,
+  MONOTONIC_CLOCK_ID,
 } from './observer-contract.mjs';
 import {
   attachProbe,
@@ -242,6 +244,44 @@ async function readProcessStartTicks() {
     }
 
     return processStartTicks;
+  } finally {
+    await handle?.close().catch(() => {});
+  }
+}
+
+async function readLinuxBootId() {
+  let handle;
+
+  try {
+    handle = await open(
+      LINUX_BOOT_ID_PATH,
+      constants.O_RDONLY | constants.O_NOFOLLOW,
+    );
+
+    const buffer = Buffer.alloc(129);
+    const { bytesRead } = await handle.read(
+      buffer,
+      0,
+      buffer.length,
+      0,
+    );
+
+    if (bytesRead < 1 || bytesRead === buffer.length) {
+      throw new Error('invalid Linux boot identity');
+    }
+
+    const linuxBootId = new TextDecoder('utf-8', { fatal: true })
+      .decode(buffer.subarray(0, bytesRead))
+      .trim();
+
+    if (
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u
+        .test(linuxBootId)
+    ) {
+      throw new Error('invalid Linux boot identity');
+    }
+
+    return linuxBootId;
   } finally {
     await handle?.close().catch(() => {});
   }
@@ -570,8 +610,7 @@ async function waitForArm(probe, config) {
   while (monotonicMilliseconds() < deadline) {
     try {
       await lstat(armPath);
-      await probe.acceptArm();
-      return true;
+      return await probe.acceptArm();
     } catch (error) {
       if (error?.code !== 'ENOENT') throw error;
     }
@@ -582,22 +621,22 @@ async function waitForArm(probe, config) {
     await delay(Math.min(config.pollIntervalMs, remaining));
   }
 
-  return false;
+  return null;
 }
 
-async function collectSamples(probe) {
+async function collectSamples(probe, limits) {
   for (
     let count = 0;
-    count < MAX_SAMPLES && probe.state === 'armed';
+    count < limits.maxSamples && probe.state === 'armed';
     count += 1
   ) {
-    await delay(MIN_SAMPLE_INTERVAL_MS);
+    await delay(limits.minIntervalMs);
 
     if (probe.state !== 'armed') return;
 
     const result = await probe.sample();
 
-    if (result.result !== 'complete' || probe.state === 'terminal') {
+    if (result.result === 'failed' || probe.state === 'terminal') {
       return;
     }
   }
@@ -676,6 +715,8 @@ async function runDesktopObserver({
     pid: process.pid,
     processStartTicks: await readProcessStartTicks(),
     uid,
+    monotonicClockId: MONOTONIC_CLOCK_ID,
+    linuxBootId: await readLinuxBootId(),
   };
 
   const adapter = createDesktopAdapter({
@@ -694,8 +735,10 @@ async function runDesktopObserver({
       processIdentity,
     });
 
-    if (await waitForArm(probe, config)) {
-      await collectSamples(probe);
+    const acceptedArm = await waitForArm(probe, config);
+
+    if (acceptedArm) {
+      await collectSamples(probe, acceptedArm.limits);
     }
   } finally {
     adapter.dispose();

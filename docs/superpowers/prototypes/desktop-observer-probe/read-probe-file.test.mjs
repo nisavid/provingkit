@@ -26,12 +26,15 @@ const binding = {
   queryGeneration: 1,
   getterSetId:
     'desktop-query.readonly.v1:accountInfo,getContextUsage-summary,listPermissionRules',
+  monotonicClockId: 'linux-clock-monotonic.v1',
+  linuxBootId: '11111111-2222-4333-8444-555555555555',
 };
 
 const failedSample = JSON.stringify({
   schema: 'desktop-observer.sample.v1',
   sequence: 1,
   observedAt: 1_000,
+  observedAtMonotonicMs: 5_000,
   state: 'unqualified',
   binding,
   result: 'failed',
@@ -72,6 +75,9 @@ test('acquires only a safe explicitly selected sample file', async () => {
       expectedBinding: binding,
       now: 2_000,
       afterSequence: 0,
+      monotonicNow: 6_000,
+      monotonicClockId: binding.monotonicClockId,
+      linuxBootId: binding.linuxBootId,
       maximumAgeMs: 1_000,
     });
 

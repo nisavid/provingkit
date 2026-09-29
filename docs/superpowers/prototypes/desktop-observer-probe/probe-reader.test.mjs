@@ -26,6 +26,8 @@ test('a bounded public sample round-trips through the strict reader', async t =>
 
   let clock = 10_000;
   const now = () => clock;
+  let monotonicClock = 50_000;
+  const monotonicNow = () => monotonicClock++;
 
   const record = {
     taskId: 'reader-task',
@@ -100,8 +102,11 @@ test('a bounded public sample round-trips through the strict reader', async t =>
       pid: 4242,
       processStartTicks: '123456',
       uid: process.getuid(),
+      monotonicClockId: 'linux-clock-monotonic.v1',
+      linuxBootId: '11111111-2222-4333-8444-555555555555',
     },
     now,
+    monotonicNow,
   });
 
   const bootstrap = JSON.parse(
@@ -120,6 +125,8 @@ test('a bounded public sample round-trips through the strict reader', async t =>
     'targetCodeSessionId',
     'queryGeneration',
     'getterSetId',
+    'monotonicClockId',
+    'linuxBootId',
   ];
 
   const expectedBinding = Object.fromEntries(
@@ -146,14 +153,21 @@ test('a bounded public sample round-trips through the strict reader', async t =>
     'utf8',
   );
 
+  const inspectionOptions = overrides => ({
+    now: produced.observation.collection.endedAt,
+    monotonicNow:
+      produced.observation.collection.endedAtMonotonicMs,
+    monotonicClockId: expectedBinding.monotonicClockId,
+    linuxBootId: expectedBinding.linuxBootId,
+    afterSequence: 0,
+    maximumAgeMs: 30_000,
+    ...overrides,
+  });
+
   const inspected = inspectProbeSample(
     serialized,
     expectedBinding,
-    {
-      now: clock,
-      afterSequence: 0,
-      maximumAgeMs: 30_000,
-    },
+    inspectionOptions(),
   );
 
   assert.equal(inspected.state, 'usable-partial');
@@ -163,6 +177,11 @@ test('a bounded public sample round-trips through the strict reader', async t =>
   const { collection, fields } = inspected.sample.observation;
 
   assert.equal(collection.hostChangedDuringRead, true);
+  assert.equal(
+    collection.startedAtMonotonicMs,
+    produced.observedAtMonotonicMs,
+  );
+  assert.ok(collection.endedAtMonotonicMs >= collection.startedAtMonotonicMs);
   assert.equal(
     fields.hostBefore.value.permissionMode,
     'before-read',
@@ -214,41 +233,62 @@ test('a bounded public sample round-trips through the strict reader', async t =>
 
   assert.deepEqual(
     inspectProbeSample(serialized, expectedBinding, {
-      now: collection.endedAt + 101,
-      afterSequence: 0,
+      ...inspectionOptions(),
+      now: produced.observedAt + 101,
+      monotonicNow: produced.observedAtMonotonicMs + 101,
       maximumAgeMs: 100,
     }),
     unknown('expired'),
   );
 
   assert.deepEqual(
-    inspectProbeSample(serialized, expectedBinding, {
-      now: collection.endedAt,
-      afterSequence: produced.sequence,
-      maximumAgeMs: 30_000,
-    }),
+    inspectProbeSample(
+      serialized,
+      expectedBinding,
+      inspectionOptions({ afterSequence: produced.sequence }),
+    ),
     unknown('not-newer'),
   );
 
   assert.deepEqual(
     inspectProbeSample(
       serialized,
+      expectedBinding,
+      inspectionOptions({
+        now: produced.observedAt + 50,
+        monotonicNow: produced.observedAtMonotonicMs + 101,
+        maximumAgeMs: 100,
+      }),
+    ),
+    unknown('expired'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(
+      serialized,
+      expectedBinding,
+      inspectionOptions({
+        linuxBootId: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
+      }),
+    ),
+    unknown('incomparable-clock'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(
+      serialized,
       { ...expectedBinding, targetTaskId: 'different-task' },
-      {
-        now: collection.endedAt,
-        afterSequence: 0,
-        maximumAgeMs: 30_000,
-      },
+      inspectionOptions(),
     ),
     unknown('binding-mismatch'),
   );
 
   assert.deepEqual(
-    inspectProbeSample('{', expectedBinding, {
-      now: collection.endedAt,
-      afterSequence: 0,
-      maximumAgeMs: 30_000,
-    }),
+    inspectProbeSample(
+      '{',
+      expectedBinding,
+      inspectionOptions(),
+    ),
     unknown('invalid-sample'),
   );
 
@@ -256,11 +296,11 @@ test('a bounded public sample round-trips through the strict reader', async t =>
   withExtraField.observation.unapproved = true;
 
   assert.deepEqual(
-    inspectProbeSample(JSON.stringify(withExtraField), expectedBinding, {
-      now: collection.endedAt,
-      afterSequence: 0,
-      maximumAgeMs: 30_000,
-    }),
+    inspectProbeSample(
+      JSON.stringify(withExtraField),
+      expectedBinding,
+      inspectionOptions(),
+    ),
     unknown('invalid-sample'),
   );
 
@@ -270,11 +310,11 @@ test('a bounded public sample round-trips through the strict reader', async t =>
   );
 
   assert.deepEqual(
-    inspectProbeSample(duplicateKey, expectedBinding, {
-      now: collection.endedAt,
-      afterSequence: 0,
-      maximumAgeMs: 30_000,
-    }),
+    inspectProbeSample(
+      duplicateKey,
+      expectedBinding,
+      inspectionOptions(),
+    ),
     unknown('invalid-sample'),
   );
 
@@ -287,11 +327,11 @@ test('a bounded public sample round-trips through the strict reader', async t =>
   };
 
   assert.deepEqual(
-    inspectProbeSample(JSON.stringify(failed), expectedBinding, {
-      now: collection.endedAt,
-      afterSequence: 0,
-      maximumAgeMs: 30_000,
-    }),
+    inspectProbeSample(
+      JSON.stringify(failed),
+      expectedBinding,
+      inspectionOptions(),
+    ),
     unknown('incomplete-sample'),
   );
 
@@ -305,39 +345,46 @@ test('a bounded public sample round-trips through the strict reader', async t =>
         },
       }),
       expectedBinding,
-      {
+      inspectionOptions({
         now: failed.observedAt,
-        afterSequence: 0,
-        maximumAgeMs: 30_000,
-      },
+        monotonicNow: failed.observedAtMonotonicMs,
+      }),
     ),
     unknown('binding-mismatch'),
   );
 
   assert.deepEqual(
-    inspectProbeSample(JSON.stringify(failed), expectedBinding, {
-      now: failed.observedAt + 101,
-      afterSequence: 0,
-      maximumAgeMs: 100,
-    }),
+    inspectProbeSample(
+      JSON.stringify(failed),
+      expectedBinding,
+      inspectionOptions({
+        now: failed.observedAt + 101,
+        monotonicNow: failed.observedAtMonotonicMs + 101,
+        maximumAgeMs: 100,
+      }),
+    ),
     unknown('expired'),
   );
 
   assert.deepEqual(
-    inspectProbeSample(JSON.stringify(failed), expectedBinding, {
-      now: failed.observedAt - 1,
-      afterSequence: 0,
-      maximumAgeMs: 30_000,
-    }),
+    inspectProbeSample(
+      JSON.stringify(failed),
+      expectedBinding,
+      inspectionOptions({ now: failed.observedAt - 1 }),
+    ),
     unknown('clock-before-observation'),
   );
 
   assert.deepEqual(
-    inspectProbeSample(JSON.stringify(failed), expectedBinding, {
-      now: failed.observedAt,
-      afterSequence: failed.sequence,
-      maximumAgeMs: 30_000,
-    }),
+    inspectProbeSample(
+      JSON.stringify(failed),
+      expectedBinding,
+      inspectionOptions({
+        now: failed.observedAt,
+        monotonicNow: failed.observedAtMonotonicMs,
+        afterSequence: failed.sequence,
+      }),
+    ),
     unknown('not-newer'),
   );
 });

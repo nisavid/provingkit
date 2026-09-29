@@ -65,25 +65,44 @@ async function makeFixture(root, name) {
 
   const calls = {
     getters: [],
+    getterStartedAt: [],
     selectedTaskIds: [],
   };
+  let accountReads = 0;
+  let contextReads = 0;
+  let permissionReads = 0;
 
   const query = {
     async accountInfo() {
       calls.getters.push('accountInfo');
+      calls.getterStartedAt.push({
+        name: 'accountInfo',
+        at: Number(process.hrtime.bigint() / 1_000_000n),
+      });
+      accountReads += 1;
       return {
         apiProvider: 'firstParty',
-        tokenSource: 'fixture',
+        tokenSource: `fixture-${accountReads}`,
       };
     },
     async getContextUsage() {
       calls.getters.push('getContextUsage');
+      calls.getterStartedAt.push({
+        name: 'getContextUsage',
+        at: Number(process.hrtime.bigint() / 1_000_000n),
+      });
+      contextReads += 1;
       return {
-        model: 'fixture-model',
+        model: `fixture-model-${contextReads}`,
       };
     },
     async listPermissionRules() {
       calls.getters.push('listPermissionRules');
+      calls.getterStartedAt.push({
+        name: 'listPermissionRules',
+        at: Number(process.hrtime.bigint() / 1_000_000n),
+      });
+      permissionReads += 1;
       return {
         state: {
           rules: [{
@@ -96,7 +115,7 @@ async function makeFixture(root, name) {
             path: '/fixture',
             source: 'session',
           }],
-          originalCwd: '/fixture/original',
+          originalCwd: `/fixture/original-${permissionReads}`,
           managedOnly: false,
         },
       };
@@ -201,7 +220,7 @@ async function makeFixture(root, name) {
 
 test(
   'public Desktop boot verifies artifacts, waits for an exact arm, and samples only the selected task',
-  { timeout: 12_000 },
+  { timeout: 22_000 },
   async () => {
     const root = await mkdtemp(join(tmpdir(), 'desktop-bootstrap-'));
     const previousConfigPath =
@@ -260,9 +279,11 @@ test(
         targetCodeSessionId: bootstrap.targetCodeSessionId,
         queryGeneration: bootstrap.queryGeneration,
         getterSetId: bootstrap.getterSetId,
-        maxSamples: 1,
+        monotonicClockId: bootstrap.monotonicClockId,
+        linuxBootId: bootstrap.linuxBootId,
+        maxSamples: 3,
         minIntervalMs: 5000,
-        observationWindowMs: 15_000,
+        observationWindowMs: 20_000,
         perGetterTimeoutMs: 1000,
       };
 
@@ -277,24 +298,89 @@ test(
 
       assert.equal(await completion, true);
 
-      const sample = JSON.parse(
-        await readFile(
-          join(fixture.runDirectory, 'sample-000001.json'),
-          'utf8',
+      const samples = await Promise.all(
+        [1, 2, 3].map(async sequence =>
+          JSON.parse(
+            await readFile(
+              join(
+                fixture.runDirectory,
+                `sample-${String(sequence).padStart(6, '0')}.json`,
+              ),
+              'utf8',
+            ),
+          ),
         ),
       );
 
-      assert.equal(sample.schema, SAMPLE_SCHEMA);
-      assert.equal(sample.result, 'partial');
-      assert.equal(
-        sample.binding.targetTaskId,
-        fixture.config.targetTaskId,
+      assert.deepEqual(
+        samples.map(sample => sample.sequence),
+        [1, 2, 3],
+      );
+      assert.ok(
+        samples.every(
+          sample =>
+            sample.schema === SAMPLE_SCHEMA &&
+            sample.result === 'partial' &&
+            sample.binding.targetTaskId ===
+              fixture.config.targetTaskId,
+        ),
+      );
+      assert.deepEqual(
+        samples.map(
+          sample =>
+            sample.observation.fields.accountInfo.value.providerSource,
+        ),
+        ['fixture-1', 'fixture-2', 'fixture-3'],
+      );
+      assert.deepEqual(
+        samples.map(
+          sample =>
+            sample.observation.fields.getContextUsageSummary.value,
+        ),
+        ['fixture-model-1', 'fixture-model-2', 'fixture-model-3'],
+      );
+      assert.deepEqual(
+        samples.map(
+          sample =>
+            sample.observation.fields.listPermissionRules.value
+              .originalCwd,
+        ),
+        [
+          '/fixture/original-1',
+          '/fixture/original-2',
+          '/fixture/original-3',
+        ],
       );
       assert.deepEqual(fixture.calls.getters, [
         'accountInfo',
         'getContextUsage',
         'listPermissionRules',
+        'accountInfo',
+        'getContextUsage',
+        'listPermissionRules',
+        'accountInfo',
+        'getContextUsage',
+        'listPermissionRules',
       ]);
+
+      const accountStarts = fixture.calls.getterStartedAt
+        .filter(call => call.name === 'accountInfo')
+        .map(call => call.at);
+
+      assert.equal(accountStarts.length, 3);
+      assert.ok(accountStarts[1] - accountStarts[0] >= 5000);
+      assert.ok(accountStarts[2] - accountStarts[1] >= 5000);
+
+      const getterSnapshot = [...fixture.calls.getters];
+      await delay(50);
+      assert.deepEqual(fixture.calls.getters, getterSnapshot);
+
+      await assert.rejects(
+        readFile(
+          join(fixture.runDirectory, 'sample-000004.json'),
+        ),
+        error => error?.code === 'ENOENT',
+      );
       assert.ok(
         fixture.calls.selectedTaskIds.every(
           taskId => taskId === fixture.config.targetTaskId,

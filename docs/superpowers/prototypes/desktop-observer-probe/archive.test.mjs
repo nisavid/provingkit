@@ -28,6 +28,101 @@ test('a manager patch applies only to its inspected source and unique nonoverlap
     replacements: [{ before: 'return 1;', after: 'x' }, { before: '1;', after: 'y' }] }), /overlap/);
 });
 
+test('the authored manager loader is inert when inactive and isolates configured sidecar loading', async () => {
+  const patch = JSON.parse(
+    await readFile(new URL('./manager-patch.json', import.meta.url)),
+  );
+  const insertion = patch.replacements.find(
+    replacement => replacement.purpose === 'require-insertion',
+  );
+  const suffix = '(function(){try';
+  const suffixAt = insertion.after.indexOf(suffix);
+
+  assert.ok(suffixAt > 0);
+
+  const fragment = insertion.after.slice(
+    '"use strict";'.length,
+    suffixAt,
+  );
+  const expectedFunctions = [
+    'noteQueryInstalled',
+    'teardownQuery',
+    'noteCodeSessionId',
+    'recordModeEvent',
+    'bootDesktopObserver',
+  ];
+
+  const evaluate = ({
+    configured,
+    resolveError,
+    loadError,
+    loaded,
+  }) => {
+    const calls = [];
+    const syntheticRequire = specifier => {
+      calls.push(['require', specifier]);
+      if (loadError) throw loadError;
+      return loaded;
+    };
+
+    syntheticRequire.resolve = specifier => {
+      calls.push(['resolve', specifier]);
+      if (resolveError) throw resolveError;
+      return '/fixture/desktopRuntimeObserver.js';
+    };
+
+    const adapter = Function(
+      'require',
+      'process',
+      `${fragment}\nreturn PROVINGKIT_OBSERVER_278;`,
+    )(
+      syntheticRequire,
+      {
+        env: configured
+          ? { PROVINGKIT_OBSERVER_CONFIG: '/fixture/config.json' }
+          : {},
+      },
+    );
+
+    return { adapter, calls };
+  };
+
+  const inactive = evaluate({ configured: false });
+  assert.deepEqual(inactive.calls, []);
+  assert.equal(inactive.adapter.modulePath, null);
+  assert.ok(
+    expectedFunctions.every(
+      name => inactive.adapter[name]() === false,
+    ),
+  );
+
+  const failed = evaluate({
+    configured: true,
+    loadError: new Error('synthetic load failure'),
+  });
+  assert.deepEqual(failed.calls, [
+    ['resolve', './desktopRuntimeObserver.js'],
+    ['require', '/fixture/desktopRuntimeObserver.js'],
+  ]);
+  assert.equal(failed.adapter.modulePath, null);
+  assert.ok(
+    expectedFunctions.every(name => failed.adapter[name]() === false),
+  );
+
+  const loaded = Object.fromEntries(
+    expectedFunctions.map(name => [name, () => name]),
+  );
+  const accepted = evaluate({ configured: true, loaded });
+  assert.equal(
+    accepted.adapter.modulePath,
+    '/fixture/desktopRuntimeObserver.js',
+  );
+  assert.deepEqual(
+    expectedFunctions.map(name => accepted.adapter[name]),
+    expectedFunctions.map(name => loaded[name]),
+  );
+});
+
 test('a copied archive changes only selected members and remains readable by Electron tooling', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'observer-archive-'));
   try {

@@ -1,8 +1,9 @@
 # Packaging the disposable Desktop observer
 
 The inspected archive supports a copied candidate that preserves every
-unchanged member's bytes and metadata. Loading the candidate is a separate
-experiment. This preparation has not started Desktop or touched a live task.
+unchanged member's bytes and metadata. The current candidate has passed complete
+offline archive verification. Loading it in the packaged application remains a
+separate, unperformed experiment.
 
 ## Inputs and evidence
 
@@ -24,17 +25,16 @@ Inspection on 2026-09-29 found:
 | Independent archive reader | `@electron/asar 4.3.0` |
 
 These identities do not identify the Code executor a disposable task will
-actually use. The Desktop package allows an automatically downloaded executor;
-the live probe must record the selected executor separately.
+actually use. The live probe must record the selected executor separately.
 
 ## Archive shape
 
-The archive contains 364 file members: 362 packed and two unpacked native
-modules, with no link entries. Each member has SHA-256 file and 4 MiB block
-hashes. An independent packaging scout validated all member sizes and hashes,
-including the unpacked modules; I reproduced that validation. The scout also
-used `@electron/asar 4.3.0` to extract both
-inspected JavaScript chunks and both native modules with matching hashes.
+The pristine archive contains 364 file members: 362 packed and two unpacked
+native modules, with no link entries. Each member has SHA-256 file and 4 MiB
+block hashes. An independent packaging scout validated all member sizes and
+hashes, including the unpacked modules; I reproduced that validation. The scout
+also used `@electron/asar 4.3.0` to extract both inspected JavaScript chunks and
+both native modules with matching hashes.
 
 The first four little-endian unsigned integers are
 `(4, 98156, 98152, 98146)`. JSON starts at byte 16 and has two zero padding
@@ -51,38 +51,43 @@ Their respective SHA-256 values are:
 - `f20b3962cbe04a7d25edb271304bfff721737e096541b11a11c19ceede9ac4af`
 - `6d211b9d3d39fcd4f7a8c681c6ef1d13a01d43a6e275556826748331859b213c`
 
-## Proposed builder
+## Builder and current candidate
 
-Preserve the pristine parsed header tree and entire packed payload. Append the
-changed manager chunk and added CommonJS module, then redirect only those
-member descriptors to the appended bytes. Recompute their sizes and integrity
-descriptors. Preserve unchanged offsets, executable flags, directory metadata,
-and unpacked descriptors.
+`archive.mjs` preserves the pristine parsed header tree and entire packed
+payload. It appends the changed manager chunk and added CommonJS module, then
+redirects only those member descriptors to the appended bytes. It recomputes
+their sizes and integrity descriptors while preserving unchanged offsets,
+executable flags, directory metadata, and unpacked descriptors.
 
-For serialized UTF-8 header length `J`, let `H = 8 + align4(J)`. Emit the prefix
-`(4, H, H - 4, J)`, header JSON, zero padding, original payload, and appended
-bytes. The old manager bytes remain unreachable payload data. Unchanged
-header-relative offsets remain valid when the header's physical length changes.
+For serialized UTF-8 header length `J`, let `H = 8 + align4(J)`. The builder
+emits the prefix `(4, H, H - 4, J)`, header JSON, zero padding, original payload,
+and appended bytes. The old manager bytes remain unreachable payload data.
+Unchanged header-relative offsets remain valid when the header's physical
+length changes.
 
-The verification contract compares every original member's descriptor and
-bytes, allowing only the intended manager change and added module. A separate
-read through Electron's ASAR package must corroborate extraction. Neither
-archive extraction nor JavaScript syntax checking establishes runtime loading.
+The current sidecar bundles exactly `desktop-adapter.mjs`,
+`observer-contract.mjs`, and `observer-probe.mjs`. Complete verification covered
+all 365 candidate members: the added sidecar, the changed manager, and 363
+original members whose descriptors and bytes remained unchanged. Independent
+ASAR extraction corroborated every file and block hash. Both the resulting
+manager and sidecar passed `node --check`.
 
-`archive.mjs` implements this byte transformation. Its four tests use the
-independent `@electron/asar 4.3.0` writer and reader. They passed for readable
-changed archives, preserved unpacked assets, rejected source drift, and
-rejected mistaken replacement/addition names.
+The generated `build-receipt.json` is build output tied to the proposed
+`candidate.asar`. The published `candidate-build.json` is the retained source
+copy used for review and authorization. The receipt is the source of the
+candidate, manager, sidecar, pristine, and source-input hashes; mutable hashes
+are not duplicated in this prose. These two files must compare byte for byte
+before the candidate may be staged or authorized.
 
-I also applied the transformation to a copy of the full inspected archive,
-using an explicitly marked packaging fixture: a comment appended to the manager
-and an empty exported module. `verify-archive.mjs` checked all 365 resulting
-members through the independent reader, including all file/block hashes,
-unchanged header metadata, and unchanged bytes for 363 original members. That
-fixture's archive SHA-256 was
-`c15d10232532174daf290605d05d18bf5fe3f8d6794e73d562a7e686218d8566`.
-It is not an observer candidate and was never executed. Repeat the verification
-with the actual patched manager and observer module before source acceptance.
+Any source change makes that verification stale. The latest source must be
+rebuilt, completely reverified, syntax-checked, and have its generated receipt
+retained as `candidate-build.json` before final review. Archive extraction and
+JavaScript syntax checking do not establish that the packaged application
+loads the candidate.
+
+An earlier comment-only manager fixture and empty sidecar established the
+archive transformation before the observer candidate existed. It was never
+executed and supplies no evidence about current runtime loading.
 
 ## Launcher and operating effects
 
@@ -93,16 +98,20 @@ resources. A symlink to the installed executable does not establish a separate
 runtime tree.
 
 The executable's ELF RPATH is `$ORIGIN`, with a direct dependency on
-`libffmpeg.so`. A copied runtime needs the matching libraries, resources,
-locales, snapshots, unpacked modules, and data files. The package also expects a
-root-owned mode-4755 `chrome-sandbox` and, where applicable, a path-specific
-AppArmor profile. Copied-runtime sandbox behavior requires its own evidence;
-disabling sandboxing is not an experimental setup step.
+`libffmpeg.so`. A copied runtime would need the matching libraries, resources,
+locales, snapshots, unpacked modules, data files, sandbox ownership and mode,
+and any path-specific AppArmor treatment. Copied-runtime sandbox behavior has
+not been established, and disabling sandboxing is not an experimental setup
+step.
 
-Temporary replacement of the installed archive would preserve the installed
-runtime layout but modify a package-owned file and require a Desktop restart.
-A restart can interrupt existing work. Package upgrade or reinstall can
-overwrite the experiment. The package declares no backup-managed files.
+The selected route is temporary exchange of the installed archive while
+preserving the installed executable, native assets, launcher, and sandbox
+layout. It modifies a package-owned file and therefore requires the later
+positive grant. The proposal uses one scheduled window in the current signed-in
+profile: one candidate launch and one restored launch, with Desktop shut down
+before each archive exchange. Those are two application restarts. A restart can
+interrupt existing work, and package upgrade or reinstall can overwrite the
+experiment. The package declares no backup-managed files.
 
 Restoration must first recheck the installed package identity. An intervening
 upgrade prevents blindly restoring an older archive. Restore and verify the
@@ -127,21 +136,26 @@ with the candidate.
 
 ## Sidecar format and runtime file access
 
-The offline builder uses `esbuild 0.28.2` to bundle the two authored ES modules
-into one CommonJS sidecar. A scratch bundle of the observer passed its seven
-synthetic checks in that format. The full candidate also needs the adapter and
-all later source changes verified before review.
+The offline builder uses `esbuild 0.28.2` to bundle the adapter, observer, and
+shared contract into one CommonJS sidecar. The current complete candidate has
+passed synthetic source checks, archive verification, and manager and sidecar
+syntax checks. Those results do not establish runtime loading.
 
 [Electron 44.4.3’s filesystem wrapper](https://github.com/electron/electron/blob/v44.4.3/lib/node/asar-fs-wrapper.ts)
 extracts an ASAR member when `open` needs a real file. Its virtual `lstat`
-produces synthetic inode and timestamp metadata. Comparing the opened file’s
-identity with the virtual member’s metadata is therefore invalid. The proposed
-adapter instead reads the packed member through `readFile`, checks its bounded
-size and digest, and verifies the physical archive on both sides of that read.
-This behavior is source-backed; the packaged application has not been launched.
+produces synthetic inode and timestamp metadata. Comparing the opened file's
+identity with the virtual member's metadata is therefore invalid. The adapter
+instead reads the packed member through `readFile`, checks its bounded size and
+digest, and verifies the physical archive on both sides of that read. This
+behavior is source-backed; the packaged application has not been launched.
 
 ## Remaining preparation
 
-The probe plan must choose the runtime location and restoration sequence, bind
-the actual Code executor, and identify the exact candidate bytes. The archive
-facts above do not establish that the modified app loads.
+The chosen installed-archive route still requires the latest source rebuild,
+complete archive verification, byte-for-byte build-receipt comparison, final
+source review, and a private authorization packet. That packet must bind the
+published source revision, exact candidate, launcher and argument-file
+identities, actual task and Code IDs allocated after fixture creation, cleanup
+manifest location, protected backup, and one current-profile window with the
+candidate and restored launches. None of the archive facts establishes that the
+modified app loads.
