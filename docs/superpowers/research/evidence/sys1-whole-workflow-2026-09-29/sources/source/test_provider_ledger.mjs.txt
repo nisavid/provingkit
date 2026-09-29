@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { makeAttemptFetch } from './provider_ledger.mjs';
+
+test('records a failed HTTP attempt before access and retains valid failure usage', async () => {
+  const events=[];
+  const fetcher=makeAttemptFetch({invocationId:'inv-1',record:e=>events.push(e),fetchImpl:async () => {
+    assert.equal(events.length,1); assert.equal(events[0].kind,'provider_start');
+    return new Response(JSON.stringify({model:'synthetic-model',usage:{input_tokens:12,output_tokens:0}}),{status:503,headers:{'x-request-id':'request-1'}});
+  }});
+  const response=await fetcher('https://api.typesafe.ai/v1/system-one',{method:'POST',headers:{authorization:'Bearer SYNTHETIC_SECRET'},body:JSON.stringify({model:'synthetic-model',state:'synthetic state',questions:{q:{type:'noul',instructions:'Synthetic?'}}})});
+  assert.equal(response.status,503);
+  assert.equal(events[1].outcome,'error');
+  assert.deepEqual(events[1].usage,{input_tokens:12,output_tokens:0});
+  assert.equal(events[1].attempt_id,events[0].attempt_id);
+  assert.equal(JSON.stringify(events).includes('SYNTHETIC_SECRET'),false);
+});
+
+test('network rejection records an unknown remainder without copying error details', async () => {
+  const events=[]; let calls=0;
+  const error=new Error('SYNTHETIC_SECRET');
+  const fetcher=makeAttemptFetch({invocationId:'inv-2',record:e=>events.push(e),fetchImpl:async () => { calls++; throw error; }});
+  await assert.rejects(fetcher('https://api.typesafe.ai/v1/system-one',{method:'POST',body:'{"model":"synthetic","state":"x","questions":{}}'}),e=>e===error);
+  assert.equal(calls,1); assert.equal(events.length,2); assert.equal(events[1].usage,null);
+  assert.equal(JSON.stringify(events).includes('SYNTHETIC_SECRET'),false);
+});
+
+test('two actual attempts keep distinct identities and reject boolean usage', async () => {
+  const events=[];
+  const fetcher=makeAttemptFetch({invocationId:'inv-3',record:e=>events.push(e),fetchImpl:async () => new Response('{"usage":{"input_tokens":true,"output_tokens":0}}')});
+  for(let i=0;i<2;i++) await fetcher('https://api.typesafe.ai/v1/system-one',{method:'POST',body:'{"model":"synthetic","state":"x","questions":{}}'});
+  assert.notEqual(events[0].attempt_id,events[2].attempt_id);
+  assert.equal(events[1].usage,null); assert.equal(events[3].usage,null);
+});
+
+test('oversized or stalled usage inspection stays unknown and preserves the response', async () => {
+  for (const kind of ['oversized','stalled']) {
+    const events=[];
+    const response=kind==='oversized' ? new Response('x'.repeat(65)) : new Response(new ReadableStream({start(){}}));
+    const fetcher=makeAttemptFetch({invocationId:'bounded',record:e=>events.push(e),fetchImpl:async()=>response,
+                                  inspection:{maxBytes:64,timeoutMs:20}});
+    const result=await fetcher('https://api.typesafe.ai/v1/systemone',{method:'POST',body:'{"model":"synthetic"}'});
+    assert.equal(result,response); assert.equal(events[1].usage,null);
+    assert.equal(events[1].usage_inspection,kind==='oversized'?'oversized':'timeout');
+    if(kind==='oversized') assert.equal(await result.text(),'x'.repeat(65));
+    else void result.body.cancel();
+  }
+});

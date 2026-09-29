@@ -1,0 +1,268 @@
+"""Bounded transcript-to-transport context projection for synthetic sessions."""
+import json
+import sys
+
+
+def bind(payload):
+    unavailable = {"availability": "unavailable", "reason": "unbound_native_receipts", "messages": []}
+    session, harness = payload.get("session_id"), payload.get("harness")
+    deliveries, acks = payload.get("deliveries"), payload.get("acknowledgments")
+    received = payload.get("hook_received_ns")
+    if (not isinstance(session, str) or not session or harness not in ("claude", "codex")
+            or not isinstance(deliveries, list) or not deliveries or not isinstance(acks, list)
+            or len(deliveries) != len(acks) or type(received) is not int or received < 0):
+        return unavailable
+    submitted, previous_ack = [], -1
+    for index, (delivery, ack) in enumerate(zip(deliveries, acks)):
+        if not isinstance(delivery, dict) or not isinstance(ack, dict):
+            return unavailable
+        sent = delivery.get("sent_before", {})
+        observed = ack.get("observed_at", {})
+        if not isinstance(sent, dict) or not isinstance(observed, dict):
+            return unavailable
+        before, after = sent.get("monotonic_ns"), observed.get("monotonic_ns")
+        if (type(before) is not int or type(after) is not int
+                or not previous_ack < before <= after <= received
+                or delivery.get("session_id") != session or ack.get("session_id") != session
+                or ack.get("harness") != harness
+                or type(delivery.get("sequence")) is not int or delivery["sequence"] != index
+                or type(ack.get("sequence")) is not int or ack["sequence"] != index):
+            return unavailable
+        if harness == "claude":
+            uuid = delivery.get("native_uuid")
+            if (not isinstance(uuid, str) or not uuid or ack.get("native_uuid") != uuid
+                    or ack.get("message") != {"role": "user", "content": delivery.get("text")}):
+                return unavailable
+        elif not isinstance(ack.get("turn_id"), str) or not ack["turn_id"]:
+            return unavailable
+        submitted.append(dict(delivery, delivery="sent"))
+        previous_ack = after
+    if harness == "codex" and payload.get("hook_turn_id") != acks[-1]["turn_id"]:
+        return unavailable
+    result = project(dict(payload, mode="projection", submissions=submitted, delivery_complete=True))
+    if result["availability"] != "available":
+        return result
+    if harness == "codex":
+        rows = [x for x in result["messages"] if x["origin"] == "controller_operator"]
+        for row, ack in zip(rows, acks):
+            metadata = payload["records"][row["record_index"]].get("metadata", {})
+            source = metadata.get("retained_source", {}) if isinstance(metadata, dict) else {}
+            identity = source.get("id", {}) if isinstance(source, dict) else {}
+            if (not isinstance(source, dict) or source.get("complete") is not True
+                    or not isinstance(identity, dict) or identity.get("role") != "user"
+                    or identity.get("turn_id") != ack["turn_id"]):
+                return dict(unavailable, reason="unbound_native_message")
+    result["binding"] = "controller_delivery_and_native_receipt_before_hook"
+    return result
+
+
+def claude_records(records, submissions, session):
+    unavailable = {"availability": "unavailable", "messages": []}
+    messages, found, calls, results = [], [], set(), set()
+    if any(not isinstance(x.get("native_uuid"), str) or not x["native_uuid"] for x in submissions):
+        return dict(unavailable, reason="unbound_delivery")
+    by_uuid = {x["native_uuid"]: x for x in submissions}
+    if (len(by_uuid) != len(submissions)
+            or any(not isinstance(x, str) or not x for x in by_uuid)):
+        return dict(unavailable, reason="unbound_delivery")
+    attachments = {"environment", "model", "total_tokens_reminder", "session_context",
+                   "date", "credential_org", "prompt_snapshot"}
+    for index, record in enumerate(records):
+        if record.get("sessionId") != session or record.get("isSidechain") is True:
+            return dict(unavailable, reason="unbound_session")
+        kind = record.get("type")
+        if kind == "queue-operation" and record.get("operation") in ("enqueue", "dequeue"):
+            continue
+        if kind in ("atis-latch", "last-prompt", "cost-state"):
+            continue
+        if kind == "attachment":
+            attachment = record.get("attachment")
+            if not isinstance(attachment, dict) or attachment.get("type") not in attachments:
+                return dict(unavailable, reason="unsupported_attachment")
+            continue
+        if kind not in ("user", "assistant"):
+            return dict(unavailable, reason="unsupported_record")
+        message = record.get("message")
+        if not isinstance(message, dict) or message.get("role") != kind:
+            return dict(unavailable, reason="malformed_message")
+        content = message.get("content")
+        if kind == "user" and isinstance(content, str):
+            delivery = by_uuid.get(record.get("uuid"))
+            if delivery is None or delivery["text"] != content:
+                return dict(unavailable, reason="unbound_user")
+            found.append(content)
+            messages.append({"record_index": index, "role": "user", "origin": "controller_operator", "text": content})
+            continue
+        if not isinstance(content, list) or not content or not all(isinstance(x, dict) for x in content):
+            return dict(unavailable, reason="unsupported_message")
+        for part_index, part in enumerate(content):
+            row = {"record_index": index, "part_index": part_index, "role": kind}
+            if kind == "assistant" and part.get("type") == "text" and isinstance(part.get("text"), str):
+                row.update(origin="native_assistant", text=part["text"])
+            elif kind == "assistant" and part.get("type") in ("thinking", "redacted_thinking"):
+                continue
+            elif kind == "assistant" and part.get("type") == "tool_use":
+                ident = part.get("id")
+                if (not isinstance(ident, str) or not ident or ident in calls
+                        or not isinstance(part.get("name"), str) or not isinstance(part.get("input"), dict)):
+                    return dict(unavailable, reason="unbound_tool_call")
+                calls.add(ident)
+                row.update(origin="native_tool_invocation", call_id=ident,
+                           text=json.dumps({"name": part["name"], "input": part["input"]}))
+            elif kind == "user" and part.get("type") == "tool_result":
+                ident = part.get("tool_use_id")
+                if (not isinstance(ident, str) or ident not in calls or ident in results
+                        or not isinstance(part.get("content"), str)):
+                    return dict(unavailable, reason="unbound_tool_result")
+                results.add(ident)
+                row.update(role="tool", origin="native_tool_result", call_id=ident, text=part["content"])
+            else:
+                return dict(unavailable, reason="unsupported_message")
+            messages.append(row)
+    if found != [x["text"] for x in submissions]:
+        return dict(unavailable, reason="missing_or_reordered_submission")
+    return {"availability": "available", "reason": None, "messages": messages}
+
+
+def codex_settings_match(event, expected, session):
+    """Match the bounded applied configuration of the prepared native session."""
+    if event.get("thread_id") != session or not isinstance(expected, dict):
+        return False
+    applied = event.get("thread_settings")
+    roots = expected.get("allowed_roots")
+    if (not isinstance(applied, dict) or not isinstance(roots, list) or len(roots) != 2
+            or not all(isinstance(x, str) and x.startswith("/") for x in roots)
+            or len(set(roots)) != 2 or expected.get("cwd") not in roots):
+        return False
+    required = {"model": expected.get("model"), "reasoning_effort": expected.get("effort"),
+                "cwd": expected["cwd"], "model_provider_id": "openai",
+                "approval_policy": "on-request", "approvals_reviewer": "user"}
+    if (any(not isinstance(value, str) or applied.get(key) != value for key, value in required.items())
+            or applied.get("runtime_workspace_roots") != roots
+            or applied.get("collaboration_mode") != {"mode": "default", "settings": {
+                "model": expected["model"], "reasoning_effort": expected["effort"], "developer_instructions": None}}):
+        return False
+    profile = applied.get("permission_profile")
+    if not isinstance(profile, dict) or profile.get("type") != "managed" or profile.get("network") != "restricted":
+        return False
+    fs = profile.get("file_system")
+    if not isinstance(fs, dict) or fs.get("type") != "restricted" or not isinstance(fs.get("entries"), list):
+        return False
+    # The native shape repeats some entries. Compare their full values as sets;
+    # additions, omissions, changed access, and broader paths still fail.
+    entries = [{"path": {"type": "special", "value": {"kind": "root"}}, "access": "read"}]
+    entries += [{"path": {"type": "special", "value": {"kind": kind}}, "access": "write"}
+                for kind in ("slash_tmp", "tmpdir")]
+    entries += [{"path": {"type": "path", "path": root}, "access": "write"} for root in roots]
+    entries += [{"path": {"type": "path", "path": root + "/" + suffix}, "access": "read", "missing_path_behavior": "skip"}
+                for root in roots for suffix in (".git", ".agents", ".codex", ".aws")]
+    encode = lambda row: json.dumps(row, sort_keys=True, separators=(",", ":"))
+    return set(map(encode, fs["entries"])) == set(map(encode, entries))
+
+
+def project(payload):
+    output = {"availability": "unavailable", "reason": None, "messages": []}
+    if not isinstance(payload, dict):
+        return dict(output, reason="malformed_input")
+    if payload.get("mode") == "bound":
+        return bind(payload)
+    if payload.get("harness") not in ("codex", "claude"):
+        output["reason"] = "unsupported_harness"
+        return output
+    session, submissions = payload.get("session_id"), payload.get("submissions")
+    if (not isinstance(session, str) or not session or payload.get("delivery_complete") is not True
+            or not isinstance(submissions, list) or not submissions):
+        return dict(output, reason="unbound_delivery")
+    for index, row in enumerate(submissions):
+        if (not isinstance(row, dict) or row.get("session_id") != session or row.get("delivery") != "sent"
+                or type(row.get("sequence")) is not int or row["sequence"] != index
+                or not isinstance(row.get("text"), str) or not row["text"]):
+            return dict(output, reason="unbound_delivery")
+    submitted = [x["text"] for x in submissions]
+    if len(set(submitted)) != len(submitted):
+        return dict(output, reason="ambiguous_delivery")
+    records = payload.get("records")
+    if not isinstance(records, list) or not all(isinstance(x, dict) for x in records):
+        return dict(output, reason="malformed_records")
+    if payload["harness"] == "claude":
+        return claude_records(records, submissions, session)
+    metas = [x.get("payload") for x in records if x.get("type") == "session_meta"]
+    if len(metas) != 1 or not isinstance(metas[0], dict) or metas[0].get("id") != session:
+        return dict(output, reason="unbound_session")
+    found, tool_calls, tool_results = [], set(), set()
+    for index, record in enumerate(records):
+        if record.get("type") == "session_meta":
+            continue
+        if record.get("type") in ("world_state", "turn_context", "token_usage_record"):
+            if not isinstance(record.get("payload"), dict):
+                return dict(output, reason="malformed_metadata", messages=[])
+            continue
+        if record.get("type") == "event_msg":
+            event = record.get("payload")
+            if (not isinstance(event, dict) or event.get("type") not in
+                    ("task_started", "item_completed", "token_count", "task_complete", "thread_settings_applied")
+                    or event.get("thread_id", session) != session):
+                return dict(output, reason="unsupported_event", messages=[])
+            if event["type"] == "thread_settings_applied" and not codex_settings_match(event, payload.get("expected_settings"), session):
+                return dict(output, reason="applied_settings_differ", messages=[])
+            continue
+        if record.get("type") != "response_item":
+            return dict(output, reason="unsupported_record", messages=[])
+        message = record.get("payload", {})
+        if not isinstance(message, dict):
+            return dict(output, reason="malformed_message", messages=[])
+        if message.get("type") == "reasoning":
+            continue
+        if message.get("type") == "custom_tool_call":
+            ident = message.get("call_id")
+            if (not isinstance(ident, str) or not ident or ident in tool_calls
+                    or not isinstance(message.get("name"), str) or not isinstance(message.get("input"), str)):
+                return dict(output, reason="unbound_tool_call", messages=[])
+            tool_calls.add(ident)
+            output["messages"].append({"record_index": index, "role": "assistant", "origin": "native_tool_invocation",
+                                       "call_id": ident, "text": json.dumps({"name": message["name"], "input": message["input"]})})
+            continue
+        if message.get("type") == "custom_tool_call_output":
+            ident, content = message.get("call_id"), message.get("output")
+            if (not isinstance(ident, str) or ident not in tool_calls or ident in tool_results
+                    or not isinstance(content, list) or not content
+                    or not all(isinstance(part, dict) and part.get("type") == "input_text"
+                               and isinstance(part.get("text"), str) for part in content)):
+                return dict(output, reason="unbound_tool_result", messages=[])
+            tool_results.add(ident)
+            for part_index, part in enumerate(content):
+                output["messages"].append({"record_index": index, "part_index": part_index, "role": "tool",
+                                           "origin": "native_tool_result", "call_id": ident, "text": part["text"]})
+            continue
+        if message.get("type") != "message":
+            return dict(output, reason="unsupported_record", messages=[])
+        role, content = message.get("role"), message.get("content")
+        if (role not in ("user", "assistant", "developer", "system", "tool")
+                or not isinstance(content, list) or not content
+                or not all(isinstance(part, dict) and part.get("type") in ("input_text", "output_text")
+                           and isinstance(part.get("text"), str) for part in content)):
+            return dict(output, reason="unsupported_message", messages=[])
+        for part_index, part in enumerate(content):
+            text = part["text"]
+            if role == "user" and text in submitted:
+                if len(content) != 1:
+                    return dict(output, reason="ambiguous_operator_message", messages=[])
+                origin = "controller_operator"
+                found.append(text)
+            elif role == "user":
+                if found:
+                    return dict(output, reason="unbound_later_user", messages=[])
+                origin = "unattributed_startup"
+            else:
+                origin = "native_" + role
+            output["messages"].append({"record_index": index, "part_index": part_index,
+                                       "role": role, "origin": origin, "text": text})
+    if found != submitted:
+        output.update(reason="missing_or_reordered_submission", messages=[])
+        return output
+    output["availability"] = "available"
+    return output
+
+
+if __name__ == "__main__":
+    print(json.dumps(project(json.load(sys.stdin))))

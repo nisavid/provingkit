@@ -1,0 +1,228 @@
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+
+HERE = Path(__file__).resolve().parent
+
+
+class QualificationTests(unittest.TestCase):
+    def test_codex_hook_allows_only_the_single_exact_new_file(self):
+        with tempfile.TemporaryDirectory() as parent:
+            prepared = subprocess.run([sys.executable, str(HERE / 'probe.py'), 'prepare', '--harness', 'codex',
+                                       '--parent', parent, '--name', 'patch'], capture_output=True, text=True, check=True)
+            root = Path(json.loads(prepared.stdout)['manifest']).parent
+            config = json.loads((root / 'hook-config.json').read_text())
+            storage = root / 'store'; native_dir = storage / '2026/09/29'; native_dir.mkdir(parents=True)
+            transcript = native_dir / 'rollout-s.jsonl'
+            transcript.write_text(json.dumps({'type': 'session_meta', 'payload': {'id': 's'}}) + '\n' +
+                                  json.dumps({'type': 'response_item', 'payload': {'type': 'message', 'role': 'user', 'content': [{'type': 'input_text', 'text': 'Create the named file.'}]}}) + '\n')
+            config['storage_root'] = str(storage)
+            (root / 'hook-config.json').write_text(json.dumps(config))
+            expected = hashlib.sha256((root / 'hook-config.json').read_bytes()).hexdigest()
+            (root / 'private/native-readiness.json').write_text(json.dumps({'verified': True, 'session_id': 's', 'transcript_path': str(transcript)}))
+            (root / 'private/delivery.json').write_text(json.dumps({'session_id': 's', 'sequence': 0, 'text': 'Create the named file.', 'sent_before': {'monotonic_ns': 1}}))
+            (root / 'private/acknowledgment.json').write_text(json.dumps({'harness': 'codex', 'session_id': 's', 'sequence': 0, 'turn_id': 't', 'observed_at': {'monotonic_ns': 2}}))
+            target = root / 'sibling/n17.txt'
+            patch = f'*** Begin Patch\n*** Add File: {target}\n+SYS1_SYNTHETIC_FILE\n*** End Patch\n'
+            for command, allowed in ((patch, True), (patch.replace(str(target),'../sibling/n17.txt'), True),
+                                     (patch.replace(str(target),'../sibling/./n17.txt'), True),
+                                     (patch.replace(str(target),'../sibling//n17.txt'), True),
+                                     (patch.replace(str(target),'../other/n17.txt'), False),
+                                     (patch.replace(str(target),'../../sibling/n17.txt'), False),
+                                     (patch.replace(str(target),'../sibling/../n17.txt'), False),
+                                     (patch.replace('n17.txt', 'different.txt'), False),
+                                     (patch.replace('+SYS1_SYNTHETIC_FILE', '+different'), False),
+                                     (patch.replace('*** End Patch', f'*** Add File: {root}/sibling/other.txt\n+SYS1_SYNTHETIC_FILE\n*** End Patch'), False)):
+                with self.subTest(command=command):
+                    event = {'hook_event_name': 'PreToolUse', 'session_id': 's', 'turn_id': 't', 'cwd': config['cwd'],
+                             'transcript_path': str(transcript), 'tool_name': 'apply_patch', 'tool_input': {'command': command}}
+                    result = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                            input=json.dumps(event), text=True, capture_output=True, check=True)
+                    if allowed:
+                        self.assertEqual(result.stdout, '')
+                        row = json.loads((root / 'private/hook-events.jsonl').read_text().splitlines()[-1])
+                        self.assertEqual(row['context_route']['availability'], 'available')
+                        self.assertEqual(row['context_route']['matched_record_index'], 1)
+                    else:
+                        self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'], 'deny')
+                    self.assertFalse(target.exists())
+
+    def test_run_refuses_wrong_digest_source_drift_and_reused_attempt_before_native_launch(self):
+        with tempfile.TemporaryDirectory() as parent:
+            for case in ('digest', 'source', 'reused'):
+                p = subprocess.run([sys.executable, str(HERE / 'probe.py'), 'prepare', '--harness', 'claude',
+                                    '--parent', parent, '--name', case], capture_output=True, text=True, check=True)
+                path = Path(json.loads(p.stdout)['manifest']); root = path.parent
+                expected = json.loads(p.stdout)['sha256']
+                if case == 'digest': expected = '0' * 64
+                if case == 'source':
+                    manifest = json.loads(path.read_text())
+                    manifest['source_sha256'][str(HERE / 'hook.py')] = '0' * 64
+                    path.write_text(json.dumps(manifest)); expected = hashlib.sha256(path.read_bytes()).hexdigest()
+                if case == 'reused': (root / 'run-reservation.json').write_text('earlier attempt\n')
+                run = subprocess.run([sys.executable, str(HERE / 'probe.py'), 'run', '--manifest', str(path), '--sha256', expected],
+                                     capture_output=True, text=True)
+                self.assertNotEqual(run.returncode, 0)
+                self.assertIn({'digest': 'manifest_digest_mismatch', 'source': 'source_drift', 'reused': 'attempt_already_reserved'}[case], run.stderr)
+                self.assertFalse((root / 'version-stdout.log').exists())
+                if case == 'reused': self.assertEqual((root / 'run-reservation.json').read_text(), 'earlier attempt\n')
+
+    def test_claude_init_after_first_user_does_not_deadlock_or_mark_readiness_early(self):
+        with tempfile.TemporaryDirectory() as parent:
+            p = subprocess.run([sys.executable, str(HERE / 'probe.py'), 'prepare', '--harness', 'claude',
+                                '--parent', parent, '--name', 'ordered'], capture_output=True, text=True, check=True)
+            root = Path(json.loads(p.stdout)['manifest']).parent
+            manifest = json.loads((root / 'manifest.json').read_text())
+            binary = Path(parent) / 'bin'; binary.mkdir()
+            fake = binary / 'claude'
+            init = {'type': 'system', 'subtype': 'init', 'model': 'claude-opus-5-5', 'cwd': manifest['project'],
+                    'session_id': manifest['claude_session_id'], 'claude_code_version': '2.1.284', 'permissionMode': 'auto',
+                    'tools': ['Write'], 'mcp_servers': [], 'skills': [],
+                    'plugins': [{'name': 'agents-md', 'path': 'builtin', 'source': 'agents-md@builtin'},
+                                {'name': 'telemetry', 'path': 'builtin', 'source': 'telemetry@builtin'}],
+                    'agents': ['claude', 'Explore', 'general-purpose', 'Plan', 'statusline-setup']}
+            fake.write_text('#!' + sys.executable + '\n' + '''import json, sys
+from pathlib import Path
+def emit(x): print(json.dumps(x), flush=True)
+control=json.loads(sys.stdin.readline())
+emit({'type':'control_response','response':{'request_id':control['request_id'],'subtype':'success','response':{'models':[{'value':'opus','resolvedModel':'claude-opus-5-5','supportedEffortLevels':['high']}]}}})
+user=json.loads(sys.stdin.readline())
+''' + f'assert not Path({str(root / "private/native-readiness.json")!r}).exists()\n' +
+                'init=' + repr(init) + '\n' + '''emit(init)
+user['session_id']=init['session_id']; user['isReplay']=True; emit(user)
+emit({'type':'assistant','session_id':init['session_id'],'message':{'role':'assistant','content':[{'type':'tool_use','id':'tool-1','name':'Write','input':{}}]}})
+emit({'type':'user','session_id':init['session_id'],'uuid':'tool-result-1','message':{'role':'user','content':[{'type':'tool_result','tool_use_id':'tool-1','content':'File created successfully.'}]}})
+emit({'type':'result','session_id':init['session_id'],'is_error':False,'result':'synthetic transport response'})
+sys.stdin.read()
+''')
+            fake.chmod(0o755)
+            env = dict(os.environ, PATH=str(binary) + os.pathsep + os.environ['PATH'])
+            driver = 'import json,sys,time;from pathlib import Path;from native_runner import run_claude;r=Path(sys.argv[1]);m=json.loads((r/"manifest.json").read_text());print(json.dumps(run_claude(m,r,Path(m["project"]),Path(m["sibling"]),time.monotonic()+2)))'
+            run = subprocess.run([sys.executable, '-c', driver, str(root)], cwd=HERE, env=env, capture_output=True, text=True, timeout=8)
+            self.assertEqual(run.returncode, 0, run.stderr)
+            self.assertEqual(json.loads(run.stdout)['native_result']['result'], 'synthetic transport response')
+            ready = json.loads((root / 'private/native-readiness.json').read_text())
+            sent = json.loads((root / 'private/delivery.json').read_text())
+            self.assertGreater(ready['verified_at']['monotonic_ns'], sent['sent_before']['monotonic_ns'])
+
+    def test_ready_hook_captures_current_delivery_without_waiting_for_acknowledgment(self):
+        with tempfile.TemporaryDirectory() as parent:
+            p = subprocess.run([sys.executable, str(HERE / "probe.py"), "prepare", "--harness", "claude",
+                                "--parent", parent, "--name", "capture"], capture_output=True, text=True, check=True)
+            root = Path(json.loads(p.stdout)["manifest"]).parent
+            config = json.loads((root / "hook-config.json").read_text())
+            sid = config["prebound_session_id"]
+            store = root / 'store'; native_dir = store / 'project-id'; native_dir.mkdir(parents=True)
+            transcript = native_dir / (sid + '.jsonl')
+            transcript.write_text(json.dumps({'type': 'user', 'sessionId': sid, 'message': {'role': 'user', 'content': 'Create the named file.'}}) + '\n')
+            target = root / 'sibling/n17.txt'
+            config.update(storage_root=str(store), inventory={str(target): 'SYS1_SYNTHETIC_FILE\n'})
+            (root / 'hook-config.json').write_text(json.dumps(config))
+            expected = hashlib.sha256((root / 'hook-config.json').read_bytes()).hexdigest()
+            (root / 'private/native-readiness.json').write_text(json.dumps({'verified': True, 'session_id': sid, 'transcript_path': str(transcript)}))
+            delivery = {'session_id': sid, 'text': 'Create the named file.', 'sequence': 0,
+                        'native_uuid': 'u1', 'sent_before': {'monotonic_ns': 123}}
+            (root / 'private/delivery.json').write_text(json.dumps(delivery))
+            event = {'hook_event_name': 'PreToolUse', 'session_id': sid, 'cwd': config['cwd'],
+                     'transcript_path': str(transcript), 'tool_name': 'Write',
+                     'tool_input': {'file_path': str(target), 'content': 'SYS1_SYNTHETIC_FILE\n'}}
+            run = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                 input=json.dumps(event), text=True, capture_output=True)
+            self.assertEqual(run.returncode, 0, run.stderr)
+            self.assertEqual(run.stdout, '')
+            row = json.loads((root / 'private/hook-events.jsonl').read_text().splitlines()[0])
+            self.assertEqual(row['delivery'], delivery)
+            self.assertIsNone(row['acknowledgment'])
+            self.assertEqual(row['context_route']['availability'], 'unavailable')
+            self.assertEqual(row['context_route']['matched_record_index'], 0)
+            self.assertEqual(row['capture']['availability'], 'available')
+            self.assertEqual(row['capture']['messages'][0]['content'], 'Create the named file.')
+            self.assertEqual(row['capture']['primary']['raw_sha256'], hashlib.sha256(transcript.read_bytes()).hexdigest())
+            self.assertEqual(row['capture']['primary']['records'][0]['sessionId'], sid)
+            self.assertLessEqual(row['received_ns'], row['finished_ns'])
+            ack = {'harness': 'claude', 'session_id': sid, 'sequence': 0, 'native_uuid': 'u1',
+                   'message': {'role': 'user', 'content': delivery['text']}, 'observed_at': {'monotonic_ns': 124}}
+            (root / 'private/acknowledgment.json').write_text(json.dumps(ack))
+            complete = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                      input=json.dumps(event), text=True, capture_output=True, check=True)
+            self.assertEqual(complete.stdout, '')
+            complete_row = json.loads((root / 'private/hook-events.jsonl').read_text().splitlines()[-1])
+            self.assertEqual(complete_row['context_route']['availability'], 'available')
+            transcript.write_text(transcript.read_text().replace('Create the named file.', 'Different operator input.'))
+            mismatch = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                      input=json.dumps(event), text=True, capture_output=True, check=True)
+            mismatch_row = json.loads((root / 'private/hook-events.jsonl').read_text().splitlines()[-1])
+            self.assertEqual(mismatch_row['context_route']['availability'], 'unavailable')
+            self.assertEqual(mismatch_row['context_route']['reason'], 'current_turn_not_uniquely_matched')
+            for changed in (
+                dict(event, session_id='other'),
+                dict(event, tool_input={'file_path': str(target.parent / 'other.txt'), 'content': 'SYS1_SYNTHETIC_FILE\n'}),
+                dict(event, tool_input={'file_path': str(target), 'content': 'different\n'}),
+            ):
+                rejected = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                          input=json.dumps(changed), text=True, capture_output=True, check=True)
+                self.assertEqual(json.loads(rejected.stdout)['hookSpecificOutput']['permissionDecision'], 'deny')
+            target.write_text('existing\n')
+            rejected = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                      input=json.dumps(event), text=True, capture_output=True, check=True)
+            self.assertEqual(json.loads(rejected.stdout)['hookSpecificOutput']['permissionDecision'], 'deny')
+            self.assertEqual(target.read_text(), 'existing\n')
+            target.unlink(); target.symlink_to(root / 'private/delivery.json')
+            rejected = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                      input=json.dumps(event), text=True, capture_output=True, check=True)
+            self.assertEqual(json.loads(rejected.stdout)['hookSpecificOutput']['permissionDecision'], 'deny')
+            self.assertEqual(json.loads((root / 'private/delivery.json').read_text()), delivery)
+            config['source_sha256'][str(HERE / 'hook.py')] = '0' * 64
+            (root / 'hook-config.json').write_text(json.dumps(config))
+            expected = hashlib.sha256((root / 'hook-config.json').read_bytes()).hexdigest()
+            rejected = subprocess.run([sys.executable, str(HERE / 'hook.py'), str(root), expected],
+                                      input=json.dumps(event), text=True, capture_output=True, check=True)
+            self.assertEqual(json.loads(rejected.stdout)['hookSpecificOutput']['permissionDecision'], 'deny')
+            last = json.loads((root / 'private/hook-events.jsonl').read_text().splitlines()[-1])
+            self.assertEqual(last['reason'], 'source_drift')
+
+    def test_hook_denies_before_native_readiness_and_records_the_attempt(self):
+        with tempfile.TemporaryDirectory() as parent:
+            p = subprocess.run([sys.executable, str(HERE / "probe.py"), "prepare", "--harness", "claude",
+                                "--parent", parent, "--name", "gate"], capture_output=True, text=True, check=True)
+            root = Path(json.loads(p.stdout)["manifest"]).parent
+            manifest = json.loads((root / "manifest.json").read_text())
+            path, content = next(iter(manifest["inventory"].items()))
+            event = {"hook_event_name": "PreToolUse", "session_id": manifest["claude_session_id"],
+                     "cwd": manifest["project"], "tool_name": "Write", "tool_input": {"file_path": path, "content": content}}
+            run = subprocess.run([sys.executable, str(HERE / "hook.py"), str(root), manifest["hook_config_sha256"]],
+                                 input=json.dumps(event), text=True, capture_output=True)
+            self.assertEqual(run.returncode, 0, run.stderr)
+            self.assertEqual(json.loads(run.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+            rows = [json.loads(line) for line in (root / "private/hook-events.jsonl").read_text().splitlines()]
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["reason"], "native_not_ready")
+            self.assertFalse(Path(path).exists())
+
+    def test_prepare_produces_one_bound_sibling_write_without_starting_a_model(self):
+        with tempfile.TemporaryDirectory() as parent:
+            p = subprocess.run([sys.executable, str(HERE / "probe.py"), "prepare", "--harness", "claude",
+                                "--parent", parent, "--name", "one"], capture_output=True, text=True)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            result = json.loads(p.stdout)
+            self.assertIs(result["native_started"], False)
+            path = Path(result["manifest"])
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), result["sha256"])
+            manifest = json.loads(path.read_text())
+            self.assertEqual(len(manifest["inventory"]), 1)
+            target = Path(next(iter(manifest["inventory"])))
+            self.assertEqual(target.parent, path.parent / "sibling")
+            self.assertFalse(target.exists())
+            self.assertFalse((path.parent / "run-reservation.json").exists())
+            again = subprocess.run([sys.executable, str(HERE / "probe.py"), "prepare", "--harness", "claude",
+                                    "--parent", parent, "--name", "one"], capture_output=True, text=True)
+            self.assertNotEqual(again.returncode, 0)
+
+
+if __name__ == "__main__":
+    unittest.main()

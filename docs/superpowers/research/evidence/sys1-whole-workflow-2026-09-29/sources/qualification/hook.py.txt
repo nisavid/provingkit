@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""Observe a native proposal while containing one synthetic new-file effect."""
+import fcntl
+import hashlib
+import json
+from pathlib import Path
+import sys
+import time
+
+
+def denial():
+    return {'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny',
+            'permissionDecisionReason': 'Native qualification readiness or synthetic file bounds failed.'}}
+
+
+def optional(path):
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def context_route(row, config, event):
+    result = {'availability': 'unavailable', 'reason': None, 'matched_record_index': None}
+    delivery, ack = row['delivery'], row['acknowledgment']
+    if (not isinstance(delivery, dict) or delivery.get('session_id') != event['session_id']
+            or type(delivery.get('sequence')) is not int or delivery['sequence'] != 0
+            or not isinstance(delivery.get('text'), str) or not delivery['text']):
+        return dict(result, reason='unbound_delivery')
+    sent = delivery.get('sent_before', {}).get('monotonic_ns')
+    if type(sent) is not int or not 0 <= sent <= row['received_ns']:
+        return dict(result, reason='delivery_not_before_hook')
+    matches = [item for item in row['capture']['messages']
+               if item.get('role') == 'user' and item.get('kind') == 'text'
+               and item.get('content') == delivery['text']]
+    if len(matches) != 1:
+        return dict(result, reason='current_turn_not_uniquely_matched')
+    result['matched_record_index'] = matches[0]['record_index']
+    if (not isinstance(ack, dict) or ack.get('session_id') != event['session_id']
+            or ack.get('harness') != config['harness'] or type(ack.get('sequence')) is not int
+            or ack['sequence'] != 0):
+        return dict(result, reason='acknowledgment_not_bound_at_hook')
+    observed = ack.get('observed_at', {}).get('monotonic_ns')
+    if type(observed) is not int or not sent <= observed <= row['received_ns']:
+        return dict(result, reason='acknowledgment_not_before_hook')
+    if config['harness'] == 'claude':
+        if (not isinstance(delivery.get('native_uuid'), str) or not delivery['native_uuid']
+                or ack.get('native_uuid') != delivery['native_uuid']
+                or ack.get('message') != {'role': 'user', 'content': delivery['text']}):
+            return dict(result, reason='acknowledgment_content_differs')
+    elif not isinstance(ack.get('turn_id'), str) or not ack['turn_id'] or ack['turn_id'] != event.get('turn_id'):
+        return dict(result, reason='acknowledgment_turn_differs')
+    return dict(result, availability='available')
+
+
+def main():
+    root, expected = Path(sys.argv[1]), sys.argv[2]
+    row = {'received_ns': time.monotonic_ns(), 'reason': None}
+    result = None
+    try:
+        raw = (root / 'hook-config.json').read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected:
+            raise ValueError('config_drift')
+        config = json.loads(raw)
+        for path, digest in config['source_sha256'].items():
+            if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
+                raise ValueError('source_drift')
+        from observer import capture
+        from fixture import guard
+        raw = sys.stdin.buffer.read(65537)
+        if len(raw) > 65536:
+            raise ValueError('oversized_hook')
+        event = json.loads(raw)
+        row['event'] = event
+        row['delivery'] = optional(root / 'private/delivery.json')
+        row['acknowledgment'] = optional(root / 'private/acknowledgment.json')
+        if event.get('hook_event_name') == 'PreToolUse':
+            ready = optional(root / 'private/native-readiness.json')
+            if not isinstance(ready, dict) or ready.get('verified') is not True:
+                raise ValueError('native_not_ready')
+            sid = ready.get('session_id')
+            if not isinstance(sid, str) or not sid or event.get('session_id') != sid:
+                raise ValueError('session_mismatch')
+            if config['harness'] == 'claude' and sid != config['prebound_session_id']:
+                raise ValueError('prebound_session_mismatch')
+            if event.get('cwd') != config['cwd']:
+                raise ValueError('cwd_mismatch')
+            if config['harness'] == 'codex' and event.get('transcript_path') != ready.get('transcript_path'):
+                raise ValueError('transcript_mismatch')
+            observer_config = {'harness': config['harness'], 'session_id': sid,
+                               'storage_root': config['storage_root'], 'max_bytes': 2097152}
+            if ready.get('transcript_path'):
+                observer_config['transcript_path'] = ready['transcript_path']
+            row['capture'] = capture(observer_config, event)
+            if row['capture']['availability'] == 'available':
+                row['context_route'] = context_route(row, config, event)
+            row['containment'] = guard({'cwd': config['cwd'], 'inventory': config['inventory'],
+                                        'allowed_roots': config['allowed_roots'], 'hook': event})
+            if row['containment']['containment'] != 'within_fixture':
+                raise ValueError(row['containment']['reason'])
+            if row['capture']['availability'] != 'available':
+                raise ValueError('capture_unavailable')
+        elif event.get('hook_event_name') != 'UserPromptSubmit':
+            raise ValueError('unexpected_hook_event')
+    except Exception as error:
+        row['reason'] = str(error)
+        row['error_type'] = type(error).__name__
+        result = denial()
+    row['finished_ns'] = time.monotonic_ns()
+    with (root / 'private/hook-events.jsonl').open('a') as stream:
+        fcntl.flock(stream, fcntl.LOCK_EX)
+        stream.write(json.dumps(row) + '\n')
+        stream.flush()
+    if result:
+        print(json.dumps(result))
+
+
+if __name__ == '__main__':
+    main()

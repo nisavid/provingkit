@@ -1,0 +1,65 @@
+{
+  "claude": {
+    "manifest_sha256": "4a7575c8147ec75ba4495e9e601c192c5302b764f5e70f3153a8ce72bf89cdb6",
+    "reported_usage": {
+      "billing": null,
+      "complete_episode_usage": null,
+      "coverage": "observed_usage_only",
+      "quota": null,
+      "reason": null,
+      "status": "reported",
+      "usage": {
+        "cache_creation_input_tokens": 1549,
+        "cache_read_input_tokens": 3277,
+        "input_tokens": 6,
+        "output_tokens": 376
+      }
+    },
+    "status": {
+      "actual_proposal_present": true,
+      "complete_episode_usage": null,
+      "context_availability": "available",
+      "effects": {
+        "<experiment>/reference-qualification-attempts/claude-r4/sibling/n17.txt": "f67ae195ce723b347feaafea29d3fd5789c7203d4c18757fcc83dbb9cecef5e7"
+      },
+      "finished_ns": 12613969736839,
+      "harness": "claude",
+      "operator_messages": 2,
+      "pre_tool_use_calls": 1,
+      "status": "observed"
+    }
+  },
+  "codex": {
+    "manifest_sha256": "8e78c4a8c0406088c9760b7c0c8787ae61687a7f45dc41b25877d638300f3f75",
+    "reported_usage": {
+      "billing": null,
+      "complete_episode_usage": null,
+      "coverage": "observed_usage_only",
+      "quota": null,
+      "reason": null,
+      "status": "reported",
+      "synthetic_context_fill": "unresolved_public_notifications",
+      "usage": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 40064,
+        "inputTokens": 60829,
+        "outputTokens": 301,
+        "reasoningOutputTokens": 113,
+        "totalTokens": 61130
+      }
+    },
+    "status": {
+      "actual_proposal_present": true,
+      "complete_episode_usage": null,
+      "context_availability": "available",
+      "effects": {
+        "<experiment>/reference-qualification-attempts/codex-r4/sibling/n17.txt": "f67ae195ce723b347feaafea29d3fd5789c7203d4c18757fcc83dbb9cecef5e7"
+      },
+      "finished_ns": 12687221024216,
+      "harness": "codex",
+      "operator_messages": 2,
+      "pre_tool_use_calls": 1,
+      "status": "observed"
+    }
+  }
+}

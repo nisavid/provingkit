@@ -1,0 +1,149 @@
+/** Synthetic comparison adapter; never changes the installed Jev package. */
+import {createHash,randomUUID} from 'node:crypto';
+import {appendFileSync,existsSync,mkdirSync,readFileSync,writeFileSync,realpathSync} from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {makeAttemptFetch} from './provider_ledger.mjs';
+
+const sha=data=>createHash('sha256').update(data).digest('hex');
+const stamp=()=>({wall:new Date().toISOString(),monotonic_ns:process.hrtime.bigint().toString()});
+const no=(reason)=>({decision:'abstain',reason});
+export function decideContextAnswers(answers) {
+  const keys=['authorized','excluded','withdrawn'];
+  if (!answers || typeof answers!=='object' || JSON.stringify(Object.keys(answers).sort())!==JSON.stringify(keys)) return no('malformed_answers');
+  if (!keys.every(k=>answers[k]?.type==='noul' && typeof answers[k].noul==='number' && Number.isFinite(answers[k].noul) && answers[k].noul>=0 && answers[k].noul<=1)) return no('malformed_answers');
+  if (answers.withdrawn.noul>=.95) return {decision:'block',reason:'withdrawn_or_held'};
+  if (answers.excluded.noul>=.95) return {decision:'block',reason:'excluded_destination'};
+  if (answers.authorized.noul>=.95 && answers.withdrawn.noul<=.05 && answers.excluded.noul<=.05) return {decision:'continue',reason:'authorized_exact_effect'};
+  return no('uncertain');
+}
+
+export function validWatermark(value) {
+  return value && typeof value.session_id==='string' && value.session_id.length>0
+    && /^[a-f0-9]{64}$/.test(value.transcript_sha256)
+    && Number.isSafeInteger(value.record_count) && value.record_count>0
+    && ((typeof value.turn_id==='string' && value.turn_id.length>0)
+       || (typeof value.user_message_uuid==='string' && value.user_message_uuid.length>0));
+}
+
+export function reconcileProviderLedger(sdkRows,events) {
+  const starts=events.filter(x=>x.kind==='provider_start');
+  const ends=events.filter(x=>x.kind==='provider_end');
+  const cached=sdkRows.filter(x=>x.cached===true);
+  if(cached.length && (sdkRows.length!==1 || starts.length || ends.length)) throw new Error('Cache record conflicts with provider attempts');
+  const ids=new Set(starts.map(x=>x.attempt_id));
+  if(ids.size!==starts.length || ends.some(x=>!ids.has(x.attempt_id)) || new Set(ends.map(x=>x.attempt_id)).size!==ends.length) throw new Error('Invalid provider attempt identities');
+  const unknown=starts.filter(start=>{const end=ends.find(x=>x.attempt_id===start.attempt_id);return !end || !end.usage || !['input_tokens','output_tokens'].every(k=>Number.isSafeInteger(end.usage[k]) && end.usage[k]>=0);}).map(x=>x.attempt_id);
+  return {cache_disposition:cached.length?'hit':starts.length?'provider_attempt':'no_recorded_provider_or_cache_hit',unknown_provider_attempts:unknown};
+}
+
+function newOrSame(file,value) {
+  const bytes=JSON.stringify(value)+'\n';
+  if (existsSync(file)) { if(readFileSync(file,'utf8')!==bytes) throw new Error('Isolated config changed'); }
+  else writeFileSync(file,bytes,{flag:'wx',mode:0o600});
+}
+export async function runCandidate(request,config,{fetchImpl=globalThis.fetch}={}) {
+  if (!['A','D'].includes(request.arm) || !['claude','codex'].includes(request.harness)) throw new Error('Unsupported arm or harness');
+  for(const [file,digest] of Object.entries(config.source_sha256)) if(sha(readFileSync(file))!==digest) throw new Error('Source drift');
+  const directory=config.data_dir;
+  if(!path.isAbsolute(directory) || realpathSync(directory)!==directory) throw new Error('Data directory differs');
+  const id=randomUUID();
+  const record=e=>appendFileSync(path.join(directory,'invocations.jsonl'),JSON.stringify(e)+'\n',{mode:0o600});
+  const provider=e=>appendFileSync(path.join(directory,'provider.jsonl'),JSON.stringify(e)+'\n',{mode:0o600});
+  record({kind:'invocation_start',invocation_id:id,at:stamp(),arm:request.arm,input_sha256:sha(JSON.stringify(request))});
+  let result;
+  try {
+    // Read the ordinary Linux configuration without invoking its legacy-directory
+    // migration. Only this in-memory object can contain a configured key.
+    const hostBase=process.env.XDG_CONFIG_HOME?.trim() || path.join(os.homedir(),'.config');
+    let hostDirectory=path.join(hostBase,'jev-axi');
+    if(!existsSync(hostDirectory) && existsSync(path.join(hostBase,'jev-cli'))) hostDirectory=path.join(hostBase,'jev-cli');
+    let hostConfig={};
+    try {hostConfig=JSON.parse(readFileSync(path.join(hostDirectory,'config.json'),'utf8'));} catch {}
+    if(!hostConfig || typeof hostConfig!=='object' || Array.isArray(hostConfig)) throw new Error('Unsupported baseline configuration');
+    // Relocate before importing or calling any installed path helper.
+    for(const [kind,env] of [['config','XDG_CONFIG_HOME'],['state','XDG_STATE_HOME'],['cache','XDG_CACHE_HOME']]) {
+      const dir=path.join(directory,kind);mkdirSync(dir,{recursive:true});process.env[env]=dir;
+    }
+    const load=name=>import(pathToFileURL(path.join(config.package_root,'dist/src',name)).href);
+    const configuration=await load('config.js');
+    const client=await load('client.js');
+    const model=configuration.resolveModel(undefined,hostConfig),ttl=configuration.resolveCacheTtlHours(hostConfig);
+    const enabled=process.env.JEV_AXI_NO_CACHE!=='1' && ttl>0;
+    if(model!==config.baseline_model || ttl!==config.cache_ttl_hours || enabled!==config.cache_enabled) throw new Error('Baseline config drift');
+    process.env.TYPESAFE_DEFAULT_MODEL=model;
+    const conf=path.join(directory,'config/jev-axi');mkdirSync(conf,{recursive:true});
+    newOrSame(path.join(conf,'config.json'),{model,cacheTtlHours:ttl});
+    const safety=await load('safety.js');
+    if (request.arm==='A' && !/^(Bash|Write|Edit|MultiEdit)$/.test(request.call.tool_name)) {
+      result={decision:'continue',reason:'native_matcher_omits_tool',source:'matcher',output:''};
+    } else if (request.arm==='D' && (request.context?.availability!=='available' || request.proposed_file?.target_state!=='absent' || !validWatermark(request.context.watermark))) {
+      result={...no('unavailable_context_or_target'),output:''};
+    } else {
+      // A routine local verdict needs neither an API key nor its resolver.
+      if(request.arm==='D' || safety.localVerdict(request.call).decision!=='allow') {
+        const key=configuration.resolveApiKey(hostConfig).key;
+        if(key) process.env.TYPESAFE_API_KEY=key;
+      }
+      const ledger=configuration.paths.usageLedger();
+      const before=existsSync(ledger)?readFileSync(ledger,'utf8'):'';
+      const providerEvents=[];
+      const wrapped=makeAttemptFetch({invocationId:id,record:e=>{providerEvents.push(e);provider(e);},fetchImpl});
+      client.configureFetch(wrapped);
+      if(request.arm==='A') {
+        const {hookCommand}=await load('commands/hook.js');
+        const output=await hookCommand(['pre-tool-use','--agent',request.harness,'--input',JSON.stringify(request.call)]);
+        const parsed=output?JSON.parse(output):null;
+        const local=safety.localVerdict(request.call);
+        result={decision:parsed?.hookSpecificOutput?.permissionDecision??'continue',
+                reason:parsed?.hookSpecificOutput?.permissionDecisionReason??(local.decision==='allow'?local.reason:'quiet_output'),
+                source:local.decision==='allow'?'local':'jev_or_error',output};
+      } else {
+        const policyBytes=readFileSync(config.questions_path);
+        if(sha(policyBytes)!==config.questions_sha256) throw new Error('Questions drift');
+        const spec=JSON.parse(policyBytes);
+        // Only task messages and their role provenance enter this synthetic query.
+        // Startup and developer instructions stay local and are counted as omitted.
+        const allowed=new Set(['controller_operator','native_assistant','native_tool_invocation','native_tool_result']);
+        const messages=request.context.messages.filter(x=>allowed.has(x.origin));
+        const state={messages,proposed_file:request.proposed_file,context_binding:request.context.binding,
+                     transcript_watermark:request.context.watermark,
+                     omitted_non_task_records:(request.context.omitted_non_task_records??0)+request.context.messages.length-messages.length};
+        const bytes=JSON.stringify(state);
+        record({kind:'judgment_input',invocation_id:id,at:stamp(),state_sha256:sha(bytes),state_bytes:Buffer.byteLength(bytes),questions_sha256:config.questions_sha256,model:spec.model});
+        if(Buffer.byteLength(bytes)>131072) result={...no('oversized_context'),output:''};
+        else {
+          try {
+            const evaluated=await client.evaluate(state,spec.questions,{model:spec.model,command:'sys1-context-comparison',timeoutMs:6000,maxRetries:0});
+            if(evaluated.model!==spec.model) throw new Error('Returned model differs');
+            result={...decideContextAnswers(evaluated.answers),answers:evaluated.answers,model:evaluated.model,cached:evaluated.cached,output:''};
+            if(result.decision==='block') result.output=safety.hookOutput('deny',`The current operator instruction appears to exclude or withhold this exact file creation (${result.reason}). Check the existing instruction before proceeding.`,request.harness);
+          } catch { result={...no('provider_error'),output:''}; }
+        }
+      }
+      const after=existsSync(ledger)?readFileSync(ledger,'utf8'):'';
+      if(!after.startsWith(before)) throw new Error('Usage ledger changed');
+      const appended=after.slice(before.length).trim().split('\n').filter(Boolean).map(x=>JSON.parse(x));
+      result.sdk_usage_records=appended.map(row=>Object.fromEntries(['model','in','out','ms','q','cached'].filter(key=>Object.hasOwn(row,key)).map(key=>[key,row[key]])));
+      const reconciled=reconcileProviderLedger(appended,providerEvents);
+      result.cache_disposition=reconciled.cache_disposition;
+      result.unknown_provider_attempts=reconciled.unknown_provider_attempts;
+      if(reconciled.cache_disposition==='hit') provider({kind:'cache_hit',invocation_id:id,at:stamp()});
+    }
+    record({kind:'invocation_end',invocation_id:id,at:stamp(),status:'completed',result});
+    return {...result,invocation_id:id};
+  } catch(error) {
+    record({kind:'invocation_end',invocation_id:id,at:stamp(),status:'incomplete',error_type:error.constructor.name});
+    throw error;
+  }
+}
+
+if(process.argv[1] && import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href) {
+  try {
+    const [configPath,expected]=process.argv.slice(2);const bytes=readFileSync(configPath);
+    if(sha(bytes)!==expected) throw new Error('Config drift');
+    const input=readFileSync(0);if(input.length>262144) throw new Error('Oversized input');
+    console.log(JSON.stringify(await runCandidate(JSON.parse(input),JSON.parse(bytes))));
+  } catch(error) { console.error(JSON.stringify({status:'incomplete',error_type:error.constructor.name}));process.exitCode=1; }
+}

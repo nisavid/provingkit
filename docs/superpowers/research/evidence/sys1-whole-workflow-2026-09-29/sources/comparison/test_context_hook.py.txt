@@ -1,0 +1,97 @@
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+
+HERE = Path(__file__).resolve().parent
+
+
+class ContextHookTests(unittest.TestCase):
+    def test_two_submissions_and_actual_proposal_survive_native_shape_projection(self):
+        for harness in ('claude', 'codex'):
+            with self.subTest(harness=harness), tempfile.TemporaryDirectory() as parent:
+                p = subprocess.run([sys.executable, str(HERE/'reference_probe.py'), 'prepare', '--harness', harness,
+                                    '--parent', parent, '--name', 'ref'], capture_output=True, text=True, check=True)
+                root = Path(json.loads(p.stdout)['manifest']).parent
+                config = json.loads((root/'hook-config.json').read_text())
+                sid = config['prebound_session_id'] if harness == 'claude' else 's'
+                store = root/'store'; folder = store/('project-id' if harness == 'claude' else '2026/09/29')
+                folder.mkdir(parents=True)
+                path = folder/(sid+'.jsonl' if harness == 'claude' else 'rollout-'+sid+'.jsonl')
+                texts = ['Propose x; do not create it.', 'Create the file in that proposal now.']
+                proposal = 'PROPOSAL {"content":"synthetic","path":"/fixture/x"}'
+                if harness == 'claude':
+                    records = [{'type':'user','sessionId':sid,'uuid':'u0','message':{'role':'user','content':texts[0]}},
+                               {'type':'assistant','sessionId':sid,'message':{'role':'assistant','content':[{'type':'text','text':proposal}]}},
+                               {'type':'user','sessionId':sid,'uuid':'u1','message':{'role':'user','content':texts[1]}}]
+                else:
+                    applied = json.loads((HERE.parent/'source/codex-settings-fixture.json').read_text().replace('/fixture', str(root)))
+                    records = [{'type':'session_meta','payload':{'id':sid}},
+                               {'type':'event_msg','payload':{'type':'thread_settings_applied','thread_id':sid,'thread_settings':applied}}]
+                    for i,text in enumerate(texts):
+                        records.append({'type':'response_item','payload':{'type':'message','role':'user','content':[{'type':'input_text','text':text}]},
+                                        'metadata':{'retained_source':{'id':{'role':'user','turn_id':f't{i}'},'complete':True}}})
+                        if i==0:records.append({'type':'response_item','payload':{'type':'message','role':'assistant','content':[{'type':'output_text','text':proposal}]}})
+                path.write_text(''.join(json.dumps(x)+'\n' for x in records))
+                config['storage_root'] = str(store)
+                (root/'hook-config.json').write_text(json.dumps(config))
+                digest = hashlib.sha256((root/'hook-config.json').read_bytes()).hexdigest()
+                (root/'private/native-readiness.json').write_text(json.dumps({'verified':True,'session_id':sid,'transcript_path':str(path)}))
+                for i,text in enumerate(texts):
+                    delivery = {'harness':harness,'session_id':sid,'sequence':i,'text':text,'sent_before':{'monotonic_ns':1+i*2}}
+                    ack = {'harness':harness,'session_id':sid,'sequence':i,'observed_at':{'monotonic_ns':2+i*2}}
+                    if harness=='claude':delivery['native_uuid']=f'u{i}';ack.update(native_uuid=f'u{i}',message={'role':'user','content':text})
+                    else:ack['turn_id']=f't{i}'
+                    (root/f'private/deliveries/{i:03d}.json').write_text(json.dumps(delivery))
+                    (root/f'private/acknowledgments/{i:03d}.json').write_text(json.dumps(ack))
+                target=root/'sibling/n17.txt'
+                event={'session_id':sid,'cwd':str(root/'project'),'transcript_path':str(path),'hook_event_name':'PreToolUse'}
+                if harness=='claude':event.update(tool_name='Write',tool_input={'file_path':str(target),'content':'SYS1_SYNTHETIC_FILE\n'})
+                else:event.update(turn_id='t1',tool_name='apply_patch',tool_input={'command':f'*** Begin Patch\n*** Add File: {target}\n+SYS1_SYNTHETIC_FILE\n*** End Patch\n'})
+                def invoke():
+                    value=subprocess.run([sys.executable,str(HERE/'context_hook.py'),str(root),digest],input=json.dumps(event),capture_output=True,text=True,check=True)
+                    row=json.loads((root/'private/hook-events.jsonl').read_text().splitlines()[-1])
+                    return value,row
+                result,row=invoke()
+                self.assertEqual(result.stdout,'')
+                self.assertEqual(row['context']['availability'],'available')
+                self.assertEqual([x['text'] for x in row['context']['messages']],[texts[0],proposal,texts[1]])
+                self.assertIs(row['freshness']['unchanged'],True)
+                self.assertFalse(target.exists())
+                (root/'private/acknowledgments/001.json').unlink()
+                result,row=invoke()
+                self.assertEqual(result.stdout,'')
+                self.assertEqual(row['context']['availability'],'unavailable')
+                if harness=='claude':event['tool_input']['file_path']=str(root/'sibling/other.txt')
+                else:event['tool_input']['command']=event['tool_input']['command'].replace('n17.txt','other.txt')
+                result,row=invoke()
+                self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+                self.assertFalse(target.exists())
+
+    def test_reference_run_refuses_existing_attempt_before_any_native_invocation(self):
+        with tempfile.TemporaryDirectory() as parent:
+            p=subprocess.run([sys.executable,str(HERE/'reference_probe.py'),'prepare','--harness','claude','--parent',parent,'--name','ref'],capture_output=True,text=True,check=True)
+            prepared=json.loads(p.stdout);root=Path(prepared['manifest']).parent
+            (root/'run-reservation.json').write_text('preserve this attempt\n')
+            result=subprocess.run([sys.executable,str(HERE/'reference_probe.py'),'run','--manifest',prepared['manifest'],'--sha256',prepared['sha256']],capture_output=True,text=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('attempt already reserved',result.stderr)
+            self.assertEqual((root/'run-reservation.json').read_text(),'preserve this attempt\n')
+            self.assertFalse((root/'version-stdout.log').exists())
+
+if __name__=='__main__':unittest.main()
+
+class ReferenceEvidenceTests(unittest.TestCase):
+    def test_report_requires_the_actual_proposal_between_the_two_operator_messages(self):
+        from reference_probe import audit_context
+        first={'origin':'controller_operator','text':'Propose x; hold.'}
+        second={'origin':'controller_operator','text':'Create that proposal now.'}
+        proposed={'origin':'native_assistant','text':'PROPOSAL x'}
+        for rows, expected in (([first,proposed,second],True),([first,second,proposed],False),
+                               ([proposed,first,second],False),([first,proposed,{'origin':'native_assistant','text':'Instead propose y'},second],False)):
+            with self.subTest(rows=rows):
+                result=audit_context({'availability':'available','messages':rows},['Propose x; hold.','Create that proposal now.'],'PROPOSAL x')
+                self.assertEqual(result,expected)
