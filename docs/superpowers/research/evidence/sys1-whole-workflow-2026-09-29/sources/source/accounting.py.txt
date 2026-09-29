@@ -1,0 +1,152 @@
+"""Reported-usage reconciliation for the bounded Sys1 experiment."""
+import json
+import sys
+
+CLAUDE = {
+    "input_tokens": "inputTokens",
+    "output_tokens": "outputTokens",
+    "cache_creation_input_tokens": "cacheCreationInputTokens",
+    "cache_read_input_tokens": "cacheReadInputTokens",
+}
+CODEX = ("inputTokens", "cachedInputTokens", "cacheWriteInputTokens", "outputTokens", "reasoningOutputTokens", "totalTokens")
+
+
+def counters(row, fields):
+    return isinstance(row, dict) and all(type(row.get(k)) is int and row[k] >= 0 for k in fields)
+
+
+def consistent_codex(row):
+    return (row["cachedInputTokens"] <= row["inputTokens"]
+            and row["cacheWriteInputTokens"] <= row["inputTokens"]
+            and row["reasoningOutputTokens"] <= row["outputTokens"]
+            and row["totalTokens"] == row["inputTokens"] + row["outputTokens"])
+
+def account(payload):
+    result = {"status": "unknown", "reason": None, "usage": None, "billing": None, "quota": None,
+              "coverage": "observed_usage_only", "complete_episode_usage": None}
+    if not isinstance(payload, dict):
+        result["reason"] = "malformed_envelope"
+        return result
+    events = payload.get("events")
+    if not isinstance(events, list) or not all(isinstance(x, dict) for x in events):
+        result["reason"] = "malformed_events"
+        return result
+    if payload.get("harness") == "jev":
+        attempts, cache_hits = {}, set()
+        for event in events:
+            kind, ident = event.get("kind"), event.get("attempt_id")
+            if kind == "cache_hit":
+                ident = event.get("invocation_id")
+                if not isinstance(ident, str) or not ident or ident in cache_hits:
+                    result["reason"] = "invalid_attempt_ledger"
+                    return result
+                cache_hits.add(ident)
+            elif kind == "provider_start":
+                if not isinstance(ident, str) or not ident or ident in attempts:
+                    result["reason"] = "invalid_attempt_ledger"
+                    return result
+                attempts[ident] = None
+            elif kind == "provider_end":
+                if not isinstance(ident, str) or ident not in attempts or attempts[ident] is not None:
+                    result["reason"] = "invalid_attempt_ledger"
+                    return result
+                attempts[ident] = event
+            else:
+                result["reason"] = "invalid_attempt_ledger"
+                return result
+        known = {"input_tokens": 0, "output_tokens": 0}
+        unknown = []
+        for ident, end in attempts.items():
+            if end is None or end.get("outcome") not in ("success", "error") or not counters(end.get("usage"), known):
+                unknown.append(ident)
+            else:
+                for key in known:
+                    known[key] += end["usage"][key]
+        result.update(provider_attempts=len(attempts), cache_hits=len(cache_hits), known_usage=known, unknown_attempt_ids=unknown)
+        if unknown or payload.get("terminal") != "completed":
+            result["reason"] = "incomplete_provider_usage"
+        else:
+            result.update(status="reported", usage=known)
+        return result
+    if payload.get("terminal") != "completed":
+        result["reason"] = "missing_terminal"
+        return result
+    if payload.get("harness") == "claude":
+        rows = [x for x in events if x.get("type") == "result"]
+        count = payload.get("expected_results")
+        if type(count) is not int or count <= 0 or len(rows) != count or any(x.get("is_error") is not False for x in rows):
+            result["reason"] = "incomplete_results"
+            return result
+        models = rows[-1].get("modelUsage")
+        if not isinstance(models, dict) or not models:
+            result["reason"] = "missing_cumulative_endpoint"
+            return result
+        if not all(counters(x.get("usage"), CLAUDE) for x in rows):
+            result["reason"] = "malformed_counter"
+            return result
+        if not all(counters(x, CLAUDE.values()) for x in models.values()):
+            result["reason"] = "malformed_counter"
+            return result
+        sums = {k: sum(x["usage"][k] for x in rows) for k in CLAUDE}
+        totals = {k: sum(x[v] for x in models.values()) for k, v in CLAUDE.items()}
+        if sums != totals:
+            result["reason"] = "cumulative_mismatch"
+            return result
+        result.update(status="reported", usage=sums)
+        return result
+    if payload.get("harness") == "codex":
+        thread_id, completed = payload.get("thread_id"), payload.get("completed_turn_ids")
+        if (not isinstance(thread_id, str) or not thread_id
+                or not isinstance(completed, list) or not completed
+                or not all(isinstance(x, str) and x for x in completed)
+                or len(set(completed)) != len(completed)):
+            result["reason"] = "invalid_native_identity"
+            return result
+        baseline = payload.get("baseline")
+        if not isinstance(baseline, dict) or baseline.get("kind") not in ("verified_empty_thread", "observed_pre_start"):
+            result["reason"] = "missing_baseline"
+            return result
+        start = baseline.get("total")
+        if not counters(start, CODEX):
+            result["reason"] = "malformed_baseline"
+            return result
+        if not consistent_codex(start):
+            result["reason"] = "inconsistent_breakdown"
+            return result
+        if baseline["kind"] == "verified_empty_thread" and any(start[k] for k in CODEX):
+            result["reason"] = "nonzero_empty_baseline"
+            return result
+        rows = [x.get("params") for x in events if x.get("method") == "thread/tokenUsage/updated"]
+        if not rows:
+            result["reason"] = "missing_usage_endpoint"
+            return result
+        previous = start
+        turns = set()
+        for row in rows:
+            if not isinstance(row, dict) or row.get("threadId") != payload.get("thread_id") or row.get("turnId") not in payload.get("completed_turn_ids", []):
+                result["reason"] = "unbound_notification"
+                return result
+            usage = row.get("tokenUsage")
+            if not isinstance(usage, dict) or not counters(usage.get("total"), CODEX) or not counters(usage.get("last"), CODEX):
+                result["reason"] = "malformed_counter"
+                return result
+            total, last = usage["total"], usage["last"]
+            if not consistent_codex(total) or not consistent_codex(last):
+                result["reason"] = "inconsistent_breakdown"
+                return result
+            if any(total[k] != previous[k] + last[k] for k in CODEX):
+                result["reason"] = "cumulative_mismatch"
+                return result
+            previous = total
+            turns.add(row["turnId"])
+        if turns != set(payload.get("completed_turn_ids", [])):
+            result["reason"] = "missing_turn_usage"
+            return result
+        result.update(status="reported", usage={k: previous[k] - start[k] for k in CODEX},
+                      synthetic_context_fill="unresolved_public_notifications")
+        return result
+    result["reason"] = "unsupported_harness"
+    return result
+
+if __name__ == "__main__":
+    print(json.dumps(account(json.load(sys.stdin))))

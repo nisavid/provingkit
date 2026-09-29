@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""Observe a provenance-bound multi-turn context at a contained synthetic effect."""
+import fcntl
+import hashlib
+import json
+from pathlib import Path
+import sys
+import time
+
+HERE = Path(__file__).resolve().parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def optional(path):
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def indexed(root, name):
+    paths = sorted((root / 'private' / name).glob('*.json'))
+    if len(paths) > 8 or [p.name for p in paths] != [f'{i:03d}.json' for i in range(len(paths))]:
+        raise ValueError('controller record inventory differs')
+    if any(p.is_symlink() or not p.is_file() or p.stat().st_size > 32768 for p in paths):
+        raise ValueError('controller record shape differs')
+    values = [json.loads(p.read_text()) for p in paths]
+    return values, {str(p): sha(p) for p in paths}
+
+
+def main():
+    root, expected = Path(sys.argv[1]), sys.argv[2]
+    row = {'received_ns': time.monotonic_ns(), 'reason': None}
+    output = None
+    try:
+        if sha(root / 'hook-config.json') != expected:
+            raise ValueError('config drift')
+        config = json.loads((root / 'hook-config.json').read_text())
+        if config.get('arm') != 'observe':
+            raise ValueError('unsupported qualification arm')
+        for name, digest in config['source_sha256'].items():
+            if sha(Path(name)) != digest:
+                raise ValueError('source drift')
+        sys.path.insert(0, str(HERE.parent / 'qualification'))
+        sys.path.insert(0, str(HERE.parent / 'source'))
+        from observer import capture
+        from fixture import guard
+        from context import project
+        raw = sys.stdin.buffer.read(65537)
+        if len(raw) > 65536:
+            raise ValueError('oversized hook')
+        event = json.loads(raw); row['event'] = event
+        deliveries, delivery_hashes = indexed(root, 'deliveries')
+        acks, ack_hashes = indexed(root, 'acknowledgments')
+        row.update(deliveries=deliveries, acknowledgments=acks)
+        if event.get('hook_event_name') == 'PreToolUse':
+            ready = optional(root / 'private/native-readiness.json')
+            if not isinstance(ready, dict) or ready.get('verified') is not True:
+                raise ValueError('native not ready')
+            sid = ready.get('session_id')
+            if not isinstance(sid, str) or not sid or event.get('session_id') != sid:
+                raise ValueError('session differs')
+            if config['harness'] == 'claude' and sid != config['prebound_session_id']:
+                raise ValueError('prebound session differs')
+            if event.get('cwd') != config['cwd']:
+                raise ValueError('cwd differs')
+            if config['harness'] == 'codex' and event.get('transcript_path') != ready.get('transcript_path'):
+                raise ValueError('transcript differs')
+            observer = {'harness': config['harness'], 'session_id': sid,
+                        'storage_root': config['storage_root'], 'max_bytes': 2097152}
+            if ready.get('transcript_path'):
+                observer['transcript_path'] = ready['transcript_path']
+            row['capture'] = capture(observer, event)
+            row['containment'] = guard({'cwd': config['cwd'], 'inventory': config['inventory'],
+                                        'allowed_roots': config['allowed_roots'], 'hook': event})
+            if row['containment']['containment'] != 'within_fixture':
+                raise ValueError(row['containment']['reason'])
+            if row['capture']['availability'] != 'available':
+                raise ValueError('capture unavailable')
+            primary = row['capture']['primary']
+            row['context'] = project({'mode': 'bound', 'harness': config['harness'], 'session_id': sid,
+                                      'deliveries': deliveries, 'acknowledgments': acks,
+                                      'hook_received_ns': row['received_ns'], 'hook_turn_id': event.get('turn_id'),
+                                      'records': primary['records'], 'expected_settings': config.get('expected_settings')})
+            # No model runs here. An unchanged capture/receipt inventory binds the emitted observation.
+            after_deliveries, after_delivery_hashes = indexed(root, 'deliveries')
+            after_acks, after_ack_hashes = indexed(root, 'acknowledgments')
+            path = Path(event['transcript_path']); state = path.stat()
+            before = primary['file']
+            unchanged = (not path.is_symlink() and state.st_dev == before['device'] and state.st_ino == before['inode']
+                         and state.st_size == before['size'] and state.st_mtime_ns == before['mtime_ns']
+                         and sha(path) == primary['raw_sha256'] and delivery_hashes == after_delivery_hashes
+                         and ack_hashes == after_ack_hashes and deliveries == after_deliveries and acks == after_acks)
+            row['freshness'] = {'unchanged': unchanged, 'checked_ns': time.monotonic_ns()}
+            if not unchanged:
+                row['context'] = {'availability': 'unavailable', 'reason': 'capture_or_delivery_changed', 'messages': []}
+        elif event.get('hook_event_name') != 'UserPromptSubmit':
+            raise ValueError('unexpected hook event')
+    except Exception as error:
+        row.update(reason=str(error), error_type=type(error).__name__)
+        output = {'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny',
+                  'permissionDecisionReason': 'The synthetic qualification readiness or fixed file bounds failed.'}}
+    row['finished_ns'] = time.monotonic_ns()
+    with (root / 'private/hook-events.jsonl').open('a') as stream:
+        fcntl.flock(stream, fcntl.LOCK_EX); stream.write(json.dumps(row) + '\n'); stream.flush()
+    if output:
+        print(json.dumps(output))
+
+if __name__ == '__main__': main()

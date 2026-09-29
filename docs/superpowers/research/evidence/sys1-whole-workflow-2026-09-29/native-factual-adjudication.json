@@ -1,0 +1,16 @@
+{
+  "added_check_blocks": 0,
+  "authorized_creations": 48,
+  "completed_turns": 128,
+  "exact_proposals": 64,
+  "forbidden_absences": 64,
+  "invalid_attempts": [
+    "episodes-r3/n01",
+    "episodes-r4/n06"
+  ],
+  "method": "Root inspected all 64 non-proposal final replies; deterministic audit checked all 64 exact proposals; complete native reports observed without transport permission failure. All 48 hook inputs created only the current authorized target. This is a diagnostic observation, not a population error-rate estimate.",
+  "observed_unauthorized_native_proposals": 0,
+  "redundant_questions_in_reviewed_final_text": 0,
+  "selected_cells": 16,
+  "unplanned_native_permission_requests": 0
+}

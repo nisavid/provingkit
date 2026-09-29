@@ -1,0 +1,70 @@
+import argparse
+import json
+import os
+import re
+import stat
+from pathlib import Path
+def parsed_effect(hook):
+    name = hook.get("tool_name")
+    data = hook.get("tool_input")
+    if not isinstance(data, dict):
+        return None, "malformed_input"
+    if name == "Write":
+        path, content = data.get("file_path"), data.get("content")
+    elif name == "apply_patch":
+        command = data.get("command")
+        if not isinstance(command, str) or len(command.encode()) > 4096:
+            return None, "unsupported_patch"
+        match = re.fullmatch(r"\*\*\* Begin Patch\n\*\*\* Add File: ([^\n]+)\n((?:\+[^\n]*\n)+)\*\*\* End Patch\n?", command)
+        if not match:
+            return None, "unsupported_patch"
+        path = match.group(1)
+        content = "".join(line[1:] + "\n" for line in match.group(2).splitlines())
+    else:
+        return None, "unsupported_tool"
+    if not isinstance(path, str) or not isinstance(content, str) or not path or "\x00" in path:
+        return None, "malformed_input"
+    return {"path": path, "content": content}, None
+
+def guard(payload):
+    hook = payload.get("hook", {})
+    cwd = payload.get("cwd")
+    inventory = payload.get("inventory")
+    def deny(reason):
+        return {"schema": "sys1-fixture-containment/v1", "containment": "denied", "reason": reason, "effect": None}
+    if not isinstance(cwd, str) or not Path(cwd).is_absolute() or hook.get("cwd") != cwd:
+        return deny("cwd_mismatch")
+    if not isinstance(inventory, dict) or not inventory:
+        return deny("invalid_inventory")
+    effect, reason = parsed_effect(hook)
+    if reason:
+        return deny(reason)
+    raw = Path(effect["path"])
+    sibling_relative = (len(raw.parts) == 3 and raw.parts[:2] == ("..", "sibling")
+                        and raw.parts[2] not in (".", ".."))
+    if (".." in raw.parts or "." in raw.parts) and not sibling_relative:
+        return deny("unsafe_path")
+    destination = raw if raw.is_absolute() else Path(cwd) / raw
+    destination = Path(os.path.abspath(destination))
+    roots = payload.get("allowed_roots")
+    if (not isinstance(roots, list) or len(roots) != 2 or len(set(roots)) != 2
+            or roots[0] != cwd or roots[1] != str(Path(cwd).parent / 'sibling')
+            or Path(cwd).name != 'project'
+            or any(not Path(p).is_dir() or Path(p).resolve() != Path(p) for p in roots)):
+        return deny("invalid_fixture_roots")
+    if destination.parent not in [Path(p) for p in roots]:
+        return deny("outside_fixture")
+    relative = destination.relative_to(Path(cwd).parent)
+    if str(destination) not in inventory or inventory[str(destination)] != effect["content"]:
+        return deny("outside_inventory")
+    parent = destination.parent
+    if not parent.is_dir() or parent.resolve() != parent:
+        return deny("unsafe_parent")
+    try:
+        target = destination.lstat()
+    except FileNotFoundError:
+        target = None
+    if target is not None:
+        return deny("symlink_target" if stat.S_ISLNK(target.st_mode) else "existing_target")
+    return {"schema": "sys1-fixture-containment/v1", "containment": "within_fixture", "reason": None,
+            "effect": {"relative_path": str(relative), "content_bytes": len(effect["content"].encode())}}

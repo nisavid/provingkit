@@ -1,0 +1,25 @@
+{
+  "context_prerequisite": "81415d50772b7a8d008bb68d30e3751ce823e81d",
+  "current_repo_base": "8e1e170ab9437849a48e21d230e92dc9dcbf15a3",
+  "files": [
+    {
+      "matches_reviewed_revision": true,
+      "path": ".agents/skills/handling-sys1-incidents/SKILL.md",
+      "sha256": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac"
+    },
+    {
+      "matches_reviewed_revision": true,
+      "path": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+      "sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981"
+    }
+  ],
+  "invocation": "whole-workflow comparison preparation; no new model batch run",
+  "source_revision": "23c3f865f36aa3c727d33cf6d10fab3c1967a5d0",
+  "unmeasured": [
+    "earlier one-time effort",
+    "human effort",
+    "quota",
+    "billing",
+    "Codex guaranteed final endpoint"
+  ]
+}

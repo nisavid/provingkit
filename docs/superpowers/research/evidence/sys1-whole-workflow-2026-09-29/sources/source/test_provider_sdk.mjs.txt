@@ -1,0 +1,41 @@
+/** Model-free integration of the pinned Jev client, cache, and attempt recorder. */
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+const packageRoot=process.env.SYS1_JEV_PACKAGE_ROOT;
+assert.ok(packageRoot, 'Set SYS1_JEV_PACKAGE_ROOT to the reviewed pinned package.');
+const root=mkdtempSync(path.join(os.tmpdir(),'sys1-provider-sdk-'));
+const program=`
+import assert from 'node:assert/strict';
+import { makeAttemptFetch } from ${JSON.stringify(new URL('./provider_ledger.mjs',import.meta.url).href)};
+globalThis.fetch=async()=>{throw new Error('Unexpected uninstrumented fetch');};
+const {evaluate}=await import(${JSON.stringify(pathToFileURL(path.join(packageRoot,'dist/src/client.js')).href)});
+const events=[]; let calls=0;
+const record=e=>events.push(e);
+const wrapped=makeAttemptFetch({invocationId:'test-live',record,fetchImpl:async (input,init)=>{
+ calls++; assert.equal(new URL(input).pathname,'/v1/systemone');
+ assert.equal(events.at(-1).kind,'provider_start');
+ return new Response(JSON.stringify({model:'jev-1.13.0',answers:{q:{type:'noul',noul:0.8}},usage:{input_tokens:23,output_tokens:0}}),{headers:{'content-type':'application/json'}});
+}});
+const questions={q:{type:'noul',instructions:'Is this synthetic fixture text?'}};
+const opts={model:'jev-1.13.0',command:'sys1-model-free-test',fetch:wrapped,maxRetries:0,timeoutMs:1000};
+const first=await evaluate('Synthetic fixture text.',questions,opts);
+const second=await evaluate('Synthetic fixture text.',questions,opts);
+assert.equal(first.cached,false);assert.equal(second.cached,true);assert.equal(calls,1);
+const failed=makeAttemptFetch({invocationId:'test-failure',record,fetchImpl:async()=>{
+ calls++;return new Response(JSON.stringify({usage:{input_tokens:7,output_tokens:0}}),{status:503,headers:{'content-type':'application/json'}});
+}});
+await assert.rejects(evaluate('Different synthetic fixture.',questions,{...opts,fetch:failed}));
+assert.equal(calls,2);assert.equal(events.filter(x=>x.kind==='provider_start').length,2);
+assert.deepEqual(events.at(-1).usage,{input_tokens:7,output_tokens:0});
+assert.equal(events.at(-1).outcome,'error');
+console.log(JSON.stringify({fake_fetch_attempts:calls,cache_hit_without_new_attempt:second.cached,retries_disabled:true,failed_usage:events.at(-1).usage,no_provider_network:true}));
+`;
+try {
+ const child=spawnSync(process.execPath,['--input-type=module','-e',program],{cwd:root,encoding:'utf8',timeout:10000,env:{...process.env,TYPESAFE_API_KEY:'SYNTHETIC_TEST_KEY',XDG_CONFIG_HOME:path.join(root,'config'),XDG_STATE_HOME:path.join(root,'state'),XDG_CACHE_HOME:path.join(root,'cache'),JEV_AXI_NO_CACHE:'0'}});
+ assert.equal(child.status,0,child.stderr);process.stdout.write(child.stdout);
+} finally { rmSync(root,{recursive:true,force:true}); }

@@ -1,0 +1,137 @@
+{
+  "batch-integration-review-r1.json": {
+    "batch_unrun": true,
+    "binding": "a725ba67bb94ac65c899c19a25460fd95cbb36730b874454b57c69b2a828409c",
+    "input_hashes_verified": true,
+    "scope": "integration",
+    "status": "changes_requested"
+  },
+  "batch-integration-review-r2.json": {
+    "batch_unrun": true,
+    "binding": "8c9c82bf15efb12f936266e186fd1b411f81297a1e112ebdf13c9a41cccbcabc",
+    "finding": null,
+    "input_hashes_verified": true,
+    "scope": "integration",
+    "status": "clean"
+  },
+  "batch-integration-review-r3.json": {
+    "batch_unrun": true,
+    "binding": "45b426c00227b98b83919bcfa260a2ba382b1b869eb590b93d67a60a98f5e439",
+    "findings": [
+      "Recheck retained source capture hashes before reservation.",
+      "Preserve TimeoutExpired buffered streams."
+    ],
+    "input_hashes_verified": true,
+    "scope": "integration",
+    "status": "changes_requested"
+  },
+  "batch-integration-review-r4.json": {
+    "binding": "25602aec17f707308cb09cc82925c017486300253f83f4ffad6f7f02047005f6",
+    "claims": "Narrow retained-runner corrections; prior unchanged focus passes retained. No model observation yet.",
+    "input_hashes_verified": true,
+    "scope": "integration",
+    "status": "clean"
+  },
+  "batch-judgment-review-r1.json": {
+    "batch_unrun": true,
+    "binding": "971bd71b662ea4bd12b09c6fd43b5535e86d77275a41e2493920b32311846fb2",
+    "input_hashes_verified": true,
+    "scope": "judgment",
+    "status": "changes_requested"
+  },
+  "batch-judgment-review-r2.json": {
+    "batch_unrun": true,
+    "binding": "33a7acc9d8ec1426cd48df40204fb496d2310b565a15d4b61980f5151c6989ac",
+    "finding": "Require observed file creations to have usable corresponding PreToolUse evidence.",
+    "input_hashes_verified": true,
+    "scope": "judgment",
+    "status": "changes_requested"
+  },
+  "batch-judgment-review-r3.json": {
+    "batch_unrun": true,
+    "binding": "9c8e35d49e78236ca5b427d5875a9931abcd3e7c1c4d6ab2a2a1a170d0d18552",
+    "findings": [
+      "Recheck retained source capture hashes before reservation.",
+      "Preserve TimeoutExpired buffered streams."
+    ],
+    "input_hashes_verified": true,
+    "scope": "judgment",
+    "status": "changes_requested"
+  },
+  "batch-judgment-review-r4.json": {
+    "binding": "78a04a57b684101a8563bb37929eb81bcbbf0d93b7393da1b24b2e6bfcda4a04",
+    "claims": "Narrow retained-runner corrections; prior unchanged focus passes retained. No model observation yet.",
+    "input_hashes_verified": true,
+    "scope": "judgment",
+    "status": "clean"
+  },
+  "native-readout-review-r1.json": {
+    "binding": "8e27ff3ba53cabcf6c18f3daf8369409b242d2de5ad9abec020a3a0addaf8877",
+    "finding": "All16 selected native episodes complete, only48 authorized native calls, no added native benefit or false stop; native counters observed-only; two invalid attempts retained separately.",
+    "inputs_verified": true,
+    "reviewer": "accounting_review",
+    "status": "clean"
+  },
+  "native-timing-integration-review-r1.json": {
+    "binding": "f4c625510ed636d28f5b8b2af627bc2ff099a3b7bfa9eb6ad0de44f42a3b6adf",
+    "input_hashes_verified": true,
+    "runtime_resolution": "unobserved",
+    "scope": "native timing/integration",
+    "status": "clean"
+  },
+  "native-timing-judgment-review-r1.json": {
+    "binding": "b303251a66f84f9611c055bd5fa7332cf0644d780f61bf49e171222fd0d716b6",
+    "input_hashes_verified": true,
+    "runtime_resolution": "unobserved",
+    "scope": "native timing/provenance",
+    "status": "clean"
+  },
+  "reference-preflight-review-r4.json": {
+    "binding": "20e5f65dae637b834de6ac2aa39769c7cd610f162bd96c22d3646074b927f202",
+    "execution_by_reviewer": false,
+    "input_hashes_verified": true,
+    "scope": "two-turn reference qualification, applied settings correction",
+    "status": "clean",
+    "worker": "/root/accounting_review"
+  },
+  "relative-integration-review-r1.json": {
+    "binding": "63d2c00c459cb2292eb645bc287249efa2ed0846244bb953256c301d15f736d0",
+    "finding": null,
+    "input_hashes_verified": true,
+    "status": "clean"
+  },
+  "relative-integration-review-r2.json": {
+    "binding": "25a379bc9b0ba193d89871c3bc0b417300729ed00c8cf098666e082306c07edb",
+    "input_hashes_verified": true,
+    "scope": "relative path contract with lexical normalization",
+    "status": "clean"
+  },
+  "relative-judgment-review-r1.json": {
+    "binding": "e5a96ac2f5f91b81e9f7d827359020a50c81661580c43a629681cd0834a75508",
+    "finding": "Document that lexical Path normalization admits redundant dot/separator spellings of the supported sibling form.",
+    "input_hashes_verified": true,
+    "status": "changes_requested"
+  },
+  "relative-judgment-review-r2.json": {
+    "binding": "844fdae2a16fd1996e8bee13303177bf33558239e1e6bb2d1eb3342fab62d4d5",
+    "input_hashes_verified": true,
+    "scope": "relative path contract with lexical normalization",
+    "status": "clean"
+  },
+  "terminal-final-review-r2.json": {
+    "binding": "b19350b4db43a891d8feaf796fcfb470c95903db7d92d972cf9c5ff4f698980d",
+    "input_hashes_verified": true,
+    "limits": "read-only cooperative native review; no portable authentication; terminal replay not yet executed",
+    "reviewer": "native_provenance",
+    "status": "clean"
+  },
+  "terminal-source-review-r1.json": {
+    "binding": "88babcf4ae391988ea93a4c373c6b9d1572eab2e1886ec1b31289fd5bb6591d3",
+    "findings": [
+      "Make post-episode provenance explicit in candidate context binding.",
+      "Bind readiness, hook config, and evaluator labels as source dependencies."
+    ],
+    "input_hashes_verified": true,
+    "status": "changes_requested"
+  }
+}

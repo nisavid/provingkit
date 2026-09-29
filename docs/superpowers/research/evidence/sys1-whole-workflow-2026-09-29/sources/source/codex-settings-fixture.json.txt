@@ -1,0 +1,152 @@
+{
+  "model": "gpt-6-sol",
+  "model_provider_id": "openai",
+  "service_tier": "default",
+  "approval_policy": "on-request",
+  "approvals_reviewer": "user",
+  "permission_profile": {
+    "type": "managed",
+    "file_system": {
+      "type": "restricted",
+      "entries": [
+        {
+          "path": {
+            "type": "special",
+            "value": {
+              "kind": "root"
+            }
+          },
+          "access": "read"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/project"
+          },
+          "access": "write"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/sibling"
+          },
+          "access": "write"
+        },
+        {
+          "path": {
+            "type": "special",
+            "value": {
+              "kind": "slash_tmp"
+            }
+          },
+          "access": "write"
+        },
+        {
+          "path": {
+            "type": "special",
+            "value": {
+              "kind": "tmpdir"
+            }
+          },
+          "access": "write"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/sibling"
+          },
+          "access": "write"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/project/.git"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/sibling/.git"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/project/.agents"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/sibling/.agents"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/project/.codex"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/sibling/.codex"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/project/.aws"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/sibling/.aws"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        },
+        {
+          "path": {
+            "type": "path",
+            "path": "/fixture/project/.codex"
+          },
+          "access": "read",
+          "missing_path_behavior": "skip"
+        }
+      ]
+    },
+    "network": "restricted"
+  },
+  "cwd": "/fixture/project",
+  "runtime_workspace_roots": [
+    "/fixture/project",
+    "/fixture/sibling"
+  ],
+  "reasoning_effort": "high",
+  "personality": "pragmatic",
+  "collaboration_mode": {
+    "mode": "default",
+    "settings": {
+      "model": "gpt-6-sol",
+      "reasoning_effort": "high",
+      "developer_instructions": null
+    }
+  },
+  "disabled_plugin_ids": []
+}

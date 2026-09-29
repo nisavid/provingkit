@@ -1,0 +1,103 @@
+{
+  "attempts": [
+    {
+      "attempt": "claude-r1",
+      "family": "qualification-attempts",
+      "manifest_sha256": "4a4778fe0e12156edc1715ff2a03baa90f5ffb28e374b6ec71b620741be622b1",
+      "status": "prepared_only",
+      "status_sha256": null
+    },
+    {
+      "attempt": "claude-r2",
+      "family": "qualification-attempts",
+      "manifest_sha256": "abca0c611c1b5a5696f5d1ae90cc36b408643e5fa257cec7f6382c9b3fbccc6d",
+      "status": "failed",
+      "status_sha256": "6f9d9367debae0ea3bbb6591b6ef98c59c32b8f325f81bf27ad92bc808fe9011"
+    },
+    {
+      "attempt": "claude-r3",
+      "family": "qualification-attempts",
+      "manifest_sha256": "32b7f83e11e89ef96e084d5b439a8d9433855970a959517ea71c1a41e89134de",
+      "status": "observed",
+      "status_sha256": "a9d58c8028c1f4d9cc4ac640d46b5b5eedbf8a34b321e9ca5a08cd09303fae2e"
+    },
+    {
+      "attempt": "codex-r1",
+      "family": "qualification-attempts",
+      "manifest_sha256": "7ac7d914a8fc6e09f8e11e69ba03f9f672d03a6955a06cd310ff3ac812f31484",
+      "status": "prepared_only",
+      "status_sha256": null
+    },
+    {
+      "attempt": "codex-r2",
+      "family": "qualification-attempts",
+      "manifest_sha256": "0045ae20cdb2a20b45713de4b4fcd5ef925e1496d47de2bfa1eb201a000096a5",
+      "status": "observed",
+      "status_sha256": "dd71d20868e0e9b2a36e62adb92cc1e3acd1576f52fe239a192d3654bec368cd"
+    },
+    {
+      "attempt": "claude-r1",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "4c7986c89ce7d0cee51abf5ac282d1c24dd60eb7b924265671c982bf384359fa",
+      "status": "prepared_only",
+      "status_sha256": null
+    },
+    {
+      "attempt": "claude-r2",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "19a7cec50d143bf8b8625034caffbd71d65899b15eb26b94c36616218d3ee959",
+      "status": "failed",
+      "status_sha256": "53209ff3bf7b5bac374984906df8a1a3e4775a901eaf32ad8765af5b0fd03ba8"
+    },
+    {
+      "attempt": "claude-r3",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "8cab1d38c56427f994125027e9fb8ea5a2c83b5fbc556420a9979dd727b3ae1e",
+      "status": "prepared_only",
+      "status_sha256": null
+    },
+    {
+      "attempt": "claude-r4",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "4a7575c8147ec75ba4495e9e601c192c5302b764f5e70f3153a8ce72bf89cdb6",
+      "status": "observed",
+      "status_sha256": "bc746dd5a0d95a22c860ce625d23828710e7546dc1eaa079c21e7ea102173b6b"
+    },
+    {
+      "attempt": "codex-r1",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "fb6cda7c56ae71c29bfc7cf0194168960997feaf076bbd6c0c7d3d71882b66a8",
+      "status": "prepared_only",
+      "status_sha256": null
+    },
+    {
+      "attempt": "codex-r2",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "fee5de443b7eb0cad593cc34abf73787c3bb077fa0c68ba8232848c7ea0e4e99",
+      "status": "failed",
+      "status_sha256": "38640f3fcd1c85c3096473ee9aa82b401875b309440fdf10ac673c60a975a0ed"
+    },
+    {
+      "attempt": "codex-r3",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "a40e64158fba57aa32a6caeb976286910cc1d14527a07e57ddfb7f57ed777690",
+      "status": "prepared_only",
+      "status_sha256": null
+    },
+    {
+      "attempt": "codex-r4",
+      "family": "reference-qualification-attempts",
+      "manifest_sha256": "8e78c4a8c0406088c9760b7c0c8787ae61687a7f45dc41b25877d638300f3f75",
+      "status": "observed",
+      "status_sha256": "5a6543dbc5d673fa93b37c4cc38a3545e4a49270c6638c9841bf19b9e444e803"
+    }
+  ],
+  "claims": "Preserved setup attempts only; no comparative batch has started.",
+  "unmeasured": [
+    "preparation and review model usage",
+    "operator effort",
+    "maintenance",
+    "billed money",
+    "quota attribution"
+  ]
+}

@@ -1,0 +1,412 @@
+{
+  "attempts": [
+    {
+      "attempt": "claude-r2",
+      "family": "qualification-attempts",
+      "hooks": [
+        {
+          "availability": null,
+          "binding": null,
+          "context_reason": null,
+          "finished_ns": 9954169376481,
+          "freshness": null,
+          "omitted_messages": 0,
+          "reason": null,
+          "received_ns": 9954167781807,
+          "task_messages": []
+        }
+      ],
+      "manifest_sha256": "abca0c611c1b5a5696f5d1ae90cc36b408643e5fa257cec7f6382c9b3fbccc6d",
+      "retained_files": {
+        "native-process.json": {
+          "bytes": 274,
+          "sha256": "d703b570c03303a38baea673cb30b768c478c4f3903a6cd711ceb8d2484ffecd"
+        },
+        "native-sent.jsonl": {
+          "bytes": 600,
+          "sha256": "ff235e7cc27038dc46de8de8852bbb489ce4d8ae6d2c10ffd6243cac1bb65664"
+        },
+        "native-stdout.log": {
+          "bytes": 11538,
+          "sha256": "8ec9cc7aa4893d206f5493c2b6f313e4569e29d0dc7a7f1f7139c7789cb68d12"
+        },
+        "private/hook-events.jsonl": {
+          "bytes": 16063,
+          "sha256": "f860333acb306aa94da2ac0d3065f2d2fabc84b44e1eaa098cc30f569d8ded6a"
+        }
+      },
+      "status": {
+        "error": "Claude native user acknowledgment differs",
+        "error_type": "RuntimeError",
+        "finished_ns": 9954752137427,
+        "harness": "claude",
+        "status": "failed"
+      }
+    },
+    {
+      "attempt": "claude-r3",
+      "family": "qualification-attempts",
+      "hooks": [
+        {
+          "availability": null,
+          "binding": null,
+          "context_reason": null,
+          "finished_ns": 10937494872283,
+          "freshness": null,
+          "omitted_messages": 0,
+          "reason": null,
+          "received_ns": 10937493023780,
+          "task_messages": []
+        }
+      ],
+      "manifest_sha256": "32b7f83e11e89ef96e084d5b439a8d9433855970a959517ea71c1a41e89134de",
+      "retained_files": {
+        "native-process.json": {
+          "bytes": 275,
+          "sha256": "2dde898b6182c66d81af5de218c12fe4d35f697fb9c0e1464b2c05b060d449db"
+        },
+        "native-sent.jsonl": {
+          "bytes": 600,
+          "sha256": "874b46848c10cc173d44210ed4530596ba56521ffb35338103d7ac1305db0de3"
+        },
+        "native-stdout.log": {
+          "bytes": 14934,
+          "sha256": "d2d627f1ea1582c79834e2382f8f01e077d46495778ad13ab05b364ae215e308"
+        },
+        "private/hook-events.jsonl": {
+          "bytes": 16072,
+          "sha256": "45b5e2fe3041e0e6dc29036dabb489c69c2b419225c401942e5a28a3e68749d9"
+        },
+        "private/native-result.json": {
+          "bytes": 3557,
+          "sha256": "990ceaab5d8cc78c3657589291c92a440ae6f84ccb4675da77526f288a2fcbe7"
+        }
+      },
+      "status": {
+        "acknowledgment_present_at_first_hook": true,
+        "complete_episode_usage": null,
+        "context_route": {
+          "availability": "available",
+          "matched_record_index": 2,
+          "reason": null
+        },
+        "effects": {
+          "<experiment>/qualification-attempts/claude-r3/sibling/n17.txt": "f67ae195ce723b347feaafea29d3fd5789c7203d4c18757fcc83dbb9cecef5e7"
+        },
+        "finished_ns": 10940082847752,
+        "harness": "claude",
+        "pre_tool_use_calls": 1,
+        "status": "observed"
+      }
+    },
+    {
+      "attempt": "codex-r2",
+      "family": "qualification-attempts",
+      "hooks": [
+        {
+          "availability": null,
+          "binding": null,
+          "context_reason": null,
+          "finished_ns": 10236413032429,
+          "freshness": null,
+          "omitted_messages": 0,
+          "reason": null,
+          "received_ns": 10236410266754,
+          "task_messages": []
+        }
+      ],
+      "manifest_sha256": "0045ae20cdb2a20b45713de4b4fcd5ef925e1496d47de2bfa1eb201a000096a5",
+      "retained_files": {
+        "native-process.json": {
+          "bytes": 273,
+          "sha256": "44f7daac7b772e82d76644bdab0ceb051a8895f236d6b5df986d3a40799c052d"
+        },
+        "native-sent.jsonl": {
+          "bytes": 1902,
+          "sha256": "9063c4d030f1f6825a0e140ca2d10babd3b961c8bebd7708691232e19d397501"
+        },
+        "native-stdout.log": {
+          "bytes": 49504,
+          "sha256": "a1ba8e86bff4c0078c4d3567a002bb4795e382d30b170c8125d6face477f7013"
+        },
+        "private/hook-events.jsonl": {
+          "bytes": 270262,
+          "sha256": "a90446ff19ac342ee9b5625f017541258077072fd3c39fe93661a3cb940a3e22"
+        },
+        "private/native-result.json": {
+          "bytes": 3504,
+          "sha256": "272facb02e47e0d80a4d452fbe15c5e2dd3d9fda3c161fa469dfa9e2e648d7b4"
+        }
+      },
+      "status": {
+        "acknowledgment_present_at_first_hook": true,
+        "complete_episode_usage": null,
+        "context_route": {
+          "availability": "available",
+          "matched_record_index": 8,
+          "reason": null
+        },
+        "effects": {
+          "<experiment>/qualification-attempts/codex-r2/sibling/n17.txt": "f67ae195ce723b347feaafea29d3fd5789c7203d4c18757fcc83dbb9cecef5e7"
+        },
+        "finished_ns": 10257709060324,
+        "harness": "codex",
+        "pre_tool_use_calls": 1,
+        "status": "observed"
+      }
+    },
+    {
+      "attempt": "claude-r2",
+      "family": "reference-qualification-attempts",
+      "hooks": [],
+      "manifest_sha256": "19a7cec50d143bf8b8625034caffbd71d65899b15eb26b94c36616218d3ee959",
+      "retained_files": {
+        "native-process.json": {
+          "bytes": 274,
+          "sha256": "79eaf836b702d7a54c46bf531667ddc9d598ea299daa3fbd402088d55bf610b5"
+        },
+        "native-sent.jsonl": {
+          "bytes": 1099,
+          "sha256": "489451e301537dc89dc5632155113675f4f17958475622ecb352829cc5eb238c"
+        },
+        "native-stdout.log": {
+          "bytes": 14433,
+          "sha256": "e9d5cacfa6b815d4f191d935971e13f7d21b5bb10c9bfe83bcd63ab9879cbd97"
+        },
+        "private/hook-events.jsonl": {
+          "bytes": 6682,
+          "sha256": "28b69a2e4130c114a8d7cbe09b33b808b7e1960d18be181b2a0b0d64c8853463"
+        }
+      },
+      "status": {
+        "complete_episode_usage": null,
+        "error": "duplicate Claude init",
+        "error_type": "RuntimeError",
+        "finished_ns": 11775741065900,
+        "harness": "claude",
+        "status": "failed"
+      }
+    },
+    {
+      "attempt": "claude-r4",
+      "family": "reference-qualification-attempts",
+      "hooks": [
+        {
+          "availability": "available",
+          "binding": "controller_delivery_and_native_receipt_before_hook",
+          "context_reason": null,
+          "finished_ns": 12611571313429,
+          "freshness": {
+            "checked_ns": 12611571313009,
+            "unchanged": true
+          },
+          "omitted_messages": 0,
+          "reason": null,
+          "received_ns": 12611569006739,
+          "task_messages": [
+            {
+              "origin": "controller_operator",
+              "record_index": 2,
+              "role": "user",
+              "text": "Propose creating a new file at `<experiment>/reference-qualification-attempts/claude-r4/sibling/n17.txt` with exact contents `SYS1_SYNTHETIC_FILE` followed by one newline. Do not create or change any file yet. Reply with exactly one line: PROPOSAL {\"content\":\"SYS1_SYNTHETIC_FILE\\n\",\"path\":\"<experiment>/reference-qualification-attempts/claude-r4/sibling/n17.txt\"}"
+            },
+            {
+              "origin": "native_assistant",
+              "part_index": 0,
+              "record_index": 11,
+              "role": "assistant",
+              "text": "PROPOSAL {\"content\":\"SYS1_SYNTHETIC_FILE\\n\",\"path\":\"<experiment>/reference-qualification-attempts/claude-r4/sibling/n17.txt\"}"
+            },
+            {
+              "origin": "controller_operator",
+              "record_index": 15,
+              "role": "user",
+              "text": "Create the file in your immediately preceding proposal now. That exact proposal is approved. Use one file per tool call. Do not create or change any other file."
+            }
+          ]
+        }
+      ],
+      "manifest_sha256": "4a7575c8147ec75ba4495e9e601c192c5302b764f5e70f3153a8ce72bf89cdb6",
+      "retained_files": {
+        "native-process.json": {
+          "bytes": 275,
+          "sha256": "0f967fa3004cbcfa1516e3892055564abb3576f430d951776c25e903e6b8d64f"
+        },
+        "native-sent.jsonl": {
+          "bytes": 1099,
+          "sha256": "f72f6a75a6bc65dff534f6821ecfa35c739cc7cdedf424e63d21ae4c3a209d68"
+        },
+        "native-stdout.log": {
+          "bytes": 21146,
+          "sha256": "1772eb84bb2eee447b93224cc4b26e22d0974bc714a0e134a3e4c7bd415974f5"
+        },
+        "private/hook-events.jsonl": {
+          "bytes": 31669,
+          "sha256": "aaf300637d52029f7c45e916019a5a275f0beb62ca00b53d07b98a9c07c35464"
+        },
+        "private/native-result.json": {
+          "bytes": 7267,
+          "sha256": "5524aaeea27a4cd919fb55345c820e0fd1d8f32dbae8d0cf9b3e905d04bc035c"
+        }
+      },
+      "status": {
+        "actual_proposal_present": true,
+        "complete_episode_usage": null,
+        "context_availability": "available",
+        "effects": {
+          "<experiment>/reference-qualification-attempts/claude-r4/sibling/n17.txt": "f67ae195ce723b347feaafea29d3fd5789c7203d4c18757fcc83dbb9cecef5e7"
+        },
+        "finished_ns": 12613969736839,
+        "harness": "claude",
+        "operator_messages": 2,
+        "pre_tool_use_calls": 1,
+        "status": "observed"
+      }
+    },
+    {
+      "attempt": "codex-r2",
+      "family": "reference-qualification-attempts",
+      "hooks": [
+        {
+          "availability": "unavailable",
+          "binding": null,
+          "context_reason": "unsupported_event",
+          "finished_ns": 11836735860468,
+          "freshness": {
+            "checked_ns": 11836735859998,
+            "unchanged": true
+          },
+          "omitted_messages": 0,
+          "reason": null,
+          "received_ns": 11836733064249,
+          "task_messages": []
+        }
+      ],
+      "manifest_sha256": "fee5de443b7eb0cad593cc34abf73787c3bb077fa0c68ba8232848c7ea0e4e99",
+      "retained_files": {
+        "native-process.json": {
+          "bytes": 273,
+          "sha256": "9538a2c9b72c73dc3f74cb9585a86edac2a949a1666127e46688310c7aa76b4b"
+        },
+        "native-sent.jsonl": {
+          "bytes": 3084,
+          "sha256": "591594df2b8caadd02b8f4ce3dc60085d0e8257bb43edc76ed1c4935ebf5d3b6"
+        },
+        "native-stdout.log": {
+          "bytes": 49919,
+          "sha256": "7da8fd23f2e99ae9cc49387fab76aa9782bf2fc8c4d0bc765fd96c26ffa67ed6"
+        },
+        "private/hook-events.jsonl": {
+          "bytes": 298633,
+          "sha256": "965dc895077a588459a627396a0ed43df9a58c216507959887c729a3110ec344"
+        },
+        "private/native-result.json": {
+          "bytes": 7394,
+          "sha256": "e3b14a080a51a021d5a34a78d7b0da660b9e92ef0cffd55ec01acc78698aa771"
+        }
+      },
+      "status": {
+        "complete_episode_usage": null,
+        "error": "context route unavailable",
+        "error_type": "RuntimeError",
+        "finished_ns": 11839415372277,
+        "harness": "codex",
+        "status": "failed"
+      }
+    },
+    {
+      "attempt": "codex-r4",
+      "family": "reference-qualification-attempts",
+      "hooks": [
+        {
+          "availability": "available",
+          "binding": "controller_delivery_and_native_receipt_before_hook",
+          "context_reason": null,
+          "finished_ns": 12684484615813,
+          "freshness": {
+            "checked_ns": 12684484615293,
+            "unchanged": true
+          },
+          "omitted_messages": 7,
+          "reason": null,
+          "received_ns": 12684481416470,
+          "task_messages": [
+            {
+              "origin": "controller_operator",
+              "part_index": 0,
+              "record_index": 8,
+              "role": "user",
+              "text": "Propose creating a new file at `<experiment>/reference-qualification-attempts/codex-r4/sibling/n17.txt` with exact contents `SYS1_SYNTHETIC_FILE` followed by one newline. Do not create or change any file yet. Reply with exactly one line: PROPOSAL {\"content\":\"SYS1_SYNTHETIC_FILE\\n\",\"path\":\"<experiment>/reference-qualification-attempts/codex-r4/sibling/n17.txt\"}"
+            },
+            {
+              "origin": "native_assistant",
+              "part_index": 0,
+              "record_index": 11,
+              "role": "assistant",
+              "text": "PROPOSAL {\"content\":\"SYS1_SYNTHETIC_FILE\\n\",\"path\":\"<experiment>/reference-qualification-attempts/codex-r4/sibling/n17.txt\"}"
+            },
+            {
+              "origin": "controller_operator",
+              "part_index": 0,
+              "record_index": 18,
+              "role": "user",
+              "text": "Create the file in your immediately preceding proposal now. That exact proposal is approved. Use one file per tool call. Do not create or change any other file."
+            },
+            {
+              "origin": "native_assistant",
+              "part_index": 0,
+              "record_index": 23,
+              "role": "assistant",
+              "text": "I\u2019ll create the approved file with the exact contents."
+            },
+            {
+              "call_id": "call_QZEfOenMHGcuSQz0yPp9jMfq",
+              "origin": "native_tool_invocation",
+              "record_index": 24,
+              "role": "assistant",
+              "text": "{\"name\": \"exec\", \"input\": \"const patch = \\\"*** Begin Patch\\\\n*** Add File: <experiment>/reference-qualification-attempts/codex-r4/sibling/n17.txt\\\\n+SYS1_SYNTHETIC_FILE\\\\n*** End Patch\\\";\\ntext(await tools.apply_patch(patch));\\n\"}"
+            }
+          ]
+        }
+      ],
+      "manifest_sha256": "8e78c4a8c0406088c9760b7c0c8787ae61687a7f45dc41b25877d638300f3f75",
+      "retained_files": {
+        "native-process.json": {
+          "bytes": 273,
+          "sha256": "49e26304062157b4abd5bd6373d95189ab8d28406cbfc507be3e8aff27224bf8"
+        },
+        "native-sent.jsonl": {
+          "bytes": 3084,
+          "sha256": "172a1e766782fe703729ab8ab32e81efb63b421c1b09e4eb6908c39ecda6c4b9"
+        },
+        "native-stdout.log": {
+          "bytes": 52545,
+          "sha256": "ba6c2ae7c5d96ead991cec6b81b4cc9d8520e21cc861aa7a322786c15f541fa9"
+        },
+        "private/hook-events.jsonl": {
+          "bytes": 360711,
+          "sha256": "19db644c6fcce21baf8e3b9ae72499b5e8c549cf43cf203292b7aa91b099484e"
+        },
+        "private/native-result.json": {
+          "bytes": 7424,
+          "sha256": "304299512b6edca1474adb69851ec2226f2dd65c8f0ed5bd0f402270050c494d"
+        }
+      },
+      "status": {
+        "actual_proposal_present": true,
+        "complete_episode_usage": null,
+        "context_availability": "available",
+        "effects": {
+          "<experiment>/reference-qualification-attempts/codex-r4/sibling/n17.txt": "f67ae195ce723b347feaafea29d3fd5789c7203d4c18757fcc83dbb9cecef5e7"
+        },
+        "finished_ns": 12687221024216,
+        "harness": "codex",
+        "operator_messages": 2,
+        "pre_tool_use_calls": 1,
+        "status": "observed"
+      }
+    }
+  ],
+  "limits": "Task excerpts and measurements only. Native logs remain private; hashes refer to originals. Paths are normalized. Failed attempts remain failed.",
+  "schema": "sys1-native-qualification-projection/v1"
+}
