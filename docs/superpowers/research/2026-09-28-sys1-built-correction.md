@@ -7,6 +7,10 @@ task and hook behavior in dedicated Codex 0.158.0 profiles. The Codex
 missing-input run emitted a rollout-flush warning, retained as an unresolved
 persistence criterion. The earlier Codex 0.157.1 pair remains incomplete.
 
+The separately approved [Claude PostToolUse-only alpha](2026-09-28-sys1-claude-alpha.md)
+records the later Claude 2.1.284 qualification, live observation, and operator
+acceptance. This report retains the earlier built-candidate observations.
+
 ## Candidate and acceptance boundary
 
 The behavior change is [08031fb](https://github.com/nisavid/jev-axi/commit/08031fb03d57ccfe9e047d00760a5dc237358d7f).
@@ -30,7 +34,8 @@ extend those checks to that revision.
 [Source and build identities](evidence/sys1-built-2026-09-28/source-build.json)
 retain that distinction.
 
-A private archive was prepared but not installed or released: 165,602 bytes,
+The initial qualification prepared a private archive without installing or
+releasing it: 165,602 bytes,
 SHA-256 `a4c8da53f0ef1a69a350424465d87bc89e835d5bcf31886e50e4f28236f1bfb8`.
 The archive is not a live qualification result.
 
@@ -117,10 +122,10 @@ flush persistence.
 
 ## Qualification limits
 
-Claude Code 2.1.284 was subsequently observed as installed; the built native
-results above apply to 2.1.283. The operator has disabled Jev in normal Codex
-sessions and authorized dedicated experiment profiles. The supported profile
-route and Claude's untested settings alternative are in
+The Claude built native results above apply to 2.1.283; the subsequent 2.1.284
+checks and live acceptance are in the linked alpha report. The operator has
+disabled Jev in normal Codex sessions and authorized dedicated experiment
+profiles. The profile route and settings alternatives are described in
 [the configuration report](2026-09-28-jev-experiment-configuration.md).
 
 These results establish bounded task and hook behavior under the recorded
