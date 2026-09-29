@@ -1,0 +1,109 @@
+{
+  "result": {
+    "qualification": "offline built CLI",
+    "status": "qualified",
+    "native_harness": false,
+    "model_accuracy": false
+  },
+  "cases": {
+    "post-human": {
+      "exit": "0\n",
+      "stdout": "",
+      "stderr": "",
+      "recorded_assessments": [
+        {
+          "ts": "2026-09-28T04:45:26.707Z",
+          "hook": "post-tool-use",
+          "verdict": "escalate",
+          "action": "none",
+          "reason": "a person may be needed to unblock this (needs_human 0.9)",
+          "meaningful_progress": 0.1,
+          "worker_stuck": 0.1,
+          "work_off_track": 0.1,
+          "needs_human": 0.9
+        }
+      ],
+      "assessment_source": {
+        "label": "jev-built-qualification-85s_9t5p/post-human/xdg/config/jev-axi/stats/supervise.jsonl",
+        "sha256": "60754456a4e60b6a74c4f88cfcd9983b71bf6dcad52a44d51b6b2d5a2c353995",
+        "bytes": 332
+      }
+    },
+    "post-mixed": {
+      "exit": "0\n",
+      "stdout": "",
+      "stderr": "",
+      "recorded_assessments": [
+        {
+          "ts": "2026-09-28T04:45:28.019Z",
+          "hook": "post-tool-use",
+          "verdict": "escalate",
+          "action": "none",
+          "reason": "a person may be needed to unblock this (needs_human 0.9)",
+          "meaningful_progress": 0.1,
+          "worker_stuck": 0.95,
+          "work_off_track": 0.85,
+          "needs_human": 0.9
+        }
+      ],
+      "assessment_source": {
+        "label": "jev-built-qualification-85s_9t5p/post-mixed/xdg/config/jev-axi/stats/supervise.jsonl",
+        "sha256": "59dbc41047c7c8b5c55d3b44a6921871f13ea9a15346facecf81d3cb363548a5",
+        "bytes": 334
+      }
+    },
+    "post-steer": {
+      "exit": "0\n",
+      "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"jev-axi supervision: the recent tool calls look stuck in a loop (worker_stuck 0.9); try a different approach. Reconsider the approach against the original request; ignore this note if it is wrong.\"}}\n",
+      "stderr": "",
+      "recorded_assessments": [
+        {
+          "ts": "2026-09-28T04:45:29.380Z",
+          "hook": "post-tool-use",
+          "verdict": "steer",
+          "action": "note",
+          "reason": "the recent tool calls look stuck in a loop (worker_stuck 0.9); try a different approach",
+          "meaningful_progress": 0.1,
+          "worker_stuck": 0.9,
+          "work_off_track": 0.1,
+          "needs_human": 0.1
+        }
+      ],
+      "assessment_source": {
+        "label": "jev-built-qualification-85s_9t5p/post-steer/xdg/config/jev-axi/stats/supervise.jsonl",
+        "sha256": "0ba87e34eea1d817d6b71af215e259d37545e0bb9641e79b46a7e068050cd1ed",
+        "bytes": 360
+      }
+    },
+    "stop-verify": {
+      "exit": "0\n",
+      "stdout": "{\"systemMessage\":\"jev-axi supervision: nothing shows the change was built or tested (needs_verification 0.9).\"}\n",
+      "stderr": "",
+      "recorded_assessments": [
+        {
+          "ts": "2026-09-28T04:45:30.726Z",
+          "hook": "stop",
+          "verdict": "verify",
+          "action": "warn",
+          "reason": "nothing shows the change was built or tested (needs_verification 0.9)",
+          "implementation_complete": 0.9,
+          "tests_sufficient": 0.9,
+          "requirements_satisfied": 0.9,
+          "needs_verification": 0.9
+        }
+      ],
+      "assessment_source": {
+        "label": "jev-built-qualification-85s_9t5p/stop-verify/xdg/config/jev-axi/stats/supervise.jsonl",
+        "sha256": "cce3315eac20c2b1d46f12515687d6cb11398359aadd9836c95e27d96e84f778",
+        "bytes": 358
+      }
+    },
+    "post-explain": {
+      "exit": "0\n",
+      "stdout": "{\"verdict\":\"escalate\",\"reason\":\"a person may be needed to unblock this (needs_human 0.9)\",\"meaningful_progress\":0.1,\"worker_stuck\":0.1,\"work_off_track\":0.1,\"needs_human\":0.9,\"action\":\"none\"}\n",
+      "stderr": "",
+      "recorded_assessments": [],
+      "assessment_note": "Explain output returns the assessment without writing a supervision log."
+    }
+  }
+}
