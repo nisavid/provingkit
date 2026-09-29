@@ -34,6 +34,14 @@ selected receiver projection and concrete insertion points, with bounded
 collection and exclusive file publication. Every observation remains partial
 and unqualified. No notification, delivery, or acknowledgment is tested here.
 
+The producer may label `sample.result` as `complete`; that means only that every
+projected field has no `unavailable` status and no field gap was reported.
+`partial` means at least one projected field is unavailable or a field gap was
+reported. Neither state establishes any member of `UNKNOWN_CLAIMS`. The strict
+reader still requires the exact unknown values and always returns
+`usable-partial` / `unqualified`. A reported nullable value is not itself a
+field gap and does not imply full runtime knowledge.
+
 ## Source layout
 
 | File | Responsibility |

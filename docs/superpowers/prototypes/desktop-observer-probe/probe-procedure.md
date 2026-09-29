@@ -208,6 +208,15 @@ with the independently checked binding and a maximum age no greater than 30
 seconds. Every result remains unqualified. Preserve a failed or missing sample
 as such.
 
+The collection producer's `sample.result` state `complete` means only that
+every projected field has no `unavailable` status and the producer reported no
+field gaps. `partial` means at least one projected field is unavailable or a
+field gap was reported. A complete collection result does not establish any
+member of `UNKNOWN_CLAIMS`: the strict reader still requires the exact unknown
+values and always returns `usable-partial` with qualification `unqualified`.
+A nullable projected value may be a fully reported value; nullability neither
+establishes full runtime knowledge nor, by itself, makes collection partial.
+
 Each of the initial and final selected-executor sample acquisitions reads the
 nonsecret Linux boot identifier once from the single path
 `/proc/sys/kernel/random/boot_id`. It reads no other path to discover a PID.
@@ -276,20 +285,26 @@ the launcher and arguments, then verify the restored app opens and the agreed
 unrelated-work expectations hold. Report disposable fixture loss or changed
 task state separately from restored package bytes.
 
-At the terminal stop, create the private cleanup manifest defined by
-[application staging and restoration](application-operation.md#private-cleanup-manifest-and-retention).
-Use its exact status, reason, restoration, fixture, output, and retained-evidence
-variants. List only files and resources actually created, preserve absent
-artifacts explicitly, and never invent a task ID, Code ID, binding, sequence, or
-file identity.
+After verified restoration, perform the distinct package-cleanup phase from
+`application-operation.md`. It may remove only the verified staging archive,
+protected backup, and empty backup run root; it does not wait for issue 281.
+Record each actual known, uncertain, removed, or absent state, and do not retry
+a failed or partial removal. If restoration is `not-required`, incomplete, or
+otherwise unverified, delete no package or private resource.
 
-When no candidate exchange occurred, record restoration as `not-required`.
-When restoration passes every required check, record it as `verified`. If
-restoration is incomplete, record `recovery-required` /
-`restoration-incomplete`, retain the recovery record and every package and
-private artifact, and perform no cleanup. A possibly created task, directory,
-worktree, or file remains an unresolved resource pending an operational
-decision.
+Create the private cleanup manifest after that package-cleanup phase ends, or
+at the terminal stop when package deletion is prohibited. Use the exact status,
+reason, restoration, package-cleanup, fixture, output, retained-evidence,
+retention, and resource-role variants defined by
+[application staging and restoration](application-operation.md#private-cleanup-manifest-and-retention).
+List only files and resources actually established, preserve absent artifacts
+explicitly, and never invent a task ID, Code ID, binding, sequence, file
+identity, or removal result.
+
+Incomplete or unverified restoration records `recovery-required` /
+`restoration-incomplete`, retains the recovery record and every package and
+private artifact, and permits no deletion. A possibly created task, directory,
+worktree, or file remains unresolved pending an operational decision.
 
 Retain raw fixture output, any valid Linux-observation artifact, unresolved
 resources, and the cleanup manifest through the return decision, accessible

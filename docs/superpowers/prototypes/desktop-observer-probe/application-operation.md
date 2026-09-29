@@ -21,7 +21,9 @@ expansion, or paths copied from this committed document:
 - `PROBE_INSTALL_ROOT`, derived from package ownership.
 - `CANDIDATE_ARCHIVE` and `GENERATED_BUILD_RECEIPT`, naming the same build output directory's `candidate.asar` and `build-receipt.json`.
 - `PUBLISHED_BUILD_RECEIPT`, naming the reviewed revision's retained `candidate-build.json`.
-- `CANDIDATE_SHA256` and the reviewed archive-verification record.
+- `CANDIDATE_SHA256`, `REVIEWED_ARCHIVE_VERIFICATION`, and
+  `REVIEWED_ARCHIVE_VERIFICATION_SHA256`. The latter must equal
+  `source.archiveVerification.sha256` in the populated private record.
 - `PROBE_SYSTEM_STATE_ROOT`, a root-owned `0700` directory prepared only under the later authorization.
 - `PROBE_USER_STATE_ROOT`, the existing private output root.
 - `PROBE_CONFIG`, a private regular file outside the empty run directory.
@@ -270,8 +272,10 @@ the later grant.
 
 Record the fixture's expected post-restoration state in the approval packet.
 The bound cleanup-manifest path remains absent until the run reaches a terminal
-state. Create the manifest after restoration is verified, when restoration was
-not required, or as the recovery record when restoration is incomplete. Record
+state. If restoration is verified, complete or stop the distinct package-cleanup
+phase before creating the manifest. If restoration was not required, create
+the manifest without deleting any package path. If restoration is incomplete
+or unverified, create the recovery manifest without deleting anything. Record
 only identities and resources actually established. An uncertain task,
 directory, worktree, file, or package path is retained pending an operational
 decision; it is never treated as absent or discarded.
@@ -328,7 +332,8 @@ export LC_ALL=C
 
 required=(RUN_ID PROBE_INSTALL_ROOT CANDIDATE_ARCHIVE
   GENERATED_BUILD_RECEIPT PUBLISHED_BUILD_RECEIPT CANDIDATE_SHA256
-  REVIEWED_ARCHIVE_VERIFICATION PROBE_SYSTEM_STATE_ROOT
+  REVIEWED_ARCHIVE_VERIFICATION REVIEWED_ARCHIVE_VERIFICATION_SHA256
+  PROBE_SYSTEM_STATE_ROOT
   PROBE_USER_STATE_ROOT PROBE_CONFIG CLEANUP_MANIFEST
   PROBE_LAUNCHER PROBE_LAUNCHER_SHA256 PROBE_LAUNCHER_STAT
   LINUX_OBSERVATION_FILE PROBE_LAUNCH_ARGV_FILE PROBE_LAUNCH_ARGV_SHA256 PROBE_LAUNCH_ARGV_STAT
@@ -433,6 +438,15 @@ hash_file() {
   [[ "$digest" =~ ^[0-9a-f]{64}$ ]]
   [[ "$marker" = "  " || "$marker" = " *" ]]
   printf '%s' "$digest"
+}
+
+check_reviewed_archive_verification() {
+  [[ "$REVIEWED_ARCHIVE_VERIFICATION_SHA256" =~ ^[0-9a-f]{64}$ ]]
+  test -f "$REVIEWED_ARCHIVE_VERIFICATION"
+  test ! -L "$REVIEWED_ARCHIVE_VERIFICATION"
+  test "$(stat -c '%h' -- "$REVIEWED_ARCHIVE_VERIFICATION")" = "1"
+  test "$(hash_file "$REVIEWED_ARCHIVE_VERIFICATION")" = \
+    "$REVIEWED_ARCHIVE_VERIFICATION_SHA256"
 }
 
 validate_protected_asset_manifest() {
@@ -629,6 +643,7 @@ for file in "$CANDIDATE_ARCHIVE" "$GENERATED_BUILD_RECEIPT" \
   test "$(stat -c '%h' -- "$file")" = "1"
 done
 
+check_reviewed_archive_verification
 cmp -s -- "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT"
 test "$(hash_file "$CANDIDATE_ARCHIVE")" = "$CANDIDATE_SHA256"
 test "$(hash_file "$PROTECTED_ASSET_MANIFEST")" = \
@@ -653,7 +668,11 @@ mv --help | grep -q -- '--no-copy'
 Review the generated and published receipts, their byte-for-byte comparison, the
 separately bound published revision, and the archive-verification record.
 Confirm that the candidate hash comes from that receipt and that the complete
-unchanged-asset inventory matches it.
+unchanged-asset inventory matches it. Every later receipt comparison or
+archive-evidence check must call
+`check_reviewed_archive_verification` again and compare the current record
+bytes with `REVIEWED_ARCHIVE_VERIFICATION_SHA256`; an earlier successful
+comparison cannot be reused.
 
 At every later point that requires the complete protected-asset check, run
 `validate_protected_asset_manifest "$PROTECTED_ASSET_MANIFEST"` again after
@@ -690,6 +709,7 @@ The build receipts must still compare byte for byte immediately before the
 candidate is copied into the package-owned staging path.
 
 ```bash
+check_reviewed_archive_verification
 cmp -s -- "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT"
 test "$(hash_file "$CANDIDATE_ARCHIVE")" = "$CANDIDATE_SHA256"
 
@@ -737,6 +757,7 @@ owner_line=$(pacman -Qo -- "$TARGET") || exit 1
 test "$owner_line" = \
   "$TARGET is owned by claude-desktop-extra 2.9939.4-1"
 test "$(hash_file "$TARGET")" = "$CANDIDATE_SHA256"
+check_reviewed_archive_verification
 cmp -s -- "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT"
 
 PROBE_LAUNCH_ARGV=()
@@ -843,11 +864,13 @@ sudo cmp -s -- "$TARGET" "$BACKUP"
 test "$(hash_file "$STAGE")" = "$CANDIDATE_SHA256"
 ```
 
-Repeat package, ownership, complete manifest, and reviewed archive-verification
-checks. Immediately before the restored launch, recheck the package and
-pristine target, revalidate the launcher and its root-owned ancestors, and
-reconstruct the argument array through a newly opened stable descriptor. Do not
-reuse the candidate launch's array or reopen the argument path after validation.
+Repeat the package, ownership, complete-manifest, receipt, and reviewed
+archive-verification checks, including a fresh
+`check_reviewed_archive_verification` call. Immediately before the restored
+launch, recheck the package and pristine target, revalidate the launcher and
+its root-owned ancestors, and reconstruct the argument array through a newly
+opened stable descriptor. Do not reuse the candidate launch's array or reopen
+the argument path after validation.
 
 ```bash
 package_line=$(pacman -Q -- claude-desktop-extra) || exit 1
@@ -856,6 +879,7 @@ owner_line=$(pacman -Qo -- "$TARGET") || exit 1
 test "$owner_line" = \
   "$TARGET is owned by claude-desktop-extra 2.9939.4-1"
 test "$(hash_file "$TARGET")" = "$PRISTINE_SHA256"
+check_reviewed_archive_verification
 
 PROBE_LAUNCH_ARGV=()
 load_reviewed_launch_argv PROBE_LAUNCH_ARGV
@@ -869,9 +893,12 @@ behavior are separate acceptance checks.
 
 ## Package cleanup
 
-Package cleanup is permitted only after restoration has been verified. If
-restoration is incomplete, retain `TARGET`, `STAGE`, `BACKUP`, every private
-artifact, and the cleanup manifest recovery record without deleting anything.
+Package cleanup is a distinct phase before cleanup-manifest creation. It may
+remove only `STAGE`, `BACKUP`, and `BACKUP_RUN_ROOT`, and only after restoration
+is `verified`. It does not require the issue 281 private-cleanup decision. A
+`not-required`, incomplete, or otherwise unverified restoration authorizes no
+package deletion. Incomplete restoration also prohibits every private, task,
+project, worktree, and manifest deletion.
 
 Immediately before deleting the package staging copy and protected backup,
 repeat the exact `STAGE` candidate identity and `BACKUP` pristine identity,
@@ -886,11 +913,27 @@ test "$(sudo stat -c '%u:%g:%a:%h:%s' -- "$BACKUP")" = \
 sudo cmp -s -- "$TARGET" "$BACKUP"
 
 sudo rm -- "$STAGE"
+sudo test ! -e "$STAGE"
+sudo test ! -L "$STAGE"
+
 sudo rm -- "$BACKUP"
+sudo test ! -e "$BACKUP"
+sudo test ! -L "$BACKUP"
+
 sudo rmdir -- "$BACKUP_RUN_ROOT"
+sudo test ! -e "$BACKUP_RUN_ROOT"
+sudo test ! -L "$BACKUP_RUN_ROOT"
 ```
 
-Retain mismatched artifacts and stop. Remove no other package-owned path.
+After each command, record only the resource state established by the command
+and its absence check. On an identity-precheck mismatch or failure before any
+deletion attempt, record a new `package-cleanup` failure through the existing
+status rules, preserving `firstFailure` and the top-level earliest stopped
+phase, set `packageCleanup.state` to `retained`, and stop without retrying. If
+removal was attempted but none was verified, use `failed`; if at least one
+removal was verified before failure, use `partial`. Retain every resource
+still known or possibly present. Attempt package deletion only after verified
+restoration, and remove no other package-owned path.
 
 ## Private cleanup manifest and retention
 
@@ -910,6 +953,7 @@ Use schema `provingkit.desktop-probe-cleanup.v2`. The top-level shape is:
   "runId": "exact RUN_ID",
   "status": "one exact status variant below",
   "restoration": "one exact restoration variant below",
+  "packageCleanup": "one exact package-cleanup variant below",
   "source": {
     "publishedRevision": "exact reviewed Git revision"
   },
@@ -919,7 +963,7 @@ Use schema `provingkit.desktop-probe-cleanup.v2`. The top-level shape is:
     "sidecarSha256": "receipt value",
     "generatedBuildReceiptSha256": "SHA-256 of build-receipt.json",
     "publishedBuildReceiptSha256": "same SHA-256",
-    "archiveVerificationSha256": "SHA-256 of the reviewed verification record"
+    "archiveVerificationSha256": "exact REVIEWED_ARCHIVE_VERIFICATION_SHA256"
   },
   "fixture": "one exact fixture variant below",
   "configuration": "one exact configuration variant below",
@@ -929,7 +973,9 @@ Use schema `provingkit.desktop-probe-cleanup.v2`. The top-level shape is:
 }
 ```
 
-A completed run uses:
+`status` is one of these three discriminated variants.
+
+A completed run is exactly:
 
 ```json
 {
@@ -943,66 +989,36 @@ A completed run uses:
 }
 ```
 
-A stopped run uses:
+A stopped run has `state` `stopped`, `reason` `phase-failed`, and `phase` equal
+to the earliest failed phase. Its `firstFailure` has `state` `present`,
+`reason` `phase-failed`, and the same phase. Each `laterFailures` entry has
+`reason` `phase-failed` and its actual later phase, in occurrence order.
 
-```json
-{
-  "state": "stopped",
-  "reason": "phase-failed",
-  "phase": "exact earliest failed phase",
-  "firstFailure": {
-    "state": "present",
-    "reason": "phase-failed",
-    "phase": "same exact earliest failed phase"
-  },
-  "laterFailures": [
-    {
-      "reason": "phase-failed",
-      "phase": "exact later failed phase"
-    }
-  ]
-}
-```
+A run with incomplete or unverified restoration has `state`
+`recovery-required`, `reason` `restoration-incomplete`, and `phase`
+`restoration`. If restoration was the first failure, `firstFailure` has
+`state` `present`, `reason` `restoration-incomplete`, and phase `restoration`.
+If another phase failed first, `firstFailure` retains `reason` `phase-failed`
+and that earlier phase, while `laterFailures` contains an entry with reason
+`restoration-incomplete` and phase `restoration`. Any failure after that entry
+uses reason `phase-failed` and its actual phase.
 
-A run whose restoration cannot be completed or verified uses:
-
-```json
-{
-  "state": "recovery-required",
-  "reason": "restoration-incomplete",
-  "phase": "restoration",
-  "firstFailure": {
-    "state": "present",
-    "reason": "phase-failed or restoration-incomplete",
-    "phase": "exact earliest failed phase"
-  },
-  "laterFailures": [
-    {
-      "reason": "phase-failed or restoration-incomplete",
-      "phase": "exact later failed phase"
-    }
-  ]
-}
-```
-
-The exact failure phases are `preflight`, `staging`, `exchange`, `setup`,
-`fixture-creation`, `fixture-query`, `configuration-creation`,
+The literal failure-phase tokens are `preflight`, `staging`, `exchange`,
+`setup`, `fixture-creation`, `fixture-query`, `configuration-creation`,
 `configuration-validation`, `output-root-creation`,
 `output-root-validation`, `candidate-launch`, `bootstrap`, `arm`, `sample`,
 `helper-invocation`, `helper-result-validation`,
 `retained-evidence-creation`, `retained-evidence-validation`, `restoration`,
-`cleanup-manifest-creation`, and `cleanup-manifest-validation`.
-`restoration-incomplete` is used only with phase `restoration`; every other
+`package-cleanup`, `cleanup-manifest-creation`, and
+`cleanup-manifest-validation`. `complete` is valid only for a completed run.
+`restoration-incomplete` is valid only for phase `restoration`; every other
 failure uses `phase-failed`.
 
 `firstFailure` preserves the earliest terminal failure. `laterFailures` lists
-only later failures, in occurrence order, and remains empty when there were
-none. Restoration has outcome priority: an incomplete or unverified
-restoration changes the top-level status to `recovery-required` /
-`restoration-incomplete`, while `firstFailure` continues to preserve an
-earlier stop such as `sample` or `exchange`. Without an incomplete
-restoration, the earliest failure remains the top-level stopped phase. A later
-absent helper, retention failure, or manifest failure does not replace it.
+only later failures and remains empty when none occurred. Restoration has
+outcome priority, but it does not replace an earlier `firstFailure`. An absent
+helper, retention failure, package-cleanup failure, or manifest failure also
+does not replace an earlier failure.
 
 Failure to acquire or validate the host boot UUID during setup is phase
 `setup`. A missing, malformed, or mismatched boot UUID in a bootstrap, arm, or
@@ -1041,26 +1057,53 @@ If restoration cannot be completed or verified, restoration is:
   "recoveryRecord": {
     "state": "required",
     "lastVerifiedStep": "literal last verified restoration step",
-    "knownPackageArtifacts": [
-      {
-        "role": "target, stage, or backup",
-        "path": "exact known path",
-        "knownIdentity": {
-          "onlyActuallyVerifiedFields": "actual values"
-        }
-      }
-    ],
+    "knownPackageArtifacts": [],
     "retention": "all-package-and-private-artifacts",
     "nextDecision": "operational-restoration"
   }
 }
 ```
 
-`knownPackageArtifacts` lists only package paths that actually exist or whose
-continued existence is uncertain. `knownIdentity` contains only fields
-actually verified at the stop. Do not infer a digest, identity, or absence.
-Restoration state `incomplete` prohibits all package, task, configuration,
-output, retained-evidence, project, worktree, and manifest deletion.
+Each `knownPackageArtifacts` entry has role exactly `target`, `stage`, or
+`backup`; an exact known path; existence state exactly `known` or `uncertain`;
+and an optional `knownIdentity` object containing only fields already verified.
+Omit `knownIdentity` when no identity field was established. List only paths
+that are known to exist or whose continued existence is uncertain. Do not
+infer a digest, identity, or absence.
+
+`packageCleanup` contains exactly three resource entries keyed `stage`,
+`backup`, and `backupRunRoot`. Their matching literal roles are `stage`,
+`backup`, and `backup-run-root`. Each entry uses exactly one resource-state
+schema:
+
+- `absent`: `role` and `state`; valid only when absence was established without
+  deletion.
+- `known`: `role`, `state`, exact `path`, and optional nonempty
+  `knownIdentity`; valid only when existence was established.
+- `uncertain`: `role`, `state`, exact `path`, optional nonempty
+  `knownIdentity`, and disposition `retain-pending-operational-decision`.
+- `removed`: `role`, `state`, exact `path`, and `removedAt`; valid only after
+  the authorized deletion and both absence checks succeeded.
+
+Its top-level state is exactly one of:
+
+- `not-required`: all three resources are `absent`, and no removal was
+  attempted.
+- `retained`: no resource is `removed`, at least one is `known` or `uncertain`,
+  and package deletion was not attempted.
+- `failed`: removal was attempted, no resource is `removed`, and at least one
+  resource remains `known` or `uncertain`.
+- `partial`: at least one resource is `removed`, and at least one remains
+  `known` or `uncertain`.
+- `completed`: all three resources are `removed`.
+
+A `removed` resource and the states `failed`, `partial`, or `completed` are
+valid only with restoration `verified`. `backup-run-root` may be `removed` only
+after `backup` is `removed`; the approved sequence also requires `stage`
+removal first. Restoration `incomplete` requires package-cleanup state
+`retained` or `not-required` and prohibits every deletion. A package resource
+in state `known` or `uncertain` is retained from this authoritative package
+inventory and is not duplicated in `unresolvedResources`.
 
 An established fixture uses this variant:
 
@@ -1145,29 +1188,31 @@ for an absent or empty field. The lineage presence arrays contain only fields
 actually present with the stated value; absent fields belong only in
 `absent`.
 
-Before the complete fixture identity is established, use this variant:
+Before the complete fixture identity is established, `fixture.state` is
+exactly `not-created`, `partial`, or `uncertain`. All three variants contain
+`createdResources`, `uncertainResources`, `selectedMetadata`, and `retention`.
+
+The valid combinations are:
+
+- `not-created`: both resource arrays are empty; `selectedMetadata` is
+  `{"state":"absent","reason":"not-acquired"}`; retention is `none`.
+- `partial`: `createdResources` is nonempty, `uncertainResources` is empty,
+  selected metadata is one of the incomplete variants below, and retention is
+  `through-issue-281`.
+- `uncertain`: `uncertainResources` is nonempty, `createdResources` contains
+  any independently established resources, selected metadata is one of the
+  incomplete variants below, and retention is
+  `pending-operational-decision`.
+
+The literal incomplete selected-metadata variants are:
 
 ```json
-{
-  "state": "not-created, partial, or uncertain",
-  "createdResources": [],
-  "uncertainResources": [],
-  "selectedMetadata": "one exact incomplete selected-metadata variant below",
-  "retention": "through-issue-281 or pending-operational-decision"
-}
+{"state":"absent","reason":"not-acquired"}
 ```
-
-When selected metadata was not acquired, use:
 
 ```json
-{
-  "state": "absent",
-  "reason": "not-acquired or query-failed"
-}
+{"state":"absent","reason":"query-failed"}
 ```
-
-When a query returned data that did not establish the complete selected
-metadata identity, use:
 
 ```json
 {
@@ -1179,26 +1224,22 @@ metadata identity, use:
 }
 ```
 
-`createdResources` lists only resources known to have been created. Each entry
-has role `project-directory`, `desktop-task`, or `app-created-worktree` and
-contains only the path, identifier, and identity fields actually established.
-`uncertainResources` records a possibly created task, project path, or
-worktree as:
+Omit `knownIdentity` fields that were not established. Do not emit the
+descriptive property shown above as a literal property name.
 
-```json
-{
-  "role": "project-directory, desktop-task, or app-created-worktree",
-  "knownIdentity": {
-    "onlyActuallyKnownFields": "actual values"
-  },
-  "disposition": "retain-pending-operational-decision"
-}
-```
+Each `createdResources` entry has exactly one literal role:
+`project-directory`, `desktop-task`, or `app-created-worktree`.
+A `project-directory` or `app-created-worktree` entry contains its exact path
+and only established directory-identity fields. A `desktop-task` entry contains
+its exact established task identifier and only other identifiers actually
+established.
 
-Do not fabricate a task ID, Code ID, metadata path, selected projection,
-project path, or worktree path. An uncertain resource is never moved to
-`createdResources`, declared absent, or deleted merely to complete the
-manifest.
+Each `uncertainResources` entry uses one of the same three role tokens, a
+`knownIdentity` object containing only known path, identifier, or identity
+fields, and disposition `retain-pending-operational-decision`. Do not fabricate
+a task ID, Code ID, metadata path, selected projection, project path, or
+worktree path. An uncertain resource is never moved to `createdResources`,
+declared absent, or deleted merely to complete the manifest.
 
 Configuration is absent only when absence was established:
 
@@ -1292,11 +1333,12 @@ use:
 Add that path to `unresolvedResources`. Each artifact state is exactly
 `absent`, `present-validated`, or `present-unvalidated`. Use `absent` only when
 absence was established. `emittedFiles` contains only files that actually
-exist and passed the identity checks:
+exist and passed the identity checks. Its literal role tokens are `bootstrap`, `arm`, `sample-1`, `sample-2`,
+and `sample-3`:
 
 ```json
 {
-  "role": "bootstrap, arm, or one exact numbered sample",
+  "role": "sample-1",
   "path": "exact absolute direct child of OUTPUT_RUN_ROOT",
   "type": "regular-file",
   "device": "decimal device",
@@ -1314,12 +1356,16 @@ A created or possibly created output path that did not pass validation is not
 fabricated into `emittedFiles`. Record only its known identifiers in
 `unresolvedResources` and retain it.
 
-Retained evidence is absent when no valid retained file was established:
+Retained evidence is absent when no valid retained file was established. Its
+`reason` is exactly one of `not-reached`, `no-usable-selected-sample`,
+`helper-not-called`, `helper-invocation-failed`,
+`helper-result-unvalidated`, `retention-creation-failed`, or
+`retention-validation-failed`:
 
 ```json
 {
   "state": "absent",
-  "reason": "not-reached, no-usable-selected-sample, helper-not-called, helper-invocation-failed, helper-result-unvalidated, retention-creation-failed, or retention-validation-failed"
+  "reason": "not-reached"
 }
 ```
 
@@ -1360,45 +1406,47 @@ retained path belongs in `unresolvedResources` and remains retained.
 
 Every file array contains only actual files. Empty arrays remain empty; they
 never contain placeholders, patterns, ranges, or expected future files.
-`unresolvedResources` records every known or possibly created resource whose
-identity, existence, or validity is insufficient for cleanup:
 
-```json
-{
-  "role": "exact resource role",
-  "knownIdentity": {
-    "onlyActuallyKnownIdentifiersOrIdentityFields": "actual values"
-  },
-  "disposition": "retain-pending-operational-decision"
-}
-```
+`unresolvedResources` records every unresolved non-package resource. Its
+literal role tokens are `project-directory`, `desktop-task`,
+`app-created-worktree`, `configuration`, `output-root`, `bootstrap`, `arm`,
+`sample-1`, `sample-2`, `sample-3`,
+`selected-linux-executor-observation`, and `cleanup-manifest`. Each entry has
+the selected role, a `knownIdentity` object containing only actual known paths,
+identifiers, or identity fields, and disposition
+`retain-pending-operational-decision`. Omit unknown fields; do not add an
+unknown path, identifier, digest, or identity merely to make an entry look
+complete. Package resources use only the normative `packageCleanup` inventory
+and are not duplicated here.
 
-Do not add an unknown path, identifier, digest, or identity field merely to
-make an entry look complete. Do not read private configuration, output, helper
-results, or retained evidence solely to populate missing manifest fields.
-Use only identities already established by the authorized run.
+Do not read private configuration, output, helper results, or retained evidence
+solely to populate missing manifest fields. Use only identities already
+established by the authorized run.
 
-If cleanup-manifest creation or validation fails, retain every resource and
-return the failure without retrying or creating a replacement at another
-path. The terminal report uses the same status schema even though no valid
-manifest exists. A manifest failure is the first failure when none preceded
-it; otherwise, append it to `laterFailures`. If restoration is incomplete,
-`recovery-required` / `restoration-incomplete` retains top-level priority. A
-possibly created or invalid manifest path is itself retained using only its
-known path or identity.
+If cleanup-manifest creation or validation fails, retain every resource that
+still exists and return the failure without retrying, repairing the path, or
+creating a replacement elsewhere. Package resources already verified as
+removed during the earlier authorized package-cleanup phase remain recorded as
+`removed`; a manifest failure does not undo or repeat that phase. A possibly
+created or invalid manifest path is retained using only its known path or
+identity. The terminal report uses the same status schema even though no valid
+manifest exists.
 
 No failed setup, query, creation, launch, sampling, helper, retention,
-restoration, or manifest operation is retried to fill the manifest. Manifest
-recording does not authorize another UI action, helper invocation, candidate
-launch, private-data read, external request, or other live effect. Nothing in
-this section broadens the run’s accepted permissions.
+restoration, package-cleanup, or manifest operation is retried to fill the
+manifest. Manifest recording does not authorize another UI action, helper
+invocation, candidate launch, private-data read, external request, deletion, or
+other live effect.
 
-No cleanup is authorized without an exclusively created, validated manifest
-and the later issue 281 decision. Issue 281 may approve deletion only after
-restoration is `verified` or `not-required`, no applicable resource remains
-unresolved, and it names the reviewed cleanup manifest and SHA-256, the exact
-task identity when one is known, and the exact roles or paths to remove.
-Anything unnamed or uncertain remains retained.
+Private evidence, task, project, worktree, configuration, output, retained
+evidence, and cleanup-manifest deletion requires an exclusively created,
+validated manifest and the later issue 281 decision. This gate does not apply
+to the narrowly authorized package-cleanup phase after verified restoration.
+Issue 281 may approve private deletion only after restoration is `verified` or
+`not-required`, no applicable private resource remains unresolved, and it
+names the reviewed cleanup manifest and SHA-256, the exact task identity when
+known, and the exact roles or paths to remove. Anything unnamed or uncertain
+remains retained.
 
 The later authorized cleanup input is a manually populated private packet for
 this run. This section does not authorize implementing or running a general

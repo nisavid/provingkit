@@ -80,6 +80,14 @@ from prose. The final published revision is supplied by the authorization
 resolution after publication; do not add a future or self-referential commit
 hash to the candidate being reviewed.
 
+Bind `REVIEWED_ARCHIVE_VERIFICATION` to
+`source.archiveVerification.path` and
+`REVIEWED_ARCHIVE_VERIFICATION_SHA256` to
+`source.archiveVerification.sha256`. Require the digest to be exactly 64
+lowercase hexadecimal characters. Every required archive-evidence check hashes
+the current bytes at that path and compares them with the bound digest; neither
+value may be independently substituted.
+
 ## Fixture construction and selected metadata
 
 Create a new dedicated empty directory that is not a Git repository or
@@ -330,3 +338,20 @@ helper is not called or retention fails, record the exact absent reason instead.
 Retain any possibly created or unvalidated path as an unresolved resource. No
 task ID, Code ID, binding, sequence, file identity, or helper result may be
 fabricated to complete the manifest.
+
+## Cleanup-manifest bytes
+
+Manually populate one cleanup-manifest object from identities and outcomes
+already established by the run. Validate its exact keys, literal enum tokens,
+discriminated variants, and compatibility rules against the sole normative
+schema in `application-operation.md`. Descriptive placeholder property names
+such as `onlyActuallyVerifiedFields` are instructions, not output keys; omit
+unknown optional fields.
+
+Recursively sort the populated object's keys, serialize once with
+`JSON.stringify`, encode strict UTF-8, and append exactly one LF. Strictly
+decode, parse, revalidate, reserialize, and require byte-for-byte equality.
+Create only the bound `CLEANUP_MANIFEST` path, using the configuration file's
+exclusive-creation, complete-write, sync, descriptor-identity, ownership,
+single-link, mode `0600`, digest, and final-path checks. This manual construction
+does not define another schema or authorize a reusable cleanup serializer.
