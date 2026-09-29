@@ -35,6 +35,9 @@ write, except a denied one: a write matching a ``deny_writes`` rule (``[{match,
 message}]``, ``match`` as in ``write_checks``, including ``turn``; pushes are
 never denied) fails the whole call with ``message`` on stderr and exit 1,
 changes no state, and records ``{kind: "denied-write", denied_kind, turn}``.
+The ``claude`` and ``codex`` shims ``install_model_shims`` puts beside the
+``gh`` wrapper refuse a nested model run with exit 1 and record ``{kind:
+"nested-model-run", program, argv, turn}``.
 
 State patches (``on_write`` hooks, ``on_push``, and the runner's
 ``before_turn``) are ``{append?, set?, update_threads?}``. Their placeholders
@@ -170,6 +173,48 @@ def install(bin_dir):
                        ' "$@"\n')
     wrapper.chmod(0o755)
     return wrapper
+
+
+NESTED_RUN_KIND = "nested-model-run"
+MODEL_PROGRAMS = ("claude", "codex")
+
+
+def install_model_shims(bin_dir, programs=MODEL_PROGRAMS):
+    """Create ``bin_dir/claude`` and ``bin_dir/codex`` that refuse a nested model run and record the attempt."""
+    bin_dir = Path(bin_dir)
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    program = ("import sys; sys.path.insert(0, sys.argv[1]); import gh_stub; "
+               "sys.exit(gh_stub.refused_run_main(sys.argv[2], sys.argv[3:]))")
+    shims = []
+    for name in programs:
+        shim = bin_dir / name
+        shim.write_text("#!/bin/sh\nexec " + " ".join(shlex.quote(part) for part in (
+            sys.executable, "-c", program, str(Path(__file__).resolve().parent), name)) + ' "$@"\n')
+        shim.chmod(0o755)
+        shims.append(shim)
+    return shims
+
+
+def record_refused_run(state_dir, program, argv, cwd):
+    """Log a refused nested model run as a write of kind ``nested-model-run``; nothing else changes."""
+    with _locked(state_dir) as state:
+        write = {"kind": NESTED_RUN_KIND, "program": program, "argv": list(argv)}
+        record = {"ts": _now(), "argv": [program, *argv], "source": "shim", "stdin": "", "files": {}, "cwd": cwd,
+                  "auth_env_present": [], "writes": [write], "exit_code": 1}
+        if state.get("_turn") is not None:
+            write["turn"] = record["turn"] = state["_turn"]
+        with open(Path(state_dir) / "gh-stub.log", "a") as log:
+            log.write(json.dumps(record) + "\n")
+
+
+def refused_run_main(program, argv):
+    """Entry point for the model shims: refuse, record the attempt when the stub state is reachable, exit 1."""
+    state_dir = os.environ.get("GH_STUB_STATE_DIR")
+    if state_dir and (Path(state_dir) / "state.json").is_file():
+        record_refused_run(state_dir, program, argv, os.getcwd())
+    sys.stderr.write(f"{program}: nested model runs are refused here and the attempt is recorded. "
+                     "Check the equipment by reading it, not by running a model.\n")
+    return 1
 
 
 def install_post_receive(git_dir, state_dir):
