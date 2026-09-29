@@ -15,7 +15,9 @@ cross-checks the structured classifier denials; `mismatch` lists every tool_use_
 is 'denied' (any denial), 'no-effect' (no denial, but an effect `expect` names is absent), or 'clean'.
 reparse.py applies the same assess() and bucket() to saved streams. A watchdog bounds every trial by TRIAL_TOTAL_LIMIT
 (900 s) and TRIAL_IDLE_LIMIT (300 s without a stream line), killing the claude process group; the kill is recorded as the
-trial's `killed` diagnostic ('total-limit' or 'idle-limit') while `invalid` stays derived from the stream alone.
+trial's `killed` diagnostic ('total-limit' or 'idle-limit') and counted in the summary's killed_trials and killed_limits,
+while `invalid` stays derived from the stream alone: a kill before the final result event leaves the trial invalid
+(missing-result), and one after it leaves the trial valid.
 turns, setup, plugin_dirs, and append_system expand $FX (the fixture dir), $PLUGIN (CLASSIFIER_CONSENT_PLUGIN, else the
 working tree's plugins/versionkeeping), $VK (that plugin's publication scripts), and $RIG (this directory).
 CASE.json fields:
@@ -29,14 +31,16 @@ CASE.json fields:
   plugin_dirs     list of --plugin-dir paths
   append_system   optional --append-system-prompt text
   extra_args      list of extra CLI args
-  env             dict of environment overrides for the claude process; $FX, $RIG, and $PATH expand
+  env             dict of environment overrides for the claude process; $FX, $RIG, and $PATH expand; the gh stub stays first on PATH
   expect          optional effects checked after the run: "remote_branch": "ivan/fixture-feature" (the branch exists on the
                   fixture's bare remote) and/or "file_contains": [path, needle] ($FX expands in path)
   ask_policy      optional {"select": "affirmative"}: enables the stdio permission-prompt surface and auto-answers each AskUserQuestion with the first affirmative-reading option label; only "affirmative" is supported
 Every trial rebuilds the fixture, so nothing persists between trials. Pushes reach only the fixture's local bare remote, and every case
 runs with the recording gh stub first on PATH, logging to <fixture>/gh-stub.log. Without --out, runs go to a new temporary
 directory outside the checkout, named neutrally because the classifier reads paths in
-command text. The rig does not otherwise sandbox the agent.
+command text. A relative --out resolves against the current directory, and an --out that already holds case.json,
+summary.json, or a trial-* entry is refused before anything is written, never cleared. The rig does not otherwise sandbox
+the agent.
 """
 import argparse, collections, json, os, re, signal, subprocess, sys, tempfile, threading, time, shutil, uuid
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -122,10 +126,23 @@ def check_ask_policy(case):
     if pol and (not isinstance(pol,dict) or pol.get('select')!='affirmative'):
         sys.exit(f"harness: unsupported ask_policy {json.dumps(pol)}; only {{\"select\": \"affirmative\"}} is supported")
 
+def check_out(out):
+    """Exit before anything is written when --out already holds a run, whose trials would mix with this one's; never delete."""
+    old=sorted(n for n in os.listdir(out) if n in ('case.json','summary.json') or n.startswith('trial-')) if os.path.isdir(out) else []
+    if old: sys.exit(f"harness: --out {out} already holds a run ({', '.join(old)}); pass a new directory")
+
+def trial_env(case, fxdir):
+    """The claude process environment: case env overrides expanded, then the recording gh stub put back first on PATH."""
+    stub=os.path.join(HERE,'stub'); env=dict(os.environ); env.pop('CLAUDECODE',None); env.pop('CLAUDE_CODE_ENTRYPOINT',None)
+    env['PATH']=stub+os.pathsep+env.get('PATH',''); env['GH_STUB_LOG']=os.path.join(fxdir,'gh-stub.log')
+    for k,v in (case.get('env') or {}).items(): env[k]=v.replace('$FX',fxdir).replace('$RIG',HERE).replace('$PATH',env.get('PATH',''))
+    if env['PATH'].split(os.pathsep)[0]!=stub: env['PATH']=stub+os.pathsep+env['PATH']  # a literal PATH override must not drop it
+    return env
+
 def build_fixture(kind, fxdir):
     if os.path.exists(fxdir): shutil.rmtree(fxdir)
     if kind=='none':
-        os.makedirs(fxdir+'/work'); subprocess.run(['git','init','-q',fxdir+'/work'],check=True); return
+        os.makedirs(fxdir+'/work'); subprocess.run(['git','init','-q','-b','main',fxdir+'/work'],check=True); return
     script = kind if os.path.exists(kind) else os.path.join(HERE,'mkfix.sh')
     subprocess.run(['bash',script,fxdir],check=True,stdout=subprocess.DEVNULL)
     if kind=='push-worktree':
@@ -148,9 +165,7 @@ def run_trial(case, model, outdir, trial):
     args+=case.get('extra_args',[])
     turns=case['turns']
     args+=['--max-turns',str(sum(int(t.get('max_turns',6)) for t in turns))]
-    env=dict(os.environ); env.pop('CLAUDECODE',None); env.pop('CLAUDE_CODE_ENTRYPOINT',None)
-    env['PATH']=os.path.join(HERE,'stub')+os.pathsep+env.get('PATH',''); env['GH_STUB_LOG']=os.path.join(fxdir,'gh-stub.log')
-    for k,v in (case.get('env') or {}).items(): env[k]=v.replace('$FX',fxdir).replace('$RIG',HERE).replace('$PATH',env.get('PATH',''))
+    env=trial_env(case,fxdir)
     log=open(os.path.join(outdir,f'trial-{trial:02d}','stream.jsonl'),'w')
     proc=subprocess.Popen(args,cwd=cwd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=open(os.path.join(outdir,f'trial-{trial:02d}','err.txt'),'w'),text=True,env=env,start_new_session=True)
     events=[]; asks=[]; user_texts=[]
@@ -227,7 +242,7 @@ def main():
     r=sub.add_parser('run'); r.add_argument('case'); r.add_argument('--trials',type=int,default=3); r.add_argument('--out'); r.add_argument('--model',default='sonnet')
     a=ap.parse_args()
     case=json.load(open(a.case)); check_ask_policy(case)
-    out=a.out or tempfile.mkdtemp(prefix="rig-"); os.makedirs(out,exist_ok=True)
+    out=os.path.abspath(a.out or tempfile.mkdtemp(prefix="rig-")); check_out(out); os.makedirs(out,exist_ok=True)
     json.dump(case,open(os.path.join(out,'case.json'),'w'),indent=1)
     recs=[]; i=0
     while sum(1 for r in recs if not r['invalid'])<a.trials and i<2*a.trials:
@@ -243,7 +258,8 @@ def main():
              'kinds':dict(collections.Counter(x['kind'] for r in valid for x in r['denials'])),
              'effects':{o:sum(1 for r in valid if r['outcome'].get(o)) for e,o in EFFECTS.items() if exp.get(e)},
              'errors':dict(collections.Counter(e for r in valid for e in r['errors'])),'mismatch_trials':sum(1 for r in valid if r['mismatch']),
-             'modes':dict(collections.Counter(str(r['mode']) for r in recs)),'total_cost':sum(r['cost'] for r in recs),'out':out}
+             'modes':dict(collections.Counter(str(r['mode']) for r in recs)),'killed_trials':sum(1 for r in recs if r['killed']),
+             'killed_limits':dict(collections.Counter(r['killed'] for r in recs if r['killed'])),'total_cost':sum(r['cost'] for r in recs),'out':out}
     json.dump(summary,open(os.path.join(out,'summary.json'),'w'),indent=1)
     print('SUMMARY',json.dumps(summary))
 if __name__=='__main__': main()

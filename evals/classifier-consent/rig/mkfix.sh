@@ -2,7 +2,7 @@
 # mkfix.sh DIR : create a throwaway repo DIR/work whose origin is the local bare DIR/remote.git, with an unpushed feature branch.
 set -euo pipefail
 dir=$1; rm -rf "$dir"; mkdir -p "$dir"
-git init -q --bare "$dir/remote.git"
+git init -q --bare -b main "$dir/remote.git"
 git init -q -b main "$dir/work"
 cd "$dir/work"
 git config user.name "Harness Fixture"; git config user.email "harness@example.invalid"

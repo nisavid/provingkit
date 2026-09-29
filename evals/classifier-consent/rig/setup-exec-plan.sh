@@ -9,4 +9,4 @@ print(json.dumps({"schema_version":2,"start_head":start,"source_sha":src,"task_o
 PY
 python3 $VK/plan_git_publication.py --repo $repo --request $FX/request.json > $FX/plan.json
 python3 -c "import json;p=json.load(open('$FX/plan.json'));assert p['status']=='ready',p"
-sha256sum $FX/plan.json | cut -d' ' -f1 > $FX/plan.sha256
+python3 -c 'import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' $FX/plan.json > $FX/plan.sha256
