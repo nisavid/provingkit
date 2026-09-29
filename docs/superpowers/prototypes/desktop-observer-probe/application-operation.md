@@ -5,11 +5,17 @@ LIVE operation requires later authorization.
 
 ## Approval boundary
 
-Use [private input construction](private-input-construction.md) for the literal
-configuration and arm templates, selected metadata projection, exclusive file
-creation, and retained Linux-observation result.
+This document is the normative home for the selected-fixture projection, the
+selected-executor invocation and result variants, and the cleanup-manifest
+schema. [Private input construction](private-input-construction.md) defines how
+to construct, validate, canonicalize, and exclusively create bytes that conform
+to these contracts; it does not define alternative fields, states, reasons, or
+enum values.
 
-[Authorize the disposable Desktop observer probe](https://github.com/nisavid/provingkit/issues/279) must bind every variable to one exact value and every path variable to one exact absolute path. The packet must not use `eval`, `source`, untrusted shell expansion, or paths copied from this committed document:
+[Authorize the disposable Desktop observer probe](https://github.com/nisavid/provingkit/issues/279)
+must bind every variable to one exact value and every path variable to one exact
+absolute path. The packet must not use `eval`, `source`, untrusted shell
+expansion, or paths copied from this committed document:
 
 - `RUN_ID`, beginning with `278-`.
 - `PROBE_INSTALL_ROOT`, derived from package ownership.
@@ -56,6 +62,149 @@ revision; approval must bind and review that revision separately. Authorization
 and staging require the two receipt files to compare byte for byte. Host
 metadata proves installed ownership. UID `65534` observed in the sandbox
 namespace does not.
+
+## Normative private contracts
+
+The selected metadata projection has exactly this shape:
+
+```json
+{
+  "sessionId": "exact selected task ID",
+  "cliSessionId": "exact selected Code session ID",
+  "cwd": "exact selected real directory",
+  "optionalPathStates": {
+    "originCwd": "absent, empty, or exact approved absolute real-directory path",
+    "worktreePath": "absent, empty, or exact approved absolute real-directory path"
+  },
+  "optionalFieldPresence": {
+    "presentNull": ["actual subset of spawnedFrom, dispatchParentId, dispatchParentOrigin, and forkedFromSessionId present with null"],
+    "presentFalse": ["lineageDetached only when actually present with false"],
+    "absent": ["every allowed optional field actually absent from the selected JSON"]
+  }
+}
+```
+
+Its relation evidence is exactly:
+
+```json
+{
+  "selectedMetadataRelations": "no-nonnull-relation-observed",
+  "globalChildAbsence": "not-established-from-selected-metadata",
+  "unrelatedSharingAbsence": "not-established"
+}
+```
+
+The selected-executor invocation has exactly these keys:
+
+```json
+{
+  "afterSequence": 0,
+  "expectedBinding": "exact complete accepted bootstrap binding object",
+  "expectedUid": 0,
+  "maximumAgeMs": 30000,
+  "runDirectory": "exact absolute OUTPUT_RUN_ROOT",
+  "sequence": 0
+}
+```
+
+`sequence` is an actually selected integer from 1 through 3,
+`afterSequence` is exactly `sequence - 1`, and `expectedUid` is the selected
+Desktop user's nonnegative integer UID. Construct this object only after a
+usable selected sample exists. Do not invent a sequence, binding, task ID, Code
+ID, or sample to make the helper callable.
+
+The retained wrapper has exactly these top-level fields:
+
+```json
+{
+  "schema": "provingkit.desktop-probe-linux-observation.v1",
+  "source": {
+    "publishedRevision": "immutable reviewed Git revision",
+    "publishedBuildReceiptSha256": "lowercase SHA-256",
+    "candidateSha256": "receipt candidate SHA-256",
+    "moduleSha256": "receipt sidecar SHA-256"
+  },
+  "run": {
+    "runId": "exact RUN_ID",
+    "targetTaskId": "exact selected task ID",
+    "targetCodeSessionId": "exact selected Code ID"
+  },
+  "sample": {
+    "runDirectory": "exact absolute OUTPUT_RUN_ROOT",
+    "sequence": 0,
+    "expectedBinding": "exact complete accepted bootstrap binding object"
+  },
+  "result": "one exact result variant below"
+}
+```
+
+The two unknown result variants are exactly:
+
+```json
+{"state":"unknown","reason":"selected-sample-unavailable-or-changed","qualification":"unqualified","queryToOsAssociation":"unknown"}
+```
+
+```json
+{"state":"unknown","reason":"linux-identity-unavailable-or-changed","qualification":"unqualified","queryToOsAssociation":"unknown"}
+```
+
+`selected-sample-unavailable-or-changed` also covers failure to acquire the
+Linux boot domain before sample selection. Without that domain the helper
+cannot validate a selected sample, so this reason does not claim that the
+sample file is missing. `linux-identity-unavailable-or-changed` applies only
+after a sample has passed boot-domain, binding, and freshness selection and
+process-identity acquisition has begun.
+
+The observed result has exactly this shape:
+
+```json
+{
+  "state": "observed-partial",
+  "qualification": "unqualified",
+  "sampleEvidence": {
+    "binding": "exact complete revalidated sample binding",
+    "sequence": 0,
+    "observedAt": 0,
+    "observedAtMonotonicMs": 0,
+    "collection": {
+      "startedAt": 0,
+      "endedAt": 0,
+      "startedAtMonotonicMs": 0,
+      "endedAtMonotonicMs": 0
+    }
+  },
+  "selectedReport": {
+    "taskId": "exact selected task ID",
+    "cliPid": 0,
+    "cliPidAtMs": null,
+    "cliReportedVersion": null,
+    "currentCodeSessionId": "exact selected Code ID",
+    "queryGeneration": 0,
+    "historicProvenance": "unknown",
+    "queryToOsAssociation": "unknown",
+    "reportBasis": "manager-retained-report; not independent OS association"
+  },
+  "linuxIdentity": {
+    "pid": 0,
+    "processStartTicks": "observed decimal start ticks",
+    "ownerUid": 0,
+    "executable": {
+      "dev": "decimal device",
+      "ino": "decimal inode",
+      "size": "decimal size",
+      "sha256": "lowercase SHA-256"
+    }
+  },
+  "queryToOsAssociation": "unknown"
+}
+```
+
+In `observed-partial`, `cliPidAtMs` is independently either JSON `null` or the
+actual nonnegative safe integer reported by the producer.
+`cliReportedVersion` is independently either JSON `null` or the actual
+nonempty bounded text reported by the producer. Preserve either null exactly.
+Do not invent a timestamp or version, borrow one from another producer, or
+reclassify an otherwise valid observation because either field is null.
 
 ## Fixture preparation
 
@@ -120,8 +269,12 @@ by `probe-procedure.md`. Construct and validate its exact bytes using
 the later grant.
 
 Record the fixture's expected post-restoration state in the approval packet.
-The cleanup manifest is created only after restoration verification, when every
-emitted file and final retained identity can be inventoried exactly.
+The bound cleanup-manifest path remains absent until the run reaches a terminal
+state. Create the manifest after restoration is verified, when restoration was
+not required, or as the recovery record when restoration is incomplete. Record
+only identities and resources actually established. An uncertain task,
+directory, worktree, file, or package path is retained pending an operational
+decision; it is never treated as absent or discarded.
 
 ## Protected-asset manifest
 
@@ -629,17 +782,24 @@ numeric PID path or read environments, command lines, unrelated processes,
 transcripts, or historical peers. Comparing a process report does not establish
 the Code query's OS-process association; that remains unknown.
 
-After the one separately authorized helper invocation, follow the exact
-invocation-object byte grammar in `private-input-construction.md`. Invoke the
-exported helper once with the parsed in-memory object. Validate its in-memory
-return against one documented result shape, construct and canonicalize the
-required wrapper object, and serialize only that wrapper into
-`LINUX_OBSERVATION_FILE`. No implemented serializer or reusable invocation
-driver performs these steps. Do not serialize a caught error, exception text,
-or arbitrary raw object.
-Retain either documented unknown result as explicit evidence. Require a private
-regular single-link `0600` file no larger than 16384 bytes, then record its
-exact identity and digest for the cleanup manifest.
+Construct the one authorized helper invocation from the normative contract
+above and apply the exact byte procedure in
+[private input construction](private-input-construction.md). Invoke the
+exported helper at most once and only when an actual usable sample supplies the
+sequence and complete accepted binding. Validate its in-memory return against
+one normative result variant, construct the normative wrapper, and serialize
+only that wrapper into `LINUX_OBSERVATION_FILE`.
+
+If no usable sample exists, the helper is not called. If the helper is not
+reached, is deliberately not called, or retained-file creation or validation
+fails, do not invoke it again to fill the cleanup manifest. Record the
+retained-evidence state and terminal reason defined below. Retain any created
+but unvalidated path as an unresolved resource.
+
+A valid retained file is a private regular single-link `0600` file no larger
+than 16384 bytes. Record its exact identity and digest in the cleanup manifest.
+Do not serialize a caught error, exception text, arbitrary raw object, or fake
+binding.
 
 This window permits one arm only. A timeout or failed experiment requires a new
 plan and window, not an automatic retry.
@@ -709,6 +869,10 @@ behavior are separate acceptance checks.
 
 ## Package cleanup
 
+Package cleanup is permitted only after restoration has been verified. If
+restoration is incomplete, retain `TARGET`, `STAGE`, `BACKUP`, every private
+artifact, and the cleanup manifest recovery record without deleting anything.
+
 Immediately before deleting the package staging copy and protected backup,
 repeat the exact `STAGE` candidate identity and `BACKUP` pristine identity,
 metadata, ACL, xattr, and comparison checks.
@@ -730,16 +894,22 @@ Retain mismatched artifacts and stop. Remove no other package-owned path.
 
 ## Private cleanup manifest and retention
 
-Raw output remains private through [Decide what the observer probe establishes](https://github.com/nisavid/provingkit/issues/281).
-After restored behavior has been checked, but before returning the run for that
-decision, create `CLEANUP_MANIFEST` as a private regular, single-link `0600`
-file. It is an inventory, not an executable cleanup script. Its schema is:
+Raw output remains private through
+[Decide what the observer probe establishes](https://github.com/nisavid/provingkit/issues/281).
+At the terminal stop, exclusively create and validate `CLEANUP_MANIFEST` as a
+private regular, single-link `0600` file unless its creation or validation
+fails. It is an inventory and recovery record, not an executable cleanup
+script.
+
+Use schema `provingkit.desktop-probe-cleanup.v2`. The top-level shape is:
 
 ```json
 {
-  "schema": "provingkit.desktop-probe-cleanup.v1",
+  "schema": "provingkit.desktop-probe-cleanup.v2",
   "createdAt": "RFC-3339 timestamp",
   "runId": "exact RUN_ID",
+  "status": "one exact status variant below",
+  "restoration": "one exact restoration variant below",
   "source": {
     "publishedRevision": "exact reviewed Git revision"
   },
@@ -751,92 +921,414 @@ file. It is an inventory, not an executable cleanup script. Its schema is:
     "publishedBuildReceiptSha256": "same SHA-256",
     "archiveVerificationSha256": "SHA-256 of the reviewed verification record"
   },
-  "fixture": {
-    "profile": "exact selected profile identity",
-    "accountId": "exact selected account identity",
-    "organizationId": "exact selected organization identity",
-    "taskId": "exact disposable task identity",
-    "codeId": "exact Code session identity",
-    "metadataPath": "exact absolute selected metadata path",
-    "creationProvenance": {
-      "route": "normal-new-local-task-ui",
-      "createdAt": "RFC-3339 timestamp",
-      "preCreationInspection": "nonrecursive-empty",
-      "unexpectedActivity": "none-observed"
-    },
-    "selectedMetadata": {
-      "sessionId": "exact taskId",
-      "cliSessionId": "exact codeId",
-      "cwd": "exact real directory path",
-      "optionalPathStates": {
-        "originCwd": "absent, empty, or exact approved real-directory path",
-        "worktreePath": "absent, empty, or exact approved real-directory path"
-      },
-      "optionalFieldPresence": {
-        "presentNull": ["exact subset of spawnedFrom, dispatchParentId, dispatchParentOrigin, and forkedFromSessionId present with null"],
-        "presentFalse": ["lineageDetached only when present with false"],
-        "absent": ["every allowed optional field absent from the selected JSON"]
+  "fixture": "one exact fixture variant below",
+  "configuration": "one exact configuration variant below",
+  "output": "one exact output variant below",
+  "retainedEvidence": "one exact retained-evidence variant below",
+  "unresolvedResources": []
+}
+```
+
+A completed run uses:
+
+```json
+{
+  "state": "completed",
+  "reason": "completed",
+  "phase": "complete",
+  "firstFailure": {
+    "state": "absent"
+  },
+  "laterFailures": []
+}
+```
+
+A stopped run uses:
+
+```json
+{
+  "state": "stopped",
+  "reason": "phase-failed",
+  "phase": "exact earliest failed phase",
+  "firstFailure": {
+    "state": "present",
+    "reason": "phase-failed",
+    "phase": "same exact earliest failed phase"
+  },
+  "laterFailures": [
+    {
+      "reason": "phase-failed",
+      "phase": "exact later failed phase"
+    }
+  ]
+}
+```
+
+A run whose restoration cannot be completed or verified uses:
+
+```json
+{
+  "state": "recovery-required",
+  "reason": "restoration-incomplete",
+  "phase": "restoration",
+  "firstFailure": {
+    "state": "present",
+    "reason": "phase-failed or restoration-incomplete",
+    "phase": "exact earliest failed phase"
+  },
+  "laterFailures": [
+    {
+      "reason": "phase-failed or restoration-incomplete",
+      "phase": "exact later failed phase"
+    }
+  ]
+}
+```
+
+The exact failure phases are `preflight`, `staging`, `exchange`, `setup`,
+`fixture-creation`, `fixture-query`, `configuration-creation`,
+`configuration-validation`, `output-root-creation`,
+`output-root-validation`, `candidate-launch`, `bootstrap`, `arm`, `sample`,
+`helper-invocation`, `helper-result-validation`,
+`retained-evidence-creation`, `retained-evidence-validation`, `restoration`,
+`cleanup-manifest-creation`, and `cleanup-manifest-validation`.
+`restoration-incomplete` is used only with phase `restoration`; every other
+failure uses `phase-failed`.
+
+`firstFailure` preserves the earliest terminal failure. `laterFailures` lists
+only later failures, in occurrence order, and remains empty when there were
+none. Restoration has outcome priority: an incomplete or unverified
+restoration changes the top-level status to `recovery-required` /
+`restoration-incomplete`, while `firstFailure` continues to preserve an
+earlier stop such as `sample` or `exchange`. Without an incomplete
+restoration, the earliest failure remains the top-level stopped phase. A later
+absent helper, retention failure, or manifest failure does not replace it.
+
+Failure to acquire or validate the host boot UUID during setup is phase
+`setup`. A missing, malformed, or mismatched boot UUID in a bootstrap, arm, or
+sample record is assigned to the corresponding `bootstrap`, `arm`, or
+`sample` phase. This classification does not change the established metadata
+or Linux observation schemas.
+
+When no candidate exchange occurred, restoration is:
+
+```json
+{
+  "state": "not-required",
+  "recoveryRecord": {
+    "state": "absent"
+  }
+}
+```
+
+After the complete restoration checks pass, restoration is:
+
+```json
+{
+  "state": "verified",
+  "verifiedAt": "RFC-3339 timestamp",
+  "recoveryRecord": {
+    "state": "absent"
+  }
+}
+```
+
+If restoration cannot be completed or verified, restoration is:
+
+```json
+{
+  "state": "incomplete",
+  "recoveryRecord": {
+    "state": "required",
+    "lastVerifiedStep": "literal last verified restoration step",
+    "knownPackageArtifacts": [
+      {
+        "role": "target, stage, or backup",
+        "path": "exact known path",
+        "knownIdentity": {
+          "onlyActuallyVerifiedFields": "actual values"
+        }
       }
+    ],
+    "retention": "all-package-and-private-artifacts",
+    "nextDecision": "operational-restoration"
+  }
+}
+```
+
+`knownPackageArtifacts` lists only package paths that actually exist or whose
+continued existence is uncertain. `knownIdentity` contains only fields
+actually verified at the stop. Do not infer a digest, identity, or absence.
+Restoration state `incomplete` prohibits all package, task, configuration,
+output, retained-evidence, project, worktree, and manifest deletion.
+
+An established fixture uses this variant:
+
+```json
+{
+  "state": "established",
+  "profile": "exact selected profile identity",
+  "accountId": "exact selected account identity",
+  "organizationId": "exact selected organization identity",
+  "taskId": "exact disposable task identity",
+  "codeId": "exact Code session identity",
+  "metadataPath": "exact absolute selected metadata path",
+  "creationProvenance": {
+    "route": "normal-new-local-task-ui",
+    "createdAt": "RFC-3339 timestamp",
+    "preCreationInspection": "nonrecursive-empty",
+    "unexpectedActivity": "none-observed"
+  },
+  "selectedMetadata": {
+    "sessionId": "exact taskId",
+    "cliSessionId": "exact codeId",
+    "cwd": "exact real directory path",
+    "optionalPathStates": {
+      "originCwd": "absent, empty, or exact approved real-directory path",
+      "worktreePath": "absent, empty, or exact approved real-directory path"
     },
-    "relationEvidence": {
-      "selectedMetadataRelations": "no-nonnull-relation-observed",
-      "globalChildAbsence": "not-established-from-selected-metadata",
-      "unrelatedSharingAbsence": "not-established",
-      "operatorCoordinationAt": "RFC-3339 timestamp"
-    },
-    "project": {
-      "path": "exact absolute dedicated project path",
-      "device": "decimal device",
-      "inode": "decimal inode",
-      "uid": "decimal owner",
-      "gid": "decimal group",
-      "mode": "octal mode",
-      "dedicated": true,
-      "emptyAtFixtureCreation": true
-    },
-    "worktree": {
-      "state": "absent"
+    "optionalFieldPresence": {
+      "presentNull": [
+        "exact subset of spawnedFrom, dispatchParentId, dispatchParentOrigin, and forkedFromSessionId present with null"
+      ],
+      "presentFalse": [
+        "lineageDetached only when present with false"
+      ],
+      "absent": [
+        "every allowed optional field absent from the selected JSON"
+      ]
     }
   },
-  "configuration": {
-    "path": "exact absolute PROBE_CONFIG",
-    "type": "regular-file",
+  "relationEvidence": {
+    "selectedMetadataRelations": "no-nonnull-relation-observed",
+    "globalChildAbsence": "not-established-from-selected-metadata",
+    "unrelatedSharingAbsence": "not-established",
+    "operatorCoordinationAt": "RFC-3339 timestamp"
+  },
+  "project": {
+    "path": "exact absolute dedicated project path",
     "device": "decimal device",
     "inode": "decimal inode",
     "uid": "decimal owner",
     "gid": "decimal group",
-    "mode": "0600",
-    "links": 1,
-    "size": "decimal bytes",
-    "sha256": "lowercase SHA-256"
+    "mode": "octal mode",
+    "dedicated": true,
+    "emptyAtFixtureCreation": true
   },
-  "output": {
-    "root": {
-      "path": "exact absolute OUTPUT_RUN_ROOT",
-      "type": "directory",
-      "device": "decimal device",
-      "inode": "decimal inode",
-      "uid": "decimal owner",
-      "gid": "decimal group",
-      "mode": "0700"
-    },
-    "emittedFiles": [
-      {
-        "role": "bootstrap, arm, or one exact numbered sample",
-        "path": "exact absolute direct child of OUTPUT_RUN_ROOT",
-        "type": "regular-file",
-        "device": "decimal device",
-        "inode": "decimal inode",
-        "uid": "decimal owner",
-        "gid": "decimal group",
-        "mode": "0600",
-        "links": 1,
-        "size": "decimal bytes",
-        "sha256": "lowercase SHA-256"
-      }
-    ]
+  "worktree": {
+    "state": "absent"
+  }
+}
+```
+
+If Desktop created a verified worktree, replace only the `worktree` object
+with:
+
+```json
+{
+  "state": "present",
+  "path": "exact absolute app-created worktree path",
+  "device": "decimal device",
+  "inode": "decimal inode",
+  "uid": "decimal owner",
+  "gid": "decimal group",
+  "mode": "octal mode",
+  "creation": "app-created",
+  "dedication": "dedicated",
+  "validatedEntries": ["actual approved nonrecursive entries"]
+}
+```
+
+For each optional metadata path, write exactly `absent`, `empty`, or its
+approved nonempty real-directory path. Do not add a path or worktree identity
+for an absent or empty field. The lineage presence arrays contain only fields
+actually present with the stated value; absent fields belong only in
+`absent`.
+
+Before the complete fixture identity is established, use this variant:
+
+```json
+{
+  "state": "not-created, partial, or uncertain",
+  "createdResources": [],
+  "uncertainResources": [],
+  "selectedMetadata": "one exact incomplete selected-metadata variant below",
+  "retention": "through-issue-281 or pending-operational-decision"
+}
+```
+
+When selected metadata was not acquired, use:
+
+```json
+{
+  "state": "absent",
+  "reason": "not-acquired or query-failed"
+}
+```
+
+When a query returned data that did not establish the complete selected
+metadata identity, use:
+
+```json
+{
+  "state": "unvalidated",
+  "knownIdentity": {
+    "onlyActuallyEstablishedFields": "actual values"
   },
-  "retainedEvidence": [
+  "reason": "query-unvalidated"
+}
+```
+
+`createdResources` lists only resources known to have been created. Each entry
+has role `project-directory`, `desktop-task`, or `app-created-worktree` and
+contains only the path, identifier, and identity fields actually established.
+`uncertainResources` records a possibly created task, project path, or
+worktree as:
+
+```json
+{
+  "role": "project-directory, desktop-task, or app-created-worktree",
+  "knownIdentity": {
+    "onlyActuallyKnownFields": "actual values"
+  },
+  "disposition": "retain-pending-operational-decision"
+}
+```
+
+Do not fabricate a task ID, Code ID, metadata path, selected projection,
+project path, or worktree path. An uncertain resource is never moved to
+`createdResources`, declared absent, or deleted merely to complete the
+manifest.
+
+Configuration is absent only when absence was established:
+
+```json
+{
+  "state": "absent"
+}
+```
+
+A configuration that passed the accepted identity checks is:
+
+```json
+{
+  "state": "present",
+  "path": "exact absolute PROBE_CONFIG",
+  "type": "regular-file",
+  "device": "decimal device",
+  "inode": "decimal inode",
+  "uid": "decimal owner",
+  "gid": "decimal group",
+  "mode": "0600",
+  "links": 1,
+  "size": "decimal bytes",
+  "sha256": "lowercase SHA-256"
+}
+```
+
+If configuration creation may have left a path that did not pass validation,
+use:
+
+```json
+{
+  "state": "unvalidated",
+  "path": "exact known path",
+  "knownIdentity": {
+    "onlyActuallyVerifiedFields": "actual values"
+  },
+  "disposition": "retain-pending-operational-decision"
+}
+```
+
+Add that path to `unresolvedResources`. Do not declare the configuration
+absent merely because creation or validation failed.
+
+Output is:
+
+```json
+{
+  "root": {
+    "state": "absent"
+  },
+  "artifactStates": {
+    "bootstrap": "absent",
+    "arm": "absent",
+    "samples": "absent"
+  },
+  "emittedFiles": []
+}
+```
+
+Use an absent root only when absence was established. A root that passed the
+accepted identity checks is:
+
+```json
+{
+  "state": "present",
+  "path": "exact absolute OUTPUT_RUN_ROOT",
+  "type": "directory",
+  "device": "decimal device",
+  "inode": "decimal inode",
+  "uid": "decimal owner",
+  "gid": "decimal group",
+  "mode": "0700"
+}
+```
+
+If output-root creation may have left a path that did not pass validation,
+use:
+
+```json
+{
+  "state": "unvalidated",
+  "path": "exact known path",
+  "knownIdentity": {
+    "onlyActuallyVerifiedFields": "actual values"
+  },
+  "disposition": "retain-pending-operational-decision"
+}
+```
+
+Add that path to `unresolvedResources`. Each artifact state is exactly
+`absent`, `present-validated`, or `present-unvalidated`. Use `absent` only when
+absence was established. `emittedFiles` contains only files that actually
+exist and passed the identity checks:
+
+```json
+{
+  "role": "bootstrap, arm, or one exact numbered sample",
+  "path": "exact absolute direct child of OUTPUT_RUN_ROOT",
+  "type": "regular-file",
+  "device": "decimal device",
+  "inode": "decimal inode",
+  "uid": "decimal owner",
+  "gid": "decimal group",
+  "mode": "0600",
+  "links": 1,
+  "size": "decimal bytes",
+  "sha256": "lowercase SHA-256"
+}
+```
+
+A created or possibly created output path that did not pass validation is not
+fabricated into `emittedFiles`. Record only its known identifiers in
+`unresolvedResources` and retain it.
+
+Retained evidence is absent when no valid retained file was established:
+
+```json
+{
+  "state": "absent",
+  "reason": "not-reached, no-usable-selected-sample, helper-not-called, helper-invocation-failed, helper-result-unvalidated, retention-creation-failed, or retention-validation-failed"
+}
+```
+
+A retained file that passed the accepted identity checks uses:
+
+```json
+{
+  "state": "present",
+  "files": [
     {
       "role": "selected-linux-executor-observation",
       "purpose": "strictly serialized selected-executor helper return",
@@ -855,42 +1347,62 @@ file. It is an inventory, not an executable cleanup script. Its schema is:
 }
 ```
 
-The displayed worktree object is the no-worktree form. If Desktop creates a
-worktree, replace only that object with this present form:
+Use `no-usable-selected-sample` when no sample can truthfully supply the
+binding and sequence. Use `helper-not-called` only when a usable sample existed
+but the authorized helper invocation did not occur. Use
+`helper-invocation-failed` when the helper invocation threw or otherwise
+failed to return. Use `helper-result-unvalidated` when it returned a value
+that could not be validated under the unchanged Linux observation schema.
+Use `retention-creation-failed` or `retention-validation-failed` when the
+corresponding file operation did not establish a valid retained file. Do not
+call the helper again for any of these states. A possibly created or invalid
+retained path belongs in `unresolvedResources` and remains retained.
+
+Every file array contains only actual files. Empty arrays remain empty; they
+never contain placeholders, patterns, ranges, or expected future files.
+`unresolvedResources` records every known or possibly created resource whose
+identity, existence, or validity is insufficient for cleanup:
 
 ```json
 {
-  "state": "present",
-  "path": "exact absolute app-created worktree path",
-  "device": "decimal device",
-  "inode": "decimal inode",
-  "uid": "decimal owner",
-  "gid": "decimal group",
-  "mode": "octal mode",
-  "creation": "app-created",
-  "dedication": "dedicated",
-  "validatedEntries": ["exact approved nonrecursive entries"]
+  "role": "exact resource role",
+  "knownIdentity": {
+    "onlyActuallyKnownIdentifiersOrIdentityFields": "actual values"
+  },
+  "disposition": "retain-pending-operational-decision"
 }
 ```
 
-For each optional metadata path, write exactly `absent`, `empty`, or its
-approved nonempty real-directory path. Do not add a path or worktree identity
-for an absent or empty field. The lineage presence arrays contain only fields
-actually present with the stated value; absent fields belong only in `absent`.
+Do not add an unknown path, identifier, digest, or identity field merely to
+make an entry look complete. Do not read private configuration, output, helper
+results, or retained evidence solely to populate missing manifest fields.
+Use only identities already established by the authorized run.
 
-List every file actually emitted, including `arm.json`; do not list a pattern,
-range, glob, or file that does not exist. Every emitted path must be a direct
-child of the exact output root. The manifest must bind the same source,
-artifact, task, Code, profile, project, worktree, configuration, and output
-identities and the recorded absent-or-present worktree state already accepted
-for the run. A mismatch leaves all private data retained.
+If cleanup-manifest creation or validation fails, retain every resource and
+return the failure without retrying or creating a replacement at another
+path. The terminal report uses the same status schema even though no valid
+manifest exists. A manifest failure is the first failure when none preceded
+it; otherwise, append it to `laterFailures`. If restoration is incomplete,
+`recovery-required` / `restoration-incomplete` retains top-level priority. A
+possibly created or invalid manifest path is itself retained using only its
+known path or identity.
 
-Issue 281 may approve deletion only by naming the reviewed cleanup manifest and
-its SHA-256, the exact task identity, and the exact manifest roles or paths to
-remove. Anything not named remains retained. Approval to retain a redacted
-summary does not imply approval to remove raw evidence. The retained Linux
-observation is a separate exact manifest entry and is never inferred from the
-sampler output inventory.
+No failed setup, query, creation, launch, sampling, helper, retention,
+restoration, or manifest operation is retried to fill the manifest. Manifest
+recording does not authorize another UI action, helper invocation, candidate
+launch, private-data read, external request, or other live effect. Nothing in
+this section broadens the run’s accepted permissions.
+
+No cleanup is authorized without an exclusively created, validated manifest
+and the later issue 281 decision. Issue 281 may approve deletion only after
+restoration is `verified` or `not-required`, no applicable resource remains
+unresolved, and it names the reviewed cleanup manifest and SHA-256, the exact
+task identity when one is known, and the exact roles or paths to remove.
+Anything unnamed or uncertain remains retained.
+
+The later authorized cleanup input is a manually populated private packet for
+this run. This section does not authorize implementing or running a general
+cleanup tool.
 
 Source inspection found that `LocalSessions.delete(sessionId)` delegates to
 `manager.deleteSession` with `userInitiated: true`, and manager teardown may
@@ -958,11 +1470,13 @@ checks. Run `unlink -- "$LINUX_OBSERVATION_FILE"` only when issue 281 names
 that exact entry. Verify both `test ! -e "$LINUX_OBSERVATION_FILE"` and
 `test ! -L "$LINUX_OBSERVATION_FILE"` afterward. A mismatch retains the file.
 
-If the exact manifest-listed project remains after the UI operation, compare
-its device, inode, owner, group, and mode with the manifest, confirm it is still
-dedicated to the deleted fixture, and verify it is empty. Apply the same checks
-to a worktree only when the manifest records `state` as `present`; an absent
-state supplies no worktree cleanup path. Only then may
+If an established fixture's exact manifest-listed project remains after the UI
+operation, compare its device, inode, owner, group, and mode with the manifest,
+confirm it is still dedicated to the deleted fixture, and verify it is empty.
+Apply the same checks to a worktree only when the established fixture records
+its state as `present`. A partial or uncertain fixture supplies no cleanup
+authority for a task, project, or worktree; retain every such resource pending
+an operational decision. Only then may
 `rmdir -- "$EXACT_DIRECTORY"` remove that one directory. Do not unlink
 directory contents to make it empty. A missing recorded directory is an
 accepted managed effect; a nonempty, changed, shared, or differently owned

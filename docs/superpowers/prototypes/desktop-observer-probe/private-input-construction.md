@@ -1,10 +1,19 @@
 # Construct the private fixture inputs
 
-This document fixes the data shapes and creation procedure for one authorized
-run. It contains placeholders, not private values or live authority. The
-authorization resolution comment binds the final immutable published revision
-and the populated private record. No source-controlled example, placeholder,
-path, digest, identifier, or bootstrap value authorizes an application change,
+This document defines how to construct, validate, canonicalize, and exclusively
+create private bytes for one authorized run. The normative selected-fixture
+projection, selected-executor invocation and result variants, and
+cleanup-manifest schema are in
+[application staging and restoration](application-operation.md#normative-private-contracts)
+and its
+[private cleanup manifest and retention](application-operation.md#private-cleanup-manifest-and-retention)
+section. This document must not add alternative fields, states, reasons, or
+enum values.
+
+It contains placeholders, not private values or live authority. The
+authorization resolution binds the final immutable published revision and the
+populated private record. No source-controlled example, placeholder, path,
+digest, identifier, or bootstrap value authorizes an application change,
 private read, prompt, arm, helper invocation, or cleanup action.
 
 ## Bound private record
@@ -139,62 +148,34 @@ Repeat this acquisition immediately before staging. The two accepted
 projections and their file identities must match. A replacement, mutation,
 ownership change, additional link, or projection change is a stop condition.
 
-Project only these source-backed fields from the captured metadata:
+Project only the source-backed fields in the normative selected-metadata
+projection in
+[application staging and restoration](application-operation.md#normative-private-contracts).
+Require `sessionId` to equal the selected Desktop task ID,
+`cliSessionId` to equal the recorded Code ID, and `cwd` to match the already
+opened project identity, not only its spelling.
 
-```json
-{
-  "sessionId": "<exact selected task ID>",
-  "cliSessionId": "<exact selected Code session ID>",
-  "cwd": "<exact selected real directory>",
-  "optionalPathStates": {
-    "originCwd": "<absent|empty|exact approved absolute real-directory path>",
-    "worktreePath": "<absent|empty|exact approved absolute real-directory path>"
-  },
-  "optionalFieldPresence": {
-    "presentNull": ["exact subset of spawnedFrom, dispatchParentId, dispatchParentOrigin, and forkedFromSessionId present with null"],
-    "presentFalse": ["lineageDetached only when present with false"],
-    "absent": ["every allowed optional field absent from the selected JSON"]
-  }
-}
-```
-
-Require `sessionId` to equal the selected Desktop task ID and `cliSessionId` to
-equal the recorded Code ID. Require `cwd` to match the already opened project
-identity, not only its spelling. nE uses an empty-string fallback for
-`originCwd`, while JSON serialization omits optional properties whose value is
-undefined. Record `originCwd` and `worktreePath` as absent, empty, or their
-approved nonempty real-directory path. Do not substitute the project path for
-an absent or empty value or fabricate a worktree. Preserve whether each
-optional lineage field is absent or present. A present spawn,
-dispatch-parent, or fork value must be null, and a present `lineageDetached`
-value must be false. Any non-null relation or true `lineageDetached` is a stop
-condition. Absence remains explicitly absent and must not be converted into
-confirmed nonrelation. A missing required field, unexpected path, changed
-directory identity, unexpected activity, or metadata change before staging is
-also a stop condition.
+nE uses an empty-string fallback for `originCwd`, while JSON serialization
+omits optional properties whose value is undefined. Preserve each optional
+path as absent, empty, or its approved nonempty real-directory path. Preserve
+each optional lineage field's actual presence. A present spawn,
+dispatch-parent, or fork value must be null, and a present
+`lineageDetached` value must be false. Any non-null relation, true
+`lineageDetached`, missing required field, unexpected path, changed directory
+identity, unexpected activity, or metadata change before staging is a stop
+condition.
 
 Persisted nE metadata does not serialize `backend.kind`. Record local creation
-from the normal new-local-task UI provenance. Separately, inspected adapter
-source checks the live record for `backend.kind === "local"` with `sshConfig`
-and `wslConfig` undefined before bootstrap or getter collection and refuses
-unsupported routes. This static source fact is not live proof that a particular
-run passed the guard.
+from the normal new-local-task UI provenance. The inspected adapter guard for
+`backend.kind === "local"` with undefined SSH and WSL configuration remains
+separate static source evidence, not persisted metadata or live proof.
 
-The selected file establishes only the relations serialized in that file. It
-cannot prove a global absence of children or that no other task anywhere shares
-a repository, project, or worktree. Record the limits explicitly:
-
-```json
-{
-  "selectedMetadataRelations": "no-nonnull-relation-observed",
-  "globalChildAbsence": "not-established-from-selected-metadata",
-  "unrelatedSharingAbsence": "not-established"
-}
-```
-
-Exclusive construction and current operator coordination are cleanup
-preconditions. Neither they nor the nonrecursive project inspection establish
-global absence of sharing.
+Record the normative relation-evidence values without substitution:
+`selectedMetadataRelations` is `no-nonnull-relation-observed`,
+`globalChildAbsence` is `not-established-from-selected-metadata`, and
+`unrelatedSharingAbsence` is `not-established`. Exclusive construction,
+coordination, and nonrecursive project inspection do not establish global
+absence.
 
 ## Configuration bytes
 
@@ -290,44 +271,19 @@ the configuration. After creation, require the exact inventory
 
 ## Retained Linux-observation artifact
 
-The separately invoked selected-executor helper has one retained result file.
-Its exact basename is:
+Use the normative invocation, wrapper, and result variants in
+[application staging and restoration](application-operation.md#normative-private-contracts).
+The exact retained basename is
+`selected-linux-executor-observation.json`; its bound absolute path is outside
+`OUTPUT_RUN_ROOT`. Its existing parent is a bound private same-owner `0700`
+directory, and the result path must not exist before the authorized invocation.
 
-```text
-selected-linux-executor-observation.json
-```
-
-The bound absolute path is outside `OUTPUT_RUN_ROOT`. This preserves the
-sampler's exclusive directory inventory. Its existing parent must be a private,
-same-owner `0700` directory whose identity is bound before the run. The result
-path must not exist before the authorized helper invocation.
-
-The helper invocation is manual but its input is exact. Construct this object
-from the accepted bootstrap, private record, and selected sample:
-
-```json
-{
-  "afterSequence": 0,
-  "expectedBinding": "<the exact complete accepted bootstrap binding object>",
-  "expectedUid": 0,
-  "maximumAgeMs": 30000,
-  "runDirectory": "<exact absolute OUTPUT_RUN_ROOT>",
-  "sequence": 0
-}
-```
-
-Replace `sequence` with the selected integer from 1 through 3,
-`afterSequence` with exactly `sequence - 1`, and `expectedUid` with the
-selected Desktop user's nonnegative integer UID. `expectedBinding` has exactly
-the complete binding keys and values already accepted for the arm; it is not
-reconstructed from the sample.
-
-Reject extra or missing invocation keys, a noninteger value, a binding
-difference, a different run directory, or a placeholder. Recursively sort the
-populated object's keys, serialize it once with `JSON.stringify`, and encode it
-as strict UTF-8 with no BOM, indentation, trailing spaces, or final newline.
-Strictly decode and parse those bytes, repeat the exact validation and
-canonical serialization, and require byte-for-byte equality.
+Construct the invocation only from an actual usable selected sample, its
+accepted bootstrap binding, the private record, and the selected Desktop UID.
+Recursively sort the populated object's keys, serialize once with
+`JSON.stringify`, and encode strict UTF-8 without a BOM, indentation, trailing
+spaces, or final newline. Strictly decode, parse, revalidate, reserialize, and
+require byte-for-byte equality.
 
 In a one-shot Node ES-module evaluation, import only
 `observeSelectedLinuxExecutor` from
@@ -339,152 +295,38 @@ const result =
   await observeSelectedLinuxExecutor(invocation);
 ```
 
-Invoke it once. Do not place private values in source control, a shell command
-line, or a reusable driver, and do not print or write the raw return. Hold the
-return in memory, validate it against one documented result variant, construct
-the wrapper below, and only then serialize the wrapper to the exclusively
-created retained-evidence path.
+Invoke it at most once. Do not invoke it when no usable sample supplies an
+actual sequence and complete expected binding. Do not place private values in
+source control, a shell command line, or a reusable driver, and do not print or
+write the raw return.
 
-The artifact binds its source, run, selected sample, and complete expected
-binding even when the helper returns an unknown result:
+Validate the return against one normative result variant. In
+`observed-partial`, preserve `cliPidAtMs` as either its actual nonnegative safe
+integer or JSON `null`, and preserve `cliReportedVersion` as either its actual
+bounded nonempty text or JSON `null`. Missing producers remain null. Do not
+invent values, borrow values from another producer, or convert the result to an
+unknown variant merely because either field is null.
 
-```json
-{
-  "schema": "provingkit.desktop-probe-linux-observation.v1",
-  "source": {
-    "publishedRevision": "<immutable reviewed Git revision>",
-    "publishedBuildReceiptSha256": "<lowercase SHA-256>",
-    "candidateSha256": "<receipt candidate SHA-256>",
-    "moduleSha256": "<receipt sidecar SHA-256>"
-  },
-  "run": {
-    "runId": "<exact RUN_ID>",
-    "targetTaskId": "<exact selected task ID>",
-    "targetCodeSessionId": "<exact selected Code ID>"
-  },
-  "sample": {
-    "runDirectory": "<exact absolute OUTPUT_RUN_ROOT>",
-    "sequence": 0,
-    "expectedBinding": {
-      "runId": "<binding runId>",
-      "configSha256": "<binding configSha256>",
-      "moduleSha256": "<binding moduleSha256>",
-      "copiedAsarSha256": "<binding copiedAsarSha256>",
-      "appStartNonce": "<binding appStartNonce>",
-      "pid": 0,
-      "processStartTicks": "<binding processStartTicks>",
-      "targetTaskId": "<binding targetTaskId>",
-      "targetCodeSessionId": "<binding targetCodeSessionId>",
-      "queryGeneration": 0,
-      "getterSetId": "<binding getterSetId>",
-      "monotonicClockId": "linux-clock-monotonic.v1",
-      "linuxBootId": "<binding linuxBootId>"
-    }
-  },
-  "result": "<one exact normalized helper result described below>"
-}
-```
+No implemented serializer supplies validation. Require the observed partial
+result's sample binding and sequence to equal the wrapper and its selected
+report to match the selected task, Code ID, query generation, and PID. Retain
+an unknown result as explicit evidence; do not convert it to a missing file or
+a success.
 
-Replace the sample sequence with the authorized integer from 1 through 3 and
-the integer binding placeholders with the accepted bootstrap values. The
-serializer accepts only one of these exact helper-result variants.
+Construct the normative wrapper in memory, recursively canonicalize that
+object, serialize with `JSON.stringify`, encode strict UTF-8, and append
+exactly one LF. Reject extra or missing keys, invalid states, arbitrary error
+objects, exception text, stacks, command lines, environments, or any raw object
+outside the normative variants.
 
-An unavailable or changed sample is:
+Require the complete file to be from 1 through 16384 bytes. Create the bound
+path once with `O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW` and mode `0600`, applying
+the configuration file's complete-write, sync, descriptor identity, ownership,
+link-count, byte, parse, and digest checks. Do not invoke the helper again to
+replace an unknown result or repair a retention failure.
 
-```json
-{"state":"unknown","reason":"selected-sample-unavailable-or-changed","qualification":"unqualified","queryToOsAssociation":"unknown"}
-```
-
-An unavailable or changed Linux identity is:
-
-```json
-{"state":"unknown","reason":"linux-identity-unavailable-or-changed","qualification":"unqualified","queryToOsAssociation":"unknown"}
-```
-
-`selected-sample-unavailable-or-changed` also covers failure to acquire the
-Linux boot domain before sample selection. Without that domain the helper
-cannot validate a selected sample, so this reason does not claim that the
-sample file is missing. `linux-identity-unavailable-or-changed` applies only
-after a sample has passed boot-domain, binding, and freshness selection and
-process-identity acquisition has begun.
-
-A successful partial observation must have exactly this shape:
-
-```json
-{
-  "state": "observed-partial",
-  "qualification": "unqualified",
-  "sampleEvidence": {
-    "binding": {
-      "runId": "<binding runId>",
-      "configSha256": "<binding configSha256>",
-      "moduleSha256": "<binding moduleSha256>",
-      "copiedAsarSha256": "<binding copiedAsarSha256>",
-      "appStartNonce": "<binding appStartNonce>",
-      "pid": 0,
-      "processStartTicks": "<binding processStartTicks>",
-      "targetTaskId": "<binding targetTaskId>",
-      "targetCodeSessionId": "<binding targetCodeSessionId>",
-      "queryGeneration": 0,
-      "getterSetId": "<binding getterSetId>",
-      "monotonicClockId": "linux-clock-monotonic.v1",
-      "linuxBootId": "<binding linuxBootId>"
-    },
-    "sequence": 0,
-    "observedAt": 0,
-    "observedAtMonotonicMs": 0,
-    "collection": {
-      "startedAt": 0,
-      "endedAt": 0,
-      "startedAtMonotonicMs": 0,
-      "endedAtMonotonicMs": 0
-    }
-  },
-  "selectedReport": {
-    "taskId": "<selected task ID>",
-    "cliPid": 0,
-    "cliPidAtMs": 0,
-    "cliReportedVersion": "<reported version>",
-    "currentCodeSessionId": "<selected Code ID>",
-    "queryGeneration": 0,
-    "historicProvenance": "unknown",
-    "queryToOsAssociation": "unknown",
-    "reportBasis": "manager-retained-report; not independent OS association"
-  },
-  "linuxIdentity": {
-    "pid": 0,
-    "processStartTicks": "<observed decimal start ticks>",
-    "ownerUid": 0,
-    "executable": {
-      "dev": "<decimal device>",
-      "ino": "<decimal inode>",
-      "size": "<decimal size>",
-      "sha256": "<lowercase SHA-256>"
-    }
-  },
-  "queryToOsAssociation": "unknown"
-}
-```
-
-No implemented serializer supplies validation. Before serialization, reject
-extra or missing keys, invalid states, arbitrary error objects, exception text,
-stacks, command lines, environments, and any raw object not listed above.
-Require the successful result's sample binding and sequence to equal the
-wrapper and its selected report to match the selected task, Code ID, query
-generation, and PID. Retain an unknown result as explicit evidence; do not
-convert it to a missing file or a success.
-
-Construct the complete populated wrapper object, recursively canonicalize that
-object rather than the displayed template text, and serialize it with
-`JSON.stringify`, encode it as strict UTF-8, and append exactly one LF. Require
-the complete file to be between 1 and 16384 bytes. Create the bound path once
-with `O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW` and mode `0600`, using the same
-complete-write, sync, identity, ownership, link-count, byte, parse, and digest
-checks as the arm. Do not invoke the helper again to replace a failed result.
-
-Record the artifact's exact path, role, type, device, inode, UID, GID, mode,
-link count, size, and SHA-256 in the cleanup manifest. Retain it through issue
-281. Deletion requires issue 281 to name its exact manifest entry and requires
-the same absolute-path, no-symlink, identity, ownership, mode, one-link, size,
-and digest checks used for other private files. Unlink only that exact path,
-then verify both that it does not exist and that it is not a symlink.
+Record a valid artifact through the normative cleanup-manifest variant. If the
+helper is not called or retention fails, record the exact absent reason instead.
+Retain any possibly created or unvalidated path as an unresolved resource. No
+task ID, Code ID, binding, sequence, file identity, or helper result may be
+fabricated to complete the manifest.

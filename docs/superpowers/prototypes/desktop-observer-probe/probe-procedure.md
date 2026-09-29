@@ -135,8 +135,10 @@ That selected file cannot establish a global absence of children or unrelated
 repository, project, or worktree sharing. Absence of unrelated sharing rests on
 neither that file nor a nonrecursive project inspection. Exclusive fixture
 construction and current operator coordination are cleanup gates, not proof of
-global absence. Record the global child and unrelated-sharing states as
-`not-established` rather than as absence booleans. Before cleanup, repeat the
+global absence. Record `globalChildAbsence` as
+`not-established-from-selected-metadata` and
+`unrelatedSharingAbsence` as `not-established`. Do not substitute another enum
+or convert either value into an absence boolean. Before cleanup, repeat the
 selected-metadata checks and coordination check. The file may lag the running
 task, so the patched app must independently match both identifiers to its
 current selected record and query before bootstrap and arm acceptance.
@@ -162,9 +164,13 @@ The sidecar is inactive without an explicitly selected configuration. The
 configuration names the exact fixture, candidate identities, and a private run
 directory. It waits a bounded time for that fixture's existing query. A
 bootstrap record is inspected before a separate arm file permits collection.
-Follow [private input construction](private-input-construction.md) for the
-literal configuration and arm shapes, canonical UTF-8 encoding, exclusive
-creation, selected-metadata checks, and complete bootstrap comparison.
+[Application staging and restoration](application-operation.md#normative-private-contracts)
+is the normative home for the selected-fixture projection and selected-executor
+invocation and result variants.
+[Private input construction](private-input-construction.md) supplies their
+canonical UTF-8 construction, exclusive creation, selected-metadata acquisition,
+and complete bootstrap comparison procedures; it does not define alternative
+enum sets.
 
 `observer-probe.mjs` defines the exact configuration and arm schemas. Keep the
 configuration outside the initially empty, same-owner `0700` run directory;
@@ -242,16 +248,20 @@ most 256 MiB hashed. Retain its sample evidence with the result. A selected
 binary path, version string, or parsed PID does not establish the full
 query-to-executable association.
 
-Validate the one authorized helper return against the required successful or
-unknown shape, construct the exact wrapper, canonicalize that object, and
-serialize it into the private retained file defined by
-[private input construction](private-input-construction.md). No implemented
-serializer supplies these checks. The file is outside the sampler output
-directory and binds the source, run, selected sample, and complete expected
-binding. Never serialize raw errors or arbitrary objects. A failed result
-remains explicit retained evidence. Record the file's identity, size, and
-digest in the cleanup manifest and retain it through issue 281. No helper
-invocation occurs during preparation.
+Validate the one authorized helper return against the normative result variants
+in
+[application staging and restoration](application-operation.md#normative-private-contracts),
+construct the normative wrapper, canonicalize that object, and serialize it by
+the procedure in
+[private input construction](private-input-construction.md). Preserve nullable
+`cliPidAtMs` and `cliReportedVersion` values exactly; do not invent missing
+producer values or reclassify the result because either is null.
+
+Invoke the helper at most once and only when an actual usable selected sample
+supplies its sequence and complete accepted binding. If no usable sample exists,
+the helper is not called. A skipped helper or failed retention uses the exact absent reason
+defined by the cleanup manifest and does not authorize another invocation.
+No helper invocation occurs during preparation.
 
 ## Restoration, retention, and return
 
@@ -266,14 +276,25 @@ the launcher and arguments, then verify the restored app opens and the agreed
 unrelated-work expectations hold. Report disposable fixture loss or changed
 task state separately from restored package bytes.
 
-After restored behavior is checked, create the private cleanup manifest defined
-by [application staging and restoration](application-operation.md). It binds
-the exact source and artifact identities, disposable task and Code IDs,
-dedicated project and recorded absent-or-present worktree state, configuration,
-output root, and every emitted file, plus the separate retained
-Linux-observation artifact. Retain raw fixture output, the Linux-observation artifact, and that manifest through the return
-decision, accessible only to the user and the authorized execution and
-decision workflow.
+At the terminal stop, create the private cleanup manifest defined by
+[application staging and restoration](application-operation.md#private-cleanup-manifest-and-retention).
+Use its exact status, reason, restoration, fixture, output, and retained-evidence
+variants. List only files and resources actually created, preserve absent
+artifacts explicitly, and never invent a task ID, Code ID, binding, sequence, or
+file identity.
+
+When no candidate exchange occurred, record restoration as `not-required`.
+When restoration passes every required check, record it as `verified`. If
+restoration is incomplete, record `recovery-required` /
+`restoration-incomplete`, retain the recovery record and every package and
+private artifact, and perform no cleanup. A possibly created task, directory,
+worktree, or file remains an unresolved resource pending an operational
+decision.
+
+Retain raw fixture output, any valid Linux-observation artifact, unresolved
+resources, and the cleanup manifest through the return decision, accessible
+only to the user and the authorized execution and decision workflow. Do not
+invoke the helper merely to populate a missing retained-evidence entry.
 
 After the decision approves a redacted summary and names the exact manifest
 subset to remove, use only Desktop's normal exact-task deletion UI. Source
