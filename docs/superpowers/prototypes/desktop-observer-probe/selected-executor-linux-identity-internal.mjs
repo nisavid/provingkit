@@ -347,25 +347,66 @@ export function createSelectedLinuxExecutorObserver({
     throw new TypeError('invalid selected executor I/O seam');
   }
 
-  function isFreshNow(sample, maximumAgeMs) {
-    try {
-      return isFreshAt(
-        sample,
-        maximumAgeMs,
-        now(),
-        monotonicNow(),
-      );
-    } catch {
-      return false;
-    }
-  }
+  function createFreshnessGuard() {
+    let lastAcceptedWallNow;
+    let lastAcceptedMonotonicNow;
 
-  function requireFresh(sample, maximumAgeMs) {
-    if (!isFreshNow(sample, maximumAgeMs)) {
-      throw new StaleSelectedSampleError(
-        'selected sample expired',
-      );
+    function acceptFreshReading(
+      sample,
+      maximumAgeMs,
+      wallNow,
+      monotonicNow,
+    ) {
+      if (
+        !isFreshAt(
+          sample,
+          maximumAgeMs,
+          wallNow,
+          monotonicNow,
+        ) ||
+        (
+          lastAcceptedWallNow !== undefined &&
+          wallNow < lastAcceptedWallNow
+        ) ||
+        (
+          lastAcceptedMonotonicNow !== undefined &&
+          monotonicNow < lastAcceptedMonotonicNow
+        )
+      ) {
+        return false;
+      }
+
+      lastAcceptedWallNow = wallNow;
+      lastAcceptedMonotonicNow = monotonicNow;
+      return true;
     }
+
+    function isFreshNow(sample, maximumAgeMs) {
+      try {
+        return acceptFreshReading(
+          sample,
+          maximumAgeMs,
+          now(),
+          monotonicNow(),
+        );
+      } catch {
+        return false;
+      }
+    }
+
+    function requireFresh(sample, maximumAgeMs) {
+      if (!isFreshNow(sample, maximumAgeMs)) {
+        throw new StaleSelectedSampleError(
+          'selected sample expired',
+        );
+      }
+    }
+
+    return {
+      acceptFreshReading,
+      isFreshNow,
+      requireFresh,
+    };
   }
 
   async function readOwnedProcessDirectoryPath(
@@ -407,6 +448,7 @@ export function createSelectedLinuxExecutorObserver({
     expectedUid,
     sample,
     maximumAgeMs,
+    freshnessGuard,
   }) {
     let handle;
 
@@ -417,7 +459,10 @@ export function createSelectedLinuxExecutorObserver({
           expectedUid,
         );
 
-      requireFresh(sample, maximumAgeMs);
+      freshnessGuard.requireFresh(
+        sample,
+        maximumAgeMs,
+      );
 
       handle = await open(
         path,
@@ -457,6 +502,7 @@ export function createSelectedLinuxExecutorObserver({
     expectedUid,
     sample,
     maximumAgeMs,
+    freshnessGuard,
   }) {
     const state = validateBoundProcessDirectory(
       await directoryHandle.stat({ bigint: true }),
@@ -464,7 +510,10 @@ export function createSelectedLinuxExecutorObserver({
       expectedUid,
     );
 
-    requireFresh(sample, maximumAgeMs);
+    freshnessGuard.requireFresh(
+      sample,
+      maximumAgeMs,
+    );
     return state;
   }
 
@@ -607,7 +656,7 @@ export function createSelectedLinuxExecutorObserver({
     }
   }
 
-  async function acquire(input) {
+  async function acquire(input, freshnessGuard) {
     const linuxBootId = await readLinuxBootId();
     const acquisitionNow = now();
     const acquisitionMonotonicNow = monotonicNow();
@@ -630,7 +679,13 @@ export function createSelectedLinuxExecutorObserver({
       selected.sample.binding.monotonicClockId !==
         MONOTONIC_CLOCK_ID ||
       selected.sample.binding.linuxBootId !== linuxBootId ||
-      !isFreshNow(
+      !freshnessGuard.acceptFreshReading(
+        selected.sample,
+        input.maximumAgeMs,
+        acquisitionNow,
+        acquisitionMonotonicNow,
+      ) ||
+      !freshnessGuard.isFreshNow(
         selected.sample,
         input.maximumAgeMs,
       )
@@ -657,11 +712,15 @@ export function createSelectedLinuxExecutorObserver({
 
     if (!inputSnapshot) return unknownSample();
 
+    const freshnessGuard = createFreshnessGuard();
     const expectedUid = BigInt(inputSnapshot.expectedUid);
     let selected;
 
     try {
-      selected = await acquire(inputSnapshot);
+      selected = await acquire(
+        inputSnapshot,
+        freshnessGuard,
+      );
     } catch {
       return unknownSample();
     }
@@ -680,6 +739,7 @@ export function createSelectedLinuxExecutorObserver({
         expectedUid,
         sample: selected.sample,
         maximumAgeMs: inputSnapshot.maximumAgeMs,
+        freshnessGuard,
       });
       processDirectoryHandle = boundProcess.handle;
 
@@ -689,6 +749,7 @@ export function createSelectedLinuxExecutorObserver({
         expectedUid,
         sample: selected.sample,
         maximumAgeMs: inputSnapshot.maximumAgeMs,
+        freshnessGuard,
       });
       const startBefore = await readStartTicks(
         processDirectoryHandle,
@@ -701,6 +762,7 @@ export function createSelectedLinuxExecutorObserver({
         expectedUid,
         sample: selected.sample,
         maximumAgeMs: inputSnapshot.maximumAgeMs,
+        freshnessGuard,
       });
       const startBeforeHash = await readStartTicks(
         processDirectoryHandle,
@@ -713,6 +775,7 @@ export function createSelectedLinuxExecutorObserver({
         expectedUid,
         sample: selected.sample,
         maximumAgeMs: inputSnapshot.maximumAgeMs,
+        freshnessGuard,
       });
       const executable = await hashExecutable(
         processDirectoryHandle,
@@ -724,6 +787,7 @@ export function createSelectedLinuxExecutorObserver({
         expectedUid,
         sample: selected.sample,
         maximumAgeMs: inputSnapshot.maximumAgeMs,
+        freshnessGuard,
       });
       const startAfterReopen = await readStartTicks(
         processDirectoryHandle,
@@ -737,6 +801,7 @@ export function createSelectedLinuxExecutorObserver({
           expectedUid,
           sample: selected.sample,
           maximumAgeMs: inputSnapshot.maximumAgeMs,
+          freshnessGuard,
         });
       const executableAfter =
         await readExecutableState(
@@ -767,7 +832,10 @@ export function createSelectedLinuxExecutorObserver({
       let revalidated;
 
       try {
-        revalidated = await acquire(inputSnapshot);
+        revalidated = await acquire(
+          inputSnapshot,
+          freshnessGuard,
+        );
       } catch {
         return unknownSample();
       }

@@ -459,6 +459,78 @@ test('partial wall rollback cannot permit selected process reads after monotonic
   assert.equal(processReads, 0);
 });
 
+test('acquisition clock rollback rejects process I/O even when the regressed reading remains fresh', async t => {
+  const cases = [
+    {
+      name: 'wall clock only',
+      wallTimes: [1020, 1015],
+      monotonicTimes: [5020, 5020],
+    },
+    {
+      name: 'monotonic clock only',
+      wallTimes: [1020, 1020],
+      monotonicTimes: [5020, 5015],
+    },
+  ];
+
+  for (const fixture of cases) {
+    await t.test(fixture.name, async () => {
+      const wallTimes = [...fixture.wallTimes];
+      const monotonicTimes = [
+        ...fixture.monotonicTimes,
+      ];
+      let sampleReads = 0;
+      let processDirectoryReads = 0;
+      let processOpens = 0;
+
+      const observer = createSelectedLinuxExecutorObserver({
+        processRoot: '/synthetic-proc',
+        readProbeSample: async input => {
+          sampleReads += 1;
+          assert.equal(input.now, 1020);
+          assert.equal(input.monotonicNow, 5020);
+          assert.equal(
+            input.monotonicClockId,
+            MONOTONIC_CLOCK_ID,
+          );
+          assert.equal(input.linuxBootId, LINUX_BOOT_ID);
+          return usableInspection();
+        },
+        getuid: () => process.getuid(),
+        now: () => wallTimes.shift(),
+        monotonicNow: () => monotonicTimes.shift(),
+        readLinuxBootId: async () => LINUX_BOOT_ID,
+        lstat: async () => {
+          processDirectoryReads += 1;
+          return {
+            dev: 1n,
+            ino: 2n,
+            mode: 0o40700n,
+            uid: BigInt(process.getuid()),
+            gid: 3n,
+            isDirectory: () => true,
+            isSymbolicLink: () => false,
+          };
+        },
+        open: async () => {
+          processOpens += 1;
+          throw new Error('process path must not be opened');
+        },
+      });
+
+      assert.deepEqual(
+        await observer(acquisitionInput()),
+        unknownSample,
+      );
+      assert.equal(sampleReads, 1);
+      assert.equal(processDirectoryReads, 0);
+      assert.equal(processOpens, 0);
+      assert.deepEqual(wallTimes, []);
+      assert.deepEqual(monotonicTimes, []);
+    });
+  }
+});
+
 test('delayed acquisition and owner check reject expiry before process-file opens', async t => {
   const cases = [
     {
