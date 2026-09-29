@@ -1,6 +1,6 @@
 ---
 name: getting-prs-merged
-description: Use when the operator explicitly requests a GitHub branch or PR merge outcome. A merge closeout may invoke the readiness owner as a guarded continuation when repository policy permits; use the readiness skill directly for readiness-only requests. Do not use for description, review, status, check, comment, draft, or publication work without merge.
+description: Use when the operator asks to merge, land, or get in a GitHub branch or pull request, including a request to clear the last gate blocking that merge. A merge closeout may invoke the readiness owner as a guarded continuation when repository policy permits; use the readiness skill directly for readiness-only requests. Do not use for description, review, status, check, comment, draft, or publication work without merge.
 ---
 
 # Getting PRs Merged
@@ -64,7 +64,8 @@ owner handoff. Its invocation boundaries preserve the ongoing authorized task.
    checks, approvals, merge method/protection/authority, deployment, and cleanup.
    Use `merge-inspection` only for this read-only merge-state acquisition.
    Bind the urgency tier as [urgency](references/review-thread-resolution.md#urgency)
-   defines it, and record it with the operator's exact words.
+   defines it, and name it in your report beside the operator's exact words, for
+   example `Urgency: extreme ("This must go in ASAP")`.
 2. If no PR exists, bind the missing-PR state and repository policy. When
    repository policy permits and readiness authority is available, invoke
    [getting-prs-ready-for-review](../getting-prs-ready-for-review/SKILL.md)
