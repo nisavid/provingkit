@@ -24,6 +24,11 @@ from agent_plugins_standard import (  # noqa: E402
     validate_skill_resource_links,
 )
 from member_versions import is_supported_member_version  # noqa: E402
+from member_source_stage_cli import (  # noqa: E402
+    add_context_arguments,
+    check_context_if_requested,
+    prepare_context_if_requested,
+)
 from refresh_transaction import (  # noqa: E402
     InputEntry,
     capture_input_entry,
@@ -729,33 +734,15 @@ def validate(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repository", type=Path)
-    parser.add_argument("--source-stage", action="store_true")
+    add_context_arguments(parser)
     parser.add_argument("--write-content-lock", action="store_true")
-    parser.add_argument("--base")
-    parser.add_argument("--candidate")
-    parser.add_argument("--receipt-root")
-    parser.add_argument("--procedure-revision")
     arguments = parser.parse_args(argv)
     context = None
     try:
         repository = Path(os.path.abspath(arguments.repository.expanduser()))
-        if any(
-            value is not None
-            for value in (
-                arguments.base,
-                arguments.candidate,
-                arguments.receipt_root,
-                arguments.procedure_revision,
-            )
-        ):
-            try:
-                from behavior_eval_source_stage import check_context, prepare_context
-            except ImportError:
-                parser.error("Receipt source-stage support is unavailable")
-
-            context = prepare_context(
-                parser, arguments, repository, writing=arguments.write_content_lock
-            )
+        context = prepare_context_if_requested(
+            parser, arguments, repository, writing=arguments.write_content_lock
+        )
         if arguments.write_content_lock:
             snapshot = capture_content_lock_write_snapshot(repository)
             validate(
@@ -782,7 +769,7 @@ def main(argv: list[str] | None = None) -> int:
     if arguments.write_content_lock:
         print("Artifact Customs external content lock updated")
     if context is not None:
-        return check_context(context, "artifact-customs")
+        return check_context_if_requested(context, "artifact-customs")
     return 0
 
 

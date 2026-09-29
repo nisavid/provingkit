@@ -20,6 +20,11 @@ from agent_plugins_standard import (  # noqa: E402
     validate_skill_resource_links,
 )
 from member_versions import is_supported_member_version  # noqa: E402
+from member_source_stage_cli import (  # noqa: E402
+    add_context_arguments,
+    check_context_if_requested,
+    prepare_context_if_requested,
+)
 
 try:
     import yaml
@@ -1302,31 +1307,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repository", nargs="?", type=Path)
     parser.add_argument("--write-content-lock", action="store_true")
-    parser.add_argument("--source-stage", action="store_true")
-    parser.add_argument("--base")
-    parser.add_argument("--candidate")
-    parser.add_argument("--receipt-root")
-    parser.add_argument("--procedure-revision")
+    add_context_arguments(parser)
     arguments = parser.parse_args()
     write_lock = arguments.write_content_lock
     context = None
     try:
         repo_root = arguments.repository or Path.cwd()
-        if any(
-            value is not None
-            for value in (
-                arguments.base,
-                arguments.candidate,
-                arguments.receipt_root,
-                arguments.procedure_revision,
-            )
-        ):
-            try:
-                from behavior_eval_source_stage import check_context, prepare_context
-            except ImportError:
-                parser.error("Receipt source-stage support is unavailable")
-
-            context = prepare_context(parser, arguments, repo_root, writing=write_lock)
+        context = prepare_context_if_requested(
+            parser, arguments, repo_root, writing=write_lock
+        )
         root = locate_root(repo_root)
         topology, semantic_files = inspect_contract(root)
         validate_inventory(
@@ -1360,7 +1349,7 @@ def main() -> int:
         file=sys.stderr if context is not None else sys.stdout,
     )
     if context is not None:
-        return check_context(context, "rolecasting")
+        return check_context_if_requested(context, "rolecasting")
     return 0
 
 

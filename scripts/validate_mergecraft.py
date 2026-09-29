@@ -27,6 +27,11 @@ from agent_plugins_standard import (  # noqa: E402
     validate_skill_resource_links,
 )
 from member_versions import is_supported_member_version  # noqa: E402
+from member_source_stage_cli import (  # noqa: E402
+    add_context_arguments,
+    check_context_if_requested,
+    prepare_context_if_requested,
+)
 from refresh_transaction import (  # noqa: E402
     InputEntry,
     RefreshTransactionError,
@@ -5668,15 +5673,10 @@ def main() -> int:
     writing = parser.add_mutually_exclusive_group()
     writing.add_argument("--write-content-lock", action="store_true")
     writing.add_argument("--write-markdown-projections", action="store_true")
-    parser.add_argument(
-        "--source-stage",
-        action="store_true",
-        help="validate an unpinned public candidate without accepting it as a release",
+    add_context_arguments(
+        parser,
+        source_stage_help="validate an unpinned public candidate without accepting it as a release",
     )
-    parser.add_argument("--base")
-    parser.add_argument("--candidate")
-    parser.add_argument("--receipt-root")
-    parser.add_argument("--procedure-revision")
     args = parser.parse_args()
     context = None
     try:
@@ -5684,26 +5684,12 @@ def main() -> int:
             repository = Path(os.path.abspath(args.repository.expanduser()))
         except RuntimeError as error:
             raise ContractError(str(error)) from error
-        if any(
-            value is not None
-            for value in (
-                args.base,
-                args.candidate,
-                args.receipt_root,
-                args.procedure_revision,
-            )
-        ):
-            try:
-                from behavior_eval_source_stage import check_context, prepare_context
-            except ImportError:
-                parser.error("Receipt source-stage support is unavailable")
-
-            context = prepare_context(
-                parser,
-                args,
-                repository,
-                writing=args.write_content_lock or args.write_markdown_projections,
-            )
+        context = prepare_context_if_requested(
+            parser,
+            args,
+            repository,
+            writing=args.write_content_lock or args.write_markdown_projections,
+        )
         if args.write_content_lock or args.write_markdown_projections:
             snapshot = capture_content_lock_write_snapshot(repository)
             validate(
@@ -5751,7 +5737,7 @@ def main() -> int:
     elif args.write_markdown_projections:
         print("Mergecraft Markdown authoring projections updated")
     if context is not None:
-        return check_context(context, "mergecraft")
+        return check_context_if_requested(context, "mergecraft")
     return 0
 
 

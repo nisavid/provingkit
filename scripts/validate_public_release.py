@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "e37c4a5d913059aa366ebc2f37913092eef13b0a8291454318e53a0a2cf1f9d7"
+SOURCE_SHA256 = "e9a83c059c2a6a38440407fce9a92e34a4b87eaddea590ba78825f0f43ccdd23"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -82,6 +82,7 @@ COMMON_SUPPORT_PATHS = {
     "scripts/run_skill_routing_eval.py",
     "scripts/agent_plugins_standard.py",
     "scripts/member_versions.py",
+    "scripts/member_source_stage_cli.py",
     "tests/test_evidence_transport.py",
     "tests/test_later_release_security_containment.py",
     "tests/test_amberbridge_compatibility_projection.py",
@@ -118,6 +119,7 @@ SOURCE_STAGE_COMMON_VALIDATOR_PATHS = ()
 RELEASE_CONTRACT_SUPPORT_MODULES = (
     "scripts/agent_plugins_standard.py",
     "scripts/member_versions.py",
+    "scripts/member_source_stage_cli.py",
 )
 BASE_PLUGIN_SUPPORT_PATHS = {
     "rolecasting": {
