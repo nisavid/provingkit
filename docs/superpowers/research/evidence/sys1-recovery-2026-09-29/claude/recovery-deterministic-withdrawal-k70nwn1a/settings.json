@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-deterministic-withdrawal-k70nwn1a 25839c08ef23c3e7189d8223ce0066ba02c2a47f2be4b7ff66a5dff258d99970",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-deterministic-withdrawal-k70nwn1a 25839c08ef23c3e7189d8223ce0066ba02c2a47f2be4b7ff66a5dff258d99970",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}

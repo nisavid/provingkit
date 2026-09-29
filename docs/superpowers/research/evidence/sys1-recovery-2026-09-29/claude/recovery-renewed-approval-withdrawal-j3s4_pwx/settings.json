@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-renewed-approval-withdrawal-j3s4_pwx ecc41897f45e67898f27738a582e13b3a173adabb66ec3ca9815d857afe5fa38",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-renewed-approval-withdrawal-j3s4_pwx ecc41897f45e67898f27738a582e13b3a173adabb66ec3ca9815d857afe5fa38",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}

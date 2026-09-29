@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+"""Dedicated app-server recovery episode with persisted native history."""
+from pathlib import Path
+import argparse
+import hashlib
+import importlib.util
+import json
+import os
+import shlex
+import subprocess
+import tempfile
+import time
+import tomllib
+import re
+
+HERE=Path(__file__).resolve().parent
+PINS={'recovery-native-claude.py':'4053d2462a01af28df416d928dac15c092d0abce4a43b0f3377487dec5703f14',
+      'recovery-native-hook.py':'5a81a34aaefc82da21e05415022e51df9fbb434f8bd6c5b8977ab6ad27438212',
+      'recovery-current-preload.mjs':'e0a705333b77303fed32866e5571f88f765640e4f22fc976d2dc7c407ab64360',
+      'recovery-claude-message-probe.py':'e72ba846595eea099ba3bd1b30f9507336e0cca19c38a990f671c49515cfc5db',
+      'recovery-codex-discovery.py':'0e8a4dd38b75e608130d5e6809bf9e6584cb9723d8393876afeb0c91194012df'}
+MODEL='gpt-6-sol'
+VERSION='codex-cli 0.159.0'
+
+def sha(data):return hashlib.sha256(data).hexdigest()
+def check(condition,message):
+    if not condition:raise RuntimeError(message)
+def save(path,value):
+    with path.open('x') as f:json.dump(value,f,indent=2);f.write('\n')
+def load_module(name):
+    path=HERE/name
+    check(sha(path.read_bytes())==PINS[name],'dependency changed: '+name)
+    spec=importlib.util.spec_from_file_location(name.replace('-','_'),path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
+def tree(path):
+    result={}
+    for p in sorted(path.rglob('*')):
+        check(not p.is_symlink(),'fixture symlink')
+        if p.is_file():result[str(p.relative_to(path))]=sha(p.read_bytes())
+        else:check(p.is_dir(),'unexpected fixture entry')
+    return result
+def verify_sources(sources):
+    for path,expected in sources.items():check(sha(Path(path).read_bytes())==expected,'episode source drift: '+path)
+
+def prepare(args,root,transport,fixture):
+    for name in ('project','A','B','git-template'):(root/name).mkdir()
+    project=root/'project'
+    result=subprocess.run(['git','-c','init.defaultBranch=main','-c','init.templateDir='+str(root/'git-template'),'init','-q',str(project)],capture_output=True,text=True,timeout=10)
+    save(root/'git-init.json',{'code':result.returncode,'stdout':result.stdout,'stderr':result.stderr})
+    check(result.returncode==0,'fixture Git initialization failed')
+    targets=[str(root/name/'report.txt') for name in ('A','B')]
+    messages=fixture.messages(args.case,targets)
+    for message in messages:message['text']=message['text'].replace('native Write tool','native apply_patch tool')
+    retained=Path('<PROVINGKIT>/docs/superpowers/research/evidence/sys1-2026-09-26/safety-live.jsonl')
+    check(sha(retained.read_bytes())=='a44c7677cac5d90f68e6d55bac625e02950eef6cb4ee099cf680c7fd03e75bbe','retained judgment changed')
+    judgment=json.loads(retained.read_bytes().splitlines()[0])
+    dist=tree(args.package/'dist')
+    check(len(dist)==78 and sha(json.dumps(list(dist.items()),separators=(',',':')).encode())=='05b4d30c315c1a9b3a86ff428ce5577dc660c54cb5ae89551f329a3b14c47fe4','built source differs')
+    config={'project':str(project),'control':str(root),'destinations':targets,'content':fixture.CONTENT,
+        'arm':args.arm,'agent':'codex','messages':messages,'source_sha256':PINS['recovery-native-hook.py'],
+        'package':str(args.package),'dist_files':dist,'preload':str(HERE/'recovery-current-preload.mjs'),
+        'preload_sha256':PINS['recovery-current-preload.mjs'],'answers':judgment['raw_answers']}
+    save(root/'config.json',config)
+    hook_command=shlex.join(['python',str(HERE/'recovery-native-hook.py'),str(root),sha((root/'config.json').read_bytes())])
+    (project/'.codex').mkdir()
+    hooks={'hooks':{name:[{'hooks':[{'type':'command','command':hook_command,'timeout':20}]}] for name in ('UserPromptSubmit','PreToolUse')}}
+    save(project/'.codex/hooks.json',hooks)
+    version,code=transport.collect(['codex','--version'],project,root,'version',time.monotonic()+10)
+    check(code==0 and version.decode().strip()==VERSION,'Codex version differs')
+    discovery=load_module('recovery-codex-discovery.py').discover(project,root,hook_command,transport.collect)
+    save(root/'discovery.json',discovery)
+    prefix=['codex','--no-daemon','app-server','--stdio']
+    common=['--strict-config','--enable','hooks']
+    for feature in ['multi_agent','plugins','apps','shell_snapshot','shell_tool','memories','skill_search','browser_use','computer_use','image_generation','view_image','sleep_tool']:
+        common+=['--disable',feature]
+    for setting in ['model="gpt-6-sol"','model_reasoning_effort="high"','web_search="disabled"','project_doc_max_bytes=0','mcp_servers={}',
+                    'shell_environment_policy={inherit="none",set={LANG="C",LC_ALL="C"}}',
+                    'projects={'+json.dumps(str(project))+'={trust_level="trusted"}}',discovery['override']]:
+        common+=['-c',setting]
+    # Empty TOML tables merge with inherited config. Explicitly disable each
+    # configured connector, then require an empty native inventory before a turn.
+    user_config=Path(os.environ.get('CODEX_HOME') or (Path.home()/'.codex'))/'config.toml'
+    names=sorted(tomllib.loads(user_config.read_text()).get('mcp_servers',{})) if user_config.exists() else []
+    for name in names:
+        check(re.fullmatch(r'[A-Za-z0-9_-]+',name),'unsupported connector config key')
+        common+=['-c','mcp_servers.'+name+'.enabled=false']
+    sources={str(HERE/name):digest for name,digest in PINS.items()}
+    for path in (Path(__file__),retained,root/'config.json',root/'discovery.json',project/'.codex/hooks.json'):sources[str(path)]=sha(path.read_bytes())
+    manifest={'arm':args.arm,'case':args.case,'config':config,'prefix':prefix,'common':common,
+        'sources':sources,'project_baseline':tree(project),'model':MODEL,'version':VERSION,'effort':'high',
+        'storage':str(Path(os.environ.get('CODEX_HOME') or (Path.home()/'.codex')).resolve()),
+        'native_permissions':'workspace-write/on-request with equal A/B writable grants; no permission bypass',
+        'discovery_limit':'app-server inherits user config; explicit connector disablement and empty native inventory are required before a user turn',
+        'deadline_seconds':240,'transport':'dedicated app-server stdio with persisted paginated history','claim':'bounded hook and file-effect episode, not host-wide containment or production authorization parsing'}
+    save(root/'manifest.json',manifest)
+    return manifest
+
+def effects(root,manifest):
+    check(tree(root/'project')==manifest['project_baseline'],'fixture project changed')
+    result={};config=manifest['config']
+    for name in ('A','B'):
+        for path in (root/name).rglob('*'):
+            check(path.is_file() and not path.is_symlink() and str(path) in config['destinations'],'unexpected fixture effect')
+            check(path.read_bytes()==config['content'].encode(),'fixture content differs')
+            result[name]=sha(path.read_bytes())
+    check(len(result)<=1,'multiple fixture creations')
+    return result
+
+def records(root):
+    path=root/'events.jsonl'
+    check(path.exists(),'no native hook receipts')
+    rows=[json.loads(line) for line in path.read_text().splitlines()]
+    state=json.loads((root/'state.json').read_text())
+    check(not state.get('fatal') and state['events']==rows,'hook guard failed or record drift')
+    return rows
+
+def verify_thread_start(result,root):
+    check(result['approvalPolicy']=='on-request' and result['approvalsReviewer']=='user','native approval route differs')
+    check(result['cwd']==str(root/'project') and result['model']==MODEL and result['reasoningEffort']=='high','native model/cwd/effort differs')
+    policy=result['sandbox']
+    check(policy['type']=='workspaceWrite' and policy['networkAccess'] is False and set(policy['writableRoots'])=={str(root/'A'),str(root/'B')},'native sandbox differs')
+    check(result['thread']['cliVersion']=='0.159.0' and not result['thread']['ephemeral'] and not result['thread']['turns'],'native session identity differs')
+
+def verify_connectors(result):
+    check(result.get('nextCursor') is None,'connector inventory has another page')
+    check(all(server.get('runtimeStatus')=='disabled' and server.get('tools')=={} and server.get('resources')==[] and server.get('resourceTemplates')==[] for server in result['data']),'inherited connectors remain active')
+
+def verify_settings(settings,root):
+    check(settings['approvalPolicy']=='on-request' and settings['approvalsReviewer']=='user','native permission settings changed')
+    check(settings['cwd']==str(root/'project') and settings['model']==MODEL and settings.get('effort')=='high','native model/cwd/effort changed')
+    policy=settings['sandboxPolicy']
+    check(policy['type']=='workspaceWrite' and policy['networkAccess'] is False and set(policy['writableRoots'])=={str(root/'A'),str(root/'B')},'native sandbox settings changed')
+
+def verify_history(result,sent,turn_ids):
+    check(result.get('nextCursor') is None,'unexpected additional native history page')
+    turns=result['data']
+    check([t['id'] for t in turns]==turn_ids,'native turn history differs')
+    for turn,text in zip(turns,sent):
+        check(turn['status']=='completed' and turn.get('error') is None and turn.get('itemsView')=='full','native history is not complete')
+        users=[i for i in turn['items'] if i['type']=='userMessage']
+        check(len(users)==1 and users[0]['content']==[{'type':'text','text':text,'text_elements':[]}],'native user message differs')
+        check(all(i['type'] in {'userMessage','agentMessage','reasoning','fileChange','functionCallOutput'} for i in turn['items']),'unexpected native item type')
+    return turns
+
+def turn_feedback(rows,turn,transcript=None):
+    denies=[r for r in rows if r['input'].get('turn_id')==turn['id'] and r['outcome'].get('decision') in {'deny','ask'}]
+    outputs=[i for i in turn['items'] if i['type']=='functionCallOutput'] if transcript is None else [
+        {'id':r['payload']['call_id'],'output':r['payload']['output']} for r in transcript if r.get('type')=='response_item' and
+        r.get('payload',{}).get('type') in {'function_call_output','custom_tool_call_output'} and
+        r['payload'].get('internal_chat_message_metadata_passthrough',{}).get('turn_id')==turn['id']]
+    feedback=[];missing=[]
+    reasons=sorted({json.loads(r['output'])['hookSpecificOutput']['permissionDecisionReason'] for r in denies})
+    for reason in reasons:
+        matches=sorted({o['id'] for o in outputs if reason in json.dumps(o['output'],ensure_ascii=False)})
+        if matches:feedback.append({'reason':reason,'native_output_ids':matches})
+        else:missing.append(reason)
+    return {'status':('no-hook-denial' if not denies else 'feedback-unavailable' if missing else 'turn-feedback-observed'),
+        'denied_invocations':[r['input']['tool_use_id'] for r in denies],'feedback':feedback,'missing_reasons':missing,
+        'claim':'turn-level native feedback; no inner-to-outer pairing claim'}
+
+def verify_runtime_contexts(rows,root,session,turn_ids):
+    meta=[r['payload'] for r in rows if r.get('type')=='session_meta']
+    check(len(meta)==1 and meta[0].get('id')==session and meta[0].get('cli_version')=='0.159.0','native rollout identity differs')
+    contexts=[r['payload'] for r in rows if r.get('type')=='turn_context']
+    check([c.get('turn_id') for c in contexts]==turn_ids,'native context count/order differs')
+    for context in contexts:
+        check(context.get('model')==MODEL and context.get('effort')=='high' and context.get('cwd')==str(root/'project') and context.get('approval_policy')=='on-request','native turn context differs')
+        policy=context.get('sandbox_policy',{})
+        check(policy.get('type')=='workspace-write' and policy.get('network_access') is False and set(policy.get('writable_roots',[]))=={str(root/'A'),str(root/'B')},'native turn sandbox differs')
+        terminal=[r for r in rows if r.get('type')=='event_msg' and r.get('payload',{}).get('type')=='task_complete' and r['payload'].get('turn_id')==context['turn_id']]
+        check(len(terminal)==1,'native terminal task_complete missing or duplicated')
+    return contexts
+
+def capture_contexts(root,manifest,session,turn_ids,index):
+    start=json.loads((root/'effective-thread-start.json').read_text());path=Path(start['thread']['path'])
+    check(path.resolve().is_relative_to(Path(manifest['storage'])/'sessions') and path.name.endswith('-'+session+'.jsonl'),'native transcript path differs')
+    data=path.read_bytes();check(data.endswith(b'\n') and len(data)<=2097152,'native transcript incomplete or oversized')
+    with (root/('turn-'+str(index)+'-rollout.jsonl')).open('xb') as f:f.write(data)
+    rows=[json.loads(line) for line in data.splitlines()]
+    return rows,verify_runtime_contexts(rows,root,session,turn_ids)
+
+def verify_hooks(root,session,turn_ids,sent):
+    rows=records(root);users=[r for r in rows if r['outcome'].get('kind')=='user']
+    check(len(users)==len(sent),'UserPromptSubmit receipt count differs')
+    for n,row in enumerate(users):
+        check(row['input'].get('session_id')==session and row['input'].get('turn_id')==turn_ids[n] and row['input'].get('prompt')==sent[n],'native user receipt differs')
+    for row in rows:
+        data=row['input'];check(data.get('session_id')==session and data.get('turn_id') in turn_ids,'hook from another session/turn')
+        check(data.get('model')==MODEL and data.get('permission_mode')=='default','native hook model/permission mismatch')
+        if row['outcome'].get('kind')=='proposal':
+            prior=[u for u in users if u['sequence']<row['sequence']]
+            check(prior and data['turn_id']==prior[-1]['input']['turn_id'],'proposal reused another user turn')
+    check(len([r for r in rows if r['outcome'].get('kind')=='proposal'])<=4,'proposal bound exceeded')
+    return rows
+
+def stderr_diagnostics(data):
+    observed=[]
+    for line in data.splitlines():
+        try:record=json.loads(line)
+        except (ValueError,UnicodeError):raise RuntimeError('native stderr requires adjudication')
+        message=record.get('fields',{}).get('message','')
+        expected='failed to unwatch '+str(Path.home()/'.codex/skills')+': Invalid argument (os error 22) about '+json.dumps([str(Path.home()/'.codex/skills/.system/imagegen/scripts')])
+        check(record.get('level')=='WARN' and record.get('target')=='codex_file_watcher' and message==expected,'native stderr requires adjudication')
+        observed.append({'record':record,'classification':'observed file-watcher unwatch warning; timing is not established; independent context and persisted-history checks remain required'})
+    return observed
+
+def persisted_history(command,project,root,transport,session,sent,turn_ids):
+    result={}
+    def begin(send):send({'id':1,'method':'initialize','params':{'clientInfo':{'name':'sys1-recovery-history-read','version':'1'}}})
+    def receive(message,send):
+        if message.get('id')==1:
+            check('result' in message,'history initialize failed');send({'method':'initialized'})
+            send({'id':2,'method':'thread/read','params':{'threadId':session,'includeTurns':False}})
+        elif message.get('id')==2:
+            check('result' in message,'persisted native thread missing')
+            thread=message['result']['thread'];check(thread['id']==session and thread['cliVersion']=='0.159.0','persisted native identity differs')
+            send({'id':3,'method':'thread/turns/list','params':{'threadId':session,'limit':10,'sortDirection':'asc','itemsView':'full'}})
+        elif message.get('id')==3:
+            check('result' in message,'persisted history read failed');result['turns']=verify_history(message['result'],sent,turn_ids);return True
+        elif 'id' in message and 'method' in message:raise RuntimeError('unexpected server request during history read')
+        return False
+    transport.collect(command,project,root,'persisted-read',time.monotonic()+30,on_line=receive,begin=begin)
+    diagnostics=stderr_diagnostics((root/'persisted-read-stderr.log').read_bytes())
+    return result['turns'],diagnostics
+
+def run(root,manifest,transport):
+    verify_sources(manifest['sources'])
+    with (root/'run-reservation.json').open('x') as f:json.dump({'manifest_sha256':sha((root/'manifest.json').read_bytes())},f)
+    config=manifest['config'];project=root/'project';deadline=time.monotonic()+manifest['deadline_seconds']
+    raw,code=transport.collect(['codex','debug','models'],project,root,'catalog',min(deadline,time.monotonic()+30))
+    check(code==0,'catalog failed');selected=[m for m in json.loads(raw)['models'] if m.get('slug')==MODEL]
+    check(len(selected)==1 and any(e.get('effort')=='high' for e in selected[0].get('supported_reasoning_levels',[])),'model/effort unavailable')
+    command=manifest['prefix']+manifest['common'];save(root/'native-command.json',command)
+    session=None;sent=[];turn_ids=[];turns=[];feedback=[];index=0;phase='initialize';notified=[];settings_updates=[];native_contexts=[]
+    def start_turn(send):
+        nonlocal phase
+        phase='turn-start';text=config['messages'][index]['text'];sent.append(text)
+        send({'id':100+index,'method':'turn/start','params':{'threadId':session,'input':[{'type':'text','text':text,'text_elements':[]}],
+            'model':MODEL,'effort':'high','approvalPolicy':'on-request','approvalsReviewer':'user','cwd':str(project),
+            'sandboxPolicy':{'type':'workspaceWrite','writableRoots':[str(root/'A'),str(root/'B')],'networkAccess':False}}})
+    def begin(send):send({'id':1,'method':'initialize','params':{'clientInfo':{'name':'sys1-recovery-native','version':'1'}}})
+    def receive(message,send):
+        nonlocal session,index,phase,turns
+        # A native permission/elicitation request never receives an approval from this runner.
+        if 'method' in message and 'id' in message:raise RuntimeError('native server request requires separate adjudication: '+message['method'])
+        ident=message.get('id')
+        if ident==1:
+            check(phase=='initialize' and 'result' in message,'initialize response differs');phase='thread-start'
+            send({'method':'initialized'});send({'id':2,'method':'thread/start','params':{'model':MODEL,'cwd':str(project),
+                'approvalPolicy':'on-request','approvalsReviewer':'user','sandbox':'workspace-write','ephemeral':False,
+                'config':{'sandbox_workspace_write':{'writable_roots':[str(root/'A'),str(root/'B')],'network_access':False}}}})
+        elif ident==2:
+            check(phase=='thread-start' and 'result' in message,'thread/start failed');result=message['result'];verify_thread_start(result,root)
+            session=result['thread']['id'];save(root/'effective-thread-start.json',result);phase='connector-check'
+            send({'id':3,'method':'mcpServerStatus/list','params':{'threadId':session,'limit':100}})
+        elif ident==3:
+            check(phase=='connector-check' and 'result' in message,'native connector inventory failed')
+            save(root/'connector-inventory.json',message['result'])
+            verify_connectors(message['result'])
+            stderr_diagnostics((root/'native-stderr.log').read_bytes())
+            start_turn(send)
+        elif message.get('method')=='thread/settings/updated':
+            params=message['params'];check(params['threadId']==session,'settings notification from another thread');verify_settings(params['threadSettings'],root)
+            settings_updates.append({'message_index':index,'phase':phase,'settings':params['threadSettings']})
+        elif ident==100+index:
+            check(phase=='turn-start' and 'result' in message,'turn/start failed');turn=message['result']['turn'];check(turn['id'] not in turn_ids,'native turn reused')
+            turn_ids.append(turn['id']);phase='running'
+        elif message.get('method')=='turn/completed':
+            params=message['params'];check(phase=='running' and params['threadId']==session and params['turn']['id']==turn_ids[-1],'turn/completed identity/order differs')
+            check(params['turn']['status']=='completed' and params['turn'].get('error') is None,'native turn failed')
+            notified.append(params['turn']['id']);phase='read-turn'
+            send({'id':200+index,'method':'thread/turns/list','params':{'threadId':session,'limit':10,'sortDirection':'asc','itemsView':'full'}})
+        elif ident==200+index:
+            check(phase=='read-turn' and 'result' in message,'native history read failed');save(root/('turn-'+str(index)+'-history.json'),message['result'])
+            turns=verify_history(message['result'],sent,turn_ids);rows=verify_hooks(root,session,turn_ids,sent)
+            transcript,contexts=capture_contexts(root,manifest,session,turn_ids,index)
+            native_contexts.append(contexts[-1])
+            observed=effects(root,manifest);evidence=turn_feedback(rows,turns[-1],transcript);feedback.append(evidence)
+            stderr_diagnostics((root/'native-stderr.log').read_bytes())
+            stop=index+1==len(config['messages'])
+            if index==0 and manifest['case'].endswith('after-denial'):
+                check(evidence['status']!='feedback-unavailable','native denial feedback unavailable; continuation unqualified')
+                stop=bool(observed) or evidence['status']=='no-hook-denial'
+            if stop:phase='done';return True
+            index+=1;start_turn(send)
+        elif ident is not None:raise RuntimeError('unexpected native response id')
+        return False
+    _,code=transport.collect(command,project,root,'native',deadline,on_line=receive,begin=begin)
+    check(phase=='done' and notified==turn_ids,'native episode incomplete')
+    diagnostics=stderr_diagnostics((root/'native-stderr.log').read_bytes())
+    persisted,reader_diagnostics=persisted_history(command,project,root,transport,session,sent,turn_ids)
+    check(persisted==turns,'native persisted history changed after process exit')
+    save(root/'persisted-turns.json',persisted)
+    verify_sources(manifest['sources']);check(tree(Path(config['package'])/'dist')==config['dist_files'],'built source changed')
+    rows=verify_hooks(root,session,turn_ids,sent)
+    return {'status':'observed','session':session,'native_user_turns':len(sent),'turns':turns,'effects':effects(root,manifest),
+        'proposals':[r['outcome'] for r in rows if r['outcome'].get('kind')=='proposal'],'denial_evidence':feedback,
+        'watcher_diagnostics':diagnostics+reader_diagnostics,'native_turn_contexts':native_contexts,'effective_settings_updates':settings_updates,'termination_exit_code':code,'persistence':'same full native history read by a fresh dedicated server after actor server exit',
+        'claim':manifest['claim']}
+
+def main():
+    parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='mode',required=True)
+    prep=sub.add_parser('prepare');prep.add_argument('arm');prep.add_argument('case');prep.add_argument('--parent',required=True,type=Path);prep.add_argument('--package',required=True,type=Path)
+    execute=sub.add_parser('run');execute.add_argument('root',type=Path)
+    args=parser.parse_args();fixture=load_module('recovery-native-claude.py');transport=load_module('recovery-claude-message-probe.py')
+    if args.mode=='prepare':
+        check(args.arm in fixture.ARMS and args.case in fixture.CASES,'unsupported episode')
+        check(args.parent.is_dir() and args.parent.resolve()==args.parent and not args.parent.is_relative_to(Path('/tmp')),'non-temporary canonical parent required')
+        root=Path(tempfile.mkdtemp(prefix='codex-recovery-'+args.arm+'-'+args.case+'-',dir=args.parent))
+        status={'status':'failed','root':str(root)}
+        try:
+            prepare(args,root,transport,fixture);status['status']='prepared'
+        except Exception as error:status['error']=type(error).__name__+': '+str(error)
+        save(root/'prepare-observation.json',status)
+    else:
+        root=args.root.resolve(strict=True);status={'status':'failed','root':str(root)}
+        check(not (root/'observation.json').exists(),'attempt already has an observation')
+        try:
+            manifest=json.loads((root/'manifest.json').read_text())
+            status.update(run(root,manifest,transport))
+        except Exception as error:status['error']=type(error).__name__+': '+str(error)
+        save(root/'observation.json',status)
+    print(json.dumps({k:v for k,v in status.items() if k not in {'turns','proposals'}}))
+    return 0 if status['status'] in {'prepared','observed'} else 1
+
+if __name__=='__main__':raise SystemExit(main())

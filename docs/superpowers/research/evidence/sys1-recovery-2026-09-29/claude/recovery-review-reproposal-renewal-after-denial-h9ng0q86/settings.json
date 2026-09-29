@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-review-reproposal-renewal-after-denial-h9ng0q86 dd8e6a5da2af925c1c57ee762e472f0e8774dc14cc92fc53b3a14f97c78e7711",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-review-reproposal-renewal-after-denial-h9ng0q86 dd8e6a5da2af925c1c57ee762e472f0e8774dc14cc92fc53b3a14f97c78e7711",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}

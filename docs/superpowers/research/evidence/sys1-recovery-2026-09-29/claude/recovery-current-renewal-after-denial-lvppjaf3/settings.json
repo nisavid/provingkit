@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-current-renewal-after-denial-lvppjaf3 e34179dce5a5a3e4a20623a2257cc66bf35411a7c527965437a5b753839c7284",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-current-renewal-after-denial-lvppjaf3 e34179dce5a5a3e4a20623a2257cc66bf35411a7c527965437a5b753839c7284",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}
