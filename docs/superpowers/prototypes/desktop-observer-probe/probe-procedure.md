@@ -52,16 +52,29 @@ for byte before authorization and again before staging. Record candidate,
 sidecar, manager, and build-input digests from that receipt. No source file from
 Desktop is published with this experiment.
 
-Closing Desktop before staging and again before restoration produces two
-application restarts in the one scheduled window: the candidate launch and the
-restored launch. Installation success, candidate loading, and restored
-application behavior are separate observations. The authorization must
-acknowledge that existing queries need not survive a restart. Collection is
-capped at 30 seconds; total window duration has not been measured. A failed
-attempt does not authorize another arm or restart cycle. Routine version changes
-do not automatically require another live window, and notification sends do not
-each require a restart. Maintained observer installation and upgrade behavior
-remain a later adoption decision.
+The accepted operating shape is one scheduled window and two full application
+shutdown/launch cycles: the candidate cycle and the restored cycle. It also
+contains two submissions of the exact setup prompt, the package, receipt,
+protected-asset, launcher, argument, fixture, and directory preflight checks,
+the archive exchanges, restoration checks, and retained-artifact construction.
+Installation success, candidate loading, and restored application behavior are separate observations. The
+authorization must acknowledge that existing queries need not survive a
+restart. Collection is bounded by preventing getter initiation, clamping
+asynchronous waits, and rejecting settlements at or after the 30-second
+monotonic observation deadline. Uncancellable or synchronously blocking getter
+work can outlive that deadline; the source does not provide hard cancellation.
+The operating-window description must not treat the observation deadline as a
+hard total-duration bound.
+
+The total operating-window duration has not been measured. Issue 279 must leave
+that duration as a scheduling unknown, let the operator choose a suitable
+window and contingency for the listed work, and permit refusal to start when
+the available window is unsuitable. Do not present a numerical total as
+observed evidence or as a deadline accepted by the user. A failed attempt does
+not authorize another arm or restart cycle. Routine version changes do not
+automatically require another live window, and notification sends do not each
+require a restart. Maintained observer installation and upgrade behavior remain
+a later adoption decision.
 
 The private packet binds the launcher's digest and owner, group, mode, device,
 inode, link count, and size. It also binds the exact NUL-delimited argument-file
@@ -73,22 +86,60 @@ atomic.
 
 ## Disposable fixture
 
-Create one disposable Code task named `Desktop observer probe 278` in a
-dedicated empty disposable worktree and project, using the current signed-in
-profile. Do not select a historical or unrelated task. Record its exact task
-identity and Code session identity using only the fixture-specific source
-approved by the authorization. Require no parent, child, shared-task,
-shared-project, or shared-worktree links. If those identities or isolation
-conditions cannot be established, stop before staging.
+Create one new top-level disposable Code task named
+`Desktop observer probe 278` in a new dedicated empty directory that is not a
+Git repository or worktree, using the current signed-in profile. Use the normal
+new-local-task UI. Never fork, spawn, import, duplicate, or reuse a task. Record
+the exact real directory identity and prove pre-creation emptiness through a
+nonrecursive inspection. Do not resolve or invent a worktree before creation.
+If Desktop creates one, verify its exact identity and require only the expected
+app-managed entries selected by the later grant. An unexpected directory or
+worktree shape returns for a decision. Do not select a historical or unrelated
+task.
 
-The selected source is the exact fixture metadata file described in
-[the observation-path investigation](../../research/2026-09-29-desktop-observation-paths.md#acquisition-paths).
-The grant supplies its complete selected path under the chosen Desktop profile,
-account, and organization. Read that file's `sessionId` and `cliSessionId`;
-require the former to equal the fixture identity chosen in the app. Do not scan
-other sessions or read transcripts to obtain the latter. The file may lag the
-running task, so the patched app must independently match both identifiers to
-its current selected record and query before bootstrap and arm acceptance.
+Reviewed source constructs the selected metadata path as
+`path.join(Electron app.getPath("userData"), "claude-code-sessions",
+currentAccountId, currentOrgId, taskId + ".json")`. Construct the absolute path
+from that reviewed source and the later selected profile, account,
+organization, and task values. The exact app-data root remains a later binding
+gap; the source-defined base is `claude-code-sessions`.
+`getSessionFilePath` is an internal source method, not an approved callable UI
+or API; never invoke it to obtain the path. Read only the constructed selected
+file and project `sessionId`, `cliSessionId`, `cwd`, `originCwd`,
+`worktreePath`, `spawnedFrom`, `dispatchParentId`,
+`dispatchParentOrigin`, `forkedFromSessionId`, and `lineageDetached`. Do not
+enumerate other sessions, export the raw metadata file, or read transcripts.
+
+Require `sessionId` to equal the fixture identity chosen in the app,
+`cliSessionId` to equal the recorded Code identity, and `cwd` to match the
+dedicated project identity. Record `originCwd` and `worktreePath` as absent,
+present with an empty string, or present with a nonempty value. Do not replace
+an absent or empty value with the project path or invent a worktree. Bind every
+nonempty value to an approved opened-directory identity. Preserve whether each
+optional lineage field is absent or present. If present, spawn,
+dispatch-parent, and fork values must be null and `lineageDetached` must be
+false. A non-null relation or true `lineageDetached` stops the run. Absence
+remains explicitly absent and must not be converted into confirmed lack of a
+relation. Any unexpected path, changed identity, or unexpected activity stops
+the run before staging.
+
+Persisted nE metadata does not serialize `backend.kind`. Local classification
+rests on the observed normal new-local-task UI provenance and, separately, the
+inspected adapter source, which checks the live record for
+`backend.kind === "local"` with `sshConfig` and `wslConfig` undefined before
+bootstrap or getter collection and refuses unsupported routes. That static
+source check is not live proof that a particular run passed the guard and must
+not be exported as persisted metadata evidence.
+
+That selected file cannot establish a global absence of children or unrelated
+repository, project, or worktree sharing. Absence of unrelated sharing rests on
+neither that file nor a nonrecursive project inspection. Exclusive fixture
+construction and current operator coordination are cleanup gates, not proof of
+global absence. Record the global child and unrelated-sharing states as
+`not-established` rather than as absence booleans. Before cleanup, repeat the
+selected-metadata checks and coordination check. The file may lag the running
+task, so the patched app must independently match both identifiers to its
+current selected record and query before bootstrap and arm acceptance.
 
 The setup prompt is:
 
@@ -111,6 +162,9 @@ The sidecar is inactive without an explicitly selected configuration. The
 configuration names the exact fixture, candidate identities, and a private run
 directory. It waits a bounded time for that fixture's existing query. A
 bootstrap record is inspected before a separate arm file permits collection.
+Follow [private input construction](private-input-construction.md) for the
+literal configuration and arm shapes, canonical UTF-8 encoding, exclusive
+creation, selected-metadata checks, and complete bootstrap comparison.
 
 `observer-probe.mjs` defines the exact configuration and arm schemas. Keep the
 configuration outside the initially empty, same-owner `0700` run directory;
@@ -120,16 +174,23 @@ fixture IDs, a unique run ID, a 60-second setup deadline, and a 100-millisecond
 setup poll interval. Supply its absolute configuration path as
 `PROVINGKIT_OBSERVER_CONFIG` only for the experimental launch.
 
-After bootstrap, compare every binding value to the granted fixture and
-reviewed bytes. The `pid` and `processStartTicks` fields identify the app. The
-operator-created arm echoes the binding keys and selects these limits: three
-samples, five-second minimum interval, 30-second observation window, and two
-seconds per getter. The source accepts only one arm within 60 seconds of
-bootstrap. The three calls are `accountInfo()`,
-`getContextUsage({detail:"summary"})`, and `listPermissionRules()`, sequentially.
-A timeout cannot cancel the original getter; it stops later calls and samples.
-Elapsed-time limits use the monotonic clock. Wall timestamps describe the
-observations and cannot extend collection authority.
+After bootstrap, compare every binding value with the granted fixture, reviewed
+bytes, configuration digest, selected clock domain, and private run record.
+Validate the generated nonce, PID, process start ticks, query generation, and
+Linux boot ID before constructing the arm. The `pid` and `processStartTicks`
+fields identify the app. The arm echoes every `BINDING_KEYS` field, including `monotonicClockId` and
+`linuxBootId`, and selects these limits: three samples, five-second minimum
+interval, 30-second observation window, and two seconds per getter.
+Source-controlled values and templates do not authorize or supply a binding.
+The source accepts only one arm within 60 seconds of bootstrap. The three calls
+are `accountInfo()`, `getContextUsage({detail:"summary"})`, and
+`listPermissionRules()`, sequentially. Each getter's wait is limited to the
+lesser of two seconds and the time remaining before the absolute monotonic
+observation deadline. No getter starts, and no settlement is accepted, at or
+after that deadline. A timeout cannot cancel the original getter; it stops later
+calls and samples. Synchronously blocking getter work likewise cannot be
+forcibly stopped. Elapsed-time limits use the monotonic clock. Wall timestamps
+describe the observations and cannot extend collection authority.
 
 Outputs are `bootstrap.json`, `arm.json`, and at most three numbered sample
 files. Each sample is bounded at 16 KiB; the run output is bounded at 64 KiB.
@@ -150,10 +211,13 @@ timestamps to the current boot. Direct calls to `readProbeSample` or
 `monotonicNow` values, the expected binding's `monotonicClockId` and
 `linuxBootId`, and the approved maximum age. The selected-executor observer
 samples both clocks after the boot-ID read, rechecks them after each awaited
-sample acquisition, and checks them again after the selected PID's owner
-directory check immediately before opening its process files. Either clock
-regressing or exceeding the maximum age stops the observation before those
-opens. Active-profile or clock uncertainty remains unqualified.
+sample acquisition, and binds the selected PID directory to one owned open
+descriptor. It rechecks that descriptor's owner and identity and both clocks
+immediately before every `stat` or `exe` open. Child reads use only the fixed
+names beneath the retained descriptor and never re-resolve the numeric PID
+path. Either clock regressing or exceeding the maximum age stops the
+observation before the next child open. Active-profile or clock uncertainty
+remains unqualified.
 
 The projection includes provider/source labels, the reported model, permission
 rules and directory grants, skipped-settings error count, spawn
@@ -169,10 +233,25 @@ existing reports and their limits. The live grant must name any selected Linux
 process fields and executable read before the executor uses them. Invoke
 `observeSelectedLinuxExecutor` with the granted inputs defined by the final
 reviewed source. It reads the selected sample itself, requires matching reports
-in both host snapshots, checks process ownership before opening process files,
-and revalidates sample freshness afterward. Retain its sample evidence with the
-result. A selected binary path, version string, or parsed PID does not establish
-the full query-to-executable association.
+in both host snapshots, opens one owned selected-PID directory descriptor,
+checks descriptor identity and freshness before every process-file open, and
+revalidates the sample afterward. Its process budget is two numeric-path
+metadata checks, one directory-descriptor open, seven descriptor metadata
+checks, three `stat` opens of at most 4,096 bytes each, two `exe` opens, and at
+most 256 MiB hashed. Retain its sample evidence with the result. A selected
+binary path, version string, or parsed PID does not establish the full
+query-to-executable association.
+
+Validate the one authorized helper return against the required successful or
+unknown shape, construct the exact wrapper, canonicalize that object, and
+serialize it into the private retained file defined by
+[private input construction](private-input-construction.md). No implemented
+serializer supplies these checks. The file is outside the sampler output
+directory and binds the source, run, selected sample, and complete expected
+binding. Never serialize raw errors or arbitrary objects. A failed result
+remains explicit retained evidence. Record the file's identity, size, and
+digest in the cleanup manifest and retain it through issue 281. No helper
+invocation occurs during preparation.
 
 ## Restoration, retention, and return
 
@@ -190,18 +269,22 @@ task state separately from restored package bytes.
 After restored behavior is checked, create the private cleanup manifest defined
 by [application staging and restoration](application-operation.md). It binds
 the exact source and artifact identities, disposable task and Code IDs,
-dedicated project and worktree, configuration, output root, and every emitted
-file. Retain raw fixture output and that manifest through the return decision,
-accessible only to the user and the authorized execution and decision
-workflow.
+dedicated project and recorded absent-or-present worktree state, configuration,
+output root, and every emitted file, plus the separate retained
+Linux-observation artifact. Retain raw fixture output, the Linux-observation artifact, and that manifest through the return
+decision, accessible only to the user and the authorized execution and
+decision workflow.
 
 After the decision approves a redacted summary and names the exact manifest
 subset to remove, use only Desktop's normal exact-task deletion UI. Source
 inspection shows that managed deletion may cascade to the selected task's
 worktree and transcript, so task deletion requires confirmed isolation and a
-live confirmation scope matching only the fixture. Do not call internal session
-deletion methods or add cleanup instrumentation. If the UI control is absent or
-its scope is broader, retain the fixture for an operational decision.
+live confirmation scope matching only the fixture. The confirmation must make
+the managed scope, including linked tasks and worktree handling, clear enough
+to compare with the fixture record. Do not call internal session or family
+deletion methods, scan all tasks, or add cleanup instrumentation. If the UI
+control is absent, the managed scope cannot be established, or its scope is
+broader, retain the fixture for an operational decision.
 
 Delete approved user-owned configuration and output files one exact
 manifest-listed path at a time after type, identity, ownership, containment,

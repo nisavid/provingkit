@@ -4,6 +4,12 @@ export const GETTER_SET_ID =
 export const MONOTONIC_CLOCK_ID = 'linux-clock-monotonic.v1';
 export const LINUX_BOOT_ID_PATH = '/proc/sys/kernel/random/boot_id';
 
+const LINUX_BOOT_ID_PATTERN =
+  /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u;
+
+export const isValidLinuxBootId = value =>
+  typeof value === 'string' && LINUX_BOOT_ID_PATTERN.test(value);
+
 export const SELECTED_EXECUTOR_REPORT_BASIS =
   'manager-retained-report; not independent OS association';
 

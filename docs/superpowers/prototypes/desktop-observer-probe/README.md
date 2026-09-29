@@ -15,6 +15,9 @@ separate [probe authorization](https://github.com/nisavid/provingkit/issues/279)
 - [Application operation](application-operation.md): host preflight, receipt
   comparison, protected backup, candidate staging, launch validation,
   restoration, and exact private cleanup.
+- [Private input construction](private-input-construction.md): literal
+  configuration and arm templates, selected-fixture validation, and the
+  retained Linux-observation artifact.
 - [Published build receipt](candidate-build.json): retained source copy of the
   generated build receipt. The candidate archive and generated
   `build-receipt.json` remain in private local staging.
@@ -57,6 +60,15 @@ the Linux boot ID, and the explicitly invoked Linux acquirer must observe the
 same boot ID before it can use a sample for process reads. A rollback, future
 timestamp, expiry, or incomparable boot rejects the sample first.
 
+The selected-process acquirer binds the numeric PID directory to one owned open
+descriptor. It resolves subsequent fixed `stat` and `exe` children only through
+that retained descriptor and rechecks descriptor identity, ownership, and both
+freshness clocks immediately before each child open. Its exact process budget
+is two numeric-path metadata checks, one directory-descriptor open, seven
+descriptor metadata checks, three `stat` opens reading at most 4,096 bytes
+each, two `exe` opens, and at most 256 MiB hashed. Synthetic replacement and
+delay checks do not qualify live behavior.
+
 The boot-domain check reads the nonsecret
 `/proc/sys/kernel/random/boot_id` path. The Desktop producer reads it while
 creating the bound probe, and the Linux helper reads it only during an
@@ -94,10 +106,14 @@ exact bytes as the published source receipt:
     cmp -s -- "$NEW_OUTPUT_DIRECTORY/build-receipt.json" docs/superpowers/prototypes/desktop-observer-probe/candidate-build.json
 
 Then rerun the source tests and `git diff --check` on the final source revision.
-Any subsequent source change requires a new build, complete archive
-verification, syntax checks, retained receipt, and final review. The generated
-and published receipts must compare byte for byte again before authorization
-and before staging.
+A change to a bundled module, manager replacement, archive builder, build
+dependency, or other input named by the build receipt requires a new build,
+complete archive verification, both syntax checks, a retained receipt, and
+review of that rebuilt candidate. A change outside those build inputs requires
+the affected checks and review, but does not by itself stale the archive
+comparison. The generated and published receipts must compare byte for byte
+before authorization and before staging. The published receipt is the source
+of the exact candidate, manager, sidecar, pristine, and build-input hashes.
 
 ## Review boundary
 
@@ -113,11 +129,14 @@ No product-owned model-execution attestation is available.
 The selected application route is temporary installed-archive exchange during
 one scheduled window in the current signed-in profile. It includes one
 candidate launch and one restored launch, with Desktop shut down before each
-exchange. The current candidate bundles the adapter, observer, and shared
-contract; complete offline verification covered all 365 candidate members, left
-363 original members unchanged, and included syntax checks of the manager and
-sidecar. Runtime loading remains unverified, and the latest source must be
-rebuilt before final review.
+exchange. The candidate represented by the retained receipt bundles the
+adapter, observer, and shared contract. The preparation resolution binds the
+source-test, syntax-check, and archive-comparison evidence for the reviewed
+revision. Runtime loading remains unverified. Any later change to a bundled or build input must be rebuilt
+and compared under the dependency rule above; other changes require their
+affected checks and review. The later authorization resolution, rather than
+this candidate or its preparation resolution, binds the actual live grant and
+final immutable published revision.
 
 Getter effects, runtime account, model, permission and cwd semantics, full
 permissions coverage, and native address binding remain live questions. No app

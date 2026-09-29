@@ -5,6 +5,10 @@ LIVE operation requires later authorization.
 
 ## Approval boundary
 
+Use [private input construction](private-input-construction.md) for the literal
+configuration and arm templates, selected metadata projection, exclusive file
+creation, and retained Linux-observation result.
+
 [Authorize the disposable Desktop observer probe](https://github.com/nisavid/provingkit/issues/279) must bind every variable to one exact value and every path variable to one exact absolute path. The packet must not use `eval`, `source`, untrusted shell expansion, or paths copied from this committed document:
 
 - `RUN_ID`, beginning with `278-`.
@@ -16,10 +20,15 @@ LIVE operation requires later authorization.
 - `PROBE_USER_STATE_ROOT`, the existing private output root.
 - `PROBE_CONFIG`, a private regular file outside the empty run directory.
 - `CLEANUP_MANIFEST`, a private path outside the run directory that does not exist before the run.
+- `LINUX_OBSERVATION_FILE`, a private path outside the run directory whose
+  basename is exactly `selected-linux-executor-observation.json`.
 - `PROBE_LAUNCHER`, its SHA-256 as `PROBE_LAUNCHER_SHA256`, and its reviewed device, inode, owner, group, mode, link count, and size as `PROBE_LAUNCHER_STAT`.
 - The reviewed NUL-delimited `PROBE_LAUNCH_ARGV_FILE`, its reconstructed NUL-delimited SHA-256 as `PROBE_LAUNCH_ARGV_SHA256`, and its device, inode, owner, group, mode, link count, and size as `PROBE_LAUNCH_ARGV_STAT`.
 - `PROTECTED_ASSET_MANIFEST`, its SHA-256, and the exact main-executable, complete native-asset, and `chrome-sandbox` inventory.
-- The current profile, account, organization, new local Code task, dedicated empty worktree and project, task ID, Code ID, metadata path, approved process bindings, and task-restoration expectations.
+- The current profile, account, organization, new local Code task, new empty
+  non-Git project directory, any app-created dedicated worktree and its approved
+  expected entries, task ID, Code ID, constructed metadata path, approved
+  process bindings, and task-restoration expectations.
 
 Any required root preparation is part of the later authorization packet, not a
 requirement already completed by this document. If a required root does not
@@ -51,30 +60,87 @@ namespace does not.
 ## Fixture preparation
 
 Before closing Claude Desktop or staging files, use the current signed-in
-profile and a new dedicated empty worktree and project to create exactly one new
-local Code task. Send the exact first prompt:
+profile and a new dedicated empty directory that is not a Git repository or
+worktree to create exactly one new top-level local Code task through the normal
+new-task UI. Never fork, spawn, import, duplicate, or reuse a task. Resolve and
+open the selected directory, record its exact real path, device, inode, UID,
+GID, and mode, and require an empty nonrecursive entry list before creation. If
+Desktop creates a dedicated worktree, record its identity and require only the
+exact app-managed entries approved by the later grant. Do not resolve or invent
+a worktree before creation. Stop and return for a decision on any unexpected
+shape, activity, or identity change. Send the exact first prompt:
 
 ```text
 This is a disposable observer fixture. Reply exactly `PROBE_READY`. Do not use tools, inspect files, change settings, or begin other work.
 ```
 
-Select only that task's metadata. Record its task ID, Code ID, metadata path,
-profile, account, organization, local backend, project, and worktree in the
-private packet. Confirm that it has no parent task, child task, shared task,
-shared project, shared worktree, or other link that deletion could follow.
-Missing or changing IDs, a non-local backend, a metadata mismatch, or any shared
-or linked state is a stop condition; do not create another fixture or rescope.
+Reviewed source constructs the metadata path as
+`path.join(Electron app.getPath("userData"), "claude-code-sessions",
+currentAccountId, currentOrgId, taskId + ".json")`. Construct the exact path
+from that source and the later selected profile, account, organization, and
+task values. The exact app-data root remains an authorization binding gap; the
+source-defined base is `claude-code-sessions`.
+`getSessionFilePath` is an internal source method, not an approved callable UI
+or API; do not invoke it. Do not enumerate the constructed path's parent
+directory. Record its projected `sessionId`, `cliSessionId`, `cwd`,
+`originCwd`, `worktreePath`, `spawnedFrom`, `dispatchParentId`,
+`dispatchParentOrigin`, `forkedFromSessionId`, and `lineageDetached`; do not
+export the raw metadata or a transcript.
+
+Require matching task and Code IDs and require `cwd` to match the opened
+project identity. Record `originCwd` and `worktreePath` as absent, present with
+an empty string, or present with a nonempty value. Do not substitute the
+project path for an absent or empty value or fabricate a worktree. Bind every
+nonempty value to an approved opened-directory identity. Preserve each optional
+lineage field's presence. If present, spawn, dispatch-parent, and fork fields
+must be null and `lineageDetached` must be false. A non-null relation or true
+`lineageDetached` is a stop condition. Absence remains absent and is not
+evidence of confirmed nonrelation. Missing or changing required IDs, an
+unexpected path, or unexpected activity is also a stop condition; do not
+create another fixture or rescope.
+
+Persisted nE metadata does not contain `backend.kind`. Record local creation
+from the normal new-local-task UI provenance. Separately, the inspected adapter
+source checks the live record for `backend.kind === "local"` with `sshConfig`
+and `wslConfig` undefined before bootstrap or getter collection and refuses
+unsupported routes. Static inspection of that guard is not live proof that a
+particular run passed it.
+
+The selected file provides no global proof that children do not exist or that
+no unrelated task shares a repository, project, or worktree. Record
+`selectedMetadataRelations` as `no-nonnull-relation-observed`,
+`globalChildAbsence` as `not-established-from-selected-metadata`, and
+`unrelatedSharingAbsence` as `not-established`. Current exclusive construction
+and operator coordination remain cleanup gates, not global-sharing evidence.
 
 Prepare `PROBE_CONFIG` before staging. It must carry the existing schema, exact
 fixture and artifact binding, private run directory, and setup limits described
-by `probe-procedure.md`. Do not acquire private identity data before the later
-grant.
+by `probe-procedure.md`. Construct and validate its exact bytes using
+`private-input-construction.md`. Do not acquire private identity data before
+the later grant.
 
 Record the fixture's expected post-restoration state in the approval packet.
 The cleanup manifest is created only after restoration verification, when every
 emitted file and final retained identity can be inventoried exactly.
 
 ## Preflight
+
+Issue 279 schedules one window and two full Desktop shutdown/launch cycles. The
+window includes:
+
+- the listed manual package, receipt, asset, launcher, argument, fixture, and
+  directory checks;
+- two submissions of the exact setup prompt;
+- candidate staging and launch;
+- getter initiation, asynchronous waiting, and settlement acceptance bounded by
+  one 30-second monotonic observation deadline, without a hard-cancellation
+  claim for uncancellable or synchronously blocking work;
+- candidate shutdown, restoration, restored launch, and restoration checks;
+- retained-artifact and cleanup-manifest construction.
+
+The total duration is unmeasured. The operator chooses the window and
+contingency and refuses to start if the available window is unsuitable. No
+unsupported numerical total is evidence or an accepted deadline.
 
 Coordinate the one current-profile window so no package operation is active or
 scheduled to overlap it. Do not change global updater configuration.
@@ -88,7 +154,7 @@ required=(RUN_ID PROBE_INSTALL_ROOT CANDIDATE_ARCHIVE
   REVIEWED_ARCHIVE_VERIFICATION PROBE_SYSTEM_STATE_ROOT
   PROBE_USER_STATE_ROOT PROBE_CONFIG CLEANUP_MANIFEST
   PROBE_LAUNCHER PROBE_LAUNCHER_SHA256 PROBE_LAUNCHER_STAT
-  PROBE_LAUNCH_ARGV_FILE PROBE_LAUNCH_ARGV_SHA256 PROBE_LAUNCH_ARGV_STAT
+  LINUX_OBSERVATION_FILE PROBE_LAUNCH_ARGV_FILE PROBE_LAUNCH_ARGV_SHA256 PROBE_LAUNCH_ARGV_STAT
   PROTECTED_ASSET_MANIFEST PROTECTED_ASSET_MANIFEST_SHA256)
 for name in "${required[@]}"; do
   [[ -n "${!name:-}" ]]
@@ -112,6 +178,7 @@ for path in "$PROBE_INSTALL_ROOT" "$CANDIDATE_ARCHIVE" \
   "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT" \
   "$REVIEWED_ARCHIVE_VERIFICATION" "$PROBE_SYSTEM_STATE_ROOT" \
   "$PROBE_USER_STATE_ROOT" "$PROBE_CONFIG" "$CLEANUP_MANIFEST" \
+  "$LINUX_OBSERVATION_FILE" \
   "$PROBE_LAUNCHER" "$PROBE_LAUNCH_ARGV_FILE" \
   "$PROTECTED_ASSET_MANIFEST"; do
   [[ "$path" = /* && "$path" != *$'\n'* && "$path" != *'/../'* ]]
@@ -164,8 +231,13 @@ test ! -L "$PROBE_CONFIG"
 test "$(stat -c '%a:%h' -- "$PROBE_CONFIG")" = "600:1"
 [[ "$PROBE_CONFIG" != "$OUTPUT_RUN_ROOT"/* ]]
 [[ "$CLEANUP_MANIFEST" != "$OUTPUT_RUN_ROOT"/* ]]
+[[ "$LINUX_OBSERVATION_FILE" != "$OUTPUT_RUN_ROOT"/* ]]
+test "${LINUX_OBSERVATION_FILE##*/}" = \
+  "selected-linux-executor-observation.json"
 test ! -e "$CLEANUP_MANIFEST"
 test ! -L "$CLEANUP_MANIFEST"
+test ! -e "$LINUX_OBSERVATION_FILE"
+test ! -L "$LINUX_OBSERVATION_FILE"
 
 package_line=$(pacman -Q -- claude-desktop-extra) || exit 1
 test "$package_line" = "claude-desktop-extra 2.9939.4-1"
@@ -412,15 +484,37 @@ This is a disposable observer fixture. Reply exactly `PROBE_READY`. Do not use t
 
 The sidecar writes `bootstrap.json` into the selected private run directory
 after binding the existing query. Under the later grant, the executor reads only
-that exact file, compares every binding field with the approved task, Code
-identity, and candidate bytes, then writes the matching `arm.json`. The three
-query getters run only after arm acceptance. Collect for at most 30 seconds.
+that exact file, validates every generated bootstrap value, compares every
+binding field with the approved task, Code identity, candidate bytes,
+configuration digest, and clock domain, then exclusively creates the matching
+`arm.json`. The arm echoes every `BINDING_KEYS` field, including the Linux boot
+domain. Follow the exact encoding and file-identity procedure in
+`private-input-construction.md`. The three query getters run only after arm
+acceptance. Do not start a getter or accept a settlement at or after the
+30-second monotonic observation deadline. Clamp every asynchronous wait to the
+lesser of its two-second limit and the remaining window. A timed-out or
+synchronously blocked getter cannot be forcibly cancelled and can outlive the
+deadline; do not treat that possibility as authority for another call or
+sample.
 
-The reviewed helper is limited to the selected reported PID, three bounded
-`stat` reads, two executable opens, and 256 MiB of hashing. It must not read
-environments, command lines, unrelated processes, transcripts, or historical
-peers. Comparing a process report does not establish the Code query's
-OS-process association; that remains unknown.
+The reviewed helper is limited to two metadata checks of the selected numeric
+PID path, one owned `O_DIRECTORY | O_NOFOLLOW` descriptor open, seven
+descriptor metadata checks, three `stat` opens reading at most 4,096 bytes
+each, two `exe` opens, and at most 256 MiB hashed. Every child open uses only a
+fixed name beneath the retained descriptor after an immediate identity,
+ownership, and freshness recheck. It must not re-resolve a child through the
+numeric PID path or read environments, command lines, unrelated processes,
+transcripts, or historical peers. Comparing a process report does not establish
+the Code query's OS-process association; that remains unknown.
+
+After the one separately authorized helper invocation, validate its return
+against one documented result shape, construct and canonicalize the required
+wrapper object, and serialize that object into `LINUX_OBSERVATION_FILE` as
+defined by `private-input-construction.md`. No implemented serializer performs
+these steps. Do not serialize a caught error or arbitrary raw object. Retain
+either documented unknown result as explicit evidence. Require a private
+regular single-link `0600` file no larger than 16384 bytes, then record its
+exact identity and digest for the cleanup manifest.
 
 This window permits one arm only. A timeout or failed experiment requires a new
 plan and window, not an automatic retry.
@@ -535,11 +629,36 @@ file. It is an inventory, not an executable cleanup script. Its schema is:
   "fixture": {
     "profile": "exact selected profile identity",
     "accountId": "exact selected account identity",
-    "organizationId": "exact selected organization identity or explicit null",
-    "backend": "local",
+    "organizationId": "exact selected organization identity",
     "taskId": "exact disposable task identity",
     "codeId": "exact Code session identity",
     "metadataPath": "exact absolute selected metadata path",
+    "creationProvenance": {
+      "route": "normal-new-local-task-ui",
+      "createdAt": "RFC-3339 timestamp",
+      "preCreationInspection": "nonrecursive-empty",
+      "unexpectedActivity": "none-observed"
+    },
+    "selectedMetadata": {
+      "sessionId": "exact taskId",
+      "cliSessionId": "exact codeId",
+      "cwd": "exact real directory path",
+      "optionalPathStates": {
+        "originCwd": "absent, empty, or exact approved real-directory path",
+        "worktreePath": "absent, empty, or exact approved real-directory path"
+      },
+      "optionalFieldPresence": {
+        "presentNull": ["exact subset of spawnedFrom, dispatchParentId, dispatchParentOrigin, and forkedFromSessionId present with null"],
+        "presentFalse": ["lineageDetached only when present with false"],
+        "absent": ["every allowed optional field absent from the selected JSON"]
+      }
+    },
+    "relationEvidence": {
+      "selectedMetadataRelations": "no-nonnull-relation-observed",
+      "globalChildAbsence": "not-established-from-selected-metadata",
+      "unrelatedSharingAbsence": "not-established",
+      "operatorCoordinationAt": "RFC-3339 timestamp"
+    },
     "project": {
       "path": "exact absolute dedicated project path",
       "device": "decimal device",
@@ -551,22 +670,7 @@ file. It is an inventory, not an executable cleanup script. Its schema is:
       "emptyAtFixtureCreation": true
     },
     "worktree": {
-      "path": "exact absolute dedicated worktree path",
-      "device": "decimal device",
-      "inode": "decimal inode",
-      "uid": "decimal owner",
-      "gid": "decimal group",
-      "mode": "octal mode",
-      "dedicated": true,
-      "emptyAtFixtureCreation": true
-    },
-    "links": {
-      "parentTaskId": null,
-      "childTaskIds": [],
-      "sharedTaskIds": [],
-      "sharedProject": false,
-      "sharedWorktree": false,
-      "validatedAt": "RFC-3339 timestamp"
+      "state": "absent"
     }
   },
   "configuration": {
@@ -606,43 +710,93 @@ file. It is an inventory, not an executable cleanup script. Its schema is:
         "sha256": "lowercase SHA-256"
       }
     ]
-  }
+  },
+  "retainedEvidence": [
+    {
+      "role": "selected-linux-executor-observation",
+      "purpose": "strictly serialized selected-executor helper return",
+      "path": "exact absolute LINUX_OBSERVATION_FILE outside OUTPUT_RUN_ROOT",
+      "type": "regular-file",
+      "device": "decimal device",
+      "inode": "decimal inode",
+      "uid": "decimal owner",
+      "gid": "decimal group",
+      "mode": "0600",
+      "links": 1,
+      "size": "decimal bytes from 1 through 16384",
+      "sha256": "lowercase SHA-256"
+    }
+  ]
 }
 ```
+
+The displayed worktree object is the no-worktree form. If Desktop creates a
+worktree, replace only that object with this present form:
+
+```json
+{
+  "state": "present",
+  "path": "exact absolute app-created worktree path",
+  "device": "decimal device",
+  "inode": "decimal inode",
+  "uid": "decimal owner",
+  "gid": "decimal group",
+  "mode": "octal mode",
+  "creation": "app-created",
+  "dedication": "dedicated",
+  "validatedEntries": ["exact approved nonrecursive entries"]
+}
+```
+
+For each optional metadata path, write exactly `absent`, `empty`, or its
+approved nonempty real-directory path. Do not add a path or worktree identity
+for an absent or empty field. The lineage presence arrays contain only fields
+actually present with the stated value; absent fields belong only in `absent`.
 
 List every file actually emitted, including `arm.json`; do not list a pattern,
 range, glob, or file that does not exist. Every emitted path must be a direct
 child of the exact output root. The manifest must bind the same source,
 artifact, task, Code, profile, project, worktree, configuration, and output
-identities already accepted for the run. A mismatch leaves all private data
-retained.
+identities and the recorded absent-or-present worktree state already accepted
+for the run. A mismatch leaves all private data retained.
 
 Issue 281 may approve deletion only by naming the reviewed cleanup manifest and
 its SHA-256, the exact task identity, and the exact manifest roles or paths to
 remove. Anything not named remains retained. Approval to retain a redacted
-summary does not imply approval to remove raw evidence.
+summary does not imply approval to remove raw evidence. The retained Linux
+observation is a separate exact manifest entry and is never inferred from the
+sampler output inventory.
 
 Source inspection found that `LocalSessions.delete(sessionId)` delegates to
 `manager.deleteSession` with `userInitiated: true`, and manager teardown may
 cascade to linked tasks, associated worktrees, and transcripts. Do not call
 either internal method, invoke a private API, or add cleanup instrumentation.
-Before deletion, revalidate that the task and Code IDs match the manifest, the
-task has no parent, child, or shared links, and its project and worktree are
-dedicated to this fixture.
+Before deletion, reread only the exact selected metadata path and revalidate its
+task and Code IDs, `cwd`, optional-path states, and spawn, dispatch-parent,
+fork, and `lineageDetached` values when present. Preserve absent and empty
+fields exactly, and stop on a non-null relation or true `lineageDetached`.
+Reconfirm exclusive fixture construction, current operator coordination,
+dedicated directory identities, and absence of unexpected activity. Do not
+claim global child or sharing absence from that one file, scan all tasks, or
+invoke an internal family or cleanup API.
 
 Use only Desktop's normal task-deletion UI. Proceed only when the live UI shows
-the selected disposable fixture and its confirmation scope matches that exact
-task. UI labels and controls are not assumed by this runbook. If the control is
-absent, the selected identity cannot be confirmed, or the confirmation
-indicates broader scope, retain the exact artifact and return for an operational
-decision. The approved cleanup accepts managed removal of that task's own
-transcript and dedicated worktree. If any broader side effect is shown or
-observed, stop without continuing file cleanup and report it.
+the selected disposable fixture and its confirmation establishes the managed
+removal scope, including any linked-task and worktree effect, as matching the
+recorded fixture. UI labels and controls are not assumed by this runbook. If
+the control is absent, the selected identity cannot be confirmed, the managed
+scope cannot be established, or the confirmation indicates broader scope,
+retain the fixture and return for an operational decision. The approved cleanup
+accepts managed removal of that task's own transcript and dedicated worktree.
+If any broader side effect is shown or observed, stop without continuing file
+cleanup and report it.
 
-After the exact UI deletion, confirm that the selected task is absent and that
-no known unrelated task, worktree, project, or transcript changed. Do not
-manually delete Desktop private profile stores, task metadata, transcripts,
-other worktrees, or any application-managed residual path.
+After the exact UI deletion, confirm through the selected task route that the
+task is absent and compare the recorded fixture directory identities and
+explicitly coordinated unrelated work with their recorded expectations. This
+is not a global absence-of-change claim. Do not manually delete Desktop private
+profile stores, task metadata, transcripts, other worktrees, or any
+application-managed residual path.
 
 Remove an approved user-owned configuration or output file only with this
 manual checklist:
@@ -670,13 +824,24 @@ one-level listing whose failure is handled. Use `rmdir -- "$OUTPUT_RUN_ROOT"`
 only when it is empty, then verify the exact path is absent. An unexpected or
 unapproved entry remains in place and returns for a decision.
 
-If the exact manifest-listed project or worktree directory remains after the UI
-operation, compare its device, inode, owner, group, and mode with the manifest,
-confirm it is still dedicated to the deleted fixture, and verify it is empty.
-Only then may `rmdir -- "$EXACT_DIRECTORY"` remove that one directory. Do not
-unlink directory contents to make it empty. A missing directory is an accepted
-managed effect; a nonempty, changed, shared, or differently owned directory is
-retained.
+Process an approved retained-evidence file as its own manifest entry. Require
+exact equality with `LINUX_OBSERVATION_FILE`, require that it is outside the
+output root and has the fixed basename
+`selected-linux-executor-observation.json`, and repeat its type, identity,
+ownership, mode, link-count, size, SHA-256, absolute-path, and no-symlink
+checks. Run `unlink -- "$LINUX_OBSERVATION_FILE"` only when issue 281 names
+that exact entry. Verify both `test ! -e "$LINUX_OBSERVATION_FILE"` and
+`test ! -L "$LINUX_OBSERVATION_FILE"` afterward. A mismatch retains the file.
+
+If the exact manifest-listed project remains after the UI operation, compare
+its device, inode, owner, group, and mode with the manifest, confirm it is still
+dedicated to the deleted fixture, and verify it is empty. Apply the same checks
+to a worktree only when the manifest records `state` as `present`; an absent
+state supplies no worktree cleanup path. Only then may
+`rmdir -- "$EXACT_DIRECTORY"` remove that one directory. Do not unlink
+directory contents to make it empty. A missing recorded directory is an
+accepted managed effect; a nonempty, changed, shared, or differently owned
+directory is retained.
 
 The cleanup manifest itself remains private decision evidence unless issue 281
 separately binds its exact path, external hash and file identity, and approves

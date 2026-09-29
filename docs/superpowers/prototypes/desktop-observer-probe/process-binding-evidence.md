@@ -65,14 +65,30 @@ the reported PID. It acquires the selected sample through `readProbeSample`,
 checks that both host snapshots carry the same report, and retains the sample's
 binding, sequence, and collection interval. Its live entrypoint fixes the
 process root to the Linux process filesystem. The expected UID must match the
-calling user, and the selected process directory must have that owner before
-any process file is opened. It reads the selected process directory metadata,
-three bounded `stat` samples, and the executable through two opens of `exe`.
-It hashes at most 256 MiB and compares start, owner, and executable metadata
-around the read. It then reacquires the same sample with a fresh timestamp and
-requires unchanged evidence. It never enumerates processes or follows a
-different PID. Synthetic checks exercise these controls; live use remains
-unqualified.
+calling user. The observer checks the numeric PID path, opens that directory
+once with `O_DIRECTORY | O_NOFOLLOW`, and requires the descriptor and path
+metadata to identify the same owned directory. Every child open then uses only
+the fixed `stat` or `exe` name beneath `/proc/self/fd/<retained-fd>`; it never
+resolves the numeric PID path again for a child read. Immediately before each
+child open, it rechecks the retained directory's owner and identity and both
+freshness clocks. It performs three bounded `stat` reads and two opens of
+`exe`, hashes at most 256 MiB, and compares process-start and executable
+metadata around the read. It then reacquires the same sample with fresh clocks
+and requires unchanged evidence.
+
+The exact process acquisition budget is two metadata checks of the numeric PID
+path, one retained directory-descriptor open, seven descriptor metadata checks
+(initial validation, one before each of five child opens, and one final check),
+three `stat` opens reading at most 4,096 bytes each, and two `exe` opens with at
+most 256 MiB hashed. The initial and final selected-sample acquisitions retain
+their separately described sample-file and boot-ID reads.
+
+Linux procfs documentation states that operations through an open descriptor
+for an exited process do not redirect to a later process that reuses the PID
+and ordinarily fail. That supports the retained-directory design; it is not
+runtime proof for this candidate. Synthetic checks cover delayed later opens
+and replacement of the numeric PID path. Live use remains unqualified. The
+observer never enumerates processes or selects an alternate PID.
 
 The app exports the query-bound retained report in each host snapshot. The
 Linux helper is a separate, explicitly invoked consumer; the sidecar neither

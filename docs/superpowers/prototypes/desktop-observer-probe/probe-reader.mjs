@@ -13,6 +13,7 @@ import {
   MAX_TEXT_BYTES,
   MONOTONIC_CLOCK_ID,
   SAMPLE_SCHEMA,
+  isValidLinuxBootId,
   SELECTED_EXECUTOR_REPORT_BASIS,
   SELECTED_EXECUTOR_REPORT_KEYS,
   UNKNOWN_CLAIMS,
@@ -323,9 +324,7 @@ function validateBinding(binding) {
 
   if (
     binding.monotonicClockId !== MONOTONIC_CLOCK_ID ||
-    typeof binding.linuxBootId !== 'string' ||
-    !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u
-      .test(binding.linuxBootId)
+    !isValidLinuxBootId(binding.linuxBootId)
   ) {
     invalid();
   }
@@ -720,7 +719,7 @@ export function inspectProbeSample(
       !Number.isSafeInteger(monotonicNow) ||
       monotonicNow < 0 ||
       typeof monotonicClockId !== 'string' ||
-      typeof linuxBootId !== 'string' ||
+      !isValidLinuxBootId(linuxBootId) ||
       !Number.isSafeInteger(afterSequence) ||
       afterSequence < 0 ||
       !Number.isSafeInteger(maximumAgeMs) ||

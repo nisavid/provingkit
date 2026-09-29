@@ -17,6 +17,9 @@ const MAX_STAT_BYTES = 4096;
 const MAX_EXECUTABLE_BYTES = 256 * 1024 * 1024;
 const HASH_BUFFER_BYTES = 64 * 1024;
 const MAX_TEXT_BYTES = 256;
+const PROCESS_DESCRIPTOR_ROOT = '/proc/self/fd';
+
+class StaleSelectedSampleError extends Error {}
 
 const unknownSample = () => ({
   state: 'unknown',
@@ -245,6 +248,22 @@ function validateExecutableState(state) {
   return state;
 }
 
+function descriptorChildPath(directoryHandle, childName) {
+  if (
+    !Number.isSafeInteger(directoryHandle?.fd) ||
+    directoryHandle.fd < 0 ||
+    (childName !== 'stat' && childName !== 'exe')
+  ) {
+    throw new Error('invalid process descriptor');
+  }
+
+  return join(
+    PROCESS_DESCRIPTOR_ROOT,
+    String(directoryHandle.fd),
+    childName,
+  );
+}
+
 export function createSelectedLinuxExecutorObserver({
   processRoot,
   readProbeSample,
@@ -265,7 +284,9 @@ export function createSelectedLinuxExecutorObserver({
     typeof getuid !== 'function' ||
     typeof now !== 'function' ||
     typeof monotonicNow !== 'function' ||
-    typeof readLinuxBootId !== 'function'
+    typeof readLinuxBootId !== 'function' ||
+    !Number.isInteger(constants.O_DIRECTORY) ||
+    !Number.isInteger(constants.O_NOFOLLOW)
   ) {
     throw new TypeError('invalid selected executor I/O seam');
   }
@@ -283,7 +304,15 @@ export function createSelectedLinuxExecutorObserver({
     }
   }
 
-  async function readOwnedProcessDirectory(
+  function requireFresh(sample, maximumAgeMs) {
+    if (!isFreshNow(sample, maximumAgeMs)) {
+      throw new StaleSelectedSampleError(
+        'selected sample expired',
+      );
+    }
+  }
+
+  async function readOwnedProcessDirectoryPath(
     path,
     expectedUid,
   ) {
@@ -300,12 +329,98 @@ export function createSelectedLinuxExecutorObserver({
     return state;
   }
 
-  async function readStartTicks(path, expectedPid) {
+  function validateBoundProcessDirectory(
+    state,
+    boundState,
+    expectedUid,
+  ) {
+    if (
+      !state.isDirectory() ||
+      state.isSymbolicLink() ||
+      state.uid !== expectedUid ||
+      !sameNodeState(state, boundState)
+    ) {
+      throw new Error('changed process directory');
+    }
+
+    return state;
+  }
+
+  async function bindProcessDirectory({
+    path,
+    expectedUid,
+    sample,
+    maximumAgeMs,
+  }) {
+    let handle;
+
+    try {
+      const pathBefore =
+        await readOwnedProcessDirectoryPath(
+          path,
+          expectedUid,
+        );
+
+      requireFresh(sample, maximumAgeMs);
+
+      handle = await open(
+        path,
+        constants.O_RDONLY |
+          constants.O_DIRECTORY |
+          constants.O_NOFOLLOW,
+      );
+
+      const descriptorState = validateBoundProcessDirectory(
+        await handle.stat({ bigint: true }),
+        pathBefore,
+        expectedUid,
+      );
+      const pathAfter =
+        await readOwnedProcessDirectoryPath(
+          path,
+          expectedUid,
+        );
+
+      if (!sameNodeState(descriptorState, pathAfter)) {
+        throw new Error('changed process directory path');
+      }
+
+      return {
+        handle,
+        state: descriptorState,
+      };
+    } catch (error) {
+      await handle?.close().catch(() => {});
+      throw error;
+    }
+  }
+
+  async function prepareSensitiveOpen({
+    directoryHandle,
+    boundState,
+    expectedUid,
+    sample,
+    maximumAgeMs,
+  }) {
+    const state = validateBoundProcessDirectory(
+      await directoryHandle.stat({ bigint: true }),
+      boundState,
+      expectedUid,
+    );
+
+    requireFresh(sample, maximumAgeMs);
+    return state;
+  }
+
+  async function readStartTicks(
+    directoryHandle,
+    expectedPid,
+  ) {
     let handle;
 
     try {
       handle = await open(
-        path,
+        descriptorChildPath(directoryHandle, 'stat'),
         constants.O_RDONLY | constants.O_NOFOLLOW,
       );
 
@@ -328,13 +443,9 @@ export function createSelectedLinuxExecutorObserver({
       }
 
       const after = await handle.stat({ bigint: true });
-      const pathState = await lstat(path, { bigint: true });
 
       if (
-        !sameFileState(before, after) ||
-        pathState.isSymbolicLink() ||
-        !pathState.isFile() ||
-        !sameFileState(after, pathState)
+        !sameFileState(before, after)
       ) {
         throw new Error('changing process stat');
       }
@@ -370,12 +481,15 @@ export function createSelectedLinuxExecutorObserver({
     }
   }
 
-  async function hashExecutable(path) {
+  async function hashExecutable(directoryHandle) {
     let handle;
 
     try {
-      // The fixed selected PID's /proc executable entry is followed.
-      handle = await open(path, constants.O_RDONLY);
+      // The bound selected PID directory's executable entry is followed.
+      handle = await open(
+        descriptorChildPath(directoryHandle, 'exe'),
+        constants.O_RDONLY,
+      );
       const before = validateExecutableState(
         await handle.stat({ bigint: true }),
       );
@@ -421,11 +535,14 @@ export function createSelectedLinuxExecutorObserver({
     }
   }
 
-  async function readExecutableState(path) {
+  async function readExecutableState(directoryHandle) {
     let handle;
 
     try {
-      handle = await open(path, constants.O_RDONLY);
+      handle = await open(
+        descriptorChildPath(directoryHandle, 'exe'),
+        constants.O_RDONLY,
+      );
       return validateExecutableState(
         await handle.stat({ bigint: true }),
       );
@@ -494,81 +611,90 @@ export function createSelectedLinuxExecutorObserver({
       processRoot,
       String(selected.report.cliPid),
     );
-    const statPath = join(processDirectory, 'stat');
-    const executablePath = join(processDirectory, 'exe');
+    let processDirectoryHandle;
 
     try {
-      const processBefore = await readOwnedProcessDirectory(
-        processDirectory,
+      const boundProcess = await bindProcessDirectory({
+        path: processDirectory,
         expectedUid,
-      );
+        sample: selected.sample,
+        maximumAgeMs: input.maximumAgeMs,
+      });
+      processDirectoryHandle = boundProcess.handle;
 
-      if (
-        !isFreshNow(selected.sample, input.maximumAgeMs)
-      ) {
-        return unknownSample();
-      }
-
+      await prepareSensitiveOpen({
+        directoryHandle: processDirectoryHandle,
+        boundState: boundProcess.state,
+        expectedUid,
+        sample: selected.sample,
+        maximumAgeMs: input.maximumAgeMs,
+      });
       const startBefore = await readStartTicks(
-        statPath,
+        processDirectoryHandle,
         selected.report.cliPid,
       );
 
-      const processBeforeHash =
-        await readOwnedProcessDirectory(
-          processDirectory,
-          expectedUid,
-        );
-      const executable = await hashExecutable(executablePath);
-
-      const processAfterHash =
-        await readOwnedProcessDirectory(
-          processDirectory,
-          expectedUid,
-        );
+      await prepareSensitiveOpen({
+        directoryHandle: processDirectoryHandle,
+        boundState: boundProcess.state,
+        expectedUid,
+        sample: selected.sample,
+        maximumAgeMs: input.maximumAgeMs,
+      });
       const startAfterHash = await readStartTicks(
-        statPath,
+        processDirectoryHandle,
+        selected.report.cliPid,
+      );
+
+      await prepareSensitiveOpen({
+        directoryHandle: processDirectoryHandle,
+        boundState: boundProcess.state,
+        expectedUid,
+        sample: selected.sample,
+        maximumAgeMs: input.maximumAgeMs,
+      });
+      const executable = await hashExecutable(
+        processDirectoryHandle,
+      );
+
+      await prepareSensitiveOpen({
+        directoryHandle: processDirectoryHandle,
+        boundState: boundProcess.state,
+        expectedUid,
+        sample: selected.sample,
+        maximumAgeMs: input.maximumAgeMs,
+      });
+      const startAfterReopen = await readStartTicks(
+        processDirectoryHandle,
         selected.report.cliPid,
       );
 
       const processBeforeReopen =
-        await readOwnedProcessDirectory(
-          processDirectory,
+        await prepareSensitiveOpen({
+          directoryHandle: processDirectoryHandle,
+          boundState: boundProcess.state,
           expectedUid,
-        );
+          sample: selected.sample,
+          maximumAgeMs: input.maximumAgeMs,
+        });
       const executableAfter =
-        await readExecutableState(executablePath);
+        await readExecutableState(
+          processDirectoryHandle,
+        );
 
       const processAfterReopen =
-        await readOwnedProcessDirectory(
-          processDirectory,
-          expectedUid,
-        );
-      const startAfterReopen = await readStartTicks(
-        statPath,
-        selected.report.cliPid,
-      );
-
-      const processAfterAllReads =
-        await readOwnedProcessDirectory(
-          processDirectory,
+        validateBoundProcessDirectory(
+          await processDirectoryHandle.stat({
+            bigint: true,
+          }),
+          boundProcess.state,
           expectedUid,
         );
 
       if (
-        !sameNodeState(processBefore, processBeforeHash) ||
-        !sameNodeState(processBeforeHash, processAfterHash) ||
-        !sameNodeState(
-          processAfterHash,
-          processBeforeReopen,
-        ) ||
         !sameNodeState(
           processBeforeReopen,
           processAfterReopen,
-        ) ||
-        !sameNodeState(
-          processAfterReopen,
-          processAfterAllReads,
         ) ||
         startBefore !== startAfterHash ||
         startAfterHash !== startAfterReopen ||
@@ -602,7 +728,7 @@ export function createSelectedLinuxExecutorObserver({
         linuxIdentity: {
           pid: revalidated.report.cliPid,
           processStartTicks: startAfterReopen,
-          ownerUid: Number(processAfterAllReads.uid),
+          ownerUid: Number(processAfterReopen.uid),
           executable: {
             dev: String(executableAfter.dev),
             ino: String(executableAfter.ino),
@@ -612,8 +738,14 @@ export function createSelectedLinuxExecutorObserver({
         },
         queryToOsAssociation: 'unknown',
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof StaleSelectedSampleError) {
+        return unknownSample();
+      }
+
       return unknownLinuxIdentity();
+    } finally {
+      await processDirectoryHandle?.close().catch(() => {});
     }
   };
 }

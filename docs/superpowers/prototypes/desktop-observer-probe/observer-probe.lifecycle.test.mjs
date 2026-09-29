@@ -265,6 +265,97 @@ test('one sample owns getter work and discards a hung result after observation e
   assert.deepEqual(fixture.calls, ['accountInfo']);
 });
 
+test('a near-deadline getter wait is clamped to the remaining observation window', async t => {
+  let markContextStarted;
+  let releaseContext;
+
+  const contextStarted = new Promise(resolve => {
+    markContextStarted = resolve;
+  });
+
+  const contextResult = new Promise(resolve => {
+    releaseContext = resolve;
+  });
+
+  const fixture = await createFixture(t, {
+    armOverrides: {
+      observationWindowMs: 100,
+      perGetterTimeoutMs: 2000,
+    },
+    queryFactory: ({ calls, advanceElapsed }) => ({
+      accountInfo() {
+        calls.push('accountInfo');
+        advanceElapsed(90);
+        return { apiProvider: 'firstParty' };
+      },
+
+      getContextUsage() {
+        calls.push('getContextUsage');
+        markContextStarted();
+        return contextResult;
+      },
+
+      listPermissionRules() {
+        calls.push('listPermissionRules');
+        return {
+          state: {
+            rules: [],
+            workspaceDirectories: [],
+            originalCwd: '/must-not-be-read',
+            managedOnly: false,
+            errors: [],
+          },
+        };
+      },
+    }),
+  });
+
+  const sampleResult = fixture.probe.sample();
+
+  await contextStarted;
+  fixture.advanceElapsed(11);
+
+  let waitTimer;
+  const raced = await Promise.race([
+    sampleResult,
+    new Promise(resolve => {
+      waitTimer = setTimeout(() => resolve(null), 250);
+    }),
+  ]);
+
+  clearTimeout(waitTimer);
+  releaseContext({ model: 'late-model' });
+
+  if (raced === null) {
+    await sampleResult;
+    assert.fail(
+      'getter wait exceeded the remaining observation window',
+    );
+  }
+
+  assert.equal(raced.result, 'failed');
+  assert.equal(raced.failureClass, 'limit_exceeded');
+  assert.equal(
+    raced.failureStage,
+    'getContextUsageSummary',
+  );
+  assert.equal(fixture.probe.state, 'terminal');
+  assert.deepEqual(fixture.calls, [
+    'accountInfo',
+    'getContextUsage',
+  ]);
+
+  assert.deepEqual(
+    JSON.parse(
+      await readFile(
+        join(fixture.runDirectory, 'sample-000001.json'),
+        'utf8',
+      ),
+    ),
+    raced,
+  );
+});
+
 test('a resolved getter is rejected when monotonic time passed its deadline while timers were starved', async t => {
   const fixture = await createFixture(t, {
     armOverrides: {

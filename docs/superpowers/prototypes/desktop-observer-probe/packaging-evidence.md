@@ -79,11 +79,14 @@ candidate, manager, sidecar, pristine, and source-input hashes; mutable hashes
 are not duplicated in this prose. These two files must compare byte for byte
 before the candidate may be staged or authorized.
 
-Any source change makes that verification stale. The latest source must be
-rebuilt, completely reverified, syntax-checked, and have its generated receipt
-retained as `candidate-build.json` before final review. Archive extraction and
-JavaScript syntax checking do not establish that the packaged application
-loads the candidate.
+A change to a bundled module, manager replacement, archive builder, build
+dependency, pristine archive, or another build input named by the receipt makes
+the candidate evidence stale. Rebuild that candidate, repeat the complete
+archive comparison and both syntax checks, and retain the new generated receipt
+before authorization. Changes outside those inputs require their affected
+checks and review without implying an archive rebuild. The receipt remains the
+source of exact hashes. Archive extraction and JavaScript syntax checking do
+not establish that the packaged application loads the candidate.
 
 An earlier comment-only manager fixture and empty sidecar established the
 archive transformation before the observer candidate existed. It was never
@@ -151,11 +154,12 @@ behavior is source-backed; the packaged application has not been launched.
 
 ## Remaining preparation
 
-The chosen installed-archive route still requires the latest source rebuild,
-complete archive verification, byte-for-byte build-receipt comparison, final
-source review, and a private authorization packet. That packet must bind the
-published source revision, exact candidate, launcher and argument-file
-identities, actual task and Code IDs allocated after fixture creation, cleanup
-manifest location, protected backup, and one current-profile window with the
-candidate and restored launches. None of the archive facts establishes that the
-modified app loads.
+The chosen installed-archive route still requires a byte-for-byte comparison
+of the generated and published receipts, review of every change after the
+recorded build, and a private authorization packet. If a bundled or build input
+has changed, the dependency rule above also requires a rebuild and complete
+comparison. The packet must bind the published source revision, exact
+candidate, launcher and argument-file identities, actual task and Code IDs
+allocated after fixture creation, cleanup-manifest location, protected backup,
+and one current-profile window with the candidate and restored launches. None
+of the archive facts establishes that the modified app loads.

@@ -32,6 +32,7 @@ import {
   MIN_SAMPLE_INTERVAL_MS,
   MONOTONIC_CLOCK_ID,
   SAMPLE_SCHEMA,
+  isValidLinuxBootId,
   SELECTED_EXECUTOR_REPORT_BASIS,
   SELECTED_EXECUTOR_REPORT_KEYS,
   UNKNOWN_CLAIMS,
@@ -304,9 +305,7 @@ function validateProcessIdentity(input) {
 
   if (
     input.monotonicClockId !== MONOTONIC_CLOCK_ID ||
-    typeof input.linuxBootId !== 'string' ||
-    !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u
-      .test(input.linuxBootId)
+    !isValidLinuxBootId(input.linuxBootId)
   ) {
     invalid('invalid monotonic clock domain');
   }
@@ -897,37 +896,40 @@ async function invokeBounded(
   fn,
   receiver,
   args,
-  timeoutMs,
+  deadline,
   elapsedClock,
   checkLifecycle,
 ) {
+  const deadlineFailure = () => {
+    const lifecycleFailure = checkLifecycle();
+
+    if (lifecycleFailure) return lifecycleFailure;
+    return elapsedClock() >= deadline ? 'timeout' : null;
+  };
+
+  const initialFailure = deadlineFailure();
+
+  if (initialFailure) {
+    return { ok: false, failureClass: initialFailure };
+  }
+
   if (typeof fn !== 'function') {
     return { ok: false, failureClass: 'unsupported' };
   }
 
-  const deadline = elapsedClock() + timeoutMs;
   let settled = false;
   let timer;
 
   const invocation = Promise.resolve().then(async () => {
-    const beforeFailure = checkLifecycle();
+    const beforeFailure = deadlineFailure();
 
     if (beforeFailure) {
       return { ok: false, failureClass: beforeFailure };
     }
 
-    if (elapsedClock() >= deadline) {
-      return { ok: false, failureClass: 'timeout' };
-    }
-
     try {
       const value = await fn.apply(receiver, args);
-
-      if (elapsedClock() >= deadline) {
-        return { ok: false, failureClass: 'timeout' };
-      }
-
-      const afterFailure = checkLifecycle();
+      const afterFailure = deadlineFailure();
 
       if (afterFailure) {
         return { ok: false, failureClass: afterFailure };
@@ -935,8 +937,10 @@ async function invokeBounded(
 
       return { ok: true, value };
     } catch {
-      if (elapsedClock() >= deadline) {
-        return { ok: false, failureClass: 'timeout' };
+      const afterFailure = deadlineFailure();
+
+      if (afterFailure) {
+        return { ok: false, failureClass: afterFailure };
       }
 
       return { ok: false, failureClass: 'rejected' };
@@ -951,9 +955,19 @@ async function invokeBounded(
       resolve(value);
     };
 
+    const remainingMs = Math.max(0, deadline - elapsedClock());
+
     timer = setTimeout(
-      () => finish({ ok: false, failureClass: 'timeout' }),
-      timeoutMs,
+      () => {
+        let failureClass = 'timeout';
+
+        try {
+          failureClass = deadlineFailure() ?? 'timeout';
+        } catch {}
+
+        finish({ ok: false, failureClass });
+      },
+      remainingMs,
     );
 
     invocation.then(
@@ -1044,7 +1058,7 @@ export async function attachProbe({
   let outputBytes = 0;
   let terminal = false;
   let armLimits = null;
-  let armedAtElapsed = null;
+  let observationDeadlineElapsed = null;
   let attempts = 0;
   let lastSampleStartedAtElapsed = null;
   let armInFlight = false;
@@ -1074,14 +1088,15 @@ export async function attachProbe({
   };
 
   const sampleLifecycleFailure = () => {
-    if (terminal || !armLimits || armedAtElapsed === null) {
+    if (
+      terminal ||
+      !armLimits ||
+      observationDeadlineElapsed === null
+    ) {
       return 'limit_exceeded';
     }
 
-    if (
-      elapsedClock() - armedAtElapsed >=
-      armLimits.observationWindowMs
-    ) {
+    if (elapsedClock() >= observationDeadlineElapsed) {
       return 'limit_exceeded';
     }
 
@@ -1262,8 +1277,18 @@ export async function attachProbe({
         invalid('arm deadline exceeded');
       }
 
+      if (
+        acceptedAtElapsed >
+        Number.MAX_SAFE_INTEGER -
+          acceptedLimits.observationWindowMs
+      ) {
+        invalid('invalid monotonic clock');
+      }
+
       armLimits = acceptedLimits;
-      armedAtElapsed = acceptedAtElapsed;
+      observationDeadlineElapsed =
+        acceptedAtElapsed +
+        acceptedLimits.observationWindowMs;
       ownedEntries.add('arm.json');
 
       return {
@@ -1286,9 +1311,9 @@ export async function attachProbe({
     sampleInFlight = true;
 
     try {
+      const sampleStartedAtElapsed = elapsedClock();
+      const observedAtMonotonicMs = sampleStartedAtElapsed;
       const observedAt = wallClock();
-      const observedAtMonotonicMs = elapsedClock();
-      const sampleStartedAtElapsed = observedAtMonotonicMs;
       const sequence = attempts + 1;
 
       if (attempts >= armLimits.maxSamples) {
@@ -1297,8 +1322,7 @@ export async function attachProbe({
       }
 
       if (
-        sampleStartedAtElapsed - armedAtElapsed >=
-          armLimits.observationWindowMs ||
+        sampleStartedAtElapsed >= observationDeadlineElapsed ||
         (
           lastSampleStartedAtElapsed !== null &&
           sampleStartedAtElapsed - lastSampleStartedAtElapsed <
@@ -1498,13 +1522,33 @@ export async function attachProbe({
           );
         }
 
+        const getterStartedAtElapsed = elapsedClock();
+        const remainingObservationMs =
+          observationDeadlineElapsed - getterStartedAtElapsed;
+
+        if (remainingObservationMs <= 0) {
+          return await failAttempt(
+            sequence,
+            observedAt,
+            observedAtMonotonicMs,
+            'limit_exceeded',
+            getter.fieldName,
+          );
+        }
+
         const startedAt = wallClock();
+        const getterDeadlineElapsed =
+          getterStartedAtElapsed +
+          Math.min(
+            armLimits.perGetterTimeoutMs,
+            remainingObservationMs,
+          );
 
         const outcome = await invokeBounded(
           candidate.getterRefs[getter.name],
           candidate.query,
           getter.args,
-          armLimits.perGetterTimeoutMs,
+          getterDeadlineElapsed,
           elapsedClock,
           sampleLifecycleFailure,
         );

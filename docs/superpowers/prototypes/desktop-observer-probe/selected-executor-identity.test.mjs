@@ -6,6 +6,7 @@ import {
   mkdir,
   mkdtemp,
   open,
+  rename,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -129,6 +130,41 @@ function acquisitionInput({
     afterSequence: 0,
     expectedUid,
   };
+}
+
+function syntheticStat(pid, processStartTicks) {
+  const fields = [
+    'S',
+    ...Array(18).fill('0'),
+    processStartTicks,
+  ];
+
+  return `${pid} (fixture worker) ${fields.join(' ')}\n`;
+}
+
+async function writeSyntheticProcess(
+  processDirectory,
+  {
+    pid = 4321,
+    processStartTicks = '424242',
+    executableBytes = Buffer.from(
+      'synthetic executable bytes\n',
+    ),
+  } = {},
+) {
+  await mkdir(processDirectory, {
+    recursive: true,
+    mode: 0o700,
+  });
+  await writeFile(
+    join(processDirectory, 'stat'),
+    syntheticStat(pid, processStartTicks),
+  );
+  await writeFile(
+    join(processDirectory, 'exe'),
+    executableBytes,
+    { mode: 0o700 },
+  );
 }
 
 test('foreign process owner is rejected before any process file is opened', async () => {
@@ -340,6 +376,175 @@ test('delayed acquisition and owner check reject expiry before process-file open
   }
 });
 
+test('freshness is rechecked after a delayed later stat read before the executable is opened', async () => {
+  const root = await mkdtemp(
+    join(tmpdir(), 'selected-executor-delay-'),
+  );
+  const processRoot = join(root, 'synthetic-proc');
+  const processDirectory = join(processRoot, '4321');
+
+  await writeSyntheticProcess(processDirectory);
+
+  try {
+    let wallChecks = 0;
+    let monotonicChecks = 0;
+    const openedPaths = [];
+
+    const observer = createSelectedLinuxExecutorObserver({
+      processRoot,
+      readProbeSample: async () => usableInspection(),
+      getuid: () => process.getuid(),
+      now: () => {
+        wallChecks += 1;
+        return wallChecks < 6 ? 1020 : 2001;
+      },
+      monotonicNow: () => {
+        monotonicChecks += 1;
+        return monotonicChecks < 6 ? 5020 : 6001;
+      },
+      readLinuxBootId: async () => LINUX_BOOT_ID,
+      lstat,
+      open: async (...args) => {
+        openedPaths.push(args[0]);
+        return open(...args);
+      },
+    });
+
+    assert.deepEqual(
+      await observer(acquisitionInput()),
+      unknownSample,
+    );
+    assert.equal(wallChecks, 6);
+    assert.equal(monotonicChecks, 6);
+    assert.equal(openedPaths[0], processDirectory);
+    assert.equal(
+      openedPaths.filter(path => path.endsWith('/stat'))
+        .length,
+      2,
+    );
+    assert.equal(
+      openedPaths.filter(path => path.endsWith('/exe')).length,
+      0,
+    );
+    assert.ok(
+      openedPaths
+        .slice(1)
+        .every(path =>
+          path.startsWith('/proc/self/fd/'),
+        ),
+    );
+  } finally {
+    await rm(root, {
+      recursive: true,
+      force: true,
+    });
+  }
+});
+
+test('replacement of the numeric PID path cannot redirect later child opens', async () => {
+  const root = await mkdtemp(
+    join(tmpdir(), 'selected-executor-replacement-'),
+  );
+  const processRoot = join(root, 'synthetic-proc');
+  const processDirectory = join(processRoot, '4321');
+  const retainedDirectory = join(processRoot, 'retained-4321');
+  const selectedExecutable = Buffer.from(
+    'selected executable bytes\n',
+  );
+  const replacementExecutable = Buffer.from(
+    'replacement executable bytes\n',
+  );
+
+  await writeSyntheticProcess(processDirectory, {
+    processStartTicks: '424242',
+    executableBytes: selectedExecutable,
+  });
+
+  try {
+    let replacementInstalled = false;
+    let directoryDescriptor;
+    const openedPaths = [];
+    const inspectedPaths = [];
+
+    const observer = createSelectedLinuxExecutorObserver({
+      processRoot,
+      readProbeSample: async () => usableInspection(),
+      getuid: () => process.getuid(),
+      now: () => 1020,
+      monotonicNow: () => 5020,
+      readLinuxBootId: async () => LINUX_BOOT_ID,
+      lstat: async (...args) => {
+        inspectedPaths.push(args[0]);
+        return lstat(...args);
+      },
+      open: async (...args) => {
+        const handle = await open(...args);
+        openedPaths.push(args[0]);
+
+        if (args[0] === processDirectory) {
+          directoryDescriptor = handle.fd;
+        } else if (
+          !replacementInstalled &&
+          args[0] ===
+            `/proc/self/fd/${directoryDescriptor}/stat`
+        ) {
+          replacementInstalled = true;
+          await rename(
+            processDirectory,
+            retainedDirectory,
+          );
+          await writeSyntheticProcess(processDirectory, {
+            processStartTicks: '999999',
+            executableBytes: replacementExecutable,
+          });
+        }
+
+        return handle;
+      },
+    });
+
+    const observed = await observer(acquisitionInput());
+    const descriptorRoot =
+      `/proc/self/fd/${directoryDescriptor}`;
+
+    assert.equal(replacementInstalled, true);
+    assert.deepEqual(inspectedPaths, [
+      processDirectory,
+      processDirectory,
+    ]);
+    assert.deepEqual(openedPaths, [
+      processDirectory,
+      `${descriptorRoot}/stat`,
+      `${descriptorRoot}/stat`,
+      `${descriptorRoot}/exe`,
+      `${descriptorRoot}/stat`,
+      `${descriptorRoot}/exe`,
+    ]);
+    assert.equal(observed.state, 'observed-partial');
+    assert.equal(
+      observed.linuxIdentity.processStartTicks,
+      '424242',
+    );
+    assert.equal(
+      observed.linuxIdentity.executable.sha256,
+      createHash('sha256')
+        .update(selectedExecutable)
+        .digest('hex'),
+    );
+    assert.notEqual(
+      observed.linuxIdentity.executable.sha256,
+      createHash('sha256')
+        .update(replacementExecutable)
+        .digest('hex'),
+    );
+  } finally {
+    await rm(root, {
+      recursive: true,
+      force: true,
+    });
+  }
+});
+
 test('a validated fixture sample observes only its selected synthetic process and retains unqualified evidence', async () => {
   const root = await mkdtemp(join(tmpdir(), 'selected-executor-'));
   const runDirectory = join(root, 'run');
@@ -358,15 +563,9 @@ test('a validated fixture sample observes only its selected synthetic process an
     mode: 0o700,
   });
 
-  const statFields = [
-    'S',
-    ...Array(18).fill('0'),
-    '424242',
-  ];
-
   await writeFile(
     join(processDirectory, 'stat'),
-    `${pid} (fixture worker) ${statFields.join(' ')}\n`,
+    syntheticStat(pid, '424242'),
   );
   await writeFile(
     join(processDirectory, 'exe'),
@@ -478,6 +677,7 @@ test('a validated fixture sample observes only its selected synthetic process an
       sample.observation.collection.endedAtMonotonicMs + 1;
     const processPaths = [];
     const processOpenPaths = [];
+    let processDirectoryDescriptor;
 
     const observer = createSelectedLinuxExecutorObserver({
       processRoot,
@@ -493,7 +693,13 @@ test('a validated fixture sample observes only its selected synthetic process an
       open: async (...args) => {
         processPaths.push(args[0]);
         processOpenPaths.push(args[0]);
-        return open(...args);
+        const handle = await open(...args);
+
+        if (args[0] === processDirectory) {
+          processDirectoryDescriptor = handle.fd;
+        }
+
+        return handle;
       },
     });
 
@@ -516,12 +722,22 @@ test('a validated fixture sample observes only its selected synthetic process an
         .selectedExecutorReport,
       selectedReport,
     );
-    assert.equal(processOpenPaths.length, 5);
+    const descriptorRoot =
+      `/proc/self/fd/${processDirectoryDescriptor}`;
+
+    assert.deepEqual(processOpenPaths, [
+      processDirectory,
+      `${descriptorRoot}/stat`,
+      `${descriptorRoot}/stat`,
+      `${descriptorRoot}/exe`,
+      `${descriptorRoot}/stat`,
+      `${descriptorRoot}/exe`,
+    ]);
     assert.ok(
       processPaths.every(
         path =>
           path === processDirectory ||
-          path.startsWith(`${processDirectory}/`),
+          path.startsWith(`${descriptorRoot}/`),
       ),
     );
     assert.ok(
