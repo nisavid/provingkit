@@ -19,18 +19,10 @@ import {
   SAMPLE_SCHEMA,
 } from './observer-probe.mjs';
 import { bootDesktopObserver } from './desktop-adapter.mjs';
+import { canonicalFlatJson } from './test-fixtures.mjs';
 
 const sha256 = bytes =>
   createHash('sha256').update(bytes).digest('hex');
-
-const canonicalFlatJson = value =>
-  JSON.stringify(
-    Object.fromEntries(
-      Object.entries(value).sort(([left], [right]) =>
-        left < right ? -1 : left > right ? 1 : 0,
-      ),
-    ),
-  );
 
 const delay = milliseconds =>
   new Promise(resolve => setTimeout(resolve, milliseconds));

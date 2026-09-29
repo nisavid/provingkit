@@ -4,15 +4,7 @@ import { chmod, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-
-const canonicalFlatJson = value =>
-  JSON.stringify(
-    Object.fromEntries(
-      Object.entries(value).sort(([left], [right]) =>
-        left < right ? -1 : left > right ? 1 : 0,
-      ),
-    ),
-  );
+import { canonicalFlatJson } from './test-fixtures.mjs';
 
 const sha256 = bytes =>
   createHash('sha256').update(bytes).digest('hex');

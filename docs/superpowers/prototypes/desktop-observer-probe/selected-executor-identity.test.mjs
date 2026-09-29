@@ -28,13 +28,9 @@ import { readProbeSample } from './read-probe-file.mjs';
 import {
   createSelectedLinuxExecutorObserver,
 } from './selected-executor-linux-identity-internal.mjs';
+import { canonicalFlatJson } from './test-fixtures.mjs';
 
 const LINUX_BOOT_ID = '11111111-2222-4333-8444-555555555555';
-
-const canonicalFlatJson = value => JSON.stringify(
-  Object.fromEntries(Object.entries(value).sort(([left], [right]) =>
-    left < right ? -1 : left > right ? 1 : 0)),
-);
 
 const unknownSample = {
   state: 'unknown',

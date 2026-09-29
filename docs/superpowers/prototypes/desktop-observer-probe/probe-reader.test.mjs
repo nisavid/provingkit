@@ -19,11 +19,7 @@ import {
   projectApprovedHost,
 } from './observer-probe.mjs';
 import { inspectProbeSample } from './probe-reader.mjs';
-
-const canonicalFlatJson = value => JSON.stringify(
-  Object.fromEntries(Object.entries(value).sort(([left], [right]) =>
-    left < right ? -1 : left > right ? 1 : 0)),
-);
+import { canonicalFlatJson } from './test-fixtures.mjs';
 
 test('a bounded public sample round-trips through the strict reader', async t => {
   const runDirectory = await mkdtemp(join(tmpdir(), 'probe-reader-'));
