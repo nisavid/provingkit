@@ -12,6 +12,8 @@ separate [probe authorization](https://github.com/nisavid/provingkit/issues/279)
   application changes, and restoration.
 - [Authorization checklist](authorization-checklist.md): concrete scopes to
   accept or amend before execution.
+- [Application operation](application-operation.md): host preflight, protected
+  backup, candidate staging, launch, restoration, and cleanup.
 - [Build receipt](candidate-build.json): source and output digests for the
   copied archive. The archive itself stays in local staging.
 - [Packaging evidence](packaging-evidence.md) and

@@ -2,6 +2,7 @@
 
 The maintained experimental procedure for this increment is
 [probe-procedure.md](probe-procedure.md), together with its
+[application operation](application-operation.md),
 [authorization checklist](authorization-checklist.md), source files, and build
 receipt. It belongs to this retained Provingkit experiment and is not installed
 agent equipment.

@@ -1,9 +1,8 @@
 # Prepare one disposable Desktop observation
 
 This procedure prepares a bounded observation of one disposable Claude Desktop
-Code task. Its source candidate and review are still being completed. The
-authorization ticket must identify the reviewed revision before offering any
-live step described here.
+Code task. The authorization ticket must identify the reviewed revision before
+offering any live step described here.
 
 ## Entry conditions
 
@@ -28,10 +27,12 @@ no notification and supplies no delivery or acknowledgment evidence.
 
 ## Proposed application operation
 
-The proposed operating route temporarily replaces the installed archive after
-Desktop is closed. It preserves the installed executable, native modules,
-launcher, and sandbox layout. This is a package-owned-file modification and
-requires permission to perform that exact replacement and restore it.
+Plan one scheduled window using the current signed-in profile. Follow
+[application staging and restoration](application-operation.md) for the exact
+preflight, backup, exchange, launch, and restoration sequence. The proposal
+temporarily replaces the installed archive while preserving the installed
+executable, native modules, launcher, and sandbox layout. The later grant must
+cover this package-owned-file modification.
 
 Before approving that route, identify a window in which Desktop can be closed
 without interrupting unrelated work. Record the user's restoration expectations
@@ -44,15 +45,20 @@ member through the independent archive reader. Only the selected manager chunk
 and added sidecar may differ. Record candidate, sidecar, manager, and build-input
 digests. No source file from Desktop is published with this experiment.
 
-Closing Desktop before staging and again before restoration requires at least
-two application shutdowns and subsequent launches. Installation success,
+Closing Desktop before staging and again before restoration requires two
+application shutdowns and subsequent launches for this attempt. Installation success,
 candidate loading, and restored application behavior are separate observations.
 The authorization must acknowledge that existing queries need not survive a
-restart.
+restart. Collection is capped at 30 seconds; total window duration has not been
+measured. A failed attempt does not authorize another arm or restart cycle.
+Routine version changes do not automatically require another live window, and
+notification sends do not each require a restart. Maintained observer
+installation and upgrade behavior remain a later adoption decision.
 
 ## Disposable fixture proposal
 
-Create one purpose-named disposable Code task in an empty disposable worktree.
+Create one disposable Code task named `Desktop observer probe 278` in an empty
+disposable worktree, using the current signed-in profile.
 Do not select a historical or unrelated task. Record its exact task identity and
 Code session identity using only the fixture-specific source approved by the
 authorization. If those identities cannot be established, stop before staging.
@@ -104,15 +110,19 @@ two seconds per getter. The source accepts only one arm within 60 seconds of
 bootstrap. The three calls are `accountInfo()`,
 `getContextUsage({detail:"summary"})`, and `listPermissionRules()`, sequentially.
 A timeout cannot cancel the original getter; it stops later calls and samples.
+Elapsed-time limits use the monotonic clock. Wall timestamps describe the
+observations and cannot extend collection authority.
 
 Outputs are `bootstrap.json` and at most three numbered sample files. Each
-sample is bounded at 16 KiB; the run output is bounded at 64 KiB. Each successful
-sample contains intervals for the three reads and before/after host snapshots,
-including whether the selected host values changed. Use the strict reader with
+sample is bounded at 16 KiB; the run output is bounded at 64 KiB. Samples record
+each getter's availability or fixed failure class and before/after host
+snapshots, including named gaps and whether the selected host values changed.
+Settled getter failures preserve independent observations; a timeout records
+the failing stage and ends collection. Use the strict reader with
 the independently checked binding and a maximum age no greater than 30 seconds.
 Every result remains unqualified. Preserve a failed or missing sample as such.
 
-The approved projection includes provider/source labels, the reported model,
+The proposed projection includes provider/source labels, the reported model,
 permission rules and directory grants, skipped-settings error count, spawn
 account/organization IDs, manager mode and last mode event, selected host
 computer-use grants, pending/update markers, retained cwd, and the query-bound
@@ -123,7 +133,14 @@ paths, and account identifiers still require explicit fixture-data consent.
 Bind app process identity separately from query-reported Code process identity.
 The [process-binding investigation](process-binding-evidence.md) identifies the
 existing reports and their limits. The live grant must name any selected Linux
-process fields and executable read before the executor uses them. A selected
+process fields and executable read before the executor uses them. Invoke
+`observeSelectedLinuxExecutor` with the granted `runDirectory`, selected
+`sequence`, independently checked `expectedBinding`, `maximumAgeMs`, last
+consumed `afterSequence`, and the approved calling user's `expectedUid`. It
+reads the selected sample itself, requires matching reports in both host
+snapshots, checks process ownership before opening process files, and
+revalidates sample freshness afterward. Retain its `sampleEvidence` with the
+result. A selected
 binary path, version string, or parsed PID does not establish the full
 query-to-executable association.
 
@@ -139,10 +156,12 @@ Remove the probe configuration from the next launch, then verify the restored
 app opens and the agreed unrelated-work expectations hold. Report disposable
 fixture loss or changed task state separately from restored package bytes.
 
-Retain only the approved experimental evidence, accessibly linked from the
-execution report. Retention duration, redaction, deletion of the fixture, and
-cleanup of its worktree require concrete terms in the authorization. Do not
-publish private fixture observations automatically.
+Propose retaining raw fixture outputs in the one private run directory through
+the return decision, accessible only to the user and the authorized execution
+and decision workflow. After that decision approves a redacted summary and the
+evidence to keep, delete the manifest-listed disposable task, empty worktree,
+configuration, and raw output. The later authorization must accept or amend
+these terms. Do not publish private fixture observations automatically.
 
 Return a report to
 [Decide what the disposable observer probe establishes](https://github.com/nisavid/provingkit/issues/281)
