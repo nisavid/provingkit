@@ -18,6 +18,14 @@ Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`,
 This is a single-context repository with root `CONTEXT.md` and system-wide
 ADRs under `docs/adr/`. See `docs/agents/domain.md`.
 
+## Sys1 incidents
+
+For observed Sys1 denials, supervision misdirection, repeated intervention
+after approval, or unexpected service-failure behavior, use
+`handling-sys1-incidents` from `.agents/skills/handling-sys1-incidents/`.
+Maintain that canonical source; regenerate `.claude/skills/handling-sys1-incidents/`
+from it and verify byte equality before publishing procedure changes.
+
 ## Project context
 
 Read `CONTEXT.md` before planning or editing, and use its canonical language
@@ -38,16 +46,9 @@ lock.
 
 ## Git and validation
 
-This is a personal `nisavid` project. Use `Ivan D Vasin <ivan@nisavid.io>` for
-Git work and the `nisavid` GitHub account for repository mutations. Prefix
-branches with `ivan/`. Use Conventional Commits for commits and pull request
-titles; Cocogitto enforces them through the `commit-msg` and `pre-push` hooks
-that `cog install-hook --all` installs.
-
-Keep the primary checkout on `main` and do branch work in a persistent
-sibling worktree under `<checkout>.wt/`. For every Git-backed task, use
-`checkpointing-and-publishing-git-work` at the start, at clean checkpoints,
-and before stopping. Every change requires `git diff --check`.
+Use Conventional Commits for commits and pull request titles. The Cocogitto
+`commit-msg` and `pre-push` hooks installed by `cog install-hook --all` check
+commit messages and history. Every change requires `git diff --check`.
 
 Before publication, run the validation that owns the touched surface:
 `python scripts/validate_<plugin>.py .` and the plugin's tests through

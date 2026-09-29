@@ -1,0 +1,28 @@
+{
+  "reason": "r5 stopped on an unsupported relative spelling of an approved single-add target; stderr observer also conflated retained diagnostics with missing evidence",
+  "changes": [
+    "Separate Codex-only hook accepts exact absolute or project-relative target; original Claude and r5 sources remain unchanged",
+    "Watcher diagnostic predicate retains one normalized .system descendant with exact root/errno/target",
+    "Exact session-bound rollout flush warning is retained, with identical full history from a fresh process required",
+    "Router errors require nonfatal policy-denial receipt, exact reason and command, bounded multiplicity, and same-turn native feedback; native format remains to be observed in a valid denial"
+  ],
+  "unchanged": [
+    "Native on-request permissions and equal A/B workspace roots",
+    "Source/build identity, hook provenance, exact messages, bounded effects, new invocation checks",
+    "Collector behavior; no claim about warning timing or cause",
+    "All previously recorded failures preserved"
+  ],
+  "tests": {
+    "hook": 17,
+    "observer": 12
+  },
+  "sources": {
+    "recovery-native-codex-app-server-r6.py": "e39b1ddb503ee647566283033f7d91bccde817933d3cce8041b6eae77b184221",
+    "recovery-native-hook-codex.py": "2c380d5c7e8042fb56b7348cc926e400c8e51ae9570e1549d4dd7fee0435268a",
+    "test-recovery-codex-app-server-r6.py": "65ebd40bc758230ec348300173d7c094eb87103901046f64aa5361ca5da18616",
+    "test-recovery-native-hook-codex.py": "89e95564fcd00b4989da2878df09c39b06ad48460d321659c6c6f21388df78db",
+    "run-recovery-codex-matrix-r6.py": "1e1560c2692ccd25dccf0dee47afa3ddcc42ccdeb19ddd2756cf876282ed1359"
+  },
+  "review": "recovery-codex-app-server-review-r6.json",
+  "matrix": "Remaining 16 preselected cells, including one affected relative-path repeat; no rerun of other failed actors"
+}

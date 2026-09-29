@@ -1,0 +1,114 @@
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).parent
+CLI = ROOT / "observer.py"
+
+
+def invoke(kind, config, hook):
+    with tempfile.TemporaryDirectory() as temporary:
+        folder = Path(temporary)
+        (folder / "config.json").write_text(json.dumps(config))
+        (folder / "hook.json").write_text(json.dumps(hook))
+        result = subprocess.run(
+            [sys.executable, str(CLI), "capture", "--config", str(folder / "config.json"),
+             "--input", str(folder / "hook.json"), "--output", str(folder / "out.json")],
+            text=True, capture_output=True,
+        )
+        return result, json.loads((folder / "out.json").read_text()) if (folder / "out.json").exists() else None
+
+
+class ObserverBoundary(unittest.TestCase):
+    def test_claude_preserves_role_order_and_markup_user_text(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            transcript = parent / "abc.jsonl"
+            records = [
+                {"type": "user", "message": {"role": "user", "content": "<request>Make D</request>"}},
+                {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "I propose R with contents red."}]}},
+                {"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "content": "R is approved"}]}},
+                {"type": "user", "message": {"role": "user", "content": "Make B instead; withdraw W."}},
+            ]
+            transcript.write_text("\n".join(json.dumps(x) for x in records) + "\n")
+            config = {"harness": "claude", "session_id": "abc", "transcript_path": str(transcript), "max_bytes": 8192}
+            hook = {"session_id": "abc", "transcript_path": str(transcript), "cwd": str(parent),
+                    "hook_event_name": "PreToolUse", "tool_name": "Write", "tool_input": {"file_path": str(parent / "D"), "content": "d"}, "tool_use_id": "tu-1"}
+            result, output = invoke("claude", config, hook)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(output["availability"], "available")
+            self.assertEqual([(m["role"], m["kind"]) for m in output["messages"]],
+                             [("user", "text"), ("assistant", "text"), ("tool", "tool_result"), ("user", "text")])
+            self.assertEqual(output["messages"][2]["envelope_role"], "user")
+            self.assertEqual(output["messages"][0]["content"], "<request>Make D</request>")
+            self.assertEqual(output["messages"][1]["content"], "I propose R with contents red.")
+            self.assertEqual(output["messages"][2]["content"], "R is approved")
+            self.assertEqual([m["record_index"] for m in output["messages"]], [0, 1, 2, 3])
+            self.assertNotIn("authorized", output)
+
+    def test_codex_uses_response_items_without_event_mirror(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            transcript = parent / "rollout-abc.jsonl"
+            transcript.write_text("\n".join(json.dumps(x) for x in [
+                {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "<user>approve D</user>"}]}},
+                {"type": "event_msg", "payload": {"type": "item_completed", "item": {"type": "message", "role": "user", "content": "mirror"}}},
+                {"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "Propose R."}]}},
+                {"type": "response_item", "payload": {"type": "function_call_output", "call_id": "call-one", "output": "R was approved by a tool"}},
+            ]) + "\n")
+            config = {"harness": "codex", "session_id": "abc", "transcript_path": str(transcript), "max_bytes": 8192}
+            hook = {"session_id": "abc", "transcript_path": str(transcript), "cwd": str(parent), "hook_event_name": "PreToolUse", "tool_name": "apply_patch", "tool_input": {"command": "*** Begin Patch\n*** Add File: D\n+d\n*** End Patch"}, "tool_use_id": "tu-2"}
+            result, output = invoke("codex", config, hook)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual([(m["role"], m["content"]) for m in output["messages"]],
+                             [("user", "<user>approve D</user>"), ("assistant", "Propose R."),
+                              ("tool", "R was approved by a tool")])
+            self.assertEqual(output["messages"][2]["kind"], "tool_result")
+
+    def test_unavailable_is_not_empty_context(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            transcript = parent / "rollout-abc.jsonl"
+            config = {"harness": "codex", "session_id": "abc", "transcript_path": str(transcript), "max_bytes": 50}
+            hook = {"session_id": "abc", "transcript_path": str(transcript), "cwd": str(parent), "hook_event_name": "PreToolUse", "tool_name": "apply_patch", "tool_input": {}, "tool_use_id": "tu-3"}
+            for data, reason in [(None, "missing"), ("{broken\n", "malformed"), ("x" * 51, "oversized")]:
+                if data is None:
+                    transcript.unlink(missing_ok=True)
+                else:
+                    transcript.write_text(data)
+                result, output = invoke("codex", config, hook)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(output["availability"], "unavailable")
+                self.assertEqual(output["reason"], reason)
+                self.assertIsNone(output["messages"])
+            transcript.write_text("{}\n")
+            hook["session_id"] = "wrong"
+            _, output = invoke("codex", config, hook)
+            self.assertEqual(output["reason"], "wrong_session")
+            transcript.unlink()
+            transcript.symlink_to(parent / "elsewhere")
+            hook["session_id"] = "abc"
+            _, output = invoke("codex", config, hook)
+            self.assertEqual(output["reason"], "symlink")
+
+    def test_observer_requires_independent_session_and_codex_path(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            transcript = parent / "rollout-abc.jsonl"
+            transcript.write_text(json.dumps({"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "only hook knows abc"}]}}) + "\n")
+            hook = {"session_id": "abc", "transcript_path": str(transcript), "cwd": str(parent),
+                    "hook_event_name": "PreToolUse", "tool_name": "apply_patch", "tool_input": {}, "tool_use_id": "tu"}
+            _, output = invoke("codex", {"harness": "codex", "transcript_path": str(transcript), "max_bytes": 8192}, hook)
+            self.assertEqual(output["availability"], "unavailable")
+            self.assertEqual(output["reason"], "unbound_session")
+            _, output = invoke("codex", {"harness": "codex", "session_id": "abc", "max_bytes": 8192}, hook)
+            self.assertEqual(output["availability"], "unavailable")
+            self.assertEqual(output["reason"], "unbound_path")
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-advisory-other-destination-o6aorkxz 8cc7dd1bb411c0af613d06f505284d2fabf10d43f04970463c1ef79644131fa8",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python <RESEARCH_SCRATCH>/recovery-native-hook.py <NATIVE_FIXTURES>/recovery-advisory-other-destination-o6aorkxz 8cc7dd1bb411c0af613d06f505284d2fabf10d43f04970463c1ef79644131fa8",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false
+}

@@ -1,0 +1,88 @@
+{
+  "kind": "selected native profile qualification evidence",
+  "sources": [
+    {
+      "label": "jev-codex-profile-2bpl2gu7/supplied/run/summary.json",
+      "sha256": "2e66ff3ad8c880287e88b342fa90edf7053e89552516bfdbf35f329ab70942e9",
+      "bytes": 30267
+    },
+    {
+      "label": "jev-codex-profile-2bpl2gu7/manifest.json",
+      "sha256": "05e6d08bed9609993ca627a75a78cb77431a434ce27dbd906c0da0757616f12d",
+      "bytes": 1928
+    },
+    {
+      "label": "jev-codex-profile-2bpl2gu7/trust.json",
+      "sha256": "f7386a269e36a5fcfe009856d1c3d3f77b95975a993796a10954774946241c21",
+      "bytes": 1121
+    },
+    {
+      "label": "jev-codex-profile-2bpl2gu7/supplied/run/reservation.json",
+      "sha256": "fb80da50ba0ea49a0169e61ed3e77eba1c00d0ea083479d411710ed1a23ee84e",
+      "bytes": 3806
+    },
+    {
+      "label": "jev-codex-profile-2bpl2gu7/supplied/run/exit.json",
+      "sha256": "33d2f04eeba1b63e4aa798fe83a189ef969ec8db7dcb852dc09ff1275fa51d78",
+      "bytes": 79
+    },
+    {
+      "label": "jev-codex-profile-2bpl2gu7/supplied/run/stderr.bin",
+      "sha256": "3e75d28a6681c31400a3f0fcb564c7613fd42796fb83294e4d53fea86bcbd401",
+      "bytes": 29
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/missing-behavior-reanalysis-7h60pwqq/summary.json",
+      "sha256": "f8a6da665144ccc358980a154699b8af9f0627e64a51c923bfed71eaf5828ff6",
+      "bytes": 13030
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/manifest.json",
+      "sha256": "ab7be2065512eeb06f9865c083b7c4f3c5dd80e5fba322d967b5a9c3419cd73a",
+      "bytes": 1937
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/trust.json",
+      "sha256": "e59e67c4d3f6ea005858c207f266acd9215b88043e559d6c8f2a46fab39fb323",
+      "bytes": 1121
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/missing/run/reservation.json",
+      "sha256": "365b47a2757a1938cbf64a915d259d10244c0841afd6216cb1f133ea156f0432",
+      "bytes": 3812
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/missing/run/exit.json",
+      "sha256": "c049bb80f0c3d977c1165863c3a9450a39ea9028a83f940bfc1a390e2e367c6e",
+      "bytes": 79
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/missing/run/stderr.bin",
+      "sha256": "68a3775458ca3bde0de8fbedfb0658320a8f8089c07d99413a712384643bc97b",
+      "bytes": 196
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/missing-behavior-reanalysis-7h60pwqq/reanalysis.json",
+      "sha256": "afa1982971eef306759a80fdf3bbe459983228d8b4b02b5b50e0ece0016169ce",
+      "bytes": 6925
+    },
+    {
+      "label": "jev-codex-profile-2bpl2gu7/supplied/run/stdout.jsonl",
+      "sha256": "b62f268db926763f7825ec16a33ba4b32dd99e8ff0095eb51af84b172a11c5a8",
+      "bytes": 1422
+    },
+    {
+      "label": "jev-codex-profile-wwp3qihr/missing/run/stdout.jsonl",
+      "sha256": "a264fa87a572440f2569f493fb9319fc0022d76110c922aa4579f611fd8f8587",
+      "bytes": 979
+    }
+  ],
+  "transformations": [
+    "Retained synthetic prompt, effects, tool/hook observations, assessment metadata and scores, exact native warning, and configuration identities.",
+    "Replaced machine paths with role placeholders; omitted original hook payloads, full assessment states, full native transcripts, account data, and unrelated context."
+  ],
+  "limits": [
+    "Missing-input original observer failed; offline reanalysis passes remaining predicates using one exact session-matched warning exception.",
+    "Selected public projections are not complete raw replay archives."
+  ]
+}

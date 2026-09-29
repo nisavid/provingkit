@@ -1,0 +1,21 @@
+{
+  "status": "clean",
+  "contract_sha256": "11c5ab52495bb545bdeeca634e8043f62fae82b28fed75b2461df14c5ec53a06",
+  "files_verified_before_and_after": 16,
+  "scope": "One fresh native Claude synthetic episode: ordered real context, actual referent, native file effects, reported usage reconciliation",
+  "observations": {
+    "native_user_turns": 7,
+    "pre_tool_reads": 10,
+    "per_result_input_sum": 28,
+    "per_result_output_sum": 2375,
+    "per_result_cache_creation_sum": 5598,
+    "per_result_cache_read_sum": 43736,
+    "all_sums_match_final_model_usage": true
+  },
+  "limits": [
+    "No Jev call",
+    "No invoice or quota observation",
+    "No general authorization or arm-comparison result",
+    "Read-only independent source/retained evidence audit"
+  ]
+}

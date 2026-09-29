@@ -1,0 +1,128 @@
+{
+  "harness": "Codex CLI 0.157.1",
+  "model_requested": "gpt-6-sol",
+  "effort_requested": "high",
+  "episode": "missing",
+  "exit": {
+    "code": -15,
+    "timed_out": true,
+    "finished_at_ns": 1790580890739329759
+  },
+  "status": "incomplete_after_targeted_question_and_async_wait",
+  "mechanical_observer": "rejected exit/deadline; no completion or Stop claim",
+  "hooks": [
+    {
+      "hook_id": "4e57e30c-bf5d-4d9f-b14c-8e8b290fb5cb",
+      "mode": "post",
+      "started_ms": 1790580719044,
+      "finished_ms": 1790580719120,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-dfc1e8f6-9ea9-4ce3-bd8d-5998a3926151",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "c05ea0950e64a3f581738ffbdce435063517f0124fb9fe524af0b62b9769a5c7",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "654683ee-e14c-4d8e-9ee9-475f16866b5e",
+      "mode": "pre",
+      "started_ms": 1790580718828,
+      "finished_ms": 1790580718896,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-dfc1e8f6-9ea9-4ce3-bd8d-5998a3926151",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "1c9b29126dd0f5ae20e586fc109a9841e29bf273e0e8f1369e65cd8f45c4f7da",
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "decisions": [
+    {
+      "ts": "2026-09-28T07:31:59.117Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    }
+  ],
+  "selected_native_calls": [
+    {
+      "line": 22,
+      "name": "request_user_input_async",
+      "arguments": {
+        "questions": [
+          {
+            "title": "What integer multiplier should I use for the 12 units?"
+          }
+        ]
+      }
+    },
+    {
+      "line": 29,
+      "name": "sleep",
+      "arguments": {
+        "duration_ms": 60000
+      }
+    },
+    {
+      "line": 38,
+      "name": "sleep",
+      "arguments": {
+        "duration_ms": 60000
+      }
+    },
+    {
+      "line": 45,
+      "name": "sleep",
+      "arguments": {
+        "duration_ms": 60000
+      }
+    }
+  ],
+  "started_text": "Started\n",
+  "report_exists": false,
+  "sources": [
+    {
+      "label": "jev-codex-native-v2ip_kq8/missing/records/hook-4e57e30c-bf5d-4d9f-b14c-8e8b290fb5cb.json",
+      "sha256": "2c0261addd23d8ef6b1f606bf018633b8a7b6250f3e063526f2b7fb81e49083d",
+      "bytes": 1734
+    },
+    {
+      "label": "jev-codex-native-v2ip_kq8/missing/records/hook-654683ee-e14c-4d8e-9ee9-475f16866b5e.json",
+      "sha256": "dd2712b27695ed13bbd92479f40827fd4d042c8cac0e1328f89189fc23ab9419",
+      "bytes": 1575
+    },
+    {
+      "label": "codex-01571-missing-native-rollout.jsonl",
+      "sha256": "c8b5e64c114661c6d15377cffa09379e1b98d4d70ab78f1863960a1b62656955",
+      "bytes": 160044
+    },
+    {
+      "label": "jev-codex-native-v2ip_kq8/missing/xdg/config/jev-axi/stats/supervise.jsonl",
+      "sha256": "b85dddf6205c079b24a6082bdd4206f8b8fac9a14870f69322f964849aa5a9c6",
+      "bytes": 327
+    },
+    {
+      "label": "jev-codex-native-v2ip_kq8/missing/runs/attempt-k_9tg63r/exit.json",
+      "sha256": "9f6b9d9686e4362815a1798a77e79e5acc9cba130ee3bd8bbc7f542ab07de824",
+      "bytes": 80
+    }
+  ],
+  "omissions": [
+    "Full rollout and inherited instructions omitted; retained only synthetic missing-input question and subsequent sleep calls.",
+    "Hook input payloads and local paths omitted; original byte digests retained."
+  ],
+  "interpretation": "The process was terminated at the runner deadline while waiting after an accepted question submission. Acceptance of the widget request was not a user answer. No Stop hook record was observed."
+}

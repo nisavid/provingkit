@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
@@ -19,6 +20,11 @@ from agent_plugins_standard import (  # noqa: E402
     validate_skill_resource_links,
 )
 from member_versions import is_supported_member_version  # noqa: E402
+from member_source_stage_cli import (  # noqa: E402
+    add_context_arguments,
+    check_context_if_requested,
+    prepare_context_if_requested,
+)
 
 try:
     import yaml
@@ -918,23 +924,19 @@ def restore_generated_file(path: Path, preimage: bytes | None) -> None:
         path.write_bytes(preimage)
 
 
-def usage() -> None:
-    print(
-        "usage: validate_proseweaving.py [--write-content-lock] [repo-root]",
-        file=sys.stderr,
-    )
-
-
-def main() -> None:
-    arguments = sys.argv[1:]
-    write_lock = bool(arguments and arguments[0] == "--write-content-lock")
-    if write_lock:
-        arguments = arguments[1:]
-    if len(arguments) > 1 or (arguments and arguments[0].startswith("-")):
-        usage()
-        raise SystemExit(2)
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("repository", nargs="?", type=Path)
+    parser.add_argument("--write-content-lock", action="store_true")
+    add_context_arguments(parser)
+    arguments = parser.parse_args()
+    write_lock = arguments.write_content_lock
+    context = None
     try:
-        repo_root = Path(arguments[0]) if arguments else Path.cwd()
+        repo_root = arguments.repository or Path.cwd()
+        context = prepare_context_if_requested(
+            parser, arguments, repo_root, writing=write_lock
+        )
         root = locate_root(repo_root)
         if write_lock:
             topology, semantic_files = inspect_contract(root, expect_roster=False)
@@ -970,8 +972,14 @@ def main() -> None:
         raise SystemExit(1) from error
     if write_lock:
         print("Proseweaving semantic content lock updated")
-    print("Proseweaving contract validation passed")
+    print(
+        "Proseweaving contract validation passed",
+        file=sys.stderr if context is not None else sys.stdout,
+    )
+    if context is not None:
+        return check_context_if_requested(context, "proseweaving")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

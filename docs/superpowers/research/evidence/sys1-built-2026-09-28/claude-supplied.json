@@ -1,0 +1,287 @@
+{
+  "harness": "Claude Code 2.1.283",
+  "model": "claude-opus-5-5",
+  "effort": "high",
+  "episode": "supplied",
+  "source_summary_sha256": "426bdb04d5869a929a80426e73fcbb9879142d2787a9133cfd8b300c3dcb60b7",
+  "exit_code": 0,
+  "timed_out": false,
+  "final_response": [
+    "I created both files:\n\n- **started.txt** contains `Started` followed by one newline.\n- **report.txt** contains `Total: 36 units` followed by one newline. The brief gives 12 units and a multiplier of 3, and 12 × 3 = 36."
+  ],
+  "tools": [
+    {
+      "order": 1,
+      "name": "Write",
+      "input": {
+        "file_path": "<scratch>/jev-native-built-s3fcadh1/supplied/project/started.txt",
+        "content": "Started\n"
+      }
+    },
+    {
+      "order": 3,
+      "name": "Read",
+      "input": {
+        "file_path": "<scratch>/jev-native-built-s3fcadh1/supplied/project/brief.txt"
+      }
+    },
+    {
+      "order": 12,
+      "name": "Write",
+      "input": {
+        "file_path": "<scratch>/jev-native-built-s3fcadh1/supplied/project/report.txt",
+        "content": "Total: 36 units\n"
+      }
+    }
+  ],
+  "native_hook_responses": [
+    {
+      "order": 5,
+      "hook_name": "PreToolUse:Write",
+      "hook_event": "PreToolUse",
+      "stdout": "",
+      "stderr": "",
+      "exit_code": 0,
+      "outcome": "success"
+    },
+    {
+      "order": 7,
+      "hook_name": "PostToolUse:Write",
+      "hook_event": "PostToolUse",
+      "stdout": "",
+      "stderr": "",
+      "exit_code": 0,
+      "outcome": "success"
+    },
+    {
+      "order": 10,
+      "hook_name": "PreToolUse:Read",
+      "hook_event": "PreToolUse",
+      "stdout": "",
+      "stderr": "",
+      "exit_code": 0,
+      "outcome": "success"
+    },
+    {
+      "order": 14,
+      "hook_name": "PreToolUse:Write",
+      "hook_event": "PreToolUse",
+      "stdout": "",
+      "stderr": "",
+      "exit_code": 0,
+      "outcome": "success"
+    },
+    {
+      "order": 16,
+      "hook_name": "PostToolUse:Write",
+      "hook_event": "PostToolUse",
+      "stdout": "",
+      "stderr": "",
+      "exit_code": 0,
+      "outcome": "success"
+    },
+    {
+      "order": 20,
+      "hook_name": "Stop",
+      "hook_event": "Stop",
+      "stdout": "{\"systemMessage\":\"jev-axi supervision: the job looks unfinished (implementation_complete 0.2).\"}\n",
+      "stderr": "",
+      "exit_code": 0,
+      "outcome": "success"
+    }
+  ],
+  "hook_records": [
+    {
+      "hook_id": "52ba3d84-ad9c-4df7-93fa-f654c64a4d49",
+      "mode": "pre",
+      "started_ms": 1790575631551,
+      "finished_ms": 1790575631604,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "Write",
+      "tool_use_id": "toolu_019x8D97kCd4RZYxBg5cFfcy",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "eba981be73ea97d4be503a3ff32a00cabf40b6ce5774bdc11b6ec716b56b29ee",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "98a1c6e6-507b-42e1-b0ea-cde692d7b920",
+      "mode": "post",
+      "started_ms": 1790575631639,
+      "finished_ms": 1790575631704,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "Write",
+      "tool_use_id": "toolu_019x8D97kCd4RZYxBg5cFfcy",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "e496de5abb9328eb6e0c120ba0e4fad74d714200e67f6b6e55ab24e995440710",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "f659ba4e-80a8-40ee-b0f0-ec3ef007a76a",
+      "mode": "pre",
+      "started_ms": 1790575631731,
+      "finished_ms": 1790575631775,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "Read",
+      "tool_use_id": "toolu_01Ljuz11hveVECWgiq9F2uJh",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "7ae3212681a39677077bc9805f71bddfa4d61e23fe398902caf6e5e842c71126",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "206fc990-dc5d-4898-86fb-f6da534fe53a",
+      "mode": "pre",
+      "started_ms": 1790575633787,
+      "finished_ms": 1790575633834,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "Write",
+      "tool_use_id": "toolu_01HkPjTe9RuHTg1uw1H2y4Et",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "67d305b84b82dd28fe52467e236f8c06c918a26859b0e342de63d74233cfdfdd",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "f8d6910c-2669-4d5b-a595-559ee55b3c50",
+      "mode": "post",
+      "started_ms": 1790575633863,
+      "finished_ms": 1790575633926,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "Write",
+      "tool_use_id": "toolu_01HkPjTe9RuHTg1uw1H2y4Et",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "560bcd28d4d754217076a09f5782818a5a465e88002aaaa4d6c32bda5df058d4",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "71b42504-3424-4d63-baaf-0bed267e4bff",
+      "mode": "stop",
+      "started_ms": 1790575635712,
+      "finished_ms": 1790575635778,
+      "guard_error": null,
+      "hook_event_name": "Stop",
+      "tool_name": null,
+      "tool_use_id": null,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "99a5fecd488f73d8883ff84c6361f61fe36ab3e005584f0ed1afb1380c9d13cb",
+      "stdout": "{\"systemMessage\":\"jev-axi supervision: the job looks unfinished (implementation_complete 0.2).\"}\n",
+      "stderr": ""
+    }
+  ],
+  "assessment_requests": [
+    {
+      "hook_id": "98a1c6e6-507b-42e1-b0ea-cde692d7b920",
+      "mode": "post",
+      "state_canonical_sha256": "954316ec138e3b5f2ac9c42348658fe69d884a44ac96161444bba7448a61e7f8",
+      "job_nonempty": true,
+      "job_characters": 127,
+      "event_count": 1,
+      "questions": [
+        "meaningful_progress",
+        "worker_stuck",
+        "work_off_track",
+        "needs_human"
+      ],
+      "model_requested": "jev-latest"
+    },
+    {
+      "hook_id": "f8d6910c-2669-4d5b-a595-559ee55b3c50",
+      "mode": "post",
+      "state_canonical_sha256": "c2dc711776700787e32d494b0d6476b2ad94c4a6956d3dbfb161a8d67641f22b",
+      "job_nonempty": true,
+      "job_characters": 127,
+      "event_count": 2,
+      "questions": [
+        "meaningful_progress",
+        "worker_stuck",
+        "work_off_track",
+        "needs_human"
+      ],
+      "model_requested": "jev-latest"
+    },
+    {
+      "hook_id": "71b42504-3424-4d63-baaf-0bed267e4bff",
+      "mode": "stop",
+      "state_canonical_sha256": "8e33c248884ad70ace9afc3771167b0f885d077a650ec2d3f64b397f482f67bb",
+      "job_nonempty": true,
+      "job_characters": 127,
+      "event_count": 0,
+      "questions": [
+        "implementation_complete",
+        "tests_sufficient",
+        "requirements_satisfied",
+        "needs_verification"
+      ],
+      "model_requested": "jev-latest"
+    }
+  ],
+  "decisions": [
+    {
+      "ts": "2026-09-28T06:07:11.701Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    },
+    {
+      "ts": "2026-09-28T06:07:13.923Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    },
+    {
+      "ts": "2026-09-28T06:07:15.774Z",
+      "hook": "stop",
+      "verdict": "continue",
+      "action": "warn",
+      "reason": "the job looks unfinished (implementation_complete 0.2)",
+      "implementation_complete": 0.2,
+      "tests_sufficient": 0.1,
+      "requirements_satisfied": 0.2,
+      "needs_verification": 0.1
+    }
+  ],
+  "effects": {
+    "brief.txt": {
+      "sha256": "99d6b4b33b07f55a192eabc24eb51e13aad70e07687f636b3a8bd75e07e45b11",
+      "text": "Measured amount: 12 units.\nMultiplier: 3.\nCompute total = measured amount times multiplier.\nWrite report.txt with exactly one line in the form Total: N units, where N is the integer product.\nEnd that line with one newline; add no other text or spaces.\n"
+    },
+    "started.txt": {
+      "sha256": "70fdb269b53831677d0b65ffe50ed1d8ae147d7319493584728d7f8fdec2405e",
+      "text": "Started\n"
+    },
+    "report.txt": {
+      "sha256": "a3ad8f59855f75d42bcbfb5ba867d2767cacb326d3ce5e1898ecf51757556039",
+      "text": "Total: 36 units\n"
+    }
+  }
+}

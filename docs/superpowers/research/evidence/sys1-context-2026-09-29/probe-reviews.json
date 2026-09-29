@@ -1,0 +1,54 @@
+{
+  "r1": {
+    "status": "non-clean",
+    "candidate_contract": "context-probe-review-r1.json",
+    "findings": [
+      {
+        "id": "initial-inventory-order",
+        "disposition": "accept",
+        "correction": "guard file effects until controller-verified runtime inventory and session; report initial user ordering"
+      },
+      {
+        "id": "hook-error-exit",
+        "disposition": "accept",
+        "correction": "use native-supported deny on exception, with process-boundary tests"
+      },
+      {
+        "id": "session-self-binding",
+        "disposition": "accept",
+        "correction": "controller-known new session identity before read; test actual production config"
+      }
+    ],
+    "native_execution": false,
+    "frozen_candidate_hashes_verified": true,
+    "reviewer": "recovery_pr_runtime",
+    "controller_observed_completion": true,
+    "effective_model_attested": false
+  },
+  "r2": {
+    "status": "clean",
+    "contract_sha256": "55de4078ed4bbc6eea3d2f127f9b1082a8e47e66027d7193da146c235a7493e7",
+    "reviewer": "native independent recovery_pr_runtime",
+    "files_verified_before_and_after": 14,
+    "r1_findings_addressed": [
+      "readiness before effects",
+      "native denial on exceptions",
+      "independently bound session/path before transcript read"
+    ],
+    "limits": [
+      "cooperative synthetic containment only",
+      "no native/model execution in review",
+      "no production authorization or host isolation claim",
+      "no effective model attestation"
+    ],
+    "root_final_hash_verification": true
+  },
+  "r3": {
+    "status": "clean",
+    "contract_sha256": "0981910fcb459a572a28358c78b566f7eedebe3503565510d35a96ccc0420171",
+    "files_verified_before_and_after": 14,
+    "scope": "Narrow Codex native sandbox observation normalization; requests and prior guard unchanged",
+    "native_execution_in_review": false,
+    "root_final_hash_verification": true
+  }
+}

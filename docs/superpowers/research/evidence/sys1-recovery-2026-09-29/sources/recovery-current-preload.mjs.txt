@@ -1,0 +1,19 @@
+import {readFileSync, appendFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {join} from 'node:path';
+const control = process.env.RECOVERY_CONTROL;
+const config = JSON.parse(readFileSync(join(control, 'config.json'), 'utf8'));
+const {configureFetch} = await import(pathToFileURL(join(config.package, 'dist/src/client.js')).href);
+globalThis.fetch = async () => { throw Error('unexpected global network request'); };
+configureFetch(async (url, init) => {
+  const body = JSON.parse(init.body);
+  const keys = Object.keys(body.questions || {}).sort();
+  const expected = Object.keys(config.answers).sort();
+  if (JSON.stringify(keys) !== JSON.stringify(expected)) throw Error('unexpected safety questions');
+  appendFileSync(join(control, 'api-requests.jsonl'), JSON.stringify({
+    invocation: process.env.RECOVERY_INVOCATION, body, mode: 'offline-fixed-judgment'
+  }) + '\n');
+  return new Response(JSON.stringify({model:'jev-offline-recovery-fixture',
+    answers:config.answers, usage:{input_tokens:0,output_tokens:0}}),
+    {status:200,headers:{'content-type':'application/json'}});
+});

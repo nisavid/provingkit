@@ -1,0 +1,3458 @@
+{
+  "method": "source selection then deterministic host-path replacement; raw records retained locally",
+  "source_texts": "Inspection-only projections retain original source hashes. They are not runnable artifacts and have not been claimed as re-executed candidates.",
+  "files": [
+    {
+      "projection": "recovery-native-selection.json",
+      "original_sha256": "05d06c501a2bd32ebc7a2a0ee5baacfe012acc9b1cbbdaf76166c70a8314e8f1",
+      "projected_sha256": "05d06c501a2bd32ebc7a2a0ee5baacfe012acc9b1cbbdaf76166c70a8314e8f1",
+      "original_bytes": 2446,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "recovery-native-version-amendment.json",
+      "original_sha256": "e054f1e2c17d3e0bed941b0f4cb7e13eb58c91b7f659aee0a1374edde3f1e0ca",
+      "projected_sha256": "e054f1e2c17d3e0bed941b0f4cb7e13eb58c91b7f659aee0a1374edde3f1e0ca",
+      "original_bytes": 722,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "recovery-claude-summary.json",
+      "original_sha256": "89f13f120bf26383c7dd7e33d63dd6659014572c114b992d3b74f29f2c5cd9fb",
+      "projected_sha256": "89f13f120bf26383c7dd7e33d63dd6659014572c114b992d3b74f29f2c5cd9fb",
+      "original_bytes": 12249,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "policy/manifest.json",
+      "original_sha256": "8f1db6af73081c22383c31223a687cf45af607be638e71c8e224e3519819be9b",
+      "projected_sha256": "455aa0d6ad03dd1932f83dd0a7b045521a14beed9d9440a4e2b537960fa7c857",
+      "original_bytes": 499316,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "policy/results.jsonl",
+      "original_sha256": "3517b0e3d5dcd24c639d17dc23c387b9b92466e2acd3292527c647cfda428094",
+      "projected_sha256": "3517b0e3d5dcd24c639d17dc23c387b9b92466e2acd3292527c647cfda428094",
+      "original_bytes": 475769,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "policy/summary.json",
+      "original_sha256": "6abaeadf07d0d2aa671f9adbf19997d96bfdfcf3c6845e60c66cfb0910b1b03d",
+      "projected_sha256": "6abaeadf07d0d2aa671f9adbf19997d96bfdfcf3c6845e60c66cfb0910b1b03d",
+      "original_bytes": 2157,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "built-policy/api-requests.jsonl",
+      "original_sha256": "60712da25cf860a655a0b0c82b465a5f3d17a4ecf5abdac5ec47a852e683a7c9",
+      "projected_sha256": "60712da25cf860a655a0b0c82b465a5f3d17a4ecf5abdac5ec47a852e683a7c9",
+      "original_bytes": 3066,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "built-policy/claude-study.json",
+      "original_sha256": "75755644d9791f1442bf768539449adecbeca397f1db8f36b405c8fe7db7ac8c",
+      "projected_sha256": "75755644d9791f1442bf768539449adecbeca397f1db8f36b405c8fe7db7ac8c",
+      "original_bytes": 734,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "built-policy/claude-tmp.json",
+      "original_sha256": "e3ac9f479ff722889d6c5fd19f69977af2c21c8994ed1fc4e91a04214dc2f14f",
+      "projected_sha256": "e3ac9f479ff722889d6c5fd19f69977af2c21c8994ed1fc4e91a04214dc2f14f",
+      "original_bytes": 458,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "built-policy/codex-study.json",
+      "original_sha256": "5ebc9e3a80063f2dd9e0713e6f430bb6bb63456cf7b6cec26f5e10cb143f4bb2",
+      "projected_sha256": "5ebc9e3a80063f2dd9e0713e6f430bb6bb63456cf7b6cec26f5e10cb143f4bb2",
+      "original_bytes": 494,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "built-policy/codex-tmp.json",
+      "original_sha256": "c19437c040dc3fba66c0e422b7483137ab9a2e77caecaac887db4d0cecfc7536",
+      "projected_sha256": "c19437c040dc3fba66c0e422b7483137ab9a2e77caecaac887db4d0cecfc7536",
+      "original_bytes": 486,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "built-policy/config.json",
+      "original_sha256": "0a9b1eed98f287256a7dd083f10da82e1414fc21fdc65d015ba0eeef4bd60ceb",
+      "projected_sha256": "6e397171588e1f034bfe8e2aea1aaab0a85dadfb964c8eb5e7f9e8df62406ee1",
+      "original_bytes": 698,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "built-policy/summary.json",
+      "original_sha256": "44bb5929f6ad7caa2189a57d83d20836c224e27e1db0969916e7c0046926b6ce",
+      "projected_sha256": "54395315ecc30795fca1b9bb8dc21f87806d155721c1d4860a8f77bbe965a13f",
+      "original_bytes": 353,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "sources/recovery-policy-replay.mjs.txt",
+      "original_sha256": "c64fd6a9d2e0e20e96f0a2490a350a1218979d97f5b7ffbee3f491b8c5783077",
+      "projected_sha256": "c64fd6a9d2e0e20e96f0a2490a350a1218979d97f5b7ffbee3f491b8c5783077",
+      "original_bytes": 3753,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/run-recovery-policy-replay.py.txt",
+      "original_sha256": "4ce6e6ad63b553576f0a8751fa5ef953a7fe45f8c0798c85769556954ab21942",
+      "projected_sha256": "686f36ddd358219295a4c1034954e34b7cc8e5212b31613e573eab075392848b",
+      "original_bytes": 5725,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/test-recovery-policy-replay.py.txt",
+      "original_sha256": "73c373cbe64e0a7e6ad37d34a35eb7c480c624a8e17c07676682380056a86f84",
+      "projected_sha256": "1a94c1017be1f50fd5904396ed192a75f27a72cf6c0963f87eaa376456c94520",
+      "original_bytes": 5455,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-native-claude.py.txt",
+      "original_sha256": "4053d2462a01af28df416d928dac15c092d0abce4a43b0f3377487dec5703f14",
+      "projected_sha256": "d77318402fd6f1b69d3f0b0830fcdb76b57fcfce1c94eca763f883a32b6a310b",
+      "original_bytes": 14461,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-native-hook.py.txt",
+      "original_sha256": "5a81a34aaefc82da21e05415022e51df9fbb434f8bd6c5b8977ab6ad27438212",
+      "projected_sha256": "5a81a34aaefc82da21e05415022e51df9fbb434f8bd6c5b8977ab6ad27438212",
+      "original_bytes": 11140,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-current-preload.mjs.txt",
+      "original_sha256": "e0a705333b77303fed32866e5571f88f765640e4f22fc976d2dc7c407ab64360",
+      "projected_sha256": "e0a705333b77303fed32866e5571f88f765640e4f22fc976d2dc7c407ab64360",
+      "original_bytes": 1113,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/test-recovery-native-hook.py.txt",
+      "original_sha256": "d89c531587d63b29d5f862c587076608128b00436cd2838ba02ee5c6bb71d799",
+      "projected_sha256": "d89c531587d63b29d5f862c587076608128b00436cd2838ba02ee5c6bb71d799",
+      "original_bytes": 7353,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-claude-message-probe.py.txt",
+      "original_sha256": "e72ba846595eea099ba3bd1b30f9507336e0cca19c38a990f671c49515cfc5db",
+      "projected_sha256": "0125f4e17573b2c0ffff5eb86e58c8b4cb86c5131c557457f97287603c892bdc",
+      "original_bytes": 10439,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-codex-message-probe.py.txt",
+      "original_sha256": "f0fd836a9382c7f164b819db61b468c5ae4c22ffaced1b1c89b7eda8dc9ab641",
+      "projected_sha256": "b0d35b0225d955d88b952af5b0df545580b152c0113e3800d31d531050ed6c02",
+      "original_bytes": 8218,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-native-codex.py.txt",
+      "original_sha256": "665adb106531d2307dd4a33949172344ef7e754737c7a3c55749fcf74db06114",
+      "projected_sha256": "bc0d6b49734240d55e38a1d7247556bf1c43b7f147ae576a20ba1005c2abc2a1",
+      "original_bytes": 16938,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/test-recovery-codex-observer.py.txt",
+      "original_sha256": "1da43a653197c69f7b0f3425a48ea14759aab1f2fbdafc3c6d8c3ee74cb51fc9",
+      "projected_sha256": "1da43a653197c69f7b0f3425a48ea14759aab1f2fbdafc3c6d8c3ee74cb51fc9",
+      "original_bytes": 2427,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-codex-discovery.py.txt",
+      "original_sha256": "0e8a4dd38b75e608130d5e6809bf9e6584cb9723d8393876afeb0c91194012df",
+      "projected_sha256": "0e8a4dd38b75e608130d5e6809bf9e6584cb9723d8393876afeb0c91194012df",
+      "original_bytes": 7854,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-native-codex-app-server.py.txt",
+      "original_sha256": "d7e31cccb85d03e1b4f9f4cd82f3035ef6f632ce48d18b913c56d1503f525065",
+      "projected_sha256": "faa5c6899203b5750e678c436445e3c0d946ee2213d4e900f7bcb2f20b44a9b5",
+      "original_bytes": 24697,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/test-recovery-codex-app-server.py.txt",
+      "original_sha256": "bb35317617147de76b46adaf5b350194c5a55a96a0467b5ac8981e43018df876",
+      "projected_sha256": "bb35317617147de76b46adaf5b350194c5a55a96a0467b5ac8981e43018df876",
+      "original_bytes": 4681,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/manifest.json",
+      "original_sha256": "d6948b53e6f2f1eb732af060a991dcc21a49d0ae9b2fb0a8b17a2813355774d6",
+      "projected_sha256": "2f3fbb409181173d5f12ca2b4ab3b56f57635d39df7b3ed1a2fc9cfc76f63ebf",
+      "original_bytes": 3926,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/settings.json",
+      "original_sha256": "5565c6e3e9ad18589c2cc59ce3e23167b04788c74b2a8a955202109f87fbf80d",
+      "projected_sha256": "1d1cc6fb714932e96b5aefa039d90fd24bf3ae8f0a78a084afa419333dcfc79b",
+      "original_bytes": 944,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/config.json",
+      "original_sha256": "8cc7dd1bb411c0af613d06f505284d2fabf10d43f04970463c1ef79644131fa8",
+      "projected_sha256": "c822bc64989157e1c659b904d2570defe63074bb1ff1ad7931c39e9a1beed889",
+      "original_bytes": 10148,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/observation.json",
+      "original_sha256": "6e295e20b071d30a01c9d56a0320ab18514947dfe6670a5a3e13a6602514a392",
+      "projected_sha256": "e514b95960a1ae9f88bf4fd2a52470ceefa267b645f5a16e724e6a34e473f9fe",
+      "original_bytes": 1805,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/events.jsonl",
+      "original_sha256": "d5deabca8d61e2c52421ec361ebbea6db226c63e4e2c0a83fbb8f7b6e79119df",
+      "projected_sha256": "374b53666d09b3be92e25efa4aaac3c9c51ad876c622306b347acd28875c5cf1",
+      "original_bytes": 4906,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/native-process.json",
+      "original_sha256": "ee67d58ac1e229d45230009f66d1608cc44b57d8694dae160a350c476bfca8b3",
+      "projected_sha256": "ee67d58ac1e229d45230009f66d1608cc44b57d8694dae160a350c476bfca8b3",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-other-destination-o6aorkxz/native-selected.json",
+      "original_sha256": "c4a1a68ef6107649011ecd355b338daa140f2d6797875f133af094e3e25e2afe",
+      "projected_sha256": "40ff08e5223caaeaf278b9b5ca919022a9abdb25394365a2a1dc63307533ec96",
+      "original_bytes": 18587,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/manifest.json",
+      "original_sha256": "0421daf0bd35d17e73b14483f7d048c9f78e9d14551065ab280ebb256ba91049",
+      "projected_sha256": "8688ae99bc351ebf111a804425d316ea0de9f9d8c887f53ba3a1c2f910abaf74",
+      "original_bytes": 4801,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/settings.json",
+      "original_sha256": "7a60bebad1d368281618d09b55e5a3c2eb96a4708e52b4ef6aac0e5dbf7e6b9e",
+      "projected_sha256": "8e5c964a4082de0f453ad0290b99a594708507108341c9781318786549920a19",
+      "original_bytes": 950,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/config.json",
+      "original_sha256": "a63fbec24401724883c120bbf09e03eba6485e9ec005378fcb9a9f0e6c8c94da",
+      "projected_sha256": "fea18bc83eee92b4fb33f27f7e8b403af4eca4896439869e747bbba062b507de",
+      "original_bytes": 10876,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/observation.json",
+      "original_sha256": "8125365aef4dbeb23e22ec4c9676611a87e686e5b9725a0cbc58ede76a35a56f",
+      "projected_sha256": "dd592935e21ea25f742b711d9f5f13769763c263737d5148af7907b736fccc1d",
+      "original_bytes": 1722,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/events.jsonl",
+      "original_sha256": "e006058b87c707daf6c08f73275bd3f9b7589a98aff6a09b433642462ae49144",
+      "projected_sha256": "13613e753c2da616faabeeddfdd4cbb59b37039853a6ba868f1c0f9e500822ed",
+      "original_bytes": 4942,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/native-process.json",
+      "original_sha256": "4e7924eaaa32f51d58c9107689569f9426a91f5846f775bfbec35d5a66fc2d22",
+      "projected_sha256": "4e7924eaaa32f51d58c9107689569f9426a91f5846f775bfbec35d5a66fc2d22",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-renewal-after-denial-9lwfjxzh/native-selected.json",
+      "original_sha256": "3061047c760cea75cc0e565af3c3a0a0c79c7c1ae0be3ff3803e7122e0e42103",
+      "projected_sha256": "83f9a6bd6bca00cba24a7b1f24b124ce20f407ab251c9983c329ae7f0e5de8b4",
+      "original_bytes": 18381,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/manifest.json",
+      "original_sha256": "bf3e712e82f8b0c03833218f50e4f534397a59440bb620aea43f69b0f44fce1d",
+      "projected_sha256": "43ecbec76739d293e6b860221276dfcf010d55aaeb27b0a1d9b009e54340979e",
+      "original_bytes": 4083,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/settings.json",
+      "original_sha256": "b478d0ac1a096e8e2e24d280347afefab3a8451809f85426cc1ebb82a33a54b0",
+      "projected_sha256": "8792ae83b7f8314cbf4ff494dc318e16a5fbd94bf2fdea999f206894634b74de",
+      "original_bytes": 930,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/config.json",
+      "original_sha256": "c50ca4c114caf12656eb96b35fb9844ece797ec64e865e1e50232839520e18fa",
+      "projected_sha256": "61e08210136259e7a8c0cd7771be81fb9834d60128b38e059abab6a2aa67ce6a",
+      "original_bytes": 10179,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/observation.json",
+      "original_sha256": "ca48d07317dd8084d7b1de87dc6610779b84823c86b3f5700da2e058284ca06a",
+      "projected_sha256": "44533cdad73be1a3ddba259fc5bf31df137e42dc0f7a1458c71521a71f97287e",
+      "original_bytes": 928,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/events.jsonl",
+      "original_sha256": "add94dde6ac9a40df402014bee359e5faaf3035a15c23fed55378d37543a35a6",
+      "projected_sha256": "c0bc869e5f31427151183182ca1af6dae4697bacd5ae11c3d7976c60f499f8a0",
+      "original_bytes": 3706,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/native-process.json",
+      "original_sha256": "d002b7a58d8f276d7efc7913d8d4d0c3e5b2a5555953814ff0b8ed2c80d7df31",
+      "projected_sha256": "d002b7a58d8f276d7efc7913d8d4d0c3e5b2a5555953814ff0b8ed2c80d7df31",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-advisory-withdrawal-optzi0cb/native-selected.json",
+      "original_sha256": "d14b1ca7f3bde8452c07aa6c0f544c32471cb5c36593f63828fc311aeb4ab51d",
+      "projected_sha256": "4c47b069528e36fab36f2dd0edc3aea58749b25c37399926042b664a1e9c4f01",
+      "original_bytes": 19566,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/manifest.json",
+      "original_sha256": "8c5227427fa38f51e69792af9edaddbc11ff81580a396900b9e27427eba4999a",
+      "projected_sha256": "6fb55463374ec17ffce5b18aea55a4d56c0c1747cbac1f8d0c8c0ecebd4fdf73",
+      "original_bytes": 3919,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/settings.json",
+      "original_sha256": "581cdb5077b1de4ba83b5d62b2c793fc041ba2c1290df0735054b4ddd2d448ea",
+      "projected_sha256": "fcafd0b5a9dc3153af5cdfd8d9bd53ebc8693383ef0fc18cbe9df29d7bf79fcb",
+      "original_bytes": 942,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/config.json",
+      "original_sha256": "76bfd72cc9c45b3bd3e7af8245f0fcb630fb475571d7eee89662c4f3560f170f",
+      "projected_sha256": "a57730ad6dc87b898c3c70a7b7a5be7d8e0e696621bf1f23406c74b57d679891",
+      "original_bytes": 10142,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/observation.json",
+      "original_sha256": "0c4a2743411dc29178c808e9d15d92c0833bda2e19f99d69f3057426dacac5b9",
+      "projected_sha256": "0491f9d1eb384757e0d9646bc1971a24d61ba218fc700a0564e403f3e47ad429",
+      "original_bytes": 2087,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/events.jsonl",
+      "original_sha256": "5a187132a02df07603c0432fb631fbf3fc929fe46655c643d9804796c0e5fd23",
+      "projected_sha256": "91923996b8b37affea081227c332d43c2358ab4daf8ce70d194864e7747b8232",
+      "original_bytes": 4827,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/native-process.json",
+      "original_sha256": "8c3b739b3c8264b7d6ce444b74fc8a953fb5b14e1d456b65abc74277fda19167",
+      "projected_sha256": "8c3b739b3c8264b7d6ce444b74fc8a953fb5b14e1d456b65abc74277fda19167",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/api-requests.jsonl",
+      "original_sha256": "af80a2763b8b9b1fbb80ec8b502c638f5a7a2c0d95a23e067fe2a51592c7540c",
+      "projected_sha256": "24bc59253431bfdec42258b71cd9820f8c29f21842bf0d5ee1678c7ddc4a913b",
+      "original_bytes": 3330,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-other-destination-0jg4xgsh/native-selected.json",
+      "original_sha256": "4cae7bbff4b30d9ebf871c238534fcbd1b998ef079b703efe925640ef5abfff9",
+      "projected_sha256": "47f79193089ee91c20a8f32074a9418d007e5e772c89dc5ddbc800a652df133a",
+      "original_bytes": 20882,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/manifest.json",
+      "original_sha256": "6e9cdb8ebec36ae019baf334cd308ce7c518dc5d474ea41c3bd86f0ce08d8d81",
+      "projected_sha256": "d66af507e0e475c6fff7e5f0564f98549490ce30c0214cf99936daebed7b9462",
+      "original_bytes": 4793,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/settings.json",
+      "original_sha256": "f721b0ea85a3b3822f6e6bcf36166a5a018d02b31375c05a880b1b56667e423e",
+      "projected_sha256": "e409ab4b0e4c8cdf5e23fbd802e9cbbf2c3296ac98f900087d82677ef92adc26",
+      "original_bytes": 948,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/config.json",
+      "original_sha256": "e34179dce5a5a3e4a20623a2257cc66bf35411a7c527965437a5b753839c7284",
+      "projected_sha256": "cf886d2f1260ae38bc0e5a9e318a1d8f69d9c7ffe760b59adfd3e2b140c90117",
+      "original_bytes": 10869,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/observation.json",
+      "original_sha256": "766a3473205bcf26934c83b51e23fbeb2f62f113defb2d49f8c8cdb00ca23ba5",
+      "projected_sha256": "4f7982328507230ecdaa16d5ba81df3fc5e0a47b1898e69ec60ef751c46ab6b0",
+      "original_bytes": 3980,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/events.jsonl",
+      "original_sha256": "b202c28265128c731cb65129f5f18b944edcdabb3a3f833fffa0ad3e4e04ef45",
+      "projected_sha256": "ddd4de67603d4f354deada1ae506b8189bb5f7a734c316495fe6210c585a56ae",
+      "original_bytes": 9872,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/native-process.json",
+      "original_sha256": "659aaa7ffb249d4e90449168a09dcab63ff8e8d82ab41ad06646680483246417",
+      "projected_sha256": "659aaa7ffb249d4e90449168a09dcab63ff8e8d82ab41ad06646680483246417",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/api-requests.jsonl",
+      "original_sha256": "150d5a6e9372a29b80549d0ae0e233a1d2eba32413f4168461d3826869311c42",
+      "projected_sha256": "b6ca6a63c073afe1b9a391106c5ab8347fe46fefdb3057dd6373006847d2b23d",
+      "original_bytes": 6672,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-renewal-after-denial-lvppjaf3/native-selected.json",
+      "original_sha256": "c3ac31f2f6b3f35600d1f43f248dccced1b35a51fdd0b53aa563537e3e9acbe4",
+      "projected_sha256": "28ac9c548c009eb5e3dea7efc4d7570a0fa2b852fde9e19a47e17a63313998b2",
+      "original_bytes": 39070,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/manifest.json",
+      "original_sha256": "e6102da001a8e7cee5be604bc11ccbf0bd42af6288c91ae92960adab2c58b7d5",
+      "projected_sha256": "14cbbc199c94de37db59bc136615716c97528c388f05b95b336ac78fe77be424",
+      "original_bytes": 4518,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/settings.json",
+      "original_sha256": "6d568189579b5186eaa964488b7cf9f2da71258b1cc02a06f9727c3467ed1207",
+      "projected_sha256": "cfb92273d33fad0008d192cac731430bad713b04261f9a7f965422faf6f456ad",
+      "original_bytes": 954,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/config.json",
+      "original_sha256": "4866ea4cb0b2a5852370dddf314a55f232da72b01ace5b9665d8c15424da234e",
+      "projected_sha256": "7a76c88f1af0e91e21765f934def380caed3aa105d14adb41091a6d7b4f29bc8",
+      "original_bytes": 10589,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/observation.json",
+      "original_sha256": "5b4ccdb394a748eb445226e4c64da1e495190e7373029383490e72ce16a593b4",
+      "projected_sha256": "92e7b945db813bf5b4a2b42016a4fe01c123b8c2c318799c424c31e8ba9a7bc1",
+      "original_bytes": 2581,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/events.jsonl",
+      "original_sha256": "7fd77daaaee994318ddddb258ed6be1c8d4e84aede09edfa8105d407ee1c958e",
+      "projected_sha256": "917ea3a6f51dba5b11c34d316c8bfce16e4dd70a29ce40068b20decaee85b339",
+      "original_bytes": 6934,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/native-process.json",
+      "original_sha256": "f2486feddfc74dcd99ef9860df1c2a535a81da6966d6eb07b83ff506e1e248c8",
+      "projected_sha256": "f2486feddfc74dcd99ef9860df1c2a535a81da6966d6eb07b83ff506e1e248c8",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/api-requests.jsonl",
+      "original_sha256": "ed277f1d2462b3150f42550f0fa579f0f19e8a65d34f6fa27a22899168ef9504",
+      "projected_sha256": "347a4c472d911ffce000ea59966db13750a832453f45163bfda229decf388ee4",
+      "original_bytes": 3342,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-after-denial-vk071cth/native-selected.json",
+      "original_sha256": "9bdc8881ba8650bcda1e8d03396201dec7424ed4c4f1c25c8c922599dcb6058b",
+      "projected_sha256": "4e1b75afd4d7d5e60101bb7342e0db4610657c068ef6ad505095158d0c8993f0",
+      "original_bytes": 29142,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/manifest.json",
+      "original_sha256": "ae87f6fe813a52ed323a3353dafaf04d15eca0dbdfe305e61ab99f21ce7dfa6f",
+      "projected_sha256": "2e214c422f99635c07c8694d8511ea68eb411bd9cfacf84068701939996ab779",
+      "original_bytes": 4075,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/settings.json",
+      "original_sha256": "8be2d761269012c38ffb060897cad5b85c0e6c1583e9eaa1c0f66c2eac50d79b",
+      "projected_sha256": "6cd6f0a3a7fda4c73c6e09847428d175702f9d25412b2378cca98e28f791f50e",
+      "original_bytes": 928,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/config.json",
+      "original_sha256": "9307b31ffa4a7781bfef1c6eda432a0f289b9fc67066762e700ed29e8d311a46",
+      "projected_sha256": "148a0d63729c89138aa972e0af49e5c9d1cd2ca8a89d681cbd5128450d1c72db",
+      "original_bytes": 10172,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/observation.json",
+      "original_sha256": "b441cb2555649af729a1732db6f6226760f1d3b4708371d064cca8ceecc1f78d",
+      "projected_sha256": "c88520d8fb8dcdad3bedfa5441752bbafba7af927cac327da0a69fda4c77ed15",
+      "original_bytes": 821,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/events.jsonl",
+      "original_sha256": "53b9db367669047f7eb0ef1f80e7ab17f9e1050ccc856f5c00fd72277c9a5de0",
+      "projected_sha256": "8e0fa7c623672451a7e50c767de6c1d1633577015f829a539f516a628f386c1a",
+      "original_bytes": 3694,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/native-process.json",
+      "original_sha256": "62b59a738c5c78047c45958dc1c72e216142778c008d53a0585bc6b15c631851",
+      "projected_sha256": "62b59a738c5c78047c45958dc1c72e216142778c008d53a0585bc6b15c631851",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-current-withdrawal-elqjmvwp/native-selected.json",
+      "original_sha256": "14d88d291b4615b357a7bc5b3012a490705f4fd4de0c2be05c0d9752927ac297",
+      "projected_sha256": "ead4ebdc19a7f6302337e82d0f10b5f93b3b70d311ad17a58b00cc0b34b4305e",
+      "original_bytes": 19365,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/manifest.json",
+      "original_sha256": "3c58066fd40759ae38e7d753fa9d121d1bab60df67e8f6535cc51e09c27d0b15",
+      "projected_sha256": "bc113b04d4b0aec35ebbe1cfe96b606305a7fba6747fd3f0339cb90bf8db3a02",
+      "original_bytes": 3961,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/settings.json",
+      "original_sha256": "bfdddbbb34522240dc47f466a4fdff7dd57abf9788022db59915e23ad133eda1",
+      "projected_sha256": "fffe418db4b935897587c07cca02012a21ef483c2e2aa9c3725026f924bd793e",
+      "original_bytes": 954,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/config.json",
+      "original_sha256": "9c1e84677306b0372a4b765797fcbfea26f959402274f46d5307ef7281a180bb",
+      "projected_sha256": "b8827418268cd40224d031e0bef414439e9d82375cc3fc43b663fd4324c192ff",
+      "original_bytes": 10178,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/observation.json",
+      "original_sha256": "f8d16c3c733f03b23f567a0cb02c70b39852fb051bd477b62be0ff192d0744c1",
+      "projected_sha256": "3df7225d93151377a46e9a663e54d7b2677acf365c27c09472bc6440086dcb34",
+      "original_bytes": 1653,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/events.jsonl",
+      "original_sha256": "6e736553a30f58fc77c0c1446ada089e8dfc85bcfdd0442736df64ff72068bb1",
+      "projected_sha256": "db10096ac212db9b4e0beb52005a0dc578e51ef779fcd0474fae550598284c21",
+      "original_bytes": 4778,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/native-process.json",
+      "original_sha256": "750606dd5658892a88171523181344a6c8ccbf618ce1b637a9795434760916c9",
+      "projected_sha256": "750606dd5658892a88171523181344a6c8ccbf618ce1b637a9795434760916c9",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-other-destination-yagumnc3/native-selected.json",
+      "original_sha256": "c4fa4cedc493827a9418a1df531428529bcd8dbe86ce61e5d2660e817fefb197",
+      "projected_sha256": "80917ac5e5f7134c012f79c9de0ab0575ee6c0b12fafc85c98e0cab1fdf38738",
+      "original_bytes": 15554,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/manifest.json",
+      "original_sha256": "28001fb693a0ac01ccd2beb04d6041865771e560ac52599132ded11aba1db7f7",
+      "projected_sha256": "8d19e877bc5e86936f03ad7605ed8f64082d9afeafde403ab621e4078d292418",
+      "original_bytes": 4841,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/settings.json",
+      "original_sha256": "ea7eb8df880d3061a2bc40482cb4c8c6ed6442fd13f3634e8a4cbc2bb08a913c",
+      "projected_sha256": "926e84886299cc3c0f319a20fa0b681168299b6e2c426f809347a2a9274a8f65",
+      "original_bytes": 960,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/config.json",
+      "original_sha256": "c3ca2673525218f0c781fd8b6db629c1ead2658db73eb1665b3f9af1cdb7cc88",
+      "projected_sha256": "c18bb4d564aa1755fd1270496b6f27af9ed26da8ced5ab62963069f8c872191b",
+      "original_bytes": 10911,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/observation.json",
+      "original_sha256": "4dd1ebd82917028fd9c7e14016782fd16ce0fc5d505856c6176a59f9944abac8",
+      "projected_sha256": "063741a32a8dc6a7bd4659340d9a28c69708d4381892014337ba81f39220c70c",
+      "original_bytes": 1697,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/events.jsonl",
+      "original_sha256": "214632b4304172ffd81b8a06640e66da84f74bdb037773a3833a971d215d43ce",
+      "projected_sha256": "19aa7849c0b34616110d2acea7952594bd3aac8effb649a49ea386204abac09d",
+      "original_bytes": 4814,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/native-process.json",
+      "original_sha256": "9ea874e07213d3628765ac66269cb6baad1d126093e0e9cb57d9a54f87f68e90",
+      "projected_sha256": "9ea874e07213d3628765ac66269cb6baad1d126093e0e9cb57d9a54f87f68e90",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-renewal-after-denial-337pvfgt/native-selected.json",
+      "original_sha256": "6a3204329a927c61f543f69461073b8d26ee772ce992364ca2914fc472834099",
+      "projected_sha256": "1fb276df7f132bb4249e32297c0d3ae81c9af12bbe9b41c01dd0358a5146d64c",
+      "original_bytes": 15642,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/manifest.json",
+      "original_sha256": "48281822430d205b47826e5efc5819c39470391077646e7d521d4f8c97dd4f5d",
+      "projected_sha256": "3b25af5a8029618bc9907eaea51b0b3848194717dccb879c6dc51210a332af1c",
+      "original_bytes": 4123,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/settings.json",
+      "original_sha256": "021991333fcc769fff17c3533536c690eb8d147a0553da6e953c9748313e73d9",
+      "projected_sha256": "4a1a86d8bf01ba1283512cf60b7c9ad890fff036989ca65dd72213af42678076",
+      "original_bytes": 940,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/config.json",
+      "original_sha256": "25839c08ef23c3e7189d8223ce0066ba02c2a47f2be4b7ff66a5dff258d99970",
+      "projected_sha256": "dee80f3221b2e93b194f786003d70d1b929f8ffd67300e1b9c178b510aa3da54",
+      "original_bytes": 10214,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/observation.json",
+      "original_sha256": "8ef78ad66b6b02719e802be22700015798638910fa47e6ebd910ab44b844e6a9",
+      "projected_sha256": "0e075b09c140460af730d829d6b9293d01c7550e6da3d1adbb16a09a6f2f48c3",
+      "original_bytes": 813,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/events.jsonl",
+      "original_sha256": "a5c0b501f59e2159cac2b5e9ddbaa6bad059e532abb7416f0062198e62c2c9d2",
+      "projected_sha256": "d5c5a178724c9b91ee5fa3fd749b965b63340aa10d59e0b04c1f6fea67ced764",
+      "original_bytes": 3766,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/native-process.json",
+      "original_sha256": "2323081ce8621e175805f61fc73d9a80ea677577e55cc667661efd920adc7e17",
+      "projected_sha256": "2323081ce8621e175805f61fc73d9a80ea677577e55cc667661efd920adc7e17",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-deterministic-withdrawal-k70nwn1a/native-selected.json",
+      "original_sha256": "ad739e9615d8fde94d58bead5ee410a27083f0504702dcfd72d65186a21574a1",
+      "projected_sha256": "81778e8cd45c86d1952b3da147826f494558b8795c2efc213ebcb56d83d80301",
+      "original_bytes": 17601,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/manifest.json",
+      "original_sha256": "4db463662ca623b602ff20c5fc1cc97570c8fde0155d65ae03e2ee3a230cd62f",
+      "projected_sha256": "e085b296805dfa4564d86edddb477d956b3ef235c2ba3c51135602655868c5f1",
+      "original_bytes": 3439,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/settings.json",
+      "original_sha256": "28df807e9d5c01f2e540b1ebb3bdf07ca70764ae8675ab07409d30b78d8d3b9b",
+      "projected_sha256": "faa0c2d48e298172be61c737519b1fc7310d6253b33f719e21303b53a5c0ab60",
+      "original_bytes": 930,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/config.json",
+      "original_sha256": "697e2652cab06fb1c3090ab029c173ef159c95c6c00c7e398695f28bd6f73770",
+      "projected_sha256": "e70506ce28c61cbc77524e6f640dc9025c2bf48c18feb0982236eeb94ccb4c56",
+      "original_bytes": 9651,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/observation.json",
+      "original_sha256": "1738fdb0f38dc9bc2018355e5e681b311aa3726d33906ae22599a5cf8abf61a2",
+      "projected_sha256": "dda78dcea480fe2e041bd9691711a0ebde7adefea2b176820faf7324bc9fad65",
+      "original_bytes": 776,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/events.jsonl",
+      "original_sha256": "8b04adf9de5b16000caee6aab684f290c6e2fe4ffe9eb0be6c25c60113aa1f9b",
+      "projected_sha256": "b4141fc8bd27ec329e387a5dba5e48095e2ba340b7d03eaf741904a3f7094e88",
+      "original_bytes": 1539,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/native-process.json",
+      "original_sha256": "368107572472b0b2a09fcf09f0156e093e1ce6f2cd1c02a46cd4825efd951bc8",
+      "projected_sha256": "368107572472b0b2a09fcf09f0156e093e1ce6f2cd1c02a46cd4825efd951bc8",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-missing-dqthl1h5/native-selected.json",
+      "original_sha256": "a62668867d08989e22d85430a4bdef24291bcee431b375c725e759e436f2c918",
+      "projected_sha256": "ca184c057b65eccd6acbdf2541aaff5b1fe2ae3b86a498b87faf0335d0c992ce",
+      "original_bytes": 11846,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/manifest.json",
+      "original_sha256": "8fa022de6635e8dbd467d7bca23d77d7afc3a554c9178d7de8ad6ab3bb9b7a19",
+      "projected_sha256": "bef042d931d95e40ac1a2072fe17a7f09228640ecc30e7c9866a59251a49f3a8",
+      "original_bytes": 3947,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/settings.json",
+      "original_sha256": "beb4610563c72045eb047c516dd2b1a16378cb54d4623c2b29754d2834f64f82",
+      "projected_sha256": "0ed74c4cd5fba56ebda8d501f57d10350e981a810b930bd8e4bf99b11d04a6ef",
+      "original_bytes": 950,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/config.json",
+      "original_sha256": "839ccce99d9975c3b9c366c5b338917d713c998a5fbfa3187e91e8f40512ad06",
+      "projected_sha256": "c12cbdf5c12d2a86b15e400205cd075cd26e20ffbef370a4ef8a9f8677cb8233",
+      "original_bytes": 10166,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/observation.json",
+      "original_sha256": "33eec8d524a68525ca23ed8d010e77fcb359e467b877d824359e8ba4a7d5ed74",
+      "projected_sha256": "1417ed8e1b5ceadd7fade5747d3da1b7337fd390d86bb9dadc93ca07ae04d36e",
+      "original_bytes": 1633,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/events.jsonl",
+      "original_sha256": "e904883f861ef9974a6397032de1d4982f41f0861e741a0c68c6144dca180fd6",
+      "projected_sha256": "00214e770bf3ff285981a1560431fed81ac179b895e24d2db588848c2298fe7c",
+      "original_bytes": 4713,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/native-process.json",
+      "original_sha256": "0a65dd84c742c51ca5213adc746bf0459a206f57ecf6c9217e9476b8b0d1264c",
+      "projected_sha256": "0a65dd84c742c51ca5213adc746bf0459a206f57ecf6c9217e9476b8b0d1264c",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-other-destination-6_vr5b35/native-selected.json",
+      "original_sha256": "bb77e576468b7ce34ce64e8072865ae4dafb7f96f8d380ece65839a07c00c79e",
+      "projected_sha256": "08fb71c7492f88ca925343b3f3bc903c1a2d0a1447d7d54b5a7e046b54e15c36",
+      "original_bytes": 15618,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/manifest.json",
+      "original_sha256": "fd25d393642fec609fe0aaf1f9deb49ae5592ba6852b7402edd50f70b5ed9da1",
+      "projected_sha256": "53fcf22d7c30aa39b032cc3924b9881cfeb2445c6001edc84655229433f1ed83",
+      "original_bytes": 4825,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/settings.json",
+      "original_sha256": "10890ce3eb934fc3ed0a461d09d51b1d7ca6468bd7229acf42a050497fdc83b4",
+      "projected_sha256": "86f50e27294bd16251f23b9413234ce2e3f5f39857a6a1ff6919dbf9a32a2f18",
+      "original_bytes": 956,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/config.json",
+      "original_sha256": "930f948ec11eb09638171ca05c517585fa10826b3c932f57d319d2f53dd2581f",
+      "projected_sha256": "5434e3ae53c0799db3d2ec6e5174828d85be09de6beab80f0808955e4639b7ea",
+      "original_bytes": 10897,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/observation.json",
+      "original_sha256": "b96cd043c133d27fd2a1da97f57d0d3d6c5f310092567b5390d5e95b3eadee7a",
+      "projected_sha256": "11f33b94b403037cd352adad89fa7139bf5ab7ef1977e9c625de26797c37ab09",
+      "original_bytes": 1707,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/events.jsonl",
+      "original_sha256": "72d15adda0d219208ec9f2e8a376ee1958ee657dc74a3793771b3e26e28edd26",
+      "projected_sha256": "a849a68bede6fb50b5648ec883c0e51dfe60a1a098fd5486c04c85650a0c843c",
+      "original_bytes": 4749,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/native-process.json",
+      "original_sha256": "68ad0cbf9644cf8fb11539f12420990a52a71527b1266df3950c1c30913c8a10",
+      "projected_sha256": "68ad0cbf9644cf8fb11539f12420990a52a71527b1266df3950c1c30913c8a10",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-renewal-after-denial-zu7tqp4w/native-selected.json",
+      "original_sha256": "c50028ded6a8d8032174b0837a30c0575de9867a3519cb2e7d187bf64f8aaec1",
+      "projected_sha256": "cc50e0c203bc98f98c1cd91ae34daa56ad9fd62ef916d7af5f78b8125632cd82",
+      "original_bytes": 15744,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/manifest.json",
+      "original_sha256": "e624ae50f3688e2ca88e46de39441a5ebe47727349e393a55611d2fae31d6de1",
+      "projected_sha256": "00fa3b773b4ed11ca0ebc3dfbfe2565c0ba2eda8853d44b5e8d62d81d96bcd5a",
+      "original_bytes": 4107,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/settings.json",
+      "original_sha256": "f10c292e2a13a8913fc8016974de204da9e6825fdc7196c4d7a23b8419d89b59",
+      "projected_sha256": "18b3293f56aa13c97fa8825c66523c17ec51f82713923367342f279b12ad4ed6",
+      "original_bytes": 936,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/config.json",
+      "original_sha256": "654813310450bb9a84e2f89d217374764e74d947084ad75044d48a8ff94315ae",
+      "projected_sha256": "94a262c1b5459aa28d165f9557ecc9b28df8046eb48978bc687116a10917dc9c",
+      "original_bytes": 10200,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/observation.json",
+      "original_sha256": "c004641a4940fa1ae3c41e576062ddb784293970c675af634b36aacd0e93ecf8",
+      "projected_sha256": "d89e294a1be0fefb96886d2219d579d58ca810b50f3152bcaa5f0aa5c2c26fe4",
+      "original_bytes": 799,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/events.jsonl",
+      "original_sha256": "84c79b58900db00c2801e8d369bc7633df6a20f3c93d3c5f84ba422a892686ca",
+      "projected_sha256": "f6bce3824f153b3d7d3c395f0c63d49b52a7f5cc137c542bb6eeb373df1eabf4",
+      "original_bytes": 3742,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/native-process.json",
+      "original_sha256": "4d409d85756d96cb3b0d712c93c2b2ee22bb65245b8411e76ce4b1f56fbf68c0",
+      "projected_sha256": "4d409d85756d96cb3b0d712c93c2b2ee22bb65245b8411e76ce4b1f56fbf68c0",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-native-only-withdrawal-f_1q9is2/native-selected.json",
+      "original_sha256": "8a147e40fb7e2cdee61bcaa94520d6360df639cc93c44182e7590486caedb3d1",
+      "projected_sha256": "92a3c1149dce5d5b5d47b55df4295231010d59a4a794b87fe50a03020e24efc9",
+      "original_bytes": 19321,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/manifest.json",
+      "original_sha256": "db3fe631ef39617ab3bcbf4cf2059996401c5adfc90738b9f1b9559fee34097d",
+      "projected_sha256": "bab6220c86519b76bc387fec6571b8175ba838f492a86f0110f68e3b9045c4be",
+      "original_bytes": 3982,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/settings.json",
+      "original_sha256": "9df946bf61f93c095ee6cdae73c98bd67ec8175198dfb27661053c954204311b",
+      "projected_sha256": "3d6bf6316d5122447d22606f5d805517973dd606574c78e24619d18fa783294d",
+      "original_bytes": 960,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/config.json",
+      "original_sha256": "0daf35f8703c6acf7e273f3895f52d070946a49634a051d975559509f37c5e64",
+      "projected_sha256": "7601470527d64b51fc76f094058698ea57008a22dca2417f700608d2f9bcbe9a",
+      "original_bytes": 10196,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/observation.json",
+      "original_sha256": "4d82f3140a5c14d22c5198f8bba5722e2f2d4f6a971afac6c7c459100ff94195",
+      "projected_sha256": "f2c19f8301409ec3dc4728d601edc149e34a4763a8c15b857b28e87c31ab9af6",
+      "original_bytes": 2241,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/events.jsonl",
+      "original_sha256": "774e79958f883f0fccbecccbe6e192113ca3afaeab29f8f0eba0bfd749f21ef0",
+      "projected_sha256": "f99520f98a8479b34a7316c7b9231e94c55e4daf4ff3f4a74e899057f864c380",
+      "original_bytes": 5073,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/native-process.json",
+      "original_sha256": "2e1e70834cba10cdc8009b8c7702f393062fceefaacb2d336148e0efc9591f3b",
+      "projected_sha256": "2e1e70834cba10cdc8009b8c7702f393062fceefaacb2d336148e0efc9591f3b",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-other-destination-whzrang1/native-selected.json",
+      "original_sha256": "4c81feaabdea561904e3509cc07dd7e9abb9884d53508b18e910adf578d284e4",
+      "projected_sha256": "bd68f48b43bc8422370eb960e036bc68168d32b8a94bd11b81279c8b80934201",
+      "original_bytes": 18915,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/manifest.json",
+      "original_sha256": "bc8908e36f9f8b8f626ba1f7cf6585006b8adcf4693504a91fca27b8e8ff04b7",
+      "projected_sha256": "99e04f73c32210d4492db22f2f70c6d1cd691b41c07c188f41dbc76733d9821b",
+      "original_bytes": 4865,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/settings.json",
+      "original_sha256": "a4ef1288a8bbd452d660deda20630799d1eee9f11ea925e9436ce2bef6e65cfa",
+      "projected_sha256": "b3c2905c8ed81588c8ca711229dbd9e1a7a730c06b712584939824347c4e9d75",
+      "original_bytes": 966,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/config.json",
+      "original_sha256": "7695bef3ad88d14cdae301adc4d2f998a99e7af8e13737ad1a172257e9027e59",
+      "projected_sha256": "8159a7cf46fbf1040c17f376b4daca78eef298adcfc1d0553347f10643acfbfd",
+      "original_bytes": 10932,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/observation.json",
+      "original_sha256": "2492bac05557147d994dda6d1a2cb96b7ac67ee95f19bb7ee1d75576ab2b7e0d",
+      "projected_sha256": "1c96ac9c09968cd1b9b277b3ffbf24b0e8a8186780d372d97c1d702b9aeae126",
+      "original_bytes": 3459,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/events.jsonl",
+      "original_sha256": "5d90ce60fbba0927674828d0be186415bc6406c67c03c45b2104ba7d834a4a12",
+      "projected_sha256": "0464722701f038033bea92c81d6842c529a0408dd10ad613bdac96072614e5fb",
+      "original_bytes": 10105,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/native-process.json",
+      "original_sha256": "f2105cabacf44898484514ee098ca2f5e4378f00907ddff93e0fc179373bd5eb",
+      "projected_sha256": "f2105cabacf44898484514ee098ca2f5e4378f00907ddff93e0fc179373bd5eb",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-renewal-after-denial-_brniuyf/native-selected.json",
+      "original_sha256": "899785a55c5055fb34db70257dfc517d1cf685ba4489321190545fd894d4f8ae",
+      "projected_sha256": "58bdcc166110148010928d25a81b4b8a3638cb0fa537705972ff1d20ab927c62",
+      "original_bytes": 28737,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/manifest.json",
+      "original_sha256": "c7b019dd831b4b5440029b42784705fbb4c0e97cc019d0708f340bdbde8a58fb",
+      "projected_sha256": "31b026a200b25a7f66beecdfa2ddcf1c59b31695217ca24a95699d958c64b025",
+      "original_bytes": 4590,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/settings.json",
+      "original_sha256": "780a574913ee5a55f045f198aeca56026d2f314fe4952603ab8764d9ba061fbb",
+      "projected_sha256": "e947198a2a9f4485474810eadcb72dc0b744b6a8265642349c145554118ebda4",
+      "original_bytes": 972,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/config.json",
+      "original_sha256": "e54ade2a85973499589f846771f161d9981b9fc28d6f9352d44d7cabe26bab09",
+      "projected_sha256": "ad8406166780a53942e47ec91f6eedb823ebcf0b1ede59337707a6f72cd11d7e",
+      "original_bytes": 10652,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/observation.json",
+      "original_sha256": "2305ce23d41c7009869dc0c5516a9007299bb137ac86e57bd94e960af0af5d0f",
+      "projected_sha256": "3938a8a9a678f3a66f5b615b89c1a58337e806c901ac50e55f3e20d8c7221027",
+      "original_bytes": 2762,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/events.jsonl",
+      "original_sha256": "2768dc350b488b2cfdb9f9c1be46057857684e09ef3c0933fa34e9ef4f041504",
+      "projected_sha256": "0319ae278c83b47aa1837cf50fb3f82b0c53ad363bb1a56a3decefd122dc9c45",
+      "original_bytes": 7234,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/native-process.json",
+      "original_sha256": "d017f88b209607789d924dd17f5a3d86f5715082305b5c42af2cd9b766bf2b6d",
+      "projected_sha256": "d017f88b209607789d924dd17f5a3d86f5715082305b5c42af2cd9b766bf2b6d",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-after-denial-t52jsau4/native-selected.json",
+      "original_sha256": "f46586d7a68513339f39469249cb2d838326a0ebda7a8aa1f304fc4887db9cdf",
+      "projected_sha256": "6b971af93089f450e9d3e581ac5dc2ea90d85f86071e97fa0e1a9c23af948b6d",
+      "original_bytes": 25799,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/manifest.json",
+      "original_sha256": "b3f5dffc6c5966b39d48f991c768ea74a5da952cffd35f568183ba5a138051f1",
+      "projected_sha256": "d5d53c605c655cec0a29b010813c5c34e72872fbd9df8f142d267a2592472832",
+      "original_bytes": 4147,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/settings.json",
+      "original_sha256": "bdf3caf130b3fbbf502ff7c17db57c47f1e0c5a0b3a862bf31f7d6d9e6d04b22",
+      "projected_sha256": "a9584a9ef781c3a572138374d1e6e6340b301be0b602827acc04f245530fe530",
+      "original_bytes": 946,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/config.json",
+      "original_sha256": "ecc41897f45e67898f27738a582e13b3a173adabb66ec3ca9815d857afe5fa38",
+      "projected_sha256": "f5ff557cfe1dbee8af6d2c18001587c2f2dd6ab012fd94e17ddbc8f4835563c3",
+      "original_bytes": 10235,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/observation.json",
+      "original_sha256": "0c52bfb40756913f7f214e72f0d9c7954b06e7b5e73ae350bfb34c35a171e524",
+      "projected_sha256": "5f6d8265ccc79beafe3c459a69f3ef80130d589172971a2dc929204f525fe312",
+      "original_bytes": 840,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/events.jsonl",
+      "original_sha256": "2b4872b78cb1f19a37bbb5f1d7171801a3213c37abc16d3a69713d9fd5334c97",
+      "projected_sha256": "cb5d800ae3c45837faaf48ed226a21fc518d10d3a2a2e07b70072dc52c538de6",
+      "original_bytes": 3802,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/native-process.json",
+      "original_sha256": "1e22e44ea3677ae1c95b7926b62d6109b6ff66c3c6d145f12cea452ba930e057",
+      "projected_sha256": "1e22e44ea3677ae1c95b7926b62d6109b6ff66c3c6d145f12cea452ba930e057",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-renewed-approval-withdrawal-j3s4_pwx/native-selected.json",
+      "original_sha256": "408d556b2844e7a4166112520141f3dfbb65f8c63ab23fe16d9479ac40310df0",
+      "projected_sha256": "5f007ad7a7ff24ced8675769b7eba2aaad01ab7065c6578004707de9c233c00d",
+      "original_bytes": 17677,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/manifest.json",
+      "original_sha256": "e3851b1dce2a61bf421a69a61c3d2faf19a6bc7c34847fdf1b12d7e09764494c",
+      "projected_sha256": "cb968f7373dc35bf7ee72c73b73e0262fc0625987372f0c950cc8698a65266e1",
+      "original_bytes": 3989,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/settings.json",
+      "original_sha256": "c7131918a801e540ff801a6367a634856865df413a0e374b052f5d2cc6af9793",
+      "projected_sha256": "bfa048f20fadbf127251bba4bc71d1b4ebe1111547de63c8a4a645560e677b8e",
+      "original_bytes": 962,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/config.json",
+      "original_sha256": "50e3df8329ff7f21322fcdd1a3c7b1b4869016e0cde78273d64287b162882772",
+      "projected_sha256": "3882ae63cdec9abc67543fb8b7e928a3eedffea99ca7b7d5becd6e0688b93618",
+      "original_bytes": 10202,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/observation.json",
+      "original_sha256": "650a745db892715fc1c432153f0bdbd105d910681fff79442bfc80808761d41b",
+      "projected_sha256": "84ac1e514ca0b0570c6e9006c4d69f5b9bf0b08b3c957d27f7955b9ccef12607",
+      "original_bytes": 2845,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/events.jsonl",
+      "original_sha256": "36ceb4cae0ff05743e45fb0b98c04b2a0d108147d10ba1494dc6de2aa41fb41e",
+      "projected_sha256": "c879b3ee362caf4de7af1850727a77c04b41fea74264116d4d2b42b99e2a96de",
+      "original_bytes": 7641,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/native-process.json",
+      "original_sha256": "376d3900f99d0898f2c74952616a888a95acdb1adeaf10084c495159b8af2909",
+      "projected_sha256": "376d3900f99d0898f2c74952616a888a95acdb1adeaf10084c495159b8af2909",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-other-destination-k3eghy99/native-selected.json",
+      "original_sha256": "c86a4151ee6ae8018035bf84b1967f7eeaf2a11e343fce23d32deec0a725f5e1",
+      "projected_sha256": "ca001c01b23909cf76f4c61f6bdccf8e8f05ae97e95808ef7112047534c17b6d",
+      "original_bytes": 27071,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/manifest.json",
+      "original_sha256": "bddce253da679e8546aab3a91e8688212c53c5eff6b7f597ff5955bce309b439",
+      "projected_sha256": "21fffc5c391cca6f2a5d26f567961cd6eed31e1e05b78d01618c2162651cdb29",
+      "original_bytes": 4873,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/settings.json",
+      "original_sha256": "3a8008f838a5ebd4b6dccfbd73aa8539c643282908f4611015d7917d64d7b1cf",
+      "projected_sha256": "959c19e61d3bea86587e6e2191c711e5d28aa46324639c64cd2cdb87eedf6bdb",
+      "original_bytes": 968,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/config.json",
+      "original_sha256": "dd8e6a5da2af925c1c57ee762e472f0e8774dc14cc92fc53b3a14f97c78e7711",
+      "projected_sha256": "24ef6c0630ccc6a1e2824e7d47d2829c4e92faec12278584ac1be7ef53a802cc",
+      "original_bytes": 10939,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/observation.json",
+      "original_sha256": "aec4b5df75b3ca1dad1b91201b93319d08575cdc54527e743537572c66370f78",
+      "projected_sha256": "391e4183a17aa33f3533ff2c19f1b93b18806653750f7d791df10be232df34a8",
+      "original_bytes": 3053,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/events.jsonl",
+      "original_sha256": "58921556bf6be12febe95cb15b50d2ae7d5018472dc59b4d52f42a7369af3dab",
+      "projected_sha256": "019f76eeec0f8d4a913660fe66c864329b63d3f76ec07f756cc4b03b2289ed33",
+      "original_bytes": 7695,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/native-process.json",
+      "original_sha256": "f4dc2603501ef17d3b3bfff2581c98e1464838de235bb77cdbd56e0dd02b1bc0",
+      "projected_sha256": "f4dc2603501ef17d3b3bfff2581c98e1464838de235bb77cdbd56e0dd02b1bc0",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-renewal-after-denial-h9ng0q86/native-selected.json",
+      "original_sha256": "11633e481d334bdff3dfbd30ed1f45493f597a1c726eabc254e01a7b8bb3d416",
+      "projected_sha256": "60185c72939143edabaf465fc700519ca74c8c3bb85aa08dbbee694fa0f15ebd",
+      "original_bytes": 28915,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/manifest.json",
+      "original_sha256": "4d48222c3d5e4a17555fe19567fdd76de73469759e6fb2e809b9c15ff25d9cae",
+      "projected_sha256": "1716c4bedf9c50c7efae42c1d9a4e259d0579b1744cbffb9f92d3d7f5aa68dcf",
+      "original_bytes": 4598,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/settings.json",
+      "original_sha256": "42b1d5039484da3694b721f1870dd7819ad2566b19734779621dd73787eeb9ef",
+      "projected_sha256": "8612d9206c5f14783cb19feec5e1e642143f7b6f179c341b2ba90404d36a0dc6",
+      "original_bytes": 974,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/config.json",
+      "original_sha256": "8ee83bb0b6b12aa98e37d6cbbeec3f62adff3ac4183888bcee9f5e1b9eb5847e",
+      "projected_sha256": "0bb4ca13b52e4ceb9140a46c393840abcab82e6bd0e77c3fe6c40ec026bea4c8",
+      "original_bytes": 10659,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/observation.json",
+      "original_sha256": "75c28294e89cf7f4527b2a523e83b6a76c4abcc4accb441a6864dca2a6de63fe",
+      "projected_sha256": "2969c025f59f1182ef18ba70a75ef46e72ee81e4df81101354be29ef58c78003",
+      "original_bytes": 2652,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/events.jsonl",
+      "original_sha256": "082a12a30354508b420250cee40b8d79b063c4ce3f248cf8dc9df437f3ecd504",
+      "projected_sha256": "d85d30dca2ea65aab52f428d2473b5b35caac7a30bd95bec45bac00884eda04f",
+      "original_bytes": 7394,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/native-process.json",
+      "original_sha256": "baa900fe7785c888b59b941a32eec623f731c6139bdd7b1b8ba09e5e4c873cf5",
+      "projected_sha256": "baa900fe7785c888b59b941a32eec623f731c6139bdd7b1b8ba09e5e4c873cf5",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-after-denial-1vslytbj/native-selected.json",
+      "original_sha256": "aa7a906fde019e1fb1574ab4db2a8f6974afa274a1975b6a795b1dc14d8bba6b",
+      "projected_sha256": "21e42147c33cb3f7c3faaf437e591cb8d57c68d7f3e11b19d61f8f40b74e22e7",
+      "original_bytes": 25814,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/manifest.json",
+      "original_sha256": "43643c2df1b9db39d83590f58c5f1b0cff49e4f4e55fef587e0ff39bf4fffc3a",
+      "projected_sha256": "f21c33e68c687e9f7f5bad6f8152a017a91405350df3b499540ddd4a8bd86c58",
+      "original_bytes": 4155,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/settings.json",
+      "original_sha256": "d7646b463767c4d6d85f0b80470236a691210a447bc9f85b5df5899953ade81b",
+      "projected_sha256": "4b9e17a8e563d21c0dc0d929d0a07fbce4c2d0a3607fa22bbe3d4fed3d4ead6b",
+      "original_bytes": 948,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/config.json",
+      "original_sha256": "d319b4ca69157137c7daa590c90d820e96ef5c4194ae128ce0063671fc09f099",
+      "projected_sha256": "4e6e36c6aa347f372d45a3fc1b636a9254511a68b543d6944fc9157af505780b",
+      "original_bytes": 10242,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/observation.json",
+      "original_sha256": "89b78a077368ef72cf27190c59cd631f6dae3970a3d49b46c50e49e690f7d11f",
+      "projected_sha256": "d282d09ffe1d6075cc3cd99a841e85ea2f32b9f66b86f0011c96daca71229c78",
+      "original_bytes": 809,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/events.jsonl",
+      "original_sha256": "e0fb4e9c4e1cd1c794b11d505af1e2859e2274c06ab88c2ee5bfc721ef12e0a0",
+      "projected_sha256": "1656459863863f4f7c1989092c0075d9a24a340102c1ce166cae5bc9efacd691",
+      "original_bytes": 3814,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/native-process.json",
+      "original_sha256": "adb47e220ba2ba7b4e55fecba8c615d6ab632659d1a089e9928f3e4bbd00fc52",
+      "projected_sha256": "adb47e220ba2ba7b4e55fecba8c615d6ab632659d1a089e9928f3e4bbd00fc52",
+      "original_bytes": 86,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/native-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "projected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "projection_kind": "path-normalized whole file"
+    },
+    {
+      "projection": "claude/recovery-review-reproposal-withdrawal-z0tl1nl8/native-selected.json",
+      "original_sha256": "bdd649d5adc2d247ff2109b51f762516a17d9c134801f1fbfc4f662dc51d0a32",
+      "projected_sha256": "22b98f980028a7dfd7542ef282ed496ac1abac463bec3cf2e9da32500dec9e8c",
+      "original_bytes": 17615,
+      "projection_kind": "selected native user messages, visible assistant text/tool calls, effective init fields, and results; other events and thinking omitted"
+    },
+    {
+      "projection": "codex/codex-recovery-current-renewal-after-denial-ktigsw89.json",
+      "projected_sha256": "4dde2848c93cc6ea15886380c883dd2f98cfebbd3870f57c08a798ed803cafda",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/manifest.json",
+          "sha256": "4379d8dbc374b466f2a06d36e30364138965ed18669427def8e7219bf75d579e",
+          "bytes": 16581
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/config.json",
+          "sha256": "d3c098d9bcc8495361efe2fefe66f0372dd6cb647be5d8280ba64ff97cd49ad5",
+          "bytes": 10820
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/observation.json",
+          "sha256": "152a52e95b79ecc9f1696884c33b4964457c8e53a32c98d310f97f040b0a31d7",
+          "bytes": 250
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-v54rz2x3/reanalysis.json",
+          "sha256": "8dc6df29a1b35303ffdfd75d19491e827abecea9ebecc43190d8482e1b209e5b",
+          "bytes": 21542
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/effective-thread-start.json",
+          "sha256": "da7287ae58edf99198e9d8ee4bb635b7c342393adfa922f9b60dcece02517318",
+          "bytes": 3455
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/events.jsonl",
+          "sha256": "975f145d5cc592fd4c36fc1607214d7ed4433699e8824a21230381d0f8a7c95e",
+          "bytes": 4382
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/turn-0-history.json",
+          "sha256": "5355b335249ffbc82f84ceedc86ee9bfdede299dabe0d70ad15978d1207f1233",
+          "bytes": 3045
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/turn-0-rollout.jsonl",
+          "sha256": "a87ba8b1f1d7d2a75c8c80862383f501603be4691c73eaab49e39cb5ef13504e",
+          "bytes": 161994
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/native-stderr.log",
+          "sha256": "83818712ceaa4e482498c35fddd5c2fd733ab239c8e1bc8d7b1eeebbaa79eccc",
+          "bytes": 225
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-ktigsw89/native-process.json",
+          "sha256": "d210889e4c69dc149b047e6ca36c16915fa07a02896d8f0869e614b8d8fc6c6f",
+          "bytes": 84
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-v54rz2x3/persisted-turns.json",
+          "sha256": "8181cbd08cfb303cf545f86b22f7d229961af492687cd9b318d0da1fd0424abd",
+          "bytes": 2709
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-v54rz2x3/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-v54rz2x3/persisted-read-process.json",
+          "sha256": "e1ea172d3e2450b45f82bdea39b8ccb9606faa3ceae9b38265201eff66a94b0e",
+          "bytes": 83
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-v54rz2x3/persisted-read-sent.jsonl",
+          "sha256": "10853d8e0d54b86f42bd0bb2c241bbea0f713b8b5fabe02356d4e6667103fc42",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-native-only-renewal-after-denial-zajq4z3r.json",
+      "projected_sha256": "c54ae79f194ecb14db31b5e31352ad3d3ad4d3a9f0e4a3e181a65fd647f09c7d",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/manifest.json",
+          "sha256": "d3a5770473c46a70ddc14b413a7a05c07539a4fe63e155923cbeb1edaa62419d",
+          "bytes": 16637
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/config.json",
+          "sha256": "f93edae9f5584b9d90a2ae1344f4d0dd0f618cea8699ade332869504db7dc93e",
+          "bytes": 10848
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/observation.json",
+          "sha256": "31a14c33ec895e6a52ed36d070cc2b659c32c944f464cba642b45066c059371e",
+          "bytes": 20931
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/effective-thread-start.json",
+          "sha256": "06b5c1c07859b5c0b644b0847f1270fd9f52bb00476b4522fa8dddcef937a6ac",
+          "bytes": 3499
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/events.jsonl",
+          "sha256": "bb7b6ec61955473455853e373af8cb2562ca226a8232d7ad1ab19dcc9a2d1795",
+          "bytes": 4481
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/turn-0-history.json",
+          "sha256": "2c82206386599cb5d8b8b0cd11d1390f6d985d981892fc13bd6322f7e0d60cdd",
+          "bytes": 3067
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/turn-0-rollout.jsonl",
+          "sha256": "1142b8b82243dbd0c68db5cae35d01c0abf18d1c6d48ce472ccb815d7a04762b",
+          "bytes": 162189
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/native-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/native-process.json",
+          "sha256": "288f296f1537a300ca6ac020599dbab8c1c3a5b70d9204a9d9c363ae16006baa",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/persisted-turns.json",
+          "sha256": "224b561dc35744cf68946d074ac3a26b236cde458313efe27d06ba07aff7a5d6",
+          "bytes": 2731
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/persisted-read-process.json",
+          "sha256": "e1723fb0c43f1d2fec57fb7dc845aba4a2e72ccd8ab498670a80f54279644aec",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-renewal-after-denial-zajq4z3r/persisted-read-sent.jsonl",
+          "sha256": "bd82809f236d3b74be300cd5d4d50a7aac68805c8203b2855102042981a4a10f",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-current-withdrawal-ba77dw4a.json",
+      "projected_sha256": "6b9e18b0297cf452d1447d816b5ea2c9a78728626ea19b786d676733c85e3b82",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/manifest.json",
+          "sha256": "b994a496d43f4642bbff57d8b8ebb3cc18a80c59c7c073ff2d7930fce96f1b6f",
+          "bytes": 15802
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/config.json",
+          "sha256": "4c2fa3b6ed748eb67fe4cb5ac452d0d63bbbf2a4de7f3f762a3e5c62dc5cbfa8",
+          "bytes": 10111
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/observation.json",
+          "sha256": "a0375a4c6965609b453cab05c06f120954df4e12aa8c853acc4b825feea77f5f",
+          "bytes": 35964
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/effective-thread-start.json",
+          "sha256": "2ad7450a5721bb734bb7020af5ce330270922913d7e8b7f9b7293522a7852cc3",
+          "bytes": 3345
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/events.jsonl",
+          "sha256": "47e6c44efaad86a716100807814c330b35e0cc201c8ea14d49c211560827139d",
+          "bytes": 3426
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/turn-0-history.json",
+          "sha256": "ec7735c261200be0eecec2973bef48e81f1a64e8844ddf0567d9228c796fcac6",
+          "bytes": 1538
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/turn-1-history.json",
+          "sha256": "40f98a205bf1ea98bbcff92d3523e4a9b4383cd288b17ad140231f694120bf69",
+          "bytes": 2849
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/turn-1-rollout.jsonl",
+          "sha256": "a548b90a94bd52c69c4bd98853fce7fd2060dbc5b6aa917d219536d693f63001",
+          "bytes": 176241
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/native-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/native-process.json",
+          "sha256": "537060be4d3f22d69f9383fa99f02043582fdece5cc5f1bba0b847cdae84b30e",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/persisted-turns.json",
+          "sha256": "d877c3e8d756765b17343a08399ab864f3df5eb0fa2f9427e3f04d10f9c4b900",
+          "bytes": 2495
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/persisted-read-process.json",
+          "sha256": "6109f50677179cd5b48b042ea84713b9bb1a6ac5b1587c740d62935b1cc6f667",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-ba77dw4a/persisted-read-sent.jsonl",
+          "sha256": "3c08ad26806b692fada2563026e8ed064e27153659ca17d75b22cb7395475205",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-current-other-destination-p0ac7e5n.json",
+      "projected_sha256": "e01aef9b2cd23d853a1cff3bd6be0ce64a35d111fc8509aebc991b6550c56436",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/manifest.json",
+          "sha256": "63fd48e605d4c28057c709a7fa0ffa2ce05a86cf646814dbe8471e13d9d611d9",
+          "bytes": 15811
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/config.json",
+          "sha256": "5d4ac7a50f01fd1a4f36644c582e681c00faf6b1e2ca956d670cbe0753776f8b",
+          "bytes": 10081
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/observation.json",
+          "sha256": "25c3031a489faa2506d910fe43773f13b7a0557793c7af2d44034e6b85723615",
+          "bytes": 247
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-s03iz4zr/reanalysis.json",
+          "sha256": "28bc5a9966df6dbb02b4d4c4ba40361bcdf9f83e6bd285e9528819a9adbad69c",
+          "bytes": 21455
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/effective-thread-start.json",
+          "sha256": "13dee9b890eae37c0262d7be45e76f128c34d473603e6d2c6e09b5288d503128",
+          "bytes": 3422
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/events.jsonl",
+          "sha256": "dec3713b2d0b97de1a1a67df9c74755d0865f8f5553943a360b5efcdb391844f",
+          "bytes": 4358
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/turn-0-history.json",
+          "sha256": "e1af0aa517396714c65bc9e29a353f25440940db1f101db951041301d0e5f4c7",
+          "bytes": 3023
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/turn-0-rollout.jsonl",
+          "sha256": "8cca831031bcd186b8eb102ec79ec2067c9c8dc50754e4124fc84bbc33b1f2a4",
+          "bytes": 161177
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/native-stderr.log",
+          "sha256": "2a1902ed803e368528f17ab23dc8564fad5f7fbc640b891fb4d4bec9904440c3",
+          "bytes": 238
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-other-destination-p0ac7e5n/native-process.json",
+          "sha256": "9e8b91bd0ed4d16b06e33cbbe035bd12c64717e71ce6ba4b23932a7addeec647",
+          "bytes": 84
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-s03iz4zr/persisted-turns.json",
+          "sha256": "b640e171e157e2c59b6deedfc1f3c6b6d8ea91952cb7e5d5a68e4a2a8ea3bf59",
+          "bytes": 2687
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-s03iz4zr/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-s03iz4zr/persisted-read-process.json",
+          "sha256": "9bbc7e85ba21c93a5998dbb65c93d7f0eb29f51c0a0c8eac58238e92b569a17f",
+          "bytes": 83
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-s03iz4zr/persisted-read-sent.jsonl",
+          "sha256": "862a4065f45998c9c551ef238e234083d1d193ee5b391bc8a2cdf07f3902872d",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-current-withdrawal-after-denial-3z5x80om.json",
+      "projected_sha256": "8f38760921c714207dcbea743b5f953092b07983f08581e1e5a6867cb23ee7e0",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/manifest.json",
+          "sha256": "3e91ff9c806e2af3065b8bd8641c165acc436067d59879deef674759f3d18829",
+          "bytes": 16316
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/config.json",
+          "sha256": "3770a6f7a0f34fdfd8bff359a8d9b59dbfd3c885f71f318bf6a074fd28932fda",
+          "bytes": 10534
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/observation.json",
+          "sha256": "7837f5224ecdf0b8841aaf08be941ab7e5b32b8adc1fe198f2fc08d90e410da9",
+          "bytes": 253
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-lmhfr8_w/reanalysis.json",
+          "sha256": "37ac3d41618338fd2f52a93ceb716229cb217c6174602bd532763ac11ceb7f4e",
+          "bytes": 21825
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/effective-thread-start.json",
+          "sha256": "49c158b3d3e931356a97848e70678b01eb7d4c753fd05e5533244f40e1cd92f4",
+          "bytes": 3488
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/events.jsonl",
+          "sha256": "9a1fa829b295fa32898fd00a93e429676c122e1054ddb588bcc7f1762e1ac696",
+          "bytes": 4570
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/turn-0-history.json",
+          "sha256": "55833ec3c0d564f7063d9ad824fa5bf83e4b2795b84925321c26f221679c92c9",
+          "bytes": 3114
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/turn-0-rollout.jsonl",
+          "sha256": "429a66d29f151400d2518f7acfe9d1ab5c956146da681bc1a286ce078ec41ed6",
+          "bytes": 161749
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/native-stderr.log",
+          "sha256": "f17c661e4e15b6076a7c9670cb8b8f64f0b852ef95946ff0a0b13cd29695a00c",
+          "bytes": 247
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-withdrawal-after-denial-3z5x80om/native-process.json",
+          "sha256": "42ebecbe5eb4d47d5b4558e47d5a47c585e17457664efe3d5adbf1200d046736",
+          "bytes": 84
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-lmhfr8_w/persisted-turns.json",
+          "sha256": "51739f1a4f5080376f22150a437dfbae6f035a2afb0e43e1cc9283938f2b15c5",
+          "bytes": 2778
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-lmhfr8_w/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-lmhfr8_w/persisted-read-process.json",
+          "sha256": "0268faa7da17423f1b6c2f1d12fa8564ef0e9d1fd708449d9f2d2720e3ccf5ee",
+          "bytes": 83
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-lmhfr8_w/persisted-read-sent.jsonl",
+          "sha256": "5da78c717e6d524e072e5407cbcbf522d93c534aa791126d069e3571d00449fc",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-native-only-withdrawal-5m1bja6u.json",
+      "projected_sha256": "0969109d18b0407132beaba6b2c01fa2767ddb492f956843ecd490d82304028e",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/manifest.json",
+          "sha256": "146523ba3f115e297c951ab599dbaa201285986fbaeae7da5e8292fcd63ac318",
+          "bytes": 15858
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/config.json",
+          "sha256": "eddc490ac8bc7ebf8bf5df74f4d73848737d88b2af91a9a83a953f9ad7eb914e",
+          "bytes": 10139
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/observation.json",
+          "sha256": "fbbc917c4e5f632cdc78daa744c89eceeae0da351c2f88ec35974517bc7c70f6",
+          "bytes": 244
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-2o98o5gk/reanalysis.json",
+          "sha256": "b5db0cf7b286ec437d1dcb737f490b9996d4a8b5022662f7f30058210edeef65",
+          "bytes": 37069
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/effective-thread-start.json",
+          "sha256": "7226d212f458a5f8d8f96b4af951239bcb1e459e019312cedb1fca11c5d1b526",
+          "bytes": 3389
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/events.jsonl",
+          "sha256": "493ce37bf4c30c4b8bc12f3d39d323b64189979f7bad05a08f3eafa5ef800ba9",
+          "bytes": 3458
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/turn-0-history.json",
+          "sha256": "fe430fa892f2b4ab5df83bcef9b839ea70718e0ae99acf78f64bd4f8e3a2b54a",
+          "bytes": 1511
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/turn-1-history.json",
+          "sha256": "1dc9e9106f6a880c0651db3064b5a9e6aa07886eadb1a719790edfdb8be7bbaa",
+          "bytes": 2634
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/turn-1-rollout.jsonl",
+          "sha256": "dac0c1eb52d8fcf110504e0e48279f34fad1d95659004124d45248e712b45ca6",
+          "bytes": 173651
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/native-stderr.log",
+          "sha256": "9b31fd06416bca8ceca77c3b0395b8ea0ff9a88b193cc1d9296edbaea5d1c51d",
+          "bytes": 252
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-withdrawal-5m1bja6u/native-process.json",
+          "sha256": "f85097149651bd2b5f6b96c50d81a753d7e503faeb60f7aa8e63dd8cb0f9ad1d",
+          "bytes": 84
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-2o98o5gk/persisted-turns.json",
+          "sha256": "246050cbd79c0f2e712cb700315b1787cc4818f5783037698f972d67c95faba7",
+          "bytes": 2292
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-2o98o5gk/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-2o98o5gk/persisted-read-process.json",
+          "sha256": "46b464d0f05ea09e5b042758ebd42bcc730314a06f0a773bfbf65b8fd03db310",
+          "bytes": 83
+        },
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r5-reanalysis-2o98o5gk/persisted-read-sent.jsonl",
+          "sha256": "fd472e45a8eb2a05c3ff00be5a8d9b0fd163a55cebe8b30eea6704f485828af7",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-native-only-other-destination-obftudx6.json",
+      "projected_sha256": "87fa468a330d6c4ef1b9afd0a2d2bd43c5f1295dc72058195090a49ef6ac9a60",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/manifest.json",
+          "sha256": "308c71073551c72463e5abe1f5bed6ee14322762b9f7a58d2507914c931d4c85",
+          "bytes": 15872
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/config.json",
+          "sha256": "0e1c8135ef3184a492866da72b53366f96bb07d8aa7faf899ffa2cf7bd253033",
+          "bytes": 10105
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/observation.json",
+          "sha256": "dec475d39adf8620dfdc3224973097a0e8894152df8ea4e427323e20b1a8e286",
+          "bytes": 21304
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/effective-thread-start.json",
+          "sha256": "036b7e42f34fbfe3979d908c799f015c48948104ece6240e2e0eb68653c1cf89",
+          "bytes": 3466
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/events.jsonl",
+          "sha256": "c3b80b241da3ed0688ac8ba73d26278f4c68e0c952cdeda0286fa2a34875a8be",
+          "bytes": 4165
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/turn-0-history.json",
+          "sha256": "8ff1cad2f892d968150b13e125e76a775cf0fb5a7ee11275a4b26cf532c07a68",
+          "bytes": 3058
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/turn-0-rollout.jsonl",
+          "sha256": "aa795cccca3367d120e41b07c575970e37348f613c8c7582a8aa9a21d8e6081a",
+          "bytes": 162411
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/native-stderr.log",
+          "sha256": "72b9d6666fdb4fdad0d3780dd31aae112665ca5245ddd77d817f53041a6fee97",
+          "bytes": 261
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/native-process.json",
+          "sha256": "1db8d3af1feaa08013a6c4401d5a03ba5c2756607837cec50b3ad9af7f94f2f1",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/persisted-turns.json",
+          "sha256": "688ee421d9710d427e4e6d713122198464c1e052b8fdf05824eaba9098721646",
+          "bytes": 2722
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/persisted-read-process.json",
+          "sha256": "921152b689d3344482c70c6e88da89c32439b1ddf6708286555bea924356744c",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-obftudx6/persisted-read-sent.jsonl",
+          "sha256": "e56afd2e45532dd5f1da094335a24db4c7e7f520cdfffcf375019fe2ec33b9df",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-native-only-missing-ro_rjl1n.json",
+      "projected_sha256": "977d6c6cf4c973208143dcc05507b4a58a342b92c772005b6ba220b145f750e6",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/manifest.json",
+          "sha256": "9cb8d0c3c87fe7c47fcffcdcee9ad8976e90aaca7ac8505c70ce4ada30c5a7b9",
+          "bytes": 15273
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/config.json",
+          "sha256": "ea4ba9d37ee2c903164aa01d69b9e670efdf804047153c1ce80ceff10f9b1c23",
+          "bytes": 9578
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/observation.json",
+          "sha256": "5eaa47d3b13ecdf22001867428ea18e81a1d4eee3e17cd5034a107174feabe08",
+          "bytes": 18239
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/effective-thread-start.json",
+          "sha256": "aff5753c4cb7dce9b5f59108efdc51df3fb6c772885d21b9b1aa33e085335e71",
+          "bytes": 3356
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/events.jsonl",
+          "sha256": "80791b8438d02ab28c8fd3d30609d3fb1699d9ea03b6e1488b5537cea642598c",
+          "bytes": 1391
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/turn-0-history.json",
+          "sha256": "f2ce08d1df903850a0b00e4d294fe4a9e836a790ba500a23e6ece07c356f73d3",
+          "bytes": 1400
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/turn-0-rollout.jsonl",
+          "sha256": "d29f50901ae5cdcbfa17969789761b876b1fa6625ae0f4cc7b979df9f103db2a",
+          "bytes": 151624
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/native-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/native-process.json",
+          "sha256": "3bb2c7f3dfaf3fb5c3f9176831fe3fa270581ccca159da596b0ee59bca53b298",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/persisted-turns.json",
+          "sha256": "9ff2b3e8053f01c476c95bd0fa912bd5b040adfb1c2cf3d7b1526f215f58d12b",
+          "bytes": 1122
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/persisted-read-process.json",
+          "sha256": "acbea86b711e99f892202302132da4f6f11e2e06e0179ebd687889785344b66c",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-missing-ro_rjl1n/persisted-read-sent.jsonl",
+          "sha256": "8462a0895a583aff51098e3267005825da12c852d198c95a85e1646c3c7a6afd",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-deterministic-renewal-after-denial-18myi_ti.json",
+      "projected_sha256": "9851fca4e62fdf56fbb833a11a09119d0f6569b29d6e9f5116c3fc05d9214eaf",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/manifest.json",
+          "sha256": "885aacf427c5df51d854adae629477cb828a65ec9047bcb3130b0109b3a6f259",
+          "bytes": 16674
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/config.json",
+          "sha256": "3f4f916785ac07a7fd5d7c5372153fc0312b27d7135689775be1cce4dcefab0b",
+          "bytes": 10862
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/observation.json",
+          "sha256": "3c477384d720789ddfb4a23c8e39b2c4a51500993c6ec2f2f4daba74282011d5",
+          "bytes": 21569
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/effective-thread-start.json",
+          "sha256": "110e86adb9fad4637c29b34e3b1939a0337eef9ab19ab5b0e5f6f2a249b265ad",
+          "bytes": 3521
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/events.jsonl",
+          "sha256": "8cd91098910659b979c0cb16228e20706ec26e642fdbc7ad2f250b28d54b00f9",
+          "bytes": 4538
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/turn-0-history.json",
+          "sha256": "1d1ebdb8cd708abd2324dce947809577e366cf744332badaf65dfa7663f7b792",
+          "bytes": 3064
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/turn-0-rollout.jsonl",
+          "sha256": "79b191389b1e6ff073429bb3ad3adbc84523e7611869587bf7d3b74aee1d9d37",
+          "bytes": 162786
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/native-stderr.log",
+          "sha256": "494ba54f070693fe0b86829c13d8306e34c2b7e551c7ad90ab262d0844933052",
+          "bytes": 254
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/native-process.json",
+          "sha256": "23f2f4baab8ccffee49c870951d9a7ddad85c2f79a0dc4cf14db11a98aba7bfb",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/persisted-turns.json",
+          "sha256": "5623d1b2ce6a19dba89ee07a238d78cabf9bc8a72b36d3df197789bc7db2150e",
+          "bytes": 2728
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/persisted-read-process.json",
+          "sha256": "1ccba57179322fc048b1b286e21e516ad36da4b78108d4bb3b483a8afae43f5e",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-renewal-after-denial-18myi_ti/persisted-read-sent.jsonl",
+          "sha256": "d1fe3f8b2ffdfbb7e349e34ce963e49b106db228a29df6763c41b8c09771ac11",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-deterministic-withdrawal-0a2_s89m.json",
+      "projected_sha256": "50354e1628048e2f73f029540d5ac981b34af9192c3167cbc86e41e1ee0c1427",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/manifest.json",
+          "sha256": "2b485e1ff521f6462514f714d6e03a2b0fd2af5d750894ce36bbf4582574a4b5",
+          "bytes": 15895
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/config.json",
+          "sha256": "c53f27d683211294247f078bef9242948a3357247d818603e50d9bb483e58473",
+          "bytes": 10153
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/observation.json",
+          "sha256": "b3175b87bba37533bcbcbb25faafce283327ec3cbe82f252118fe3848507b553",
+          "bytes": 36791
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/effective-thread-start.json",
+          "sha256": "aff2a3aa6c4a9567847a1ccddfa6e9019fe6fc975658641648298297f985ef5b",
+          "bytes": 3411
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/events.jsonl",
+          "sha256": "6aa9fc3960d067b661de71465d28b9bd965be339cdfdb0894f6ebd53ca2608ff",
+          "bytes": 3474
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/turn-0-history.json",
+          "sha256": "98e412d7f078deb26c5dc40c250ca39ff62b3a411c34919e5265e22bd1605f47",
+          "bytes": 1512
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/turn-1-history.json",
+          "sha256": "29878980b99290b4f8049e61fa95547b5238b9e6adcf2834488994721642c0fb",
+          "bytes": 2625
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/turn-1-rollout.jsonl",
+          "sha256": "9161443e13e7e18dcc13c544ea116c164b0e5ae15b2599f606623cc902c89dc2",
+          "bytes": 173950
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/native-stderr.log",
+          "sha256": "0671fecbf3b48dbaafcd9aff8b47f70280250d9c013f09e7d4b8b8c758c96acf",
+          "bytes": 261
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/native-process.json",
+          "sha256": "1f937b4d43cdcb421460170b8277350209e44809231c6ae482218aa709a30895",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/persisted-turns.json",
+          "sha256": "d68f3cfb91498289a29d7a6564261cbbdc87e151138de10edc2735213032cf00",
+          "bytes": 2283
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/persisted-read-process.json",
+          "sha256": "4cf68a08e98d27e6ae1038566499be30b16f2f055f335674a5a2cbdad5c31f78",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-withdrawal-0a2_s89m/persisted-read-sent.jsonl",
+          "sha256": "1952991e06e12966a99bf026a4279afc0e0379fad0a8a0a499422e0380309ea2",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-deterministic-other-destination-vt69mle1.json",
+      "projected_sha256": "20641df81417387f3a25a2052c94dd3f0a6fd1dbe2c7e1cb3585cd36d85106d8",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/manifest.json",
+          "sha256": "7c4462e51638e2204c85a64f7913e60d5cfe6985da94704db43245b68f204cb6",
+          "bytes": 15898
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/config.json",
+          "sha256": "d5871031dbc3ff6db97441857616d6e0ec22b73f80b983548c0779c65f2a507a",
+          "bytes": 10117
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/observation.json",
+          "sha256": "e486df5c3f4f2f4f568f241ce21e6cef35ef308633dc20be088491c306035f98",
+          "bytes": 21425
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/effective-thread-start.json",
+          "sha256": "fbfd020953646ca3e3fb7a35a96fca2e12b3afd55be4eb0fa103fc401476aa97",
+          "bytes": 3488
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/events.jsonl",
+          "sha256": "49db012249fdbf83d2e71dea4d518c16a5c3a4f9e5ecd3ca52d057c4e9972017",
+          "bytes": 4514
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/turn-0-history.json",
+          "sha256": "69634828e01dcd3e17f483b141d8eecaf16a65729b0ed898e003cf52c9d69fc1",
+          "bytes": 3048
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/turn-0-rollout.jsonl",
+          "sha256": "159d485d040a6437df377b043753731a7c4b42996d4b520c14da8ed33d2f3684",
+          "bytes": 161693
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/native-stderr.log",
+          "sha256": "259cc598beb39ad09213a64a781fdffcc09ea31b4c98d74dbcbf8c95c870f825",
+          "bytes": 261
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/native-process.json",
+          "sha256": "4cc27e9784efe631ccecd24faa90ac04f9f1ccb467a88319049f2e23ae1554fb",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/persisted-turns.json",
+          "sha256": "538396bb02c0aab1d748d58ceb755c7c536be062e9d0d693144693afd7730a80",
+          "bytes": 2712
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/persisted-read-process.json",
+          "sha256": "f0c14f469805dedae08a3113a642fb3182a97b831aeb6421de648fa06c514e15",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-deterministic-other-destination-vt69mle1/persisted-read-sent.jsonl",
+          "sha256": "75d66e987360aef77239df5d9d44f257dd871cda6abd1fed9d567010cbef679b",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-advisory-renewal-after-denial-w5glyeg4.json",
+      "projected_sha256": "1f60e38e79d78d0c6cd0ecf4943a273ab6229e28857eed0bc91b3bfe20abda3c",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/manifest.json",
+          "sha256": "e0bb7a4c6a65589393e363e91018c1852c1d79a6c00b6fde353522917fad28d5",
+          "bytes": 16604
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/config.json",
+          "sha256": "45206083bcc0fb4b353b2c6959b90aae5493baf74733811b63677b180e9ca60a",
+          "bytes": 10827
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/observation.json",
+          "sha256": "c226be9d04fb2dc88439d987a1fefb4435c8f7956af55b4eec8480ada66d5390",
+          "bytes": 21325
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/effective-thread-start.json",
+          "sha256": "96a3aa074c35414b98473324d543d9efbe039d8784f17779aa4a1914a0472607",
+          "bytes": 3466
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/events.jsonl",
+          "sha256": "966637eb3370558a823b1a1d1177f7e73f5862d6b8154ce6ab3e3e2a928374dc",
+          "bytes": 4686
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/turn-0-history.json",
+          "sha256": "94b7372a6ee050476ed0def5e38eca1e7975c65b41886a1b086730327c26bedb",
+          "bytes": 3042
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/turn-0-rollout.jsonl",
+          "sha256": "ac3ab0d35a6833bbe91a8dbf811999b69abc5a03b81eae4772371089931a9eae",
+          "bytes": 163302
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/native-stderr.log",
+          "sha256": "a988059b47c4e63e74ea5ce6bef2b6548b009584e43509bcdcdcdd7f3018cd85",
+          "bytes": 257
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/native-process.json",
+          "sha256": "dab7d7e848ad617b67da6febb54020c8fcb169c8adbdb1533247083796e21d6d",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/persisted-turns.json",
+          "sha256": "138465197bc7eec2946efb394ddda52f1609a679c2159def9ed6a8cf6a8e6b00",
+          "bytes": 2706
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/persisted-read-process.json",
+          "sha256": "abcb55828631152fb50b51bcd61d868cd65497eed4ea87915f871819e998f6cd",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-renewal-after-denial-w5glyeg4/persisted-read-sent.jsonl",
+          "sha256": "1722b515a0f121d9a2a05e211003be1ac8339b0e2d6fcce9c33657d1a6161715",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-advisory-withdrawal-3mifqar2.json",
+      "projected_sha256": "efb907cf5bf73c32cb1407d16f47a4d395bd2ade75cff530e46d2e7db7fc5df0",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/manifest.json",
+          "sha256": "433a6eb35201a6bcae051881b05c6c496968285a739054b6f1cc4a52cd2c2a16",
+          "bytes": 15825
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/config.json",
+          "sha256": "b479256c29c8574d92998cc9f5cb1034f6ade37b7468b91d36a2f0d810bf7400",
+          "bytes": 10118
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/observation.json",
+          "sha256": "6adaed8dc931ec313ecedcb61c3f85908a8a0cba139941d5520599edd9f6c401",
+          "bytes": 36057
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/effective-thread-start.json",
+          "sha256": "6a43a27c4f2a8616a0475732ed3535a59c3d23d1de45bc03940ca79ffb9fcf23",
+          "bytes": 3356
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/events.jsonl",
+          "sha256": "27fd870e576e421dfb57e479d78287f7d0ab0c7221da83183e1a076232cadbb0",
+          "bytes": 3434
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/turn-0-history.json",
+          "sha256": "7f1a0d0c9287e882906ef7e9891d1e5e06d7cad901042736f493f90dc5503330",
+          "bytes": 1551
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/turn-1-history.json",
+          "sha256": "e4d3ae65ca548ca840dc6330636cb9ff28c32d0dc6f1fe40665fbbabee1a34fd",
+          "bytes": 2854
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/turn-1-rollout.jsonl",
+          "sha256": "5b43fceb5774aa3d3b58c10981438e1d9dccf473c6ecf85d7fd3db2fc0498df0",
+          "bytes": 176671
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/native-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/native-process.json",
+          "sha256": "66e3d73512c4668ac795c05afe7382f5fc1584ac866b8f788836eb97d5503ff8",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/persisted-turns.json",
+          "sha256": "ea040b0a31d674a9128b645346e46f4406d0243f01a6fb4cd174bc005c51f8e5",
+          "bytes": 2500
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/persisted-read-process.json",
+          "sha256": "7a308646cb6c32dbd36797b8f9a7f45aa2f66c0eae29b531079b76f91c53fa95",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-withdrawal-3mifqar2/persisted-read-sent.jsonl",
+          "sha256": "5de8df89b4c971cc696d69a94ccf26365f481ee689d6445a50915a5ece8f5c9f",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-advisory-other-destination-rocs9ujk.json",
+      "projected_sha256": "ac1955e2b464f67d8645f94ef26a4ac4621e95e872ad670227c94085c5dbfddc",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/manifest.json",
+          "sha256": "b094f0fd521f1df6fdd97b4186835f4f94b6d9f37f1a0950e8979a6639c2ec47",
+          "bytes": 15833
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/config.json",
+          "sha256": "4e03b402bde98e71b4bd2855b90f3e44002f2205f4da12a7f9609b2039c3769f",
+          "bytes": 10087
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/observation.json",
+          "sha256": "723218adf456f3b22f9613aa886f5de2f2e1825edfda68df743b107789072669",
+          "bytes": 21279
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/effective-thread-start.json",
+          "sha256": "cfa23a94ad46eada0b2858c2f89dcc5b4ffd38d4fe44083e950e28c54a9dd694",
+          "bytes": 3433
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/events.jsonl",
+          "sha256": "066e897ac96eba5ae90b98ecb329ebfcad4224d033043548c8d73c50597bf6c3",
+          "bytes": 4662
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/turn-0-history.json",
+          "sha256": "11e824e883ceafd9e365e2e8d9f51a7e57641999029b6bd1911bdf3aafafa6fe",
+          "bytes": 3127
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/turn-0-rollout.jsonl",
+          "sha256": "811b26674973e1b68412712a34bdba8a78d46a4375d9253608409a7ef072bde8",
+          "bytes": 164416
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/native-stderr.log",
+          "sha256": "69f9dac895c9e6251ec0b859231793e4ba3d4d71d86e1776dd063d8acb22fdb2",
+          "bytes": 261
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/native-process.json",
+          "sha256": "9273dc90cdb344e41fde9aee1052097ff8f3933f382bef7e100e9f62cc1fded5",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/persisted-turns.json",
+          "sha256": "06a781b0dff1223a48a252d9789b491c6c530e35313f663c2b6aba036a04b20d",
+          "bytes": 2791
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/persisted-read-process.json",
+          "sha256": "b56673f2a6d36a5f331d947e6fff2487caaf0fc26aa0e8fa393a6cb0400f3750",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-advisory-other-destination-rocs9ujk/persisted-read-sent.jsonl",
+          "sha256": "ed527fc268f7d8b20cc72fed499c09a51be687e469095748c5855e8466eea569",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit.json",
+      "projected_sha256": "da67419005129b5be48caed300d5e0ff9d2c71afcb65151bd880fbcd7b57b433",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/manifest.json",
+          "sha256": "adabba0bde56d00f0f2e9e37b65af7da41607f6568f2c104aa07290fefec8ee3",
+          "bytes": 16730
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/config.json",
+          "sha256": "90b7de8880f5e94b3967cd9e4ac999c14ea91f0b4a9b67e22220a30a3c9a04d9",
+          "bytes": 10890
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/observation.json",
+          "sha256": "4282e37cc7989d91a03aef702a9d35a2d285f26e6b3d2db772be0d9fa49d65cb",
+          "bytes": 24377
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/effective-thread-start.json",
+          "sha256": "80873e37cbde6a2136212ca30ea7e1bae678e8fec284bad97061dc1d355abf39",
+          "bytes": 3565
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/events.jsonl",
+          "sha256": "33abeba2be288fba5f8798fac39906c34a2d95fa6efa8962e0ceb6faa8e01385",
+          "bytes": 7273
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/turn-0-history.json",
+          "sha256": "c18cd812baee1fb2f7d784c4e3b83dce2c2073e8f6119c0e71043b3e14d950cc",
+          "bytes": 3751
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/turn-0-rollout.jsonl",
+          "sha256": "ab3ecbc51f580c2f80ea99674f68cb7bfa2c9ddd5496cb8788b9224c7de826b1",
+          "bytes": 171540
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/native-stderr.log",
+          "sha256": "d1cad3a587198f2b56ad4afdc96064ad350ccfb416cd20511d6839e092931645",
+          "bytes": 937
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/native-process.json",
+          "sha256": "902ba6078644cea2b4097aabdadcbabf7e053a026376cbb452112e56375b7744",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/persisted-turns.json",
+          "sha256": "2386fc40960d6271636de6e2dfb652009291d631b913b4925d654376af9c7ccb",
+          "bytes": 3385
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/persisted-read-process.json",
+          "sha256": "59a81bde2d751ff4ef4ac1381b9b86f2870e377ff6d4cccf65e35b9caee81c27",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-renewal-after-denial-9kogtdit/persisted-read-sent.jsonl",
+          "sha256": "315b9be2fa596356797063407a0838a6efaef8960b8ad78a55f150af2eda67ab",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-review-reproposal-withdrawal-haw0kaxk.json",
+      "projected_sha256": "071d12b768b9440e57fec612343bba1e57d6c084e72ecb710d710886ac67ec63",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/manifest.json",
+          "sha256": "db3ed02ea8a385025cddec8d1a192a4237ad1c9696aa4b16d8386fed35d4528a",
+          "bytes": 15951
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/config.json",
+          "sha256": "a35d23c5f18ef329d3128e93f6c6fe96189cb6175c21025367c738aa9023ff9c",
+          "bytes": 10181
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/observation.json",
+          "sha256": "5ef1d0dc4ca5021238567ccd5d095237c45aac5df84417b75729b1fc108e2ead",
+          "bytes": 37157
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/effective-thread-start.json",
+          "sha256": "54ef1c532161fd07094e5a2d9a1c118ca4b15afbabe2dc3c4d2b3a3a42fb8178",
+          "bytes": 3455
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/events.jsonl",
+          "sha256": "213203056582c6abd1d0142bcaf7e45f10a253fe0c0f9ad71ac2bbdb70ebe382",
+          "bytes": 3506
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/turn-0-history.json",
+          "sha256": "2ddfa219e03d355d9e86602732cd0ca79d4ace88b76f3eaa61f9b2ded4fa517c",
+          "bytes": 1517
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/turn-1-history.json",
+          "sha256": "55451dac3c4910c273fd3b591f9d0ae640707cd211b6f3601d3311f152f94fbd",
+          "bytes": 2646
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/turn-1-rollout.jsonl",
+          "sha256": "d5fe5e277cb0f34a810f90c28e5dd23dd7c328c1337fbd00c0461f3ae973ac69",
+          "bytes": 174630
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/native-stderr.log",
+          "sha256": "7a32b10e5ee0fbe872f11b5f6b51a9acb494cc63bcbba8b95e7f389f75f00f0f",
+          "bytes": 250
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/native-process.json",
+          "sha256": "f322deff6a7ffde1ec89f57d24bb4f58753202604a4760e4bab7145809163b72",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/persisted-turns.json",
+          "sha256": "3350f0c09f1a478c8d43749f6d71a7181194507601a3568d0e6d41f196603d68",
+          "bytes": 2304
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/persisted-read-process.json",
+          "sha256": "792e719670a6edd978d2f65c6dbe7326da736f8ab38d17884fa0e8adbcca65aa",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-haw0kaxk/persisted-read-sent.jsonl",
+          "sha256": "6718880a34aea4016ca3196ba5027b732b82ffed3a18528bedc4855bc682fed7",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-review-reproposal-other-destination-j85bkdvz.json",
+      "projected_sha256": "e1cd720013895d6f844c082db125e928965914e98234672539e8b16ed00fef0d",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/manifest.json",
+          "sha256": "b0565860cb9afe62bdf68929bee0afd3f59bc2c3646eaf25cad9b9d2d3da4e31",
+          "bytes": 15950
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/config.json",
+          "sha256": "fe27bd8fec13365018259b6404f59c5cc62e9e89924e00c4f22f033f2e2eaf97",
+          "bytes": 10141
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/observation.json",
+          "sha256": "3c4977fae0eb3b3debe84568e29b9d2abc1409c3c0efd1aeb82fced98a8d5ec1",
+          "bytes": 24458
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/effective-thread-start.json",
+          "sha256": "cb70fbbec2b12ad5e39efa835ea2f67dde6ebc8cc9a2b3bd37c528030d45746e",
+          "bytes": 3532
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/events.jsonl",
+          "sha256": "2d37b4fa89719ad1b8d301d7697f682b545ad9a9a5d092256e6ac735fa632de4",
+          "bytes": 7237
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/turn-0-history.json",
+          "sha256": "4547e8025525c223b0aed14d9fdc2030c339a7261774706b18de686cce7def63",
+          "bytes": 3963
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/turn-0-rollout.jsonl",
+          "sha256": "89a5ad528eed1492f60ca547e3dd00cc3594bc9c958fb3367cb4c9aa25fb310a",
+          "bytes": 173415
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/native-stderr.log",
+          "sha256": "c6cf2dd700c6cbfeab1b8d1892106342d62969e17ab81d94902af9dfb6892a2c",
+          "bytes": 941
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/native-process.json",
+          "sha256": "0d30e90a4242826f4d8c756db3358e19c03f29ad583cb8e8d4cc3439d13f3010",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/persisted-turns.json",
+          "sha256": "d7b5d8fbfeae3d661cc995a53886a9128f0092f5496888b40461ae53c5da02e0",
+          "bytes": 3585
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/persisted-read-process.json",
+          "sha256": "b6f51c3083768aa8fa94a71292a53da4f1d2ed6f3427796d112ec02b8eb6dd93",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-other-destination-j85bkdvz/persisted-read-sent.jsonl",
+          "sha256": "095ff9fe4ac62d0941becd0ed7ba059882fd037ad672bc3468f7fe9e878bc902",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb.json",
+      "projected_sha256": "95d9f4906385404fab3d3d46fefe13c83762d60887c4a91329968f7c9d12aac9",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/manifest.json",
+          "sha256": "3427df4a2a67aad5ee7d488c57d668cb70d4bc0e1ae3c53625f4dcbe1a5e4110",
+          "bytes": 16465
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/config.json",
+          "sha256": "205ceac56898fb235d256ccd68a694d802ef9d85d64fe8d3fd6867ec393eb9b2",
+          "bytes": 10604
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/observation.json",
+          "sha256": "c7eafe89dd27b01afb1e629c0aa015ade278e8b3e7f54d3ec27f64e676522592",
+          "bytes": 41182
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/effective-thread-start.json",
+          "sha256": "30582494bc37d104415359e5e93e1a86222ab2ba8994ca53bb7444a218c984c3",
+          "bytes": 3598
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/events.jsonl",
+          "sha256": "1f4fc3cf39c6b5823fbc4b05f146fc8df8e11e9638e0ac22f31e46774e78d49c",
+          "bytes": 6910
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/turn-0-history.json",
+          "sha256": "5b3557a5c317b75a7b7f0d9749e9e16f790e81dd595790f0776e5d4acf4ff800",
+          "bytes": 2573
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/turn-1-history.json",
+          "sha256": "63e8b4f2a4e693eef2aaab1b3149f0c64c721e8751ad449dadb6f9d42a535fdf",
+          "bytes": 3713
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/turn-1-rollout.jsonl",
+          "sha256": "60b29800da56db99b44fd952f60a27690bd2b0988c3ad76793e03c9cab61c575",
+          "bytes": 185745
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/native-stderr.log",
+          "sha256": "924c5e101aa9197c87a01272d34d2d8ba894295668b745118fb232bdbc0e5e3f",
+          "bytes": 936
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/native-process.json",
+          "sha256": "add14590b55ce53f05bbaba9be4826beda50172a1e70a8fddc1e0dfa85a058ed",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/persisted-turns.json",
+          "sha256": "eca3b0c0411cab8d5fa95e1d82c4fa1ffb2c7dc365ff7a31cd23c73735ef1595",
+          "bytes": 3341
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/persisted-read-process.json",
+          "sha256": "5391603845fd813339b810853523d1a29780b8e7abd590d6d4f79d8a6293f152",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-review-reproposal-withdrawal-after-denial-e8sumkxb/persisted-read-sent.jsonl",
+          "sha256": "0025d0ea5748eb14947b81ed23ff7ac7b905a4411e367e291e4e8cc8f191eee8",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-renewed-approval-renewal-after-denial-06floctc.json",
+      "projected_sha256": "85d5c1ce6a91e76e0c9acaf083864bace28f27f3711f4f92b49ca8f2109cf2aa",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/manifest.json",
+          "sha256": "b881a69eda215cb5da3fb98e69527f44c8f5e9b4ec8c770f3eaf02ff96bd53a6",
+          "bytes": 16716
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/config.json",
+          "sha256": "fc53dffa0a0ca8622b385a1d0052a917b52758059a65a447fe9b7c3502355022",
+          "bytes": 10883
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/observation.json",
+          "sha256": "d251cf2dde2c912d3aedda253073ff3205bd6d01caa9469c576aafcd2168fe82",
+          "bytes": 42574
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/effective-thread-start.json",
+          "sha256": "0c80b7f0a663295126014feaf33e50fb6c16ccb68d91982f49447175db1b1866",
+          "bytes": 3554
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/events.jsonl",
+          "sha256": "5113e93597fc041f876486030c90562344e887e51a776c047fd718187f2353f5",
+          "bytes": 9529
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/turn-0-history.json",
+          "sha256": "8eedbba86cd72b61141d30217c0beed32cb154cf8f36098e9e1ecfd58a068caf",
+          "bytes": 2485
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/turn-1-history.json",
+          "sha256": "5b578b0e057205a1644c82fffc01c599a45febfee68cd7ff8448a5cdfecbc528",
+          "bytes": 5258
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/turn-1-rollout.jsonl",
+          "sha256": "23c0d2a77b66ec110dd2aa768017aa689b4ca0a7b80c9626602f808b32a39db6",
+          "bytes": 194967
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/native-stderr.log",
+          "sha256": "2b279322bdbad830d95f6386a9a0aff0c7792908e9f052ae56fa6b42371d4268",
+          "bytes": 803
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/native-process.json",
+          "sha256": "929b4119fa58cd0268dd17bc069d81618660d3093fc0d6bf12d23ebb44c2471b",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/persisted-turns.json",
+          "sha256": "f0e83cada50cd0fe994a0749d619f575b4d789d1b8c788678ca2bce07ca60abd",
+          "bytes": 4816
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/persisted-read-process.json",
+          "sha256": "c94dc8fd5ef1425fb8dce06767caf8393eeb37e8851bba5fe160e62afb362ca0",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-renewal-after-denial-06floctc/persisted-read-sent.jsonl",
+          "sha256": "16426accadc6610a665064bf9f04fbc2c601d7d3568f07447617b64daf8d0423",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-renewed-approval-withdrawal-lsfopb2y.json",
+      "projected_sha256": "66d743d2171b955ea1b0b0f37fec12c80e4263e82a9ec57b83712d5afd0b8efa",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/manifest.json",
+          "sha256": "5694f4fd749c7181cb0490d514e45af851e5036948cb1e622a62078c47becf59",
+          "bytes": 15937
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/config.json",
+          "sha256": "7bad4d702c1a247651dcc9720e802378182e18893615516bc85342c6dfa2ae55",
+          "bytes": 10174
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/observation.json",
+          "sha256": "8764aa487be4cb998ba60aa7e82c8551bb8139bf9481c5a4579811cdb1584117",
+          "bytes": 37072
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/effective-thread-start.json",
+          "sha256": "ebfffbd25421e39c83c5e66e8788ac1ed733f8b81b072b4f76fa9f1f63784a24",
+          "bytes": 3444
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/events.jsonl",
+          "sha256": "221a4a758e72f7ca6740133d1dcf328459fe8c39863bd16a650261ebb83eec28",
+          "bytes": 3498
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/turn-0-history.json",
+          "sha256": "5e839e082a3a344dac73bde0376bf8c0b130c274bf58f0ee604088ff08e364ab",
+          "bytes": 1515
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/turn-1-history.json",
+          "sha256": "3771e9dbb53e32ef7b861679801029cfec9db166998deb5b1d8345f958767382",
+          "bytes": 2649
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/turn-1-rollout.jsonl",
+          "sha256": "fe5e4bff3a72ab3b3d10accb4ac612a6ea279b0f6a7bbe8adf5a207da9884ba5",
+          "bytes": 174501
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/native-stderr.log",
+          "sha256": "aa6abe673bf89f257da10e6eb0f37dec220a9209519f6050a91e8e3eecfca099",
+          "bytes": 251
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/native-process.json",
+          "sha256": "e180980a88acd4db6cf839bc466018a9f54a639d8db57cd8a0d9b39356ec2bd3",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/persisted-turns.json",
+          "sha256": "bf9c77634224a11bc84e24e3a80593bfde89e236497691b96ef21033134ec3ee",
+          "bytes": 2307
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/persisted-read-process.json",
+          "sha256": "f2bb4861ae2bda8fa8f462fe8dda1662933281998ad4b3649c998072d0101023",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-lsfopb2y/persisted-read-sent.jsonl",
+          "sha256": "3ce008c90578222261a34a22f686ed420b8333c8266881ce8f37ea7e00b3cfe3",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-renewed-approval-other-destination-zs1zp1y1.json",
+      "projected_sha256": "dec808965c4838d0c8e2a8fe031b62e09272e7e52e8dc6e1c429407d8489d5e5",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/manifest.json",
+          "sha256": "96fce5567a3aaed188e8e41067f10efa3c44953129645b9e290b4c4b9fb5800b",
+          "bytes": 15937
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/config.json",
+          "sha256": "54b77e9d9ec42f33cc5fa5ce0199f9d6e9aff1b1bfb4f2f4166b51bf0829916b",
+          "bytes": 10135
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/observation.json",
+          "sha256": "510b9a3580c1217f74cf5a7ec8248912fb722140dc253d37c41bc36d5f103796",
+          "bytes": 21999
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/effective-thread-start.json",
+          "sha256": "53e8289d4c8ea2e8728722720705436128e1def331652b9755aac007c6e6084c",
+          "bytes": 3521
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/events.jsonl",
+          "sha256": "0c74ac004493fcc5382b439e16d609ce92bb2feef6b23b6e960e3a295917095d",
+          "bytes": 4797
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/turn-0-history.json",
+          "sha256": "7d7db280ecd5623aa92c5703e90829bb1cf1268f1b8dce581a5b3250e945229f",
+          "bytes": 2459
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/turn-0-rollout.jsonl",
+          "sha256": "1c62d6f6adddf0ad33bf3e2e6a96db768db844cfc6ecc0eeaa73721a82320fe6",
+          "bytes": 162662
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/native-stderr.log",
+          "sha256": "fdc519bd2d65181400284a5255e8b41d7142cac3da524195ec229d1298482d08",
+          "bytes": 796
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/native-process.json",
+          "sha256": "9b094a97bf249b1b9efacdbacaacb0d762e9bd5346f7409a6b93d082497cc363",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/persisted-turns.json",
+          "sha256": "9cd76a7917674ce51392438044ef024a417ff894aaaa6ddd7f4ff7ca721ade94",
+          "bytes": 2151
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/persisted-read-process.json",
+          "sha256": "02bcceccd01dde3a0eaa0fec842c6a18de4c9e630209b36144e81809c1353063",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-other-destination-zs1zp1y1/persisted-read-sent.jsonl",
+          "sha256": "7db54fb6fc20ecfc7559af1fb826bf7db918559249279ac36d5bd543644dde82",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl.json",
+      "projected_sha256": "68290ed1d6afac8759ba868e0e595e9e307696839bcc2ce19fac05b5224da0ba",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/manifest.json",
+          "sha256": "5a777caf85dc4f86dd09662388379217b6ce4f46a9cc9dbe35dc417670ff169b",
+          "bytes": 16451
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/config.json",
+          "sha256": "2de7b743b588566e815f522e7c31e5957dc2bc7bd80c1d2a905361087ef579f7",
+          "bytes": 10597
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/observation.json",
+          "sha256": "bbf60c787e9e187c196a3b6a95fad1286d285042deaf0be937056500daad7806",
+          "bytes": 40809
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/effective-thread-start.json",
+          "sha256": "4614c463a8c9fef1d16243d4bc4909a258d3b0d6bf7fe5ef88ea29aa12f493f1",
+          "bytes": 3587
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/events.jsonl",
+          "sha256": "77b5c13dd073c21659288865d74e0910ac50afb4bf206591e6f046f2108870b4",
+          "bytes": 6756
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/turn-0-history.json",
+          "sha256": "470a736705bf79cd0a17452661a2294c4e821a29aae663e2507b35f40aa9fa27",
+          "bytes": 2564
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/turn-1-history.json",
+          "sha256": "85f09d5a956c57db94d35bec5d6f086c7a22b8968e8c96ca4d96d473918636bc",
+          "bytes": 3705
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/turn-1-rollout.jsonl",
+          "sha256": "90655fbf7caf364dd16c131c2a45bbc14f7f567e364e75eae14d269e49a5edf8",
+          "bytes": 185591
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/native-stderr.log",
+          "sha256": "d96753f279e7414477b87cb31de207edb561483d8e7ab5abe7dc9881009fb99d",
+          "bytes": 802
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/native-process.json",
+          "sha256": "7154bf684108097bb26a9312c48a24312a27dd384d08895dbd1f255510aa099e",
+          "bytes": 84
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/persisted-turns.json",
+          "sha256": "f00833eab9c47ec02c49176fbf0c35cf0dde0823da94db6bb637c10b3ac440b8",
+          "bytes": 3333
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/persisted-read-stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/persisted-read-process.json",
+          "sha256": "1ceac7f8b5a61a6378a7a0fcdcfe286861990dd256e15a5d30b4fc75968430e8",
+          "bytes": 83
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-renewed-approval-withdrawal-after-denial-ykp7bzrl/persisted-read-sent.jsonl",
+          "sha256": "91ceb685a54746902f986ab006100acabec8f9c924cda7dd8b5a118668253ed6",
+          "bytes": 427
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-current-renewal-after-denial-bgeewan4.json",
+      "projected_sha256": "d2b0459280f54b9e0cfc32f6dfbc5d5ce52c27a86226aa1be3316df757ea0cd3",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/manifest.json",
+          "sha256": "4eb6b270f221df4f4f808a9eae10ca7a38c9072c97b9d5b2e8cfffa2438def4a",
+          "bytes": 16830
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/config.json",
+          "sha256": "8d2e2995944e551b8c2676788d19e8e89fd61b5ee4033b5bede745aa55085dd2",
+          "bytes": 10820
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/observation.json",
+          "sha256": "f5cb355800f3b1d801c9a7219dff15feea2b2c859d0e0066f3c92e444f12c163",
+          "bytes": 275
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/events.jsonl",
+          "sha256": "c3582ee821802daffd371c063e31a48cc2bb2deef58592970558c083a57b3226",
+          "bytes": 4422
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/turn-0-rollout.jsonl",
+          "sha256": "365cedc0c33b20f066f3c01045362e702b45ad751e4ee88f4499502973ad216d",
+          "bytes": 155400
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-bgeewan4/turn-0-stderr.log",
+          "sha256": "2c32186819aaafa9953c6772dc7af4d9df3d885c0cf28f36db1516c593141ab9",
+          "bytes": 206
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-current-renewal-after-denial-qyhuk0_s.json",
+      "projected_sha256": "ad1d635ae9deadace60d02b3b242af858c9568874b5decc97b578e00ba7a86c0",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/manifest.json",
+          "sha256": "add9bbfc3bbd8edab7cea20b38b3813a2faa3060d5f3a5b9dcfcbc2f7da6b6c5",
+          "bytes": 16581
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/config.json",
+          "sha256": "92a6e15889ceb463f8f880b219d9e77a3341724d8cf382378626b7878ecc9175",
+          "bytes": 10820
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/observation.json",
+          "sha256": "493b1eb2556cd6db8763a482d52b1ccf6ee781e4df66211165e51e190c8f9ac2",
+          "bytes": 263
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/effective-thread-start.json",
+          "sha256": "e5104be2e4151f57b8d802f727c0762ce6578854ad7ac43da74113d4fe3b9c4c",
+          "bytes": 3455
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/events.jsonl",
+          "sha256": "dd113122b60901ce3d05c5378f3e58d62b7834bce3e58dec65ab18eb005fbf72",
+          "bytes": 4382
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/turn-0-history.json",
+          "sha256": "b52b21b64f4d7640b9bf19253f56754c258c2d6e3d972c86c9fa44daac1ce77b",
+          "bytes": 3049
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/native-stderr.log",
+          "sha256": "0bd75956d292b13fad18c48c620e42e4a47898f4b50bc0b7c6e196c34891e68d",
+          "bytes": 255
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-current-renewal-after-denial-qyhuk0_s/native-process.json",
+          "sha256": "d5889055b6dddeb0ac35bfcb46179c18d9000098003ba4f804109a5fe72fda9a",
+          "bytes": 84
+        }
+      ]
+    },
+    {
+      "projection": "codex/codex-recovery-native-only-other-destination-x22jx1rg.json",
+      "projected_sha256": "d1dbfa9adcec4000f3ae41a5d78fb3036963ec6f00954a735620d68219bb7982",
+      "projection_kind": "selected synthetic prompts, hook receipts, native history/tool outputs, permission metadata, diagnostics and fresh-reader evidence; reasoning, ambient instructions, account and connector identity omitted",
+      "originals": [
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/manifest.json",
+          "sha256": "3f40f12e910d77c7ec574e6fefd0f8b35298083cf709cbcf82d106825016a30d",
+          "bytes": 15863
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/config.json",
+          "sha256": "343b2eb5ec223f6acb5abc39c30e5f4030c16c89fca2f7dc7307bf623fb02d6a",
+          "bytes": 10105
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/observation.json",
+          "sha256": "c4c50340987aaa485ce63a35c3e63d6195020d0aa9ed8d77bf16c300691dbe8d",
+          "bytes": 249
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/effective-thread-start.json",
+          "sha256": "feb343ec54ea6b7e8cdf138fa9e40fcfe8de0e7d1a8ecb1984c9e9ad5530761e",
+          "bytes": 3466
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/connector-inventory.json",
+          "sha256": "988442b550141633e3699514c141416c887e9ef2ee914b1b3b13244a8a8aceb0",
+          "bytes": 2348
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/events.jsonl",
+          "sha256": "ed94745802319b95eeaa34a16dd6c59711db71534f87975cd96a5d60991045e4",
+          "bytes": 4185
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/turn-0-history.json",
+          "sha256": "f8f71cd81447728bc3599b92080e1f97d6d6d5627ecc6a7019fc17c425cbbecb",
+          "bytes": 2572
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/native-stderr.log",
+          "sha256": "539ed41c26e167b94cc3ea4839aba7569aba4a54d1ece602e1164e06114351af",
+          "bytes": 570
+        },
+        {
+          "path": "<NATIVE_FIXTURES>/codex-recovery-native-only-other-destination-x22jx1rg/native-process.json",
+          "sha256": "6eef49aa065c5a87668eb9329c53f34dade7c0c2f37032c5fc55fba02e46db09",
+          "bytes": 84
+        }
+      ]
+    },
+    {
+      "projection": "recovery-codex-summary.json",
+      "projected_sha256": "88c17796a4c989fb3fb606ccdb469413257158a6a5fbad576a1ffd8ae0a8fa5c",
+      "projection_kind": "path-normalized whole file",
+      "originals": [
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-summary.json",
+          "sha256": "d078fb32ed9837cede06e67cee96731f2fd7e1b98385061c533d873971e8d13c",
+          "bytes": 71378
+        }
+      ]
+    },
+    {
+      "projection": "recovery-codex-r6-amendment.json",
+      "projected_sha256": "e778b0ec4931c441495e6a14a920b631c9326e6a6bae29a8bd5db4e2b5621298",
+      "projection_kind": "path-normalized whole file",
+      "originals": [
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-r6-amendment.json",
+          "sha256": "6e9336675051461b00ac3ab50e5ddea93586855abe8625267ac964f34eb87a27",
+          "bytes": 1850
+        }
+      ]
+    },
+    {
+      "projection": "recovery-codex-matrix-r5.json",
+      "projected_sha256": "f47df76d5fa75addb62aea2ce965516016b63324629a2bdea3c727c70af95d2e",
+      "projection_kind": "path-normalized whole file",
+      "originals": [
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-matrix-r5.json",
+          "sha256": "736aa6bd021dde81f1e2a38648e611fe0f7ff3348f976ef6f1b00c681364c5f2",
+          "bytes": 1815
+        }
+      ]
+    },
+    {
+      "projection": "recovery-codex-matrix-r6.json",
+      "projected_sha256": "b85e7bc53fb995d52afc3c501f72dbfedec82d12b741da47b864fe5bd7021335",
+      "projection_kind": "path-normalized whole file",
+      "originals": [
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-matrix-r6.json",
+          "sha256": "d9aef49d4f0f14ec6dd8be0118c7ebaf4d35b0a899dd362b303b498775475b36",
+          "bytes": 1734
+        }
+      ]
+    },
+    {
+      "projection": "recovery-codex-exec-failure-adjudication.json",
+      "projected_sha256": "95cea3fe21d808c74d773561756e5fbd67c15e89ce18ade8a5b2d34c034876bc",
+      "projection_kind": "path-normalized whole file",
+      "originals": [
+        {
+          "path": "<RESEARCH_SCRATCH>/recovery-codex-exec-failure-adjudication.json",
+          "sha256": "14925683f75d525e7d6e1ab0c47add6478fc1325f6216a1438843922a45590a9",
+          "bytes": 1896
+        }
+      ]
+    },
+    {
+      "projection": "sources/recovery-native-codex-app-server-r6.py.txt",
+      "original_sha256": "e39b1ddb503ee647566283033f7d91bccde817933d3cce8041b6eae77b184221",
+      "projected_sha256": "0fde79744cf1abd741407e04fc911dd52716c994cdfa442f5a54b21b174c5cac",
+      "original_bytes": 26862,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-native-hook-codex.py.txt",
+      "original_sha256": "2c380d5c7e8042fb56b7348cc926e400c8e51ae9570e1549d4dd7fee0435268a",
+      "projected_sha256": "2c380d5c7e8042fb56b7348cc926e400c8e51ae9570e1549d4dd7fee0435268a",
+      "original_bytes": 11233,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/test-recovery-codex-app-server-r6.py.txt",
+      "original_sha256": "65ebd40bc758230ec348300173d7c094eb87103901046f64aa5361ca5da18616",
+      "projected_sha256": "65ebd40bc758230ec348300173d7c094eb87103901046f64aa5361ca5da18616",
+      "original_bytes": 6740,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/test-recovery-native-hook-codex.py.txt",
+      "original_sha256": "89e95564fcd00b4989da2878df09c39b06ad48460d321659c6c6f21388df78db",
+      "projected_sha256": "89e95564fcd00b4989da2878df09c39b06ad48460d321659c6c6f21388df78db",
+      "original_bytes": 8849,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/recovery-native-codex-app-server-reanalysis-d7fffc21595f.py.txt",
+      "original_sha256": "d7fffc21595f41d10bd09ea9d017c64eac80129e6ec2cf4657e913d7c0530938",
+      "projected_sha256": "a4359b2b8713a0fe5fb812ea38a6537071c3785f55afbbb89c45a217c59e865a",
+      "original_bytes": 25709,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/reanalyse-codex-r5.py.txt",
+      "original_sha256": "6fc5e2a72f4e07c5b98e5b348dbb108966b79430ce888707ea2a43c67dba32f1",
+      "projected_sha256": "6fc5e2a72f4e07c5b98e5b348dbb108966b79430ce888707ea2a43c67dba32f1",
+      "original_bytes": 2898,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    },
+    {
+      "projection": "sources/summarize-recovery-codex.py.txt",
+      "original_sha256": "066bb6aeaffcf1dc9718b29f421c35951762ebb203aa22497b04c2aa058c96d4",
+      "projected_sha256": "066bb6aeaffcf1dc9718b29f421c35951762ebb203aa22497b04c2aa058c96d4",
+      "original_bytes": 4395,
+      "projection_kind": "source text for inspection; host paths replaced; not an executable derivative"
+    }
+  ],
+  "codex_selection": "Evidence packets preserve original input hashes and selected fields. Native reasoning and unrelated inherited instructions are omitted. Reanalysis remains distinct from the failed original observation."
+}

@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node {scratch}/pilot-hook.mjs pre {jev-package} {scratch}/sys1-supervision-m0vgmb3t/manifest.json {scratch}/sys1-supervision-m0vgmb3t/records/choice_supplied-current_stop.hook.jsonl {scratch}/sys1-supervision-m0vgmb3t/records/choice_supplied-current_stop.first-read {scratch}/sys1-supervision-m0vgmb3t/project/brief.txt current_stop",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node {scratch}/pilot-hook.mjs post {jev-package} {scratch}/sys1-supervision-m0vgmb3t/manifest.json {scratch}/sys1-supervision-m0vgmb3t/records/choice_supplied-current_stop.hook.jsonl {scratch}/sys1-supervision-m0vgmb3t/records/choice_supplied-current_stop.first-read {scratch}/sys1-supervision-m0vgmb3t/project/brief.txt current_stop",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

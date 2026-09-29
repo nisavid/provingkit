@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""Passive, private hook-time transcript capture. No approval decision is emitted."""
+
+import argparse
+import json
+import os
+import stat
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def stamp():
+    return {"wall": datetime.now(timezone.utc).isoformat(), "monotonic_ns": time.monotonic_ns()}
+
+
+def content_parts(value):
+    if isinstance(value, str):
+        return [("text", value)]
+    if not isinstance(value, list):
+        return [("unknown_content", value)]
+    parts = []
+    for block in value:
+        if not isinstance(block, dict):
+            parts.append(("unknown_content", block))
+            continue
+        native_type = block.get("type")
+        if native_type in {"text", "input_text", "output_text"}:
+            parts.append(("text", block.get("text")))
+        elif native_type == "tool_result":
+            parts.append(("tool_result", block.get("content")))
+        elif native_type == "tool_use":
+            parts.append(("tool_use", {"name": block.get("name"), "input": block.get("input")}))
+        else:
+            parts.append(("unknown_content", block))
+    return parts
+
+
+def extract(records, harness):
+    messages, unknown = [], []
+    for index, record in enumerate(records):
+        native_type = record.get("type")
+        if harness == "claude" and native_type in {"user", "assistant"}:
+            payload = record.get("message", {})
+            role = payload.get("role")
+        elif harness == "codex" and native_type == "response_item":
+            payload = record.get("payload", {})
+            if payload.get("type") in {"function_call_output", "custom_tool_call_output"}:
+                messages.append({"record_index": index, "part_index": 0, "role": "tool",
+                                 "kind": "tool_result", "content": payload.get("output")})
+                continue
+            if payload.get("type") != "message":
+                unknown.append({"record_index": index, "type": "response_item:" + str(payload.get("type"))})
+                continue
+            role = payload.get("role")
+        elif harness == "codex" and native_type == "event_msg":
+            continue  # Event mirrors are never a second message.
+        elif native_type in {"system", "summary", "session_meta", "turn_context", "event_msg", "result"}:
+            continue
+        else:
+            unknown.append({"record_index": index, "type": str(native_type)})
+            continue
+        if role not in {"user", "assistant", "developer", "system", "tool"}:
+            unknown.append({"record_index": index, "type": "message-role:" + str(role)})
+            continue
+        for part_index, (kind, content) in enumerate(content_parts(payload.get("content"))):
+            message = {"record_index": index, "part_index": part_index,
+                       "role": "tool" if kind == "tool_result" else role,
+                       "kind": kind, "content": content}
+            if kind == "tool_result":
+                message["envelope_role"] = role
+            messages.append(message)
+    return messages, unknown
+
+
+def read_once(config, hook):
+    started = stamp()
+    base = {"read_started": started, "read_ended": None, "availability": "unavailable",
+            "reason": None, "messages": None, "unknown_records": None, "file": None}
+    def finish(reason):
+        base["reason"] = reason
+        base["read_ended"] = stamp()
+        return base
+    session = config.get("session_id")
+    if not isinstance(session, str) or not session:
+        return finish("unbound_session")
+    if config.get("harness") == "codex" and not config.get("transcript_path"):
+        return finish("unbound_path")
+    actual_path = hook.get("transcript_path")
+    expected = Path(config["transcript_path"] if "transcript_path" in config else str(actual_path or ""))
+    parent = expected.parent
+    if hook.get("session_id") != session:
+        return finish("wrong_session")
+    if not expected.is_absolute() or str(hook.get("transcript_path")) != str(expected):
+        return finish("wrong_path")
+    native_filename = (expected.name == session + ".jsonl") if config["harness"] == "claude" else expected.name.endswith("-" + session + ".jsonl")
+    if not native_filename or expected.suffix != ".jsonl":
+        return finish("unbound_filename")
+    if "storage_root" in config:
+        root = Path(config["storage_root"])
+        if not root.is_absolute() or root.resolve() != root or not parent.is_relative_to(root):
+            return finish("unbound_storage_root")
+        depth = len(parent.relative_to(root).parts)
+        if depth != (1 if config["harness"] == "claude" else 3):
+            return finish("unbound_native_parent")
+    if not parent.is_absolute() or parent.resolve() != parent:
+        return finish("unbound_parent")
+    try:
+        observed = expected.lstat()
+    except FileNotFoundError:
+        return finish("missing")
+    except OSError:
+        return finish("unreadable")
+    if stat.S_ISLNK(observed.st_mode):
+        return finish("symlink")
+    if not stat.S_ISREG(observed.st_mode):
+        return finish("not_regular")
+    limit = config["max_bytes"]
+    if not isinstance(limit, int) or not 0 < limit <= 2_097_152:
+        return finish("invalid_bound")
+    base["file"] = {"device": observed.st_dev, "inode": observed.st_ino,
+                    "size": observed.st_size, "mtime_ns": observed.st_mtime_ns}
+    if observed.st_size > limit:
+        return finish("oversized")
+    try:
+        fd = os.open(expected, os.O_RDONLY | os.O_NOFOLLOW)
+        with os.fdopen(fd, "rb") as stream:
+            actual = os.fstat(stream.fileno())
+            if (actual.st_dev, actual.st_ino, actual.st_size) != (observed.st_dev, observed.st_ino, observed.st_size):
+                return finish("changed_during_read")
+            raw = stream.read(limit + 1)
+    except OSError:
+        return finish("unreadable")
+    if len(raw) > limit:
+        return finish("oversized")
+    if raw and not raw.endswith(b"\n"):
+        return finish("truncated")
+    try:
+        records = [json.loads(line) for line in raw.splitlines()]
+        if not all(isinstance(x, dict) for x in records):
+            return finish("malformed")
+    except (UnicodeError, ValueError):
+        return finish("malformed")
+    messages, unknown = extract(records, config["harness"])
+    base.update(availability="available", reason=None, messages=messages,
+                unknown_records=unknown, read_ended=stamp())
+    return base
+
+
+def capture(config, hook, second_delay_ms=0):
+    if config.get("harness") not in {"claude", "codex"}:
+        raise ValueError("unsupported harness")
+    fields = ["session_id", "turn_id", "transcript_path", "cwd", "hook_event_name",
+              "permission_mode", "prompt_id", "effort", "model", "tool_name", "tool_input", "tool_use_id"]
+    result = {"schema": "sys1-hook-context-observation/v1", "harness": config["harness"],
+              "hook_fields": {key: hook[key] for key in fields if key in hook},
+              "primary": read_once(config, hook)}
+    result.update({key: result["primary"][key] for key in ("availability", "reason", "messages")})
+    if second_delay_ms:
+        if second_delay_ms < 0 or second_delay_ms > 500:
+            raise ValueError("second delay outside bound")
+        time.sleep(second_delay_ms / 1000)
+        result["secondary_timing_probe"] = {"artificial_delay_ms": second_delay_ms, **read_once(config, hook)}
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    sub = parser.add_subparsers(dest="mode", required=True)
+    cmd = sub.add_parser("capture")
+    for name in ("config", "input", "output"):
+        cmd.add_argument("--" + name, type=Path, required=True)
+    cmd.add_argument("--second-read-delay-ms", type=int, default=0)
+    args = parser.parse_args()
+    config = json.loads(args.config.read_text())
+    hook = json.loads(args.input.read_text())
+    observed = capture(config, hook, args.second_read_delay_ms)
+    with args.output.open("x") as stream:
+        json.dump(observed, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({"availability": observed["availability"], "reason": observed["reason"]}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

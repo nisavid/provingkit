@@ -1,0 +1,32 @@
+{
+  "generator": "Codex CLI 0.159.0 local JSON schema generation",
+  "no_billing_query_made": true,
+  "schemas": {
+    "v2/RawResponseCompletedNotification.json": {
+      "sha256": "aba140e87952c900f96e0308a8849d3e313d985de1f1aa2b77f193884a76357c",
+      "description": "Internal-only notification containing the exact usage from one upstream Responses API completion.",
+      "title": "RawResponseCompletedNotification"
+    },
+    "ServerNotification.json": {
+      "sha256": "d3479ecf59ca421a8b052d3d15e8196d23d297a0bd85ae5a270a34ddd9c865c9",
+      "description": "Notification sent from the server to the client.",
+      "title": "ServerNotification",
+      "includes_raw_response_completed": false,
+      "includes_thread_token_usage": true
+    },
+    "v2/ThreadTokenUsageUpdatedNotification.json": {
+      "sha256": "aba4f6c7e4a19b2b842c08ee793b57000c07dafd57b922ad0d8e7c76609108c2",
+      "description": null,
+      "title": "ThreadTokenUsageUpdatedNotification"
+    },
+    "v2/GetAccountTokenUsageResponse.json": {
+      "sha256": "a58e58c852c888e5de925d99a66688d55ebb2fff038e795aadf04f8a8426dff8",
+      "description": null,
+      "title": "GetAccountTokenUsageResponse",
+      "thread_usage_fields": [
+        "estimatedUsageCreditsMicros",
+        "estimatedUsageUsdMicros"
+      ]
+    }
+  }
+}

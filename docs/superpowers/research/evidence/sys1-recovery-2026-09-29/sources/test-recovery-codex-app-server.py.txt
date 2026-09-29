@@ -1,0 +1,49 @@
+from pathlib import Path
+import copy, importlib.util, json, unittest
+spec=importlib.util.spec_from_file_location('adapter',Path(__file__).with_name('recovery-native-codex-app-server.py'));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+
+def history():return {'data':[{'id':'t1','status':'completed','error':None,'itemsView':'full','items':[{'type':'userMessage','id':'u1','content':[{'type':'text','text':'Approved A','text_elements':[]}]}]}],'nextCursor':None}
+def denial(call):return {'input':{'turn_id':'t1','tool_use_id':call},'outcome':{'decision':'deny'},'output':json.dumps({'hookSpecificOutput':{'permissionDecisionReason':'Denied by fixture'}})}
+
+class Observer(unittest.TestCase):
+ def test_complete_native_user_history(self):
+  self.assertEqual(m.verify_history(history(),['Approved A'],['t1'])[0]['id'],'t1')
+ def test_wrong_or_incomplete_history_is_not_qualified(self):
+  for mutate in [lambda d:d.update(nextCursor='more'),lambda d:d['data'][0].update(status='inProgress'),lambda d:d['data'][0].update(itemsView='summary'),lambda d:d['data'][0]['items'][0]['content'][0].update(text='Approved B'),lambda d:d['data'][0].update(id='another-turn')]:
+   d=history();mutate(d)
+   with self.subTest(d=d),self.assertRaises(RuntimeError):m.verify_history(d,['Approved A'],['t1'])
+ def test_one_outer_output_does_not_pair_multiple_inner_denials(self):
+  turn={'id':'t1','items':[{'type':'functionCallOutput','id':'outer','output':'Denied by fixture'}]}
+  v=m.turn_feedback([denial('inner1'),denial('inner2')],turn)
+  self.assertEqual(v['denied_invocations'],['inner1','inner2']);self.assertEqual(v['feedback'],[{'reason':'Denied by fixture','native_output_ids':['outer']}]);self.assertEqual(v['status'],'turn-feedback-observed')
+ def test_missing_feedback_distinct_from_no_denial(self):
+  self.assertEqual(m.turn_feedback([denial('inner')],{'id':'t1','items':[]})['status'],'feedback-unavailable')
+  self.assertEqual(m.turn_feedback([],{'id':'t1','items':[]})['status'],'no-hook-denial')
+ def test_effective_permission_metadata_rejects_exec_never(self):
+  root=Path('/study/fixture');result={'approvalPolicy':'on-request','approvalsReviewer':'user','cwd':str(root/'project'),'model':'gpt-6-sol','reasoningEffort':'high','sandbox':{'type':'workspaceWrite','networkAccess':False,'writableRoots':[str(root/'A'),str(root/'B')]},'thread':{'cliVersion':'0.159.0','ephemeral':False,'turns':[]}}
+  m.verify_thread_start(result,root)
+  result['approvalPolicy']='never'
+  with self.assertRaises(RuntimeError):m.verify_thread_start(result,root)
+
+ def test_permission_update_is_checked_against_frozen_configuration(self):
+  settings={'approvalPolicy':'never','approvalsReviewer':'user','cwd':'/study/fixture/project','model':'gpt-6-sol','effort':'high','sandboxPolicy':{'type':'workspaceWrite','networkAccess':False,'writableRoots':['/study/fixture/A','/study/fixture/B']}}
+  with self.assertRaises(RuntimeError):m.verify_settings(settings,Path('/study/fixture'))
+
+ def test_inventory_requires_disabled_connectors_and_no_capabilities(self):
+  result={'data':[{'runtimeStatus':'disabled','tools':{},'resources':[],'resourceTemplates':[]}],'nextCursor':None}
+  m.verify_connectors(result)
+  result['data'][0]['runtimeStatus']='ready'
+  with self.assertRaises(RuntimeError):m.verify_connectors(result)
+
+ def test_native_context_is_required_for_each_actual_turn(self):
+  rows=[{'type':'session_meta','payload':{'id':'s','cli_version':'0.159.0'}},{'type':'turn_context','payload':{'turn_id':'t1','model':'gpt-6-sol','effort':'high','cwd':'/study/fixture/project','approval_policy':'never','sandbox_policy':{'type':'workspace-write','writable_roots':['/study/fixture/A','/study/fixture/B'],'network_access':False}}},{'type':'event_msg','payload':{'type':'task_complete','turn_id':'t1'}}]
+  with self.assertRaises(RuntimeError):m.verify_runtime_contexts(rows,Path('/study/fixture'),'s',['t1'])
+
+ def test_only_observed_watcher_warning_can_be_adjudicated(self):
+  cleanup=json.dumps({'level':'WARN','target':'codex_file_watcher','fields':{'message':'failed to unwatch '+str(Path.home()/'.codex/skills')+': Invalid argument (os error 22) about '+json.dumps([str(Path.home()/'.codex/skills/.system/imagegen/scripts')])}}).encode()
+  self.assertEqual(len(m.stderr_diagnostics(cleanup)),1)
+  with self.assertRaises(RuntimeError):m.stderr_diagnostics(b'failed to flush rollout after terminal event')
+  for data in [cleanup.replace(b'/skills:',b'/skills-other:'),cleanup.replace(b'Invalid argument (os error 22)',b'failed to flush rollout; Invalid argument (os error 22)')]:
+   with self.assertRaises(RuntimeError):m.stderr_diagnostics(data)
+
+if __name__=='__main__':unittest.main()

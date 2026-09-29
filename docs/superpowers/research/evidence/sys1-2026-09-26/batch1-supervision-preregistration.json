@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-09-26T18:40:13.615268+00:00",
+  "criteria_commit": "f7820ec5c7b58f9422907b665abe5b0cffb6ca95",
+  "runner_sha256": "6a7b9da281520f102fb70a8852428ed17a2cc53758673550ae46351841d0e436",
+  "question": "Does preserving genuine operator amendments distinguish aligned changes from actual drift and unaccepted agent proposals?",
+  "requested_model": "jev-latest",
+  "repeats": 1,
+  "dry_sha256": "5c1eefcd42d7d0c3da6cc6f7b91a645eac1cd08c99aeb42ce470b9d02562c1a4",
+  "rows": 12,
+  "unique_state_question_pairs": 10,
+  "effects": "synthetic text only, no tools executed",
+  "limits": [
+    "diagnostic corpus, not calibration",
+    "no live transcript authority demonstrated",
+    "v2 dry-run ENXIO retained; v3 changes only stdin transport"
+  ]
+}
