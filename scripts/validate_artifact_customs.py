@@ -24,6 +24,11 @@ from agent_plugins_standard import (  # noqa: E402
     validate_skill_resource_links,
 )
 from member_versions import is_supported_member_version  # noqa: E402
+from member_source_stage_cli import (  # noqa: E402
+    add_context_arguments,
+    check_context_if_requested,
+    prepare_context_if_requested,
+)
 from refresh_transaction import (  # noqa: E402
     InputEntry,
     capture_input_entry,
@@ -729,11 +734,15 @@ def validate(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repository", type=Path)
-    parser.add_argument("--source-stage", action="store_true")
+    add_context_arguments(parser)
     parser.add_argument("--write-content-lock", action="store_true")
     arguments = parser.parse_args(argv)
+    context = None
     try:
         repository = Path(os.path.abspath(arguments.repository.expanduser()))
+        context = prepare_context_if_requested(
+            parser, arguments, repository, writing=arguments.write_content_lock
+        )
         if arguments.write_content_lock:
             snapshot = capture_content_lock_write_snapshot(repository)
             validate(
@@ -753,9 +762,14 @@ def main(argv: list[str] | None = None) -> int:
     ) as error:
         print(f"Artifact Customs contract failed: {error}", file=sys.stderr)
         return 1
-    print(f"Artifact Customs {validation_stage} contract passed")
+    print(
+        f"Artifact Customs {validation_stage} contract passed",
+        file=sys.stderr if context is not None else sys.stdout,
+    )
     if arguments.write_content_lock:
         print("Artifact Customs external content lock updated")
+    if context is not None:
+        return check_context_if_requested(context, "artifact-customs")
     return 0
 
 

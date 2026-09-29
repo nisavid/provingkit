@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import math
@@ -26,6 +27,11 @@ from agent_plugins_standard import (  # noqa: E402
     validate_skill_resource_links,
 )
 from member_versions import is_supported_member_version  # noqa: E402
+from member_source_stage_cli import (  # noqa: E402
+    add_context_arguments,
+    check_context_if_requested,
+    prepare_context_if_requested,
+)
 from refresh_transaction import (  # noqa: E402
     InputEntry,
     RefreshTransactionError,
@@ -5667,17 +5673,23 @@ def main() -> int:
     writing = parser.add_mutually_exclusive_group()
     writing.add_argument("--write-content-lock", action="store_true")
     writing.add_argument("--write-markdown-projections", action="store_true")
-    parser.add_argument(
-        "--source-stage",
-        action="store_true",
-        help="validate an unpinned public candidate without accepting it as a release",
+    add_context_arguments(
+        parser,
+        source_stage_help="validate an unpinned public candidate without accepting it as a release",
     )
     args = parser.parse_args()
+    context = None
     try:
         try:
             repository = Path(os.path.abspath(args.repository.expanduser()))
         except RuntimeError as error:
             raise ContractError(str(error)) from error
+        context = prepare_context_if_requested(
+            parser,
+            args,
+            repository,
+            writing=args.write_content_lock or args.write_markdown_projections,
+        )
         if args.write_content_lock or args.write_markdown_projections:
             snapshot = capture_content_lock_write_snapshot(repository)
             validate(
@@ -5696,16 +5708,19 @@ def main() -> int:
                 write_markdown_projections(repository, snapshot=snapshot)
             else:
                 write_content_lock(repository, snapshot=snapshot)
-        validate(
-            repository,
-            args.skill,
-            source_stage=args.source_stage,
-            check_content_lock=False if args.write_markdown_projections else None,
-            check_markdown_evidence=not args.write_markdown_projections,
-            check_feedback_evidence=not args.write_markdown_projections,
-            check_relation_evidence=not args.write_markdown_projections,
-            emit_success=not args.write_markdown_projections,
-        )
+        with contextlib.redirect_stdout(
+            sys.stderr if context is not None else sys.stdout
+        ):
+            validate(
+                repository,
+                args.skill,
+                source_stage=args.source_stage,
+                check_content_lock=False if args.write_markdown_projections else None,
+                check_markdown_evidence=not args.write_markdown_projections,
+                check_feedback_evidence=not args.write_markdown_projections,
+                check_relation_evidence=not args.write_markdown_projections,
+                emit_success=not args.write_markdown_projections,
+            )
     except (
         AgentPluginContractError,
         ContractError,
@@ -5721,6 +5736,8 @@ def main() -> int:
         print("Mergecraft semantic content lock updated")
     elif args.write_markdown_projections:
         print("Mergecraft Markdown authoring projections updated")
+    if context is not None:
+        return check_context_if_requested(context, "mergecraft")
     return 0
 
 
