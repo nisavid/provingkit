@@ -45,7 +45,9 @@ that event. A valid trial is denied when any call drew a denial, no-effect when
 none did but an effect the case's `expect` names is absent (the agent refused,
 stalled, or stopped), and clean otherwise. No-effect trials get their own count,
 are never counted as clean, and are not retried. Summaries and `rig/reparse.py`
-count over valid trials only.
+count over valid trials only, and `rig/reparse.py` counts a valid, denial-free
+trial as no-record, not no-effect, when the case's `expect` names an effect but
+the trial's `record.json` is missing or unreadable.
 
 Any case runs alone:
 
