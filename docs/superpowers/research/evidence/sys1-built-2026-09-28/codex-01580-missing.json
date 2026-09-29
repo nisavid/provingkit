@@ -1,0 +1,209 @@
+{
+  "harness": "Codex CLI 0.158.0",
+  "model_requested": "gpt-6-sol",
+  "effort_requested": "high",
+  "episode": "missing",
+  "prompt": "First use apply_patch in a separate tool call to create started.txt with exactly Started followed by one newline. Then compute the product of the measured amount and multiplier. Use apply_patch in a later, separate tool call to write report.txt with exactly one line in the form Total: N units followed by one newline, where N is the integer product. Measured amount: 12 units. Use only the named synthetic files; do not invoke shell tools or delegate. Multiplier: not recorded. This is an automated synthetic fixture. If a required input is absent, put one targeted question in the final response and end this turn without writing report.txt. For this fixture only, do not submit an asynchronous question or wait for Ivan; the final question is the expected output when the multiplier is missing.",
+  "configuration": "Dedicated named profile overlays normal configuration; ordinary Jev entries remain disabled; research adapter matches apply_patch.",
+  "binary_sha256": "167c0148a849d2444f1b5a7fb5f8bb2de1de5ae13a2a504b833fc765980f5cd9",
+  "candidate": {
+    "commit": "ed5e7c94248d2a639d471b6cbd427ba08abef773",
+    "dist_count": 78,
+    "dist_sha256": "05b4d30c315c1a9b3a86ff428ce5577dc660c54cb5ae89551f329a3b14c47fe4"
+  },
+  "runner_sha256": "7f20f1748d3a36916c473f96fbadb1e6f8baeda710bbad594497de9ae42b5674",
+  "observer_sha256": "8235b60a17029eda551000f5143b019d0fe8154eb01b008eec2f002d815c563b",
+  "model_catalog": {
+    "sha256": "9d53371b1539bf0f1bfdae69850deae8b23d9ce7ebf352b99b60426aec482fd8",
+    "fetched_at": "2026-09-29T01:47:49.131388620Z",
+    "age_seconds": 8.732488,
+    "model": "gpt-6-sol",
+    "effort": "high"
+  },
+  "trust": {
+    "profile_sha256": "477fae0dc88aa91e329e8679d861794618ad1d305f141f9af720e1766f758283",
+    "normal_config_sha256": "712c0c8c28e2ff5dea6370da8314c69bc048c68cecdf92096dc3bdcc59378d28",
+    "normal_config_unchanged": true,
+    "review": {
+      "surface": "Codex CLI 0.158.0 TUI /hooks",
+      "method": "each candidate inspected and trusted individually",
+      "session_id": "01a0eac4-248f-7fe2-b381-4165c8b54127",
+      "model_prompt_submitted": false
+    },
+    "candidate_trusted_hashes": [
+      "sha256:7cffeaa7db931a2ec1458c8da97a7e314f3093cdd5cbca467a223557a4a48151",
+      "sha256:564591a312f4ba4d81dd5680a483377446740b439764199931b0a7848aea1dfa",
+      "sha256:0b29715527fe29567e4171d339022cc9ace31b8366d5878fa2e9681d415ccde6"
+    ]
+  },
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "finished_at_ns": 1790646487496780209
+  },
+  "stderr": "Reading prompt from stdin...\n2026-09-29T01:48:06.107619Z  WARN codex_core::tasks: failed to flush rollout after emitting terminal turn event: thread 01a0ead8-e47f-76b0-b4e8-b473a2b6952d not found\n",
+  "original_observer_status": "failed: unexpected rollout-flush warning",
+  "task_and_hook_predicates": "passed offline reanalysis with one exact warning exception",
+  "file_changes": [
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "<scratch>/jev-codex-profile-wwp3qihr/missing/project/started.txt",
+            "kind": "add"
+          }
+        ],
+        "status": "completed"
+      }
+    }
+  ],
+  "agent_messages": [
+    [
+      2,
+      "I\u2019ll create `started.txt` as specified. The multiplier is missing, so I can\u2019t calculate the total yet."
+    ],
+    [
+      5,
+      "What is the multiplier?"
+    ]
+  ],
+  "hook_records": [
+    {
+      "hook_id": "5fe7ea71-1296-4f63-9e31-ed6134bc60da",
+      "mode": "post",
+      "started_ms": 1790646483351,
+      "finished_ms": 1790646483422,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-d0573270-02ca-4066-9b47-88fd0cdca921",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "b16ae46a75ee0e6e2626f7e714a96a3a6831be0a89754d48d29891b49d756bf4",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "775d79f9-d9dc-42d2-a42c-8feeaef6287e",
+      "mode": "pre",
+      "started_ms": 1790646483159,
+      "finished_ms": 1790646483245,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-d0573270-02ca-4066-9b47-88fd0cdca921",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "64dcafeb02ba15d5ce396a50ff48708b09b1a06ea73b799df444277e21834283",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "e79d6787-3d60-4266-ba7c-cc53f79ebb83",
+      "mode": "stop",
+      "started_ms": 1790646486046,
+      "finished_ms": 1790646486096,
+      "guard_error": null,
+      "hook_event_name": "Stop",
+      "tool_name": null,
+      "tool_use_id": null,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "d1f9181df0941b5d68a8a50ae49ef2c27f74c743967bfa7845aa2053f0010fe3",
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "assessment_requests": [
+    {
+      "hook_id": "5fe7ea71-1296-4f63-9e31-ed6134bc60da",
+      "mode": "post",
+      "state_canonical_sha256": "15ea12d7cb0089566e84a894f3462d9937b5fce948bff22102711e0b93ec8789",
+      "job_nonempty": true,
+      "job_characters": 797,
+      "event_count": 1,
+      "questions": [
+        "meaningful_progress",
+        "worker_stuck",
+        "work_off_track",
+        "needs_human"
+      ],
+      "model_requested": "jev-latest"
+    }
+  ],
+  "decisions": [
+    {
+      "ts": "2026-09-29T01:48:03.418Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    }
+  ],
+  "effects": {
+    "fixture.txt": {
+      "sha256": "c10709b7d2c43a771a7e08df25a681c88f4a4e9babdc092099d6ff24d1fa598c",
+      "text": "synthetic native Codex built-Jev fixture\n"
+    },
+    "started.txt": {
+      "sha256": "70fdb269b53831677d0b65ffe50ed1d8ae147d7319493584728d7f8fdec2405e",
+      "text": "Started\n"
+    },
+    "report.txt": null
+  },
+  "pairing": [
+    {
+      "same_tool_input": true,
+      "matching_native_tool_use_ids": true,
+      "pairing_limit": null
+    }
+  ],
+  "stop_status": "skipped",
+  "limits": [
+    "One episode per case; synthetic closed judgments, not judgment accuracy.",
+    "Retained inherited user instructions and ordinary enabled user hooks; not isolated context or process containment.",
+    "Default Jev installer does not match apply_patch.",
+    "Model selection and catalog do not attest opaque provider routing.",
+    "Original observer failure preserved; flush persistence and warning cause remain unqualified."
+  ],
+  "reanalysis": {
+    "kind": "offline behavior reanalysis, not a new native run",
+    "observer_sha256": "26a98a2a7e63db559fb4748edf01cce227be90d2c8271308a3dfb4d0f65d4f12",
+    "original_observer_status": "failed: unexpected rollout-flush warning on stderr",
+    "task_and_hook_predicates": "passed",
+    "persistence_criterion": "unqualified; flush warning retained",
+    "warning_sha256": "68a3775458ca3bde0de8fbedfb0658320a8f8089c07d99413a712384643bc97b",
+    "native_rollout_currently_ends_in_task_complete": true,
+    "scope": "One preserved synthetic episode; this exception accepts only its exact timestamped, session-specific warning bytes."
+  },
+  "native_transcript": {
+    "sha256": "eb80ce1d9c03b7d359838aa4d794c27c84437c35be14a0b6e3dc03cf9c44dafa",
+    "bytes": 163121
+  },
+  "native_terminal_events": [
+    {
+      "type": "thread.started",
+      "thread_id": "01a0ead8-e47f-76b0-b4e8-b473a2b6952d"
+    },
+    {
+      "type": "turn.completed",
+      "usage": {
+        "input_tokens": 48266,
+        "cached_input_tokens": 31616,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 152,
+        "reasoning_output_tokens": 70
+      }
+    }
+  ]
+}

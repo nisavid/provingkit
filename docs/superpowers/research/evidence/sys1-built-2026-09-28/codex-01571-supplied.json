@@ -1,0 +1,244 @@
+{
+  "harness": "Codex CLI 0.157.1",
+  "model_requested": "gpt-6-sol",
+  "effort_requested": "high",
+  "episode": "supplied",
+  "source_summary_sha256": "f69da370c864902294726e570c90a411a72ba9afe17d01e00998b1f50bd3e76b",
+  "file_changes": [
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "<scratch>/jev-codex-native-v2ip_kq8/supplied/project/started.txt",
+            "kind": "add"
+          }
+        ],
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_2",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "<scratch>/jev-codex-native-v2ip_kq8/supplied/project/report.txt",
+            "kind": "add"
+          }
+        ],
+        "status": "completed"
+      }
+    }
+  ],
+  "agent_messages": [
+    [
+      2,
+      "I’ll create `started.txt` first, then calculate 12 × 3 and write `report.txt` in a separate patch."
+    ],
+    [
+      7,
+      "Created `started.txt` with `Started` and `report.txt` with `Total: 36 units`, each followed by one newline."
+    ]
+  ],
+  "hook_records": [
+    {
+      "hook_id": "3bd689ea-b526-4655-9318-e8c293136165",
+      "mode": "post",
+      "started_ms": 1790580334085,
+      "finished_ms": 1790580334151,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-bb7ffc59-553a-410f-b782-f7657754b447",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "5402facaa10ce59bb777a87b3df6e0e3d07b8ccf64a0d715c8ea6ee85d8ad62c",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "40e290a3-7176-4aa3-bbf9-2bafcdb662c8",
+      "mode": "pre",
+      "started_ms": 1790580331661,
+      "finished_ms": 1790580331745,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-e5254034-ae61-4ed9-81b1-98719c6fed09",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "205756b389d83cf0579a6b4ceb0dace1b87feeeba0ef078b5cd3372702ee7a92",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "a514325d-ea84-451e-b5fa-a504f0834d34",
+      "mode": "post",
+      "started_ms": 1790580331897,
+      "finished_ms": 1790580331968,
+      "guard_error": null,
+      "hook_event_name": "PostToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-e5254034-ae61-4ed9-81b1-98719c6fed09",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "48e7e2552dbee6d08b0f1ff07fef71887bd1b78779c8446c8c907834f7a5625e",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "b226055d-1580-4cf9-96d6-3d0762b98960",
+      "mode": "pre",
+      "started_ms": 1790580333893,
+      "finished_ms": 1790580333939,
+      "guard_error": null,
+      "hook_event_name": "PreToolUse",
+      "tool_name": "apply_patch",
+      "tool_use_id": "exec-bb7ffc59-553a-410f-b782-f7657754b447",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "c01c49c1e534aa6faec4ef18b4a6de3e56a7347920482e50712a82e74efd36b4",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "hook_id": "ec24196e-76f1-439b-9a56-79fb53cc9916",
+      "mode": "stop",
+      "started_ms": 1790580357815,
+      "finished_ms": 1790580357906,
+      "guard_error": null,
+      "hook_event_name": "Stop",
+      "tool_name": null,
+      "tool_use_id": null,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "input_sha256": "48b77923e5d50d9350c69b63f11a17e6551e9743350c480104ad7369d38b1712",
+      "stdout": "{\"systemMessage\":\"jev-axi supervision: the job looks unfinished (implementation_complete 0.2).\"}\n",
+      "stderr": ""
+    }
+  ],
+  "assessment_requests": [
+    {
+      "hook_id": "a514325d-ea84-451e-b5fa-a504f0834d34",
+      "mode": "post",
+      "state_canonical_sha256": "0f91b8d72a0e8c2624d603d142b63b001bea09ee03deaacaf35975fdd82f04bc",
+      "job_nonempty": true,
+      "job_characters": 467,
+      "event_count": 1,
+      "questions": [
+        "meaningful_progress",
+        "worker_stuck",
+        "work_off_track",
+        "needs_human"
+      ],
+      "model_requested": "jev-latest"
+    },
+    {
+      "hook_id": "3bd689ea-b526-4655-9318-e8c293136165",
+      "mode": "post",
+      "state_canonical_sha256": "7806253b64b61952b8e18d93e8e31a86ea2fd864c8ccde5bbd5875869db8e961",
+      "job_nonempty": true,
+      "job_characters": 467,
+      "event_count": 2,
+      "questions": [
+        "meaningful_progress",
+        "worker_stuck",
+        "work_off_track",
+        "needs_human"
+      ],
+      "model_requested": "jev-latest"
+    },
+    {
+      "hook_id": "ec24196e-76f1-439b-9a56-79fb53cc9916",
+      "mode": "stop",
+      "state_canonical_sha256": "6592614c99f4bd24e4b790467bfaf99325c52687325e3edeca50a07a31b7c5bf",
+      "job_nonempty": true,
+      "job_characters": 467,
+      "event_count": 0,
+      "questions": [
+        "implementation_complete",
+        "tests_sufficient",
+        "requirements_satisfied",
+        "needs_verification"
+      ],
+      "model_requested": "jev-latest"
+    }
+  ],
+  "decisions": [
+    {
+      "ts": "2026-09-28T07:25:31.964Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    },
+    {
+      "ts": "2026-09-28T07:25:34.148Z",
+      "hook": "post-tool-use",
+      "verdict": "escalate",
+      "action": "none",
+      "reason": "a person may be needed to unblock this (needs_human 0.82)",
+      "meaningful_progress": 0.1,
+      "worker_stuck": 0.1,
+      "work_off_track": 0.1,
+      "needs_human": 0.82
+    },
+    {
+      "ts": "2026-09-28T07:25:57.902Z",
+      "hook": "stop",
+      "verdict": "continue",
+      "action": "warn",
+      "reason": "the job looks unfinished (implementation_complete 0.2)",
+      "implementation_complete": 0.2,
+      "tests_sufficient": 0.1,
+      "requirements_satisfied": 0.2,
+      "needs_verification": 0.1
+    }
+  ],
+  "effects": {
+    "fixture.txt": {
+      "sha256": "c10709b7d2c43a771a7e08df25a681c88f4a4e9babdc092099d6ff24d1fa598c",
+      "text": "synthetic native Codex built-Jev fixture\n"
+    },
+    "started.txt": {
+      "sha256": "70fdb269b53831677d0b65ffe50ed1d8ae147d7319493584728d7f8fdec2405e",
+      "text": "Started\n"
+    },
+    "report.txt": {
+      "sha256": "a3ad8f59855f75d42bcbfb5ba867d2767cacb326d3ce5e1898ecf51757556039",
+      "text": "Total: 36 units\n"
+    }
+  },
+  "pairing": [
+    {
+      "same_tool_input": true,
+      "matching_native_tool_use_ids": true,
+      "pairing_limit": null
+    },
+    {
+      "same_tool_input": true,
+      "matching_native_tool_use_ids": true,
+      "pairing_limit": null
+    }
+  ],
+  "stop_status": "assessed",
+  "mechanical_status": "passed_pending_manual_adjudication",
+  "limits": [
+    "No automatic classification of the missing-input answer.",
+    "Native JSON may omit hook notifications and raw patch bodies.",
+    "App-server inventory does not prove the native exec hook stack."
+  ]
+}

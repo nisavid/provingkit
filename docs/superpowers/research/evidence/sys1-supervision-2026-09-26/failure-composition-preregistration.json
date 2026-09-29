@@ -1,0 +1,10 @@
+{
+  "question": "How do the installed safety policy and adapters compose with injected transport/answer failures, and does supervision stay silent?",
+  "runner_sha256": "864449655ccdf040c413d2937aff8fcac125b01f06a9b0452c25729ef106bf9f",
+  "node": "v24.21.0",
+  "sdk_version": "0.6.0",
+  "sdk_sha256": "bbb851dfe375c586c5bee3c082a04ab71882813dde39df0e95eaa23f30ec7012",
+  "calls": "16 safety case/error combinations, each through judge and two adapters; three supervisor errors through ordinary and explain paths",
+  "expected": "JSON403 deny; other selected errors allow; supervisor silent on error",
+  "limits": "Synthetic transport and authored transcript; no live model, proposed command execution, native harness, or actual service outage. Timeout untested. Current state omits authorization; sidecar retained only."
+}

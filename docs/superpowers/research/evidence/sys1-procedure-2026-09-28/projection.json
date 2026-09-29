@@ -1,0 +1,55 @@
+{
+  "scope": "One explicit-plugin synthetic episode per listed cell; generated handbacks retained including known errors.",
+  "transformations": [
+    "Selected task prompt, tool inputs, native Skill result, proof of complete source body in delivered user context, model/version, exit, and final handback.",
+    "Replaced machine paths with role placeholders.",
+    "Omitted full stdout, initialization/account metadata, unrelated context, timings/costs, and repeated source text; original stdout SHA-256 retained."
+  ],
+  "limits": [
+    "Not automatic repository discovery.",
+    "Not general reliability or outcome-rate evidence.",
+    "Sparse-input handback precision errors remain documented in the report."
+  ],
+  "files": [
+    {
+      "file": "initial-final--observed_denial.json",
+      "sha256": "b49a74b00101ebcdf3439b43a058b94d0e3b4e0271cdc4c90abd6d03e7e530dc"
+    },
+    {
+      "file": "initial-final--repeat_after_approval.json",
+      "sha256": "635e0b064ed59b7fdecf149d7d1f393e95129196d5ffac8acd92d4f9e0ad70cd"
+    },
+    {
+      "file": "initial-final--service_failure.json",
+      "sha256": "6d9543f13ad510c624797106ca8fb84fe1faa1c1b25cdbe8e7bcc4fa59a55fc1"
+    },
+    {
+      "file": "initial-final--ordinary_missing_file.json",
+      "sha256": "74e409a56826c9048f42a8fa59326d3a615651f016a4c92863b835d6b2456a14"
+    },
+    {
+      "file": "initial-final--pending_permission.json",
+      "sha256": "6ab91941bced1c074961c343eb86db0c58cd8e91bb1c51932dcb56cdf915c2f7"
+    },
+    {
+      "file": "initial-final--general_adoption.json",
+      "sha256": "abcc3d858c4c7992a353734e304fc56b26755857ab180be4320b175f593a2c1c"
+    },
+    {
+      "file": "authority-clarification--observed_denial.json",
+      "sha256": "649757b1d284b454a2431a3863c4d9688cf9c89888175ea51411da805df874c3"
+    },
+    {
+      "file": "authority-clarification--repeat_after_approval.json",
+      "sha256": "d99665ea813f47a63e11bbe185337b13b8b315307704917a80e700f2bf286c58"
+    },
+    {
+      "file": "explicit-authorization--approved_outside_path.json",
+      "sha256": "9cff967193d505af41536acd4fc840b6f20b2d604256d7dbdfb38efbd474a9a7"
+    },
+    {
+      "file": "explicit-authorization--broader_prior_approval.json",
+      "sha256": "11e3b155eaeeb48f56013e9596614d2119a9f71f86a387ed56b3267de18f39b2"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "sys1-claude-alpha-observation/v1",
+  "candidate_commit": "ed5e7c94248d2a639d471b6cbd427ba08abef773",
+  "runtime_manifest_sha256": "a2c92c8cdc06515de17098f9173ecdc1d5cb64308b6b0f61512433824c51b7de",
+  "runtime_inventory_sha256": "2315ad87b93cf64c496aba0b0bf14509c87ef0cbd2f5d071317fccd1dcb15faf",
+  "claude_version": "2.1.284",
+  "model": "claude-opus-5-5",
+  "effort": "high_requested",
+  "process": {
+    "exception": null,
+    "exit_code": 0,
+    "finished_at": "2026-09-29T03:26:47.326961+00:00",
+    "signal_sent": [],
+    "started_at": "2026-09-29T03:26:19.850182+00:00",
+    "stream_drain_incomplete": false,
+    "termination_reason": null,
+    "timed_out": false
+  },
+  "tool_sequence": [
+    "Read brief.txt",
+    "Write checkpoint-01.txt",
+    "Write checkpoint-02.txt",
+    "Write checkpoint-03.txt",
+    "Write checkpoint-04.txt",
+    "Write checkpoint-05.txt",
+    "Write checkpoint-06.txt",
+    "Write checkpoint-07.txt",
+    "Write checkpoint-08.txt",
+    "Write checkpoint-09.txt"
+  ],
+  "paired_results": 10,
+  "exact_checkpoint_outputs": 9,
+  "brief_unchanged": true,
+  "real_post_assessment": {
+    "action": "none",
+    "hook": "post-tool-use",
+    "meaningful_progress": 0.61,
+    "needs_human": 0.03,
+    "reason": "no worker concern above threshold",
+    "ts": "2026-09-29T03:26:42.025Z",
+    "verdict": "continue",
+    "work_off_track": 0.03,
+    "worker_stuck": 0.02
+  },
+  "runtime_settings_and_codex_identity_checks": "matched_before_and_after_native_run",
+  "original_smoke_acceptance": "failed_unexpected_fixture_files",
+  "extra_fixture_files_at_process_end": 17,
+  "extra_fixture_directories_at_process_end": 6,
+  "extra_fixture_namespace": ".remember/",
+  "retained_plugin": "remember@claude-plugins-official active; namespace correlation, not direct process attribution",
+  "other_hook_errors": [
+    {
+      "event": "SessionStart",
+      "component": "lavish-axi command missing",
+      "exit_code": 127
+    },
+    {
+      "event": "Stop",
+      "component": "fixture-relative react-doctor.mjs missing",
+      "exit_code": 1
+    }
+  ],
+  "rollback": "completed; full original settings digest restored",
+  "aftercare": "Some remember files changed after process-end inventory; subsequent targeted process inspection found no fixture-owned process remaining",
+  "later_operator_decision": "Accept observed candidate behavior for local alpha and retain plugin effects separately; preserve original failed trial",
+  "reapplication": "same candidate and command reapplied; identity checks passed; no second model episode",
+  "normal_codex_jev": "disabled_unchanged",
+  "upstream_submission": "held",
+  "private_evidence_bindings": {
+    "process": "53f2cd9b0a25067f7aa7c1cfc6fd76f794279871101ac329166d65f5b6ccd6cd",
+    "native_events": "8f393371ac9a3b5f777801a6a4f3b0342b80288204343007958d160b5e735b7b",
+    "supervise_delta": "1a09aabb50fb430bf9f3fb8595a9192c9485d079c64665ba9d477a403b64c405",
+    "staged_pair_adjudication": "d8680025838b2c08c6db79462b1e561cd531f9ee65151eaec3a7877549948a5c",
+    "reapply_result": "0e0868d914d96f1b549efd05c15a07f343f6bec4fb1411ee34280278812090f5"
+  },
+  "limits": [
+    "one real candidate episode; no general reliability or judgment-accuracy claim",
+    "live verdict was continue, not high-needs_human escalation; that branch has injected-fixture evidence",
+    "candidate path inferred from settings/runtime/native correlation",
+    "no process-wide containment or complete host-effect claim"
+  ]
+}
