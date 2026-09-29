@@ -308,27 +308,19 @@ actual sequence and complete expected binding. Do not place private values in
 source control, a shell command line, or a reusable driver, and do not print or
 write the raw return.
 
-Validate the return against one normative result variant. The producer records
-a missing or null `selectedExecutorReport.cliPidAtMs` or
-`selectedExecutorReport.cliReportedVersion` as an `unavailable` gap while
-preserving JSON `null` in the projected report. The helper may therefore return
-a valid `observed-partial` result with either field null. Preserve
-`cliPidAtMs` as either its actual nonnegative safe integer or JSON `null`, and
-preserve `cliReportedVersion` as either its actual bounded nonempty text or
-JSON `null`.
-
-Use the producer's validated result status and actual gap list; null neither
-proves runtime knowledge nor erases a reported gap. Do not invent values,
-borrow values from another producer, suppress gaps, or make the helper reject
-or reclassify an otherwise valid partial result merely because either field is
-null. The strict sample reader checks every required `UNKNOWN_CLAIMS` value and
-the unqualified outcome; the retained helper-result schema stays unchanged.
+Validate the return against one normative result variant. Apply the exact
+producer-result, field-outcome, host-gap, nullable-report, and
+original-sample requirements in
+[Retained producer provenance](private-data-contracts.md#retained-producer-provenance).
+Validate the summary against the already selected sample in memory. Do not
+reread private output to construct or complete it.
 
 No implemented serializer supplies validation. Require the observed partial
 result's sample binding and sequence to equal the wrapper and its selected
-report to match the selected task, Code ID, query generation, and PID. Retain
-an unknown result as explicit evidence; do not convert it to a missing file or
-a success.
+report to match the selected task, Code ID, query generation, and PID. Require
+its `sampleEvidence.result` and all five `fieldOutcomes` entries to match that
+same selected sample exactly. Retain an unknown result as explicit evidence;
+do not convert it to a missing file or a success.
 
 Construct the normative wrapper in memory, recursively canonicalize that
 object, serialize with `JSON.stringify`, encode strict UTF-8, and append

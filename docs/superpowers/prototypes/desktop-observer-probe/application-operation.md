@@ -799,12 +799,10 @@ Before reversing, repeat `pacman -Q`, `pacman -Qo`, the complete protected-asset
 manifest, and these identity checks:
 
 ```bash
-test "$(hash_file "$TARGET")" = "$CANDIDATE_SHA256"
-test "$(sudo stat -c '%u:%g:%a:%h' -- "$TARGET")" = "0:0:644:1"
-test "$(hash_file "$STAGE")" = "$PRISTINE_SHA256"
-test "$(sudo stat -c '%u:%g:%a:%h:%s' -- "$STAGE")" = \
-  "0:0:644:1:54910454"
-test "$(hash_file "$BACKUP")" = "$PRISTINE_SHA256"
+check_root_archive_file \
+  "$TARGET" "$CANDIDATE_SHA256" "$CANDIDATE_SIZE"
+check_root_archive_file "$STAGE" "$PRISTINE_SHA256" "54910454"
+check_root_archive_file "$BACKUP" "$PRISTINE_SHA256" "54910454"
 sudo cmp -s -- "$STAGE" "$BACKUP"
 ```
 

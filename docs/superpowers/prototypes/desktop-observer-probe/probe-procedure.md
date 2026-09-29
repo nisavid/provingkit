@@ -230,13 +230,13 @@ preserving JSON `null` as the projected fallback. A null report member is
 therefore a valid shape, but it neither establishes runtime knowledge nor
 overrides the producer's status or gap evidence.
 
-The helper may accept such a sample and return `observed-partial` with those
-nulls. Preserve the values and gaps exactly; do not invent fields or
-independently reject or reclassify a valid partial helper result merely because
-a nullable member is null. Neither producer result state establishes any
-member of `UNKNOWN_CLAIMS`: the producer emits those exact unknown values, and
-the strict reader requires them and always returns `usable-partial` with
-qualification `unqualified`.
+The helper's retained producer status, field failures, host gaps, nullable
+report facts, and relationship to the canonical original sample are governed
+by
+[Retained producer provenance](private-data-contracts.md#retained-producer-provenance).
+Neither producer result state establishes any member of `UNKNOWN_CLAIMS`: the
+producer emits those exact unknown values, and the strict reader requires them
+and always returns `usable-partial` with qualification `unqualified`.
 
 Each of the initial and final selected-executor sample acquisitions reads the
 nonsecret Linux boot identifier once from the single path
@@ -283,9 +283,9 @@ in
 [private probe data contracts](private-data-contracts.md#normative-private-contracts),
 construct the normative wrapper, canonicalize that object, and serialize it by
 the procedure in
-[private input construction](private-input-construction.md). Preserve nullable
-`cliPidAtMs` and `cliReportedVersion` values exactly; do not invent missing
-producer values or reclassify the result because either is null.
+[private input construction](private-input-construction.md). Apply the exact
+retained sample-evidence requirements in
+[Retained producer provenance](private-data-contracts.md#retained-producer-provenance).
 
 Invoke the helper at most once and only when an actual usable selected sample
 supplies its sequence and complete accepted binding. If no usable sample exists,

@@ -118,11 +118,54 @@ The observed result has exactly this shape:
     "sequence": 0,
     "observedAt": 0,
     "observedAtMonotonicMs": 0,
+    "result": "complete or partial",
     "collection": {
       "startedAt": 0,
       "endedAt": 0,
       "startedAtMonotonicMs": 0,
       "endedAtMonotonicMs": 0
+    },
+    "fieldOutcomes": {
+      "accountInfo": {
+        "status": "available or unavailable",
+        "failureClass": "null or the exact validated failure class",
+        "failureStage": "null or accountInfo",
+        "gaps": []
+      },
+      "getContextUsageSummary": {
+        "status": "available or unavailable",
+        "failureClass": "null or the exact validated failure class",
+        "failureStage": "null or getContextUsageSummary",
+        "gaps": []
+      },
+      "listPermissionRules": {
+        "status": "available or unavailable",
+        "failureClass": "null or the exact validated failure class",
+        "failureStage": "null or listPermissionRules",
+        "gaps": []
+      },
+      "hostBefore": {
+        "status": "available or unavailable",
+        "failureClass": "null or the exact validated failure class",
+        "failureStage": "null or hostBefore",
+        "gaps": [
+          {
+            "field": "exact validated host-gap field",
+            "failureClass": "exact validated failure class"
+          }
+        ]
+      },
+      "hostAfter": {
+        "status": "available or unavailable",
+        "failureClass": "null or the exact validated failure class",
+        "failureStage": "null or hostAfter",
+        "gaps": [
+          {
+            "field": "exact validated host-gap field",
+            "failureClass": "exact validated failure class"
+          }
+        ]
+      }
     }
   },
   "selectedReport": {
@@ -150,6 +193,35 @@ The observed result has exactly this shape:
   "queryToOsAssociation": "unknown"
 }
 ```
+
+### Retained producer provenance
+
+`sampleEvidence.result` is the exact `complete` or `partial` result from the
+revalidated selected sample. Each `fieldOutcomes` entry preserves that field's
+validated status, failure class, and failure stage. Available fields retain
+their existing null failure markers. An unavailable field has its exact
+field-bound failure stage and an empty `gaps` array because no value was
+accepted.
+
+For an available `hostBefore` or `hostAfter`, `gaps` is the exact validated,
+ordered host-gap list from that projection. Every other field has an empty
+`gaps` array. The retained wrapper validator must require exactly the five
+field names above, compare every outcome with the selected sample, and reject
+an omitted, added, reordered, suppressed, or altered host gap. It must also
+require the retained result to match the selected sample and the result implied
+by those statuses and gaps.
+
+The original numbered sample files remain the canonical evidence for the full
+producer observation, including getter values and complete gap context. They
+remain private output and retain their required file identities and digests in
+the cleanup inventory. `sampleEvidence` is a bounded provenance summary for
+the helper result; it does not replace the original sample or define another
+sample schema.
+
+The helper constructs this summary from the already acquired, strictly
+validated sample used for final revalidation. This requires no additional
+private read, live action, or scope. It copies no getter value, raw error,
+transcript, environment, or unapproved object field.
 
 In the producer projection, a missing or null selected fact is preserved as
 JSON `null` and recorded as an `unavailable` gap. This includes
