@@ -641,7 +641,7 @@ export function createSelectedLinuxExecutorObserver({
         sample: selected.sample,
         maximumAgeMs: input.maximumAgeMs,
       });
-      const startAfterHash = await readStartTicks(
+      const startBeforeHash = await readStartTicks(
         processDirectoryHandle,
         selected.report.cliPid,
       );
@@ -696,8 +696,8 @@ export function createSelectedLinuxExecutorObserver({
           processBeforeReopen,
           processAfterReopen,
         ) ||
-        startBefore !== startAfterHash ||
-        startAfterHash !== startAfterReopen ||
+        startBefore !== startBeforeHash ||
+        startBeforeHash !== startAfterReopen ||
         !sameFileState(executable.state, executableAfter)
       ) {
         return unknownLinuxIdentity();

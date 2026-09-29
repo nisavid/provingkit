@@ -123,6 +123,30 @@ Record the fixture's expected post-restoration state in the approval packet.
 The cleanup manifest is created only after restoration verification, when every
 emitted file and final retained identity can be inventoried exactly.
 
+## Protected-asset manifest
+
+`PROTECTED_ASSET_MANIFEST` is an LF-terminated tab-delimited data file with no
+header or blank lines. Each row has exactly these eight nonempty columns:
+
+```text
+role<TAB>path<TAB>sha256<TAB>uid<TAB>gid<TAB>mode<TAB>links<TAB>size<LF>
+```
+
+`role` is exactly `main-executable`, `native-asset`, or `chrome-sandbox`.
+`path` is the literal absolute pathname byte sequence: it is not quoted,
+escaped, expanded, or normalized. A path containing a tab, LF, or CR is not
+representable and must be rejected rather than escaped. `sha256` is 64
+lowercase hexadecimal characters. `uid`, `gid`, `links`, and `size` are
+canonical unsigned decimal integers; `links` is positive. `mode` is the three-
+or four-digit octal spelling returned by `stat -c %a`.
+
+The manifest contains exactly one `main-executable` row, exactly one
+`chrome-sandbox` row, and one row for every reviewed native asset, with no
+duplicate path or additional row. Its path set must equal the complete
+package-derived inventory approved by issue 279. Completeness is established
+during review of that inventory; a runtime scan must not invent or enlarge it.
+The approved manifest hash binds the reviewed set.
+
 ## Preflight
 
 Issue 279 schedules one window and two full Desktop shutdown/launch cycles. The
@@ -246,12 +270,110 @@ test "$owner_line" = \
   "$TARGET is owned by claude-desktop-extra 2.9939.4-1"
 
 hash_file() {
-  local output digest marker extra
+  local output digest marker
   output=$(sudo sha256sum -- "$1") || return 1
-  read -r digest marker extra <<< "$output" || return 1
-  test "$marker" = "$1"
-  test -z "${extra:-}"
+  if [[ "$output" == \\* ]]; then
+    output="${output:1}"
+  fi
+  digest="${output:0:64}"
+  marker="${output:64:2}"
+  [[ "$digest" =~ ^[0-9a-f]{64}$ ]]
+  [[ "$marker" = "  " || "$marker" = " *" ]]
   printf '%s' "$digest"
+}
+
+validate_protected_asset_manifest() {
+  local manifest="$1"
+  local role path digest uid gid mode links size actual
+  local cursor component last_byte
+  local main_count=0 native_count=0 sandbox_count=0
+  local -a components
+  local -A seen_paths=()
+
+  test -f "$manifest"
+  test ! -L "$manifest"
+  test "$(stat -c '%h' -- "$manifest")" = "1"
+  test -s "$manifest"
+
+  last_byte=$(
+    tail -c 1 -- "$manifest" |
+      od -An -tu1 |
+      tr -d ' '
+  ) || return 1
+  test "$last_byte" = "10"
+
+  awk -F '\t' '
+    NF != 8 { exit 1 }
+    {
+      if (index($0, "\r") != 0) exit 1
+      for (field = 1; field <= 8; field += 1) {
+        if ($field == "") exit 1
+      }
+    }
+    END {
+      if (NR == 0) exit 1
+    }
+  ' "$manifest" || return 1
+
+  while IFS=$'\t' read -r \
+    role path digest uid gid mode links size; do
+    case "$role" in
+      main-executable)
+        ((main_count += 1))
+        ;;
+      native-asset)
+        ((native_count += 1))
+        ;;
+      chrome-sandbox)
+        ((sandbox_count += 1))
+        test "${path##*/}" = "chrome-sandbox"
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+
+    [[ "$path" = /* ]]
+    [[ "$path" = "$PROBE_INSTALL_ROOT"/* ]]
+    [[ "$path" != *$'\t'* ]]
+    [[ "$path" != *$'\n'* ]]
+    [[ "$path" != *$'\r'* ]]
+    [[ -z "${seen_paths[$path]+x}" ]]
+    seen_paths["$path"]=1
+
+    cursor="/"
+    IFS=/ read -r -a components <<< "${path#/}" ||
+      return 1
+    for component in "${components[@]}"; do
+      [[
+        -n "$component" &&
+        "$component" != "." &&
+        "$component" != ".."
+      ]]
+      cursor="${cursor%/}/$component"
+      sudo test ! -L "$cursor"
+    done
+
+    [[ "$digest" =~ ^[0-9a-f]{64}$ ]]
+    [[ "$uid" =~ ^(0|[1-9][0-9]*)$ ]]
+    [[ "$gid" =~ ^(0|[1-9][0-9]*)$ ]]
+    [[ "$mode" =~ ^[0-7]{3,4}$ ]]
+    [[ "$links" =~ ^[1-9][0-9]*$ ]]
+    [[ "$size" =~ ^(0|[1-9][0-9]*)$ ]]
+
+    sudo test -f "$path"
+    sudo test ! -L "$path"
+    actual=$(
+      sudo stat -c '%u:%g:%a:%h:%s' -- "$path"
+    ) || return 1
+    test "$actual" = \
+      "$uid:$gid:$mode:$links:$size"
+    test "$(hash_file "$path")" = "$digest"
+  done < "$manifest"
+
+  test "$main_count" = "1"
+  test "$sandbox_count" = "1"
+  test "$native_count" -gt 0
 }
 
 check_no_xattrs() {
@@ -358,6 +480,8 @@ cmp -s -- "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT"
 test "$(hash_file "$CANDIDATE_ARCHIVE")" = "$CANDIDATE_SHA256"
 test "$(hash_file "$PROTECTED_ASSET_MANIFEST")" = \
   "$PROTECTED_ASSET_MANIFEST_SHA256"
+validate_protected_asset_manifest \
+  "$PROTECTED_ASSET_MANIFEST"
 check_reviewed_launcher
 PREFLIGHT_LAUNCH_ARGV=()
 load_reviewed_launch_argv PREFLIGHT_LAUNCH_ARGV
@@ -378,12 +502,10 @@ separately bound published revision, and the archive-verification record.
 Confirm that the candidate hash comes from that receipt and that the complete
 unchanged-asset inventory matches it.
 
-Verify every protected-asset manifest row by reading its fixed tab-delimited
-fields as data, checking that its absolute path is under `PROBE_INSTALL_ROOT`,
-and comparing SHA-256, owner, group, mode, link count, and size with
-`sha256sum` and `stat`. Require exactly one reviewed main executable, every
-reviewed native asset, and exactly one `chrome-sandbox`. Do not execute or
-evaluate manifest content. Save this verified manifest for restoration.
+At every later point that requires the complete protected-asset check, run
+`validate_protected_asset_manifest "$PROTECTED_ASSET_MANIFEST"` again after
+rechecking the manifest file's bound SHA-256. Do not evaluate a row as shell
+text or use it to construct a command string.
 
 Quit Claude Desktop through its UI. Under the later grant, the exact selected
 application PID may be checked against the profile-specific `SingletonLock`;
@@ -507,12 +629,15 @@ numeric PID path or read environments, command lines, unrelated processes,
 transcripts, or historical peers. Comparing a process report does not establish
 the Code query's OS-process association; that remains unknown.
 
-After the one separately authorized helper invocation, validate its return
-against one documented result shape, construct and canonicalize the required
-wrapper object, and serialize that object into `LINUX_OBSERVATION_FILE` as
-defined by `private-input-construction.md`. No implemented serializer performs
-these steps. Do not serialize a caught error or arbitrary raw object. Retain
-either documented unknown result as explicit evidence. Require a private
+After the one separately authorized helper invocation, follow the exact
+invocation-object byte grammar in `private-input-construction.md`. Invoke the
+exported helper once with the parsed in-memory object. Validate its in-memory
+return against one documented result shape, construct and canonicalize the
+required wrapper object, and serialize only that wrapper into
+`LINUX_OBSERVATION_FILE`. No implemented serializer or reusable invocation
+driver performs these steps. Do not serialize a caught error, exception text,
+or arbitrary raw object.
+Retain either documented unknown result as explicit evidence. Require a private
 regular single-link `0600` file no larger than 16384 bytes, then record its
 exact identity and digest for the cleanup manifest.
 

@@ -2,11 +2,19 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { sha256 } from './archive.mjs';
+import {
+  loadAssessedArchiveReader,
+} from './archive-reader-identity.mjs';
 
 const [pristinePath, candidatePath, modulePath, managerPath] = process.argv.slice(2);
 if (!pristinePath || !candidatePath || !modulePath || !managerPath || !process.env.PROBE_ASAR_READER)
   throw new Error('Supply pristine archive, candidate archive, module, patched manager, and PROBE_ASAR_READER URL.');
-const asar = await import(process.env.PROBE_ASAR_READER);
+const {
+  archiveReader: asar,
+  identity: archiveReader,
+} = await loadAssessedArchiveReader(
+  process.env.PROBE_ASAR_READER,
+);
 const manager = '.vite/build/index.chunk-B9SZqsi8.js';
 const added = '.vite/build/desktopRuntimeObserver.js';
 const pristine = await readFile(pristinePath);
@@ -64,5 +72,6 @@ for (const [name, descriptor] of after) {
   }
 }
 console.log(JSON.stringify({ archiveSha256: sha256(await readFile(candidatePath)),
+  archiveReader,
   originalMembers: before.size, candidateMembers: after.size, changes,
   unchangedMembers: before.size - 1, runtimeLoading: 'unverified' }, null, 2));

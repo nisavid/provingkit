@@ -104,8 +104,42 @@ organization, and task values. The exact app-data root remains a later binding
 gap; the source-defined base is `claude-code-sessions`. `getSessionFilePath` is
 an internal source method, not an approved callable UI or API; never invoke it.
 Do not enumerate the containing directory, scan other task files, or read a
-transcript. Project only these source-backed fields from that one metadata
-file:
+transcript.
+
+Acquire the selected metadata through one stable descriptor. Starting at the
+already bound `userData` directory, check each constructed path component with
+`lstat`; reject every symlink component, a component owned by another UID, or a
+directory writable by group or other. Do not enumerate any component.
+
+For the final path:
+
+1. `lstat` it and require a regular non-symlink file owned by the selected
+   Desktop UID, with one link and a size from 1 through 65536 bytes. Record
+   device, inode, UID, GID, mode, link count, size, nanosecond mtime, and
+   nanosecond ctime. Do not require mode `0600`: a source-written `0644` file
+   inside the private profile is acceptable. Reject group- or world-writable
+   mode.
+2. Open that exact path once with `O_RDONLY|O_NOFOLLOW`. `fstat` the descriptor
+   before reading and require every recorded field to equal the preceding
+   `lstat`.
+3. Read at most 65537 bytes from the descriptor. Require exactly the recorded
+   size followed by EOF; a short read, additional byte, or size above 65536 is
+   a stop condition.
+4. `fstat` the same descriptor after reading and require device, inode, type,
+   UID, GID, mode, link count, size, mtime, and ctime to equal the descriptor's
+   pre-read state.
+5. `lstat` the final path again, require that it is still a non-symlink, and
+   require the same fields to equal the descriptor state. Then close the
+   descriptor.
+6. Strictly decode only the captured bytes as UTF-8 and parse one JSON object.
+   Project only the fields listed below. Do not retain or export the raw bytes,
+   the unprojected object, or any additional field.
+
+Repeat this acquisition immediately before staging. The two accepted
+projections and their file identities must match. A replacement, mutation,
+ownership change, additional link, or projection change is a stop condition.
+
+Project only these source-backed fields from the captured metadata:
 
 ```json
 {
@@ -268,6 +302,49 @@ sampler's exclusive directory inventory. Its existing parent must be a private,
 same-owner `0700` directory whose identity is bound before the run. The result
 path must not exist before the authorized helper invocation.
 
+The helper invocation is manual but its input is exact. Construct this object
+from the accepted bootstrap, private record, and selected sample:
+
+```json
+{
+  "afterSequence": 0,
+  "expectedBinding": "<the exact complete accepted bootstrap binding object>",
+  "expectedUid": 0,
+  "maximumAgeMs": 30000,
+  "runDirectory": "<exact absolute OUTPUT_RUN_ROOT>",
+  "sequence": 0
+}
+```
+
+Replace `sequence` with the selected integer from 1 through 3,
+`afterSequence` with exactly `sequence - 1`, and `expectedUid` with the
+selected Desktop user's nonnegative integer UID. `expectedBinding` has exactly
+the complete binding keys and values already accepted for the arm; it is not
+reconstructed from the sample.
+
+Reject extra or missing invocation keys, a noninteger value, a binding
+difference, a different run directory, or a placeholder. Recursively sort the
+populated object's keys, serialize it once with `JSON.stringify`, and encode it
+as strict UTF-8 with no BOM, indentation, trailing spaces, or final newline.
+Strictly decode and parse those bytes, repeat the exact validation and
+canonical serialization, and require byte-for-byte equality.
+
+In a one-shot Node ES-module evaluation, import only
+`observeSelectedLinuxExecutor` from
+`selected-executor-linux-identity.mjs`, parse the validated in-memory bytes,
+and invoke exactly:
+
+```js
+const result =
+  await observeSelectedLinuxExecutor(invocation);
+```
+
+Invoke it once. Do not place private values in source control, a shell command
+line, or a reusable driver, and do not print or write the raw return. Hold the
+return in memory, validate it against one documented result variant, construct
+the wrapper below, and only then serialize the wrapper to the exclusively
+created retained-evidence path.
+
 The artifact binds its source, run, selected sample, and complete expected
 binding even when the helper returns an unknown result:
 
@@ -323,6 +400,13 @@ An unavailable or changed Linux identity is:
 ```json
 {"state":"unknown","reason":"linux-identity-unavailable-or-changed","qualification":"unqualified","queryToOsAssociation":"unknown"}
 ```
+
+`selected-sample-unavailable-or-changed` also covers failure to acquire the
+Linux boot domain before sample selection. Without that domain the helper
+cannot validate a selected sample, so this reason does not claim that the
+sample file is missing. `linux-identity-unavailable-or-changed` applies only
+after a sample has passed boot-domain, binding, and freshness selection and
+process-identity acquisition has begun.
 
 A successful partial observation must have exactly this shape:
 

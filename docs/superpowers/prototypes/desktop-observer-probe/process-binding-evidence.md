@@ -83,7 +83,7 @@ three `stat` opens reading at most 4,096 bytes each, and two `exe` opens with at
 most 256 MiB hashed. The initial and final selected-sample acquisitions retain
 their separately described sample-file and boot-ID reads.
 
-Linux procfs documentation states that operations through an open descriptor
+[Linux procfs documentation](https://docs.kernel.org/filesystems/proc.html) states that operations through an open descriptor
 for an exited process do not redirect to a later process that reuses the PID
 and ordinarily fail. That supports the retained-directory design; it is not
 runtime proof for this candidate. Synthetic checks cover delayed later opens

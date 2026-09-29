@@ -1,14 +1,81 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, readFile, rm, cp } from 'node:fs/promises';
+import {
+  appendFile,
+  mkdtemp,
+  mkdir,
+  writeFile,
+  readFile,
+  rm,
+  cp,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { appendMembers, patchManager } from './archive.mjs';
+import {
+  assessArchiveReaderIdentity,
+  loadAssessedArchiveReader,
+} from './archive-reader-identity.mjs';
 
 // The caller supplies an independently installed @electron/asar 4.3.0 reader.
-const asar = await import(process.env.PROBE_ASAR_READER);
+const { archiveReader: asar } =
+  await loadAssessedArchiveReader(
+    process.env.PROBE_ASAR_READER,
+  );
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+
+test('archive reader assessment rejects changed entrypoint bytes', async () => {
+  const directory = await mkdtemp(
+    join(tmpdir(), 'observer-asar-reader-'),
+  );
+
+  try {
+    const installedEntrypoint = fileURLToPath(
+      process.env.PROBE_ASAR_READER,
+    );
+    const installedRoot = dirname(dirname(installedEntrypoint));
+    const copiedRoot = join(directory, 'reader');
+    const copiedEntrypoint = join(
+      copiedRoot,
+      'lib',
+      'asar.js',
+    );
+
+    await mkdir(join(copiedRoot, 'lib'), {
+      recursive: true,
+    });
+    await cp(
+      join(installedRoot, 'package.json'),
+      join(copiedRoot, 'package.json'),
+    );
+    await cp(installedEntrypoint, copiedEntrypoint);
+
+    const copiedUrl =
+      pathToFileURL(copiedEntrypoint).href;
+    const identity =
+      await assessArchiveReaderIdentity(copiedUrl);
+
+    assert.equal(identity.name, '@electron/asar');
+    assert.equal(identity.version, '4.3.0');
+    assert.equal(
+      identity.qualification,
+      'observed build dependency files; no transitive dependency attestation',
+    );
+
+    await appendFile(copiedEntrypoint, '\n');
+    await assert.rejects(
+      assessArchiveReaderIdentity(copiedUrl),
+      /unassessed archive reader identity/,
+    );
+  } finally {
+    await rm(directory, {
+      recursive: true,
+      force: true,
+    });
+  }
+});
 
 test('a manager patch applies only to its inspected source and unique nonoverlapping anchors', () => {
   const source = Buffer.from('"use strict";function example(){return 1;}');

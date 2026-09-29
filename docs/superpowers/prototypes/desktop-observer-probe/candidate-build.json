@@ -4,13 +4,22 @@
     "name": "esbuild",
     "version": "0.28.2"
   },
+  "archiveReader": {
+    "name": "@electron/asar",
+    "version": "4.3.0",
+    "packageJsonSha256": "360ba58371fc5084bd85d5a16bdc3da2f18653b0fd80ae4c7c56b5c31d142a2a",
+    "entrypoint": "lib/asar.js",
+    "entrypointSha256": "8326b28ef2557554175cf738eb608a2d6c48134c878519a0a0242ce3fa4056cb",
+    "qualification": "observed build dependency files; no transitive dependency attestation"
+  },
   "sourceInputs": {
     "desktop-adapter.mjs": "1b0cce2b59df281839e65eecf48591c67b5e578e5f817e2d8861d3714f68527d",
     "observer-contract.mjs": "42428d0d0c956124a3fbfd0c4517d1f662bafec157e2f815689ca5bfc6aef2b5",
     "observer-probe.mjs": "9a7efd93c120c7069d6bf32cc2818710eb9e5d84fa1f1f06a350c9dd1f7bfee8",
     "manager-patch.json": "525439920c7eec08d7f1c7bea1d224acbfb9470a756491d13921eaf01bd08ce2",
     "archive.mjs": "28f199c0efbd27f88b68cf63a2666391a5798e1ea5c79f4fff33f0db05ef9af5",
-    "build-candidate.mjs": "0532007f9f739a06b2fa2db72747b8a7b182171123653674ab62f41126f896f2"
+    "archive-reader-identity.mjs": "81e0a9e261384f642389a410528f85f9c75899da320918b70976f10228aeb306",
+    "build-candidate.mjs": "ff329ebbf1d1fd840f939ff2a2c2077f44efbb25d9e48b1f754749d552731db9"
   },
   "pristineSha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
   "candidateSha256": "98dbf400ae793516f356c1d58ef3587d387691c0b77d25d8a968b284e8d16098",
