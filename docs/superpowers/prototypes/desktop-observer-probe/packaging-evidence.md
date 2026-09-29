@@ -22,7 +22,7 @@ Inspection on 2026-09-29 found:
 | Pristine `resources/app.asar` | SHA-256 `4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a` |
 | Launcher | SHA-256 `015f5232d3c2c40f04f5529d44058d3fd0a80cdce0eddf91dc08688f0a8c867e` |
 | Electron executable | SHA-256 `d33007e153db6cee9cc8e2aa6ca986914113bf2355783c3a1fb3af46fd4a1b32` |
-| Independent archive reader | `@electron/asar 4.3.0`; `package.json` SHA-256 `360ba58371fc5084bd85d5a16bdc3da2f18653b0fd80ae4c7c56b5c31d142a2a`; `lib/asar.js` SHA-256 `8326b28ef2557554175cf738eb608a2d6c48134c878519a0a0242ce3fa4056cb`; observed build dependency files, with no transitive dependency attestation |
+| Selected build dependencies | Complete regular-file inventories for the selected eight-package `@electron/asar 4.3.0` runtime closure and the selected `esbuild 0.28.2` plus `@esbuild/linux-x64 0.28.2` runtime closure; Node and the host OS remain trusted baseline dependencies |
 
 These identities do not identify the Code executor a disposable task will
 actually use. The live probe must record the selected executor separately.
@@ -164,8 +164,19 @@ allocated after fixture creation, cleanup-manifest location, protected backup,
 and one current-profile window with the candidate and restored launches. None
 of the archive facts establishes that the modified app loads.
 
-Before importing the archive reader, the builder and independent verifier
-check its package name, version, package-JSON hash, entrypoint path, and
-entrypoint hash. A different identity is unassessed, not established as
-incompatible. The build receipt and archive-verification output record those
-same facts and explicitly make no transitive dependency attestation.
+Before importing either selected tool, the builder checks every regular file
+in both package closures against `build-dependency-manifest.json`. The
+independent verifier performs the same complete assessment before importing
+the archive reader. Assessment rejects missing or additional package files,
+symlinks, changed package names or versions, dependency resolution outside the
+selected roots, noncanonical entrypoint paths, a non-Linux-x64 host, and
+module-loading overrides such as `ESBUILD_BINARY_PATH`, `NODE_OPTIONS`, or
+`NODE_PATH`.
+
+The build receipt and archive-verification output record the manifest digest,
+the complete relative package identity lists, both selected entrypoint
+identities, and the selected native esbuild binary identity. These records
+bind only the observed package trees on Linux x64. They do not attest Node,
+the kernel, shared libraries, firmware, or the wider host OS. A changed
+identity remains unassessed rather than established as incompatible, so the
+accepted graduated compatibility policy continues to govern reassessment.

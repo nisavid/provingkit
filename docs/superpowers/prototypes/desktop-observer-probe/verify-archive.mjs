@@ -4,17 +4,29 @@ import { readFile } from 'node:fs/promises';
 import { sha256 } from './archive.mjs';
 import {
   loadAssessedArchiveReader,
-} from './archive-reader-identity.mjs';
+} from './build-dependency-identity.mjs';
 
 const [pristinePath, candidatePath, modulePath, managerPath] = process.argv.slice(2);
-if (!pristinePath || !candidatePath || !modulePath || !managerPath || !process.env.PROBE_ASAR_READER)
-  throw new Error('Supply pristine archive, candidate archive, module, patched manager, and PROBE_ASAR_READER URL.');
+if (
+  !pristinePath ||
+  !candidatePath ||
+  !modulePath ||
+  !managerPath ||
+  !process.env.PROBE_ASAR_READER ||
+  !process.env.PROBE_ESBUILD
+)
+  throw new Error('Supply pristine archive, candidate archive, module, patched manager, PROBE_ASAR_READER URL, and PROBE_ESBUILD URL.');
 const {
   archiveReader: asar,
-  identity: archiveReader,
-} = await loadAssessedArchiveReader(
-  process.env.PROBE_ASAR_READER,
-);
+  identity: buildDependencies,
+} = await loadAssessedArchiveReader({
+  manifestUrl: new URL(
+    './build-dependency-manifest.json',
+    import.meta.url,
+  ),
+  archiveReaderUrl: process.env.PROBE_ASAR_READER,
+  bundlerUrl: process.env.PROBE_ESBUILD,
+});
 const manager = '.vite/build/index.chunk-B9SZqsi8.js';
 const added = '.vite/build/desktopRuntimeObserver.js';
 const pristine = await readFile(pristinePath);
@@ -72,6 +84,8 @@ for (const [name, descriptor] of after) {
   }
 }
 console.log(JSON.stringify({ archiveSha256: sha256(await readFile(candidatePath)),
-  archiveReader,
+  dependencyManifestSha256: buildDependencies.manifestSha256,
+  bundler: buildDependencies.bundler,
+  archiveReader: buildDependencies.archiveReader,
   originalMembers: before.size, candidateMembers: after.size, changes,
   unchangedMembers: before.size - 1, runtimeLoading: 'unverified' }, null, 2));

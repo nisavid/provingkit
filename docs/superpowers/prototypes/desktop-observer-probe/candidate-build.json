@@ -1,8 +1,31 @@
 {
   "schema": "provingkit.desktop-probe-build.v1",
+  "dependencyManifestSha256": "efabee587e55860b1ce32aadac3360adcc2673e76116a1a03029295f7491938a",
   "bundler": {
     "name": "esbuild",
-    "version": "0.28.2"
+    "version": "0.28.2",
+    "packageJsonSha256": "9d0bc453f4e791553c4cc2298ba023b409241fd9801e494741666eb0f6051490",
+    "entrypoint": "lib/main.js",
+    "entrypointSha256": "61ec0ba144ff93f4bf0e96ad6fab6f430ede0aa13e27ace8063ed63ba416b3cd",
+    "packages": [
+      {
+        "name": "@esbuild/linux-x64",
+        "version": "0.28.2",
+        "relativeRoot": "@esbuild/linux-x64"
+      },
+      {
+        "name": "esbuild",
+        "version": "0.28.2",
+        "relativeRoot": "esbuild"
+      }
+    ],
+    "qualification": "complete observed package-file inventory for the selected Linux x64 installed runtime dependency closure; Node and host OS are trusted baseline",
+    "executable": {
+      "packageName": "@esbuild/linux-x64",
+      "version": "0.28.2",
+      "relativePath": "bin/esbuild",
+      "sha256": "e1698a3d5c6c0798fee4fd3b5cc816651f460c63d390a7a26ea4beb0b1884100"
+    }
   },
   "archiveReader": {
     "name": "@electron/asar",
@@ -10,7 +33,49 @@
     "packageJsonSha256": "360ba58371fc5084bd85d5a16bdc3da2f18653b0fd80ae4c7c56b5c31d142a2a",
     "entrypoint": "lib/asar.js",
     "entrypointSha256": "8326b28ef2557554175cf738eb608a2d6c48134c878519a0a0242ce3fa4056cb",
-    "qualification": "observed build dependency files; no transitive dependency attestation"
+    "packages": [
+      {
+        "name": "@electron/asar",
+        "version": "4.3.0",
+        "relativeRoot": "@electron/asar"
+      },
+      {
+        "name": "balanced-match",
+        "version": "4.0.4",
+        "relativeRoot": "balanced-match"
+      },
+      {
+        "name": "brace-expansion",
+        "version": "5.0.12",
+        "relativeRoot": "brace-expansion"
+      },
+      {
+        "name": "glob",
+        "version": "13.0.6",
+        "relativeRoot": "glob"
+      },
+      {
+        "name": "lru-cache",
+        "version": "11.5.3",
+        "relativeRoot": "lru-cache"
+      },
+      {
+        "name": "minimatch",
+        "version": "10.2.6",
+        "relativeRoot": "minimatch"
+      },
+      {
+        "name": "minipass",
+        "version": "7.1.3",
+        "relativeRoot": "minipass"
+      },
+      {
+        "name": "path-scurry",
+        "version": "2.0.2",
+        "relativeRoot": "path-scurry"
+      }
+    ],
+    "qualification": "complete observed package-file inventory for the selected installed runtime dependency closure; Node and host OS are trusted baseline"
   },
   "sourceInputs": {
     "desktop-adapter.mjs": "1b0cce2b59df281839e65eecf48591c67b5e578e5f817e2d8861d3714f68527d",
@@ -18,8 +83,9 @@
     "observer-probe.mjs": "9a7efd93c120c7069d6bf32cc2818710eb9e5d84fa1f1f06a350c9dd1f7bfee8",
     "manager-patch.json": "525439920c7eec08d7f1c7bea1d224acbfb9470a756491d13921eaf01bd08ce2",
     "archive.mjs": "28f199c0efbd27f88b68cf63a2666391a5798e1ea5c79f4fff33f0db05ef9af5",
-    "archive-reader-identity.mjs": "81e0a9e261384f642389a410528f85f9c75899da320918b70976f10228aeb306",
-    "build-candidate.mjs": "ff329ebbf1d1fd840f939ff2a2c2077f44efbb25d9e48b1f754749d552731db9"
+    "build-dependency-identity.mjs": "e2d9bd5e349e18e1ad54658bbee64d5c8b3c1bfab25072a9cf2af22c7a29f002",
+    "build-dependency-manifest.json": "efabee587e55860b1ce32aadac3360adcc2673e76116a1a03029295f7491938a",
+    "build-candidate.mjs": "a7eeb8af97c2e427fa4c5fcd7ef8e4544a04bc8a1346db61d410eab80f60c394"
   },
   "pristineSha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
   "candidateSha256": "98dbf400ae793516f356c1d58ef3587d387691c0b77d25d8a968b284e8d16098",

@@ -15,60 +15,145 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { appendMembers, patchManager } from './archive.mjs';
 import {
-  assessArchiveReaderIdentity,
+  assessBuildDependencies,
   loadAssessedArchiveReader,
-} from './archive-reader-identity.mjs';
+} from './build-dependency-identity.mjs';
 
-// The caller supplies an independently installed @electron/asar 4.3.0 reader.
+const buildDependencyOptions = {
+  manifestUrl: new URL(
+    './build-dependency-manifest.json',
+    import.meta.url,
+  ),
+  archiveReaderUrl: process.env.PROBE_ASAR_READER,
+  bundlerUrl: process.env.PROBE_ESBUILD,
+};
+
+// The caller supplies the selected independently installed tool closure.
 const { archiveReader: asar } =
-  await loadAssessedArchiveReader(
-    process.env.PROBE_ASAR_READER,
-  );
+  await loadAssessedArchiveReader(buildDependencyOptions);
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
-test('archive reader assessment rejects changed entrypoint bytes', async () => {
+test('build dependency assessment rejects selected package drift', async () => {
   const directory = await mkdtemp(
-    join(tmpdir(), 'observer-asar-reader-'),
+    join(tmpdir(), 'observer-build-dependencies-'),
   );
 
   try {
-    const installedEntrypoint = fileURLToPath(
-      process.env.PROBE_ASAR_READER,
+    const manifestBytes = await readFile(
+      buildDependencyOptions.manifestUrl,
     );
-    const installedRoot = dirname(dirname(installedEntrypoint));
-    const copiedRoot = join(directory, 'reader');
-    const copiedEntrypoint = join(
-      copiedRoot,
-      'lib',
-      'asar.js',
+    const manifest = JSON.parse(manifestBytes);
+    const copiedNodeModules = join(directory, 'node_modules');
+    const copiedManifest = join(
+      directory,
+      'build-dependency-manifest.json',
     );
+    await mkdir(copiedNodeModules);
+    await writeFile(copiedManifest, manifestBytes);
 
-    await mkdir(join(copiedRoot, 'lib'), {
-      recursive: true,
-    });
-    await cp(
-      join(installedRoot, 'package.json'),
-      join(copiedRoot, 'package.json'),
-    );
-    await cp(installedEntrypoint, copiedEntrypoint);
+    const selectedGroups = [
+      {
+        name: 'archiveReader',
+        entrypoint: 'lib/asar.js',
+        url: process.env.PROBE_ASAR_READER,
+      },
+      {
+        name: 'bundler',
+        entrypoint: 'lib/main.js',
+        url: process.env.PROBE_ESBUILD,
+      },
+    ];
 
-    const copiedUrl =
-      pathToFileURL(copiedEntrypoint).href;
-    const identity =
-      await assessArchiveReaderIdentity(copiedUrl);
+    for (const selected of selectedGroups) {
+      const group = manifest[selected.name];
+      const entryPackage = group.packages.find(
+        packageRecord =>
+          packageRecord.name === group.entryPackage,
+      );
+      let installedNodeModules = fileURLToPath(selected.url);
+      for (
+        let index = 0;
+        index <
+          entryPackage.relativeRoot.split('/').length +
+          selected.entrypoint.split('/').length;
+        index += 1
+      ) {
+        installedNodeModules = dirname(installedNodeModules);
+      }
 
-    assert.equal(identity.name, '@electron/asar');
-    assert.equal(identity.version, '4.3.0');
+      for (const packageRecord of group.packages) {
+        const destination = join(
+          copiedNodeModules,
+          ...packageRecord.relativeRoot.split('/'),
+        );
+        await mkdir(dirname(destination), { recursive: true });
+        await cp(
+          join(
+            installedNodeModules,
+            ...packageRecord.relativeRoot.split('/'),
+          ),
+          destination,
+          {
+            recursive: true,
+            errorOnExist: true,
+            force: false,
+          },
+        );
+      }
+    }
+
+    const copiedOptions = {
+      manifestUrl: pathToFileURL(copiedManifest),
+      archiveReaderUrl: pathToFileURL(join(
+        copiedNodeModules,
+        '@electron',
+        'asar',
+        'lib',
+        'asar.js',
+      )).href,
+      bundlerUrl: pathToFileURL(join(
+        copiedNodeModules,
+        'esbuild',
+        'lib',
+        'main.js',
+      )).href,
+    };
+    const identity = await assessBuildDependencies(copiedOptions);
+
+    assert.equal(identity.manifestSha256, sha(manifestBytes));
+    assert.equal(identity.archiveReader.name, '@electron/asar');
+    assert.equal(identity.archiveReader.version, '4.3.0');
     assert.equal(
-      identity.qualification,
-      'observed build dependency files; no transitive dependency attestation',
+      identity.bundler.executable.sha256,
+      manifest.bundler.packages
+        .find(item => item.name === '@esbuild/linux-x64')
+        .files['bin/esbuild'],
     );
 
-    await appendFile(copiedEntrypoint, '\n');
-    await assert.rejects(
-      assessArchiveReaderIdentity(copiedUrl),
-      /unassessed archive reader identity/,
+    const rejectDrift = async (relativePath, addition) => {
+      const path = join(
+        copiedNodeModules,
+        ...relativePath.split('/'),
+      );
+      const original = await readFile(path);
+      try {
+        await appendFile(path, addition);
+        await assert.rejects(
+          assessBuildDependencies(copiedOptions),
+          /unassessed build dependency identity/,
+        );
+      } finally {
+        await writeFile(path, original);
+      }
+    };
+
+    await rejectDrift('esbuild/lib/main.js', '\n');
+    await rejectDrift(
+      '@esbuild/linux-x64/bin/esbuild',
+      Buffer.from([0]),
     );
+    await rejectDrift('glob/dist/commonjs/index.js', '\n');
+    await rejectDrift('@electron/asar/lib/asar.js', '\n');
   } finally {
     await rm(directory, {
       recursive: true,

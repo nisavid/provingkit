@@ -46,6 +46,7 @@ and unqualified. No notification, delivery, or acknowledgment is tested here.
 | `read-probe-file.mjs` | Acquisition of one explicitly selected private sample file |
 | `selected-executor-linux-identity.mjs` | Fresh sample acquisition followed by bounded observation of its selected Code PID |
 | `selected-executor-linux-identity-internal.mjs` | Process acquisition with a synthetic I/O seam |
+| `build-dependency-manifest.json`, `build-dependency-identity.mjs` | Exact selected Linux x64 package-file inventories and pre-import dependency assessment |
 | `archive.mjs`, `build-candidate.mjs` | Offline source patching, CommonJS bundling, and ASAR construction |
 | `verify-archive.mjs` | Independent extraction and complete member comparison |
 
@@ -78,8 +79,19 @@ explicitly selected acquisition. Any later live grant must include that path.
 
 Use Node.js with the independently installed `@electron/asar 4.3.0` reader and
 `esbuild 0.28.2`. Set `PROBE_ASAR_READER` to the file URL of the former's
-`lib/asar.js`, and `PROBE_ESBUILD` to the latter's `lib/main.js`. Run from the
-repository root:
+`lib/asar.js`, and `PROBE_ESBUILD` to the latter's `lib/main.js`.
+
+Before either package is imported, the build and verification scripts compare
+every regular file in the selected package closures with
+`build-dependency-manifest.json`. They reject missing or additional files,
+symlinks, changed package names or versions, changed dependency resolution
+roots, noncanonical entrypoint paths, a non-Linux-x64 host, and module-loading
+overrides such as `ESBUILD_BINARY_PATH`, `NODE_OPTIONS`, or `NODE_PATH`. The
+manifest covers the selected package trees and esbuild native binary. Node and
+the host OS remain trusted baseline dependencies; this is not global OS
+attestation.
+
+Run from the repository root:
 
     node --test --test-timeout=25000 docs/superpowers/prototypes/desktop-observer-probe/*.test.mjs docs/superpowers/prototypes/desktop-runtime-observer/*.test.mjs
     git diff --check
@@ -114,6 +126,9 @@ the affected checks and review, but does not by itself stale the archive
 comparison. The generated and published receipts must compare byte for byte
 before authorization and before staging. The published receipt is the source
 of the exact candidate, manager, sidecar, pristine, and build-input hashes.
+
+A changed tool or manifest identity is unassessed, not established as
+incompatible; the accepted graduated compatibility policy still applies.
 
 ## Review boundary
 

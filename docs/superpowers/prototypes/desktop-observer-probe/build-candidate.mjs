@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { appendMembers, patchManager, sha256 } from './archive.mjs';
 import {
-  loadAssessedArchiveReader,
-} from './archive-reader-identity.mjs';
+  loadAssessedBuildTools,
+} from './build-dependency-identity.mjs';
 
 const sourceDirectory = dirname(fileURLToPath(import.meta.url));
 const [pristineArgument, outputArgument] = process.argv.slice(2);
@@ -13,14 +13,20 @@ if (!pristineArgument || !outputArgument || process.argv.length !== 4)
   throw new Error('usage: build-candidate.mjs PRISTINE_ASAR NEW_OUTPUT_DIRECTORY');
 const pristinePath = resolve(pristineArgument);
 const outputDirectory = resolve(outputArgument);
-const esbuild = await import(process.env.PROBE_ESBUILD);
 const {
   archiveReader: asar,
-  identity: archiveReader,
-} = await loadAssessedArchiveReader(
-  process.env.PROBE_ASAR_READER,
-);
-if (esbuild.version !== '0.28.2') throw new Error('unassessed bundler version');
+  bundler: esbuild,
+  identity: buildDependencies,
+} = await loadAssessedBuildTools({
+  manifestUrl: new URL(
+    './build-dependency-manifest.json',
+    import.meta.url,
+  ),
+  archiveReaderUrl: process.env.PROBE_ASAR_READER,
+  bundlerUrl: process.env.PROBE_ESBUILD,
+});
+if (esbuild.version !== buildDependencies.bundler.version)
+  throw new Error('unassessed bundler identity');
 
 const patchBytes = await readFile(join(sourceDirectory, 'manager-patch.json'));
 const patch = JSON.parse(patchBytes);
@@ -79,14 +85,16 @@ for (const name of [
   ...inputNames,
   'manager-patch.json',
   'archive.mjs',
-  'archive-reader-identity.mjs',
+  'build-dependency-identity.mjs',
+  'build-dependency-manifest.json',
   'build-candidate.mjs',
 ])
   sourceInputs[name] = sha256(await readFile(join(sourceDirectory, name)));
 const receipt = {
   schema: 'provingkit.desktop-probe-build.v1',
-  bundler: { name: 'esbuild', version: esbuild.version },
-  archiveReader,
+  dependencyManifestSha256: buildDependencies.manifestSha256,
+  bundler: buildDependencies.bundler,
+  archiveReader: buildDependencies.archiveReader,
   sourceInputs,
   pristineSha256: sha256(pristine),
   candidateSha256: sha256(candidate),
