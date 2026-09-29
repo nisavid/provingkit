@@ -117,6 +117,7 @@ async function makeFixture(root, name) {
           }],
           originalCwd: `/fixture/original-${permissionReads}`,
           managedOnly: false,
+          errors: [],
         },
       };
     },

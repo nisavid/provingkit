@@ -483,6 +483,67 @@ function validateHost(value, binding) {
   ) {
     invalid();
   }
+
+  const gapsByField = new Map(
+    value.gaps.map(gap => [gap.field, gap.failureClass]),
+  );
+  const requireNullableGap = (field, projectedValue) => {
+    if (
+      (projectedValue === null) !== gapsByField.has(field)
+    ) {
+      invalid();
+    }
+  };
+
+  for (const field of [
+    'spawnRoute',
+    'permissionMode',
+    'modeEvent',
+    'harnessCwd',
+    'alwaysAllowedReasons',
+    'cuAllowedApps',
+    'cuGrantFlags',
+    'effectiveCuAllowedApps',
+    'effectiveCuGrantFlags',
+    'sessionPermissionUpdateTypes',
+    'flagScopeSyncPending',
+    'modeRequestsInFlight',
+  ]) {
+    requireNullableGap(field, value[field]);
+  }
+
+  const reportFields = [
+    'taskId',
+    'cliPid',
+    'cliPidAtMs',
+    'cliReportedVersion',
+    'currentCodeSessionId',
+  ];
+
+  for (const field of reportFields) {
+    requireNullableGap(
+      `selectedExecutorReport.${field}`,
+      value.selectedExecutorReport[field],
+    );
+  }
+
+  const reportFailureClass =
+    gapsByField.get('selectedExecutorReport');
+
+  if (
+    reportFailureClass !== undefined &&
+    (
+      (
+        reportFailureClass !== 'unavailable' &&
+        reportFailureClass !== 'shape_invalid'
+      ) ||
+      reportFields.some(
+        field => value.selectedExecutorReport[field] !== null,
+      )
+    )
+  ) {
+    invalid();
+  }
 }
 
 function validateAccount(value) {

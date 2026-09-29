@@ -706,18 +706,12 @@ function projectRules(value) {
     }),
   );
 
-  let errorCount = 0;
+  if (!Array.isArray(state.errors)) {
+    throw new DataFault('shape_invalid');
+  }
 
-  if (state.errors !== undefined) {
-    if (!Array.isArray(state.errors)) {
-      throw new DataFault('shape_invalid');
-    }
-
-    if (state.errors.length > MAX_ARRAY_ITEMS) {
-      throw new DataFault('limit_exceeded');
-    }
-
-    errorCount = state.errors.length;
+  if (state.errors.length > MAX_ARRAY_ITEMS) {
+    throw new DataFault('limit_exceeded');
   }
 
   return {
@@ -725,7 +719,7 @@ function projectRules(value) {
     workspaceGrants,
     originalCwd: projectedText(state.originalCwd, MAX_CWD_BYTES),
     managedOnly: projectedBoolean(state.managedOnly),
-    errorCount,
+    errorCount: state.errors.length,
   };
 }
 

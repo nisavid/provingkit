@@ -70,6 +70,7 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
             }],
             originalCwd: '/fixture/original',
             managedOnly: false,
+            errors: [],
           },
         };
       },

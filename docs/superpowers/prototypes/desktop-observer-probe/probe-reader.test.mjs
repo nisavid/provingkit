@@ -41,7 +41,19 @@ test('a bounded public sample round-trips through the strict reader', async t =>
       },
       permissionMode: 'before-read',
       harnessCwd: '/reader/workspace',
+      alwaysAllowedReasons: [],
+      cuAllowedApps: [],
+      cuGrantFlags: {
+        clipboardRead: false,
+      },
+      effectiveCuAllowedApps: [],
+      effectiveCuGrantFlags: {},
+      sessionPermissionUpdates: [],
+      flagScopeSyncPending: false,
       modeRequestsInFlight: 0,
+      fieldFailures: {
+        modeEvent: 'timeout',
+      },
     },
   };
 
@@ -77,7 +89,6 @@ test('a bounded public sample round-trips through the strict reader', async t =>
           }],
           originalCwd: '/reader/original',
           managedOnly: false,
-          errors: [],
         },
       };
     },
@@ -176,6 +187,21 @@ test('a bounded public sample round-trips through the strict reader', async t =>
 
   const { collection, fields } = inspected.sample.observation;
 
+  assert.deepEqual(
+    {
+      status: fields.listPermissionRules.status,
+      failureClass: fields.listPermissionRules.failureClass,
+      failureStage: fields.listPermissionRules.failureStage,
+      value: fields.listPermissionRules.value,
+    },
+    {
+      status: 'unavailable',
+      failureClass: 'shape_invalid',
+      failureStage: 'listPermissionRules',
+      value: null,
+    },
+  );
+
   assert.equal(collection.hostChangedDuringRead, true);
   assert.equal(
     collection.startedAtMonotonicMs,
@@ -190,6 +216,58 @@ test('a bounded public sample round-trips through the strict reader', async t =>
     fields.hostAfter.value.permissionMode,
     'after-read',
   );
+
+  const expectedHostGaps = {
+    modeEvent: 'timeout',
+    selectedExecutorReport: 'unavailable',
+    'selectedExecutorReport.taskId': 'unavailable',
+    'selectedExecutorReport.cliPid': 'unavailable',
+    'selectedExecutorReport.cliPidAtMs': 'unavailable',
+    'selectedExecutorReport.cliReportedVersion': 'unavailable',
+    'selectedExecutorReport.currentCodeSessionId': 'unavailable',
+  };
+
+  for (const name of ['hostBefore', 'hostAfter']) {
+    const host = fields[name].value;
+
+    assert.deepEqual(
+      Object.fromEntries(
+        host.gaps.map(gap => [
+          gap.field,
+          gap.failureClass,
+        ]),
+      ),
+      expectedHostGaps,
+    );
+    assert.deepEqual(
+      {
+        taskId: host.selectedExecutorReport.taskId,
+        cliPid: host.selectedExecutorReport.cliPid,
+        cliPidAtMs: host.selectedExecutorReport.cliPidAtMs,
+        cliReportedVersion:
+          host.selectedExecutorReport.cliReportedVersion,
+        currentCodeSessionId:
+          host.selectedExecutorReport.currentCodeSessionId,
+      },
+      {
+        taskId: null,
+        cliPid: null,
+        cliPidAtMs: null,
+        cliReportedVersion: null,
+        currentCodeSessionId: null,
+      },
+    );
+    assert.deepEqual(host.alwaysAllowedReasons, []);
+    assert.deepEqual(host.cuAllowedApps, []);
+    assert.deepEqual(host.cuGrantFlags, {
+      clipboardRead: false,
+    });
+    assert.deepEqual(host.effectiveCuAllowedApps, []);
+    assert.deepEqual(host.effectiveCuGrantFlags, {});
+    assert.deepEqual(host.sessionPermissionUpdateTypes, []);
+    assert.equal(host.flagScopeSyncPending, false);
+    assert.equal(host.modeRequestsInFlight, 0);
+  }
 
   assert.deepEqual(
     Object.keys(fields).sort(),
@@ -298,6 +376,86 @@ test('a bounded public sample round-trips through the strict reader', async t =>
   assert.deepEqual(
     inspectProbeSample(
       JSON.stringify(withExtraField),
+      expectedBinding,
+      inspectionOptions(),
+    ),
+    unknown('invalid-sample'),
+  );
+
+  const withoutRequiredGap = JSON.parse(serialized);
+
+  for (const name of ['hostBefore', 'hostAfter']) {
+    const host =
+      withoutRequiredGap.observation.fields[name].value;
+    host.gaps = host.gaps.filter(
+      gap => gap.field !== 'modeEvent',
+    );
+  }
+
+  assert.deepEqual(
+    inspectProbeSample(
+      JSON.stringify(withoutRequiredGap),
+      expectedBinding,
+      inspectionOptions(),
+    ),
+    unknown('invalid-sample'),
+  );
+
+  const gapOnFalseValue = JSON.parse(serialized);
+
+  for (const name of ['hostBefore', 'hostAfter']) {
+    gapOnFalseValue.observation.fields[name].value.gaps.push({
+      field: 'flagScopeSyncPending',
+      failureClass: 'unavailable',
+    });
+  }
+
+  assert.deepEqual(
+    inspectProbeSample(
+      JSON.stringify(gapOnFalseValue),
+      expectedBinding,
+      inspectionOptions(),
+    ),
+    unknown('invalid-sample'),
+  );
+
+  const parentGapWithAvailableChild = JSON.parse(serialized);
+
+  for (const name of ['hostBefore', 'hostAfter']) {
+    const host =
+      parentGapWithAvailableChild.observation.fields[name].value;
+    host.selectedExecutorReport.taskId =
+      expectedBinding.targetTaskId;
+    host.gaps = host.gaps.filter(
+      gap =>
+        gap.field !== 'selectedExecutorReport.taskId',
+    );
+  }
+
+  assert.deepEqual(
+    inspectProbeSample(
+      JSON.stringify(parentGapWithAvailableChild),
+      expectedBinding,
+      inspectionOptions(),
+    ),
+    unknown('invalid-sample'),
+  );
+
+  const invalidParentFailureClass = JSON.parse(serialized);
+
+  for (const name of ['hostBefore', 'hostAfter']) {
+    const parentGap =
+      invalidParentFailureClass.observation.fields[
+        name
+      ].value.gaps.find(
+        gap => gap.field === 'selectedExecutorReport',
+      );
+    parentGap.failureClass = 'timeout';
+  }
+
+  assert.deepEqual(
+    inspectProbeSample(
+      JSON.stringify(invalidParentFailureClass),
       expectedBinding,
       inspectionOptions(),
     ),
