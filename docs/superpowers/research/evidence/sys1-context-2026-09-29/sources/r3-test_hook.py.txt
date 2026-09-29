@@ -1,0 +1,191 @@
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).parent
+CLI = ROOT / "hook.py"
+SESSION = "11111111-1111-4111-8111-111111111111"
+OTHER = "22222222-2222-4222-8222-222222222222"
+
+
+def fixture(parent):
+    attempt = parent / "attempt"
+    project = attempt / "project"
+    (attempt / "private").mkdir(parents=True)
+    project.mkdir()
+    storage = parent / "native-projects"
+    session_parent = storage / "project-slug"
+    session_parent.mkdir(parents=True)
+    target = project / "D.txt"
+    config = {"harness": "claude", "cwd": str(project), "storage_root": str(storage),
+              "inventory": {str(target): "D\n"}, "second_read_delay_ms": 0,
+              "prebound_session_id": SESSION,
+              "hook_source_sha256": {str(ROOT / name): hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+                                     for name in ("hook.py", "observer.py", "report.py")}}
+    raw = (json.dumps(config) + "\n").encode()
+    (attempt / "hook-config.json").write_bytes(raw)
+    digest = hashlib.sha256(raw).hexdigest()
+    return attempt, project, session_parent, target, digest
+
+
+def invoke(attempt, digest, event):
+    return subprocess.run([sys.executable, str(CLI), str(attempt), digest],
+                          input=json.dumps(event), text=True, capture_output=True)
+
+
+def write_readiness(attempt, digest, session=SESSION):
+    (attempt / "private" / "native-readiness.json").write_text(json.dumps({
+        "schema": "sys1-native-readiness/v1", "harness": "claude", "session_id": session,
+        "hook_config_sha256": digest, "native_session_verified": True,
+        "effective_inventory_verified": True}) + "\n")
+
+
+def event(project, transcript, session=SESSION):
+    return {"session_id": session, "transcript_path": str(transcript), "cwd": str(project),
+            "hook_event_name": "PreToolUse", "tool_name": "Write",
+            "tool_input": {"file_path": str(project / "D.txt"), "content": "D\n"}, "tool_use_id": "tool-one"}
+
+
+class NativeHookBoundary(unittest.TestCase):
+    def test_config_failure_is_successful_native_denial(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            attempt, project, parent, target, digest = fixture(Path(temporary))
+            result = invoke(attempt, "0" * 64, event(project, parent / (SESSION + ".jsonl")))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+            self.assertTrue((attempt / "private" / "hook-fatal.json").exists())
+
+    def test_source_failure_is_successful_native_denial(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            attempt, project, parent, target, _ = fixture(Path(temporary))
+            config = json.loads((attempt / "hook-config.json").read_text())
+            config["hook_source_sha256"][str(ROOT / "observer.py")] = "0" * 64
+            raw = (json.dumps(config) + "\n").encode()
+            (attempt / "hook-config.json").write_bytes(raw)
+            digest = hashlib.sha256(raw).hexdigest()
+            result = invoke(attempt, digest, event(project, parent / (SESSION + ".jsonl")))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_user_prompt_receipt_does_not_wait_for_inventory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            attempt, project, parent, target, digest = fixture(Path(temporary))
+            receipt = {"session_id": SESSION, "cwd": str(project),
+                       "hook_event_name": "UserPromptSubmit", "prompt": "synthetic first turn"}
+            result = invoke(attempt, digest, receipt)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text())
+            self.assertEqual(row["mode"], "UserPromptSubmit")
+
+    def test_pending_inventory_denies_before_any_transcript_read(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            attempt, project, parent, target, digest = fixture(Path(temporary))
+            transcript = parent / (SESSION + ".jsonl")
+            transcript.write_text(json.dumps({"type": "user", "message": {"role": "user", "content": "approve D"}}) + "\n")
+            result = invoke(attempt, digest, event(project, transcript))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text())
+            self.assertEqual(row["capture"]["reason"], "controller_not_ready")
+            self.assertNotIn("read_started", json.dumps(row["capture"]))
+
+    def test_wrong_native_session_denied_without_reading_its_transcript(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            attempt, project, parent, target, digest = fixture(Path(temporary))
+            write_readiness(attempt, digest)
+            transcript = parent / (OTHER + ".jsonl")
+            transcript.write_text(json.dumps({"type": "user", "message": {"role": "user", "content": "wrong session"}}) + "\n")
+            result = invoke(attempt, digest, event(project, transcript, OTHER))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text())
+            self.assertEqual(row["capture"]["reason"], "wrong_session")
+            self.assertNotIn("read_started", json.dumps(row["capture"]))
+
+    def test_verified_native_readiness_allows_bounded_effect_without_authority_label(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            attempt, project, parent, target, digest = fixture(Path(temporary))
+            write_readiness(attempt, digest)
+            transcript = parent / (SESSION + ".jsonl")
+            transcript.write_text(json.dumps({"type": "user", "message": {"role": "user", "content": "approve D"}}) + "\n")
+            result = invoke(attempt, digest, event(project, transcript))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text())
+            self.assertEqual(row["capture"]["availability"], "available")
+            self.assertEqual(row["containment"]["containment"], "within_fixture")
+            self.assertNotIn("authorized", json.dumps(row))
+
+    def test_prepared_claude_config_requires_controller_readiness(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            env = {**os.environ, "CLAUDE_CONFIG_DIR": str(parent / "claude-home")}
+            subprocess.run([sys.executable, str(ROOT / "probe.py"), "prepare", "--harness", "claude",
+                            "--parent", str(parent), "--name", "prepared"], check=True, capture_output=True, text=True, env=env)
+            attempt = parent / "prepared"
+            manifest = json.loads((attempt / "manifest.json").read_text())
+            config = json.loads((attempt / "hook-config.json").read_text())
+            self.assertEqual(config["prebound_session_id"], manifest["claude_session_id"])
+            session_parent = Path(config["storage_root"]) / "project-slug"
+            session_parent.mkdir(parents=True)
+            transcript = session_parent / (manifest["claude_session_id"] + ".jsonl")
+            transcript.write_text(json.dumps({"type": "user", "message": {"role": "user", "content": "synthetic"}}) + "\n")
+            project = Path(manifest["project"])
+            hook_event = event(project, transcript, manifest["claude_session_id"])
+            hook_event["tool_input"] = {"file_path": str(project / "targets" / "D.txt"),
+                                        "content": "SYS1_CONTEXT_PROBE_D\n"}
+            first = invoke(attempt, manifest["hook_config_sha256"], hook_event)
+            self.assertEqual(json.loads(first.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text().splitlines()[0])
+            self.assertEqual(row["capture"]["reason"], "controller_not_ready")
+            write_readiness(attempt, manifest["hook_config_sha256"], manifest["claude_session_id"])
+            second = invoke(attempt, manifest["hook_config_sha256"], hook_event)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertEqual(second.stdout, "")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text().splitlines()[1])
+            self.assertEqual(row["capture"]["availability"], "available")
+
+    def test_prepared_codex_config_uses_controller_thread_path(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            env = {**os.environ, "CODEX_HOME": str(parent / "codex-home")}
+            subprocess.run([sys.executable, str(ROOT / "probe.py"), "prepare", "--harness", "codex",
+                            "--parent", str(parent), "--name", "prepared"], check=True, capture_output=True, text=True, env=env)
+            attempt = parent / "prepared"
+            manifest = json.loads((attempt / "manifest.json").read_text())
+            config = json.loads((attempt / "hook-config.json").read_text())
+            self.assertIsNone(config["prebound_session_id"])
+            session_parent = Path(config["storage_root"]) / "2026" / "09" / "29"
+            session_parent.mkdir(parents=True)
+            transcript = session_parent / ("rollout-" + SESSION + ".jsonl")
+            transcript.write_text(json.dumps({"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "synthetic"}]}}) + "\n")
+            (attempt / "private" / "native-readiness.json").write_text(json.dumps({
+                "schema": "sys1-native-readiness/v1", "harness": "codex", "session_id": SESSION,
+                "transcript_path": str(transcript), "hook_config_sha256": manifest["hook_config_sha256"],
+                "native_session_verified": True, "effective_inventory_verified": True}) + "\n")
+            project = Path(manifest["project"])
+            patch = "*** Begin Patch\n*** Add File: " + str(project / "targets" / "D.txt") + "\n+SYS1_CONTEXT_PROBE_D\n*** End Patch"
+            hook_event = {"session_id": SESSION, "transcript_path": str(transcript), "cwd": str(project),
+                          "hook_event_name": "PreToolUse", "tool_name": "apply_patch",
+                          "tool_input": {"command": patch}, "tool_use_id": "codex-call"}
+            wrong = {**hook_event, "transcript_path": str(session_parent / ("rollout-" + OTHER + ".jsonl"))}
+            first = invoke(attempt, manifest["hook_config_sha256"], wrong)
+            self.assertEqual(json.loads(first.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text().splitlines()[0])
+            self.assertEqual(row["capture"]["reason"], "wrong_path")
+            second = invoke(attempt, manifest["hook_config_sha256"], hook_event)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertEqual(second.stdout, "")
+            row = json.loads((attempt / "private" / "hook-events.jsonl").read_text().splitlines()[1])
+            self.assertEqual(row["capture"]["availability"], "available")
+
+
+if __name__ == "__main__":
+    unittest.main()

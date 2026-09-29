@@ -1,0 +1,249 @@
+{
+  "schema": "sys1-native-context-qualification/v1",
+  "harness": "Claude Code 2.1.284",
+  "model": "claude-opus-5-5",
+  "effort": "high",
+  "native_results": 7,
+  "hook_reads": [
+    {
+      "stage": 0,
+      "effect": "targets/D.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 1,
+      "assistant_referent_present": false,
+      "roles": [
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "queue-operation"
+      ],
+      "transcript_bytes": 6975,
+      "read_duration_ns": 177645
+    },
+    {
+      "stage": 0,
+      "effect": "markers/M0.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 1,
+      "assistant_referent_present": false,
+      "roles": [
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "queue-operation"
+      ],
+      "transcript_bytes": 6975,
+      "read_duration_ns": 168535
+    },
+    {
+      "stage": 1,
+      "effect": "markers/M1.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 2,
+      "assistant_referent_present": false,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "queue-operation"
+      ],
+      "transcript_bytes": 19330,
+      "read_duration_ns": 273822
+    },
+    {
+      "stage": 2,
+      "effect": "targets/R.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 3,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "queue-operation"
+      ],
+      "transcript_bytes": 26719,
+      "read_duration_ns": 309491
+    },
+    {
+      "stage": 2,
+      "effect": "markers/M2.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 3,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "queue-operation"
+      ],
+      "transcript_bytes": 26719,
+      "read_duration_ns": 300971
+    },
+    {
+      "stage": 3,
+      "effect": "markers/M3.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 4,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "last-prompt",
+        "queue-operation"
+      ],
+      "transcript_bytes": 40093,
+      "read_duration_ns": 395238
+    },
+    {
+      "stage": 4,
+      "effect": "targets/B.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 5,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "last-prompt",
+        "queue-operation"
+      ],
+      "transcript_bytes": 47706,
+      "read_duration_ns": 434377
+    },
+    {
+      "stage": 4,
+      "effect": "markers/M4.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 5,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "last-prompt",
+        "queue-operation"
+      ],
+      "transcript_bytes": 47706,
+      "read_duration_ns": 577463
+    },
+    {
+      "stage": 5,
+      "effect": "markers/M5.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 6,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "last-prompt",
+        "queue-operation"
+      ],
+      "transcript_bytes": 58294,
+      "read_duration_ns": 684720
+    },
+    {
+      "stage": 6,
+      "effect": "markers/M6.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 7,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "atis-latch",
+        "attachment",
+        "last-prompt",
+        "queue-operation"
+      ],
+      "transcript_bytes": 65623,
+      "read_duration_ns": 507655
+    }
+  ],
+  "usage_per_result_sums": {
+    "input_tokens": 28,
+    "output_tokens": 2375,
+    "cache_creation_input_tokens": 5598,
+    "cache_read_input_tokens": 43736
+  },
+  "sums_match_final_model_usage": true,
+  "final_model_usage": {
+    "inputTokens": 28,
+    "outputTokens": 2375,
+    "cacheReadInputTokens": 43736,
+    "cacheCreationInputTokens": 5598,
+    "webSearchRequests": 0,
+    "costUSD": 0.10114319999999997,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 8,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+  },
+  "run_elapsed_seconds": 49.138654751,
+  "artificial_delay_ms_per_hook": 100,
+  "process_exit": 143,
+  "termination": "controller stopped the persistent process after seven native terminal results",
+  "source_probe_sha256": "0c9c66a914ab615b664a99f3933075f5bd2da6bd2123192db5f6382eb367b4e8",
+  "raw_sha256": {
+    "manifest.json": "c59d6a6bbeb1e970385b1b91c2ff4fe08f0425b13d4123ced53c44e792114847",
+    "private/hook-events.jsonl": "7f2709e37a31c501a454f32ed11d23a95a90a1be2d7873db910785f2f1d1e308",
+    "native-stdout.log": "27c267a2b67e74e3241b2a3c7679d8ad2847820e18fd5c9b2763bccf54366f38",
+    "private/timeline.json": "38b90658cffae63317a62eda65e0270cccf173468d0457598920dee6b34ff7b5",
+    "private/run-status.json": "ce145e4f41048a11fadf9efb876d0d9dda251ad1529c9947b5a10bc7fd2b7f91"
+  },
+  "limits": [
+    "one fresh uncompressed synthetic session",
+    "no Jev invocation",
+    "no observed human timing",
+    "reported usage only, no invoice or quota claim"
+  ]
+}

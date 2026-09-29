@@ -1,0 +1,237 @@
+{
+  "recovery-current-withdrawal-elqjmvwp": {
+    "category": "observed-retained-synthetic",
+    "provenance": {
+      "fixture_relative_path": ".scratch/sys1-recovery-ix4t7rk_/recovery-current-withdrawal-elqjmvwp/native-stdout.log",
+      "raw_file_sha256": "14d88d291b4615b357a7bc5b3012a490705f4fd4de0c2be05c0d9752927ac297"
+    },
+    "selected_records": [
+      {
+        "line": 8,
+        "type": "assistant",
+        "repeated_message_id": false,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 4,
+          "cache_creation_input_tokens": 1034,
+          "cache_read_input_tokens": 628
+        }
+      },
+      {
+        "line": 10,
+        "type": "result",
+        "num_turns": 1,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 4,
+          "cache_creation_input_tokens": 1034,
+          "cache_read_input_tokens": 628,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "iterations": [
+            {
+              "input_tokens": 2,
+              "output_tokens": 4,
+              "cache_read_input_tokens": 628,
+              "cache_creation_input_tokens": 1034,
+              "cache_creation": {
+                "ephemeral_5m_input_tokens": 0,
+                "ephemeral_1h_input_tokens": 1034
+              },
+              "type": "message"
+            }
+          ]
+        },
+        "model_usage": {
+          "claude-opus-5-5": {
+            "inputTokens": 2,
+            "outputTokens": 4,
+            "cacheReadInputTokens": 628,
+            "cacheCreationInputTokens": 1034,
+            "webSearchRequests": 0,
+            "costUSD": 0.0084856,
+            "contextWindow": 1000000,
+            "maxOutputTokens": 128000,
+            "thinkingTokens": 0,
+            "canonicalModel": "claude-opus-5-5",
+            "provider": "firstParty",
+            "costBasis": "list"
+          }
+        }
+      },
+      {
+        "line": 18,
+        "type": "assistant",
+        "repeated_message_id": false,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 2,
+          "cache_creation_input_tokens": 807,
+          "cache_read_input_tokens": 998
+        }
+      },
+      {
+        "line": 19,
+        "type": "assistant",
+        "repeated_message_id": true,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 2,
+          "cache_creation_input_tokens": 807,
+          "cache_read_input_tokens": 998
+        }
+      },
+      {
+        "line": 20,
+        "type": "result",
+        "num_turns": 1,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 67,
+          "cache_creation_input_tokens": 807,
+          "cache_read_input_tokens": 998,
+          "output_tokens_details": {
+            "thinking_tokens": 22
+          },
+          "iterations": [
+            {
+              "input_tokens": 2,
+              "output_tokens": 67,
+              "cache_read_input_tokens": 998,
+              "cache_creation_input_tokens": 807,
+              "cache_creation": {
+                "ephemeral_5m_input_tokens": 0,
+                "ephemeral_1h_input_tokens": 807
+              },
+              "type": "message"
+            }
+          ]
+        },
+        "model_usage": {
+          "claude-opus-5-5": {
+            "inputTokens": 4,
+            "outputTokens": 71,
+            "cacheReadInputTokens": 1626,
+            "cacheCreationInputTokens": 1841,
+            "webSearchRequests": 0,
+            "costUSD": 0.0164892,
+            "contextWindow": 1000000,
+            "maxOutputTokens": 128000,
+            "thinkingTokens": 22,
+            "canonicalModel": "claude-opus-5-5",
+            "provider": "firstParty",
+            "costBasis": "list"
+          }
+        }
+      }
+    ]
+  },
+  "recovery-review-reproposal-renewal-after-denial-h9ng0q86": {
+    "category": "observed-retained-synthetic",
+    "provenance": {
+      "fixture_relative_path": ".scratch/sys1-recovery-ix4t7rk_/recovery-review-reproposal-renewal-after-denial-h9ng0q86/native-stdout.log",
+      "raw_file_sha256": "11633e481d334bdff3dfbd30ed1f45493f597a1c726eabc254e01a7b8bb3d416"
+    },
+    "selected_records": [
+      {
+        "line": 8,
+        "type": "assistant",
+        "repeated_message_id": false,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 16,
+          "cache_creation_input_tokens": 1145,
+          "cache_read_input_tokens": 628
+        }
+      },
+      {
+        "line": 15,
+        "type": "assistant",
+        "repeated_message_id": false,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 8,
+          "cache_creation_input_tokens": 290,
+          "cache_read_input_tokens": 1773
+        }
+      },
+      {
+        "line": 30,
+        "type": "assistant",
+        "repeated_message_id": true,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 8,
+          "cache_creation_input_tokens": 290,
+          "cache_read_input_tokens": 1773
+        }
+      },
+      {
+        "line": 31,
+        "type": "assistant",
+        "repeated_message_id": true,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 8,
+          "cache_creation_input_tokens": 290,
+          "cache_read_input_tokens": 1773
+        }
+      },
+      {
+        "line": 35,
+        "type": "assistant",
+        "repeated_message_id": false,
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 287,
+          "cache_creation_input_tokens": 487,
+          "cache_read_input_tokens": 2063
+        }
+      },
+      {
+        "line": 36,
+        "type": "result",
+        "num_turns": 3,
+        "usage": {
+          "input_tokens": 6,
+          "output_tokens": 801,
+          "cache_creation_input_tokens": 1922,
+          "cache_read_input_tokens": 4464,
+          "output_tokens_details": {
+            "thinking_tokens": 177
+          },
+          "iterations": [
+            {
+              "input_tokens": 2,
+              "output_tokens": 287,
+              "cache_read_input_tokens": 2063,
+              "cache_creation_input_tokens": 487,
+              "cache_creation": {
+                "ephemeral_5m_input_tokens": 0,
+                "ephemeral_1h_input_tokens": 487
+              },
+              "type": "message"
+            }
+          ]
+        },
+        "model_usage": {
+          "claude-opus-5-5": {
+            "inputTokens": 6,
+            "outputTokens": 801,
+            "cacheReadInputTokens": 4464,
+            "cacheCreationInputTokens": 1922,
+            "webSearchRequests": 0,
+            "costUSD": 0.0323128,
+            "contextWindow": 1000000,
+            "maxOutputTokens": 128000,
+            "thinkingTokens": 177,
+            "canonicalModel": "claude-opus-5-5",
+            "provider": "firstParty",
+            "costBasis": "list"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "schema": "sys1-native-context-qualification/v1",
+  "harness": "Codex CLI 0.159.0 dedicated app-server",
+  "model": "gpt-6-sol",
+  "effort": "high",
+  "native_results": 7,
+  "hook_reads": [
+    {
+      "stage": 0,
+      "effect": "targets/D.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 1,
+      "assistant_referent_present": false,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 143145,
+      "read_duration_ns": 539633
+    },
+    {
+      "stage": 0,
+      "effect": "markers/M0.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 1,
+      "assistant_referent_present": false,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 147360,
+      "read_duration_ns": 605192
+    },
+    {
+      "stage": 1,
+      "effect": "markers/M1.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 2,
+      "assistant_referent_present": false,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 167130,
+      "read_duration_ns": 642660
+    },
+    {
+      "stage": 2,
+      "effect": "targets/R.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 3,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 185193,
+      "read_duration_ns": 826385
+    },
+    {
+      "stage": 2,
+      "effect": "markers/M2.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 3,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 188539,
+      "read_duration_ns": 789856
+    },
+    {
+      "stage": 3,
+      "effect": "markers/M3.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 4,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 207439,
+      "read_duration_ns": 909212
+    },
+    {
+      "stage": 4,
+      "effect": "targets/B.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 5,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 224541,
+      "read_duration_ns": 985600
+    },
+    {
+      "stage": 4,
+      "effect": "markers/M4.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 5,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 227894,
+      "read_duration_ns": 1135175
+    },
+    {
+      "stage": 5,
+      "effect": "markers/M5.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 6,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 246027,
+      "read_duration_ns": 1106906
+    },
+    {
+      "stage": 6,
+      "effect": "markers/M6.txt",
+      "availability": "available",
+      "all_prior_user_turns_ordered": true,
+      "user_turn_count": 7,
+      "assistant_referent_present": true,
+      "roles": [
+        "assistant",
+        "developer",
+        "tool",
+        "user"
+      ],
+      "unknown_record_types": [
+        "response_item:custom_tool_call",
+        "response_item:reasoning",
+        "token_usage_record",
+        "world_state"
+      ],
+      "transcript_bytes": 263569,
+      "read_duration_ns": 1310909
+    }
+  ],
+  "usage_notifications": 18,
+  "zero_baseline": "verified empty fresh thread before first user turn",
+  "each_total_equals_previous_plus_last_for_retained_fields": true,
+  "reported_final_total": {
+    "totalTokens": 378767,
+    "inputTokens": 377183,
+    "cachedInputTokens": 337152,
+    "cacheWriteInputTokens": 0,
+    "outputTokens": 1584,
+    "reasoningOutputTokens": 370
+  },
+  "run_elapsed_seconds": 66.35247313,
+  "artificial_delay_ms_per_hook": 100,
+  "source_probe_sha256": "9c4cba43a783a19c6bd592828558bd8a7e229562920fad9f5af4d6228fe8e4fb",
+  "raw_sha256": {
+    "manifest.json": "ba8a896ae4953e4ec094f0d0a8e934327323e348f51fa2b96bf48f21726b7a0e",
+    "private/hook-events.jsonl": "67252ca1f1a1cf50c99e610eeeb42f842c5d960c6b85c682330401f844943903",
+    "native-stdout.log": "58b06d3aa3ca7faa4d671b1fc9398daaa207660866c39bbc6c05607bf4154d17",
+    "private/timeline.json": "d7565850d39dca56ce1f6239ed17b94dd403b1e7b53fdde648073b5cecbb6994",
+    "private/run-status.json": "021a19e065dd9ab3659ef87243b4f7cdfc997c8c723a05110235a1119cd4e2ed",
+    "private/persisted-transcript.jsonl": "2514c3a751bdc454ae42a439874eacdf1080e5e3d62ac149c96f96a24b4e44ee",
+    "private/persisted-turns.json": "3ea80116aea9a026d2ff7436279fb332dc0d42318d4459e15295a053f6770e6d"
+  },
+  "limits": [
+    "one fresh uncompressed synthetic session",
+    "no Jev invocation",
+    "no observed human timing",
+    "reported usage only; native raw provider response notifications are internal-only",
+    "cumulative synthetic fill cannot be universally excluded by this arithmetic"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "r2-probe.py.txt": {
+    "executed_or_tested_sha256": "0c9c66a914ab615b664a99f3933075f5bd2da6bd2123192db5f6382eb367b4e8",
+    "published_sha256": "aefbc52a5a5e29fe3dee4b0a498f1b32eb8843ad08f6d791818d1cebc50c3180",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-probe.py.txt": {
+    "executed_or_tested_sha256": "9c4cba43a783a19c6bd592828558bd8a7e229562920fad9f5af4d6228fe8e4fb",
+    "published_sha256": "beebb90d317986054d8bf515931eaa3e9c482af987918f95508d79da8629f4d1",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-hook.py.txt": {
+    "executed_or_tested_sha256": "0a36af439739345a7d8abcfdc2a8ee032f2e1f8bbfd1a45302a701fb18a80181",
+    "published_sha256": "0a36af439739345a7d8abcfdc2a8ee032f2e1f8bbfd1a45302a701fb18a80181",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-observer.py.txt": {
+    "executed_or_tested_sha256": "27df0b9daa9a1bbbfe5ea545d03fa0c0a90e08bd7e378d21942ece1c2b6b1729",
+    "published_sha256": "27df0b9daa9a1bbbfe5ea545d03fa0c0a90e08bd7e378d21942ece1c2b6b1729",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-report.py.txt": {
+    "executed_or_tested_sha256": "a4c5a1036787ce4e4cd028fec8fd0544a1ed813705c70949f87aace0a7c4882d",
+    "published_sha256": "a4c5a1036787ce4e4cd028fec8fd0544a1ed813705c70949f87aace0a7c4882d",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-test_hook.py.txt": {
+    "executed_or_tested_sha256": "cdbb7b578b3f6cc29150dfdaf347a974c229fce1cc8da26765331cd6954bebed",
+    "published_sha256": "cdbb7b578b3f6cc29150dfdaf347a974c229fce1cc8da26765331cd6954bebed",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-test_observer.py.txt": {
+    "executed_or_tested_sha256": "3fe6e67d4f3c496773761c0a0557f1e3da28b2f0e25836cfc293850de48b6803",
+    "published_sha256": "3fe6e67d4f3c496773761c0a0557f1e3da28b2f0e25836cfc293850de48b6803",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-test_report.py.txt": {
+    "executed_or_tested_sha256": "f4428bb568cbc32a0bca0d8dae737579a1719b352e9d13704a87751f5df5cf50",
+    "published_sha256": "f4428bb568cbc32a0bca0d8dae737579a1719b352e9d13704a87751f5df5cf50",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-test_probe.py.txt": {
+    "executed_or_tested_sha256": "5c7520bb4e41eff1c6ac6f573aaf79f24f32e6d238899eff62421f327ede52cf",
+    "published_sha256": "5c7520bb4e41eff1c6ac6f573aaf79f24f32e6d238899eff62421f327ede52cf",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  },
+  "r3-test_codex_sandbox.py.txt": {
+    "executed_or_tested_sha256": "a1357e3b7ed508feee1f7cde28a4f4d2471f832a17cbba3136243c18b5b76df0",
+    "published_sha256": "a1357e3b7ed508feee1f7cde28a4f4d2471f832a17cbba3136243c18b5b76df0",
+    "normalization": "replace synthetic scratch prefix with <scratch>; archival source, not an executable package"
+  }
+}

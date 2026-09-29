@@ -1,0 +1,121 @@
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+CLI = Path(__file__).parent / "report.py"
+
+
+def call(mode, payload):
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        source, output = root / "input.json", root / "output.json"
+        source.write_text(json.dumps(payload))
+        result = subprocess.run([sys.executable, str(CLI), mode, "--input", str(source),
+                                 "--output", str(output)], capture_output=True, text=True)
+        return result, json.loads(output.read_text()) if output.exists() else None
+
+
+def tokens(total, input_tokens, cached=0, output=0, reasoning=0):
+    return {"totalTokens": total, "inputTokens": input_tokens, "cachedInputTokens": cached,
+            "outputTokens": output, "reasoningOutputTokens": reasoning}
+
+
+def usage(turn, total):
+    return {"method": "thread/tokenUsage/updated", "params": {"threadId": "synthetic-session",
+            "turnId": turn, "tokenUsage": {"total": total,
+            "last": tokens(total["totalTokens"], total["inputTokens"])}}}
+
+
+class GuardBoundary(unittest.TestCase):
+    def test_supported_new_file_and_inventory_including_withdrawn_target(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            cwd = Path(temporary)
+            inventory = {str(cwd / name): content for name, content in {"D": "direct\n", "W": "withdrawn\n"}.items()}
+            base = {"cwd": str(cwd), "inventory": inventory}
+            for tool_name, tool_input, wanted in [
+                ("Write", {"file_path": str(cwd / "D"), "content": "direct\n"}, "D"),
+                ("apply_patch", {"command": "*** Begin Patch\n*** Add File: W\n+withdrawn\n*** End Patch"}, "W"),
+            ]:
+                _, output = call("guard", {**base, "hook": {"cwd": str(cwd), "tool_name": tool_name, "tool_input": tool_input}})
+                self.assertEqual(output["containment"], "within_fixture")
+                self.assertEqual(output["effect"]["relative_path"], wanted)
+                self.assertNotIn("authorized", output)
+            (cwd / "D").write_text("existing")
+            _, output = call("guard", {**base, "hook": {"cwd": str(cwd), "tool_name": "Write", "tool_input": {"file_path": str(cwd / "D"), "content": "direct\n"}}})
+            self.assertEqual(output["reason"], "existing_target")
+
+    def test_rejects_unsupported_patch_and_escaping_paths(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            cwd = Path(temporary)
+            base = {"cwd": str(cwd), "inventory": {str(cwd / "D"): "d\n"}}
+            bad = [
+                {"tool_name": "apply_patch", "tool_input": {"command": "*** Begin Patch\n*** Update File: D\n+x\n*** End Patch"}},
+                {"tool_name": "apply_patch", "tool_input": {"command": "*** Begin Patch\n*** Add File: D\n+d\n*** Add File: E\n+e\n*** End Patch"}},
+                {"tool_name": "Write", "tool_input": {"file_path": str(cwd / ".." / "escape"), "content": "d\n"}},
+                {"tool_name": "Write", "tool_input": {"file_path": str(cwd / "D"), "content": "wrong"}},
+            ]
+            for hook in bad:
+                _, output = call("guard", {**base, "hook": {"cwd": str(cwd), **hook}})
+                self.assertEqual(output["containment"], "denied", hook)
+
+
+class AccountingBoundary(unittest.TestCase):
+    def test_fresh_two_turn_includes_first_turn_and_deduplicates_total(self):
+        events = [usage("turn-1", tokens(110, 80, 20, 30, 5)),
+                  usage("turn-1", tokens(110, 80, 20, 30, 5)),
+                  usage("turn-2", tokens(260, 190, 40, 70, 12))]
+        _, output = call("grade", {"harness": "codex", "baseline": {"kind": "verified_empty_thread", "total": tokens(0, 0)},
+                                    "events": events, "terminal": {"status": "completed", "turnId": "turn-2"}})
+        self.assertEqual(output["accounting"]["status"], "unknown")
+        self.assertEqual(output["accounting"]["reason"], "codex_native_exposure_and_synthetic_fills_unqualified")
+        self.assertEqual(output["accounting"]["observed_cumulative_delta_tokens"], 260)
+        self.assertEqual(output["accounting"]["raw_notification_count"], 3)
+        self.assertEqual(output["accounting"]["duplicate_total_count"], 1)
+        self.assertEqual(output["accounting"]["component_deltas"],
+                         {"inputTokens": 190, "cachedInputTokens": 40, "outputTokens": 70, "reasoningOutputTokens": 12})
+        self.assertNotIn("threadId", json.dumps(output))
+
+    def test_nonzero_baseline_and_missing_endpoint(self):
+        event = usage("turn-1", tokens(145, 100, 10, 45))
+        base = {"harness": "codex", "baseline": {"kind": "observed_pre_start", "total": tokens(90, 60, 5, 30)}, "events": [event], "terminal": {"status": "completed", "turnId": "turn-1"}}
+        _, output = call("grade", base)
+        self.assertEqual(output["accounting"]["observed_cumulative_delta_tokens"], 55)
+        _, output = call("grade", {**base, "terminal": None})
+        self.assertEqual(output["accounting"]["status"], "unknown")
+        self.assertEqual(output["accounting"]["reason"], "missing_terminal")
+        _, output = call("grade", {**base, "baseline": None})
+        self.assertEqual(output["accounting"]["reason"], "missing_pre_episode_baseline")
+
+    def test_claude_raw_usage_remains_unaggregated(self):
+        events = [{"type": "assistant", "message": {"usage": {"input_tokens": 12, "cache_read_input_tokens": 4, "output_tokens": 6}}},
+                  {"type": "result", "usage": {"input_tokens": 12, "output_tokens": 6}}]
+        _, output = call("grade", {"harness": "claude", "events": events, "terminal": {"status": "completed"}})
+        self.assertEqual(output["accounting"]["status"], "unknown")
+        self.assertEqual(output["accounting"]["reason"], "claude_usage_nesting_unqualified")
+        self.assertEqual(len(output["accounting"]["raw_usage"]), 2)
+
+    def test_claude_result_turn_usage_and_cumulative_model_usage_are_distinct(self):
+        events = [
+            {"type": "result", "usage": {"input_tokens": 2, "output_tokens": 4, "cache_read_input_tokens": 628, "cache_creation_input_tokens": 1034},
+             "modelUsage": {"opus": {"inputTokens": 2, "outputTokens": 4, "cacheReadInputTokens": 628, "cacheCreationInputTokens": 1034}}},
+            {"type": "result", "usage": {"input_tokens": 2, "output_tokens": 67, "cache_read_input_tokens": 998, "cache_creation_input_tokens": 807},
+             "modelUsage": {"opus": {"inputTokens": 4, "outputTokens": 71, "cacheReadInputTokens": 1626, "cacheCreationInputTokens": 1841}}},
+        ]
+        _, output = call("grade", {"harness": "claude", "events": events, "terminal": {"status": "completed"}})
+        self.assertEqual(output["accounting"]["observed_completed_turn_output_tokens"], 71)
+        self.assertEqual(output["accounting"]["raw_usage"][1]["fields"]["output_tokens"], 67)
+        self.assertEqual(output["accounting"]["raw_model_usage"][1]["fields"]["opus"]["outputTokens"], 71)
+        self.assertEqual(output["accounting"]["status"], "unknown")
+
+    def test_codex_missing_usage_endpoint_is_unknown(self):
+        _, output = call("grade", {"harness": "codex", "baseline": {"kind": "verified_empty_thread", "total": tokens(0, 0)},
+                                    "events": [], "terminal": {"status": "completed"}})
+        self.assertEqual(output["accounting"]["reason"], "missing_usage_endpoint")
+
+
+if __name__ == "__main__":
+    unittest.main()

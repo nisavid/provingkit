@@ -1,0 +1,22 @@
+{
+  "status": "clean",
+  "contract_sha256": "30f12a5728101a8db5d8ffa62067827893ecd5126a5c49d8d4fc4bcf887e7f9b",
+  "files_verified_before_and_after": 19,
+  "scope": "One fresh native Codex synthetic episode: ordered real context, actual referent, bounded native effects, persisted history and reported usage reconciliation",
+  "observations": {
+    "native_user_turns": 7,
+    "pre_tool_reads": 10,
+    "usage_notifications": 18,
+    "final_reported_total_tokens": 378767,
+    "all_cumulative_updates_equal_previous_plus_last": true,
+    "native_persisted_transcript_matches_copy": true,
+    "fresh_reader_turns_equal_in_process_history": true
+  },
+  "limits": [
+    "Native user role also carries inherited AGENTS/environment material; synthetic sent turns were independently matched",
+    "No Jev call",
+    "No invoice or quota observation",
+    "No general authorization or arm-comparison result",
+    "Read-only independent source/retained evidence audit"
+  ]
+}
