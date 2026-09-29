@@ -1,47 +1,85 @@
-# Preparing the disposable observer probe
+# Prepare a disposable Desktop observer probe
 
-This directory retains preparation evidence for
-[Prepare and review the disposable observer probe](https://github.com/nisavid/provingkit/issues/278).
-The output required by that task is a reviewed app patch, offline candidate,
-probe procedure, and authorization checklist for one disposable Desktop Code
-task. Preparation is in progress; these notes do not supply an installable or
-approved candidate.
+This candidate provides an offline Desktop patch, a bounded observer, strict
+sample readers, and a procedure for one disposable Code task. It prepares
+[the observer probe](https://github.com/nisavid/provingkit/issues/278).
+Independent review is pending. Installation and live observation require the
+separate [probe authorization](https://github.com/nisavid/provingkit/issues/279).
 
-## Inputs
+## Start here
 
-- The accepted [observer prototype](../desktop-runtime-observer/README.md) at
-  `be9abcb2714231eb1f10d5586361dc9d15361ca0` supplies the portable observation
-  and reader experiment, fourteen source anchors, and twelve synthetic tests.
-- [Packaging evidence](packaging-evidence.md) identifies the inspected archive,
-  launcher, independent ASAR reader, and preservation/restoration requirements.
-- [Security design guidance](security-design.md) is the exact returned text of
-  the bounded Daybreak design review, with SHA-256
-  `2b9e00f54d283beb46a9197dd5e2b098fa6b1b2e45afe9c1673194c6b25d6267`.
-  It is a proposed control contract; its numeric limits and schema suggestions
-  have not been adopted as a live-probe authorization or final source contract.
+- [Probe procedure](probe-procedure.md): fixture, exact setup prompt, collection,
+  application changes, and restoration.
+- [Authorization checklist](authorization-checklist.md): concrete scopes to
+  accept or amend before execution.
+- [Build receipt](candidate-build.json): source and output digests for the
+  copied archive. The archive itself stays in local staging.
+- [Packaging evidence](packaging-evidence.md) and
+  [process-binding evidence](process-binding-evidence.md): inspected dependencies
+  and the limits of those observations.
+- [Procedure capture](procedure-capture.md): current consumer instructions and
+  proposed maintained ownership after the experiment.
 
-The security review received an operator-approved text brief describing the
-observer and proposed controls. It received no credentials, private receiver
-data, or complete Desktop source, and completed with no tool calls. The
+The accepted input is the [observer prototype](../desktop-runtime-observer/README.md)
+at `be9abcb2714231eb1f10d5586361dc9d15361ca0`. This preparation implements its
+selected receiver projection and concrete insertion points, with bounded
+collection and exclusive file publication. Every observation remains partial
+and unqualified. No notification, delivery, or acknowledgment is tested here.
+
+## Source layout
+
+| File | Responsibility |
+| --- | --- |
+| `observer-probe.mjs` | Exact binding, explicit arm, bounded getter calls, projection, and sample export |
+| `desktop-adapter.mjs` | Selected manager view, generation/mode hooks, bootstrap, and collection lifecycle |
+| `manager-patch.json` | Exact source replacements for the inspected manager |
+| `probe-reader.mjs` | Strict schema, binding, interval, and sequence checks over sample bytes |
+| `read-probe-file.mjs` | Acquisition of one explicitly selected private sample file |
+| `selected-executor-linux-identity.mjs` | Separate bounded observation of the one reported Code PID |
+| `archive.mjs`, `build-candidate.mjs` | Offline source patching, CommonJS bundling, and ASAR construction |
+| `verify-archive.mjs` | Independent extraction and complete member comparison |
+
+The Linux helper performs no reads on import and is never called by the app
+sidecar. Its future invocation needs explicit process-data scope. App process
+identity, retained query reports, and OS observations stay separate; none
+authenticates the query-to-OS association.
+
+## Reproduce source checks
+
+Use Node.js with the independently installed `@electron/asar 4.3.0` reader and
+`esbuild 0.28.2`. Set `PROBE_ASAR_READER` to the file URL of the former's
+`lib/asar.js`, and `PROBE_ESBUILD` to the latter's `lib/main.js`. Run from the
+repository root:
+
+    node --test --test-timeout=15000 docs/superpowers/prototypes/desktop-observer-probe/*.test.mjs docs/superpowers/prototypes/desktop-runtime-observer/*.test.mjs
+    git diff --check
+
+The build takes an explicitly supplied pristine archive and a new output
+directory. It never imports or executes Desktop code:
+
+    node docs/superpowers/prototypes/desktop-observer-probe/build-candidate.mjs "$PRISTINE_ASAR" "$NEW_OUTPUT_DIRECTORY"
+    node docs/superpowers/prototypes/desktop-observer-probe/verify-archive.mjs "$PRISTINE_ASAR" "$NEW_OUTPUT_DIRECTORY/candidate.asar" "$NEW_OUTPUT_DIRECTORY/desktopRuntimeObserver.js" "$NEW_OUTPUT_DIRECTORY/manager.js"
+    node --check "$NEW_OUTPUT_DIRECTORY/manager.js"
+    node --check "$NEW_OUTPUT_DIRECTORY/desktopRuntimeObserver.js"
+
+The independent archive comparison permits only the manager change and sidecar
+addition. The other 363 original members must retain their bytes and metadata.
+Extraction and syntax checks do not establish that the modified app loads.
+
+## Review boundary
+
+[Security design guidance](security-design.md) retains the original bounded
+Daybreak design response verbatim, SHA-256
+`2b9e00f54d283beb46a9197dd5e2b098fa6b1b2e45afe9c1673194c6b25d6267`.
+It is historical design input; the current source and procedure define the
+candidate under review. Source controls were developed through tools-disabled
+Daybreak sessions using approved source packets and synthetic results. The
 requested route was `gpt-daybreak-blue-latest` through Codex CLI `0.159.0`.
-Transport completion and the retained response are observed; no product-owned
-model-execution attestation is available.
+No product-owned model-execution attestation is available.
 
-## Completion contract
-
-The source candidate must bind the exact existing receiver and query, preserve
-the agreed projection and its unknowns, bound getter work, and export only the
-approved fixture evidence. The app integration, collection controls, source
-bytes, archive output, and probe procedure need independent review together.
-
-The procedure must name app changes and restart effects, preserve unrelated
-work, establish the actual executor and process binding, specify any setup
-prompt, and define retention, cleanup, and restoration. Any missing runtime
-semantics stay explicit. This probe sends no notification and cannot qualify
-delivery or acknowledgment.
-
-Use `capturing-agent-procedures` when completing this preparation. The
-authorization and execution tickets must load the published procedure revision
-before acting and return observations against its stated criteria. Installation,
-task creation, private reads, getter invocation, and later notification sends
-retain their existing separate gates.
+The procedure proposes temporary installed-archive replacement and at least
+two shutdown/launch cycles. Getter effects, candidate loading, runtime account,
+model, permission and cwd semantics, full permissions coverage, and native
+address binding remain live questions. No app installation, launch, private
+receiver read, task creation, setup prompt, or notification was performed during
+this preparation.

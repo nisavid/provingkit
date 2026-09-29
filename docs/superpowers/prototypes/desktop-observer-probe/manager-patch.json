@@ -1,0 +1,70 @@
+{
+  "schema": "provingkit.desktop-manager-patch.v1",
+  "archiveSha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
+  "target": {
+    "path": ".vite/build/index.chunk-B9SZqsi8.js",
+    "sha256": "bd2144a3653bb843f4b75fe652124a4e478f273b5f6c2e10a2139fa3a9a3152f"
+  },
+  "replacements": [
+    {
+      "purpose": "require-insertion",
+      "occurrences": 1,
+      "before": "\"use strict\";(function(){try{var e=typeof window<\"u\"?window:typeof global<\"u\"?global:typeof globalThis<\"u\"?globalThis:typeof self<\"u\"?self:{};e.SENTRY_RELEASE={",
+      "after": "\"use strict\";const PROVINGKIT_OBSERVER_278=require(\"./desktopRuntimeObserver.js\");(function(){try{var e=typeof window<\"u\"?window:typeof global<\"u\"?global:typeof globalThis<\"u\"?globalThis:typeof self<\"u\"?self:{};e.SENTRY_RELEASE={"
+    },
+    {
+      "purpose": "query-install-generation",
+      "occurrences": 1,
+      "before": "noteQueryInstalled(e,n){",
+      "after": "noteQueryInstalled(e,n){PROVINGKIT_OBSERVER_278.noteQueryInstalled(this,e,n);"
+    },
+    {
+      "purpose": "query-teardown-generation",
+      "occurrences": 1,
+      "before": "teardownQuery(e,r=\"exited\",i){",
+      "after": "teardownQuery(e,r=\"exited\",i){PROVINGKIT_OBSERVER_278.teardownQuery(this,e);"
+    },
+    {
+      "purpose": "rewind-code-id-generation",
+      "occurrences": 1,
+      "before": "i.cliSessionId=o,i.unarchivedCliSessionId=void 0",
+      "after": "PROVINGKIT_OBSERVER_278.noteCodeSessionId(this,i,o),i.cliSessionId=o,i.unarchivedCliSessionId=void 0"
+    },
+    {
+      "purpose": "resume-code-id-generation",
+      "occurrences": 1,
+      "before": "r.cliSessionId=i,r.unarchivedCliSessionId=void 0",
+      "after": "PROVINGKIT_OBSERVER_278.noteCodeSessionId(this,r,i),r.cliSessionId=i,r.unarchivedCliSessionId=void 0"
+    },
+    {
+      "purpose": "clear-code-id-generation",
+      "occurrences": 1,
+      "before": "e.cliSessionId=void 0,i&&(e.isFirstTurn=!1)",
+      "after": "PROVINGKIT_OBSERVER_278.noteCodeSessionId(this,e,void 0),e.cliSessionId=void 0,i&&(e.isFirstTurn=!1)"
+    },
+    {
+      "purpose": "init-code-id-generation",
+      "occurrences": 1,
+      "before": "i.cliSessionId=g,n.wc(\"ccd\",i,{trigger:\"init\"})",
+      "after": "PROVINGKIT_OBSERVER_278.noteCodeSessionId(this,i,g),i.cliSessionId=g,n.wc(\"ccd\",i,{trigger:\"init\"})"
+    },
+    {
+      "purpose": "init-mode-event",
+      "occurrences": 1,
+      "before": "a&&!x&&b&&this.takeCliPermissionMode(i,b,\"cli_init\")",
+      "after": "a&&!x&&b&&(PROVINGKIT_OBSERVER_278.recordModeEvent(this,i,i.query,b),this.takeCliPermissionMode(i,b,\"cli_init\"))"
+    },
+    {
+      "purpose": "status-mode-event",
+      "occurrences": 1,
+      "before": "if(p&&!m&&f&&f!==o.permissionMode&&o.query===e){",
+      "after": "p&&!m&&f&&o.query===e&&PROVINGKIT_OBSERVER_278.recordModeEvent(this,o,e,f);if(p&&!m&&f&&f!==o.permissionMode&&o.query===e){"
+    },
+    {
+      "purpose": "singleton-attachment",
+      "occurrences": 1,
+      "before": "var sF=new aF(t.By);t._B(sF);",
+      "after": "var sF=new aF(t.By);t._B(sF);process.env.PROVINGKIT_OBSERVER_CONFIG&&PROVINGKIT_OBSERVER_278.bootDesktopObserver({manager:sF,isUnavailable:pk,effectiveCuAllowedApps:t.qC,effectiveCuGrantFlags:t.JC,modulePath:require.resolve(\"./desktopRuntimeObserver.js\"),copiedAsarPath:require(\"node:path\").join(process.resourcesPath,\"app.asar\")});"
+    }
+  ]
+}

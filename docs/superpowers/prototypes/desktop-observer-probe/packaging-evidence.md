@@ -69,7 +69,7 @@ bytes, allowing only the intended manager change and added module. A separate
 read through Electron's ASAR package must corroborate extraction. Neither
 archive extraction nor JavaScript syntax checking establishes runtime loading.
 
-`archive.mjs` implements this byte transformation. Its three tests use the
+`archive.mjs` implements this byte transformation. Its four tests use the
 independent `@electron/asar 4.3.0` writer and reader. They passed for readable
 changed archives, preserved unpacked assets, rejected source drift, and
 rejected mistaken replacement/addition names.
@@ -124,6 +124,21 @@ upstream implementation supports preparing the copied Linux archive without
 changing executable fuses or embedded signatures. This is a source-backed
 compatibility expectation; the exact packaged runtime has not been launched
 with the candidate.
+
+## Sidecar format and runtime file access
+
+The offline builder uses `esbuild 0.28.2` to bundle the two authored ES modules
+into one CommonJS sidecar. A scratch bundle of the observer passed its seven
+synthetic checks in that format. The full candidate also needs the adapter and
+all later source changes verified before review.
+
+[Electron 44.4.3’s filesystem wrapper](https://github.com/electron/electron/blob/v44.4.3/lib/node/asar-fs-wrapper.ts)
+extracts an ASAR member when `open` needs a real file. Its virtual `lstat`
+produces synthetic inode and timestamp metadata. Comparing the opened file’s
+identity with the virtual member’s metadata is therefore invalid. The proposed
+adapter instead reads the packed member through `readFile`, checks its bounded
+size and digest, and verifies the physical archive on both sides of that read.
+This behavior is source-backed; the packaged application has not been launched.
 
 ## Remaining preparation
 

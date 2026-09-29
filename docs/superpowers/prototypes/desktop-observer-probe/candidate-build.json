@@ -1,0 +1,19 @@
+{
+  "schema": "provingkit.desktop-probe-build.v1",
+  "bundler": {
+    "name": "esbuild",
+    "version": "0.28.2"
+  },
+  "sourceInputs": {
+    "desktop-adapter.mjs": "1d2339313f330c159a02f5865ac2683a926d0fe1ef77f0db7f0980b84ce51826",
+    "observer-probe.mjs": "423f745b9c6771dd3e8b3cd910b4d6847da28552bb99ad7833eea436f2d9fcd7",
+    "manager-patch.json": "32f9cbdcce27eea00edf5f89cf37e7663bb4fdbe8af59f2074618b92dd865bd3",
+    "archive.mjs": "28f199c0efbd27f88b68cf63a2666391a5798e1ea5c79f4fff33f0db05ef9af5",
+    "build-candidate.mjs": "66079cef39a342273f26fd60de6161a2c5bbb7879635b7562d773469105aeff1"
+  },
+  "pristineSha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
+  "candidateSha256": "404dece05e10d0b798c167b6a30a3e68745c51ce5ed95ce5aaa1fa51bf7e664c",
+  "sidecarSha256": "69062a9bcae7fd222dbdd6bc6d756017054de72e95c34d2901330ce859fb5fcc",
+  "managerSha256": "937dd6198d6d7be897c022cc6ec553070d3aced89301b9014c9d8b49cc32504e",
+  "runtimeExecuted": false
+}
