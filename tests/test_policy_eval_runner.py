@@ -13,6 +13,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -2270,6 +2271,15 @@ while True:
     for argv in step.get("run", []):
         done = subprocess.run(argv, capture_output=True, text=True)
         reply += " [%s exit %d: %s]" % (argv[0], done.returncode, done.stderr.strip())
+    for number, questions in enumerate(step.get("ask", [])):
+        emit({"type": "control_request", "request_id": "ask-%d-%d" % (index, number), "request": {
+            "subtype": "can_use_tool", "tool_name": "AskUserQuestion", "input": {"questions": questions}}})
+        while True:
+            response = json.loads(sys.stdin.readline())
+            if response.get("type") == "control_response":
+                break
+        decision = response["response"]["response"]
+        reply = "answers: %s\n\n%s" % (json.dumps((decision.get("updatedInput") or {}).get("answers")), reply)
     background = step.get("background")
     if background:
         emit({"type": "system", "subtype": "background_tasks_changed",
@@ -2328,8 +2338,12 @@ for line in sys.stdin:
                 "type": "fileChange", "id": "exec-1", "status": "completed",
                 "changes": [{"path": step["file_change"]["path"], "kind": {"type": "add"},
                              "diff": step["file_change"]["diff"]}]}}})
-        emit({"method": "item/completed", "params": {"item": {"type": "agentMessage",
-                                                              "text": step.get("text", "ok").replace("{input}", text)}}})
+        said = step.get("text", "ok").replace("{input}", text)
+        for number, questions in enumerate(step.get("ask", [])):
+            emit({"id": 900 + number, "method": "item/tool/requestUserInput", "params": {"questions": questions}})
+            reply = json.loads(sys.stdin.readline())
+            said = "answers: %s\n\n%s" % (json.dumps(reply["result"]["answers"]), said)
+        emit({"method": "item/completed", "params": {"item": {"type": "agentMessage", "text": said}}})
         if step.get("tool_last"):
             emit({"method": "item/completed", "params": {"item": {"type": "commandExecution", "command": "true",
                                                                   "exitCode": 0, "status": "completed"}}})
@@ -2960,3 +2974,494 @@ class CodexAsyncQuestionTest(ScriptedHarness, unittest.TestCase):
         self.assertEqual(record["tool_calls"], [{"tool": "fileChange", "command": None, "status": "completed",
                                                  "changes": [{"path": "/r/policies/alerts.md", "kind": "add",
                                                               "diff": "+# Alerts\n"}]}])
+
+
+# ----------------------------------------------------------------------------- answer-sheet operator
+
+SHEET = [
+    {"id": "window", "covers": "Which hours count as overnight, and in which time zone.",
+     "answer": "Overnight is 22:00 to 07:00 America/New_York."},
+    {"id": "degraded", "covers": "Whether degraded latency or elevated errors count as customers being affected.",
+     "answer": "Degraded customer-facing latency or errors count as affected; internal dashboards do not."},
+    {"id": "threshold", "covers": "How many repeats within an hour silence an alert (the seed says three).",
+     "answer": "Three times within one hour, as I said.", "counts_against": "reports"},
+]
+SHEET_DEFAULT = "Use your recommendation, and mark it in the policy as a default I can change."
+KEYWORDS = {"window": "overnight", "degraded": "degrad", "threshold": "how many"}
+
+
+def sheet_case(**overrides):
+    return minimal_case(operator={"sheet": [dict(entry) for entry in SHEET], "default": SHEET_DEFAULT}, **overrides)
+
+
+def keyword_ids(text):
+    return [entry for entry, word in KEYWORDS.items() if word in text.lower()]
+
+
+def keyword_mapping(request):
+    """Map by keyword: each tool question, or each numbered item of a prose message (waiting when there is one)."""
+    if request["kind"] == "tool":
+        blocks = re.split(r"\n\n(?=Question \d+\n)", request["message"])
+        return {"waiting_on_operator": True,
+                "questions": [{"text": block.split("\n")[0], "sheet_ids": keyword_ids(block)} for block in blocks]}
+    items = [re.sub(r"^\s*\d+\.\s+", "", line) for line in request["message"].split("\n")
+             if re.match(r"\s*\d+\.\s", line)]
+    return {"waiting_on_operator": bool(items), "questions": [{"text": i, "sheet_ids": keyword_ids(i)} for i in items]}
+
+
+class FakeMapper:
+    """A mapping backend that answers ``respond(request)`` and keeps every request; a returned exception is raised."""
+
+    def __init__(self, respond=keyword_mapping):
+        self.respond, self.requests = respond, []
+
+    def __call__(self, request):
+        self.requests.append(request)
+        result = self.respond(request)
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+
+def numbered(*pairs):
+    return "Answers to your questions:\n" + "".join(f"\n{n}. {q}\n{a}\n" for n, (q, a) in enumerate(pairs, 1))[:-1]
+
+
+class AnswerSheetFormatTest(unittest.TestCase):
+    def test_a_case_declares_an_answer_sheet(self):
+        case = runner.validate_case(sheet_case())
+        self.assertEqual(runner.MAPPING_MODEL, "claude-haiku-4-5-20251001")
+        self.assertEqual(case["operator"], {"sheet": SHEET, "default": SHEET_DEFAULT, "model": runner.MAPPING_MODEL})
+        self.assertNotIn("answers", case)
+        self.assertNotIn("answers_in_prose", case)
+        self.assertEqual(case["permissions"]["codex"]["route"], "app-server")
+        self.assertEqual(runner.validate_case(json.loads(json.dumps(case))), case)
+        own = runner.validate_case(minimal_case(operator={"sheet": SHEET[:1], "default": "d", "model": "other"}))
+        self.assertEqual(own["operator"]["model"], "other")
+        self.assertNotIn("operator", runner.validate_case(minimal_case()))
+
+    def test_a_sheet_case_takes_no_scripted_answers(self):
+        for extra in ({"answers": []}, {"answers": [{"match": "x", "answer": "y"}]}, {"default_answer": "d"},
+                      {"answers_in_prose": True}, {"answers_in_prose": False}):
+            with self.assertRaisesRegex(runner.CaseError, "operator", msg=extra):
+                runner.validate_case(sheet_case(**extra))
+        with self.assertRaisesRegex(runner.CaseError, "operator"):
+            runner.validate_case(sheet_case(condition_overrides={"real": {
+                "answers": [{"match": "x", "answer": "y"}]}}))
+
+    def test_malformed_sheets_are_rejected(self):
+        entry = SHEET[0]
+        for operator in ("sheet", {"sheet": [entry]}, {"sheet": [entry], "default": " "}, {"sheet": [], "default": "d"},
+                         {"sheet": [entry], "default": "d", "model": ""}, {"sheet": [entry], "default": "d", "x": 1},
+                         {"sheet": [dict(entry, id="bad id")], "default": "d"},
+                         {"sheet": [entry, dict(entry)], "default": "d"},
+                         {"sheet": [{"id": "x", "answer": "a"}], "default": "d"},
+                         {"sheet": [dict(entry, covers=" ")], "default": "d"},
+                         {"sheet": [dict(entry, answer="")], "default": "d"},
+                         {"sheet": [dict(entry, note="n")], "default": "d"},
+                         {"sheet": [dict(entry, counts_against="nope")], "default": "d"}):
+            with self.assertRaises(runner.CaseError, msg=operator):
+                runner.validate_case(minimal_case(operator=operator))
+
+    def test_question_checks_bind_sheet_entries_and_rounds_only_with_a_sheet(self):
+        case = runner.validate_case(sheet_case(question_checks=[
+            {"id": "asks-window", "expectation": "reports", "match": {"sheet_id": "window", "round": 1}, "min": 1}]))
+        self.assertEqual(case["question_checks"][0]["match"], {"sheet_id": "window", "round": 1})
+        for match in ({"sheet_id": "nope"}, {"sheet_id": 3}, {"round": 0}, {"round": "1"}, {"round": 5}):
+            with self.assertRaises(runner.CaseError, msg=match):
+                runner.validate_case(sheet_case(question_checks=[{"id": "c", "expectation": "reports",
+                                                                  "match": match}]))
+        for match in ({"sheet_id": "window"}, {"round": 1}):
+            with self.assertRaisesRegex(runner.CaseError, "sheet", msg=match):
+                runner.validate_case(minimal_case(question_checks=[{"id": "c", "expectation": "reports",
+                                                                    "match": match}]))
+        with self.assertRaisesRegex(runner.CaseError, "counts_against:threshold"):
+            runner.validate_case(sheet_case(question_checks=[{"id": "counts_against:threshold",
+                                                              "expectation": "reports"}]))
+        with self.assertRaisesRegex(runner.CaseError, "app-server"):
+            runner.validate_case(sheet_case(permissions={"codex": {"route": "exec"}}))
+
+
+class MappingRequestTest(unittest.TestCase):
+    QUESTIONS = [{"header": "Window", "question": "When does the night start?",
+                  "options": [{"label": "22:00-07:00", "description": "Late"}, {"label": "Local overnight"}]},
+                 {"question": "Anything else?", "options": ["Yes", "No"]}]
+
+    def test_tool_questions_show_each_header_stem_and_option_label(self):
+        self.assertEqual(runner.tool_question_text(self.QUESTIONS),
+                         "Question 1\nHeader: Window\nQuestion: When does the night start?\n"
+                         "Options: 22:00-07:00 | Local overnight\n\n"
+                         "Question 2\nQuestion: Anything else?\nOptions: Yes | No")
+
+    def test_the_mapper_sees_sheet_ids_and_coverage_but_never_answers(self):
+        sheet = runner.validate_case(sheet_case())["operator"]["sheet"]
+        for kind, message in (("tool", runner.tool_question_text(self.QUESTIONS)), ("prose", "1. Which hours?")):
+            prompt = runner.mapping_prompt(kind, message, sheet)
+            self.assertIn(message, prompt)
+            for entry in sheet:
+                self.assertIn(f"{entry['id']}: {entry['covers']}", prompt)
+                self.assertNotIn(entry["answer"], prompt)
+            self.assertNotIn(SHEET_DEFAULT, prompt)
+            self.assertNotIn("counts_against", prompt)
+        schema = runner.mapping_schema(["window", "degraded"])
+        self.assertEqual(schema["required"], ["waiting_on_operator", "questions"])
+        self.assertEqual(schema["properties"]["questions"]["items"]["properties"]["sheet_ids"]["items"]["enum"],
+                         ["window", "degraded"])
+
+    def test_mappings_are_strict_and_put_entries_in_sheet_order(self):
+        ids = ["window", "degraded", "threshold"]
+        self.assertEqual(runner.parse_mapping({"waiting_on_operator": True, "questions": [
+            {"text": "q", "sheet_ids": ["threshold", "window", "threshold"]}]}, "prose", ids),
+            {"waiting_on_operator": True, "questions": [{"text": "q", "sheet_ids": ["window", "threshold"]}]})
+        self.assertEqual(runner.parse_mapping('```json\n{"waiting_on_operator": false, "questions": []}\n```',
+                                              "prose", ids), {"waiting_on_operator": False, "questions": []})
+        self.assertTrue(runner.parse_mapping({"waiting_on_operator": False, "questions": [
+            {"text": "a", "sheet_ids": []}]}, "tool", ids, 1)["waiting_on_operator"])
+        for value, kind, count in (
+                ("not json", "prose", None), ({"questions": []}, "prose", None),
+                ({"waiting_on_operator": "yes", "questions": []}, "prose", None),
+                ({"waiting_on_operator": True, "questions": [{"text": "q", "sheet_ids": ["nope"]}]}, "prose", None),
+                ({"waiting_on_operator": True, "questions": [{"text": "q"}]}, "prose", None),
+                ({"waiting_on_operator": True, "questions": []}, "prose", None),
+                ({"waiting_on_operator": False, "questions": [{"text": "q", "sheet_ids": []}]}, "prose", None),
+                ({"waiting_on_operator": True, "questions": [{"text": "q", "sheet_ids": []}]}, "tool", 2)):
+            with self.assertRaises(runner.MapperError, msg=value):
+                runner.parse_mapping(value, kind, ids, count)
+
+
+class SheetOperatorTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.cache = Path(self.tmp.name) / "mapper"
+
+    def operator(self, respond=keyword_mapping, **changes):
+        backend = FakeMapper(respond)
+        operator = dict(runner.validate_case(sheet_case())["operator"], **changes)
+        return runner.SheetOperator(operator, backend, self.cache), backend
+
+    def test_a_tool_call_answers_each_question_from_its_entries_in_sheet_order_else_the_default(self):
+        operator, backend = self.operator(lambda request: {"waiting_on_operator": True, "questions": [
+            {"text": "Night", "sheet_ids": ["degraded", "window"]}, {"text": "Tickets", "sheet_ids": []}]})
+        questions = [{"header": "Night", "question": "When is it night?", "options": [{"label": "Degraded counts"}]},
+                     {"question": "Where do tickets go?", "options": [{"label": "Tracker"}]}]
+        answers, extra = operator.tool_answers(questions, 1, 0)
+        self.assertEqual(answers, [SHEET[0]["answer"] + "\n\n" + SHEET[1]["answer"], SHEET_DEFAULT])
+        request = backend.requests[0]
+        self.assertEqual((request["kind"], request["message"], request["count"], request["model"]),
+                         ("tool", runner.tool_question_text(questions), 2, runner.MAPPING_MODEL))
+        self.assertEqual(request["sheet"], [{"id": e["id"], "covers": e["covers"]} for e in SHEET])
+        self.assertEqual(extra, {"round": 1, "sheet": [{"sheet_ids": ["window", "degraded"], "answer_source": "sheet"},
+                                                       {"sheet_ids": [], "answer_source": "default"}],
+                                 "mapper": {"model": runner.MAPPING_MODEL, "cache_key": extra["mapper"]["cache_key"]}})
+        self.assertEqual(operator.tool_answers(questions, 1, 2)[1]["round"], 3)
+
+    def test_a_prose_batch_with_a_long_sign_off_is_answered_in_one_numbered_message(self):
+        operator, _ = self.operator()
+        message = ("Before I write the policy:\n\n1. What hours count as overnight?\n"
+                   "2. Does degraded latency count as affected?\n3. Where do tickets go?\n\n"
+                   "Once you answer, I'll build it. Then I'll test it. Then I'll report.")
+        self.assertIsNone(runner.prose_question(message))
+        entry, answer = operator.prose_entry(message, 1, 0)
+        self.assertEqual(answer, numbered(("What hours count as overnight?", SHEET[0]["answer"]),
+                                          ("Does degraded latency count as affected?", SHEET[1]["answer"]),
+                                          ("Where do tickets go?", SHEET_DEFAULT)))
+        self.assertEqual(entry, {
+            "kind": "prose", "turn": 1, "round": 1, "text": None, "answer": answer, "answer_sent": True,
+            "questions": [
+                {"text": "What hours count as overnight?", "sheet_ids": ["window"], "answer": SHEET[0]["answer"],
+                 "answer_source": "sheet"},
+                {"text": "Does degraded latency count as affected?", "sheet_ids": ["degraded"],
+                 "answer": SHEET[1]["answer"], "answer_source": "sheet"},
+                {"text": "Where do tickets go?", "sheet_ids": [], "answer": SHEET_DEFAULT, "answer_source": "default"}],
+            "waiting_on_operator": True, "regex_detected": False, "detector_disagreement": True,
+            "mapper": {"model": runner.MAPPING_MODEL, "cache_key": entry["mapper"]["cache_key"]}})
+        capped, unsent = operator.prose_entry(message, 1, runner.MAX_PROSE_ANSWERS_PER_TURN)
+        self.assertIsNone(unsent)
+        self.assertEqual((capped["round"], capped["answer"], capped["answer_sent"]), (4, answer, False))
+
+    def test_the_mapper_decides_prose_questions_and_the_regex_is_an_audit_column(self):
+        operator, _ = self.operator(lambda request: {"waiting_on_operator": False, "questions": []})
+        entry, answer = operator.prose_entry("Did the checks pass?\n\nShould I merge it?", 1, 0)
+        self.assertIsNone(answer)
+        rows = runner.question_log([entry])
+        self.assertEqual(rows, [{"turn": 1, "round": 1, "kind": "prose", "question": "Should I merge it?",
+                                 "answer": None, "answer_sent": False, "sheet_ids": [], "answer_source": "none",
+                                 "mapper": entry["mapper"], "waiting_on_operator": False, "regex_detected": True,
+                                 "detector_disagreement": True}])
+        case = runner.validate_case(sheet_case(question_checks=[{"id": "none", "expectation": "reports", "max": 0}]))
+        self.assertTrue(runner.evaluate_question_checks(case, rows)[0]["passed"])
+        self.assertEqual(operator.prose_entry("Merged #84.", 1, 0), (None, None))
+
+    def test_mappings_are_cached_in_the_run_directory_by_message_sheet_and_model(self):
+        operator, backend = self.operator()
+        first = operator.map("prose", "1. Which hours count as overnight?", 1)
+        self.assertEqual(operator.map("prose", "1. Which hours count as overnight?", 1), first)
+        self.assertEqual(len(backend.requests), 1)
+        stored = json.loads((self.cache / f"{first['mapper']['cache_key']}.json").read_text())
+        self.assertEqual(stored["mapping"], first["mapping"])
+        self.assertEqual(stored["request"]["message"], "1. Which hours count as overnight?")
+        again, fresh = self.operator()
+        self.assertEqual(again.map("prose", "1. Which hours count as overnight?", 1), first)
+        self.assertEqual(fresh.requests, [])
+        keys = {first["mapper"]["cache_key"]}
+        for changed, message in (({}, "1. Which hours count as night?"), ({"model": "other"}, None),
+                                 ({"sheet": [dict(SHEET[0], covers="Overnight hours.")] + SHEET[1:]}, None)):
+            other, _ = self.operator(**changed)
+            keys.add(other.map("prose", message or "1. Which hours count as overnight?", 1)["mapper"]["cache_key"])
+        self.assertEqual(len(keys), 4)
+        self.assertEqual({k: operator.summary()[k] for k in ("requests", "cache_hits", "backend_calls")},
+                         {"requests": 2, "cache_hits": 1, "backend_calls": 1})
+
+    def test_a_malformed_mapping_is_retried_once(self):
+        replies = [{"waiting_on_operator": True, "questions": []}]
+        operator, backend = self.operator(lambda request: replies.pop(0) if replies else keyword_mapping(request))
+        result = operator.map("prose", "1. Which hours count as overnight?", 1)
+        self.assertEqual(len(backend.requests), 2)
+        self.assertIsNone(result["error"])
+        self.assertEqual(result["mapping"]["questions"][0]["sheet_ids"], ["window"])
+
+    def test_a_failing_mapper_falls_back_and_records_the_error(self):
+        for failure in (RuntimeError("model unavailable"), "not json"):
+            operator, backend = self.operator(lambda request, failure=failure: failure)
+            answers, extra = operator.tool_answers([{"question": "Which hours count as overnight?"}], 2, 0)
+            self.assertEqual(answers, [SHEET_DEFAULT])
+            self.assertEqual(extra["sheet"], [{"sheet_ids": [], "answer_source": "default"}])
+            self.assertIn("model unavailable" if isinstance(failure, Exception) else "JSON", extra["mapper_error"])
+            self.assertEqual(len(backend.requests), 2)
+            entry, answer = operator.prose_entry("Done.\n\nShould I merge it?", 2, 0)
+            self.assertIsNone(answer)
+            self.assertEqual({k: entry[k] for k in ("waiting_on_operator", "regex_detected", "detector_disagreement",
+                                                   "questions", "answer", "answer_sent")},
+                             {"waiting_on_operator": None, "regex_detected": True, "detector_disagreement": False,
+                              "questions": [], "answer": None, "answer_sent": False})
+            self.assertEqual(entry["mapper_error"], extra["mapper_error"])
+            self.assertEqual(operator.prose_entry("Done.", 3, 0), (None, None))
+            summary = operator.summary()
+            self.assertEqual((summary["failures"], summary["backend_calls"]), (3, 6))
+            self.assertEqual([(e["turn"], e["kind"]) for e in summary["errors"]],
+                             [(2, "tool"), (2, "prose"), (3, "prose")])
+            self.assertFalse(list(self.cache.glob("*.json")))
+
+
+class SheetCheckTest(unittest.TestCase):
+    MAPPER = {"model": runner.MAPPING_MODEL, "cache_key": "k"}
+    ROWS = [{"turn": 1, "round": 1, "kind": "tool", "question": "Hours?", "answer": "a", "sheet_ids": ["window"],
+             "answer_source": "sheet", "mapper": MAPPER},
+            {"turn": 1, "round": 2, "kind": "prose", "question": "Repeats?", "answer": "b", "answer_sent": True,
+             "sheet_ids": ["degraded", "threshold"], "answer_source": "sheet", "mapper": MAPPER,
+             "waiting_on_operator": True, "regex_detected": True, "detector_disagreement": False},
+            {"turn": 2, "round": 1, "kind": "prose", "question": "Merge?", "answer": None, "answer_sent": False,
+             "sheet_ids": [], "answer_source": "none", "mapper": MAPPER, "waiting_on_operator": False,
+             "regex_detected": True, "detector_disagreement": True}]
+
+    def test_sheet_id_and_round_count_mapped_questions(self):
+        case = runner.validate_case(sheet_case(turns=["a", "b"], question_checks=[
+            {"id": "window-first", "expectation": "reports", "match": {"sheet_id": "window", "round": 1}, "min": 1},
+            {"id": "degraded-first", "expectation": "reports", "match": {"sheet_id": "degraded", "round": 1},
+             "min": 1},
+            {"id": "second-round", "expectation": "reports", "match": {"round": 2}, "min": 1, "max": 1},
+            {"id": "all", "expectation": "reports", "min": 2, "max": 2}]))
+        results = {r["id"]: (r["count"], r["passed"]) for r in runner.evaluate_question_checks(case, self.ROWS)}
+        self.assertEqual(results, {"window-first": (1, True), "degraded-first": (0, False), "second-round": (1, True),
+                                   "all": (2, True), "counts_against:threshold": (1, False)})
+
+    def test_counts_against_fails_its_expectation_whatever_the_grader_says(self):
+        case = runner.validate_case(sheet_case())
+        checks = runner.evaluate_question_checks(case, self.ROWS)
+        self.assertEqual(checks, [{"id": "counts_against:threshold", "expectation": "reports",
+                                   "match": {"sheet_id": "threshold"}, "min": 0, "max": 0, "count": 1,
+                                   "passed": False}])
+        grade = {"resolves-own": {"passed": True, "rationale": ""}, "reports": {"passed": True, "rationale": ""}}
+        self.assertEqual([(r["id"], r["passed"], r["checks"]) for r in runner.combine_grades(case, grade, checks)],
+                         [("resolves-own", True, []), ("reports", False, ["counts_against:threshold"])])
+        self.assertTrue(runner.evaluate_question_checks(case, self.ROWS[:1])[0]["passed"])
+        self.assertEqual(runner.evaluate_question_checks(runner.validate_case(minimal_case()), self.ROWS), [])
+
+    def test_question_log_carries_each_questions_mapping(self):
+        entries = [{"turn": 1, "round": 1, "questions": [{"question": "Hours?"}, {"question": "Tickets?"}],
+                    "answers": {"Hours?": "22-07", "Tickets?": SHEET_DEFAULT}, "mapper": self.MAPPER,
+                    "sheet": [{"sheet_ids": ["window"], "answer_source": "sheet"},
+                              {"sheet_ids": [], "answer_source": "default"}]},
+                   {"turn": 1, "round": 2, "delivery": "async", "answer_sent": True,
+                    "questions": [{"id": "W", "question": "W"}], "answers": {"W": {"answers": [SHEET_DEFAULT]}},
+                    "sheet": [{"sheet_ids": [], "answer_source": "default"}], "mapper": self.MAPPER,
+                    "mapper_error": "RuntimeError: down"}]
+        self.assertEqual(runner.question_log(entries), [
+            {"turn": 1, "kind": "tool", "question": "Hours?", "answer": "22-07", "round": 1, "sheet_ids": ["window"],
+             "answer_source": "sheet", "mapper": self.MAPPER},
+            {"turn": 1, "kind": "tool", "question": "Tickets?", "answer": SHEET_DEFAULT, "round": 1, "sheet_ids": [],
+             "answer_source": "default", "mapper": self.MAPPER},
+            {"turn": 1, "kind": "tool", "question": "W", "answer": SHEET_DEFAULT, "answer_sent": True, "round": 2,
+             "sheet_ids": [], "answer_source": "default", "mapper": self.MAPPER,
+             "mapper_error": "RuntimeError: down"}])
+
+
+FAKE_CLAUDE_MAPPER = r'''#!/usr/bin/env python3
+import json, os, sys
+prompt = sys.stdin.read()
+with open(os.environ["FAKE_MAPPER_LOG"], "a") as log:
+    log.write(json.dumps({"argv": sys.argv[1:], "prompt": prompt, "cwd": os.getcwd()}) + "\n")
+if os.environ.get("FAKE_MAPPER_FAIL"):
+    sys.stderr.write("overloaded\n")
+    sys.exit(1)
+print(json.dumps({"type": "result", "subtype": "success", "is_error": False, "total_cost_usd": 0.0012,
+                  "structured_output": {"waiting_on_operator": True,
+                                        "questions": [{"text": "Hours?", "sheet_ids": ["window"]}]}}))
+'''
+
+
+class ClaudeMapperTest(unittest.TestCase):
+    def test_the_default_mapper_runs_haiku_without_tools_skills_mcp_or_settings(self):
+        schema = runner.mapping_schema(["window"])
+        argv = runner.claude_mapper_argv(runner.MAPPING_MODEL, schema, executable="claude")
+        self.assertEqual(argv[:6], ["claude", "-p", "--output-format", "json", "--model", "claude-haiku-4-5-20251001"])
+        for flag in ("--strict-mcp-config", "--no-session-persistence", "--disable-slash-commands"):
+            self.assertIn(flag, argv)
+        self.assertEqual(argv[argv.index("--tools") + 1], "")
+        self.assertEqual(json.loads(argv[argv.index("--json-schema") + 1]), schema)
+        self.assertNotIn("--effort", argv)
+        grader = runner.claude_grader_argv("claude-haiku-4-5-20251001", "medium", schema, executable="claude")
+        self.assertEqual(grader[:6] + grader[8:], argv)
+
+    def test_the_claude_mapper_returns_the_structured_output_and_adds_up_its_cost(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake, log = root / "claude", root / "log.jsonl"
+            fake.write_text(FAKE_CLAUDE_MAPPER.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+            fake.chmod(0o755)
+            env = dict(os.environ, FAKE_MAPPER_LOG=str(log))
+            mapper = runner.ClaudeMapper(str(fake), env, root / "mapper", timeout=30)
+            request = {"model": runner.MAPPING_MODEL, "kind": "prose", "message": "1. Hours?", "count": None,
+                       "sheet": [{"id": "window", "covers": "Hours."}], "prompt": "PROMPT",
+                       "schema": runner.mapping_schema(["window"])}
+            self.assertEqual(mapper(request), {"waiting_on_operator": True,
+                                               "questions": [{"text": "Hours?", "sheet_ids": ["window"]}]})
+            self.assertEqual(mapper(request)["questions"][0]["sheet_ids"], ["window"])
+            self.assertAlmostEqual(mapper.cost_usd, 0.0024)
+            calls = [json.loads(line) for line in log.read_text().splitlines()]
+            self.assertEqual(calls[0]["prompt"], "PROMPT")
+            self.assertEqual(calls[0]["argv"][:5], ["-p", "--output-format", "json", "--model", runner.MAPPING_MODEL])
+            self.assertEqual(Path(calls[0]["cwd"]), (root / "mapper" / "work").resolve())
+            self.assertEqual(len(list((root / "mapper" / "calls").glob("*.json"))), 2)
+            failing = runner.ClaudeMapper(str(fake), dict(env, FAKE_MAPPER_FAIL="1"), root / "mapper", timeout=30)
+            with self.assertRaisesRegex(runner.MapperError, "overloaded"):
+                failing(request)
+
+
+class AnswerSheetHostTest(ScriptedHarness, unittest.TestCase):
+    BATCH = ("I read the seed and the fixture.\n\n1. What hours count as overnight, and in which time zone?\n"
+             "2. Does degraded latency count as customers affected?\n3. How many repeats should silence an alert?\n\n"
+             "Once you answer, I'll build it. Then I'll test it. Then I'll report.")
+    FIRST = numbered(("What hours count as overnight, and in which time zone?", SHEET[0]["answer"]),
+                     ("Does degraded latency count as customers affected?", SHEET[1]["answer"]),
+                     ("How many repeats should silence an alert?", SHEET[2]["answer"]))
+    SECOND = numbered(("Where should tickets go?", SHEET_DEFAULT))
+
+    def sheet_case_file(self, **overrides):
+        return self.write_case(operator={"sheet": SHEET, "default": SHEET_DEFAULT}, **overrides)
+
+    def test_claude_prose_batches_are_answered_from_the_sheet(self):
+        mapper = FakeMapper()
+        case = self.sheet_case_file(turns=["Draft the policy.", "Wrap up."], question_checks=[
+            {"id": "asks-window", "expectation": "reports", "match": {"sheet_id": "window", "round": 1}, "min": 1},
+            {"id": "second-round", "expectation": "reports", "match": {"round": 2}, "min": 1, "max": 1}])
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": self.BATCH},
+                                                   {"text": "Thanks.\n\n1. Where should tickets go?"},
+                                                   {"text": "Written."}, {"text": "done: {input}"}], mapper=mapper))
+        self.assertEqual(self.sent_texts(run_dir), ["Draft the policy.", self.FIRST, self.SECOND, "Wrap up."])
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual((record["status"], record["prose_answers_sent"], record["response"]),
+                         ("verified-transport", 2, "done: Wrap up."))
+        self.assertEqual([r["kind"] for r in mapper.requests], ["prose"] * 4)
+        self.assertEqual({k: record["mapping"][k] for k in ("model", "requests", "backend_calls", "failures")},
+                         {"model": runner.MAPPING_MODEL, "requests": 4, "backend_calls": 4, "failures": 0})
+        self.assertEqual(len(list((run_dir / "mapper").glob("*.json"))), 4)
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        rows = transcript["asked_questions"]
+        self.assertEqual([(r["turn"], r["round"], r["sheet_ids"], r["answer_source"], r["answer_sent"],
+                           r["regex_detected"], r["detector_disagreement"]) for r in rows],
+                         [(1, 1, ["window"], "sheet", True, False, True),
+                          (1, 1, ["degraded"], "sheet", True, False, True),
+                          (1, 1, ["threshold"], "sheet", True, False, True),
+                          (1, 2, [], "default", True, True, False)])
+        self.assertEqual(rows[0]["answer"], SHEET[0]["answer"])
+        self.assertEqual(rows[0]["mapper"]["model"], runner.MAPPING_MODEL)
+        checks = {c["id"]: c["passed"] for c in runner.evaluate_question_checks(case_from(run_dir), rows)}
+        self.assertEqual(checks, {"asks-window": True, "second-round": True, "counts_against:threshold": False})
+        self.assertEqual(transcript["answer_sheet"], [{"id": e["id"], "covers": e["covers"]} for e in SHEET])
+        prompt = runner.grader_prompt(case_from(run_dir), transcript)
+        self.assertIn(SHEET[1]["covers"], prompt)
+        self.assertLess(prompt.index(SHEET[1]["covers"]), prompt.index("Denials by the harness"))
+
+    def test_claude_tool_questions_are_answered_from_the_sheet_by_stem_and_options(self):
+        questions = [{"header": "Window", "question": "Which window should the policy use?",
+                      "options": [{"label": "Overnight 22:00-07:00"}, {"label": "Business hours"}]},
+                     {"header": "Tickets", "question": "Where do tickets go?", "options": [{"label": "Tracker"}]}]
+        mapper = FakeMapper()
+        case = self.sheet_case_file(permissions={"claude": {"mode": "manual"}})
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "Drafted.", "ask": [questions]}], mapper=mapper))
+        record = json.loads((run_dir / "record.json").read_text())
+        answers = {"Which window should the policy use?": SHEET[0]["answer"], "Where do tickets go?": SHEET_DEFAULT}
+        self.assertEqual(record["response"], f"answers: {json.dumps(answers)}\n\nDrafted.")
+        self.assertEqual(mapper.requests[0]["message"], runner.tool_question_text(questions))
+        rows = json.loads((run_dir / "transcript.json").read_text())["asked_questions"]
+        self.assertEqual([(r["kind"], r["question"], r["round"], r["sheet_ids"], r["answer_source"]) for r in rows],
+                         [("tool", "Which window should the policy use?", 1, ["window"], "sheet"),
+                          ("tool", "Where do tickets go?", 1, [], "default")])
+
+    def test_codex_async_and_prose_questions_are_answered_from_the_sheet(self):
+        async_questions = [{"title": "What hours count as overnight?", "options": ["22:00-07:00", "Schedule"]},
+                           {"title": "Where do tickets go?", "options": ["Tracker"]}]
+        mapper = FakeMapper()
+        case = self.sheet_case_file(turns=["Draft the policy.", "Wrap up."])
+        run_dir = runner.run_case(case, "codex", "gpt-6-sol", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "Drafted; two defaults await you.",
+                                                    "async_questions": async_questions},
+                                                   {"text": "Revised.\n\n1. Does degraded latency count as affected?"},
+                                                   {"text": "Written."}, {"text": "done: {input}"}], mapper=mapper))
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertTrue(record["execution"]["completed"])
+        self.assertEqual(CodexAsyncQuestionTest.turn_texts(self, run_dir), [
+            "Draft the policy.",
+            numbered(("What hours count as overnight?", SHEET[0]["answer"]), ("Where do tickets go?", SHEET_DEFAULT)),
+            numbered(("Does degraded latency count as affected?", SHEET[1]["answer"])), "Wrap up."])
+        self.assertEqual([r["kind"] for r in mapper.requests], ["tool", "prose", "prose", "prose"])
+        self.assertIn("Options: 22:00-07:00 | Schedule", mapper.requests[0]["message"])
+        rows = json.loads((run_dir / "transcript.json").read_text())["asked_questions"]
+        self.assertEqual([(r["kind"], r["round"], r["sheet_ids"], r["answer_source"], r["answer_sent"]) for r in rows],
+                         [("tool", 1, ["window"], "sheet", True), ("tool", 1, [], "default", True),
+                          ("prose", 2, ["degraded"], "sheet", True)])
+
+    def test_codex_tool_questions_are_answered_from_the_sheet(self):
+        question = {"id": "hours", "header": "Hours", "question": "Which hours?",
+                    "options": [{"label": "Overnight 22:00-07:00"}]}
+        case = self.sheet_case_file()
+        run_dir = runner.run_case(case, "codex", "gpt-6-sol", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "Posted.", "ask": [[question]]}], mapper=FakeMapper()))
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual(record["response"],
+                         "answers: %s\n\nPosted." % json.dumps({"hours": {"answers": [SHEET[0]["answer"]]}}))
+        rows = json.loads((run_dir / "transcript.json").read_text())["asked_questions"]
+        self.assertEqual([(r["question"], r["sheet_ids"], r["answer_source"]) for r in rows],
+                         [("Which hours?", ["window"], "sheet")])
+
+    def test_a_failing_mapper_never_aborts_a_run(self):
+        case = self.sheet_case_file(permissions={"claude": {"mode": "manual"}})
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "Should I merge it?",
+                                                    "ask": [[{"question": "Which hours count as overnight?"}]]}],
+                                                  mapper=FakeMapper(lambda request: RuntimeError("model unavailable"))))
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual(record["status"], "verified-transport")
+        self.assertEqual(record["response"],
+                         "answers: %s\n\nShould I merge it?" % json.dumps({"Which hours count as overnight?":
+                                                                           SHEET_DEFAULT}))
+        self.assertEqual(self.sent_texts(run_dir), ["Handle the review feedback on PR 101."])
+        self.assertEqual((record["mapping"]["failures"], record["mapping"]["backend_calls"]), (2, 4))
+        rows = json.loads((run_dir / "transcript.json").read_text())["asked_questions"]
+        self.assertEqual([(r["kind"], r["answer"], r["answer_source"]) for r in rows],
+                         [("tool", SHEET_DEFAULT, "default"), ("prose", None, "none")])
+        self.assertTrue(all("model unavailable" in r["mapper_error"] for r in rows))
