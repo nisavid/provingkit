@@ -83,6 +83,52 @@ private evidence, restore across package drift, or add another launch cycle.
 When the authorized autonomous control surface is unavailable, the supervisor
 returns control to the human operator.
 
+Each launch transfers control once to its own bound transient service in the
+selected user's existing systemd manager. The service receives the unchanged
+reviewed launcher array through an inner clean environment, discards
+application output, survives loss of the invoking shell or terminal, and never
+restarts. Both submissions use the fixed description
+`Provingkit task 278 Desktop launch control` and
+`--expand-environment=no`, preserving the literal inner environment
+assignments and launcher arguments. Submission is asynchronous, and
+`Type=exec` establishes only execution of the initial command. Its PID is
+launcher-control metadata only. The actual application PID still comes
+exclusively from the two bound lock paths and must pass the selected-PID route
+attestation. A successful unit submission or launcher exit does not establish
+application success.
+
+The user manager keeps manager state and generated runtime unit configuration
+under `$XDG_RUNTIME_DIR/systemd/transient`, including the exact `ExecStart`
+array and its selected noncredential launch configuration. The fixed
+description avoids copying the command into the description but does not
+remove that `ExecStart` storage. `systemctl show` acquires all
+manager-exposed properties for the addressed unit before projecting the named
+output fields, so the later grant must cover that acquisition for only the two
+exact task-owned units. Printed and retained control metadata remains limited
+to the seven fields named in `application-operation.md`; it is separate from
+private receiver payloads. The manager state and generated file are retired
+only through the exact-unit stop, reset, and `LoadState=not-found` sequence,
+never by inspecting or deleting unit files or enumerating units or processes.
+The dependency basis is the systemd 261.2
+[systemd-run manual](https://github.com/systemd/systemd/blob/v261.2/man/systemd-run.xml),
+[systemd.unit manual](https://github.com/systemd/systemd/blob/v261.2/man/systemd.unit.xml),
+[property-show implementation](https://github.com/systemd/systemd/blob/v261.2/src/systemctl/systemctl-show.c#L2123-L2171),
+and
+[transient-setting writer](https://github.com/systemd/systemd/blob/v261.2/src/core/dbus-execute.c#L1678-L1690).
+
+Candidate shutdown and every failed-cycle recovery establish bounded
+quiescence through normal UI shutdown, disappearance of the attested PID,
+absence of both exact lock paths, and absence of the selected-profile UI before
+retiring the exact unit and requiring `LoadState=not-found`. The procedure
+does not enumerate processes or manually inspect or remove generated unit
+files. If the supervisor, user manager, or exact unit is lost, it performs no
+replacement submission: candidate loss may enter only the already authorized
+restoration cycle, while loss during unaccepted restored verification leaves
+restoration incomplete. An accepted restored application may remain open under
+its exact restored unit, with the corresponding manager state and generated
+runtime configuration retained, until its later normal UI shutdown and
+exact-unit retirement.
+
 Routine version changes do not automatically require another live window, and
 notification sends do not each
 require a restart. Maintained observer installation and upgrade behavior remain
@@ -95,9 +141,12 @@ Electron user-data root; the clean launch environment; the current-profile
 branch and existing configuration-directory identity; the flags file or
 absence; the readable `44.4.3` version file; the executable and
 adjacent-resources route; and the exact source-derived effective-argv
-variants. The ordinary password-store detector remains active when current
-state selects it, so that branch admits only its two source-bounded argv
-results.
+variants. It additionally binds the two exact transient-unit names, the fixed
+launch-control mechanism, description, disabled environment expansion,
+properties, manager-storage effect, exact-unit metadata acquisition and output
+projection, and the existing launch-working-directory identity. The ordinary
+password-store detector remains active when current state selects it, so that
+branch admits only its two source-bounded argv results.
 
 An absent named-profile executable remains absent and uses canonical fallback.
 An existing named executable must pass the exact no-refresh checks; otherwise
@@ -345,6 +394,10 @@ repeat the complete launcher-route checks, and attest the restored process
 before accepting it. Then verify the restored app opens and the agreed
 unrelated-work expectations hold. Report route failure, disposable fixture
 loss, or changed task state separately from restored package bytes.
+If the accepted restored app remains open, the later grant must cover retention
+of its exact service, manager state, and generated runtime configuration until
+normal UI shutdown, followed by the same bounded retirement and
+`LoadState=not-found` check.
 
 After verified restoration, perform the distinct package-cleanup phase from
 `application-operation.md`. It may remove only the verified staging archive,

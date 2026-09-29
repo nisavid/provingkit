@@ -92,6 +92,45 @@ The populated record must contain no angle-bracket placeholder.
         }
       ]
     },
+    "launchControl": {
+      "mechanism": "systemd-user-transient-service.v1",
+      "candidateUnit": "<exact provingkit-278-...-candidate.service>",
+      "restoredUnit": "<exact provingkit-278-...-restored.service>",
+      "clientOptions": [
+        "--description=Provingkit task 278 Desktop launch control",
+        "--expand-environment=no"
+      ],
+      "workingDirectory": {
+        "path": "<exact absolute existing directory>",
+        "stat": "<device:inode:uid:gid:mode>"
+      },
+      "serviceProperties": [
+        "Type=exec",
+        "RemainAfterExit=yes",
+        "Restart=no",
+        "KillMode=process",
+        "StandardInput=null",
+        "StandardOutput=null",
+        "StandardError=null"
+      ],
+      "managerStorageEffect": {
+        "runtimeUnitStorage": "XDG_RUNTIME_DIR/systemd/transient",
+        "storedLaunchConfiguration": "selected-noncredential-execstart"
+      },
+      "metadataObservation": {
+        "acquisition": "all-properties-for-exact-task-unit",
+        "outputProjection": [
+          "LoadState",
+          "ActiveState",
+          "SubState",
+          "Result",
+          "ExecMainCode",
+          "ExecMainStatus",
+          "MainPID"
+        ]
+      },
+      "applicationPidSource": "selected-profile-lock-attestation"
+    },
     "flags": {
       "state": "<absent|present>",
       "path": "<exact selected claude-desktop-flags.conf path>",
@@ -215,6 +254,57 @@ per-launch array after comparison. Do not create an environment file, write
 assignments to a shell script, or use `source` or `eval`. Because this increment
 creates no separate environment file, it adds no cleanup-manifest resource or
 later deletion step.
+
+Require `launchControl.mechanism`, every ordered `clientOptions` value, every
+ordered `serviceProperties` value, both `managerStorageEffect` values,
+`metadataObservation.acquisition`, and the complete ordered
+`metadataObservation.outputProjection` to equal the literals above. The fixed
+description must not be replaced with the command, unit name, cycle name, or
+private value. Disabled environment expansion is mandatory for both
+submissions. The candidate and restored unit names must be distinct, no more
+than 200 bytes, match the cycle-specific patterns in
+`application-operation.md`, and be absent from the selected user's manager
+before their respective one-time submissions. Do not derive a unit name at
+runtime or reuse one after failure.
+
+Open `launchControl.workingDirectory.path` without following its final
+component. Require an existing directory owned by the selected Desktop UID,
+not group- or world-writable, and compare its device, inode, UID, GID, and mode
+with `launchControl.workingDirectory.stat` before each launch. The transient
+service uses this exact path rather than an inherited shell working directory.
+
+The application command remains an inner `/usr/bin/env -i` followed by the
+already validated launcher array. The candidate adds only the authorized
+observer-configuration assignment; the restored launch adds none. The outer
+`systemd-run` client also receives the reviewed base environment through
+`/usr/bin/env -i` solely to select the bound user manager and graphical
+session. `--expand-environment=no` prevents systemd-run from expanding dollar
+expressions in any inner assignment or launcher argument. Do not treat its
+PID, the transient unit's `MainPID`, or launcher exit status as the application
+PID. `applicationPidSource` fixes the existing selected-lock attestation as
+that source.
+
+The transient service creates manager state and generated runtime unit
+configuration under `$XDG_RUNTIME_DIR/systemd/transient`. Its generated
+`ExecStart` setting contains the exact selected noncredential environment
+assignments, the candidate observer-configuration path assignment when
+present, and the launcher arguments. This manager-owned runtime file is not a
+separately created private-input or cleanup-manifest role, but its creation,
+retention, and manager-mediated retirement are operating effects that the
+later grant must cover. Do not inspect or delete the file manually.
+
+The property-show client acquires all manager-exposed properties for the exact
+addressed unit before printing the requested projection. Permit that
+acquisition only for the two exact task-owned unit names and retain only the
+seven `metadataObservation.outputProjection` fields in the phase record.
+Existing task-unit metadata is separate from private receiver payloads. Do not
+enumerate other units or processes, collect application output, or read the
+unit journal. After bounded quiescence, retirement uses only the exact unit and
+is complete only when its property-show result is
+`LoadState=not-found`. If the restored application remains open, retain its
+exact manager state and generated configuration until later normal UI shutdown
+and that same retirement check. A lost unit or supervisor does not authorize
+another submission.
 
 For a present flags file, acquire only its exact path through one stable
 descriptor. Record and compare its identity and digest, then apply the

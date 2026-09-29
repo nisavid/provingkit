@@ -38,6 +38,10 @@ expansion, or paths copied from this committed document:
 - The ordered in-memory `PROBE_LAUNCH_ENV` array reconstructed from the
   private record, and its NUL-delimited `name=value` SHA-256 as
   `PROBE_LAUNCH_ENV_SHA256`.
+- `PROBE_CANDIDATE_LAUNCH_UNIT` and `PROBE_RESTORED_LAUNCH_UNIT`, the two
+  distinct exact transient user-service names reserved for this run, and
+  `PROBE_LAUNCH_WORKING_DIRECTORY` with its device, inode, UID, GID, and mode
+  as `PROBE_LAUNCH_WORKING_DIRECTORY_STAT`.
 - `PROBE_CONFIG_DIR`, its existing directory identity as
   `PROBE_CONFIG_DIR_STAT`, `PROBE_LOCK_PATH_PRIMARY`,
   `PROBE_LOCK_PATH_3P`, `PROBE_FLAGS_PATH`, and `PROBE_FLAGS_STATE`.
@@ -264,10 +268,14 @@ A recovery shell is a fresh Bash process with `set -euo pipefail` and
    identities applicable to the last verified phase.
 5. Reconstruct `PROBE_LAUNCH_ENV` and the exact effective-argv variants
    manually from the existing private record. Repeat every applicable bound
-   launcher-routing check below. Do not reacquire an ambient value merely to
-   reconstruct lost state.
+   launcher-routing check below. Recover the exact current-cycle transient
+   unit name and launch-working-directory binding from that record. Do not
+   reacquire an ambient value merely to reconstruct lost state.
 6. Follow the restoration prechecks and remaining restoration steps from the
    first step not already verified. Never repeat a verified exchange or launch.
+   Inspect an already submitted launch only through its exact transient unit,
+   the two bound lock paths, and the already authorized selected-PID checks;
+   never resubmit `systemd-run` during recovery.
    A changed package, upgrade, ownership change, protected-asset change,
    missing archive, uncertain exchange state, identity mismatch, or failed
    restoration command stops recovery. Record `recovery-required`, retain all
@@ -281,6 +289,144 @@ attestation remain necessary. A failed attestation authorizes shutdown and
 restoration only, not another candidate launch. No failure authorizes an extra
 launch. Package cleanup remains prohibited until restoration is fully
 verified.
+
+## Supervised launch control transfer
+
+Both launches use one transient service in the selected Desktop user's existing
+systemd user manager. The candidate and restored services have distinct bound
+names. Each name must match
+`^provingkit-278-[A-Za-z0-9_.-]+-(candidate|restored)\.service$`, must be no
+more than 200 bytes, must end in the corresponding cycle suffix, and must not
+already be loaded before its one submission. A pre-existing, reused, or
+unqueryable unit is a stop condition; do not stop, reset, replace, or reuse it
+to make the launch proceed.
+
+The fixed service properties are `Type=exec`, `RemainAfterExit=yes`,
+`Restart=no`, `KillMode=process`, `StandardInput=null`,
+`StandardOutput=null`, and `StandardError=null`. Both submissions use the fixed
+description `Provingkit task 278 Desktop launch control` and
+`--expand-environment=no`. Disabling systemd-run's otherwise-default
+environment expansion preserves every inner environment assignment and
+launcher argument as the literal array element supplied by the reviewed shell
+construction. The fixed description prevents the command itself from being
+copied into the description, but it does not suppress `ExecStart` storage. The
+working directory is the bound existing
+`PROBE_LAUNCH_WORKING_DIRECTORY`, which must remain a non-symlink directory
+owned by the selected Desktop UID, not group- or world-writable, and identical
+to `PROBE_LAUNCH_WORKING_DIRECTORY_STAT`. The service receives the reviewed
+launcher invocation through an inner `/usr/bin/env -i`; systemd does not
+supply the application environment. The candidate inner environment adds only
+the separately authorized `PROVINGKIT_OBSERVER_CONFIG` assignment. The
+restored inner environment is exactly the reviewed base environment.
+
+`systemd-run` is itself invoked through `/usr/bin/env -i` with the same
+reviewed base environment so that its user-manager and session route uses the
+bound `DBUS_SESSION_BUS_ADDRESS`, runtime-directory, display, and related
+entries rather than ambient shell state. This outer invocation does not alter
+the inner launcher or Electron arrays. Application standard input is closed,
+and application standard output and error are discarded. Do not use
+`journalctl`, `systemctl status`, or another output source to collect launcher
+or application text.
+
+The selected user's manager keeps unit state and generated runtime unit
+configuration under `$XDG_RUNTIME_DIR/systemd/transient`. That generated
+configuration includes the exact `ExecStart` array, including the selected
+noncredential environment assignments, the candidate configuration-path
+assignment, when present, and the launcher arguments. It excludes credential
+and API-key variables because those are already prohibited from the reviewed
+launch environment. The later grant must cover this manager/runtime-file copy,
+its retention while either exact unit remains loaded, and its bounded
+manager-mediated retirement. Do not inspect or delete a generated unit file
+manually, and do not enumerate units or processes to locate it.
+
+`systemctl --user show --property=...` limits printed output, but the installed
+client maps all manager-exposed properties for the addressed unit before
+filtering that output. The later grant therefore covers acquisition in client
+memory of all unit metadata for only the two exact task-owned names at the
+specified checks. The procedure prints and records only `LoadState`,
+`ActiveState`, `SubState`, `Result`, `ExecMainCode`, `ExecMainStatus`, and
+`MainPID`. This manager metadata, including stored launch configuration, is
+separate from private receiver payloads. No other unit name may be queried or
+enumerated. Property-show mode reports an absent exact unit as
+`LoadState=not-found` and returns success, so the existing absence comparison
+remains the required check.
+
+These behaviors are defined by the systemd 261.2
+[systemd-run manual](https://github.com/systemd/systemd/blob/v261.2/man/systemd-run.xml),
+the dynamic user-unit storage described by the
+[systemd.unit manual](https://github.com/systemd/systemd/blob/v261.2/man/systemd.unit.xml),
+the
+[property-show implementation](https://github.com/systemd/systemd/blob/v261.2/src/systemctl/systemctl-show.c#L2123-L2171),
+and the
+[transient `ExecStart` writer](https://github.com/systemd/systemd/blob/v261.2/src/core/dbus-execute.c#L1678-L1690).
+The default service launch is asynchronous: `systemd-run` returns after the
+service starts, and `Type=exec` establishes only execution of the initial
+command. `RemainAfterExit=yes` preserves the completed service until it is
+stopped and is used without `--wait`, `--scope`, `--pty`, or `--pipe`.
+
+The transient service belongs to the user manager rather than the invoking
+terminal. Closing or losing the launch shell therefore does not terminate a
+successfully submitted service. `RemainAfterExit=yes` also retains the exact
+unit record when the launcher returns after handing the application to another
+scope. The external phase supervisor retains recovery state and performs this
+sequence for each cycle:
+
+1. Complete all route checks, reconstruct and validate the two launch arrays,
+   recheck the bound working directory, confirm that the exact cycle unit has
+   `LoadState=not-found`, and submit that unit once.
+2. Treat a zero `systemd-run` result only as successful service submission and
+   execution of the outer `/usr/bin/env`; it is not application success.
+   Acquire manager metadata only for that exact task-owned unit under the
+   scope above, and print and record only `LoadState`, `ActiveState`,
+   `SubState`, `Result`, `ExecMainCode`, `ExecMainStatus`, and `MainPID`. A
+   failed submission, missing unit immediately after successful submission,
+   non-success service result, or nonzero launcher exit before route
+   attestation fails the cycle and is not retried.
+3. Inspect only the two bound lock paths and attest their one selected PID by
+   the existing procedure. That PID and its start time identify the actual
+   application for this run. `MainPID` may instead be `/usr/bin/env`, the
+   launcher, a wrapper, Electron, or zero after a successful handoff; no unit
+   PID or launcher exit establishes application identity or success.
+4. Accept launch control only after the selected-PID executable, argv,
+   adjacent archive, profile, and flags checks pass. An active service or a
+   zero wrapper exit without that attestation is not an accepted launch. A
+   successful wrapper exit while the attested application remains active is a
+   permitted handoff. A nonzero wrapper exit, unexpected selected-PID exit, or
+   lost route before the operator-requested shutdown is a cycle failure.
+5. For candidate shutdown or failed-cycle recovery, request normal UI shutdown,
+   require the attested PID and start-time identity to be gone where that
+   check is authorized, require both exact lock paths to be absent, and confirm
+   that no selected-profile UI remains. These checks establish the bounded
+   current-profile quiescence used here; they do not prove system-wide process
+   absence. Do not enumerate processes. Only after that quiescence may the
+   supervisor stop and reset the exact transient unit through the user manager,
+   then repeat the exact property-show absence check and require
+   `LoadState=not-found`. That final result is the bounded retirement evidence
+   for the manager state and generated runtime configuration. Do not inspect
+   or delete the runtime unit file directly. Failure to establish quiescence
+   or retire that unit stops before restoration.
+
+After restored attestation and the recorded restoration checks, the restored
+application may remain open as the restored state. Its exact transient unit
+then remains under the user manager, with its manager state and generated
+runtime configuration retained, until the application is normally closed and
+the exact unit is retired. The later grant must explicitly cover this retained
+restored-service state and bounded control handoff. After a later normal UI
+close, apply the same selected-PID, two-lock, stop, reset, and
+`LoadState=not-found` retirement sequence. Do not terminate the restored
+application merely to unload the unit.
+
+If the external phase supervisor, user manager, or exact unit record is lost
+before candidate collection or restored acceptance, do not infer success and
+do not launch again. On regaining control, inspect only the exact bound unit,
+the two lock paths, and an already selected PID. Stop collection, request
+normal UI shutdown if Desktop may be running, and establish bounded
+quiescence. Candidate-cycle loss may proceed only into the already authorized
+single restoration cycle after its prechecks. Loss during the restored cycle
+records restoration as incomplete unless the already submitted restored
+launch and every required acceptance check had been recorded before the loss.
+No supervisor-loss branch authorizes another candidate or restored launch,
+another prompt, or a retry of `systemd-run`.
 
 ## Bound launcher routing
 
@@ -566,6 +712,8 @@ required=(RUN_ID PROBE_INSTALL_ROOT CANDIDATE_ARCHIVE
   PROBE_LAUNCHER PROBE_LAUNCHER_SHA256 PROBE_LAUNCHER_STAT
   LINUX_OBSERVATION_FILE PROBE_LAUNCH_ARGV_FILE PROBE_LAUNCH_ARGV_SHA256 PROBE_LAUNCH_ARGV_STAT
   PROBE_PROFILE PROBE_PROFILE_KIND PROBE_HOME PROBE_LAUNCH_ENV_SHA256
+  PROBE_CANDIDATE_LAUNCH_UNIT PROBE_RESTORED_LAUNCH_UNIT
+  PROBE_LAUNCH_WORKING_DIRECTORY PROBE_LAUNCH_WORKING_DIRECTORY_STAT
   PROBE_CONFIG_DIR PROBE_CONFIG_DIR_STAT
   PROBE_LOCK_PATH_PRIMARY PROBE_LOCK_PATH_3P
   PROBE_FLAGS_PATH PROBE_FLAGS_STATE PROBE_NAMED_BINARY_STATE
@@ -592,6 +740,12 @@ else
     "$PROBE_NAMED_BINARY_STATE" = "ready"
   ]]
 fi
+[[ "$PROBE_CANDIDATE_LAUNCH_UNIT" =~ ^provingkit-278-[A-Za-z0-9_.-]+-candidate\.service$ ]]
+[[ "$PROBE_RESTORED_LAUNCH_UNIT" =~ ^provingkit-278-[A-Za-z0-9_.-]+-restored\.service$ ]]
+test "${#PROBE_CANDIDATE_LAUNCH_UNIT}" -le 200
+test "${#PROBE_RESTORED_LAUNCH_UNIT}" -le 200
+test "$PROBE_CANDIDATE_LAUNCH_UNIT" != \
+  "$PROBE_RESTORED_LAUNCH_UNIT"
 
 test -d "$PROBE_CONFIG_DIR"
 test ! -L "$PROBE_CONFIG_DIR"
@@ -600,6 +754,17 @@ test "$(stat -c '%d:%i:%u:%g:%a' -- "$PROBE_CONFIG_DIR")" = \
 test "$(stat -c '%u' -- "$PROBE_CONFIG_DIR")" = "$(id -u)"
 config_dir_mode=$(stat -c '%a' -- "$PROBE_CONFIG_DIR") || exit 1
 (( (8#$config_dir_mode & 0022) == 0 ))
+test -d "$PROBE_LAUNCH_WORKING_DIRECTORY"
+test ! -L "$PROBE_LAUNCH_WORKING_DIRECTORY"
+test "$(stat -c '%d:%i:%u:%g:%a' -- \
+  "$PROBE_LAUNCH_WORKING_DIRECTORY")" = \
+  "$PROBE_LAUNCH_WORKING_DIRECTORY_STAT"
+test "$(stat -c '%u' -- "$PROBE_LAUNCH_WORKING_DIRECTORY")" = \
+  "$(id -u)"
+launch_working_mode=$(
+  stat -c '%a' -- "$PROBE_LAUNCH_WORKING_DIRECTORY"
+) || exit 1
+(( (8#$launch_working_mode & 0022) == 0 ))
 
 TARGET_DIR="$PROBE_INSTALL_ROOT/resources"
 TARGET="$TARGET_DIR/app.asar"
@@ -620,6 +785,7 @@ for path in "$PROBE_INSTALL_ROOT" "$CANDIDATE_ARCHIVE" \
   "$PROBE_USER_STATE_ROOT" "$PROBE_CONFIG" "$CLEANUP_MANIFEST" \
   "$LINUX_OBSERVATION_FILE" \
   "$PROBE_LAUNCHER" "$PROBE_LAUNCH_ARGV_FILE" \
+  "$PROBE_LAUNCH_WORKING_DIRECTORY" \
   "$PROTECTED_ASSET_MANIFEST"; do
   [[ "$path" = /* && "$path" != *$'\n'* && "$path" != *'/../'* ]]
   cursor="/"
@@ -1129,9 +1295,46 @@ check_reviewed_launcher
 PROBE_LAUNCH_ENV=()
 # Insert the exact reviewed name=value array from the private record.
 validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+
+candidate_unit_load_state=$(
+  /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+    /usr/bin/systemctl --user show \
+      --property=LoadState --value \
+      "$PROBE_CANDIDATE_LAUNCH_UNIT"
+) || exit 1
+test "$candidate_unit_load_state" = "not-found"
+
+if ! /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+  /usr/bin/systemd-run --user --quiet \
+    --unit="$PROBE_CANDIDATE_LAUNCH_UNIT" \
+    --description="Provingkit task 278 Desktop launch control" \
+    --expand-environment=no \
+    --working-directory="$PROBE_LAUNCH_WORKING_DIRECTORY" \
+    --property=Type=exec \
+    --remain-after-exit \
+    --property=Restart=no \
+    --property=KillMode=process \
+    --property=StandardInput=null \
+    --property=StandardOutput=null \
+    --property=StandardError=null \
+    -- \
+    /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+      "PROVINGKIT_OBSERVER_CONFIG=$PROBE_CONFIG" \
+      "${PROBE_LAUNCH_ARGV[@]}"; then
+  unset PROBE_LAUNCH_ARGV PROBE_LAUNCH_ENV
+  exit 1
+fi
+
 /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
-  "PROVINGKIT_OBSERVER_CONFIG=$PROBE_CONFIG" \
-  "${PROBE_LAUNCH_ARGV[@]}"
+  /usr/bin/systemctl --user show \
+    --property=LoadState \
+    --property=ActiveState \
+    --property=SubState \
+    --property=Result \
+    --property=ExecMainCode \
+    --property=ExecMainStatus \
+    --property=MainPID \
+    "$PROBE_CANDIDATE_LAUNCH_UNIT"
 unset PROBE_LAUNCH_ARGV PROBE_LAUNCH_ENV
 ```
 
@@ -1139,7 +1342,9 @@ Immediately after launch, complete the selected-process, effective-argv,
 adjacent-archive, flags, and profile checks. These checks precede the bootstrap
 wait, but they do not complete the candidate bootstrap binding. The launcher,
 route, and stable-input checks narrow the mutation window; they do not make
-script execution atomic. A changed package, launcher, launcher ancestor,
+script execution atomic. Neither successful unit submission nor the displayed
+unit PID substitutes for the selected lock PID and route attestation. A changed
+package, launcher, launcher ancestor,
 argument-file identity, reconstructed argument or environment digest, flags
 state, profile branch, executable, version, resources route, archive identity,
 or protected asset is a stop condition.
@@ -1206,9 +1411,13 @@ plan and window, not an automatic retry.
 After collection ends, whether successfully or unsuccessfully, quit Claude
 Desktop through its UI before any restoration check or exchange. Verify that
 the exact selected PID has exited where that can be established, then verify
-that the current profile is quiescent. One observed PID does not prove that all
-activity has ended. If the profile is not quiescent or an unknown or shared
-consumer still uses the installed resources, stop for an operating decision.
+that both bound lock paths are absent and no selected-profile UI remains.
+After that bounded quiescence, stop and reset only
+`PROBE_CANDIDATE_LAUNCH_UNIT`; do not read its journal or use its process group
+as evidence of application exit. One observed PID does not prove that all
+activity has ended. If the profile is not quiescent, the exact unit cannot be
+retired, or an unknown or shared consumer still uses the installed resources,
+stop for an operating decision.
 
 ## Restore and verify
 
@@ -1264,8 +1473,45 @@ check_reviewed_launcher
 PROBE_LAUNCH_ENV=()
 # Insert the exact reviewed name=value array from the private record.
 validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+
+restored_unit_load_state=$(
+  /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+    /usr/bin/systemctl --user show \
+      --property=LoadState --value \
+      "$PROBE_RESTORED_LAUNCH_UNIT"
+) || exit 1
+test "$restored_unit_load_state" = "not-found"
+
+if ! /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+  /usr/bin/systemd-run --user --quiet \
+    --unit="$PROBE_RESTORED_LAUNCH_UNIT" \
+    --description="Provingkit task 278 Desktop launch control" \
+    --expand-environment=no \
+    --working-directory="$PROBE_LAUNCH_WORKING_DIRECTORY" \
+    --property=Type=exec \
+    --remain-after-exit \
+    --property=Restart=no \
+    --property=KillMode=process \
+    --property=StandardInput=null \
+    --property=StandardOutput=null \
+    --property=StandardError=null \
+    -- \
+    /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+      "${PROBE_LAUNCH_ARGV[@]}"; then
+  unset PROBE_LAUNCH_ARGV PROBE_LAUNCH_ENV
+  exit 1
+fi
+
 /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
-  "${PROBE_LAUNCH_ARGV[@]}"
+  /usr/bin/systemctl --user show \
+    --property=LoadState \
+    --property=ActiveState \
+    --property=SubState \
+    --property=Result \
+    --property=ExecMainCode \
+    --property=ExecMainStatus \
+    --property=MainPID \
+    "$PROBE_RESTORED_LAUNCH_UNIT"
 unset PROBE_LAUNCH_ARGV PROBE_LAUNCH_ENV
 ```
 
@@ -1274,7 +1520,13 @@ attestation before accepting the launch. The restored cycle performs no
 bootstrap read or bootstrap-binding comparison. Then verify the selected
 profile opens and inspect the same fixture against the recorded restoration
 expectations. Restored bytes, protected assets, route attestation, and task
-behavior are separate acceptance checks.
+behavior are separate acceptance checks. Successful transient-unit submission,
+an active unit, or a zero launcher exit does not replace any of them. If the
+restored application remains open, retain its exact unit, manager state, and
+generated runtime configuration as the bounded user-manager control until
+normal UI shutdown; do not submit another launch. The later normal close must
+finish the exact-unit retirement sequence and establish
+`LoadState=not-found`.
 
 ## Package cleanup
 

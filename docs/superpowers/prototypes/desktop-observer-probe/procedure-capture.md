@@ -34,12 +34,17 @@ conditions, exact inputs, clean-environment construction, current-profile
 branch, existing configuration-directory identity, complete private
 account/organization/user-data/launch-file bindings, canonical configuration
 and arm encodings, named-profile no-refresh condition, password-store argv
-variants, post-launch route attestation, stop branches, restoration, and
-consumer pointers. Execution invokes the same captured route checks before
-both launches and before candidate arming or restored acceptance. No new
-skill package is created or submitted to a skill evaluator. This capture
-supports the bounded experiment; broader installation and reusable-skill
-evaluation remain with the later adoption work.
+variants, transient user-service control transfer, fixed description, disabled
+environment expansion, asynchronous submission boundary, wrapper-versus-
+application PID handling, manager state and generated runtime unit
+configuration, exact-unit metadata acquisition and output projection, retained
+restored-service state, exact-unit retirement, output suppression, terminal
+and supervisor loss, post-launch route attestation, quiescence, stop branches,
+restoration, and consumer pointers. Execution invokes the same captured route
+checks before both one-time unit submissions and before candidate arming or
+restored acceptance. No new skill package is created or submitted to a skill
+evaluator. This capture supports the bounded experiment; broader installation
+and reusable-skill evaluation remain with the later adoption work.
 
 From this prototype directory, run
 `node --test application-operation-launch-environment.test.mjs` when reviewing
