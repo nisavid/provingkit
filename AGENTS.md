@@ -46,9 +46,9 @@ lock.
 
 ## Git and validation
 
-Use Conventional Commits for commits and pull request titles; Cocogitto
-enforces them through the `commit-msg` and `pre-push` hooks that
-`cog install-hook --all` installs. Every change requires `git diff --check`.
+Use Conventional Commits for commits and pull request titles. The Cocogitto
+`commit-msg` and `pre-push` hooks installed by `cog install-hook --all` check
+commit messages and history. Every change requires `git diff --check`.
 
 Before publication, run the validation that owns the touched surface:
 `python scripts/validate_<plugin>.py .` and the plugin's tests through
