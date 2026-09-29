@@ -18,6 +18,14 @@ Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`,
 This is a single-context repository with root `CONTEXT.md` and system-wide
 ADRs under `docs/adr/`. See `docs/agents/domain.md`.
 
+## Sys1 incidents
+
+For observed Sys1 denials, supervision misdirection, repeated intervention
+after approval, or unexpected service-failure behavior, use
+`handling-sys1-incidents` from `.agents/skills/handling-sys1-incidents/`.
+Maintain that canonical source; regenerate `.claude/skills/handling-sys1-incidents/`
+from it and verify byte equality before publishing procedure changes.
+
 ## Project context
 
 Read `CONTEXT.md` before planning or editing, and use its canonical language

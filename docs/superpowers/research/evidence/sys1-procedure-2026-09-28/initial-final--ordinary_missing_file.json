@@ -1,0 +1,34 @@
+{
+  "round": "initial-final",
+  "case": "ordinary_missing_file",
+  "candidate_sha256": "dec24ab2bea14c2250271350bcdf70c25bc40e9729e9bc81541e580af7bb143a",
+  "source_pins": {
+    "SKILL.md": "697fadfe90e71c80e464f4cfcf71ba79129734a4217f26032336a078207b5784",
+    "references/evidence-record.md": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+    "references/comparison-contract.md": "d17b3027879e3cc92fa7fbfee2498fe821a78ffffc6e253ceb7100f66e14581a"
+  },
+  "runner_sha256": "4483706ed9948419c211c588ef9478afe05af2dac2dba72354eab0724ccbae3d",
+  "prompt": "A normal build command says input.csv was not found. There is no hook intervention or permission denial. Explain the smallest next debugging step using only these facts; do not run commands or change anything.",
+  "expected_invocation": false,
+  "harness": "2.1.284",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "high",
+  "native_model_observed": "claude-opus-5-5",
+  "tools_observed": [
+    "Read",
+    "Skill"
+  ],
+  "exit": {
+    "code": 0,
+    "timed_out": false
+  },
+  "tool_uses": [],
+  "native_skill_results": [],
+  "loaded_source_observations": [],
+  "handback": [
+    "This is an ordinary build or file-path problem. No hook stepped in and no permission was denied, so nothing about tooling or safety needs investigating.\n\n**Smallest next step:** find the exact path the build tried to open, and check whether `input.csv` exists at that path.\n\n- If the error message includes a full or relative path, check that exact location.\n- If the build used a bare relative name like `input.csv`, it looked in the build's working directory. Compare that directory with where the file actually is.\n\nWhat you find points to the fix:\n- **File exists elsewhere:** the build is running from a different directory than expected, or it's configured with the wrong path. Change the working directory or the configured path.\n- **File exists nowhere:** it's missing. Maybe it was never generated, it's gitignored and not checked in, or an earlier step that produces it didn't run. Find out what's supposed to create or provide it.\n- **File is at that exact path:** look at small differences, like filename case (`Input.csv` vs `input.csv` matters on Linux), a stray extension, or a broken symlink.\n\nAs you asked, I haven't run or changed anything."
+  ],
+  "raw_stdout_sha256": "fefa40658b89d5cf160372ecdc4843f7325985cb6cec0e4338e05dc2d22d2109",
+  "raw_stdout_bytes": 10335,
+  "execution_plan_sha256": "c85b00a6572d25dfbb4d8d42ada17b25eae1d4bc8e05e0d25779ecd98b2724e2"
+}

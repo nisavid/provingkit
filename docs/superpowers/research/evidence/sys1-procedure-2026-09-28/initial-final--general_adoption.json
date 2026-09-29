@@ -1,0 +1,34 @@
+{
+  "round": "initial-final",
+  "case": "general_adoption",
+  "candidate_sha256": "dec24ab2bea14c2250271350bcdf70c25bc40e9729e9bc81541e580af7bb143a",
+  "source_pins": {
+    "SKILL.md": "697fadfe90e71c80e464f4cfcf71ba79129734a4217f26032336a078207b5784",
+    "references/evidence-record.md": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+    "references/comparison-contract.md": "d17b3027879e3cc92fa7fbfee2498fe821a78ffffc6e253ceb7100f66e14581a"
+  },
+  "runner_sha256": "4483706ed9948419c211c588ef9478afe05af2dac2dba72354eab0724ccbae3d",
+  "prompt": "I am planning a first Jev integration and have observed no incident. What initial design questions should I settle? Give a short planning answer without running tools that change anything.",
+  "expected_invocation": false,
+  "harness": "2.1.284",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "high",
+  "native_model_observed": "claude-opus-5-5",
+  "tools_observed": [
+    "Read",
+    "Skill"
+  ],
+  "exit": {
+    "code": 0,
+    "timed_out": false
+  },
+  "tool_uses": [],
+  "native_skill_results": [],
+  "loaded_source_observations": [],
+  "handback": [
+    "Since there's no incident, the incident-handling skill doesn't apply, so I didn't invoke it. I also don't recognize \"Jev\" as a specific system, so these questions are general to a first integration. If you point me to its docs or a spec in the repo, I can make them specific.\n\n**Scope and contract**\n1. What exactly does Jev need to do for you in the first version? Pick one or two concrete use cases and list what's out of scope.\n2. Which side owns the contract (API schema, events, data format)? How is it versioned, and what happens when either side changes it?\n3. Is the integration synchronous (request/response) or asynchronous (events, queues, webhooks)? This choice drives most of the other answers.\n\n**Data and identity**\n4. What data crosses the boundary? Which system is the source of truth for each entity, and how do IDs map between them?\n5. How does authentication work (keys, OAuth, mTLS)? Where are credentials stored and rotated? What's the least privilege the integration needs?\n\n**Failure behavior**\n6. What happens when Jev is slow, down or returns bad data? Decide timeouts, retries, whether calls are safe to repeat, and whether you fail open or closed.\n7. Are there rate limits or quotas, and how will you back off?\n\n**Operability**\n8. Settle observability now, not after the first incident: logs with correlation IDs, metrics for latency, errors and volume, and alerts on those.\n9. How will you roll it out and back? Options include a feature flag, shadow or dry-run mode, and a staged rollout.\n\n**Testing**\n10. Is there a sandbox or test environment? Will you use contract tests or mocks? How will you test the failure paths from question 6?\n\n**Suggested order:** settle questions 1–3 first, because they shape everything else. Questions 6 and 8 are the ones most often skipped and most often regretted."
+  ],
+  "raw_stdout_sha256": "62cbb83567f988fb6e2f8ddb8b321d0abd078ce675888ebe256bb6b0ff4c5ba0",
+  "raw_stdout_bytes": 11941,
+  "execution_plan_sha256": "c85b00a6572d25dfbb4d8d42ada17b25eae1d4bc8e05e0d25779ecd98b2724e2"
+}
