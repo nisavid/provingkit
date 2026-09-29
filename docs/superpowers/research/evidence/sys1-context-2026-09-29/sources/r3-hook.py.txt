@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""Passive PreToolUse capture plus independent synthetic-file containment."""
+
+import fcntl
+import hashlib
+import json
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def stamp():
+    return {"wall": datetime.now(timezone.utc).isoformat(), "monotonic_ns": time.monotonic_ns()}
+
+
+def denial(reason):
+    return json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
+                       "permissionDecision": "deny", "permissionDecisionReason": reason}})
+
+
+def put(path, value):
+    with path.open("x") as stream:
+        json.dump(value, stream, indent=2)
+        stream.write("\n")
+
+
+def main():
+    if len(sys.argv) != 3:
+        raise ValueError("hook expects attempt and config digest")
+    attempt, expected = Path(sys.argv[1]), sys.argv[2]
+    config_path = attempt / "hook-config.json"
+    if hashlib.sha256(config_path.read_bytes()).hexdigest() != expected:
+        raise RuntimeError("hook config changed")
+    config = json.loads(config_path.read_text())
+    for source, digest in config["hook_source_sha256"].items():
+        if hashlib.sha256(Path(source).read_bytes()).hexdigest() != digest:
+            raise RuntimeError("hook source changed")
+    from observer import capture
+    from report import guard
+    raw = sys.stdin.buffer.read(65537)
+    if len(raw) > 65536:
+        raise RuntimeError("hook input bound exceeded")
+    event = json.loads(raw)
+    mode = event.get("hook_event_name")
+    row = {"received": stamp(), "event": event, "mode": mode}
+    output = ""
+    if mode == "PreToolUse":
+        readiness_path = attempt / "private" / "native-readiness.json"
+        readiness = json.loads(readiness_path.read_text()) if readiness_path.exists() else None
+        if readiness is None or not readiness.get("native_session_verified") or not readiness.get("effective_inventory_verified"):
+            reason = "controller_not_ready"
+        elif (readiness.get("schema") != "sys1-native-readiness/v1" or
+              readiness.get("harness") != config["harness"] or
+              readiness.get("hook_config_sha256") != expected or
+              not isinstance(readiness.get("session_id"), str)):
+            raise RuntimeError("controller readiness metadata differs")
+        elif config["harness"] == "claude" and readiness["session_id"] != config.get("prebound_session_id"):
+            raise RuntimeError("prebound Claude session differs")
+        elif event.get("session_id") != readiness["session_id"]:
+            reason = "wrong_session"
+        elif config["harness"] == "codex" and event.get("transcript_path") != readiness.get("transcript_path"):
+            reason = "wrong_path"
+        elif event.get("cwd") != config["cwd"]:
+            reason = "cwd_mismatch"
+        else:
+            reason = None
+        if reason is not None:
+            row["capture"] = {"availability": "unavailable", "reason": reason, "messages": None}
+            row["containment"] = {"containment": "denied", "reason": reason, "effect": None}
+        else:
+            observer_config = {"harness": config["harness"], "storage_root": config["storage_root"],
+                               "session_id": readiness["session_id"], "max_bytes": 2097152}
+            if config["harness"] == "codex":
+                observer_config["transcript_path"] = readiness["transcript_path"]
+            row["capture"] = capture(observer_config, event, config.get("second_read_delay_ms", 0))
+            row["containment"] = guard({"cwd": config["cwd"], "inventory": config["inventory"], "hook": event})
+        if row["containment"]["containment"] != "within_fixture":
+            output = denial("Outside the bounded synthetic new-file fixture or native readiness.")
+    elif mode != "UserPromptSubmit":
+        raise RuntimeError("unexpected hook event")
+    row["finished"] = stamp()
+    path = attempt / "private" / "hook-events.jsonl"
+    with path.open("a+") as stream:
+        fcntl.flock(stream, fcntl.LOCK_EX)
+        stream.write(json.dumps(row, ensure_ascii=False) + "\n")
+        stream.flush()
+        fcntl.flock(stream, fcntl.LOCK_UN)
+    if output:
+        print(output)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception as error:
+        # A hook failure is never an approval. Keep the private diagnostic.
+        if len(sys.argv) >= 2:
+            path = Path(sys.argv[1]) / "private" / "hook-fatal.json"
+            try:
+                put(path, {"type": type(error).__name__, "message": str(error), "at": stamp()})
+            except OSError:
+                pass
+        print(denial("Synthetic fixture observer failed."))
+        raise SystemExit(0)

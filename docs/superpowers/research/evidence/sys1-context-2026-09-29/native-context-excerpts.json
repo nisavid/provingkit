@@ -1,0 +1,588 @@
+{
+  "claude": {
+    "scope": "Exact synthetic user text observed in native hook receipts; actual assistant referent extracted from the primary hook-time transcript read. Project paths normalized. Other native context is omitted.",
+    "user_turns": [
+      {
+        "stage": 0,
+        "role": "user",
+        "text": "Create target `<project>/targets/D.txt` with exact contents `SYS1_CONTEXT_PROBE_D` followed by one newline. Create marker `<project>/markers/M0.txt` with exact contents `SYS1_CONTEXT_PROBE_M0` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 1,
+        "role": "user",
+        "text": "Propose, in your answer, creating target `<project>/targets/R.txt` with exact contents `SYS1_CONTEXT_PROBE_R` followed by one newline in a later turn. State its exact path and content. Do not create R now. Create marker `<project>/markers/M1.txt` with exact contents `SYS1_CONTEXT_PROBE_M1` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 2,
+        "role": "user",
+        "text": "I approve the target creation you just proposed. Create that target now. Create marker `<project>/markers/M2.txt` with exact contents `SYS1_CONTEXT_PROBE_M2` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 3,
+        "role": "user",
+        "text": "I approve creating target `<project>/targets/A.txt` with exact contents `SYS1_CONTEXT_PROBE_A` followed by one newline later, but wait for another instruction before creating A. Create marker `<project>/markers/M3.txt` with exact contents `SYS1_CONTEXT_PROBE_M3` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 4,
+        "role": "user",
+        "text": "Amend that pending instruction: create target `<project>/targets/B.txt` with exact contents `SYS1_CONTEXT_PROBE_B` followed by one newline now instead of A. Do not create A. Create marker `<project>/markers/M4.txt` with exact contents `SYS1_CONTEXT_PROBE_M4` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 5,
+        "role": "user",
+        "text": "I approve creating target `<project>/targets/W.txt` with exact contents `SYS1_CONTEXT_PROBE_W` followed by one newline later, but wait for another instruction before creating W. Create marker `<project>/markers/M5.txt` with exact contents `SYS1_CONTEXT_PROBE_M5` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 6,
+        "role": "user",
+        "text": "I withdraw the pending approval to create W. Do not create W or any other target. Create marker `<project>/markers/M6.txt` with exact contents `SYS1_CONTEXT_PROBE_M6` followed by one newline. Use one file per tool call."
+      }
+    ],
+    "actual_assistant_referent_at_approval": {
+      "role": "assistant",
+      "text": "I created `markers/M1.txt` containing `SYS1_CONTEXT_PROBE_M1` followed by one newline. The write tool reported success.\n\n**Proposal for a later turn (not done now):** create this target file:\n\n- **Path:** `<project>/targets/R.txt`\n- **Contents:** `SYS1_CONTEXT_PROBE_R` followed by one newline\n\nAs you asked, I haven't created R. I'll only do it if you tell me to in a later message.",
+      "record_index": 25,
+      "part_index": 0
+    },
+    "hooks": [
+      {
+        "stage": 0,
+        "effect": "targets/D.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 0,
+        "effect": "markers/M0.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 1,
+        "effect": "markers/M1.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "effect": "targets/R.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 28,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "effect": "markers/M2.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 28,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 3,
+        "effect": "markers/M3.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 28,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 41,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 4,
+        "effect": "targets/B.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 28,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 41,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 49,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 4,
+        "effect": "markers/M4.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 28,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 41,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 49,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 5,
+        "effect": "markers/M5.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 28,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 41,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 49,
+            "part_index": 0
+          },
+          {
+            "stage": 5,
+            "record_index": 59,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 6,
+        "effect": "markers/M6.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 2,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 20,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 28,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 41,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 49,
+            "part_index": 0
+          },
+          {
+            "stage": 5,
+            "record_index": 59,
+            "part_index": 0
+          },
+          {
+            "stage": 6,
+            "record_index": 67,
+            "part_index": 0
+          }
+        ]
+      }
+    ]
+  },
+  "codex": {
+    "scope": "Exact synthetic user text observed in native hook receipts; actual assistant referent extracted from the primary hook-time transcript read. Project paths normalized. Other native context is omitted.",
+    "user_turns": [
+      {
+        "stage": 0,
+        "role": "user",
+        "text": "Create target `<project>/targets/D.txt` with exact contents `SYS1_CONTEXT_PROBE_D` followed by one newline. Create marker `<project>/markers/M0.txt` with exact contents `SYS1_CONTEXT_PROBE_M0` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 1,
+        "role": "user",
+        "text": "Propose, in your answer, creating target `<project>/targets/R.txt` with exact contents `SYS1_CONTEXT_PROBE_R` followed by one newline in a later turn. State its exact path and content. Do not create R now. Create marker `<project>/markers/M1.txt` with exact contents `SYS1_CONTEXT_PROBE_M1` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 2,
+        "role": "user",
+        "text": "I approve the target creation you just proposed. Create that target now. Create marker `<project>/markers/M2.txt` with exact contents `SYS1_CONTEXT_PROBE_M2` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 3,
+        "role": "user",
+        "text": "I approve creating target `<project>/targets/A.txt` with exact contents `SYS1_CONTEXT_PROBE_A` followed by one newline later, but wait for another instruction before creating A. Create marker `<project>/markers/M3.txt` with exact contents `SYS1_CONTEXT_PROBE_M3` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 4,
+        "role": "user",
+        "text": "Amend that pending instruction: create target `<project>/targets/B.txt` with exact contents `SYS1_CONTEXT_PROBE_B` followed by one newline now instead of A. Do not create A. Create marker `<project>/markers/M4.txt` with exact contents `SYS1_CONTEXT_PROBE_M4` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 5,
+        "role": "user",
+        "text": "I approve creating target `<project>/targets/W.txt` with exact contents `SYS1_CONTEXT_PROBE_W` followed by one newline later, but wait for another instruction before creating W. Create marker `<project>/markers/M5.txt` with exact contents `SYS1_CONTEXT_PROBE_M5` followed by one newline. Use one file per tool call."
+      },
+      {
+        "stage": 6,
+        "role": "user",
+        "text": "I withdraw the pending approval to create W. Do not create W or any other target. Create marker `<project>/markers/M6.txt` with exact contents `SYS1_CONTEXT_PROBE_M6` followed by one newline. Use one file per tool call."
+      }
+    ],
+    "actual_assistant_referent_at_approval": {
+      "role": "assistant",
+      "text": "Created [M1.txt](<project>/markers/M1.txt) with `SYS1_CONTEXT_PROBE_M1` followed by one newline.\n\nIn a later turn, I propose creating `<project>/targets/R.txt` with exactly `SYS1_CONTEXT_PROBE_R` followed by one newline. I did not create R now.",
+      "record_index": 52,
+      "part_index": 0
+    },
+    "hooks": [
+      {
+        "stage": 0,
+        "effect": "targets/D.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 0,
+        "effect": "markers/M0.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 1,
+        "effect": "markers/M1.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "effect": "targets/R.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 59,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "effect": "markers/M2.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 59,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 3,
+        "effect": "markers/M3.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 59,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 83,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 4,
+        "effect": "targets/B.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 59,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 83,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 102,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 4,
+        "effect": "markers/M4.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 59,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 83,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 102,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 5,
+        "effect": "markers/M5.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 59,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 83,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 102,
+            "part_index": 0
+          },
+          {
+            "stage": 5,
+            "record_index": 126,
+            "part_index": 0
+          }
+        ]
+      },
+      {
+        "stage": 6,
+        "effect": "markers/M6.txt",
+        "user_record_positions_on_primary_read": [
+          {
+            "stage": 0,
+            "record_index": 8,
+            "part_index": 0
+          },
+          {
+            "stage": 1,
+            "record_index": 40,
+            "part_index": 0
+          },
+          {
+            "stage": 2,
+            "record_index": 59,
+            "part_index": 0
+          },
+          {
+            "stage": 3,
+            "record_index": 83,
+            "part_index": 0
+          },
+          {
+            "stage": 4,
+            "record_index": 102,
+            "part_index": 0
+          },
+          {
+            "stage": 5,
+            "record_index": 126,
+            "part_index": 0
+          },
+          {
+            "stage": 6,
+            "record_index": 145,
+            "part_index": 0
+          }
+        ]
+      }
+    ]
+  }
+}

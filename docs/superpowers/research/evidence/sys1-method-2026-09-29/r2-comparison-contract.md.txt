@@ -89,12 +89,9 @@ when its added work buys no supported benefit; retain a replacement when the
 evidence supports its reliability and whole-task value. Do not invent a trade-off
 the operator has not accepted.
 
-Complete the handback with each case and harness before aggregates, the eligible
-arms, procedure and evidence revisions, and the supported conclusion. Include
-every accounting component in item 7 as measured, assumed, or unknown; for a
-plan, specify its measurement route or gap. Missing case breakdowns and costs
-stay visible as gaps, with their effect on the conclusion stated. The handback
-is incomplete when a required component silently disappears into a summary.
-If the evidence does not choose an arm, name the smallest discriminating
+Report each case and harness before aggregates. Return the eligible arms,
+observed outcomes, cost components and unknowns,
+procedure and evidence revisions, and the best-supported conclusion with its
+limits. If the evidence does not choose an arm, name the smallest discriminating
 follow-up or the consequential decision that remains open. Diagnostic fixtures
 do not establish population reliability or authorize live adoption.
