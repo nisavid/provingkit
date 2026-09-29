@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Replay constructed policy inputs without starting a model or executing effects."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import tempfile
+
+ROOT = Path('<RESEARCH_SCRATCH>')
+WORKTREE = Path('<PROVINGKIT>')
+SAFETY = Path('<JEV_BUILD>/dist/src/safety.js')
+RUNNER = ROOT / 'recovery-policy-replay.mjs'
+RETAINED = WORKTREE / 'docs/superpowers/research/evidence/sys1-2026-09-26/safety-live.jsonl'
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+def save(path, value):
+    with path.open('x') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+def main():
+    root = Path(tempfile.mkdtemp(prefix='recovery-policy-replay-', dir=ROOT))
+    source = RETAINED.read_bytes()
+    judgment = json.loads(source.splitlines()[0])
+    if (judgment['index'], judgment['case'], judgment['variant']) != (1, 'approved_artifact', 'current'):
+        raise RuntimeError('retained judgment selection changed')
+    scores = {'hazards': {k: v['noul'] for k, v in judgment['raw_answers'].items() if v['type'] == 'noul'},
+              'risk': judgment['raw_answers']['risk']['score']}
+    sources = {str(p): sha(p.read_bytes()) for p in [RUNNER, SAFETY, Path(__file__), RETAINED]}
+    arms = ['current', 'native-only', 'deterministic', 'advisory', 'review-reproposal',
+            'renewed-approval', 'selective-authorization', 'selective-hazard']
+    cases = []
+    content = 'Synthetic recovery artifact.\n'
+    for agent, tool in [('claude', 'Write'), ('codex', 'apply_patch')]:
+        for location in ['study', 'tmp']:
+            base = '/study/recovery' if location == 'study' else '/tmp/recovery'
+            action = {'tool': tool, 'path': base + '/A/report.txt', 'operation': 'create', 'content_sha256': sha(content.encode())}
+            other = {**action, 'path': base + '/B/report.txt'}
+            grant = {'kind': 'approve', 'id': 'user-1', 'action': action}
+            denial = {'kind': 'deny', 'id': 'call-1', 'action': action}
+            renewal = {'kind': 'approve', 'id': 'user-2', 'action': action}
+            withdraw = {'kind': 'withdraw', 'id': 'user-2', 'action': action}
+            review = {'kind': 'review', 'id': 'review-1', 'action': action, 'approval_id': 'user-1', 'denial_id': 'call-1'}
+            histories = {
+                'existing-initial': [grant],
+                'existing-reviewed': [grant, denial, review],
+                'missing': [],
+                'withdrawn': [grant, withdraw],
+                'other-destination': [{**grant, 'action': other}],
+                'renewal-before': [grant],
+                'renewal-after': [grant, denial, renewal],
+                'withdrawal-after': [grant, denial, withdraw],
+                'renewal-reviewed': [grant, denial, renewal, {**review, 'approval_id': 'user-2'}],
+            }
+            call = {'tool_name': tool, 'cwd': base + '/project',
+                    'tool_input': {'file_path': action['path'], 'content': content} if tool == 'Write' else
+                    {'input': '*** Begin Patch\n*** Add File: ' + action['path'] + '\n+' + content + '*** End Patch'}}
+            for name, history in histories.items():
+                for arm in arms:
+                    cases.append({'case': name, 'location': location, 'agent': agent,
+                                  'input': {'arm': arm, 'agent': agent, 'action': action, 'call': call,
+                                            'invocation': 'call-2', 'history': history, 'scores': scores}})
+    manifest = {'schema': 1, 'sources': sources, 'judgment': {'file': str(RETAINED), 'line': 1, 'record': judgment},
+                'cases': cases, 'claim': 'exported policy composition and explicit fixture oracles only',
+                'limits': ['No proposed file effect executes.', 'No native approval delivery or safety catch is established.',
+                           'After-denial histories are constructed inputs, not proof that each arm reaches them.',
+                           'Selective authorization and probabilistic hazard are separate variants of one proposed role.',
+                           'Current integration is composed from retained safety exports; CLI extraction is not exercised here.',
+                           'Review records are authored fixtures, not native reviewer decisions.']}
+    save(root / 'manifest.json', manifest)
+    counts = {}
+    with (root / 'results.jsonl').open('x') as output:
+        for case in cases:
+            result = subprocess.run(['node', str(RUNNER), str(SAFETY)], input=json.dumps(case['input']),
+                                    capture_output=True, text=True, timeout=10)
+            row = {**case, 'exit_code': result.returncode, 'stdout': result.stdout, 'stderr': result.stderr}
+            if result.returncode == 0:
+                row['observed'] = json.loads(result.stdout)
+                key = '|'.join([case['agent'], case['location'], case['input']['arm'], row['observed']['decision']])
+                counts[key] = counts.get(key, 0) + 1
+            output.write(json.dumps(row) + '\n'); output.flush()
+            if result.returncode:
+                raise RuntimeError('policy replay failed; retained prior records')
+    if sources != {str(p): sha(p.read_bytes()) for p in [RUNNER, SAFETY, Path(__file__), RETAINED]}:
+        raise RuntimeError('source changed during replay')
+    save(root / 'summary.json', {'cases': len(cases), 'counts': counts, 'sources_unchanged': True})
+    print(json.dumps({'root': str(root), 'cases': len(cases), 'sources_unchanged': True}))
+
+if __name__ == '__main__':
+    main()

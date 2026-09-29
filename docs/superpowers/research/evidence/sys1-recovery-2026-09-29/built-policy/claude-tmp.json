@@ -1,0 +1,18 @@
+{
+  "id": "claude-tmp",
+  "input": {
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "cwd": "/tmp/recovery/project",
+    "session_id": "constructed-only",
+    "tool_use_id": "claude-tmp",
+    "operator_approval": "Synthetic extra field for extraction check",
+    "tool_input": {
+      "file_path": "/tmp/recovery/A/report.txt",
+      "content": "Synthetic recovery artifact.\n"
+    }
+  },
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": ""
+}

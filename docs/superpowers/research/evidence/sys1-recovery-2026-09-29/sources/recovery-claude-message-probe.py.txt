@@ -1,0 +1,195 @@
+#!/usr/bin/env python3
+"""One tools-disabled two-turn Claude delivery probe, with retained raw events."""
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib
+import json
+import os
+import selectors
+import signal
+import subprocess
+import tempfile
+import time
+import uuid
+
+ROOT = Path('<RESEARCH_SCRATCH>')
+TOKENS = ('RECOVERY_DELIVERY_FIRST', 'RECOVERY_DELIVERY_SECOND')
+VERSION = '2.1.284 (Claude Code)'
+MODEL = 'claude-opus-5-5'
+
+def put(path, data):
+    with path.open('xb') as stream:
+        stream.write(data)
+
+def encoded(value):
+    return (json.dumps(value, sort_keys=True, indent=2) + '\n').encode()
+
+def check(condition, message):
+    if not condition:
+        raise RuntimeError(message)
+
+def observe(events, messages):
+    results = [e for e in events if e.get('type') == 'result']
+    check(len(results) == 2, 'two native turn results required')
+    sessions = {e.get('session_id') for e in results}
+    check(len(sessions) == 1 and None not in sessions and ('' not in sessions), 'probe invariant failed at source line 31')
+    for result, token in zip(results, TOKENS):
+        check(not result.get('is_error'), 'native turn reported error')
+        check(result.get('result', '').strip() == token, 'unexpected answer')
+    acknowledgments = [e for e in events if e.get('type') == 'user']
+    order = []
+    for message in messages:
+        matching = [e for e in acknowledgments if e.get('uuid') == message['uuid']]
+        check(len(matching) == 1, 'missing or duplicate native user acknowledgment')
+        check(matching[0]['message'] == message['message'], 'native user content mismatch')
+        check(matching[0]['session_id'] in sessions, 'user delivered to different session')
+        order.extend([events.index(matching[0]), events.index(results[len(order) // 2])])
+    check(order == sorted(set(order)), 'native acknowledgments/results out of order')
+    assistants = [e for e in events if e.get('type') == 'assistant']
+    check(assistants and all((e['message']['model'] == MODEL for e in assistants)), 'probe invariant failed at source line 45')
+    check(not any((p.get('type') == 'tool_use' for e in assistants for p in e['message'].get('content', []))), 'unexpected tool invocation')
+    return {'session_id': next(iter(sessions)), 'results': 2,
+            'acknowledged_user_uuids': [m['uuid'] for m in messages],
+            'tool_invocations': 0, 'claim': 'two user turns delivered in one CLI process; no approval or hook recovery claim'}
+
+def collect(command, project, attempt, label, deadline, on_line=None, begin=None):
+    """Retain bounded byte chunks before parsing; terminate the child process group."""
+    buffers = {'out': bytearray(), 'err': bytearray()}
+    size = 0
+    process = None
+    exit_code = None
+    with (attempt / (label + '-stdout.log')).open('xb') as out, (attempt / (label + '-stderr.log')).open('xb') as err, (attempt / (label + '-sent.jsonl')).open('xb') as sent, selectors.DefaultSelector() as selector:
+        def send(value):
+            raw = (json.dumps(value) + '\n').encode()
+            sent.write(raw); sent.flush()
+            process.stdin.write(raw); process.stdin.flush()
+        try:
+            process = subprocess.Popen(command, cwd=project, stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       start_new_session=True)
+            selector.register(process.stdout, selectors.EVENT_READ, 'out')
+            selector.register(process.stderr, selectors.EVENT_READ, 'err')
+            if begin:
+                begin(send)
+            else:
+                process.stdin.close()
+            done = False
+            while selector.get_map() and not done:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError(label + ' deadline exceeded')
+                for key, _ in selector.select(min(remaining, 1)):
+                    raw = os.read(key.fileobj.fileno(), 4096)
+                    if not raw:
+                        selector.unregister(key.fileobj)
+                        continue
+                    kind = key.data
+                    retained = raw[:max(0, 2097152 - size)]
+                    target = out if kind == 'out' else err
+                    target.write(retained); target.flush()
+                    size += len(raw)
+                    if size > 2097152:
+                        raise RuntimeError(label + ' output bound exceeded; retained prefix only')
+                    buffers[kind].extend(raw)
+                    if kind == 'out' and on_line:
+                        while b'\n' in buffers['out']:
+                            line, _, tail = buffers['out'].partition(b'\n')
+                            buffers['out'] = bytearray(tail)
+                            if on_line(json.loads(line), send):
+                                done = True
+            if on_line and not done:
+                raise RuntimeError(label + ' ended before required events')
+            if not on_line:
+                process.wait(timeout=max(0.01, min(5, deadline - time.monotonic())))
+        finally:
+            if process is not None:
+                try:
+                    os.killpg(process.pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+                try:
+                    exit_code = process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    exit_code = process.wait(timeout=5)
+                # Drain the now-terminated process without exceeding the retained byte cap.
+                for key in list(selector.get_map().values()):
+                    os.set_blocking(key.fileobj.fileno(), False)
+                    while True:
+                        try:
+                            raw = os.read(key.fileobj.fileno(), 4096)
+                        except BlockingIOError:
+                            break
+                        if not raw:
+                            break
+                        target = out if key.data == 'out' else err
+                        target.write(raw[:max(0, 2097152 - size)])
+                        size += len(raw)
+                put(attempt / (label + '-process.json'), encoded({'exit_code': exit_code, 'received_bytes': size, 'retained_prefix_limit': 2097152}))
+    if size > 2097152:
+        raise RuntimeError(label + ' output bound exceeded during shutdown; retained prefix only')
+    return bytes(buffers['out']), exit_code
+
+def main():
+    attempt = Path(tempfile.mkdtemp(prefix='recovery-claude-delivery-', dir=ROOT))
+    project = attempt / 'project'
+    project.mkdir()
+    command = ['claude', '-p', '--safe-mode', '--restricted', '--tools', '',
+               '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
+               '--model', MODEL, '--effort', 'high', '--no-session-persistence',
+               '--input-format', 'stream-json', '--output-format', 'stream-json',
+               '--replay-user-messages', '--verbose']
+    messages = [{'type': 'user', 'uuid': str(uuid.uuid4()), 'session_id': '',
+                 'parent_tool_use_id': None,
+                 'message': {'role': 'user', 'content': 'Reply with exactly ' + token + '. Do not use tools.'}}
+                for token in TOKENS]
+    manifest = {'command': command, 'cwd': str(project), 'version': VERSION,
+                'model': MODEL, 'effort_requested': 'high', 'messages': messages,
+                'deadline_seconds': 180, 'output_limit_bytes': 2097152,
+                'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                'scope': 'synthetic tools-disabled user-message delivery, no hooks or file effects',
+                'created_at': datetime.now(timezone.utc).isoformat()}
+    put(attempt / 'manifest.json', encoded(manifest))
+    events = []
+    status = {'status': 'failed', 'attempt': str(attempt)}
+    deadline = time.monotonic() + 180
+    initialized = False
+    results = 0
+    def begin(send):
+        send({'type': 'control_request', 'request_id': 'delivery-initialize', 'request': {'subtype': 'initialize'}})
+    def on_line(event, send):
+        nonlocal initialized, results
+        events.append(event)
+        if event.get('type') == 'control_response' and event.get('response', {}).get('request_id') == 'delivery-initialize':
+            response = event['response']
+            check(response['subtype'] == 'success', 'probe invariant failed at source line 162')
+            model = next(m for m in response['response']['models'] if m.get('value') == 'opus')
+            check(model['resolvedModel'] == MODEL and 'high' in model['supportedEffortLevels'], 'probe invariant failed at source line 164')
+            check(not initialized, 'probe invariant failed at source line 165')
+            initialized = True
+            send(messages[0])
+        elif event.get('type') == 'result':
+            check(initialized and (not event.get('is_error')), 'probe invariant failed at source line 169')
+            results += 1
+            if results == 1:
+                send(messages[1])
+        return results == 2
+    try:
+        version, code = collect(['claude', '--version'], project, attempt, 'version', min(deadline, time.monotonic() + 10))
+        check(version.decode().strip() == VERSION and code == 0, 'version preflight mismatch')
+        _, code = collect(command, project, attempt, 'native', deadline, on_line, begin)
+        raw_events = (attempt / 'native-stdout.log').read_bytes()
+        check(raw_events.endswith(b'\n'), 'native stream ends with an incomplete event')
+        complete_events = [json.loads(line) for line in raw_events.splitlines()]
+        status = {'status': 'observed', 'attempt': str(attempt), 'termination_exit_code': code, **observe(complete_events, messages)}
+    except Exception as error:
+        status['error'] = type(error).__name__ + ': ' + str(error)
+    status['fixture_files'] = sorted(str(p.relative_to(project)) for p in project.rglob('*'))
+    if status['fixture_files']:
+        status.update(status='failed', error='unexpected fixture effects')
+    put(attempt / 'observation.json', encoded(status))
+    print(json.dumps(status))
+    return 0 if status['status'] == 'observed' else 1
+
+if __name__ == '__main__':
+    raise SystemExit(main())

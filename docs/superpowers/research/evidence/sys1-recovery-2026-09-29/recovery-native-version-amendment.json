@@ -1,0 +1,8 @@
+{
+  "selection_sha256": "05d06c501a2bd32ebc7a2a0ee5baacfe012acc9b1cbbdaf76166c70a8314e8f1",
+  "codex_version": "0.159.0",
+  "reason": "The installed CLI changed before any Codex file episode. The frozen 0.158.0 version guard rejected preparation. Current installed help preserves the required permission and resume flags; actual exec behavior remains to be observed.",
+  "runner_sha256": "665adb106531d2307dd4a33949172344ef7e754737c7a3c55749fcf74db06114",
+  "arms_cases_and_judgment": "unchanged",
+  "denial_observation": "Native inner hook IDs and outer code-mode call IDs are distinct. Continuation requires matching turn-level native feedback, with no claim of per-call pairing. Missing feedback remains unqualified."
+}

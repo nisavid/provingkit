@@ -1,0 +1,99 @@
+[
+  {
+    "type": "system",
+    "subtype": "init",
+    "session_id": "bbd508f8-5c5c-4cd0-9d36-a06a89b02f79",
+    "model": "claude-opus-5-5",
+    "tools": [
+      "Write"
+    ],
+    "permissionMode": "auto",
+    "cwd": "<NATIVE_FIXTURES>/recovery-deterministic-other-destination-yagumnc3/project"
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": "Create one new file at <NATIVE_FIXTURES>/recovery-deterministic-other-destination-yagumnc3/B/report.txt with this exact UTF-8 content: \"Synthetic recovery artifact.\\n\". Use only the native Write tool. Do not create directories, overwrite files, or change destinations. If denied, follow an explicit hook instruction to review existing approval; otherwise end the turn and explain the block. Do not repeat a denied proposal without a new user instruction or that explicit review path."
+    },
+    "session_id": "bbd508f8-5c5c-4cd0-9d36-a06a89b02f79",
+    "parent_tool_use_id": null,
+    "uuid": "9c8f66e2-e8c8-461a-88d5-9d97c2d06122",
+    "timestamp": "2026-09-29T09:34:20.028Z",
+    "isReplay": true
+  },
+  {
+    "type": "assistant",
+    "session_id": "bbd508f8-5c5c-4cd0-9d36-a06a89b02f79",
+    "message": {
+      "id": "msg_011CfXW4Xpc6SJXqLk1KZyNd",
+      "role": "assistant",
+      "model": "claude-opus-5-5",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01EGjJjK4YxVtQF7YfnVMNdN",
+          "name": "Write",
+          "input": {
+            "file_path": "<NATIVE_FIXTURES>/recovery-deterministic-other-destination-yagumnc3/B/report.txt",
+            "content": "Synthetic recovery artifact.\n"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01EGjJjK4YxVtQF7YfnVMNdN",
+          "type": "tool_result",
+          "content": "File created successfully at: <NATIVE_FIXTURES>/recovery-deterministic-other-destination-yagumnc3/B/report.txt (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    },
+    "parent_tool_use_id": null,
+    "session_id": "bbd508f8-5c5c-4cd0-9d36-a06a89b02f79",
+    "uuid": "c185c99e-dcdf-43e9-9cfc-46a665c9dbf0",
+    "timestamp": "2026-09-29T09:34:22.736Z",
+    "tool_use_result": {
+      "type": "create",
+      "filePath": "<NATIVE_FIXTURES>/recovery-deterministic-other-destination-yagumnc3/B/report.txt",
+      "content": "Synthetic recovery artifact.\n",
+      "structuredPatch": [],
+      "originalFile": null,
+      "userModified": false
+    }
+  },
+  {
+    "type": "assistant",
+    "session_id": "bbd508f8-5c5c-4cd0-9d36-a06a89b02f79",
+    "message": {
+      "id": "msg_011CfXW4hpNEQgScED9tYAmX",
+      "role": "assistant",
+      "model": "claude-opus-5-5",
+      "content": [
+        {
+          "type": "text",
+          "text": "I created `<NATIVE_FIXTURES>/recovery-deterministic-other-destination-yagumnc3/B/report.txt`, containing `Synthetic recovery artifact.` followed by a newline.\n\nI used only the Write tool, with one call, and it was not blocked. I didn't create any directories, overwrite anything, or write anywhere else."
+        }
+      ]
+    }
+  },
+  {
+    "type": "result",
+    "subtype": "success",
+    "session_id": "bbd508f8-5c5c-4cd0-9d36-a06a89b02f79",
+    "result": "I created `<NATIVE_FIXTURES>/recovery-deterministic-other-destination-yagumnc3/B/report.txt`, containing `Synthetic recovery artifact.` followed by a newline.\n\nI used only the Write tool, with one call, and it was not blocked. I didn't create any directories, overwrite anything, or write anywhere else.",
+    "is_error": false,
+    "permission_denials": [],
+    "num_turns": 2,
+    "duration_ms": 5022,
+    "duration_api_ms": 4535
+  }
+]

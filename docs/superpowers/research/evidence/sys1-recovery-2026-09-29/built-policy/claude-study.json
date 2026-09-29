@@ -1,0 +1,18 @@
+{
+  "id": "claude-study",
+  "input": {
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "cwd": "/study/recovery/project",
+    "session_id": "constructed-only",
+    "tool_use_id": "claude-study",
+    "operator_approval": "Synthetic extra field for extraction check",
+    "tool_input": {
+      "file_path": "/study/recovery/A/report.txt",
+      "content": "Synthetic recovery artifact.\n"
+    }
+  },
+  "exit_code": 0,
+  "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"jev-axi safety check: likely changing files or state outside the project (p=0.84, risk 0.6 of 2). Needs explicit user approval before running.\"}}\n",
+  "stderr": ""
+}

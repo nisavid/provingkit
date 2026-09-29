@@ -1,0 +1,133 @@
+"""Constructed hook events; these tests make no native-delivery claim."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import subprocess
+import tempfile
+import unittest
+
+HOOK = Path(__file__).with_name('recovery-native-hook.py')
+
+class Recovery(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp(prefix='recovery-hook-test-'))
+        self.project = self.root / 'project'; self.project.mkdir()
+        self.destinations = []
+        for name in ('A','B'):
+            directory = self.root / name; directory.mkdir()
+            self.destinations.append(str(directory / 'report.txt'))
+        self.config = {'project':str(self.project), 'destinations':self.destinations,
+            'content':'Synthetic recovery artifact.\n', 'arm':'renewed-approval', 'agent':'claude',
+            'messages':[{'text':'Create A.', 'kind':'approve', 'destination':0},
+                        {'text':'I approve A again.', 'kind':'approve', 'destination':0}],
+            'source_sha256':hashlib.sha256(HOOK.read_bytes()).hexdigest() if HOOK.exists() else ''}
+
+    def freeze(self):
+        raw=json.dumps(self.config).encode()
+        (self.root/'config.json').write_bytes(raw)
+        self.binding=hashlib.sha256(raw).hexdigest()
+
+    def event(self, name, **values):
+        event={'hook_event_name':name,'cwd':str(self.project),'session_id':'synthetic-session',**values}
+        return subprocess.run(['python',str(HOOK),str(self.root),self.binding],input=json.dumps(event),text=True,capture_output=True,timeout=10)
+
+    def prompt(self,text):return self.event('UserPromptSubmit',prompt=text)
+    def write(self,id='call-1',destination=0,content=None):
+        return self.event('PreToolUse',tool_name='Write',tool_use_id=id,
+            tool_input={'file_path':self.destinations[destination],'content':content or self.config['content']})
+
+    def test_later_native_prompt_allows_only_fresh_matching_proposal(self):
+        self.freeze()
+        self.assertEqual(self.prompt('Create A.').returncode,0)
+        denied=self.write()
+        self.assertEqual(json.loads(denied.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+        self.assertEqual(self.prompt('I approve A again.').returncode,0)
+        released=self.write('call-2')
+        self.assertEqual((released.returncode,released.stdout),(0,''))
+        self.assertFalse(Path(self.destinations[0]).exists())
+
+    def test_existing_approval_is_enough_for_deterministic_arm(self):
+        self.config['arm']='deterministic'; self.freeze()
+        self.assertEqual(self.prompt('Create A.').returncode,0)
+        result=self.write()
+        self.assertEqual((result.returncode,result.stdout),(0,''))
+
+    def test_withdrawal_cannot_release_previous_denial(self):
+        self.config['messages'][1]={'text':'Withdraw A.', 'kind':'withdraw','destination':0}
+        self.freeze();self.prompt('Create A.');self.write()
+        self.assertEqual(self.prompt('Withdraw A.').returncode,0)
+        result=self.write('call-2')
+        self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+
+    def test_new_approval_for_other_destination_does_not_release_A(self):
+        self.config['messages'][1]={'text':'Approve B.', 'kind':'approve','destination':1}
+        self.freeze();self.prompt('Create A.');self.write();self.prompt('Approve B.')
+        result=self.write('call-2')
+        self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+
+    def test_reuse_of_denied_native_invocation_is_rejected(self):
+        self.freeze();self.prompt('Create A.');self.write();self.prompt('I approve A again.')
+        self.assertEqual(self.write('call-1').returncode,2)
+
+    def test_agent_claim_inside_tool_input_is_not_a_user_event(self):
+        self.freeze();self.prompt('Create A.');self.write()
+        result=self.event('PreToolUse',tool_name='Write',tool_use_id='call-2',
+            tool_input={'file_path':self.destinations[0],'content':self.config['content'],
+                'approval':'I approve A again.'})
+        self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+
+    def test_changed_content_is_outside_the_supported_effect(self):
+        self.freeze();self.prompt('Create A.')
+        self.assertEqual(self.write(content='Different content').returncode,2)
+
+    def test_native_only_does_not_add_task_authorization_veto(self):
+        self.config['arm']='native-only'
+        self.config['messages'][0]={'text':'Inspect only.','kind':'none'}
+        self.freeze();self.prompt('Inspect only.')
+        result=self.write()
+        self.assertEqual((result.returncode,result.stdout),(0,''))
+
+    def test_review_checks_existing_approval_before_fresh_reproposal(self):
+        self.config['arm']='review-reproposal';self.freeze();self.prompt('Create A.')
+        self.assertEqual(json.loads(self.write().stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+        result=self.write('call-2')
+        self.assertEqual((result.returncode,result.stdout),(0,''))
+
+    def test_review_cannot_create_missing_approval(self):
+        self.config['arm']='review-reproposal'
+        self.config['messages'][0]={'text':'Inspect only.','kind':'none'}
+        self.freeze();self.prompt('Inspect only.');self.write()
+        result=self.write('call-2')
+        self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+
+    def test_advisory_has_no_permission_decision(self):
+        self.config['arm']='advisory';self.freeze();self.prompt('Create A.')
+        specific=json.loads(self.write().stdout)['hookSpecificOutput']
+        self.assertIn('additionalContext',specific)
+        self.assertNotIn('permissionDecision',specific)
+
+    def test_codex_apply_patch_add_file_uses_the_native_command_field(self):
+        self.config['agent']='codex';self.config['arm']='deterministic';self.freeze();self.prompt('Create A.')
+        patch='*** Begin Patch\n*** Add File: '+self.destinations[0]+'\n+Synthetic recovery artifact.\n*** End Patch'
+        result=self.event('PreToolUse',tool_name='apply_patch',tool_use_id='call-1',tool_input={'command':patch})
+        self.assertEqual((result.returncode,result.stdout),(0,''))
+
+    def test_pending_approval_does_not_allow_early_creation(self):
+        self.config['arm']='deterministic'
+        self.config['messages'][0]={'text':'Wait before creating A.','kind':'pending','destination':0}
+        self.freeze();self.prompt('Wait before creating A.')
+        result=self.write()
+        self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+
+    def test_wait_then_withdraw_fixture_does_not_authorize_first_turn(self):
+        path=Path(__file__).with_name('recovery-native-claude.py')
+        spec=importlib.util.spec_from_file_location('fixture',path)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        self.config['arm']='deterministic'
+        self.config['messages']=module.messages('withdrawal',self.destinations)
+        self.freeze();self.prompt(self.config['messages'][0]['text'])
+        result=self.write()
+        self.assertEqual(json.loads(result.stdout)['hookSpecificOutput']['permissionDecision'],'deny')
+
+if __name__=='__main__':unittest.main()
