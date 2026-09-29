@@ -132,7 +132,9 @@ test('the reader accepts fresh partial evidence and rejects stale, restarted, re
     e => { delete e.fields.hostAfter.value.harnessCwd; },
     e => { e.fields.hostAfter.value.modeEvent = {mode:'plan',at:900,generation:99}; },
     e => { e.fields.rules.value.unselected = 'extra data'; },
-    e => { e.fields.account.rawResponse = {token:'synthetic-secret'}; }]) {
+    e => { e.fields.account.rawResponse = {token:'synthetic-secret'}; },
+    e => { e.collection.hostChangedDuringRead = {unexpected:'payload'}; },
+    e => { e.collection.hostChangedDuringRead = true; }]) {
     const broken = JSON.parse(bytes); change(broken);
     assert.equal(read(JSON.stringify(broken)).reason, 'invalid-envelope');
   }

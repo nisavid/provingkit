@@ -224,6 +224,10 @@ export function inspectEnvelope(serialized, expectedBinding, { now = Date.now(),
           if (canonical(projectHost(host, envelope.binding.generation, envelope.compatibility)) !== canonical(value)) throw new Error();
         }
       }
+      const before = envelope.fields.hostBefore, after = envelope.fields.hostAfter;
+      const hostChanged = before.state === 'observed' && after.state === 'observed'
+        ? canonical(before.value) !== canonical(after.value) : null;
+      if (collection.hostChangedDuringRead !== hostChanged) throw new Error();
     }
     if (envelope.compatibility.export.state === 'incompatible') return unknown('incompatible-export-dependency');
     if (!sameBinding(envelope.binding, expectedBinding)) return unknown('binding-mismatch');

@@ -247,6 +247,10 @@ function inspectEnvelope(serialized, expectedBinding, { now = Date.now(), afterS
           if (canonical(projectHost(host, envelope.binding.generation, envelope.compatibility)) !== canonical(value)) throw new Error();
         }
       }
+      const before = envelope.fields.hostBefore, after = envelope.fields.hostAfter;
+      const hostChanged = before.state === 'observed' && after.state === 'observed'
+        ? canonical(before.value) !== canonical(after.value) : null;
+      if (collection.hostChangedDuringRead !== hostChanged) throw new Error();
     }
     if (envelope.compatibility.export.state === 'incompatible') return unknown('incompatible-export-dependency');
     if (!sameBinding(envelope.binding, expectedBinding)) return unknown('binding-mismatch');
@@ -298,22 +302,22 @@ function reset() { fixture = createFixture(); offset = 0; compatibility = {}; ob
 function inspect() { if (sample) reader = inspectEnvelope(serialized, fixture.binding, {now:Date.now()+offset}); }
 async function observe() { sample = await observer.observeReceiver(fixture.binding,{timeoutMs:25, compatibility}); serialized = JSON.stringify(sample); inspect(); }
 function render() {
-  el('fixture').replaceChildren(); const r = fixture.record, h = r.host;
-  card(el('fixture'),'Selected identity',[['Desktop task',fixture.binding.taskId],['Expected Code session',fixture.binding.codeSessionId],['Current Code session',r.codeSessionId],['Expected / current generation',`${fixture.binding.generation} / ${r.generation}`],['App start',r.appStartId]]);
-  card(el('fixture'),'Receiver and settings',[['Turn',r.turn],['Existing query',r.query?'Present':'Absent'],['Manager mode',h.permissionMode],['Last Code event',h.modeEvent??null],['Manager cwd',h.harnessCwd],['Stored permission update types',h.sessionPermissionUpdates.map(u=>u.type)],['Flag push pending marker',h.flagScopeSyncPending],['Complete pending/failed history','Unavailable in the inspected producer']]);
-  card(el('fixture'),'Host grants and dependencies',[['Allowed reasons',h.alwaysAllowedReasons],['Raw computer-use flags',h.cuGrantFlags],['Effective computer-use flags',h.effectiveCuGrantFlags],['Model dependency',compatibility.model??'Unassessed'],['Rule dependency',compatibility.rules??'Unassessed']]);
+  el('fixture').replaceChildren(); const record = fixture.record, host = record.host;
+  card(el('fixture'),'Selected identity',[['Desktop task',fixture.binding.taskId],['Expected Code session',fixture.binding.codeSessionId],['Current Code session',record.codeSessionId],['Expected / current generation',`${fixture.binding.generation} / ${record.generation}`],['App start',record.appStartId]]);
+  card(el('fixture'),'Receiver and settings',[['Turn',record.turn],['Existing query',record.query?'Present':'Absent'],['Manager mode',host.permissionMode],['Last Code event',host.modeEvent??null],['Manager cwd',host.harnessCwd],['Stored permission update types',host.sessionPermissionUpdates.map(u=>u.type)],['Flag push pending marker',host.flagScopeSyncPending],['Complete pending/failed history','Unavailable in the inspected producer']]);
+  card(el('fixture'),'Host grants and dependencies',[['Allowed reasons',host.alwaysAllowedReasons],['Raw computer-use flags',host.cuGrantFlags],['Effective computer-use flags',host.effectiveCuGrantFlags],['Model dependency',compatibility.model??'Unassessed'],['Rule dependency',compatibility.rules??'Unassessed']]);
   el('fields').replaceChildren();
   el('reader-state').textContent = reader ? (reader.state==='usable-partial'?'Fresh partial evidence':`Unknown: ${reader.reason}`) : 'No sample yet';
   el('sample-summary').textContent = sample ? `Collection: ${sample.collection.state}. Sample ${sample.sequence}. Host change during reads: ${showValue(sample.collection.hostChangedDuringRead)}. Every claim remains unqualified.` : 'A valid export can contain partial observations. It cannot qualify the route.';
   const fields = reader?.state==='usable-partial' ? reader.envelope.fields : {};
   for (const [key,title] of [['account','Account initialization'],['model','Model report'],['rules','Code permission rules'],['hostBefore','Host state before reads'],['hostAfter','Host state after reads']]) {
-    const f=fields[key]; if(!f) continue;
-    const rows=[['Result',f.state],['Origin',f.source],['Age / coverage',f.freshness??f.reason],['Read interval',`${f.startedAt}–${f.endedAt}`]];
-    if(f.state==='observed') {
-      if(key==='model') rows.push(['Reported model',f.value]);
-      else if(key==='account') rows.push(['Provider and source',f.value]);
-      else if(key==='rules') rows.push(['Rules',f.value.rules],['Additional directories',f.value.workspaceDirectories],['Original cwd (not current cwd)',f.value.originalCwd],['Managed only',f.value.managedOnly],['Skipped-settings errors',f.value.settingsErrorCount]);
-      else for (const [label,k] of [['Spawn route (retained)','spawnRoute'],['Manager mode','permissionMode'],['Last Code event (retained)','modeEvent'],['Manager cwd','harnessCwd'],['Cwd event provenance','cwdEventProvenance'],['Allowed reasons','alwaysAllowedReasons'],['Raw apps','cuAllowedApps'],['Raw flags','cuGrantFlags'],['Effective apps','effectiveCuAllowedApps'],['Effective flags','effectiveCuGrantFlags'],['Stored update types','sessionPermissionUpdateTypes'],['Flag pending marker','flagScopeSyncPending'],['Mode requests in flight','modeRequestsInFlight'],['Pending coverage','pendingCoverage']]) rows.push([label,f.value[k]]);
+    const field=fields[key]; if(!field) continue;
+    const rows=[['Result',field.state],['Origin',field.source],['Age / coverage',field.freshness??field.reason],['Read interval',`${field.startedAt}–${field.endedAt}`]];
+    if(field.state==='observed') {
+      if(key==='model') rows.push(['Reported model',field.value]);
+      else if(key==='account') rows.push(['Provider and source',field.value]);
+      else if(key==='rules') rows.push(['Rules',field.value.rules],['Additional directories',field.value.workspaceDirectories],['Original cwd (not current cwd)',field.value.originalCwd],['Managed only',field.value.managedOnly],['Skipped-settings errors',field.value.settingsErrorCount]);
+      else for (const [label,k] of [['Spawn route (retained)','spawnRoute'],['Manager mode','permissionMode'],['Last Code event (retained)','modeEvent'],['Manager cwd','harnessCwd'],['Cwd event provenance','cwdEventProvenance'],['Allowed reasons','alwaysAllowedReasons'],['Raw apps','cuAllowedApps'],['Raw flags','cuGrantFlags'],['Effective apps','effectiveCuAllowedApps'],['Effective flags','effectiveCuGrantFlags'],['Stored update types','sessionPermissionUpdateTypes'],['Flag pending marker','flagScopeSyncPending'],['Mode requests in flight','modeRequestsInFlight'],['Pending coverage','pendingCoverage']]) rows.push([label,field.value[k]]);
     }
     card(el('fields'),title,rows);
   }
