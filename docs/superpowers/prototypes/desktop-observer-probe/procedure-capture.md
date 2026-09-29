@@ -30,7 +30,17 @@ or permission to edit another repository is inferred here. Adoption must name
 that source and its maintenance checks before installing durable equipment.
 
 Independent review of this increment must cover the procedure's entry
-conditions, exact inputs, stop branches, restoration, and consumer pointers.
-No new skill package is created or submitted to a skill evaluator. This capture
-supports the bounded experiment; broader installation and reusable-skill
-evaluation remain with the later adoption work.
+conditions, exact inputs, clean-environment construction, current-profile
+branch, named-profile no-refresh condition, password-store argv variants,
+post-launch route attestation, stop branches, restoration, and consumer
+pointers. Execution invokes the same captured route checks before both
+launches and before candidate arming or restored acceptance. No new skill
+package is created or submitted to a skill evaluator. This capture supports
+the bounded experiment; broader installation and reusable-skill evaluation
+remain with the later adoption work.
+
+From this prototype directory, run
+`node --test application-operation-launch-environment.test.mjs` when reviewing
+or consuming this revision. It exercises only the named
+launcher-environment boundary with invented inputs; it supplies no runtime
+binding and no evidence of application loading or effective settings.

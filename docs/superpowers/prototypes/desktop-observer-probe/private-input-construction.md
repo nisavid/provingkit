@@ -44,6 +44,69 @@ The populated record must contain no angle-bracket placeholder.
     "managerSha256": "<receipt manager SHA-256>",
     "moduleSha256": "<receipt sidecar SHA-256>"
   },
+  "launchRoute": {
+    "launcher": {
+      "path": "/usr/bin/claude-desktop",
+      "sha256": "015f5232d3c2c40f04f5529d44058d3fd0a80cdce0eddf91dc08688f0a8c867e",
+      "stat": "<device:inode:uid:gid:mode:links:size>"
+    },
+    "profile": {
+      "kind": "<default|named>",
+      "name": "<default or exact current named profile>",
+      "home": "<exact absolute HOME>",
+      "configDirectory": "<exact launcher-selected config_dir>",
+      "claudeConfigDirectory": {
+        "state": "<absent|present>",
+        "value": "<omit only when absent; preserve an empty or nonempty value exactly>"
+      },
+      "locks": [
+        "<config_dir/SingletonLock>",
+        "<config_dir-3p/SingletonLock>"
+      ],
+      "namedExecutable": {
+        "state": "<not-applicable|absent|ready>",
+        "path": "<omit only for not-applicable; otherwise exact named executable path>",
+        "readyIdentity": "<ready only: device:inode:uid:gid:mode:links:size>",
+        "readySha256": "<ready only: reviewed executable SHA-256>"
+      }
+    },
+    "environment": {
+      "encoding": "ordered-nul-delimited-name-equals-value",
+      "sha256": "<lowercase SHA-256>",
+      "entries": [
+        {
+          "name": "<allowed environment name>",
+          "value": "<exact reviewed value>"
+        }
+      ]
+    },
+    "flags": {
+      "state": "<absent|present>",
+      "path": "<exact selected claude-desktop-flags.conf path>",
+      "sha256": "<present only: lowercase SHA-256>",
+      "stat": "<present only: device:inode:uid:gid:mode:links:size>",
+      "tokens": ["<present only: exact ordered parsed token>"]
+    },
+    "execution": {
+      "executable": "<exact canonical or ready named-profile executable>",
+      "executableSha256": "<reviewed executable SHA-256>",
+      "versionFile": {
+        "path": "<exact selected executable-adjacent version path>",
+        "sha256": "<lowercase SHA-256>",
+        "stat": "<device:inode:uid:gid:mode:links:size>",
+        "firstLine": "44.4.3"
+      },
+      "resources": "<exact selected executable-adjacent resources path>",
+      "appAsar": "<exact selected executable-adjacent resources/app.asar path>",
+      "passwordStoreBranch": "<forwarded|environment-auto|environment-explicit|detector-bounded>",
+      "effectiveArgvVariants": [
+        {
+          "sha256": "<lowercase SHA-256 of the NUL-delimited argv>",
+          "argv": ["<exact ordered argument including argv[0]>"]
+        }
+      ]
+    }
+  },
   "fixture": {
     "creationRoute": "normal-new-local-task-ui",
     "taskId": "<selected task ID>",
@@ -87,6 +150,61 @@ Bind `REVIEWED_ARCHIVE_VERIFICATION` to
 lowercase hexadecimal characters. Every required archive-evidence check hashes
 the current bytes at that path and compares them with the bound digest; neither
 value may be independently substituted.
+
+## Launch-routing inputs
+
+Construct `launchRoute` only through the bounded observations and derivation in
+`application-operation.md`. This is the sole definition of the private
+launch-route fragment; other documents consume it rather than restating its
+shape.
+
+The later grant permits a name-only inventory of the ambient environment.
+Read values only for names allowed by the bound launcher-routing procedure.
+Do not dump the environment, read a credential or API-key value, enumerate a
+profile directory except for the narrowly authorized named-profile
+no-refresh symlink check, or read the selected profile's JSON or JSONC
+configuration.
+
+Sort environment entries bytewise by `name`, reject duplicate names, and
+compute `launchRoute.environment.sha256` over exact `name=value` strings, each
+followed by one NUL byte. Preserve present empty values. Validate `HOME`,
+`PATH`, `CLAUDE_PROFILE`, XDG/config states, display/session values, and every
+`CLAUDE_` launcher variable against the procedure. A required variable outside
+the allowlist is a stop for an amended review.
+
+The environment array is reconstructed manually in memory before each launch.
+The approved selected entries and their digest remain in the private record as
+launch configuration and recovery input; discard only the reconstructed
+per-launch array after comparison. Do not create an environment file, write
+assignments to a shell script, or use `source` or `eval`. Because this increment
+creates no separate environment file, it adds no cleanup-manifest resource or
+later deletion step.
+
+For a present flags file, acquire only its exact path through one stable
+descriptor. Record and compare its identity and digest, then apply the
+launcher's exact line/comment/default-IFS tokenization. Do not enumerate its
+parent. For an absent file, record and recheck only the exact path's absence.
+
+For a default profile, record named-executable state `not-applicable`. For a
+named profile with no profile executable, record `absent`; do not create or
+materialize it. For an existing named executable, record `ready` only after
+the exact no-refresh predicates, byte equality with the canonical executable,
+resource-link target, and bounded sibling-symlink inventory pass. Any refresh
+predicate returns for a decision and must not be represented as `ready`.
+
+Derive `effectiveArgvVariants` only from the inspected launcher revision,
+reviewed environment, profile branch, and exact flags tokens. Apply the ordered
+algorithm in `application-operation.md`. Record one variant unless absent
+`CLAUDE_PASSWORD_STORE` and absence of a forwarded password-store token selects
+the ordinary detector branch; that branch records exactly the no-added-flag
+and `--password-store=gnome-libsecret` variants. Do not run the detector during
+construction, alter password-store state, derive argv from logs, or copy a
+prior process command line.
+
+Each `argv` begins with the exact selected Electron executable. Compute its
+digest over every exact element followed by NUL. Reject an unexpected
+positional argument, empty executable, legacy executable, `--no-sandbox`,
+unreviewed feature, or route-changing flag.
 
 ## Fixture construction and selected metadata
 

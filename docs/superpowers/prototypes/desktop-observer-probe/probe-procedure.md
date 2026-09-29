@@ -89,12 +89,34 @@ require a restart. Maintained observer installation and upgrade behavior remain
 a later adoption decision.
 
 The private packet binds the launcher's digest and owner, group, mode, device,
-inode, link count, and size. It also binds the exact NUL-delimited argument-file
-identity and reconstructed byte digest. Revalidate the package, protected
-assets, root-owned launcher ancestry, launcher, and stable-descriptor argument
-read immediately before both launches. Execute only the validated in-memory
-argument array. These checks narrow the mutation window but do not make launch
-atomic.
+inode, link count, and size. It also binds the exact one-argument NUL launch
+file, clean launch environment, current-profile branch, flags file or absence,
+readable `44.4.3` version file, executable and adjacent-resources route, and
+the exact source-derived effective-argv variants. The ordinary password-store
+detector remains active when current state selects it, so that branch admits
+only its two source-bounded argv results.
+
+An absent named-profile executable remains absent and uses canonical fallback.
+An existing named executable must pass the exact no-refresh checks; otherwise
+the run returns for a decision before the launcher can replace it or maintain
+shared sibling links. The procedure does not change profiles, force a password
+store, authorize stale-lock cleanup, or read the selected profile's diagnostic
+configuration.
+
+Revalidate the package, protected assets, root-owned launcher ancestry,
+launcher, launch file, environment, flags, profile state, no-refresh
+predicates, version file, executable, resources route, archive, and absent
+locks immediately before both launches. After each launch, attest the one
+selected main PID through the two exact lock paths, then compare its executable,
+bounded command line, and executable-adjacent archive with the reviewed
+bindings. After those candidate checks, validate bootstrap and require its PID
+and copied-archive digest to agree before arming. The restored cycle has no
+bootstrap comparison. Execute only validated in-memory arrays and discard
+their reconstructed copies plus raw lock-target and command-line bytes after
+comparison. The private binding record continues to retain the approved
+allowlisted selected environment entries and digest as recovery input, not a
+full ambient or raw process environment. These checks narrow the mutation
+window but do not make launch atomic.
 
 ## Disposable fixture
 
@@ -301,10 +323,11 @@ package with the retained older archive; return for a restoration decision.
 Otherwise restore the verified pristine archive and verify its bytes and
 unchanged native assets.
 
-Remove the probe configuration from the restored launch environment, revalidate
-the launcher and arguments, then verify the restored app opens and the agreed
-unrelated-work expectations hold. Report disposable fixture loss or changed
-task state separately from restored package bytes.
+Use the same reviewed clean base environment without the probe configuration,
+repeat the complete launcher-route checks, and attest the restored process
+before accepting it. Then verify the restored app opens and the agreed
+unrelated-work expectations hold. Report route failure, disposable fixture
+loss, or changed task state separately from restored package bytes.
 
 After verified restoration, perform the distinct package-cleanup phase from
 `application-operation.md`. It may remove only the verified staging archive,

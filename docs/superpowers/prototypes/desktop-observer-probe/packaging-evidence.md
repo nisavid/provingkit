@@ -94,11 +94,40 @@ executed and supplies no evidence about current runtime loading.
 
 ## Launcher and operating effects
 
-The inspected launcher selects an executable through `CLAUDE_ELECTRON` and
-loads its adjacent `resources/app.asar`. It ignores `CLAUDE_APP_ASAR`. Existing
-named-profile maintenance may substitute a profile executable and refresh
-resources. A symlink to the installed executable does not establish a separate
-runtime tree.
+The probe uses `/usr/bin/claude-desktop` from a reviewed clean environment
+with the current profile selected explicitly. The inspected launcher loads the
+selected executable's adjacent `resources/app.asar` and ignores
+`CLAUDE_APP_ASAR`. `CLAUDE_ELECTRON`, AppImage, ASAR, and sandbox overrides
+are prohibited.
+
+A focused synthetic test extracts only
+`validate_reviewed_launch_environment` from the reviewed Markdown and invokes
+that definition in disposable Bash processes with invented arrays and
+independently computed digests. It checks the allowlist, ordering, required
+bindings, digest, preserved empty and equals-sign values, and PATH component
+rules. It does not inspect a live environment or establish application loading,
+launcher execution, or effective settings.
+
+An absent named-profile executable is not created by ordinary launch; the
+launcher falls back to the canonical executable while retaining named-profile
+state and its `--user-data-dir`. An existing named executable can trigger
+shared sibling maintenance, replacement, and hardlink or copy effects. This
+probe therefore requires its exact no-refresh predicates to pass and stops for
+a new decision if they do not. It does not substitute the default profile.
+
+The selected flags file or its absence, the readable executable-adjacent
+`44.4.3` version file, executable route, adjacent resources route, and exact
+source-derived effective-argv variants are bound before the window. The
+password-store detector is preserved: when neither flags nor environment
+select a store, the accepted argv set contains only the no-added-flag and
+`gnome-libsecret` results.
+
+Both launches receive the same reviewed base environment; only the candidate
+launch adds `PROVINGKIT_OBSERVER_CONFIG`. After each launch, the selected main
+PID's executable, command line, and executable-adjacent
+`resources/app.asar` are checked against those bindings before candidate
+arming or restored acceptance. This is a future verification method, not
+evidence that either launch has occurred.
 
 The executable's ELF RPATH is `$ORIGIN`, with a direct dependency on
 `libffmpeg.so`. A copied runtime would need the matching libraries, resources,
@@ -159,10 +188,12 @@ of the generated and published receipts, review of every change after the
 recorded build, and a private authorization packet. If a bundled or build input
 has changed, the dependency rule above also requires a rebuild and complete
 comparison. The packet must bind the published source revision, exact
-candidate, launcher and argument-file identities, actual task and Code IDs
-allocated after fixture creation, cleanup-manifest location, protected backup,
-and one current-profile window with the candidate and restored launches. None
-of the archive facts establishes that the modified app loads.
+candidate, launcher, argument-file, environment, profile, flags, version,
+effective-argv, executable, and resources-route identities; actual task and
+Code IDs allocated after fixture creation; cleanup-manifest location;
+protected backup; and one current-profile window with the candidate and
+restored launches. None of the archive facts establishes that the modified app
+loads.
 
 Before importing either selected tool, the builder checks every regular file
 in both package closures against `build-dependency-manifest.json`. The

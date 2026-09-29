@@ -33,6 +33,21 @@ expansion, or paths copied from this committed document:
   basename is exactly `selected-linux-executor-observation.json`.
 - `PROBE_LAUNCHER`, its SHA-256 as `PROBE_LAUNCHER_SHA256`, and its reviewed device, inode, owner, group, mode, link count, and size as `PROBE_LAUNCHER_STAT`.
 - The reviewed NUL-delimited `PROBE_LAUNCH_ARGV_FILE`, its reconstructed NUL-delimited SHA-256 as `PROBE_LAUNCH_ARGV_SHA256`, and its device, inode, owner, group, mode, link count, and size as `PROBE_LAUNCH_ARGV_STAT`.
+- `PROBE_PROFILE`, exactly `default` or the current named-profile token;
+  `PROBE_PROFILE_KIND`, exactly `default` or `named`; and `PROBE_HOME`.
+- The ordered in-memory `PROBE_LAUNCH_ENV` array reconstructed from the
+  private record, and its NUL-delimited `name=value` SHA-256 as
+  `PROBE_LAUNCH_ENV_SHA256`.
+- `PROBE_CONFIG_DIR`, `PROBE_LOCK_PATH_PRIMARY`,
+  `PROBE_LOCK_PATH_3P`, `PROBE_FLAGS_PATH`, and `PROBE_FLAGS_STATE`.
+- `PROBE_EXPECTED_ELECTRON`, `PROBE_EXPECTED_ELECTRON_SHA256`,
+  `PROBE_VERSION_FILE`, `PROBE_VERSION_FILE_SHA256`,
+  `PROBE_VERSION_FILE_STAT`, `PROBE_EXPECTED_RESOURCES`, and
+  `PROBE_EXPECTED_APP_ASAR`.
+- `PROBE_NAMED_BINARY_STATE`, exactly `not-applicable`, `absent`, or
+  `ready`. Refresh is outside this increment.
+- The exact source-derived effective-argv variant or variants recorded under
+  `launchRoute.execution.effectiveArgvVariants` in the private record.
 - `PROTECTED_ASSET_MANIFEST`, its SHA-256, and the exact main-executable, complete native-asset, and `chrome-sandbox` inventory.
 - The current profile, account, organization, new local Code task, new empty
   non-Git project directory, any app-created dedicated worktree and its approved
@@ -56,7 +71,11 @@ The packet must confirm:
 - Main executable: `root:root`, mode `0755`.
 - `chrome-sandbox`: `root:root`, mode `4755`.
 - The launcher and every ancestor are root-owned and not group- or world-writable.
-- The launcher ignores `CLAUDE_APP_ASAR`, loads the executable-adjacent archive, and creates the profile binary with symlinks to shared resources.
+- The launcher ignores `CLAUDE_APP_ASAR` and loads the selected
+  executable-adjacent archive. An absent named-profile executable is not
+  created by an ordinary launch; an existing one may be refreshed only when a
+  source predicate fires. This procedure prohibits that refresh and stops
+  before launch if its no-refresh precondition is not met.
 
 `build-receipt.json` is generated output tied to the proposed archive.
 `candidate-build.json` is its published source copy. Both bind source-input
@@ -233,15 +252,20 @@ A recovery shell is a fresh Bash process with `set -euo pipefail` and
    `check_root_owned_directory`, `check_root_owned_ancestors`,
    `check_root_owned_parent_ancestors`,
    `check_reviewed_archive_verification`,
-   `validate_protected_asset_manifest`, `check_reviewed_launcher`, and
-   `load_reviewed_launch_argv`. Do not execute the rest of preflight as a
-   definitions loader.
+   `validate_protected_asset_manifest`, `check_reviewed_launcher`,
+   `load_reviewed_launch_argv`, and
+   `validate_reviewed_launch_environment`. Do not execute the rest of
+   preflight as a definitions loader.
 4. Re-establish `CANDIDATE_SIZE` only after the current candidate archive again
    matches `CANDIDATE_SHA256`. Recheck the current package version and
    ownership, protected-asset manifest and its bound hash, reviewed
    archive-verification record, and the exact target, stage, and backup
    identities applicable to the last verified phase.
-5. Follow the restoration prechecks and remaining restoration steps from the
+5. Reconstruct `PROBE_LAUNCH_ENV` and the exact effective-argv variants
+   manually from the existing private record. Repeat every applicable bound
+   launcher-routing check below. Do not reacquire an ambient value merely to
+   reconstruct lost state.
+6. Follow the restoration prechecks and remaining restoration steps from the
    first step not already verified. Never repeat a verified exchange or launch.
    A changed package, upgrade, ownership change, protected-asset change,
    missing archive, uncertain exchange state, identity mismatch, or failed
@@ -251,9 +275,244 @@ A recovery shell is a fresh Bash process with `set -euo pipefail` and
 
 After a successful restoration exchange, or when unchanged archive bytes are
 established but Desktop availability requires recovery, the one restored
-launch authorized by the applicable restoration-cycle grant and its checks
-remain necessary. No failure authorizes an extra launch. Package cleanup
-remains prohibited until restoration is fully verified.
+launch authorized by the applicable restoration-cycle grant and its route
+attestation remain necessary. A failed attestation authorizes shutdown and
+restoration only, not another candidate launch. No failure authorizes an extra
+launch. Package cleanup remains prohibited until restoration is fully
+verified.
+
+## Bound launcher routing
+
+This procedure uses literal launcher `/usr/bin/claude-desktop` with SHA-256
+`015f5232d3c2c40f04f5529d44058d3fd0a80cdce0eddf91dc08688f0a8c867e`.
+`PROBE_LAUNCH_ARGV_FILE` contains exactly one NUL-terminated argument:
+`/usr/bin/claude-desktop`. URI, subcommand, maintenance, deployment-mode,
+profile, `--user-data-dir`, AppImage, ASAR, executable-override, and
+sandbox-disabling arguments are prohibited.
+
+The launch environment is an ordered in-memory array of exact `name=value`
+strings reconstructed manually from the private record. It is never sourced,
+evaluated, or inherited implicitly. Its NUL-delimited digest is computed as:
+
+```text
+name=value NUL name=value NUL ...
+```
+
+Names are bytewise ascending and unique. The array contains `HOME`,
+`USER`, `LOGNAME`, `PATH`, and `CLAUDE_PROFILE`. `HOME` equals
+`PROBE_HOME`; `CLAUDE_PROFILE` is `default` or the exact current named
+profile. `PATH` contains only nonempty absolute components.
+
+Only these additional names may be present:
+
+- `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_DATA_DIRS`,
+  `XDG_CACHE_HOME`, `XDG_STATE_HOME`, and `XDG_RUNTIME_DIR`;
+- `DISPLAY`, `WAYLAND_DISPLAY`, `XAUTHORITY`, and
+  `DBUS_SESSION_BUS_ADDRESS`;
+- `XDG_SESSION_TYPE`, `XDG_CURRENT_DESKTOP`, `XDG_SESSION_DESKTOP`,
+  `DESKTOP_SESSION`, `XDG_SESSION_CLASS`, `XDG_SEAT`, and `XDG_VTNR`;
+- `LANG`, `LANGUAGE`, `LC_ALL`, `LC_ADDRESS`, `LC_COLLATE`,
+  `LC_CTYPE`, `LC_IDENTIFICATION`, `LC_MEASUREMENT`, `LC_MESSAGES`,
+  `LC_MONETARY`, `LC_NAME`, `LC_NUMERIC`, `LC_PAPER`,
+  `LC_TELEPHONE`, and `LC_TIME`;
+- `GTK_IM_MODULE`, `QT_IM_MODULE`, `XMODIFIERS`, `GDK_BACKEND`,
+  `PULSE_SERVER`, `PIPEWIRE_RUNTIME_DIR`, `SSH_AUTH_SOCK`,
+  `GPG_AGENT_INFO`, `GNOME_KEYRING_CONTROL`, `TERM`, `COLORTERM`,
+  and `DESKTOP_STARTUP_ID`;
+- `CLAUDE_CONFIG_DIR`, `CLAUDE_USE_XWAYLAND`,
+  `CLAUDE_GPU_BACKEND`, `CLAUDE_DISABLE_GPU`,
+  `CLAUDE_ENABLE_VULKAN`, `CLAUDE_PASSWORD_STORE`,
+  `CLAUDE_NATIVE_TITLEBAR`, `CLAUDE_NO_WINDOW_CONTROLS`,
+  `CLAUDE_DISABLE_SYSTEMD_SCOPE`, `CLAUDE_KEEP_TTY`, and
+  `CLAUDE_LAUNCHER`.
+
+When present, `CLAUDE_LAUNCHER` must equal
+`/usr/bin/claude-desktop`. `CLAUDE_ELECTRON`, `CLAUDE_APP_ASAR`,
+`CLAUDE_APPIMAGE_PATH`, `CLAUDE_DISABLE_SANDBOX`,
+`ELECTRON_FORCE_IS_PACKAGED`, and `PROVINGKIT_OBSERVER_CONFIG` are
+prohibited in the base environment. Credential and API-key variables are not
+copied into the packet or launch environment.
+
+The later grant permits a name-only inventory of the ambient environment and
+reads of values for only the allowed names above. Do not dump the environment.
+The presence of an unapproved name that may affect loading, execution,
+authentication, or UI routing—including a name beginning `LD_`, `NODE_`, or
+`ELECTRON_`, or `GTK_MODULES`, `GTK_PATH`, `GIO_EXTRA_MODULES`,
+`QT_PLUGIN_PATH`, or `QT_QPA_PLATFORM_PLUGIN_PATH`—stops for an amended
+review without reading that value. If preserving the current account or Code
+route requires another variable, stop for that decision rather than silently
+discarding or authorizing it.
+
+The selected paths are derived exactly as follows:
+
+- `config_dir` is nonempty `XDG_CONFIG_HOME`, otherwise
+  `PROBE_HOME/.config`, followed by `/Claude` for the default profile or
+  `/Claude-<profile>` for a named profile.
+- `PROBE_LOCK_PATH_PRIMARY` is `config_dir/SingletonLock`;
+  `PROBE_LOCK_PATH_3P` is `config_dir-3p/SingletonLock`.
+- `PROBE_FLAGS_PATH` is nonempty `XDG_CONFIG_HOME`, otherwise
+  `PROBE_HOME/.config`, followed by `/claude-desktop-flags.conf`.
+- A named profile inherits a nonempty `CLAUDE_CONFIG_DIR`. Otherwise the
+  launcher exports `PROBE_HOME/.claude-<profile>`. The procedure does not
+  alter deployment mode or infer an app data root from an absent lock.
+
+The current launcher may read only the selected profile's
+`claude-desktop-extra.jsonc` and `claude-desktop-extra.json` for saved
+native-titlebar and window-control diagnostics. Do not read those files for
+this route review. Existing app-side configuration effects remain ordinary
+profile effects. `CLAUDE_NATIVE_TITLEBAR` and
+`CLAUDE_NO_WINDOW_CONTROLS` are the explicit launcher controls; if both equal
+`1`, the launcher unsets the latter. Neither adds a Chromium argument.
+
+Before either launch, both exact lock paths must be absent. A lock symlink,
+whether active, malformed, or stale, stops for an operating decision. This
+increment does not authorize the launcher's stale-lock removal. During
+post-launch attestation, the two paths may be read only as described below.
+
+The executable branch is:
+
+- For `default`, `PROBE_NAMED_BINARY_STATE=not-applicable` and the selected
+  executable is `/usr/lib/claude-desktop/claude`.
+- For named profile state `absent`, require exact absence of
+  `PROBE_HOME/.local/lib/claude-desktop/claude-<profile>`. Ordinary launch
+  must retain that absence and select `/usr/lib/claude-desktop/claude`.
+- For named profile state `ready`, require that exact profile executable to be
+  executable and byte-identical to the reviewed canonical executable. Require
+  the canonical executable not to be newer, its `resources` link to have the
+  exact canonical-resources target, and every existing sibling symlink
+  inspected by the launcher's normal predicate to have an existing target.
+  The later grant must cover that metadata-only sibling-symlink enumeration.
+
+For `ready`, recheck all no-refresh predicates and the bound sibling-symlink
+inventory immediately before each launch and recheck the same identities
+afterward. For `absent`, recheck only the exact named executable's absence
+before and after launch. If a refresh predicate is true, if a
+`.new.<launcher-pid>` staging path appears, or if a profile or sibling asset
+changes, stop. Do not refresh, materialize, replace, relink, or substitute the
+profile. The preflight gate rejects a launch when the inspected predicate
+would refresh. The afterward check detects selected changes, but the
+check/launch/check sequence is not atomic and does not guarantee against
+same-user interference during its race window. It preserves current-profile
+selection and stops on observed drift; it does not prove that every mutation
+was prevented.
+
+Legacy `/usr/lib/claude-desktop-bin/claude` fallback is prohibited. For the
+selected executable directory `D`, bind `D/version`, `D/resources`, and
+`D/resources/app.asar`. Read the version file through one stable descriptor;
+require its bound identity and digest, and require its first line to be exactly
+`44.4.3`. This prevents the launcher's `--version` fallback execution.
+Require the selected `resources/app.asar` to resolve through the reviewed
+resource route to the same device and inode as `TARGET`.
+
+For a present flags file, open only `PROBE_FLAGS_PATH` through one stable
+descriptor. Compare its before/descriptor/after identity and digest with the
+private record. Parse each LF-delimited line, including a final line without
+LF, by removing the first `#` and everything after it, ignoring an
+all-whitespace remainder, and splitting the remainder on Bash default IFS
+without quote parsing or expansion. Compare the resulting ordered tokens
+exactly with the private record. For an absent flags file, require exact
+absence before and after each launch.
+
+Profile extraction has already completed before these tokens are read. Reject
+every positional token and every token that can select another application,
+archive, executable, profile, user-data directory, URI, deployment mode,
+extension, debugging listener, AppImage, or weaker sandbox. Feature, display,
+GPU, password-store, and other behavioral tokens proceed only when the grant
+names the exact token and accepts its effect. A token not already classified
+by the grant stops the run.
+
+Construct the effective-argv variants manually from the reviewed environment
+and ordered flag tokens:
+
+1. Element zero is `PROBE_EXPECTED_ELECTRON`. The first argument is
+   `--enable-blink-features=WebBluetooth`.
+2. Because AppImage and `CLAUDE_DISABLE_SANDBOX=1` are prohibited, no
+   `--no-sandbox` argument is added.
+3. With absent `WAYLAND_DISPLAY`, select x11 and add no platform argument.
+   With present `WAYLAND_DISPLAY`, select wayland unless
+   `CLAUDE_USE_XWAYLAND=1` and nonempty `DISPLAY`, which selects xwayland.
+   Xwayland adds `--ozone-platform=x11`. Wayland adds
+   `--ozone-platform=wayland`, `--enable-wayland-ime`, and
+   `--wayland-text-input-version=3`; its enable-feature list begins with
+   `GlobalShortcutsPortal`, and its disable-feature list begins with `Vulkan`
+   unless `CLAUDE_ENABLE_VULKAN=1`.
+4. Scan flag tokens in order. Split each `--disable-features=` or
+   `--enable-features=` value on commas, remove that original token, skip
+   empty and exact duplicate feature names, and preserve first occurrence.
+   Emit the single joined disable-features argument first when nonempty, then
+   the single joined enable-features argument when nonempty.
+5. `CLAUDE_GPU_BACKEND=angle-gl` adds `--use-gl=angle` and then
+   `--use-angle=gl`. `CLAUDE_DISABLE_GPU=1` or `compositing` adds
+   `--disable-gpu-compositing`; `full` adds `--disable-gpu`.
+6. A remaining forwarded `--password-store=*` token suppresses detection and
+   remains among the forwarded tokens. Otherwise, absent
+   `CLAUDE_PASSWORD_STORE` yields exactly two permitted variants: no added
+   argument or `--password-store=gnome-libsecret`. Value `auto` adds none;
+   any other reviewed value adds one
+   `--password-store=<exact-value>` argument. Do not set, clear, or alter this
+   variable to force a variant.
+7. A named profile appends `--user-data-dir=<config_dir>`.
+8. Append all remaining forwarded flag tokens in their original order.
+
+Record exactly one argv variant except for the bounded two-result detector
+branch. Each variant is a NUL-delimited array with its own SHA-256. Neither
+launcher log text nor a prior process supplies an expected variant. The
+launcher exports `ELECTRON_FORCE_IS_PACKAGED=true` and its resolved
+`CLAUDE_LAUNCHER`; those exports do not add arguments.
+
+The bindings used by these checks remain later-grant data. A check described
+here without a named shell function is a manual route check against those
+bindings, not a call to an omitted function.
+
+Immediately before each launch, repeat the package, target, protected-asset,
+launcher, one-argument launch-file, clean-environment, flags, profile branch,
+no-refresh, version, executable, resources, archive, and absent-lock checks.
+Any mismatch stops before execution. `systemd-run` or `setsid` wrapping does
+not change the expected inner Electron array; runtime disagreement is a failed
+attestation, not successful routing.
+
+After launch and before candidate arm creation or restored acceptance, inspect
+only the two bound lock paths. Parse the substring after the last `-` in each
+present symlink target as a positive decimal PID. Require exactly one unique
+PID, owned by the selected Desktop UID and started during this launch. A
+missing, malformed, reused, conflicting, or non-unique PID stops the run. Do
+not enumerate processes or infer another profile path.
+
+For that PID only, the later grant permits:
+
+- metadata checks of the numeric `/proc` directory and its `stat` start-time
+  field before and after attestation;
+- one stable-descriptor read of `/proc/<pid>/exe`;
+- one read, bounded at 64 KiB, of `/proc/<pid>/cmdline`;
+- the opens needed to hash the selected executable and its adjacent
+  `resources/app.asar`.
+
+Require the executable target, identity, and SHA-256 to match
+`PROBE_EXPECTED_ELECTRON`. Compare the NUL-delimited command line in memory
+with the permitted effective-argv variant or variants and accept exactly one
+match. Do not retain raw command-line or lock-target bytes. Resolve
+`resources/app.asar` from the attested executable directory and require its
+stable descriptor to identify `TARGET`, with the candidate digest during the
+candidate cycle and pristine digest during the restored cycle. Recheck the
+flags state and applicable named-profile state after launch.
+
+For the candidate cycle, complete the selected-process, argv, adjacent-archive,
+flags, and profile checks before waiting for bootstrap. Once bootstrap is
+available and validated, require its PID to equal the attested PID and its
+copied-archive digest to equal the candidate digest before creating `arm.json`.
+The restored cycle performs no bootstrap read or bootstrap-binding comparison;
+it keeps UI and fixture behavior as separate acceptance checks. Attestation
+failure authorizes only normal shutdown and the already granted restoration
+path.
+
+The per-launch `PROBE_LAUNCH_ENV` and effective-argv arrays, parsed working
+copies, `/proc` command-line bytes, and lock-target bytes remain in memory only
+and are unset or discarded after comparison. The private record retains the
+approved `launchRoute.environment.entries`, their digest, and the effective
+argv variants as selected launch configuration and recovery input. Those
+allowlisted entries exclude credential and API-key variables; they are not a
+full ambient-environment dump or raw process-environment export. This increment
+creates no separate runtime-input file and adds no cleanup-manifest role.
 
 ## Preflight
 
@@ -288,11 +547,32 @@ required=(RUN_ID PROBE_INSTALL_ROOT CANDIDATE_ARCHIVE
   PROBE_USER_STATE_ROOT PROBE_CONFIG CLEANUP_MANIFEST
   PROBE_LAUNCHER PROBE_LAUNCHER_SHA256 PROBE_LAUNCHER_STAT
   LINUX_OBSERVATION_FILE PROBE_LAUNCH_ARGV_FILE PROBE_LAUNCH_ARGV_SHA256 PROBE_LAUNCH_ARGV_STAT
+  PROBE_PROFILE PROBE_PROFILE_KIND PROBE_HOME PROBE_LAUNCH_ENV_SHA256
+  PROBE_CONFIG_DIR PROBE_LOCK_PATH_PRIMARY PROBE_LOCK_PATH_3P
+  PROBE_FLAGS_PATH PROBE_FLAGS_STATE PROBE_NAMED_BINARY_STATE
+  PROBE_EXPECTED_ELECTRON PROBE_EXPECTED_ELECTRON_SHA256
+  PROBE_VERSION_FILE PROBE_VERSION_FILE_SHA256 PROBE_VERSION_FILE_STAT
+  PROBE_EXPECTED_RESOURCES PROBE_EXPECTED_APP_ASAR
   PROTECTED_ASSET_MANIFEST PROTECTED_ASSET_MANIFEST_SHA256)
 for name in "${required[@]}"; do
   [[ -n "${!name:-}" ]]
 done
 [[ "$RUN_ID" =~ ^278-[A-Za-z0-9._-]+$ ]]
+test "$PROBE_LAUNCHER" = "/usr/bin/claude-desktop"
+test "$PROBE_LAUNCHER_SHA256" = \
+  "015f5232d3c2c40f04f5529d44058d3fd0a80cdce0eddf91dc08688f0a8c867e"
+[[ "$PROBE_PROFILE_KIND" = "default" || "$PROBE_PROFILE_KIND" = "named" ]]
+[[ "$PROBE_PROFILE" = "default" || "$PROBE_PROFILE" =~ ^[a-zA-Z0-9_-]+$ ]]
+if [[ "$PROBE_PROFILE_KIND" = "default" ]]; then
+  test "$PROBE_PROFILE" = "default"
+  test "$PROBE_NAMED_BINARY_STATE" = "not-applicable"
+else
+  test "$PROBE_PROFILE" != "default"
+  [[
+    "$PROBE_NAMED_BINARY_STATE" = "absent" ||
+    "$PROBE_NAMED_BINARY_STATE" = "ready"
+  ]]
+fi
 
 TARGET_DIR="$PROBE_INSTALL_ROOT/resources"
 TARGET="$TARGET_DIR/app.asar"
@@ -581,7 +861,7 @@ load_reviewed_launch_argv() {
   test ! -L "$PROBE_LAUNCH_ARGV_FILE"
   test "$descriptor_after" = "$descriptor_before"
   test "$path_after" = "$path_before"
-  test "${#destination[@]}" -gt 0
+  test "${#destination[@]}" = "1"
   test "${destination[0]}" = "$PROBE_LAUNCHER"
 
   hash_output=$(printf '%s\0' "${destination[@]}" | sha256sum) || return 1
@@ -590,6 +870,95 @@ load_reviewed_launch_argv() {
   test -z "${extra:-}"
   test "$digest" = "$PROBE_LAUNCH_ARGV_SHA256"
 }
+
+# BEGIN validate_reviewed_launch_environment
+validate_reviewed_launch_environment() {
+  local source_name="$1" assignment name value previous=""
+  local hash_output digest marker extra component
+  local -n source="$source_name"
+  local -A seen=()
+  local -a path_components
+
+  test "${#source[@]}" -gt 0
+  for assignment in "${source[@]}"; do
+    [[ "$assignment" == *=* ]]
+    name="${assignment%%=*}"
+    value="${assignment#*=}"
+    [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]
+    [[ -z "${seen[$name]+x}" ]]
+    if [[ -n "$previous" ]]; then
+      [[ "$previous" < "$name" ]]
+    fi
+    previous="$name"
+    seen["$name"]=1
+
+    case "$name" in
+      HOME|USER|LOGNAME|PATH|CLAUDE_PROFILE|\
+      XDG_CONFIG_HOME|XDG_DATA_HOME|XDG_DATA_DIRS|XDG_CACHE_HOME|\
+      XDG_STATE_HOME|XDG_RUNTIME_DIR|DISPLAY|WAYLAND_DISPLAY|\
+      XAUTHORITY|DBUS_SESSION_BUS_ADDRESS|XDG_SESSION_TYPE|\
+      XDG_CURRENT_DESKTOP|XDG_SESSION_DESKTOP|DESKTOP_SESSION|\
+      XDG_SESSION_CLASS|XDG_SEAT|XDG_VTNR|LANG|LANGUAGE|LC_ALL|\
+      LC_ADDRESS|LC_COLLATE|LC_CTYPE|LC_IDENTIFICATION|\
+      LC_MEASUREMENT|LC_MESSAGES|LC_MONETARY|LC_NAME|LC_NUMERIC|\
+      LC_PAPER|LC_TELEPHONE|LC_TIME|GTK_IM_MODULE|QT_IM_MODULE|\
+      XMODIFIERS|GDK_BACKEND|PULSE_SERVER|PIPEWIRE_RUNTIME_DIR|\
+      SSH_AUTH_SOCK|GPG_AGENT_INFO|GNOME_KEYRING_CONTROL|TERM|\
+      COLORTERM|DESKTOP_STARTUP_ID|CLAUDE_CONFIG_DIR|\
+      CLAUDE_USE_XWAYLAND|CLAUDE_GPU_BACKEND|CLAUDE_DISABLE_GPU|\
+      CLAUDE_ENABLE_VULKAN|CLAUDE_PASSWORD_STORE|\
+      CLAUDE_NATIVE_TITLEBAR|CLAUDE_NO_WINDOW_CONTROLS|\
+      CLAUDE_DISABLE_SYSTEMD_SCOPE|CLAUDE_KEEP_TTY|CLAUDE_LAUNCHER)
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+
+    [[ "$value" != *$'\n'* && "$value" != *$'\r'* ]]
+    if [[ "$name" = "CLAUDE_LAUNCHER" ]]; then
+      test "$value" = "$PROBE_LAUNCHER"
+    fi
+  done
+
+  for name in HOME USER LOGNAME PATH CLAUDE_PROFILE; do
+    [[ -n "${seen[$name]+x}" ]]
+  done
+
+  for assignment in "${source[@]}"; do
+    name="${assignment%%=*}"
+    value="${assignment#*=}"
+    case "$name" in
+      HOME)
+        test "$value" = "$PROBE_HOME"
+        [[ "$value" = /* ]]
+        ;;
+      CLAUDE_PROFILE)
+        test "$value" = "$PROBE_PROFILE"
+        ;;
+      PATH)
+        [[
+          -n "$value" &&
+          "$value" != :* &&
+          "$value" != *: &&
+          "$value" != *::*
+        ]]
+        IFS=: read -r -a path_components <<< "$value" || return 1
+        test "${#path_components[@]}" -gt 0
+        for component in "${path_components[@]}"; do
+          [[ -n "$component" && "$component" = /* ]]
+        done
+        ;;
+    esac
+  done
+
+  hash_output=$(printf '%s\0' "${source[@]}" | sha256sum) || return 1
+  read -r digest marker extra <<< "$hash_output" || return 1
+  test "$marker" = "-"
+  test -z "${extra:-}"
+  test "$digest" = "$PROBE_LAUNCH_ENV_SHA256"
+}
+# END validate_reviewed_launch_environment
 
 test -d "$TARGET_DIR"
 test "$(stat -c '%u:%g:%a' -- "$TARGET_DIR")" = "0:0:755"
@@ -623,6 +992,13 @@ check_reviewed_launcher
 PREFLIGHT_LAUNCH_ARGV=()
 load_reviewed_launch_argv PREFLIGHT_LAUNCH_ARGV
 unset PREFLIGHT_LAUNCH_ARGV
+
+# Populate only from launchRoute.environment in the validated private record.
+PROBE_LAUNCH_ENV=()
+# The operator inserts the exact reviewed name=value array here as shell data,
+# without source, eval, ambient expansion, or an additional environment read.
+validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+unset PROBE_LAUNCH_ENV
 
 sudo test ! -e "$STAGE"
 sudo test ! -L "$STAGE"
@@ -704,9 +1080,11 @@ the protected backup and stop; do not use an unreviewed fallback.
 
 Immediately before the candidate launch, repeat `pacman -Q`, `pacman -Qo`, the
 target candidate identity, the complete protected-asset manifest, and the
-receipt comparison. Revalidate the root-owned launcher and its ancestors, then
-read the argument file once through one stable descriptor. Use only the
-validated in-memory array produced from that descriptor.
+receipt comparison. Repeat every applicable check in
+[Bound launcher routing](#bound-launcher-routing). Revalidate the root-owned
+launcher and its ancestors, then read the argument file once through one stable
+descriptor. Reconstruct `PROBE_LAUNCH_ENV` manually from the validated private
+record and use only those two validated in-memory arrays.
 
 ```bash
 package_line=$(pacman -Q -- claude-desktop-extra) || exit 1
@@ -721,13 +1099,23 @@ cmp -s -- "$GENERATED_BUILD_RECEIPT" "$PUBLISHED_BUILD_RECEIPT"
 PROBE_LAUNCH_ARGV=()
 load_reviewed_launch_argv PROBE_LAUNCH_ARGV
 check_reviewed_launcher
-env PROVINGKIT_OBSERVER_CONFIG="$PROBE_CONFIG" "${PROBE_LAUNCH_ARGV[@]}"
+PROBE_LAUNCH_ENV=()
+# Insert the exact reviewed name=value array from the private record.
+validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+/usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+  "PROVINGKIT_OBSERVER_CONFIG=$PROBE_CONFIG" \
+  "${PROBE_LAUNCH_ARGV[@]}"
+unset PROBE_LAUNCH_ARGV PROBE_LAUNCH_ENV
 ```
 
-The launcher check and stable argument-file read narrow the mutation window;
-they do not make script execution atomic. A changed package, launcher, launcher
-ancestor, argument-file identity, reconstructed argument digest, or protected
-asset is a stop condition. Preserve every original argument exactly.
+Immediately after launch, complete the selected-process, effective-argv,
+adjacent-archive, flags, and profile checks. These checks precede the bootstrap
+wait, but they do not complete the candidate bootstrap binding. The launcher,
+route, and stable-input checks narrow the mutation window; they do not make
+script execution atomic. A changed package, launcher, launcher ancestor,
+argument-file identity, reconstructed argument or environment digest, flags
+state, profile branch, executable, version, resources route, archive identity,
+or protected asset is a stop condition.
 
 After candidate launch and before waiting for bootstrap, submit this exact
 second prompt on the same recorded fixture:
@@ -741,7 +1129,9 @@ after binding the existing query. Under the later grant, the executor reads only
 that exact file, validates every generated bootstrap value, compares every
 binding field with the approved task, Code identity, candidate bytes,
 configuration digest, and clock domain, then exclusively creates the matching
-`arm.json`. The arm echoes every `BINDING_KEYS` field, including the Linux boot
+`arm.json`. Before creating the arm, compare the validated bootstrap PID with
+the already attested process and its copied-archive digest with the candidate
+digest. The arm echoes every `BINDING_KEYS` field, including the Linux boot
 domain. Follow the exact encoding and file-identity procedure in
 `private-input-construction.md`. The three query getters run only after arm
 acceptance. Do not start a getter or accept a settlement at or after the
@@ -826,10 +1216,11 @@ test "$(hash_file "$STAGE")" = "$CANDIDATE_SHA256"
 Repeat the package, ownership, complete-manifest, receipt, and reviewed
 archive-verification checks, including a fresh
 `check_reviewed_archive_verification` call. Immediately before the restored
-launch, recheck the package and pristine target, revalidate the launcher and
-its root-owned ancestors, and reconstruct the argument array through a newly
-opened stable descriptor. Do not reuse the candidate launch's array or reopen
-the argument path after validation.
+launch, recheck the package and pristine target and repeat every applicable
+check in [Bound launcher routing](#bound-launcher-routing). Revalidate the
+launcher and its root-owned ancestors, reconstruct the argument array through a
+newly opened stable descriptor, and reconstruct the clean environment from the
+private record. Do not reuse either candidate-launch array.
 
 ```bash
 package_line=$(pacman -Q -- claude-desktop-extra) || exit 1
@@ -843,11 +1234,19 @@ check_reviewed_archive_verification
 PROBE_LAUNCH_ARGV=()
 load_reviewed_launch_argv PROBE_LAUNCH_ARGV
 check_reviewed_launcher
-env -u PROVINGKIT_OBSERVER_CONFIG "${PROBE_LAUNCH_ARGV[@]}"
+PROBE_LAUNCH_ENV=()
+# Insert the exact reviewed name=value array from the private record.
+validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+/usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
+  "${PROBE_LAUNCH_ARGV[@]}"
+unset PROBE_LAUNCH_ARGV PROBE_LAUNCH_ENV
 ```
 
-Verify the selected profile opens and inspect the same fixture against the
-recorded restoration expectations. Restored bytes, protected assets, and task
+Complete the restored selected-process, effective-argv, and adjacent-archive
+attestation before accepting the launch. The restored cycle performs no
+bootstrap read or bootstrap-binding comparison. Then verify the selected
+profile opens and inspect the same fixture against the recorded restoration
+expectations. Restored bytes, protected assets, route attestation, and task
 behavior are separate acceptance checks.
 
 ## Package cleanup
