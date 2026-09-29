@@ -1,0 +1,190 @@
+import json
+from pathlib import Path
+import subprocess
+import sys
+import unittest
+
+SCRIPT = Path(__file__).with_name("accounting.py")
+
+class AccountingTests(unittest.TestCase):
+    def invoke(self, payload):
+        result = subprocess.run([sys.executable, str(SCRIPT)], input=json.dumps(payload), text=True, capture_output=True, check=True)
+        return json.loads(result.stdout)
+
+    def test_claude_boolean_counter_is_unknown_even_if_totals_match(self):
+        for field in ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"):
+            with self.subTest(field=field):
+                usage = {"input_tokens": 3, "output_tokens": 7, "cache_creation_input_tokens": 11, "cache_read_input_tokens": 13}
+                usage[field] = True
+                total = dict(zip(("inputTokens", "outputTokens", "cacheCreationInputTokens", "cacheReadInputTokens"), usage.values()))
+                event = {"type": "result", "is_error": False, "usage": usage, "modelUsage": {"model-x": total}}
+                result = self.invoke({"harness": "claude", "events": [event], "expected_results": 1, "terminal": "completed"})
+                self.assertEqual(result["status"], "unknown")
+                self.assertEqual(result["reason"], "malformed_counter")
+                self.assertIsNone(result["usage"])
+
+    def test_claude_incomplete_or_malformed_endpoint_does_not_produce_a_total(self):
+        event = {"type": "result", "is_error": False,
+                 "usage": {"input_tokens": 3, "output_tokens": 7, "cache_creation_input_tokens": 11, "cache_read_input_tokens": 13},
+                 "modelUsage": {"model-x": {"inputTokens": 3, "outputTokens": 7, "cacheCreationInputTokens": 11, "cacheReadInputTokens": 13}}}
+        base = {"harness": "claude", "events": [event], "expected_results": 1, "terminal": "completed"}
+        for replacement in ({"events": []}, {"expected_results": 2}, {"expected_results": True}, {"terminal": "failed"}, {"events": [None]}, {"events": [dict(event, modelUsage={})]}, {"events": [dict(event, is_error=True)]}):
+            with self.subTest(replacement=replacement):
+                result = self.invoke(dict(base, **replacement))
+                self.assertEqual(result["status"], "unknown")
+                self.assertIsNone(result["usage"])
+
+    def test_codex_reconciles_incremental_notifications_and_keeps_breakdowns_separate(self):
+        zero = {"inputTokens": 0, "cachedInputTokens": 0, "cacheWriteInputTokens": 0, "outputTokens": 0, "reasoningOutputTokens": 0, "totalTokens": 0}
+        one = {"inputTokens": 10, "cachedInputTokens": 8, "cacheWriteInputTokens": 0, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
+        two = {"inputTokens": 7, "cachedInputTokens": 4, "cacheWriteInputTokens": 0, "outputTokens": 2, "reasoningOutputTokens": 1, "totalTokens": 9}
+        total = {"inputTokens": 17, "cachedInputTokens": 12, "cacheWriteInputTokens": 0, "outputTokens": 5, "reasoningOutputTokens": 2, "totalTokens": 22}
+        events = [
+            {"method": "thread/tokenUsage/updated", "params": {"threadId": "session", "turnId": "turn-1", "tokenUsage": {"last": one, "total": one}}},
+            {"method": "thread/tokenUsage/updated", "params": {"threadId": "session", "turnId": "turn-2", "tokenUsage": {"last": two, "total": total}}},
+        ]
+        payload = {"harness": "codex", "events": events, "thread_id": "session", "completed_turn_ids": ["turn-1", "turn-2"], "baseline": {"kind": "verified_empty_thread", "total": zero}, "terminal": "completed"}
+        result = self.invoke(payload)
+        self.assertEqual(result["status"], "reported")
+        self.assertEqual(result["usage"], total)
+        self.assertEqual(result["usage"]["totalTokens"], 22)
+        self.assertEqual(result["synthetic_context_fill"], "unresolved_public_notifications")
+        self.assertEqual(result["coverage"], "observed_usage_only")
+        self.assertIsNone(result["complete_episode_usage"])
+
+    def test_codex_invalid_usage_never_becomes_zero_or_an_episode_total(self):
+        zero = {"inputTokens": 0, "cachedInputTokens": 0, "cacheWriteInputTokens": 0, "outputTokens": 0, "reasoningOutputTokens": 0, "totalTokens": 0}
+        counts = {"inputTokens": 10, "cachedInputTokens": 8, "cacheWriteInputTokens": 0, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
+        def base():
+            return {"harness": "codex", "events": [{"method": "thread/tokenUsage/updated", "params": {"threadId": "s", "turnId": "t", "tokenUsage": {"last": dict(counts), "total": dict(counts)}}}], "thread_id": "s", "completed_turn_ids": ["t"], "baseline": {"kind": "verified_empty_thread", "total": dict(zero)}, "terminal": "completed"}
+        cases = []
+        for location in ("baseline", "last", "total"):
+            for field in counts:
+                p = base()
+                row = p["baseline"]["total"] if location == "baseline" else p["events"][0]["params"]["tokenUsage"][location]
+                row[field] = True
+                cases.append(p)
+        for key, value in (("thread_id", "other"), ("completed_turn_ids", ["t", "missing"]), ("baseline", None), ("events", []), ("terminal", "failed")):
+            p = base(); p[key] = value; cases.append(p)
+        p = base(); p["events"][0]["params"]["tokenUsage"]["last"]["totalTokens"] = 14; cases.append(p)
+        for p in cases:
+            with self.subTest(payload=p):
+                result = self.invoke(p)
+                self.assertEqual(result["status"], "unknown")
+                self.assertIsNone(result["usage"])
+
+    def test_codex_rejects_impossible_breakdowns_even_when_endpoints_reconcile(self):
+        zero = {"inputTokens": 0, "cachedInputTokens": 0, "cacheWriteInputTokens": 0, "outputTokens": 0, "reasoningOutputTokens": 0, "totalTokens": 0}
+        bad = {"inputTokens": 10, "cachedInputTokens": 11, "cacheWriteInputTokens": 0, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
+        p = {"harness": "codex", "events": [{"method": "thread/tokenUsage/updated", "params": {"threadId": "s", "turnId": "t", "tokenUsage": {"last": bad, "total": bad}}}], "thread_id": "s", "completed_turn_ids": ["t"], "baseline": {"kind": "verified_empty_thread", "total": zero}, "terminal": "completed"}
+        result = self.invoke(p)
+        self.assertEqual(result["status"], "unknown")
+        self.assertEqual(result["reason"], "inconsistent_breakdown")
+        bad["cachedInputTokens"] = 3
+        bad["cacheWriteInputTokens"] = 100
+        result = self.invoke(p)
+        self.assertEqual(result["status"], "unknown")
+        self.assertEqual(result["reason"], "inconsistent_breakdown")
+
+    def test_codex_preserves_cache_write_breakdown_without_adding_it_twice(self):
+        zero = {"inputTokens": 0, "cachedInputTokens": 0, "cacheWriteInputTokens": 0,
+                "outputTokens": 0, "reasoningOutputTokens": 0, "totalTokens": 0}
+        usage = {"inputTokens": 10, "cachedInputTokens": 3, "cacheWriteInputTokens": 4,
+                 "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
+        payload = {"harness": "codex", "events": [{"method": "thread/tokenUsage/updated", "params": {
+            "threadId": "s", "turnId": "t", "tokenUsage": {"last": usage, "total": usage}}}],
+            "thread_id": "s", "completed_turn_ids": ["t"], "baseline": {"kind": "verified_empty_thread", "total": zero}, "terminal": "completed"}
+        result = self.invoke(payload)
+        self.assertEqual(result["status"], "reported")
+        self.assertEqual(result["usage"], usage)
+
+    def test_codex_requires_typed_unique_native_thread_and_turn_identities(self):
+        zero = {"inputTokens": 0, "cachedInputTokens": 0, "cacheWriteInputTokens": 0,
+                "outputTokens": 0, "reasoningOutputTokens": 0, "totalTokens": 0}
+        for thread, turn, completed in ((None, None, [None]), ("s", "t", "t"),
+                                        ("s", "t", ["t", "t"]), ("s", "t", [["t"]]),
+                                        ("s", "t", None), ("", "t", ["t"])):
+            with self.subTest(thread=thread, turn=turn, completed=completed):
+                payload = {"harness": "codex", "events": [{"method": "thread/tokenUsage/updated", "params": {
+                    "threadId": thread, "turnId": turn, "tokenUsage": {"last": zero, "total": zero}}}],
+                    "thread_id": thread, "completed_turn_ids": completed,
+                    "baseline": {"kind": "verified_empty_thread", "total": zero}, "terminal": "completed"}
+                result = self.invoke(payload)
+                self.assertEqual(result["status"], "unknown")
+                self.assertEqual(result["reason"], "invalid_native_identity")
+
+    def test_codex_malformed_baseline_kind_is_unknown_json(self):
+        for kind in ([], {}, None, True):
+            with self.subTest(kind=kind):
+                result = self.invoke({"harness": "codex", "terminal": "completed", "events": [],
+                    "thread_id": "s", "completed_turn_ids": ["t"], "baseline": {"kind": kind}})
+                self.assertEqual(result["status"], "unknown")
+                self.assertEqual(result["reason"], "missing_baseline")
+
+    def test_jev_failures_remain_unknown_and_cache_history_is_not_new_usage(self):
+        events = [
+            {"kind": "provider_start", "attempt_id": "a"},
+            {"kind": "provider_end", "attempt_id": "a", "outcome": "success", "usage": {"input_tokens": 100, "output_tokens": 2}},
+            {"kind": "cache_hit", "invocation_id": "b", "historical_usage": {"input_tokens": 100, "output_tokens": 2}},
+            {"kind": "provider_start", "attempt_id": "c"},
+            {"kind": "provider_end", "attempt_id": "c", "outcome": "error"},
+            {"kind": "provider_start", "attempt_id": "d"},
+        ]
+        result = self.invoke({"harness": "jev", "events": events, "terminal": "completed"})
+        self.assertEqual(result["status"], "unknown")
+        self.assertEqual(result["provider_attempts"], 3)
+        self.assertEqual(result["cache_hits"], 1)
+        self.assertEqual(result["known_usage"], {"input_tokens": 100, "output_tokens": 2})
+        self.assertEqual(result["unknown_attempt_ids"], ["c", "d"])
+        self.assertIsNone(result["usage"])
+
+    def test_jev_reports_valid_usage_even_when_the_attempt_failed(self):
+        events = [
+            {"kind": "provider_start", "attempt_id": "a"},
+            {"kind": "provider_end", "attempt_id": "a", "outcome": "error",
+             "usage": {"input_tokens": 41, "output_tokens": 2}},
+            {"kind": "cache_hit", "invocation_id": "b",
+             "historical_usage": {"input_tokens": 900, "output_tokens": 70}},
+        ]
+        result = self.invoke({"harness": "jev", "events": events, "terminal": "completed"})
+        self.assertEqual(result["status"], "reported")
+        self.assertEqual(result["usage"], {"input_tokens": 41, "output_tokens": 2})
+        self.assertEqual(result["unknown_attempt_ids"], [])
+
+    def test_jev_malformed_failure_usage_retains_an_unknown_remainder(self):
+        for usage in (None, {"input_tokens": True, "output_tokens": 2},
+                      {"input_tokens": 7}, {"input_tokens": -1, "output_tokens": 2}):
+            with self.subTest(usage=usage):
+                result = self.invoke({"harness": "jev", "terminal": "completed", "events": [
+                    {"kind": "provider_start", "attempt_id": "a"},
+                    {"kind": "provider_end", "attempt_id": "a", "outcome": "error", "usage": usage}]})
+                self.assertEqual(result["status"], "unknown")
+                self.assertEqual(result["unknown_attempt_ids"], ["a"])
+                self.assertIsNone(result["usage"])
+
+    def test_claude_rejects_mismatched_or_malformed_cumulative_fields(self):
+        for value in (4, True, None, -1):
+            with self.subTest(value=value):
+                event = {"type": "result", "is_error": False,
+                         "usage": {"input_tokens": 3, "output_tokens": 7, "cache_creation_input_tokens": 11, "cache_read_input_tokens": 13},
+                         "modelUsage": {"m": {"inputTokens": value, "outputTokens": 7, "cacheCreationInputTokens": 11, "cacheReadInputTokens": 13}}}
+                result = self.invoke({"harness": "claude", "terminal": "completed", "expected_results": 1, "events": [event]})
+                self.assertEqual(result["status"], "unknown")
+                self.assertIsNone(result["usage"])
+
+    def test_claude_reconciles_completed_results_without_double_counting(self):
+        events = [
+            {"type": "assistant", "message": {"usage": {"input_tokens": 9999, "output_tokens": 9999}}},
+            {"type": "result", "is_error": False, "usage": {"input_tokens": 3, "output_tokens": 7, "cache_creation_input_tokens": 11, "cache_read_input_tokens": 13}},
+            {"type": "result", "is_error": False, "usage": {"input_tokens": 5, "output_tokens": 9, "cache_creation_input_tokens": 17, "cache_read_input_tokens": 19}, "modelUsage": {"model-x": {"inputTokens": 8, "outputTokens": 16, "cacheCreationInputTokens": 28, "cacheReadInputTokens": 32}}},
+        ]
+        result = self.invoke({"harness": "claude", "events": events, "expected_results": 2, "terminal": "completed"})
+        self.assertEqual(result["status"], "reported")
+        self.assertEqual(result["usage"], {"input_tokens": 8, "output_tokens": 16, "cache_creation_input_tokens": 28, "cache_read_input_tokens": 32})
+        self.assertIsNone(result["billing"])
+        self.assertIsNone(result["quota"])
+        self.assertEqual(result["coverage"], "observed_usage_only")
+        self.assertIsNone(result["complete_episode_usage"])
+
+if __name__ == "__main__":
+    unittest.main()

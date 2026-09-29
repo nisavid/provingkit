@@ -1,0 +1,229 @@
+{
+  "sources/before-native-timing/experiment.py.txt": {
+    "original_sha256": "cbe11b52f7609678004944376571c55f4fa77caab8898f296528a1f871b7fdef",
+    "published_sha256": "4fc7d05b4a0e163d45398bb2a678be7d0a981ddd4dfcf50d22e26eb43648398d",
+    "scope": "source used for retained-r2 and invalid native r3/n01"
+  },
+  "sources/before-native-timing/experiment_hook.py.txt": {
+    "original_sha256": "03919ff09fd45fddb4d363f998e2548ecb6865c401fa452ae91cd485c4c8aabd",
+    "published_sha256": "03919ff09fd45fddb4d363f998e2548ecb6865c401fa452ae91cd485c4c8aabd",
+    "scope": "source used for retained-r2 and invalid native r3/n01"
+  },
+  "sources/before-native-timing/retained.py.txt": {
+    "original_sha256": "0f21725a64908451a9e6371fa4a6f4ac81d4f2321e7d5e0aa58d4ae5e701c0b2",
+    "published_sha256": "0f21725a64908451a9e6371fa4a6f4ac81d4f2321e7d5e0aa58d4ae5e701c0b2",
+    "scope": "source used for retained-r2 and invalid native r3/n01"
+  },
+  "sources/before-native-timing/test_experiment.py.txt": {
+    "original_sha256": "203bc5f8e3ad1826cea6ce0bac9636f395cd5424171ecee44cd4fd612006293a",
+    "published_sha256": "203bc5f8e3ad1826cea6ce0bac9636f395cd5424171ecee44cd4fd612006293a",
+    "scope": "source used for retained-r2 and invalid native r3/n01"
+  },
+  "sources/before-native-timing/test_retained.py.txt": {
+    "original_sha256": "273e2c666be6e0f17f3fc44f371e68cb51767a82384a150c9fa264a01f46c60c",
+    "published_sha256": "273e2c666be6e0f17f3fc44f371e68cb51767a82384a150c9fa264a01f46c60c",
+    "scope": "source used for retained-r2 and invalid native r3/n01"
+  },
+  "sources/before-relative-path/comparison/experiment.py.txt": {
+    "original_sha256": "cbe11b52f7609678004944376571c55f4fa77caab8898f296528a1f871b7fdef",
+    "published_sha256": "4fc7d05b4a0e163d45398bb2a678be7d0a981ddd4dfcf50d22e26eb43648398d",
+    "scope": "native r4 source for first five valid cells and invalid r4/n06"
+  },
+  "sources/before-relative-path/comparison/experiment_hook.py.txt": {
+    "original_sha256": "e3a292734ca6c1b29cffe2b19b2ca759baf22d2d1bb7d66cd4d08a9b9b77d543",
+    "published_sha256": "e3a292734ca6c1b29cffe2b19b2ca759baf22d2d1bb7d66cd4d08a9b9b77d543",
+    "scope": "native r4 source for first five valid cells and invalid r4/n06"
+  },
+  "sources/before-relative-path/comparison/test_experiment.py.txt": {
+    "original_sha256": "47c63ea18b84c053849c0b70380e911c8097f0883ebb931725289acf1d9ea940",
+    "projection_note": "Trailing line whitespace and extra terminal blank lines removed; original digest retained.",
+    "published_sha256": "37b3776b2006af8752ad77f65ee8e5bcee010c33efc58804d83f96caf8c368a1",
+    "scope": "native r4 source for first five valid cells and invalid r4/n06"
+  },
+  "sources/before-relative-path/qualification/fixture.py.txt": {
+    "original_sha256": "bee6e6aa29fbf7b4c0d17a6106357ab7b1832be9bb88342cac380075a4f6916b",
+    "published_sha256": "bee6e6aa29fbf7b4c0d17a6106357ab7b1832be9bb88342cac380075a4f6916b",
+    "scope": "native r4 source for first five valid cells and invalid r4/n06"
+  },
+  "sources/comparison/context_hook.py.txt": {
+    "original_sha256": "16577e4077f5d9288a45d48d4b96238c06a1188326f459352fd11edbb44d1f5e",
+    "published_sha256": "16577e4077f5d9288a45d48d4b96238c06a1188326f459352fd11edbb44d1f5e",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/experiment.py.txt": {
+    "original_sha256": "ec6c5dba304d809b75b5aa6a7c5f66556e1fcf54c763112f65e5a41bf7e08765",
+    "published_sha256": "c404760c07a6b2582c2455375130ee7c8febbb025f736285e3b2faf5a848d0f6",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/experiment_hook.py.txt": {
+    "original_sha256": "9154bdf8273a9c98dcf8f6fab9dcaa121b9ed19ac8d05cf8684e908706c9bbc1",
+    "published_sha256": "9154bdf8273a9c98dcf8f6fab9dcaa121b9ed19ac8d05cf8684e908706c9bbc1",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/native_controller.py.txt": {
+    "original_sha256": "e94a766be96cd1a9c803882d34a7287b54505a1e13e354f91d1e8ac7de34e3e2",
+    "published_sha256": "e94a766be96cd1a9c803882d34a7287b54505a1e13e354f91d1e8ac7de34e3e2",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/reference_probe.py.txt": {
+    "original_sha256": "676cc771d03959aea271c5a37036f9eb79be1f2095362384a454dd053ecaefd0",
+    "published_sha256": "676cc771d03959aea271c5a37036f9eb79be1f2095362384a454dd053ecaefd0",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/retained.py.txt": {
+    "original_sha256": "0f21725a64908451a9e6371fa4a6f4ac81d4f2321e7d5e0aa58d4ae5e701c0b2",
+    "published_sha256": "0f21725a64908451a9e6371fa4a6f4ac81d4f2321e7d5e0aa58d4ae5e701c0b2",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/test_context_hook.py.txt": {
+    "original_sha256": "516918eaa0ba20d41a42b5f46297f833a2e80d0343fb99161474d61644c6a518",
+    "published_sha256": "516918eaa0ba20d41a42b5f46297f833a2e80d0343fb99161474d61644c6a518",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/test_controller.py.txt": {
+    "original_sha256": "edda556cbe8647112f13468b0a4bf413d72fbeac13107b2e2eaaf848517e953c",
+    "published_sha256": "edda556cbe8647112f13468b0a4bf413d72fbeac13107b2e2eaaf848517e953c",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/test_experiment.py.txt": {
+    "original_sha256": "835e3f5d2c014cbe5677fbe41a562b6d50e6430cf1208935378d1e3e73fd038e",
+    "published_sha256": "835e3f5d2c014cbe5677fbe41a562b6d50e6430cf1208935378d1e3e73fd038e",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/comparison/test_retained.py.txt": {
+    "original_sha256": "273e2c666be6e0f17f3fc44f371e68cb51767a82384a150c9fa264a01f46c60c",
+    "published_sha256": "273e2c666be6e0f17f3fc44f371e68cb51767a82384a150c9fa264a01f46c60c",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/prepare-terminal-proposals.py.txt": {
+    "original_sha256": "5101131729d656f4761ee8e84122d655d9a149e2bb316b9d5022039fb795820e",
+    "published_sha256": "5101131729d656f4761ee8e84122d655d9a149e2bb316b9d5022039fb795820e",
+    "scope": "terminal-history conditional input preparation; no native effects"
+  },
+  "sources/qualification/derivation.json.txt": {
+    "original_sha256": "22541edca901380487ef3175b8ccd5fe88c7941b227af22fb4919c6b06276fba",
+    "published_sha256": "22541edca901380487ef3175b8ccd5fe88c7941b227af22fb4919c6b06276fba",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/fixture.py.txt": {
+    "original_sha256": "bc4cc48f461f9ef33167244fa8c99c060af3467a1e2602b1fff3d32c59b5e0db",
+    "published_sha256": "bc4cc48f461f9ef33167244fa8c99c060af3467a1e2602b1fff3d32c59b5e0db",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/hook.py.txt": {
+    "original_sha256": "a5e6261ac109327c746c26a8ea08d68cdffb13fc49f428b540cf4adbac054b8c",
+    "published_sha256": "a5e6261ac109327c746c26a8ea08d68cdffb13fc49f428b540cf4adbac054b8c",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/native_runner.py.txt": {
+    "original_sha256": "a4021a3c3f0ab347808cba596d066eabff90d72ce094bed3c9a04395f6af0223",
+    "published_sha256": "a4021a3c3f0ab347808cba596d066eabff90d72ce094bed3c9a04395f6af0223",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/native_support.py.txt": {
+    "original_sha256": "31b42df399d1987f5370c559d4336fef60cb9fff51c78ec1a8ef97408bd2a1a1",
+    "published_sha256": "31b42df399d1987f5370c559d4336fef60cb9fff51c78ec1a8ef97408bd2a1a1",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/observer.py.txt": {
+    "original_sha256": "631dcbf82eed419e911f189a7372651af1f2fe6cc77aa5f00a9ab2becbcb1632",
+    "published_sha256": "631dcbf82eed419e911f189a7372651af1f2fe6cc77aa5f00a9ab2becbcb1632",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/probe.py.txt": {
+    "original_sha256": "5fd2855d847f94b06d8f2cfa619dc347a12e3d1841c87d43c3e6e65572fdb5b5",
+    "published_sha256": "5fd2855d847f94b06d8f2cfa619dc347a12e3d1841c87d43c3e6e65572fdb5b5",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/test_qualification.py.txt": {
+    "original_sha256": "e548b62cae10a09f63ebe964e2d11fd73a878aeee51945a6cd108f66f60362dd",
+    "published_sha256": "e548b62cae10a09f63ebe964e2d11fd73a878aeee51945a6cd108f66f60362dd",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/test_transport.py.txt": {
+    "original_sha256": "d6cfe39dc42f01882a4fd2c59a0b5761f524685ba90cbccd54c23de3503361ef",
+    "published_sha256": "d6cfe39dc42f01882a4fd2c59a0b5761f524685ba90cbccd54c23de3503361ef",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/qualification/transport.py.txt": {
+    "original_sha256": "0b6dada830dd6dbdff4cb2c4ccd444c6680044ddb00a08041c39c40514a49d8f",
+    "published_sha256": "0b6dada830dd6dbdff4cb2c4ccd444c6680044ddb00a08041c39c40514a49d8f",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/accounting.py.txt": {
+    "original_sha256": "3a3aaa24e9f09953d381779a994ac3b5b766bd0edf64226ea4348c3daca4db9d",
+    "published_sha256": "3a3aaa24e9f09953d381779a994ac3b5b766bd0edf64226ea4348c3daca4db9d",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/cases.py.txt": {
+    "original_sha256": "98d5ff4d405bee3e6e13b4b4eebe6c17fba7ad19c22593f6af1353268a0168f3",
+    "published_sha256": "98d5ff4d405bee3e6e13b4b4eebe6c17fba7ad19c22593f6af1353268a0168f3",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/codex-settings-fixture.json.txt": {
+    "original_sha256": "56d6948df1fca092022db18fb80092b50d759535090fc3bca1bb661ca01e6c80",
+    "published_sha256": "56d6948df1fca092022db18fb80092b50d759535090fc3bca1bb661ca01e6c80",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/context.py.txt": {
+    "original_sha256": "dbc13439ced9df6c352c8b71a5d6ccdf650d38f9ad75f4a676a6199202e506d8",
+    "published_sha256": "dbc13439ced9df6c352c8b71a5d6ccdf650d38f9ad75f4a676a6199202e506d8",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/deterministic.py.txt": {
+    "original_sha256": "06fc93c3f460859c74e542fd5d0efe551a93b90be6c5a91b47f6d5b200d26af5",
+    "published_sha256": "06fc93c3f460859c74e542fd5d0efe551a93b90be6c5a91b47f6d5b200d26af5",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/jev_candidate.mjs.txt": {
+    "original_sha256": "cea5318c914206aad1716d9c3d83a0f9c4568e014a64bdb0c92ccec944f1d620",
+    "published_sha256": "cea5318c914206aad1716d9c3d83a0f9c4568e014a64bdb0c92ccec944f1d620",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/provider_ledger.mjs.txt": {
+    "original_sha256": "7c6536a2a3447c9e6a43c62ec5991b6aa8d167abccc85becfe340279eb012781",
+    "published_sha256": "7c6536a2a3447c9e6a43c62ec5991b6aa8d167abccc85becfe340279eb012781",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/questions-policy.json.txt": {
+    "original_sha256": "695a3e54c995ac6819933f988ad3ad2bc6c46e7d351e3272865f9a568c2b0347",
+    "published_sha256": "695a3e54c995ac6819933f988ad3ad2bc6c46e7d351e3272865f9a568c2b0347",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/test_accounting.py.txt": {
+    "original_sha256": "6003ad6569268b260fc3b377f17db2764f6367d05231975f2ebfe6063bd234bc",
+    "published_sha256": "6003ad6569268b260fc3b377f17db2764f6367d05231975f2ebfe6063bd234bc",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/test_context.py.txt": {
+    "original_sha256": "091a12a6f55b43fa254b799db44edd726d95d5025f04e1008a192724eb7106c4",
+    "projection_note": "Trailing line whitespace and extra terminal blank lines removed; original digest retained.",
+    "published_sha256": "95ef74097cf2e3c663e8bb58dc5e13564248d3aa90d5ac93c260300b86e606c1",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/test_deterministic.py.txt": {
+    "original_sha256": "348c3c871ef27627d2fb555162f019e499ba712a73ac6f37340a68ac024e5818",
+    "published_sha256": "348c3c871ef27627d2fb555162f019e499ba712a73ac6f37340a68ac024e5818",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/test_jev_adapter.mjs.txt": {
+    "original_sha256": "2ecf55dd2300458d17a77b8a26aa82ed3e4754fa3cb980dc2c04d25d22f99c70",
+    "published_sha256": "2ecf55dd2300458d17a77b8a26aa82ed3e4754fa3cb980dc2c04d25d22f99c70",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/test_jev_policy.mjs.txt": {
+    "original_sha256": "279fa047223592c493a60a2896a632a741ff440c0d72c403b487738e6c7b82a9",
+    "published_sha256": "279fa047223592c493a60a2896a632a741ff440c0d72c403b487738e6c7b82a9",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/test_provider_ledger.mjs.txt": {
+    "original_sha256": "36ed1b0a3676fe7dbabc5b33c0bff92f2ea7d3442ca0c27ea9e1c1243badd05e",
+    "published_sha256": "36ed1b0a3676fe7dbabc5b33c0bff92f2ea7d3442ca0c27ea9e1c1243badd05e",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  },
+  "sources/source/test_provider_sdk.mjs.txt": {
+    "original_sha256": "438befb3075a8b56a34ebf181df6addb659df06fda74fa7511e4698cee6aac5e",
+    "published_sha256": "438befb3075a8b56a34ebf181df6addb659df06fda74fa7511e4698cee6aac5e",
+    "scope": "current native r5 source; normalized archival source, not an installed procedure"
+  }
+}

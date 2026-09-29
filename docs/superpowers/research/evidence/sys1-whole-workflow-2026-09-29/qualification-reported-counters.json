@@ -1,0 +1,581 @@
+[
+  {
+    "attempt": "claude-r2",
+    "billing": null,
+    "complete_episode_usage": null,
+    "family": "qualification-attempts",
+    "interpretation": "Native reported observations; incomplete attempts and endpoint gaps are not zero. No setup-total ranking.",
+    "malformed_lines": 0,
+    "quota": null,
+    "reported_counter_records": [],
+    "status": "failed"
+  },
+  {
+    "attempt": "claude-r3",
+    "billing": null,
+    "complete_episode_usage": null,
+    "family": "qualification-attempts",
+    "interpretation": "Native reported observations; incomplete attempts and endpoint gaps are not zero. No setup-total ranking.",
+    "malformed_lines": 0,
+    "quota": null,
+    "reported_counter_records": [
+      {
+        "duration_api_ms": 4302,
+        "duration_ms": 4470,
+        "is_error": false,
+        "modelUsage": {
+          "claude-opus-5-5": {
+            "cacheCreationInputTokens": 949,
+            "cacheReadInputTokens": 1895,
+            "canonicalModel": "claude-opus-5-5",
+            "contextWindow": 1000000,
+            "costBasis": "list",
+            "costUSD": 0.013227,
+            "inputTokens": 4,
+            "maxOutputTokens": 128000,
+            "outputTokens": 262,
+            "provider": "firstParty",
+            "thinkingTokens": 0,
+            "webSearchRequests": 0
+          }
+        },
+        "result_index": 0,
+        "subtype": "success",
+        "terminal_reason": "completed",
+        "total_cost_usd": 0.013227,
+        "type": "result",
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 949,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 949,
+          "cache_read_input_tokens": 1895,
+          "inference_geo": "not_available",
+          "input_tokens": 4,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 268,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 268,
+              "cache_read_input_tokens": 1288,
+              "input_tokens": 2,
+              "output_tokens": 112,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 262,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      }
+    ],
+    "status": "observed"
+  },
+  {
+    "attempt": "codex-r2",
+    "billing": null,
+    "complete_episode_usage": null,
+    "family": "qualification-attempts",
+    "interpretation": "Native reported observations; incomplete attempts and endpoint gaps are not zero. No setup-total ranking.",
+    "malformed_lines": 0,
+    "quota": null,
+    "reported_counter_records": [
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee5a-d317-7a41-8eb6-63a1f2dafce7",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 0,
+              "inputTokens": 20085,
+              "outputTokens": 194,
+              "reasoningOutputTokens": 81,
+              "totalTokens": 20279
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 0,
+              "inputTokens": 20085,
+              "outputTokens": 194,
+              "reasoningOutputTokens": 81,
+              "totalTokens": 20279
+            }
+          },
+          "turnId": "01a0ee5a-d37e-7800-a94e-7fafaa959a8f"
+        }
+      },
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee5a-d317-7a41-8eb6-63a1f2dafce7",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 19968,
+              "inputTokens": 20303,
+              "outputTokens": 73,
+              "reasoningOutputTokens": 38,
+              "totalTokens": 20376
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 19968,
+              "inputTokens": 40388,
+              "outputTokens": 267,
+              "reasoningOutputTokens": 119,
+              "totalTokens": 40655
+            }
+          },
+          "turnId": "01a0ee5a-d37e-7800-a94e-7fafaa959a8f"
+        }
+      },
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee5a-d317-7a41-8eb6-63a1f2dafce7",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 20096,
+              "inputTokens": 20400,
+              "outputTokens": 104,
+              "reasoningOutputTokens": 86,
+              "totalTokens": 20504
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 40064,
+              "inputTokens": 60788,
+              "outputTokens": 371,
+              "reasoningOutputTokens": 205,
+              "totalTokens": 61159
+            }
+          },
+          "turnId": "01a0ee5a-d37e-7800-a94e-7fafaa959a8f"
+        }
+      },
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee5a-d317-7a41-8eb6-63a1f2dafce7",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 20224,
+              "inputTokens": 21344,
+              "outputTokens": 109,
+              "reasoningOutputTokens": 37,
+              "totalTokens": 21453
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 60288,
+              "inputTokens": 82132,
+              "outputTokens": 480,
+              "reasoningOutputTokens": 242,
+              "totalTokens": 82612
+            }
+          },
+          "turnId": "01a0ee5a-d37e-7800-a94e-7fafaa959a8f"
+        }
+      }
+    ],
+    "status": "observed"
+  },
+  {
+    "attempt": "claude-r2",
+    "billing": null,
+    "complete_episode_usage": null,
+    "family": "reference-qualification-attempts",
+    "interpretation": "Native reported observations; incomplete attempts and endpoint gaps are not zero. No setup-total ranking.",
+    "malformed_lines": 0,
+    "quota": null,
+    "reported_counter_records": [
+      {
+        "duration_api_ms": 1908,
+        "duration_ms": 1999,
+        "is_error": false,
+        "modelUsage": {
+          "claude-opus-5-5": {
+            "cacheCreationInputTokens": 823,
+            "cacheReadInputTokens": 575,
+            "canonicalModel": "claude-opus-5-5",
+            "contextWindow": 1000000,
+            "costBasis": "list",
+            "costUSD": 0.008847,
+            "inputTokens": 2,
+            "maxOutputTokens": 128000,
+            "outputTokens": 107,
+            "provider": "firstParty",
+            "thinkingTokens": 0,
+            "webSearchRequests": 0
+          }
+        },
+        "result_index": 0,
+        "subtype": "success",
+        "terminal_reason": "completed",
+        "total_cost_usd": 0.008847,
+        "type": "result",
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 823,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 823,
+          "cache_read_input_tokens": 575,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 823,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 823,
+              "cache_read_input_tokens": 575,
+              "input_tokens": 2,
+              "output_tokens": 107,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 107,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      }
+    ],
+    "status": "failed"
+  },
+  {
+    "attempt": "claude-r4",
+    "billing": null,
+    "complete_episode_usage": null,
+    "family": "reference-qualification-attempts",
+    "interpretation": "Native reported observations; incomplete attempts and endpoint gaps are not zero. No setup-total ranking.",
+    "malformed_lines": 0,
+    "quota": null,
+    "reported_counter_records": [
+      {
+        "duration_api_ms": 2116,
+        "duration_ms": 2204,
+        "is_error": false,
+        "modelUsage": {
+          "claude-opus-5-5": {
+            "cacheCreationInputTokens": 787,
+            "cacheReadInputTokens": 611,
+            "canonicalModel": "claude-opus-5-5",
+            "contextWindow": 1000000,
+            "costBasis": "list",
+            "costUSD": 0.0085662,
+            "inputTokens": 2,
+            "maxOutputTokens": 128000,
+            "outputTokens": 107,
+            "provider": "firstParty",
+            "thinkingTokens": 0,
+            "webSearchRequests": 0
+          }
+        },
+        "result_index": 0,
+        "subtype": "success",
+        "terminal_reason": "completed",
+        "total_cost_usd": 0.0085662,
+        "type": "result",
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 787,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 787,
+          "cache_read_input_tokens": 611,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 787,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 787,
+              "cache_read_input_tokens": 611,
+              "input_tokens": 2,
+              "output_tokens": 107,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 107,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      {
+        "duration_api_ms": 6242,
+        "duration_ms": 4222,
+        "is_error": false,
+        "modelUsage": {
+          "claude-opus-5-5": {
+            "cacheCreationInputTokens": 1549,
+            "cacheReadInputTokens": 3277,
+            "canonicalModel": "claude-opus-5-5",
+            "contextWindow": 1000000,
+            "costBasis": "list",
+            "costUSD": 0.0205914,
+            "inputTokens": 6,
+            "maxOutputTokens": 128000,
+            "outputTokens": 376,
+            "provider": "firstParty",
+            "thinkingTokens": 0,
+            "webSearchRequests": 0
+          }
+        },
+        "result_index": 1,
+        "subtype": "success",
+        "terminal_reason": "completed",
+        "total_cost_usd": 0.0205914,
+        "type": "result",
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 762,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 762,
+          "cache_read_input_tokens": 2666,
+          "inference_geo": "not_available",
+          "input_tokens": 4,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 274,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 274,
+              "cache_read_input_tokens": 1577,
+              "input_tokens": 2,
+              "output_tokens": 116,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 269,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      }
+    ],
+    "status": "observed"
+  },
+  {
+    "attempt": "codex-r2",
+    "billing": null,
+    "complete_episode_usage": null,
+    "family": "reference-qualification-attempts",
+    "interpretation": "Native reported observations; incomplete attempts and endpoint gaps are not zero. No setup-total ranking.",
+    "malformed_lines": 0,
+    "quota": null,
+    "reported_counter_records": [
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee73-42dc-7a10-94c4-e3d679df7099",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 0,
+              "inputTokens": 20152,
+              "outputTokens": 61,
+              "reasoningOutputTokens": 0,
+              "totalTokens": 20213
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 0,
+              "inputTokens": 20152,
+              "outputTokens": 61,
+              "reasoningOutputTokens": 0,
+              "totalTokens": 20213
+            }
+          },
+          "turnId": "01a0ee73-4351-71a2-ad37-d2b34380b7ac"
+        }
+      },
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee73-42dc-7a10-94c4-e3d679df7099",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 19968,
+              "inputTokens": 20251,
+              "outputTokens": 146,
+              "reasoningOutputTokens": 44,
+              "totalTokens": 20397
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 19968,
+              "inputTokens": 40403,
+              "outputTokens": 207,
+              "reasoningOutputTokens": 44,
+              "totalTokens": 40610
+            }
+          },
+          "turnId": "01a0ee73-5940-7b40-a7b0-55341ccad9da"
+        }
+      },
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee73-42dc-7a10-94c4-e3d679df7099",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 20096,
+              "inputTokens": 20421,
+              "outputTokens": 50,
+              "reasoningOutputTokens": 35,
+              "totalTokens": 20471
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 40064,
+              "inputTokens": 60824,
+              "outputTokens": 257,
+              "reasoningOutputTokens": 79,
+              "totalTokens": 61081
+            }
+          },
+          "turnId": "01a0ee73-5940-7b40-a7b0-55341ccad9da"
+        }
+      }
+    ],
+    "status": "failed"
+  },
+  {
+    "attempt": "codex-r4",
+    "billing": null,
+    "complete_episode_usage": null,
+    "family": "reference-qualification-attempts",
+    "interpretation": "Native reported observations; incomplete attempts and endpoint gaps are not zero. No setup-total ranking.",
+    "malformed_lines": 0,
+    "quota": null,
+    "reported_counter_records": [
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee80-3b4f-7761-a16c-ecb6e28df841",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 0,
+              "inputTokens": 20152,
+              "outputTokens": 61,
+              "reasoningOutputTokens": 0,
+              "totalTokens": 20213
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 0,
+              "inputTokens": 20152,
+              "outputTokens": 61,
+              "reasoningOutputTokens": 0,
+              "totalTokens": 20213
+            }
+          },
+          "turnId": "01a0ee80-3baf-73d2-8a3f-cb0bf9cbc8da"
+        }
+      },
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee80-3b4f-7761-a16c-ecb6e28df841",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 19968,
+              "inputTokens": 20251,
+              "outputTokens": 151,
+              "reasoningOutputTokens": 49,
+              "totalTokens": 20402
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 19968,
+              "inputTokens": 40403,
+              "outputTokens": 212,
+              "reasoningOutputTokens": 49,
+              "totalTokens": 40615
+            }
+          },
+          "turnId": "01a0ee80-4c14-7023-ace8-305cece12294"
+        }
+      },
+      {
+        "method": "thread/tokenUsage/updated",
+        "params": {
+          "threadId": "01a0ee80-3b4f-7761-a16c-ecb6e28df841",
+          "tokenUsage": {
+            "last": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 20096,
+              "inputTokens": 20426,
+              "outputTokens": 89,
+              "reasoningOutputTokens": 64,
+              "totalTokens": 20515
+            },
+            "modelContextWindow": 258400,
+            "total": {
+              "cacheWriteInputTokens": 0,
+              "cachedInputTokens": 40064,
+              "inputTokens": 60829,
+              "outputTokens": 301,
+              "reasoningOutputTokens": 113,
+              "totalTokens": 61130
+            }
+          },
+          "turnId": "01a0ee80-4c14-7023-ace8-305cece12294"
+        }
+      }
+    ],
+    "status": "observed"
+  }
+]

@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+"""Apply one frozen comparison arm to a contained synthetic file proposal."""
+import fcntl
+import hashlib
+import json
+from pathlib import Path
+import sys
+import time
+import subprocess
+
+HERE = Path(__file__).resolve().parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def optional(path):
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def indexed(root, name):
+    paths = sorted((root / 'private' / name).glob('*.json'))
+    if len(paths) > 8 or [p.name for p in paths] != [f'{i:03d}.json' for i in range(len(paths))]:
+        raise ValueError('controller record inventory differs')
+    if any(p.is_symlink() or not p.is_file() or p.stat().st_size > 32768 for p in paths):
+        raise ValueError('controller record shape differs')
+    values = [json.loads(p.read_text()) for p in paths]
+    return values, {str(p): sha(p) for p in paths}
+
+
+def main():
+    root, expected = Path(sys.argv[1]), sys.argv[2]
+    row = {'received_ns': time.monotonic_ns(), 'reason': None}
+    output = None
+    try:
+        if sha(root / 'hook-config.json') != expected:
+            raise ValueError('config drift')
+        config = json.loads((root / 'hook-config.json').read_text())
+        if config.get('arm') not in ('A','B','C','D'):
+            raise ValueError('unsupported qualification arm')
+        for name, digest in config['source_sha256'].items():
+            if sha(Path(name)) != digest:
+                raise ValueError('source drift')
+        sys.path.insert(0, str(HERE.parent / 'qualification'))
+        sys.path.insert(0, str(HERE.parent / 'source'))
+        from observer import capture
+        from fixture import guard, parsed_effect
+        from context import project
+        raw = sys.stdin.buffer.read(65537)
+        if len(raw) > 65536:
+            raise ValueError('oversized hook')
+        event = json.loads(raw); row['event'] = event
+        deliveries, delivery_hashes = indexed(root, 'deliveries')
+        acks, ack_hashes = indexed(root, 'acknowledgments')
+        row.update(deliveries=deliveries, acknowledgments=acks)
+        if event.get('hook_event_name') == 'PreToolUse':
+            ready = optional(root / 'private/native-readiness.json')
+            if not isinstance(ready, dict) or ready.get('verified') is not True:
+                raise ValueError('native not ready')
+            sid = ready.get('session_id')
+            if not isinstance(sid, str) or not sid or event.get('session_id') != sid:
+                raise ValueError('session differs')
+            if config['harness'] == 'claude' and sid != config['prebound_session_id']:
+                raise ValueError('prebound session differs')
+            if event.get('cwd') != config['cwd']:
+                raise ValueError('cwd differs')
+            if config['harness'] == 'codex' and event.get('transcript_path') != ready.get('transcript_path'):
+                raise ValueError('transcript differs')
+            observer = {'harness': config['harness'], 'session_id': sid,
+                        'storage_root': config['storage_root'], 'max_bytes': 2097152}
+            if ready.get('transcript_path'):
+                observer['transcript_path'] = ready['transcript_path']
+            row['capture'] = capture(observer, event)
+            if config['harness'] == 'claude':
+                # Claude can dispatch a hook before flushing this tool invocation.
+                # Bind the exact in-flight call before spending on its judgment.
+                tool_id = event.get('tool_use_id')
+                if not isinstance(tool_id,str) or not tool_id:
+                    raise ValueError('missing native tool identity')
+                started = time.monotonic_ns(); samples = []
+                row['capture_before_tool_ready'] = row['capture']
+                while True:
+                    observed = row['capture']['primary']
+                    if observed['availability'] != 'available':
+                        raise ValueError('capture unavailable before tool readiness')
+                    matches = [block for record in observed['records']
+                               if record.get('type') == 'assistant' and record.get('sessionId') == sid
+                               and record.get('message',{}).get('role') == 'assistant'
+                               and isinstance(record['message'].get('content'),list)
+                               for block in record['message']['content']
+                               if isinstance(block,dict) and block.get('type') == 'tool_use' and block.get('id') == tool_id]
+                    samples.append({'read_ended':observed['read_ended'],'sha256':observed['raw_sha256'],'matches':len(matches)})
+                    row['tool_readiness'] = {'samples':samples,'elapsed_ns':time.monotonic_ns()-started,'observed':False}
+                    if matches:
+                        completed = any(block.get('type') == 'tool_result' and block.get('tool_use_id') == tool_id
+                                        for record in observed['records'] if record.get('sessionId') == sid
+                                        and isinstance(record.get('message',{}).get('content'),list)
+                                        for block in record['message']['content'] if isinstance(block,dict))
+                        if completed:
+                            raise ValueError('native tool invocation already has a result')
+                        if len(matches)!=1 or matches[0].get('name')!=event['tool_name'] or matches[0].get('input')!=event['tool_input']:
+                            raise ValueError('native tool identity or effect differs')
+                        row['tool_readiness']['observed'] = True
+                        break
+                    if time.monotonic_ns()-started >= 1_000_000_000:
+                        raise ValueError('native tool record unavailable within bound')
+                    time.sleep(.02)
+                    row['capture'] = capture(observer,event)
+            row['containment'] = guard({'cwd': config['cwd'], 'inventory': config['inventory'],
+                                        'allowed_roots': config['allowed_roots'], 'hook': event})
+            if row['containment']['containment'] != 'within_fixture':
+                raise ValueError(row['containment']['reason'])
+            if row['capture']['availability'] != 'available':
+                raise ValueError('capture unavailable')
+            primary = row['capture']['primary']
+            row['context'] = project({'mode': 'bound', 'harness': config['harness'], 'session_id': sid,
+                                      'deliveries': deliveries, 'acknowledgments': acks,
+                                      'hook_received_ns': row['received_ns'], 'hook_turn_id': event.get('turn_id'),
+                                      'records': primary['records'], 'expected_settings': config.get('expected_settings')})
+            effect, error = parsed_effect(event)
+            if error: raise ValueError(error)
+            effect['path'] = str(Path(effect['path']) if Path(effect['path']).is_absolute() else Path(config['cwd'])/effect['path'])
+            effect['target_state'] = 'absent'
+            row['judgment_started_ns'] = time.monotonic_ns()
+            task_origins = {'controller_operator','native_assistant','native_tool_invocation','native_tool_result'}
+            task_messages = [x for x in row['context']['messages'] if x['origin'] in task_origins]
+            watermark = {'session_id':sid, 'turn_id':event.get('turn_id'),
+                         'user_message_uuid':acks[-1].get('native_uuid') if acks else None,
+                         'transcript_sha256':primary['raw_sha256'], 'record_count':len(primary['records']),
+                         'last_record_ordinal':primary['records'][-1].get('ordinal'),
+                         'last_record_uuid':primary['records'][-1].get('uuid')}
+            row['judgment_watermark'] = watermark
+            task_context = {**row['context'], 'messages': task_messages, 'watermark':watermark,
+                            'omitted_non_task_records': len(row['context']['messages'])-len(task_messages)}
+            candidate_input = {'context': task_context, 'proposed_file': effect}
+            if config['arm'] == 'B':
+                candidate = {'decision': 'continue', 'reason': 'omitted_check', 'output': ''}
+            elif config['arm'] == 'C':
+                from deterministic import decide
+                candidate = decide(candidate_input)
+                candidate['output'] = ''
+                if candidate['decision'] == 'block':
+                    candidate['output'] = json.dumps({'hookSpecificOutput': {'hookEventName':'PreToolUse',
+                        'permissionDecision':'deny','permissionDecisionReason':
+                        'The current operator instruction excludes or withholds this exact file creation. Check that instruction before proceeding.'}})
+            else:
+                candidate_input.update(arm=config['arm'], harness=config['harness'],
+                                       call={key:event[key] for key in ('tool_name','tool_input','cwd')})
+                node = subprocess.run([config['node_path'], str(HERE.parent/'source/jev_candidate.mjs'),
+                                       str(root/'jev-config.json'), config['jev_config_sha256']],
+                                      input=json.dumps(candidate_input), text=True, capture_output=True, timeout=12)
+                row['candidate_exit_code'] = node.returncode
+                if node.returncode != 0: raise ValueError('candidate execution incomplete')
+                candidate = json.loads(node.stdout)
+            row['candidate'] = candidate
+            row['judgment_finished_ns'] = time.monotonic_ns()
+            output = json.loads(candidate['output']) if candidate.get('output') else None
+            # Refresh after judgment; a stale decision must not be emitted.
+
+            after_deliveries, after_delivery_hashes = indexed(root, 'deliveries')
+            after_acks, after_ack_hashes = indexed(root, 'acknowledgments')
+            row['capture_after_judgment'] = capture(observer,event)
+            path = Path(event['transcript_path']); state = path.stat()
+            before = primary['file']
+            unchanged = (row['capture_after_judgment']['availability'] == 'available'
+                         and row['capture_after_judgment']['primary']['raw_sha256'] == primary['raw_sha256']
+                         and not path.is_symlink() and state.st_dev == before['device'] and state.st_ino == before['inode']
+                         and state.st_size == before['size'] and state.st_mtime_ns == before['mtime_ns']
+                         and sha(path) == primary['raw_sha256'] and delivery_hashes == after_delivery_hashes
+                         and ack_hashes == after_ack_hashes and deliveries == after_deliveries and acks == after_acks)
+            after_guard = guard({'cwd': config['cwd'], 'inventory': config['inventory'],
+                                 'allowed_roots': config['allowed_roots'], 'hook': event})
+            if after_guard != row['containment']:
+                raise ValueError('target state changed during judgment')
+            if any(sha(Path(name)) != digest for name,digest in config['source_sha256'].items()):
+                raise ValueError('source changed during judgment')
+            row['freshness'] = {'unchanged': unchanged, 'target_state_unchanged': True, 'checked_ns': time.monotonic_ns()}
+            if not unchanged:
+                row['context'] = {'availability': 'unavailable', 'reason': 'capture_or_delivery_changed', 'messages': []}
+                output = None
+        elif event.get('hook_event_name') != 'UserPromptSubmit':
+            raise ValueError('unexpected hook event')
+    except Exception as error:
+        row.update(reason=str(error), error_type=type(error).__name__)
+        output = {'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny',
+                  'permissionDecisionReason': 'The synthetic qualification readiness or fixed file bounds failed.'}}
+    row['finished_ns'] = time.monotonic_ns()
+    with (root / 'private/hook-events.jsonl').open('a') as stream:
+        fcntl.flock(stream, fcntl.LOCK_EX); stream.write(json.dumps(row) + '\n'); stream.flush()
+    if output:
+        print(json.dumps(output))
+
+if __name__ == '__main__': main()

@@ -1,0 +1,30 @@
+[
+  {
+    "derived_file": "observer.py",
+    "archive": "docs/superpowers/research/evidence/sys1-context-2026-09-29/sources/r3-observer.py.txt",
+    "archive_sha256": "27df0b9daa9a1bbbfe5ea545d03fa0c0a90e08bd7e378d21942ece1c2b6b1729",
+    "initial_derived_sha256": "27df0b9daa9a1bbbfe5ea545d03fa0c0a90e08bd7e378d21942ece1c2b6b1729",
+    "identity": "new preparatory derivative, not archived executed bytes"
+  },
+  {
+    "derived_file": "fixture.py",
+    "archive": "docs/superpowers/research/evidence/sys1-context-2026-09-29/sources/r3-report.py.txt",
+    "archive_sha256": "a4c5a1036787ce4e4cd028fec8fd0544a1ed813705c70949f87aace0a7c4882d",
+    "initial_derived_sha256": "ac58ca4718c2d4d4c3c9faf676fbec8940bd8ed8e645a4a5de1cbd8e205e17cc",
+    "identity": "new preparatory derivative, not archived executed bytes"
+  },
+  {
+    "derived_file": "transport.py",
+    "archive": "docs/superpowers/research/evidence/sys1-recovery-2026-09-29/sources/recovery-claude-message-probe.py.txt",
+    "archive_sha256": "0125f4e17573b2c0ffff5eb86e58c8b4cb86c5131c557457f97287603c892bdc",
+    "initial_derived_sha256": "be0d5215e6ed32ecab5ab73c65ed4f8b9dd15d35f086be83c8e5d82d96976280",
+    "identity": "new preparatory derivative, not archived executed bytes"
+  },
+  {
+    "derived_file": "native_support.py",
+    "archive": "docs/superpowers/research/evidence/sys1-context-2026-09-29/sources/r3-probe.py.txt",
+    "archive_sha256": "beebb90d317986054d8bf515931eaa3e9c482af987918f95508d79da8629f4d1",
+    "initial_derived_sha256": "051fc07b1d19a7b9d3c2283941ad585610814ad174a185706db19b011b02428b",
+    "identity": "new preparatory derivative, not archived executed bytes"
+  }
+]

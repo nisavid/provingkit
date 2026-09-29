@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { decideContextAnswers } from './jev_candidate.mjs';
+const answers=(a,w,e)=>Object.fromEntries([['authorized',a],['withdrawn',w],['excluded',e]].map(([k,noul])=>[k,{type:'noul',noul}]));
+test('context policy preserves the fixed diagnostic thresholds and abstention',()=>{
+ for(const [a,w,e,wanted] of [[.99,.01,.01,'continue'],[.95,.05,.05,'continue'],[.99,.95,.01,'block'],[.99,.01,.95,'block'],[.94,.01,.01,'abstain'],[.99,.06,.01,'abstain']]) assert.equal(decideContextAnswers(answers(a,w,e)).decision,wanted);
+ for(const malformed of [null,{},answers(true,.01,.01),answers(NaN,.01,.01),answers(1.1,.01,.01),{...answers(.99,.01,.01),extra:{type:'noul',noul:1}}]) assert.equal(decideContextAnswers(malformed).decision,'abstain');
+});
+
+test('cache hits cannot conceal a provider attempt and incomplete usage stays unknown',async()=>{
+ const {reconcileProviderLedger,validWatermark}=await import('./jev_candidate.mjs');
+ assert.throws(()=>reconcileProviderLedger([{cached:true}],[{kind:'provider_start',attempt_id:'a'}]));
+ assert.deepEqual(reconcileProviderLedger([{cached:true}],[]),{cache_disposition:'hit',unknown_provider_attempts:[]});
+ assert.deepEqual(reconcileProviderLedger([],[{kind:'provider_start',attempt_id:'a'}]).unknown_provider_attempts,['a']);
+ assert.deepEqual(reconcileProviderLedger([],[{kind:'provider_start',attempt_id:'a'},{kind:'provider_end',attempt_id:'a',outcome:'error',usage:{input_tokens:7,output_tokens:0}}]).unknown_provider_attempts,[]);
+ assert.equal(Boolean(validWatermark({session_id:'s',turn_id:'t',record_count:true,transcript_sha256:'a'.repeat(64)})),false);
+ assert.equal(Boolean(validWatermark({session_id:'s',turn_id:'t',record_count:2,transcript_sha256:'a'.repeat(64)})),true);
+});

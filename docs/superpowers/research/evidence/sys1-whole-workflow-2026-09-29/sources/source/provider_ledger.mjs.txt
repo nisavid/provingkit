@@ -1,0 +1,62 @@
+/** Record each actual fetch attempt; never copy authentication headers or error text. */
+import { createHash, randomUUID } from 'node:crypto';
+
+const digest = value => createHash('sha256').update(value).digest('hex');
+const stamp = () => ({ wall: new Date().toISOString(), monotonic_ns: process.hrtime.bigint().toString() });
+const counters = usage => usage && Number.isSafeInteger(usage.input_tokens) && usage.input_tokens >= 0
+  && Number.isSafeInteger(usage.output_tokens) && usage.output_tokens >= 0
+  ? { input_tokens: usage.input_tokens, output_tokens: usage.output_tokens } : null;
+
+async function inspect(response, { maxBytes, timeoutMs }) {
+  if (!response.body) return { value: null, status: 'missing' };
+  const reader=response.clone().body.getReader();
+  const chunks=[]; let size=0, timer;
+  try {
+    const limit=new Promise(resolve=>{ timer=setTimeout(()=>resolve({timedOut:true}),timeoutMs); });
+    while (true) {
+      const next=await Promise.race([reader.read(),limit]);
+      if (next.timedOut) return { value:null, status:'timeout' };
+      if (next.done) break;
+      size+=next.value.byteLength;
+      if (size>maxBytes) return { value:null, status:'oversized' };
+      chunks.push(next.value);
+    }
+    return { value:JSON.parse(Buffer.concat(chunks).toString('utf8')), status:'parsed' };
+  } catch { return { value:null, status:'malformed' }; }
+  finally {
+    clearTimeout(timer);
+    // A tee cancellation can wait for the original consumer; do not await it.
+    void reader.cancel().catch(()=>{});
+  }
+}
+
+export function makeAttemptFetch({ invocationId, record, fetchImpl = globalThis.fetch,
+                                   inspection = {maxBytes:65536, timeoutMs:1000} }) {
+  if (typeof invocationId !== 'string' || !invocationId || typeof record !== 'function') throw new TypeError('Invalid ledger binding');
+  if (!Number.isSafeInteger(inspection.maxBytes) || inspection.maxBytes<1
+      || !Number.isSafeInteger(inspection.timeoutMs) || inspection.timeoutMs<1) throw new TypeError('Invalid inspection bound');
+  return async (input, init) => {
+    const request = new Request(input, init);
+    const body = await request.clone().text();
+    const payload = JSON.parse(body);
+    const attemptId = randomUUID();
+    record({ kind: 'provider_start', invocation_id: invocationId, attempt_id: attemptId, at: stamp(),
+      request_sha256: digest(body), requested_model: typeof payload.model === 'string' ? payload.model : null });
+    let response;
+    try {
+      response = await fetchImpl(input, init);
+    } catch (error) {
+      record({ kind: 'provider_end', invocation_id: invocationId, attempt_id: attemptId, at: stamp(),
+        outcome: 'error', http_status: null, usage: null, failure: 'fetch_rejected' });
+      throw error;
+    }
+    const observed=await inspect(response,inspection);
+    const parsed=observed.value;
+    record({ kind: 'provider_end', invocation_id: invocationId, attempt_id: attemptId, at: stamp(),
+      outcome: response.ok ? 'success' : 'error', http_status: response.status,
+      returned_model: typeof parsed?.model === 'string' ? parsed.model : null,
+      request_id: response.headers.get('x-request-id'), usage: counters(parsed?.usage),
+      usage_inspection: observed.status });
+    return response;
+  };
+}
