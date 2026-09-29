@@ -1,11 +1,11 @@
 {
-  "published_processor_revision": "38c3d191756ba5974405da3c32cadfb3d63cd044",
+  "published_processor_revision": "e48778f3d733d6c82961b7fed56b9bd43bee5f5f",
   "processor_files": {
     "scripts/behavior_eval_receipts.py": "400925088ffe1da0222a16ff5ec07502012df106eee31f5c038e4390dfd4f45f",
-    "scripts/behavior_eval_inventory.py": "aa2184347eb386eead680a48f14a561506036b8a6360feb8aa69ecf21e818023",
-    "scripts/behavior_eval_corpora.py": "e0de12694e9312e3886c0ac3b1370d61bcade4b5e624b6b75ad486023be01bec",
+    "scripts/behavior_eval_inventory.py": "50213cfd732162bbe7aad047cf6667323ddf3add29f79e85a9bec1663440518a",
+    "scripts/behavior_eval_corpora.py": "0900ceef2a402beeca42a95b5ab3ef8fa08136c8b2c2c77c664146630ee5d64a",
     "release/behavior-eval-policy.json": "38ffc0e27fd236d9e47e9cac46f4d8bd38ad662e32e48b4f8f0e5f6cd353fc62",
-    "release/behavior-eval-receipt-v1.schema.json": "59775e83b849017064a948388d3106c34cefdc36ccca2ec51bd5cee05e8f79e8"
+    "release/behavior-eval-receipt-v1.schema.json": "ad6f02bcb6d1d5c8e4e3d9032e635b4024e72278caac5188d2cb372f0132a018"
   },
   "corpus_sha256": "137200655a9701f7479c2c708fde0f3755c5967db1e00ae4073abebbcc6786c3",
   "thresholds": {
@@ -434,8 +434,8 @@
   "trigger_prompt_template": "Request to classify for skill triggering:\n{query}\n\nThis is a trigger-selection probe, not a request to perform the task.\nDo not run commands, inspect files, call external tools, access GitHub, or mutate any state.\nDo not use any skill merely because this is a probe or because a temporary skill exists.\nUse the temporary skill only when its description matches the request text above.\nIf an available temporary skill applies to the request above, load and use that skill now,\nthen follow its SKILL.md instructions exactly and stop. Do not answer from the skill name\nor description alone; the triggered answer is defined only inside the loaded skill body.\nDo not explain whether or why a skill applies.\nIf no temporary skill is loaded, answer exactly: SKILL_NOT_TRIGGERED",
   "request_prefix": "Execute the writing task in this JSON object. The fixture contains synthetic facts for the task. candidate_bundle contains the applicable skill instructions and routed reference text; use the supplied contents without opening files. Return only the requested writing and any requested handoff. Do not call tools, inspect the environment, consult other files, or perform any actions described in the synthetic brief.",
   "receipt_procedure": {
-    "revision": "38c3d191756ba5974405da3c32cadfb3d63cd044",
+    "revision": "e48778f3d733d6c82961b7fed56b9bd43bee5f5f",
     "path": "docs/behavior-eval-receipts.md",
-    "sha256": "16ad5af3ecebda307e3a0326945b3853c77cd000348e098ced04be9d976254f5"
+    "sha256": "d3caa35af4f5de0cb47597423be4ae9a3aa29878cfc17b539045f58981c2ec2c"
   }
 }

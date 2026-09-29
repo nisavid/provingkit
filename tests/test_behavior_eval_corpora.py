@@ -13,6 +13,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CorpusTests(unittest.TestCase):
+    def test_deep_source_bytes_remain_diagnostics_with_declared_scope(self):
+        content = b"[" * 50_000 + b"0" + b"]" * 50_000
+        for path in ("evals/example/corpus.json", "evals/skill-routing-matrix.json"):
+            with self.subTest(path=path):
+                result = corpora.inspect_document(path, content)
+                self.assertEqual(result["records"], [])
+                self.assertIsNone(result["raw"])
+                self.assertEqual(result["diagnostics"][0]["code"], "invalid-json")
+                self.assertEqual(result["source"]["path"], path)
+                if path == "evals/skill-routing-matrix.json":
+                    self.assertEqual(result["role"], "scope")
+                    self.assertEqual(result["scope"], "production-release")
+                else:
+                    self.assertEqual(result["role"], "unsupported")
+                json.dumps(result, ensure_ascii=False, allow_nan=False).encode("utf-8")
+
     def test_source_admission_rejects_nonfinite_numbers_and_unpaired_surrogates(self):
         for content in (
             b'{"skill_name":"writing","evals":[{"id":1e309}]}',
@@ -85,6 +101,18 @@ class CorpusTests(unittest.TestCase):
                 result = corpora.normalize_records(records, mapping, {path: content})
                 self.assertEqual(result["cases"][0]["status"], "unresolved")
                 self.assertEqual(result["diagnostics"][0]["code"], "invalid-expectation-map")
+
+    def test_deep_expectation_map_keeps_selected_cases_unresolved(self):
+        path = "evals/example/corpus.json"
+        content = b'{"scenarios":[{"id":"one","expectations":[{"id":"safe","text":"Keep.","severity":"safety"}]}]}'
+        records = corpora.inspect_document(path, content)["records"]
+        nested = b"[" * 50_000 + b"0" + b"]" * 50_000
+        mapping = b'{"schema_version":1,"entries":[],"unused":' + nested + b'}'
+        result = corpora.normalize_records(records, mapping, {path: content})
+        self.assertEqual(len(result["cases"]), 1)
+        self.assertEqual(result["cases"][0]["status"], "unresolved")
+        self.assertEqual(result["diagnostics"][0]["code"], "invalid-expectation-map")
+        json.dumps(result, ensure_ascii=False, allow_nan=False).encode("utf-8")
 
     def test_normalization_requires_present_fixtures_and_unchanged_source_observations(self):
         path = "evals/example/skills/writing/evals.json"

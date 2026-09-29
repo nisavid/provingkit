@@ -182,6 +182,12 @@ class ReceiptRoundtripTests(unittest.TestCase):
             self.assertEqual(checked["status"], "pass", checked)
             self.assertEqual(checked["affected_skills"], [SKILL])
             self.assertEqual(comparison["affected_skills"], [SKILL])
+            member = inventory.check_member(
+                fixture.source, fixture.baseline, containing, "receipts", "mergecraft"
+            )
+            self.assertEqual(member["status"], "pass", member)
+            self.assertEqual(member["checked_skills"], [SKILL])
+            self.assertEqual(member["coverage_basis"]["receipt_scope"], "selected-member")
             self.assertFalse(result["public_receipt_ready"])
 
 

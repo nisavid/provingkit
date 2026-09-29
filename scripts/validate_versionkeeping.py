@@ -1664,8 +1664,31 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repository", nargs="?", type=Path)
     parser.add_argument("--write-content-lock", action="store_true")
+    parser.add_argument("--source-stage", action="store_true")
+    parser.add_argument("--base")
+    parser.add_argument("--candidate")
+    parser.add_argument("--receipt-root")
+    parser.add_argument("--procedure-revision")
     arguments = parser.parse_args()
     repo_root = arguments.repository or Path(__file__).resolve().parents[1]
+    context = None
+    if any(
+        value is not None
+        for value in (
+            arguments.base,
+            arguments.candidate,
+            arguments.receipt_root,
+            arguments.procedure_revision,
+        )
+    ):
+        try:
+            from behavior_eval_source_stage import check_context, prepare_context
+        except ImportError:
+            parser.error("Receipt source-stage support is unavailable")
+
+        context = prepare_context(
+            parser, arguments, repo_root, writing=arguments.write_content_lock
+        )
     try:
         if arguments.write_content_lock:
             snapshot = capture_content_lock_write_snapshot(repo_root)
@@ -1683,9 +1706,14 @@ def main() -> int:
     ) as error:
         print(f"Versionkeeping contract validation failed: {error}", file=sys.stderr)
         return 1
-    print("Versionkeeping contract validation passed")
+    print(
+        "Versionkeeping contract validation passed",
+        file=sys.stderr if context is not None else sys.stdout,
+    )
     if arguments.write_content_lock:
         print("Versionkeeping semantic content lock updated")
+    if context is not None:
+        return check_context(context, "versionkeeping")
     return 0
 
 

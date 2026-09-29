@@ -533,6 +533,58 @@ public-command/member-validator/processor roundtrip establishes mechanics only,
 not current evaluation qualification or authority to choose S, execute models,
 write a lock, commit, or publish.
 
+## Export relation observations for a changed commit identity
+
+The reviewed recorder stores `reconciliation_execution` in each original
+application record when execution completes. It retains the scalar case ID,
+repetition, exact response digest, completion status, process return code, and
+session identity observed in the matched original initialization and result.
+Preparation also retains the accepted rubrics. These fields must exist before
+counted execution; preserve older records unchanged when they lack this shape.
+
+After `receipt-results`, use the same sidecar and source-bound helper as
+`member-project` to export a private reconciliation capsule:
+
+```sh
+python scripts/mergecraft_writing_evals.py receipt-reconciliation \
+  --projection "$projection" \
+  --projection-sha256 "$projection_sha256" \
+  --output "$private/relation-reconciliation"
+```
+
+The create-only output directory must be outside the retained source checkout.
+The exporter repeats the full member projection checks and writes
+`reconciliation.json`, `provenance.json`, the member projections under `member/`,
+and exact original artifact copies under `originals/`. Each reference binds the
+whole artifact digest and the selected JSON pointer. The provenance records the
+original locations and modes separately from the private copies. Retain the
+complete capsule: it includes original streams, requests, responses, grading,
+prior judgments, adjudications, and independent native grades.
+
+For each of the 51 applications, the declaration connects the original recorded
+execution to its source revision, corpus, request, delivered runtime and fixture
+bytes, response, preparation-time rubric, and grades. The thirteen native entries
+remain recorded invocations with the original query and entrypoint. Their
+projected invocation Booleans do not replace independent native grading.
+
+After the owner identifies the actual landed source Q and supported processing
+revision P, consume this declaration through the `reconcile` command in
+[the ordinary Receipt procedure](../behavior-eval-receipts.md). It checks the
+original delivered inputs against Q and creates a new Receipt bound to Q.
+Preserve the earlier S Receipt and all originals. Commit the new Receipt only
+in the separate receipt-containing successor allowed by that procedure, then
+run the selected member's source-stage check with the supported procedure
+revision. This export does not select Q or P, invoke a provider, publish source,
+or activate the separate retained-receipt caller.
+
+Inspect both results. Ordinary quality policy may pass at two of three while
+this member requires all 195 judgments and thirteen independent native grades
+to pass. The capsule retains `candidate_passed: false` when that stricter
+contract fails; a successful export or ordinary Receipt cannot clear it.
+Reconcile with the complete supported method bound before the observations.
+A changed method or original artifact requires a new preparation or an explicit
+owner-reviewed correspondence, never a rewritten historical record.
+
 ## Normalize completed Markdown application evidence
 
 Before projecting receipt-bound observations, the integration owner checks every

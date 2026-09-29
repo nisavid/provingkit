@@ -116,6 +116,43 @@ class WritingEvaluationPreparationTests(unittest.TestCase):
         verified = self.command("verify", "--evaluation", self.output, "--repo", ROOT)
         self.assertEqual(verified.returncode, 0, verified.stderr)
 
+    def test_recorded_relation_run_retains_supported_original_execution(self):
+        self.prepare()
+        manifest_sha = hashlib.sha256(
+            (self.output / "manifest.json").read_bytes()
+        ).hexdigest()
+        result = self.command(
+            "run",
+            "--evaluation",
+            self.output,
+            "--repo",
+            ROOT,
+            "--manifest-sha256",
+            manifest_sha,
+            "--run-id",
+            "relations/case-00-with-skill-1",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        run = self.output / "runs/relations/case-00-with-skill-1"
+        record = json.loads((run / "record.json").read_bytes())
+        original = record["reconciliation_execution"]
+        self.assertEqual(original["case_id"], 0)
+        self.assertEqual(original["repetition"], 1)
+        self.assertNotIn("id", original)
+        self.assertNotIn("native_agent", original)
+        self.assertTrue(original["execution"]["completed"])
+        self.assertEqual(original["execution"]["returncode"], 0)
+        events = [
+            json.loads(line)
+            for line in (run / "stdout.jsonl").read_text().split("\n")
+            if line
+        ]
+        self.assertEqual(original["execution"]["thread_ids"], [events[0]["session_id"]])
+        self.assertEqual(events[0]["session_id"], events[-1]["session_id"])
+        response_sha = hashlib.sha256((run / "response.txt").read_bytes()).hexdigest()
+        self.assertEqual(original["response_sha256"], response_sha)
+        self.assertEqual(original["execution"]["response_sha256"], response_sha)
+
     def test_execution_retains_exact_bytes_and_refuses_run_directory_reuse(self):
         self.fixture_client()
         self.prepare()
@@ -1599,6 +1636,154 @@ class RelationReceiptTests(unittest.TestCase):
         value = json.loads(self.projection.read_bytes())
         value[key] = self.ref(path)
         self.write(self.projection, value)
+
+    def test_relation_export_reconciles_original_runs_after_squash_with_strict_result(
+        self,
+    ):
+        self.member_fixture(all_pass=False)
+        capsule = self.root / "reconciliation-capsule"
+        args = (
+            "receipt-reconciliation",
+            "--projection",
+            self.projection,
+            "--projection-sha256",
+            self.sha(self.projection.read_bytes()),
+            "--output",
+            capsule,
+        )
+        exported = self.command(*args)
+        self.assertEqual(exported.returncode, 0, exported.stderr)
+        summary = json.loads(exported.stdout)
+        self.assertFalse(summary["candidate_passed"])
+        self.assertEqual(summary["judgments"], 195)
+        tree = self.git("rev-parse", self.revision + "^{tree}")
+        landed = self.git(
+            "commit-tree",
+            tree,
+            "-p",
+            self.base_revision,
+            "-m",
+            "Constructed squash with equal delivered inputs",
+        )
+        self.assertNotEqual(landed, self.revision)
+        reconciled = self.command(
+            "--repository",
+            self.repo,
+            "reconcile",
+            "--revision",
+            landed,
+            "--processing-revision",
+            self.revision,
+            "--skill",
+            self.skill,
+            "--results",
+            capsule / "reconciliation.json",
+            helper="scripts/behavior_eval_inventory.py",
+        )
+        self.assertEqual(reconciled.returncode, 0, reconciled.stderr)
+        receipt = json.loads(reconciled.stdout)
+        self.assertEqual(receipt["candidate_revision"], landed)
+        self.assertEqual((len(receipt["runs"]), len(receipt["triggers"])), (51, 13))
+        self.assertEqual(
+            {r["reconciliation"]["original_revision"] for r in receipt["runs"]},
+            {self.revision},
+        )
+        identities = [
+            r["reconciliation"]["execution_identity"]["identity_sha256"]
+            for r in receipt["runs"]
+        ]
+        self.assertEqual(len(set(identities)), 51)
+        self.assertEqual(
+            sum(not e["passed"] for r in receipt["runs"] for e in r["expectations"]), 1
+        )
+        strict = json.loads((capsule / "member/verification-report.json").read_bytes())
+        self.assertFalse(strict["candidate_passed"])
+        self.assertEqual(strict["ordinary"]["status"], "pass")
+        before = {str(p): p.read_bytes() for p in capsule.rglob("*") if p.is_file()}
+        self.assertNotEqual(self.command(*args).returncode, 0)
+        self.assertEqual(
+            before, {str(p): p.read_bytes() for p in capsule.rglob("*") if p.is_file()}
+        )
+
+    def test_relation_reconciliation_refuses_changed_landed_inputs_and_originals(self):
+        self.member_fixture()
+        capsule = self.root / "reconciliation-capsule"
+        exported = self.command(
+            "receipt-reconciliation",
+            "--projection",
+            self.projection,
+            "--projection-sha256",
+            self.sha(self.projection.read_bytes()),
+            "--output",
+            capsule,
+        )
+        self.assertEqual(exported.returncode, 0, exported.stderr)
+        declaration = json.loads((capsule / "reconciliation.json").read_bytes())
+
+        def reconcile(revision):
+            return self.command(
+                "--repository",
+                self.repo,
+                "reconcile",
+                "--revision",
+                revision,
+                "--processing-revision",
+                self.revision,
+                "--skill",
+                self.skill,
+                "--results",
+                capsule / "reconciliation.json",
+                helper="scripts/behavior_eval_inventory.py",
+            )
+
+        runtime = declaration["runtime_inputs"][0]
+        fixture = next(
+            path
+            for path in declaration["runs"][0]["inputs"]
+            if path not in declaration["runtime_inputs"]
+        )
+        for path in (
+            runtime,
+            fixture,
+            self.source + "/evals.json",
+            self.source + "/trigger-evals.json",
+        ):
+            with self.subTest(changed_input=path):
+                source = self.repo / path
+                original = source.read_bytes()
+                if path.endswith("/evals.json"):
+                    document = json.loads(original)
+                    document["evals"][0]["prompt"] += " Changed candidate prompt."
+                    self.write(source, document)
+                elif path.endswith("/trigger-evals.json"):
+                    document = json.loads(original)
+                    document[0]["query"] += " Changed candidate query."
+                    self.write(source, document)
+                else:
+                    source.write_bytes(original + b"\nChanged delivered bytes.\n")
+                self.git("add", path)
+                tree = self.git("write-tree")
+                candidate = self.git(
+                    "commit-tree",
+                    tree,
+                    "-p",
+                    self.base_revision,
+                    "-m",
+                    "Construct changed landed inputs",
+                )
+                source.write_bytes(original)
+                self.git("read-tree", self.revision)
+                rejected = reconcile(candidate)
+                self.assertNotEqual(rejected.returncode, 0, rejected.stdout)
+                self.assertEqual(json.loads(rejected.stdout)["status"], "error")
+
+        response = capsule / declaration["runs"][0]["response"]["path"]
+        response.write_bytes(response.read_bytes() + b"Changed retained original.")
+        rejected = reconcile(self.revision)
+        self.assertNotEqual(rejected.returncode, 0, rejected.stdout)
+        error = json.loads(rejected.stdout)
+        self.assertEqual(error["status"], "error")
+        self.assertIn("digest", error["message"])
 
     def test_member_project_requires_original_native_grade_coverage(self):
         self.member_fixture()

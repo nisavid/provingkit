@@ -20,7 +20,7 @@ processor. Python, Git, and `jsonschema` are required. The package verifies the
 five processing files against
 [the reviewed correspondence](../../scripts/mergecraft_pr_writing_evals/correspondence.json).
 Its supported public processing revision **P** is
-`38c3d191756ba5974405da3c32cadfb3d63cd044`. A changed processor, client, native
+`e48778f3d733d6c82961b7fed56b9bd43bee5f5f`. A changed processor, client, native
 recorder, or prompt constructor requires reviewed correspondence and affected
 tests before use. Preserve populated source maps. Missing dependencies stop the
 operation.
@@ -228,6 +228,23 @@ original execution revisions, and both snapshot digests distinct. The prepared
 snapshot and reconciliation snapshot can differ. Likewise, the rich grade's
 executor digest identifies its envelope, while the reconciled public run's
 executor digest identifies the response.
+
+For the normal Mergecraft source-stage route, invoke the complete member validator
+at clean C using the separately recorded procedure D:
+
+```sh
+python -B scripts/validate_mergecraft.py "$source_checkout" --source-stage \
+  --base "$B" --candidate "$C" --receipt-root "$RECEIPTS" \
+  --procedure-revision "$D"
+```
+
+The running five-file processor must match P, and the running receipt procedure
+must match D. Structural validation and the full member's selected receipts must
+pass. The PR-writing adapter qualifies only its own receipt; it does not replace
+other selected skills' evidence or the stricter relation-member requirements.
+Preserve the existing original P/D/S identities when adopting this method for
+new preparation. Historical correspondence and landing activation remain with
+their owning procedures.
 
 ## Verify changes and integration
 

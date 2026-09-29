@@ -405,6 +405,20 @@ def execute_one(evaluation: Path, spec: dict, executor: dict) -> dict:
         and not timed_out
         and observed["stream_valid"],
     }
+    observed_session = record["init"].get("session_id")
+    record["reconciliation_execution"] = {
+        "case_id": spec["case_id"],
+        "repetition": spec["repetition"],
+        "response_sha256": record["response_sha256"],
+        "execution": {
+            "completed": record["technically_valid"],
+            "returncode": returncode,
+            "thread_ids": [observed_session]
+            if isinstance(observed_session, str) and observed_session.strip()
+            else [],
+            "response_sha256": record["response_sha256"],
+        },
+    }
     create(run / "record.json", encode(record))
     for path in run.iterdir():
         if path.is_file():
@@ -1107,6 +1121,13 @@ def receipt_binding_data(
     return {
         "schema_version": 1,
         "stage": "prepared-relation-binding",
+        "rubrics": {
+            str(case["case_id"]["id"]): [
+                {key: expectation[key] for key in ("id", "severity", "text")}
+                for expectation in case["expectations"]
+            ]
+            for case in descriptor["cases"]
+        },
         "repository": str(repo.absolute()),
         "source_revision": revision,
         "snapshot_sha256": core.document_digest(snapshot),
@@ -3063,7 +3084,7 @@ def member_supplements(inputs, proposal, lineage, native_by_id, mapping):
     return projected
 
 
-def member_project(projection_path, projection_sha256, output):
+def member_projection_payloads(projection_path, projection_sha256, output):
     core, _ = receipt_modules()
     inputs = ReceiptInputs()
     proposal = inputs.json(projection_path, projection_sha256)
@@ -3284,6 +3305,12 @@ def member_project(projection_path, projection_sha256, output):
         ],
     }
     payloads["verification-report.json"] = encode(verification)
+    return payloads
+
+
+def member_project(projection_path, projection_sha256, output):
+    payloads = member_projection_payloads(projection_path, projection_sha256, output)
+    verification = json.loads(payloads["verification-report.json"])
     output.mkdir(mode=0o700)
     for name, raw in payloads.items():
         create(output / name, raw)
@@ -3292,11 +3319,243 @@ def member_project(projection_path, projection_sha256, output):
         "member output reread differs",
     )
     return {
-        "candidate_passed": candidate_passed,
+        "candidate_passed": verification["candidate_passed"],
         "applications": 51,
         "judgments": 195,
         "native_grades": 13,
         "files_sha256": {name: digest(raw) for name, raw in payloads.items()},
+    }
+
+
+def receipt_reconciliation(projection_path, projection_sha256, output):
+    """Export original observations for separate current-source reconciliation."""
+    core, _ = receipt_modules()
+    member = member_projection_payloads(projection_path, projection_sha256, output)
+    verification = core.read_json(member["verification-report.json"])
+    inputs = ReceiptInputs()
+    member_inputs(inputs, verification["inputs"])
+    proposal = inputs.json(projection_path, projection_sha256)
+    binding = inputs.reference(proposal["binding"])
+    lineage = inputs.reference(proposal["final_lineage"])
+    finalized = Path(proposal["final_lineage"]["path"]).parent
+    results = inputs.json(finalized / "results.json")
+    repo = Path(binding["repository"])
+    require("rubrics" in binding, "original preparation lacks reconciliation rubrics")
+    payloads = {"member/" + name: raw for name, raw in member.items()}
+    copies = {}
+
+    def reference(path, pointer="", format="json"):
+        path = Path(path).absolute()
+        raw = inputs.raw(path)
+        name = "originals/" + digest(raw)
+        payloads[name] = raw
+        copies[str(path)] = {
+            "original": inputs.files[str(path)],
+            "copy": name,
+        }
+        return {
+            "path": name,
+            "sha256": digest(raw),
+            "format": format,
+            "pointer": pointer,
+        }
+
+    def retained(original):
+        inputs.raw(original["path"], original["sha256"])
+        return reference(
+            original["path"],
+            original.get("pointer", ""),
+            original.get("format", "json"),
+        )
+
+    def pointer(value):
+        return str(value).replace("~", "~0").replace("/", "~1")
+
+    runs, runtime_cases = [], {}
+    for bound, observed, result in zip(
+        binding["runs"], lineage["runs"], results["runs"]
+    ):
+        directory = Path(bound["directory"])
+        record = inputs.json(directory / "record.json")
+        original = record.get("reconciliation_execution")
+        require(
+            isinstance(original, dict),
+            "original execution lacks supported recording-time shape",
+        )
+        require(
+            original
+            == {
+                "case_id": bound["case_id"]["id"],
+                "repetition": bound["repetition"],
+                "response_sha256": record["response_sha256"],
+                "execution": {
+                    "completed": True,
+                    "returncode": 0,
+                    "thread_ids": [record["session_id"]],
+                    "response_sha256": record["response_sha256"],
+                },
+            }
+            and record["technically_valid"] is True
+            and record["session_id"]
+            == record["init"]["session_id"]
+            == record["result"]["session_id"],
+            "original recorded execution differs from matched session, response, or coordinate",
+        )
+        request_path = directory / "request.txt"
+        request = inputs.json(request_path)
+        runtime = sorted(request["candidate_bundle"])
+        runtime_cases[str(bound["case_id"]["id"])] = {
+            "case_id": bound["case_id"],
+            "runtime_inputs": runtime,
+        }
+        delivered = {
+            path: {
+                "representation": "utf8",
+                "value": reference(request_path, "/candidate_bundle/" + pointer(path)),
+            }
+            for path in runtime
+        }
+        delivered.update(
+            {
+                "evals/mergecraft/skills/" + path: {
+                    "representation": "utf8",
+                    "value": reference(request_path, "/fixture/" + pointer(path)),
+                }
+                for path in request["fixture"]
+            }
+        )
+        rubric = reference(
+            proposal["binding"]["path"], "/rubrics/" + pointer(bound["case_id"]["id"])
+        )
+        grader = observed["grader_model"]
+        runs.append(
+            {
+                "case_id": bound["case_id"],
+                "repetition": bound["repetition"],
+                "execution_record": reference(
+                    directory / "record.json", "/reconciliation_execution"
+                ),
+                "original_revision": reference(
+                    proposal["binding"]["path"], "/source_revision"
+                ),
+                "original_corpus_sha256": reference(
+                    binding["snapshot"]["path"],
+                    "/inputs/" + pointer(RELATION_EVALS + "/evals.json") + "/sha256",
+                ),
+                "prompt": reference(request_path, "/prompt"),
+                "response": reference(directory / "response.txt", format="utf8"),
+                "inputs": delivered,
+                "executor_model": {
+                    "basis": "requested",
+                    "value": reference(directory / "record.json", "/model_requested"),
+                },
+                "grader_model": {
+                    "basis": grader["basis"],
+                    "value": retained(grader["reference"]),
+                },
+                "grading_record": retained(observed["original_grader"]),
+                "graded_response": {
+                    "representation": "sha256",
+                    "value": reference(
+                        observed["original_grader"]["path"], "/response_sha256"
+                    ),
+                },
+                "original_expectations": rubric,
+                "rubric": {"representation": "expectations", "value": rubric},
+                "grades": reference(finalized / result["grading"], "/expectations"),
+                "previous_grading": [
+                    retained(item) for item in observed["previous_grading"]
+                ],
+                "adjudication": retained(observed["adjudication"])
+                if observed["adjudication"] is not None
+                else None,
+            }
+        )
+    triggers = []
+    for number, (bound, observed) in enumerate(
+        zip(binding["triggers"], lineage["triggers"])
+    ):
+        directory = Path(bound["directory"])
+        triggers.append(
+            {
+                "case_id": bound["case_id"],
+                "observation_kind": "recorded-invocation",
+                "record": reference(directory / "record.json"),
+                "model": {
+                    "basis": "requested",
+                    "value": reference(directory / "record.json", "/model_requested"),
+                },
+                "query": reference(
+                    repo / RELATION_EVALS / "trigger-evals.json", f"/{number}/query"
+                ),
+                "entrypoint": {
+                    "representation": "utf8",
+                    "value": reference(repo / RELATION / "SKILL.md", format="utf8"),
+                },
+                "triggered": reference(
+                    finalized / observed["observation"], "/triggered"
+                ),
+                "limits": [
+                    binding["limits"],
+                    "Invocation Boolean is projected from retained original call/result/source correspondence; independent native grades remain in the strict member result.",
+                ],
+            }
+        )
+    declaration = {
+        "schema_version": 1,
+        "method": "reconciled-after-run",
+        "executor_model_id": binding["executor_model_id"],
+        "grader_model_id": binding["grader_model"]["id"],
+        "runtime_inputs": sorted(
+            {path for row in runtime_cases.values() for path in row["runtime_inputs"]}
+        ),
+        "runtime_inputs_complete": True,
+        "case_runtime_inputs": list(runtime_cases.values()),
+        "runs": runs,
+        "triggers": triggers,
+    }
+    core.validate(declaration, "reconciliationResults")
+    # Preserve the complete original provenance, including streams, envelopes,
+    # independent native grades, history, and failed or adjudicated judgments.
+    for identity in list(inputs.files.values()):
+        reference(identity["path"], format="utf8")
+    payloads["reconciliation.json"] = encode(declaration)
+    payloads["provenance.json"] = encode(
+        {
+            "schema_version": 1,
+            "original_source_revision": binding["source_revision"],
+            "projection": {
+                "path": str(projection_path.absolute()),
+                "sha256": projection_sha256,
+            },
+            "binding": proposal["binding"],
+            "lineage": proposal["final_lineage"],
+            "copies": list(copies.values()),
+            "candidate_passed": verification["candidate_passed"],
+            "judgments": 195,
+            "native_grades": 13,
+            "reconciliation_sha256": digest(payloads["reconciliation.json"]),
+            "limits": [
+                binding["limits"],
+                "This is a private export, not a new execution, Receipt, or landing authorization. Select Q and the supported P in the separate maintained reconciliation command.",
+            ],
+        }
+    )
+    inputs.recheck()
+    output.mkdir(mode=0o700)
+    for name, raw in payloads.items():
+        create(output / name, raw)
+    require(
+        all((output / name).read_bytes() == raw for name, raw in payloads.items()),
+        "reconciliation export reread differs",
+    )
+    return {
+        "candidate_passed": verification["candidate_passed"],
+        "applications": 51,
+        "judgments": 195,
+        "native_grades": 13,
+        "reconciliation_sha256": digest(payloads["reconciliation.json"]),
+        "original_source_revision": binding["source_revision"],
     }
 
 
@@ -3338,8 +3597,21 @@ def main() -> int:
     projection.add_argument("--projection", type=Path, required=True)
     projection.add_argument("--projection-sha256", required=True)
     projection.add_argument("--output", type=Path, required=True)
+    reconciliation = sub.add_parser("receipt-reconciliation")
+    reconciliation.add_argument("--projection", type=Path, required=True)
+    reconciliation.add_argument("--projection-sha256", required=True)
+    reconciliation.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
+        if args.command == "receipt-reconciliation":
+            print(
+                json.dumps(
+                    receipt_reconciliation(
+                        args.projection, args.projection_sha256, args.output
+                    )
+                )
+            )
+            return 0
         if args.command == "member-project":
             print(
                 json.dumps(
