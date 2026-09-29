@@ -4,9 +4,9 @@ This document defines how to construct, validate, canonicalize, and exclusively
 create private bytes for one authorized run. The normative selected-fixture
 projection, selected-executor invocation and result variants, and
 cleanup-manifest schema are in
-[application staging and restoration](application-operation.md#normative-private-contracts)
+[private probe data contracts](private-data-contracts.md#normative-private-contracts)
 and its
-[private cleanup manifest and retention](application-operation.md#private-cleanup-manifest-and-retention)
+[private cleanup manifest and retention](private-data-contracts.md#private-cleanup-manifest-and-retention)
 section. This document must not add alternative fields, states, reasons, or
 enum values.
 
@@ -158,7 +158,7 @@ ownership change, additional link, or projection change is a stop condition.
 
 Project only the source-backed fields in the normative selected-metadata
 projection in
-[application staging and restoration](application-operation.md#normative-private-contracts).
+[private probe data contracts](private-data-contracts.md#normative-private-contracts).
 Require `sessionId` to equal the selected Desktop task ID,
 `cliSessionId` to equal the recorded Code ID, and `cwd` to match the already
 opened project identity, not only its spelling.
@@ -280,7 +280,7 @@ the configuration. After creation, require the exact inventory
 ## Retained Linux-observation artifact
 
 Use the normative invocation, wrapper, and result variants in
-[application staging and restoration](application-operation.md#normative-private-contracts).
+[private probe data contracts](private-data-contracts.md#normative-private-contracts).
 The exact retained basename is
 `selected-linux-executor-observation.json`; its bound absolute path is outside
 `OUTPUT_RUN_ROOT`. Its existing parent is a bound private same-owner `0700`
@@ -353,7 +353,7 @@ fabricated to complete the manifest.
 Manually populate one cleanup-manifest object from identities and outcomes
 already established by the run. Validate its exact keys, literal enum tokens,
 discriminated variants, and compatibility rules against the sole normative
-schema in `application-operation.md`. Descriptive placeholder property names
+schema in `private-data-contracts.md`. Descriptive placeholder property names
 such as `onlyActuallyVerifiedFields` are instructions, not output keys; omit
 unknown optional fields.
 

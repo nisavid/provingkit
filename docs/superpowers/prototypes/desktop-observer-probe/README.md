@@ -1,6 +1,6 @@
 # Prepare a disposable Desktop observer probe
 
-This candidate provides an offline Desktop patch, a bounded observer, strict
+The probe source provides an offline Desktop patch, a bounded observer, strict
 sample readers, and a procedure for one disposable Code task. It prepares
 [the observer probe](https://github.com/nisavid/provingkit/issues/278).
 Installation and live observation require the reviewed revision named by the
@@ -14,7 +14,10 @@ separate [probe authorization](https://github.com/nisavid/provingkit/issues/279)
   accept or amend before execution.
 - [Application operation](application-operation.md): host preflight, receipt
   comparison, protected backup, candidate staging, launch validation,
-  restoration, and exact private cleanup.
+  restoration, and package cleanup.
+- [Private probe data contracts](private-data-contracts.md): selected-fixture
+  projection, helper invocation and results, cleanup manifest, and private
+  retention and cleanup.
 - [Private input construction](private-input-construction.md): literal
   configuration and arm templates, selected-fixture validation, and the
   retained Linux-observation artifact.

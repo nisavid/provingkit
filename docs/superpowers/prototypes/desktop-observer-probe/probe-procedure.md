@@ -176,7 +176,7 @@ The sidecar is inactive without an explicitly selected configuration. The
 configuration names the exact fixture, candidate identities, and a private run
 directory. It waits a bounded time for that fixture's existing query. A
 bootstrap record is inspected before a separate arm file permits collection.
-[Application staging and restoration](application-operation.md#normative-private-contracts)
+[Private probe data contracts](private-data-contracts.md#normative-private-contracts)
 is the normative home for the selected-fixture projection and selected-executor
 invocation and result variants.
 [Private input construction](private-input-construction.md) supplies their
@@ -280,7 +280,7 @@ query-to-executable association.
 
 Validate the one authorized helper return against the normative result variants
 in
-[application staging and restoration](application-operation.md#normative-private-contracts),
+[private probe data contracts](private-data-contracts.md#normative-private-contracts),
 construct the normative wrapper, canonicalize that object, and serialize it by
 the procedure in
 [private input construction](private-input-construction.md). Preserve nullable
@@ -317,7 +317,7 @@ Create the private cleanup manifest after that package-cleanup phase ends, or
 at the terminal stop when package deletion is prohibited. Use the exact status,
 reason, restoration, package-cleanup, fixture, output, retained-evidence,
 retention, and resource-role variants defined by
-[application staging and restoration](application-operation.md#private-cleanup-manifest-and-retention).
+[private probe data contracts](private-data-contracts.md#private-cleanup-manifest-and-retention).
 List only files and resources actually established, preserve absent artifacts
 explicitly, and never invent a task ID, Code ID, binding, sequence, file
 identity, or removal result.
