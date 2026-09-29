@@ -31,9 +31,9 @@ const binding = {
   linuxBootId: '11111111-2222-4333-8444-555555555555',
 };
 
-const failedSample = JSON.stringify({
+const failedSample = sequence => JSON.stringify({
   schema: 'desktop-observer.sample.v1',
-  sequence: 1,
+  sequence,
   observedAt: 1_000,
   observedAtMonotonicMs: 5_000,
   state: 'unqualified',
@@ -123,6 +123,7 @@ const invalidSample = {
 async function readSyntheticSelectedSample(
   envelopeSequence,
   afterSequence,
+  serialized = usableSample(envelopeSequence),
 ) {
   const runDirectory = await mkdtemp(
     path.join(tmpdir(), 'read-probe-file-sequence-'),
@@ -135,7 +136,7 @@ async function readSyntheticSelectedSample(
   );
 
   try {
-    await writeFile(selected, usableSample(envelopeSequence), {
+    await writeFile(selected, serialized, {
       mode: 0o600,
     });
     await chmod(selected, 0o600);
@@ -180,6 +181,43 @@ test('rejects a usable sample with a lower sequence than the selected filename',
   );
 });
 
+test('returns an incomplete sample when a failed envelope matches the selected filename', async () => {
+  assert.deepEqual(
+    await readSyntheticSelectedSample(
+      2,
+      1,
+      failedSample(2),
+    ),
+    {
+      state: 'unknown',
+      reason: 'incomplete-sample',
+      qualification: 'unqualified',
+    },
+  );
+});
+
+test('rejects a failed envelope with a higher sequence than the selected filename', async () => {
+  assert.deepEqual(
+    await readSyntheticSelectedSample(
+      3,
+      1,
+      failedSample(3),
+    ),
+    invalidSample,
+  );
+});
+
+test('rejects a failed envelope with a lower sequence than the selected filename', async () => {
+  assert.deepEqual(
+    await readSyntheticSelectedSample(
+      1,
+      0,
+      failedSample(1),
+    ),
+    invalidSample,
+  );
+});
+
 test('acquires only a safe explicitly selected sample file', async () => {
   const runDirectory = await mkdtemp(
     path.join(tmpdir(), 'read-probe-file-'),
@@ -219,7 +257,7 @@ test('acquires only a safe explicitly selected sample file', async () => {
   };
 
   try {
-    await writeFile(first, failedSample, { mode: 0o600 });
+    await writeFile(first, failedSample(1), { mode: 0o600 });
     await chmod(first, 0o600);
 
     assert.deepEqual(await read(1), {
@@ -228,12 +266,12 @@ test('acquires only a safe explicitly selected sample file', async () => {
       qualification: 'unqualified',
     });
 
-    await writeFile(second, failedSample, { mode: 0o600 });
+    await writeFile(second, failedSample(1), { mode: 0o600 });
     await chmod(second, 0o644);
     assertUnavailable(await read(2));
 
     await rm(second);
-    await writeFile(symlinkTarget, failedSample, {
+    await writeFile(symlinkTarget, failedSample(1), {
       mode: 0o600,
     });
     await chmod(symlinkTarget, 0o600);

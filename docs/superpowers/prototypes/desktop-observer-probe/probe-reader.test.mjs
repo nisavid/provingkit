@@ -495,6 +495,36 @@ test('a bounded public sample round-trips through the strict reader', async t =>
 
   assert.deepEqual(
     inspectProbeSample(
+      JSON.stringify(failed),
+      expectedBinding,
+      inspectionOptions({ expectedSequence: 2 }),
+    ),
+    unknown('invalid-sample'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(
+      JSON.stringify({
+        ...failed,
+        sequence: 4,
+      }),
+      expectedBinding,
+      inspectionOptions(),
+    ),
+    unknown('invalid-sample'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(
+      serialized,
+      expectedBinding,
+      inspectionOptions({ expectedSequence: 4 }),
+    ),
+    unknown('invalid-sample'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(
       JSON.stringify({
         ...failed,
         binding: {

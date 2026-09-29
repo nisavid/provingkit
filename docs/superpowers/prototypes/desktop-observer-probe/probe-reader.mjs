@@ -10,6 +10,7 @@ import {
   MAX_CWD_BYTES,
   MAX_OBSERVATION_WINDOW_MS,
   MAX_SAMPLE_BYTES,
+  MAX_SAMPLES,
   MAX_TEXT_BYTES,
   MONOTONIC_CLOCK_ID,
   SAMPLE_SCHEMA,
@@ -771,6 +772,7 @@ export function inspectProbeSample(
     monotonicClockId,
     linuxBootId,
     afterSequence = 0,
+    expectedSequence,
     maximumAgeMs,
   } = {},
 ) {
@@ -792,6 +794,14 @@ export function inspectProbeSample(
       !isValidLinuxBootId(linuxBootId) ||
       !Number.isSafeInteger(afterSequence) ||
       afterSequence < 0 ||
+      (
+        expectedSequence !== undefined &&
+        (
+          !Number.isSafeInteger(expectedSequence) ||
+          expectedSequence < 1 ||
+          expectedSequence > MAX_SAMPLES
+        )
+      ) ||
       !Number.isSafeInteger(maximumAgeMs) ||
       maximumAgeMs < 1 ||
       maximumAgeMs > MAX_OBSERVATION_WINDOW_MS
@@ -819,7 +829,12 @@ export function inspectProbeSample(
       sample.schema !== SAMPLE_SCHEMA ||
       sample.state !== 'unqualified' ||
       !Number.isSafeInteger(sample.sequence) ||
-      sample.sequence < 1
+      sample.sequence < 1 ||
+      sample.sequence > MAX_SAMPLES ||
+      (
+        expectedSequence !== undefined &&
+        sample.sequence !== expectedSequence
+      )
     ) {
       invalid();
     }

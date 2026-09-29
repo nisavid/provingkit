@@ -10,6 +10,7 @@ import {
   MAX_CWD_BYTES,
   MAX_OBSERVATION_WINDOW_MS,
   MAX_SAMPLES,
+  MAX_TEXT_BYTES,
   MONOTONIC_CLOCK_ID,
   SELECTED_EXECUTOR_REPORT_BASIS,
   SELECTED_EXECUTOR_REPORT_KEYS,
@@ -19,7 +20,6 @@ import { isValidProbeBinding } from './probe-reader.mjs';
 const MAX_STAT_BYTES = 4096;
 const MAX_EXECUTABLE_BYTES = 256 * 1024 * 1024;
 const HASH_BUFFER_BYTES = 64 * 1024;
-const MAX_TEXT_BYTES = 256;
 const PROCESS_DESCRIPTOR_ROOT = '/proc/self/fd';
 const SELECTED_EXECUTOR_INPUT_KEYS = Object.freeze([
   'afterSequence',

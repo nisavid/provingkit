@@ -3,21 +3,15 @@ import { lstat, open } from 'node:fs/promises';
 import path from 'node:path';
 import { TextDecoder } from 'node:util';
 
+import {
+  MAX_SAMPLE_BYTES,
+  MAX_SAMPLES,
+} from './observer-contract.mjs';
 import { inspectProbeSample } from './probe-reader.mjs';
-
-const MAX_SAMPLE_BYTES = 16 * 1024;
-const MIN_SEQUENCE = 1;
-const MAX_SEQUENCE = 3;
 
 const ACQUISITION_FAILURE = Object.freeze({
   state: 'unknown',
   reason: 'sample-unavailable',
-  qualification: 'unqualified',
-});
-
-const INVALID_SAMPLE = Object.freeze({
-  state: 'unknown',
-  reason: 'invalid-sample',
   qualification: 'unqualified',
 });
 
@@ -89,8 +83,8 @@ export async function readProbeSample(input) {
       typeof runDirectory !== 'string' ||
       !path.isAbsolute(runDirectory) ||
       !Number.isSafeInteger(sequence) ||
-      sequence < MIN_SEQUENCE ||
-      sequence > MAX_SEQUENCE
+      sequence < 1 ||
+      sequence > MAX_SAMPLES
     ) {
       return ACQUISITION_FAILURE;
     }
@@ -222,23 +216,15 @@ export async function readProbeSample(input) {
       fatal: true,
     }).decode(buffer.subarray(0, total));
 
-    const result = inspectProbeSample(serialized, expectedBinding, {
+    return inspectProbeSample(serialized, expectedBinding, {
       now,
       afterSequence,
+      expectedSequence: sequence,
       monotonicNow,
       monotonicClockId,
       linuxBootId,
       maximumAgeMs,
     });
-
-    if (
-      'sample' in result &&
-      result.sample.sequence !== sequence
-    ) {
-      return INVALID_SAMPLE;
-    }
-
-    return result;
   } catch {
     return ACQUISITION_FAILURE;
   } finally {
