@@ -5,15 +5,16 @@
     "version": "0.28.2"
   },
   "sourceInputs": {
-    "desktop-adapter.mjs": "1d2339313f330c159a02f5865ac2683a926d0fe1ef77f0db7f0980b84ce51826",
-    "observer-probe.mjs": "423f745b9c6771dd3e8b3cd910b4d6847da28552bb99ad7833eea436f2d9fcd7",
+    "desktop-adapter.mjs": "8714eebf7eec80d47ea6e420c5fd0a8fa5946eda8e17081f04c62bc1d321bb0d",
+    "observer-contract.mjs": "7f3d30874cbfd550e75ab47f776807c1027a310cfd93a222f7bea317cf472e3e",
+    "observer-probe.mjs": "97128eb14bcb98d3c48b83471cc8a12b3ff23cf9b4cc97b2ec466359f495d204",
     "manager-patch.json": "32f9cbdcce27eea00edf5f89cf37e7663bb4fdbe8af59f2074618b92dd865bd3",
     "archive.mjs": "28f199c0efbd27f88b68cf63a2666391a5798e1ea5c79f4fff33f0db05ef9af5",
-    "build-candidate.mjs": "66079cef39a342273f26fd60de6161a2c5bbb7879635b7562d773469105aeff1"
+    "build-candidate.mjs": "0532007f9f739a06b2fa2db72747b8a7b182171123653674ab62f41126f896f2"
   },
   "pristineSha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
-  "candidateSha256": "404dece05e10d0b798c167b6a30a3e68745c51ce5ed95ce5aaa1fa51bf7e664c",
-  "sidecarSha256": "69062a9bcae7fd222dbdd6bc6d756017054de72e95c34d2901330ce859fb5fcc",
+  "candidateSha256": "90f7ad86a2aad83f4718a7f02877e4c0310828bfec3e07d81859fc274747c87b",
+  "sidecarSha256": "8e67b56c7666f5e2ac448cc86c228e3f4f3a9cd9183abfba01a659e339beb376",
   "managerSha256": "937dd6198d6d7be897c022cc6ec553070d3aced89301b9014c9d8b49cc32504e",
   "runtimeExecuted": false
 }

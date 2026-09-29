@@ -108,6 +108,9 @@ async function makeFixture(root, name) {
     cliSessionId: `${name}-code-session`,
     query,
     inputStream: {},
+    backend: {
+      kind: 'local',
+    },
     permissionMode: 'default',
     harnessCwd: '/fixture/worktree',
     alwaysAllowedReasons: new Set(),
@@ -282,7 +285,7 @@ test(
       );
 
       assert.equal(sample.schema, SAMPLE_SCHEMA);
-      assert.equal(sample.result, 'complete');
+      assert.equal(sample.result, 'partial');
       assert.equal(
         sample.binding.targetTaskId,
         fixture.config.targetTaskId,

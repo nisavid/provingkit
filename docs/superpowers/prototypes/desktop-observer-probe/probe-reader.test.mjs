@@ -282,6 +282,7 @@ test('a bounded public sample round-trips through the strict reader', async t =>
     ...JSON.parse(serialized),
     result: 'failed',
     failureClass: 'timeout',
+    failureStage: 'accountInfo',
     observation: null,
   };
 
@@ -292,5 +293,51 @@ test('a bounded public sample round-trips through the strict reader', async t =>
       maximumAgeMs: 30_000,
     }),
     unknown('incomplete-sample'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(
+      JSON.stringify({
+        ...failed,
+        binding: {
+          ...failed.binding,
+          targetTaskId: 'foreign-task',
+        },
+      }),
+      expectedBinding,
+      {
+        now: failed.observedAt,
+        afterSequence: 0,
+        maximumAgeMs: 30_000,
+      },
+    ),
+    unknown('binding-mismatch'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(JSON.stringify(failed), expectedBinding, {
+      now: failed.observedAt + 101,
+      afterSequence: 0,
+      maximumAgeMs: 100,
+    }),
+    unknown('expired'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(JSON.stringify(failed), expectedBinding, {
+      now: failed.observedAt - 1,
+      afterSequence: 0,
+      maximumAgeMs: 30_000,
+    }),
+    unknown('clock-before-observation'),
+  );
+
+  assert.deepEqual(
+    inspectProbeSample(JSON.stringify(failed), expectedBinding, {
+      now: failed.observedAt,
+      afterSequence: failed.sequence,
+      maximumAgeMs: 30_000,
+    }),
+    unknown('not-newer'),
   );
 });

@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import {
   chmod,
+  lstat,
   mkdir,
   mkdtemp,
+  open,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -17,22 +19,221 @@ import {
   attachProbe,
   projectApprovedHost,
 } from './observer-probe.mjs';
-import { inspectProbeSample } from './probe-reader.mjs';
+import { readProbeSample } from './read-probe-file.mjs';
 import {
-  observeSelectedLinuxExecutor,
-} from './selected-executor-linux-identity.mjs';
+  createSelectedLinuxExecutorObserver,
+} from './selected-executor-linux-identity-internal.mjs';
 
-test('selected executor report reaches a bounded synthetic Linux observation without proving association', async () => {
+const REPORT_BASIS =
+  'manager-retained-report; not independent OS association';
+
+const unknownSample = {
+  state: 'unknown',
+  reason: 'selected-sample-unavailable-or-changed',
+  qualification: 'unqualified',
+  queryToOsAssociation: 'unknown',
+};
+
+const reportFor = ({
+  taskId = 'fixture-task',
+  cliPid = 4321,
+  codeSessionId = 'fixture-code',
+  generation = 7,
+} = {}) => ({
+  taskId,
+  cliPid,
+  cliPidAtMs: 1700000000000,
+  cliReportedVersion: 'fixture-version',
+  currentCodeSessionId: codeSessionId,
+  queryGeneration: generation,
+  historicProvenance: 'unknown',
+  queryToOsAssociation: 'unknown',
+  reportBasis: REPORT_BASIS,
+});
+
+const bindingFor = ({
+  taskId = 'fixture-task',
+  codeSessionId = 'fixture-code',
+  generation = 7,
+} = {}) => ({
+  runId: 'fixture-run',
+  configSha256: '0'.repeat(64),
+  moduleSha256: '1'.repeat(64),
+  copiedAsarSha256: '2'.repeat(64),
+  appStartNonce: '3'.repeat(64),
+  pid: 99,
+  processStartTicks: '10',
+  targetTaskId: taskId,
+  targetCodeSessionId: codeSessionId,
+  queryGeneration: generation,
+  getterSetId: GETTER_SET_ID,
+});
+
+function usableInspection({
+  binding = bindingFor(),
+  beforeReport = reportFor(),
+  afterReport = beforeReport,
+  sequence = 1,
+  observedAt = 1000,
+  endedAt = 1010,
+} = {}) {
+  return {
+    state: 'usable-partial',
+    qualification: 'unqualified',
+    sample: {
+      binding,
+      sequence,
+      observedAt,
+      observation: {
+        collection: {
+          startedAt: observedAt,
+          endedAt,
+          hostChangedDuringRead: false,
+        },
+        fields: {
+          hostBefore: {
+            value: {
+              selectedExecutorReport: beforeReport,
+            },
+          },
+          hostAfter: {
+            value: {
+              selectedExecutorReport: afterReport,
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
+function acquisitionInput({
+  expectedBinding = bindingFor(),
+  expectedUid = process.getuid(),
+} = {}) {
+  return {
+    runDirectory: '/fixture/run',
+    sequence: 1,
+    expectedBinding,
+    maximumAgeMs: 1000,
+    afterSequence: 0,
+    expectedUid,
+  };
+}
+
+test('foreign process owner is rejected before any process file is opened', async () => {
+  const inspection = usableInspection();
+  let processFileOpens = 0;
+
+  const observer = createSelectedLinuxExecutorObserver({
+    processRoot: '/synthetic-proc',
+    readProbeSample: async () => inspection,
+    getuid: () => process.getuid(),
+    now: () => 1020,
+    lstat: async path => {
+      assert.equal(path, '/synthetic-proc/4321');
+
+      return {
+        dev: 1n,
+        ino: 2n,
+        mode: 0o40700n,
+        uid: BigInt(process.getuid() + 1),
+        gid: 3n,
+        isDirectory: () => true,
+        isSymbolicLink: () => false,
+      };
+    },
+    open: async () => {
+      processFileOpens += 1;
+      throw new Error('process file must not be opened');
+    },
+  });
+
+  assert.deepEqual(
+    await observer(acquisitionInput()),
+    {
+      state: 'unknown',
+      reason: 'linux-identity-unavailable-or-changed',
+      qualification: 'unqualified',
+      queryToOsAssociation: 'unknown',
+    },
+  );
+  assert.equal(processFileOpens, 0);
+});
+
+test('sample binding, report mismatch, and stale acquisition failures perform zero process reads', async t => {
+  const mismatchedReports = usableInspection({
+    afterReport: reportFor({ cliPid: 4322 }),
+  });
+
+  const cases = [
+    {
+      name: 'binding mismatch',
+      acquisition: {
+        state: 'unknown',
+        reason: 'binding-mismatch',
+        qualification: 'unqualified',
+      },
+    },
+    {
+      name: 'report mismatch',
+      acquisition: mismatchedReports,
+    },
+    {
+      name: 'stale sample',
+      acquisition: {
+        state: 'unknown',
+        reason: 'expired',
+        qualification: 'unqualified',
+      },
+    },
+  ];
+
+  for (const fixture of cases) {
+    await t.test(fixture.name, async () => {
+      let processReads = 0;
+
+      const observer = createSelectedLinuxExecutorObserver({
+        processRoot: '/synthetic-proc',
+        readProbeSample: async () => fixture.acquisition,
+        getuid: () => process.getuid(),
+        now: () => 1020,
+        lstat: async () => {
+          processReads += 1;
+          throw new Error('process directory must not be read');
+        },
+        open: async () => {
+          processReads += 1;
+          throw new Error('process file must not be opened');
+        },
+      });
+
+      assert.deepEqual(
+        await observer(acquisitionInput()),
+        unknownSample,
+      );
+      assert.equal(processReads, 0);
+    });
+  }
+});
+
+test('a validated fixture sample observes only its selected synthetic process and retains unqualified evidence', async () => {
   const root = await mkdtemp(join(tmpdir(), 'selected-executor-'));
   const runDirectory = join(root, 'run');
-  const selectedRoot = join(root, 'synthetic-proc');
+  const processRoot = join(root, 'synthetic-proc');
+  const forbiddenCallerRoot = join(root, 'caller-selected-root');
   const pid = 4321;
-  const processDirectory = join(selectedRoot, String(pid));
-  const executableBytes = Buffer.from('synthetic executable bytes\n');
+  const processDirectory = join(processRoot, String(pid));
+  const executableBytes = Buffer.from(
+    'synthetic executable bytes\n',
+  );
 
   await chmod(root, 0o700);
   await mkdir(runDirectory, { mode: 0o700 });
-  await mkdir(processDirectory, { recursive: true, mode: 0o700 });
+  await mkdir(processDirectory, {
+    recursive: true,
+    mode: 0o700,
+  });
 
   const statFields = [
     'S',
@@ -143,64 +344,80 @@ test('selected executor report reaches a bounded synthetic Linux observation wit
 
     await probe.acceptArm();
     const sample = await probe.sample();
-    const inspection = inspectProbeSample(
-      JSON.stringify(sample),
-      sample.binding,
-      {
-        now: sample.observation.collection.endedAt + 1,
-        maximumAgeMs: 1000,
+    let acquisitionNow =
+      sample.observation.collection.endedAt + 1;
+    const processPaths = [];
+    const processOpenPaths = [];
+
+    const observer = createSelectedLinuxExecutorObserver({
+      processRoot,
+      readProbeSample,
+      getuid: () => process.getuid(),
+      now: () => acquisitionNow++,
+      lstat: async (...args) => {
+        processPaths.push(args[0]);
+        return lstat(...args);
       },
-    );
-
-    assert.equal(inspection.state, 'usable-partial');
-
-    const beforeReport =
-      inspection.sample.observation.fields.hostBefore.value
-        .selectedExecutorReport;
-    const afterReport =
-      inspection.sample.observation.fields.hostAfter.value
-        .selectedExecutorReport;
-
-    assert.deepEqual(beforeReport, afterReport);
-    assert.deepEqual(afterReport, {
-      taskId: 'fixture-task',
-      cliPid: pid,
-      cliPidAtMs: 1700000000000,
-      cliReportedVersion: 'fixture-version',
-      currentCodeSessionId: 'fixture-code',
-      queryGeneration: 7,
-      historicProvenance: 'unknown',
-      queryToOsAssociation: 'unknown',
-      reportBasis:
-        'manager-retained-report; not independent OS association',
+      open: async (...args) => {
+        processPaths.push(args[0]);
+        processOpenPaths.push(args[0]);
+        return open(...args);
+      },
     });
 
-    assert.equal(
-      inspection.sample.observation.fields.hostBefore.source,
-      'Desktop manager projection',
+    const observed = await observer({
+      runDirectory,
+      sequence: sample.sequence,
+      expectedBinding: sample.binding,
+      maximumAgeMs: 1000,
+      afterSequence: 0,
+      expectedUid: process.getuid(),
+      selectedRoot: forbiddenCallerRoot,
+    });
+
+    const selectedReport =
+      sample.observation.fields.hostAfter.value
+        .selectedExecutorReport;
+
+    assert.deepEqual(
+      sample.observation.fields.hostBefore.value
+        .selectedExecutorReport,
+      selectedReport,
     );
-    assert.equal(
-      inspection.sample.observation.fields.hostAfter.source,
-      'Desktop manager projection',
+    assert.equal(processOpenPaths.length, 5);
+    assert.ok(
+      processPaths.every(
+        path =>
+          path === processDirectory ||
+          path.startsWith(`${processDirectory}/`),
+      ),
+    );
+    assert.ok(
+      processPaths.every(
+        path => !path.startsWith(forbiddenCallerRoot),
+      ),
     );
 
-    const linuxObservation =
-      await observeSelectedLinuxExecutor(
-        afterReport,
-        selectedRoot,
-      );
-
-    assert.deepEqual(linuxObservation, {
+    assert.deepEqual(observed, {
       state: 'observed-partial',
       qualification: 'unqualified',
-      selectedReport: afterReport,
+      sampleEvidence: {
+        binding: sample.binding,
+        sequence: sample.sequence,
+        observedAt: sample.observedAt,
+        collection: {
+          startedAt: sample.observation.collection.startedAt,
+          endedAt: sample.observation.collection.endedAt,
+        },
+      },
+      selectedReport,
       linuxIdentity: {
         pid,
         processStartTicks: '424242',
         ownerUid: process.getuid(),
         executable: {
-          dev: linuxObservation.linuxIdentity.executable.dev,
-          ino: linuxObservation.linuxIdentity.executable.ino,
+          dev: observed.linuxIdentity.executable.dev,
+          ino: observed.linuxIdentity.executable.ino,
           size: String(executableBytes.length),
           sha256: createHash('sha256')
             .update(executableBytes)
@@ -209,43 +426,6 @@ test('selected executor report reaches a bounded synthetic Linux observation wit
       },
       queryToOsAssociation: 'unknown',
     });
-
-    const unavailable = await observeSelectedLinuxExecutor(
-      {
-        ...afterReport,
-        cliPid: null,
-      },
-      join(root, 'must-not-be-read'),
-    );
-
-    assert.deepEqual(unavailable, {
-      state: 'unknown',
-      reason: 'selected-pid-unavailable',
-      qualification: 'unqualified',
-      queryToOsAssociation: 'unknown',
-    });
-
-    const tampered = structuredClone(sample);
-    tampered.observation.fields.hostBefore.value
-      .selectedExecutorReport.queryToOsAssociation = 'proven';
-    tampered.observation.fields.hostAfter.value
-      .selectedExecutorReport.queryToOsAssociation = 'proven';
-
-    assert.deepEqual(
-      inspectProbeSample(
-        JSON.stringify(tampered),
-        sample.binding,
-        {
-          now: sample.observation.collection.endedAt + 1,
-          maximumAgeMs: 1000,
-        },
-      ),
-      {
-        state: 'unknown',
-        reason: 'invalid-sample',
-        qualification: 'unqualified',
-      },
-    );
   } finally {
     await rm(root, {
       recursive: true,

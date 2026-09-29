@@ -3,7 +3,7 @@
 This candidate provides an offline Desktop patch, a bounded observer, strict
 sample readers, and a procedure for one disposable Code task. It prepares
 [the observer probe](https://github.com/nisavid/provingkit/issues/278).
-Independent review is pending. Installation and live observation require the
+Installation and live observation require the reviewed revision named by the
 separate [probe authorization](https://github.com/nisavid/provingkit/issues/279).
 
 ## Start here
@@ -30,12 +30,14 @@ and unqualified. No notification, delivery, or acknowledgment is tested here.
 
 | File | Responsibility |
 | --- | --- |
+| `observer-contract.mjs` | Shared schema names, binding keys, limits, and named observation gaps |
 | `observer-probe.mjs` | Exact binding, explicit arm, bounded getter calls, projection, and sample export |
 | `desktop-adapter.mjs` | Selected manager view, generation/mode hooks, bootstrap, and collection lifecycle |
 | `manager-patch.json` | Exact source replacements for the inspected manager |
 | `probe-reader.mjs` | Strict schema, binding, interval, and sequence checks over sample bytes |
 | `read-probe-file.mjs` | Acquisition of one explicitly selected private sample file |
-| `selected-executor-linux-identity.mjs` | Separate bounded observation of the one reported Code PID |
+| `selected-executor-linux-identity.mjs` | Fresh sample acquisition followed by bounded observation of its selected Code PID |
+| `selected-executor-linux-identity-internal.mjs` | Process acquisition with a synthetic I/O seam |
 | `archive.mjs`, `build-candidate.mjs` | Offline source patching, CommonJS bundling, and ASAR construction |
 | `verify-archive.mjs` | Independent extraction and complete member comparison |
 
@@ -77,8 +79,9 @@ Daybreak sessions using approved source packets and synthetic results. The
 requested route was `gpt-daybreak-blue-latest` through Codex CLI `0.159.0`.
 No product-owned model-execution attestation is available.
 
-The procedure proposes temporary installed-archive replacement and at least
-two shutdown/launch cycles. Getter effects, candidate loading, runtime account,
+The procedure proposes one scheduled window in the current signed-in profile,
+with temporary installed-archive replacement and two shutdown/launch cycles.
+Getter effects, candidate loading, runtime account,
 model, permission and cwd semantics, full permissions coverage, and native
 address binding remain live questions. No app installation, launch, private
 receiver read, task creation, setup prompt, or notification was performed during

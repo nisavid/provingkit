@@ -36,6 +36,7 @@ const failedSample = JSON.stringify({
   binding,
   result: 'failed',
   failureClass: 'rejected',
+  failureStage: 'accountInfo',
   observation: null,
 });
 

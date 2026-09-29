@@ -39,7 +39,14 @@ const bundled = await esbuild.build({
 });
 const sidecar = Buffer.from(bundled.outputFiles[0].contents);
 const inputNames = Object.keys(bundled.metafile.inputs).sort();
-if (JSON.stringify(inputNames) !== JSON.stringify(['desktop-adapter.mjs', 'observer-probe.mjs']))
+if (
+  JSON.stringify(inputNames) !==
+  JSON.stringify([
+    'desktop-adapter.mjs',
+    'observer-contract.mjs',
+    'observer-probe.mjs',
+  ])
+)
   throw new Error('unexpected bundle inputs');
 const candidate = appendMembers(pristine, {
   expectedSha256: patch.archiveSha256,

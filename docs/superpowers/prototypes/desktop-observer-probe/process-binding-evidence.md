@@ -61,11 +61,18 @@ cannot establish that the selected query runs that executable.
 The app projection can retain query-bound `cliPid`, Code session ID, reported
 version, and task-owned creation-time evidence with their intervals and unknowns.
 `selected-executor-linux-identity.mjs` supplies a separate bounded observer for
-the reported PID. Its synthetic fixture check passes. Independent review and
-live use remain pending. It reads the selected process directory metadata,
+the reported PID. It acquires the selected sample through `readProbeSample`,
+checks that both host snapshots carry the same report, and retains the sample's
+binding, sequence, and collection interval. Its live entrypoint fixes the
+process root to the Linux process filesystem. The expected UID must match the
+calling user, and the selected process directory must have that owner before
+any process file is opened. It reads the selected process directory metadata,
 three bounded `stat` samples, and the executable through two opens of `exe`.
 It hashes at most 256 MiB and compares start, owner, and executable metadata
-around the read. It never enumerates processes or follows a different PID.
+around the read. It then reacquires the same sample with a fresh timestamp and
+requires unchanged evidence. It never enumerates processes or follows a
+different PID. Synthetic checks exercise these controls; live use remains
+unqualified.
 
 The app exports the query-bound retained report in each host snapshot. The
 Linux helper is a separate, explicitly invoked consumer; the sidecar neither

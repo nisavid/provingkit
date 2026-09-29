@@ -8,78 +8,39 @@ import {
   unlink,
 } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
+import {
+  ARM_DEADLINE_MS,
+  ARM_KEYS,
+  BINDING_KEYS,
+  ARM_SCHEMA,
+  BOOTSTRAP_SCHEMA,
+  CONFIG_SCHEMA,
+  FAILURE_CLASSES,
+  GETTER_SET_ID,
+  HOST_GAP_FIELDS,
+  HOST_KEYS,
+  MAX_ARRAY_ITEMS,
+  MAX_CONFIG_BYTES,
+  MAX_CWD_BYTES,
+  MAX_GETTER_TIMEOUT_MS,
+  MAX_OBSERVATION_WINDOW_MS,
+  MAX_RUN_OUTPUT_BYTES,
+  MAX_SAMPLE_BYTES,
+  MAX_SAMPLES,
+  MAX_SETUP_DEADLINE_MS,
+  MAX_TEXT_BYTES,
+  MIN_SAMPLE_INTERVAL_MS,
+  SAMPLE_SCHEMA,
+  UNKNOWN_CLAIMS,
+} from './observer-contract.mjs';
 
-export const GETTER_SET_ID =
-  'desktop-query.readonly.v1:accountInfo,getContextUsage-summary,listPermissionRules';
-
-export const CONFIG_SCHEMA = 'desktop-observer.probe-config.v1';
-export const BOOTSTRAP_SCHEMA = 'desktop-observer.bootstrap.v1';
-export const ARM_SCHEMA = 'desktop-observer.arm.v1';
-export const SAMPLE_SCHEMA = 'desktop-observer.sample.v1';
-
-const MAX_CONFIG_BYTES = 4096;
-const MAX_SAMPLE_BYTES = 16 * 1024;
-const MAX_RUN_OUTPUT_BYTES = 64 * 1024;
-const MAX_SAMPLES = 3;
-const MAX_OBSERVATION_WINDOW_MS = 30_000;
-const MIN_SAMPLE_INTERVAL_MS = 5_000;
-const MAX_GETTER_TIMEOUT_MS = 2_000;
-const MAX_SETUP_DEADLINE_MS = 60_000;
-const ARM_DEADLINE_MS = 60_000;
-const MAX_ARRAY_ITEMS = 32;
-const MAX_TEXT_BYTES = 256;
-const MAX_CWD_BYTES = 1024;
-
-const UNKNOWN_CLAIMS = Object.freeze([
-  'current-account-route',
-  'current-model-freshness',
-  'current-permission-mode',
-  'complete-applied-permissions',
-  'current-cwd',
-  'native-address-binding',
-  'external-delivery-and-ack',
-]);
-
-const BINDING_KEYS = Object.freeze([
-  'runId',
-  'configSha256',
-  'moduleSha256',
-  'copiedAsarSha256',
-  'appStartNonce',
-  'pid',
-  'processStartTicks',
-  'targetTaskId',
-  'targetCodeSessionId',
-  'queryGeneration',
-  'getterSetId',
-]);
-
-const ARM_KEYS = Object.freeze([
-  'schema',
-  ...BINDING_KEYS,
-  'maxSamples',
-  'minIntervalMs',
-  'observationWindowMs',
-  'perGetterTimeoutMs',
-]);
-
-const HOST_KEYS = Object.freeze([
-  'spawnRoute',
-  'permissionMode',
-  'modeEvent',
-  'selectedExecutorReport',
-  'harnessCwd',
-  'cwdEventProvenance',
-  'alwaysAllowedReasons',
-  'cuAllowedApps',
-  'cuGrantFlags',
-  'effectiveCuAllowedApps',
-  'effectiveCuGrantFlags',
-  'sessionPermissionUpdateTypes',
-  'flagScopeSyncPending',
-  'modeRequestsInFlight',
-  'pendingCoverage',
-]);
+export {
+  ARM_SCHEMA,
+  BOOTSTRAP_SCHEMA,
+  CONFIG_SCHEMA,
+  GETTER_SET_ID,
+  SAMPLE_SCHEMA,
+} from './observer-contract.mjs';
 
 class DataFault extends Error {
   constructor(kind) {
@@ -229,28 +190,6 @@ function optionalFlags(value) {
   }
 
   return result;
-}
-
-function retainedText(value, maximum = MAX_TEXT_BYTES) {
-  if (value === undefined || value === null) return null;
-
-  try {
-    return projectedText(value, maximum);
-  } catch {
-    return null;
-  }
-}
-
-function retainedPositiveInteger(value) {
-  return Number.isSafeInteger(value) && value > 0
-    ? value
-    : null;
-}
-
-function retainedTimestamp(value) {
-  return Number.isSafeInteger(value) && value >= 0
-    ? value
-    : null;
 }
 
 function validateConfig(input) {
@@ -460,78 +399,185 @@ async function readPrivateJson(path, uid, maximumBytes) {
 export function projectApprovedHost(input, generation) {
   if (!isPlainObject(input)) throw new DataFault('shape_invalid');
 
-  const rawExecutorReport = isPlainObject(
-    input.selectedExecutorReport,
-  )
-    ? input.selectedExecutorReport
+  const failures = isPlainObject(input.fieldFailures)
+    ? input.fieldFailures
     : {};
+  const gaps = [];
+  const gapFields = new Set(HOST_GAP_FIELDS);
+  const failureClasses = new Set(FAILURE_CLASSES);
 
-  const spawnRoute = input.spawnRoute === undefined
-    ? null
-    : {
-        accountUuid: projectedText(input.spawnRoute?.accountUuid),
-        orgId: projectedText(input.spawnRoute?.orgId),
+  const addGap = (field, failureClass) => {
+    if (
+      !gapFields.has(field) ||
+      !failureClasses.has(failureClass) ||
+      gaps.some(gap => gap.field === field)
+    ) {
+      return;
+    }
+
+    gaps.push({ field, failureClass });
+  };
+
+  const project = (
+    field,
+    value,
+    projector,
+    fallback = null,
+  ) => {
+    const suppliedFailure = failures[field];
+
+    if (failureClasses.has(suppliedFailure)) {
+      addGap(field, suppliedFailure);
+      return fallback;
+    }
+
+    if (value === undefined || value === null) {
+      addGap(field, 'unavailable');
+      return fallback;
+    }
+
+    try {
+      return projector(value);
+    } catch (error) {
+      addGap(
+        field,
+        error instanceof DataFault ? error.kind : 'shape_invalid',
+      );
+      return fallback;
+    }
+  };
+
+  const spawnRoute = project(
+    'spawnRoute',
+    input.spawnRoute,
+    value => ({
+      accountUuid: projectedText(value?.accountUuid),
+      orgId: projectedText(value?.orgId),
+    }),
+  );
+
+  const modeEvent = project(
+    'modeEvent',
+    input.modeEvent,
+    value => {
+      if (value?.generation !== generation) {
+        throw new DataFault('shape_invalid');
+      }
+
+      return {
+        mode: projectedText(value.mode),
+        at: projectedNumber(value.at),
+        generation,
       };
+    },
+  );
 
-  const modeEvent =
-    input.modeEvent?.generation === generation
-      ? {
-          mode: projectedText(input.modeEvent.mode),
-          at: projectedNumber(input.modeEvent.at),
-          generation,
+  let rawExecutorReport = input.selectedExecutorReport;
+
+  if (!isPlainObject(rawExecutorReport)) {
+    addGap(
+      'selectedExecutorReport',
+      rawExecutorReport === undefined || rawExecutorReport === null
+        ? 'unavailable'
+        : 'shape_invalid',
+    );
+    rawExecutorReport = {};
+  }
+
+  const reportText = field =>
+    project(
+      `selectedExecutorReport.${field}`,
+      rawExecutorReport[field],
+      value => projectedText(value),
+    );
+
+  const reportInteger = (field, allowZero) =>
+    project(
+      `selectedExecutorReport.${field}`,
+      rawExecutorReport[field],
+      value => {
+        if (
+          !Number.isSafeInteger(value) ||
+          value < (allowZero ? 0 : 1)
+        ) {
+          throw new DataFault('shape_invalid');
         }
-      : null;
 
-  const sessionPermissionUpdateTypes =
-    input.sessionPermissionUpdates === undefined
-      ? null
-      : projectedArray(
-          input.sessionPermissionUpdates,
-          update => projectedText(update?.type),
-        );
+        return value;
+      },
+    );
 
   return {
     spawnRoute,
-    permissionMode:
-      input.permissionMode === undefined
-        ? null
-        : projectedText(input.permissionMode),
+    permissionMode: project(
+      'permissionMode',
+      input.permissionMode,
+      value => projectedText(value),
+    ),
     modeEvent,
     selectedExecutorReport: {
-      taskId: retainedText(rawExecutorReport.taskId),
-      cliPid: retainedPositiveInteger(rawExecutorReport.cliPid),
-      cliPidAtMs:
-        retainedTimestamp(rawExecutorReport.cliPidAtMs),
-      cliReportedVersion:
-        retainedText(rawExecutorReport.cliReportedVersion),
-      currentCodeSessionId:
-        retainedText(rawExecutorReport.currentCodeSessionId),
+      taskId: reportText('taskId'),
+      cliPid: reportInteger('cliPid', false),
+      cliPidAtMs: reportInteger('cliPidAtMs', true),
+      cliReportedVersion: reportText('cliReportedVersion'),
+      currentCodeSessionId: reportText('currentCodeSessionId'),
       queryGeneration: generation,
       historicProvenance: 'unknown',
       queryToOsAssociation: 'unknown',
       reportBasis:
         'manager-retained-report; not independent OS association',
     },
-    harnessCwd:
-      input.harnessCwd === undefined
-        ? null
-        : projectedText(input.harnessCwd, MAX_CWD_BYTES),
+    harnessCwd: project(
+      'harnessCwd',
+      input.harnessCwd,
+      value => projectedText(value, MAX_CWD_BYTES),
+    ),
     cwdEventProvenance: 'unavailable',
-    alwaysAllowedReasons: optionalStringArray(input.alwaysAllowedReasons),
-    cuAllowedApps: optionalApps(input.cuAllowedApps),
-    cuGrantFlags: optionalFlags(input.cuGrantFlags),
-    effectiveCuAllowedApps: optionalApps(input.effectiveCuAllowedApps),
-    effectiveCuGrantFlags: optionalFlags(input.effectiveCuGrantFlags),
-    sessionPermissionUpdateTypes,
-    flagScopeSyncPending:
-      input.flagScopeSyncPending === undefined
-        ? null
-        : projectedBoolean(input.flagScopeSyncPending),
-    modeRequestsInFlight:
-      input.modeRequestsInFlight === undefined
-        ? null
-        : projectedCount(input.modeRequestsInFlight),
+    alwaysAllowedReasons: project(
+      'alwaysAllowedReasons',
+      input.alwaysAllowedReasons,
+      optionalStringArray,
+    ),
+    cuAllowedApps: project(
+      'cuAllowedApps',
+      input.cuAllowedApps,
+      optionalApps,
+    ),
+    cuGrantFlags: project(
+      'cuGrantFlags',
+      input.cuGrantFlags,
+      optionalFlags,
+    ),
+    effectiveCuAllowedApps: project(
+      'effectiveCuAllowedApps',
+      input.effectiveCuAllowedApps,
+      optionalApps,
+    ),
+    effectiveCuGrantFlags: project(
+      'effectiveCuGrantFlags',
+      input.effectiveCuGrantFlags,
+      optionalFlags,
+    ),
+    sessionPermissionUpdateTypes: project(
+      'sessionPermissionUpdateTypes',
+      input.sessionPermissionUpdates,
+      value => projectedArray(
+        value,
+        update => projectedText(update?.type),
+      ),
+    ),
+    flagScopeSyncPending: project(
+      'flagScopeSyncPending',
+      input.flagScopeSyncPending,
+      projectedBoolean,
+    ),
+    modeRequestsInFlight: project(
+      'modeRequestsInFlight',
+      input.modeRequestsInFlight,
+      projectedCount,
+    ),
     pendingCoverage: 'unknown',
+    gaps,
   };
 }
 
@@ -549,6 +595,31 @@ function validateProjectedHost(value) {
     value.pendingCoverage !== 'unknown'
   ) {
     throw new DataFault('shape_invalid');
+  }
+
+  if (
+    !Array.isArray(value.gaps) ||
+    value.gaps.length > HOST_GAP_FIELDS.length
+  ) {
+    throw new DataFault('shape_invalid');
+  }
+
+  const seen = new Set();
+
+  for (const gap of value.gaps) {
+    exactKeys(gap, ['field', 'failureClass'], () => {
+      throw new DataFault('shape_invalid');
+    });
+
+    if (
+      !HOST_GAP_FIELDS.includes(gap.field) ||
+      !FAILURE_CLASSES.includes(gap.failureClass) ||
+      seen.has(gap.field)
+    ) {
+      throw new DataFault('shape_invalid');
+    }
+
+    seen.add(gap.field);
   }
 
   return value;
@@ -665,16 +736,28 @@ function captureCandidate(config, selectReceiver) {
 const delay = milliseconds =>
   new Promise(resolve => setTimeout(resolve, milliseconds));
 
-async function waitForCandidate(config, selectReceiver, clock) {
-  const deadline = clock() + config.setupDeadlineMs;
+async function waitForCandidate(config, selectReceiver, elapsedClock) {
+  const deadline = elapsedClock() + config.setupDeadlineMs;
 
   while (true) {
+    if (elapsedClock() >= deadline) {
+      invalid('setup deadline exceeded');
+    }
+
     const candidate = captureCandidate(config, selectReceiver);
-    if (candidate) return candidate;
 
-    if (clock() >= deadline) invalid('setup deadline exceeded');
+    if (candidate) {
+      if (elapsedClock() >= deadline) {
+        invalid('setup deadline exceeded');
+      }
 
-    await delay(Math.min(config.pollIntervalMs, Math.max(1, deadline - clock())));
+      return candidate;
+    }
+
+    await delay(Math.min(
+      config.pollIntervalMs,
+      Math.max(1, deadline - elapsedClock()),
+    ));
   }
 }
 
@@ -765,6 +848,7 @@ function buildEnvelope({
   binding,
   result,
   failureClass,
+  failureStage,
   observation,
 }) {
   return {
@@ -775,6 +859,7 @@ function buildEnvelope({
     binding: { ...binding },
     result,
     failureClass,
+    failureStage,
     observation,
   };
 }
@@ -784,14 +869,14 @@ async function invokeBounded(
   receiver,
   args,
   timeoutMs,
-  clock,
+  elapsedClock,
   checkLifecycle,
 ) {
   if (typeof fn !== 'function') {
     return { ok: false, failureClass: 'unsupported' };
   }
 
-  const deadline = clock() + timeoutMs;
+  const deadline = elapsedClock() + timeoutMs;
   let settled = false;
   let timer;
 
@@ -802,14 +887,14 @@ async function invokeBounded(
       return { ok: false, failureClass: beforeFailure };
     }
 
-    if (clock() >= deadline) {
+    if (elapsedClock() >= deadline) {
       return { ok: false, failureClass: 'timeout' };
     }
 
     try {
       const value = await fn.apply(receiver, args);
 
-      if (clock() >= deadline) {
+      if (elapsedClock() >= deadline) {
         return { ok: false, failureClass: 'timeout' };
       }
 
@@ -821,7 +906,7 @@ async function invokeBounded(
 
       return { ok: true, value };
     } catch {
-      if (clock() >= deadline) {
+      if (elapsedClock() >= deadline) {
         return { ok: false, failureClass: 'timeout' };
       }
 
@@ -864,6 +949,8 @@ export async function attachProbe({
   approvedHostProjection,
   processIdentity: suppliedProcessIdentity,
   now = Date.now,
+  monotonicNow = () =>
+    Number(process.hrtime.bigint() / 1_000_000n),
 }) {
   const config = validateConfig(suppliedConfig);
   const processIdentity = validateProcessIdentity(suppliedProcessIdentity);
@@ -876,11 +963,21 @@ export async function attachProbe({
     invalid('unapproved host projection');
   }
 
-  const clock = () => {
+  const wallClock = () => {
     const value = now();
 
     if (!Number.isSafeInteger(value) || value < 0) {
-      invalid('invalid clock');
+      invalid('invalid wall clock');
+    }
+
+    return value;
+  };
+
+  const elapsedClock = () => {
+    const value = monotonicNow();
+
+    if (!Number.isSafeInteger(value) || value < 0) {
+      invalid('invalid monotonic clock');
     }
 
     return value;
@@ -889,7 +986,11 @@ export async function attachProbe({
   await assertRunDirectory(config.runDirectory, processIdentity.uid);
   await assertEntries(config.runDirectory, []);
 
-  const candidate = await waitForCandidate(config, selectReceiver, clock);
+  const candidate = await waitForCandidate(
+    config,
+    selectReceiver,
+    elapsedClock,
+  );
 
   await assertRunDirectory(config.runDirectory, processIdentity.uid);
   await assertEntries(config.runDirectory, []);
@@ -912,9 +1013,9 @@ export async function attachProbe({
   let outputBytes = 0;
   let terminal = false;
   let armLimits = null;
-  let armedAt = null;
+  let armedAtElapsed = null;
   let attempts = 0;
-  let lastSampleStartedAt = null;
+  let lastSampleStartedAtElapsed = null;
   let armInFlight = false;
   let sampleInFlight = false;
 
@@ -942,11 +1043,14 @@ export async function attachProbe({
   };
 
   const sampleLifecycleFailure = () => {
-    if (terminal || !armLimits || armedAt === null) {
+    if (terminal || !armLimits || armedAtElapsed === null) {
       return 'limit_exceeded';
     }
 
-    if (clock() - armedAt >= armLimits.observationWindowMs) {
+    if (
+      elapsedClock() - armedAtElapsed >=
+      armLimits.observationWindowMs
+    ) {
       return 'limit_exceeded';
     }
 
@@ -1039,9 +1143,14 @@ export async function attachProbe({
     invalid('bootstrap export failed');
   }
 
-  const bootstrapAt = clock();
+  const bootstrapAtElapsed = elapsedClock();
 
-  const failAttempt = async (sequence, observedAt, failureClass) => {
+  const failAttempt = async (
+    sequence,
+    observedAt,
+    failureClass,
+    failureStage,
+  ) => {
     terminal = true;
 
     const envelope = buildEnvelope({
@@ -1050,6 +1159,7 @@ export async function attachProbe({
       binding,
       result: 'failed',
       failureClass,
+      failureStage,
       observation: null,
     });
 
@@ -1075,7 +1185,10 @@ export async function attachProbe({
 
     try {
       const assertArmDeadline = () => {
-        if (clock() - bootstrapAt > ARM_DEADLINE_MS) {
+        if (
+          elapsedClock() - bootstrapAtElapsed >
+          ARM_DEADLINE_MS
+        ) {
           invalid('arm deadline exceeded');
         }
       };
@@ -1107,14 +1220,17 @@ export async function attachProbe({
         invalid('binding changed before arm');
       }
 
-      const acceptedAt = clock();
+      const acceptedAtElapsed = elapsedClock();
 
-      if (acceptedAt - bootstrapAt > ARM_DEADLINE_MS) {
+      if (
+        acceptedAtElapsed - bootstrapAtElapsed >
+        ARM_DEADLINE_MS
+      ) {
         invalid('arm deadline exceeded');
       }
 
       armLimits = acceptedLimits;
-      armedAt = acceptedAt;
+      armedAtElapsed = acceptedAtElapsed;
       ownedEntries.add('arm.json');
 
       return { state: 'armed', binding: { ...binding } };
@@ -1133,7 +1249,8 @@ export async function attachProbe({
     sampleInFlight = true;
 
     try {
-      const observedAt = clock();
+      const observedAt = wallClock();
+      const sampleStartedAtElapsed = elapsedClock();
       const sequence = attempts + 1;
 
       if (attempts >= armLimits.maxSamples) {
@@ -1142,21 +1259,26 @@ export async function attachProbe({
       }
 
       if (
-        observedAt - armedAt >= armLimits.observationWindowMs ||
-        (lastSampleStartedAt !== null &&
-          observedAt - lastSampleStartedAt < armLimits.minIntervalMs)
+        sampleStartedAtElapsed - armedAtElapsed >=
+          armLimits.observationWindowMs ||
+        (
+          lastSampleStartedAtElapsed !== null &&
+          sampleStartedAtElapsed - lastSampleStartedAtElapsed <
+            armLimits.minIntervalMs
+        )
       ) {
         attempts += 1;
-        lastSampleStartedAt = observedAt;
+        lastSampleStartedAtElapsed = sampleStartedAtElapsed;
         return await failAttempt(
           sequence,
           observedAt,
           'limit_exceeded',
+          'lifecycle',
         );
       }
 
       attempts += 1;
-      lastSampleStartedAt = observedAt;
+      lastSampleStartedAtElapsed = sampleStartedAtElapsed;
 
       try {
         await assertRunDirectory(
@@ -1171,58 +1293,126 @@ export async function attachProbe({
 
       const fields = {};
 
-      const captureHost = () => {
-        const startedAt = clock();
-        const beforeFailure = sampleLifecycleFailure();
+      const availableField = (
+        source,
+        freshness,
+        startedAt,
+        endedAt,
+        value,
+      ) => ({
+        source,
+        freshness,
+        startedAt,
+        endedAt,
+        status: 'available',
+        failureClass: null,
+        failureStage: null,
+        value,
+      });
 
-        if (beforeFailure) {
-          return { failureClass: beforeFailure };
-        }
+      const unavailableField = (
+        source,
+        freshness,
+        startedAt,
+        endedAt,
+        failureClass,
+        failureStage,
+      ) => ({
+        source,
+        freshness,
+        startedAt,
+        endedAt,
+        status: 'unavailable',
+        failureClass,
+        failureStage,
+        value: null,
+      });
 
-        let value;
+      const validWallInterval = (startedAt, endedAt) =>
+        startedAt >= observedAt &&
+        endedAt >= startedAt &&
+        endedAt - observedAt <= MAX_OBSERVATION_WINDOW_MS;
+
+      const captureHost = stage => {
+        const source = 'Desktop manager projection';
+        const freshness =
+          'manager-snapshot; spawn and event values are retained';
+        const startedAt = wallClock();
 
         try {
-          value = validateProjectedHost(
+          const value = validateProjectedHost(
             approvedHostProjection(
               candidate.record.host,
               candidate.generation,
             ),
           );
-        } catch (error) {
+          const endedAt = wallClock();
+
+          if (!validWallInterval(startedAt, endedAt)) {
+            return { wallInvalid: true };
+          }
+
           return {
-            failureClass:
+            field: availableField(
+              source,
+              freshness,
+              startedAt,
+              endedAt,
+              value,
+            ),
+          };
+        } catch (error) {
+          const endedAt = wallClock();
+
+          if (!validWallInterval(startedAt, endedAt)) {
+            return { wallInvalid: true };
+          }
+
+          return {
+            field: unavailableField(
+              source,
+              freshness,
+              startedAt,
+              endedAt,
               error instanceof DataFault
                 ? error.kind
                 : 'shape_invalid',
+              stage,
+            ),
           };
-        }
-
-        const endedAt = clock();
-        const afterFailure = sampleLifecycleFailure();
-
-        if (afterFailure) {
-          return { failureClass: afterFailure };
-        }
-
-        return {
-          field: {
-            source: 'Desktop manager projection',
-            freshness:
-              'manager-snapshot; spawn and event values are retained',
-            startedAt,
-            endedAt,
-            value,
-          },
         };
       };
 
-      const hostBefore = captureHost();
+      let lifecycleFailure = sampleLifecycleFailure();
 
-      if (hostBefore.failureClass) {
+      if (lifecycleFailure) {
         return await failAttempt(
           sequence,
           observedAt,
-          hostBefore.failureClass,
+          lifecycleFailure,
+          'hostBefore',
+        );
+      }
+
+      const hostBefore = captureHost('hostBefore');
+
+      if (hostBefore.wallInvalid) {
+        return await failAttempt(
+          sequence,
+          observedAt,
+          'shape_invalid',
+          'wallClock',
+        );
+      }
+
+      lifecycleFailure = sampleLifecycleFailure();
+
+      if (lifecycleFailure) {
+        return await failAttempt(
+          sequence,
+          observedAt,
+          lifecycleFailure,
+          'hostBefore',
         );
       }
 
@@ -1261,26 +1451,55 @@ export async function attachProbe({
             sequence,
             observedAt,
             beforeFailure,
+            getter.fieldName,
           );
         }
 
-        const startedAt = clock();
+        const startedAt = wallClock();
 
         const outcome = await invokeBounded(
           candidate.getterRefs[getter.name],
           candidate.query,
           getter.args,
           armLimits.perGetterTimeoutMs,
-          clock,
+          elapsedClock,
           sampleLifecycleFailure,
         );
 
         if (!outcome.ok) {
-          return await failAttempt(
-            sequence,
-            observedAt,
+          const endedAt = wallClock();
+
+          if (!validWallInterval(startedAt, endedAt)) {
+            return await failAttempt(
+              sequence,
+              observedAt,
+              'shape_invalid',
+              'wallClock',
+            );
+          }
+
+          if (
+            outcome.failureClass === 'timeout' ||
+            outcome.failureClass === 'identity_changed' ||
+            outcome.failureClass === 'limit_exceeded'
+          ) {
+            return await failAttempt(
+              sequence,
+              observedAt,
+              outcome.failureClass,
+              getter.fieldName,
+            );
+          }
+
+          fields[getter.fieldName] = unavailableField(
+            getter.source,
+            getter.freshness,
+            startedAt,
+            endedAt,
             outcome.failureClass,
+            getter.fieldName,
           );
+          continue;
         }
 
         const afterFailure = sampleLifecycleFailure();
@@ -1290,44 +1509,100 @@ export async function attachProbe({
             sequence,
             observedAt,
             afterFailure,
+            getter.fieldName,
           );
         }
 
         try {
           const value = getter.project(outcome.value);
-          const endedAt = clock();
+          const endedAt = wallClock();
 
-          fields[getter.fieldName] = {
-            source: getter.source,
-            freshness: getter.freshness,
+          if (!validWallInterval(startedAt, endedAt)) {
+            return await failAttempt(
+              sequence,
+              observedAt,
+              'shape_invalid',
+              'wallClock',
+            );
+          }
+
+          fields[getter.fieldName] = availableField(
+            getter.source,
+            getter.freshness,
             startedAt,
             endedAt,
             value,
-          };
+          );
         } catch (error) {
-          return await failAttempt(
-            sequence,
-            observedAt,
+          const endedAt = wallClock();
+
+          if (!validWallInterval(startedAt, endedAt)) {
+            return await failAttempt(
+              sequence,
+              observedAt,
+              'shape_invalid',
+              'wallClock',
+            );
+          }
+
+          fields[getter.fieldName] = unavailableField(
+            getter.source,
+            getter.freshness,
+            startedAt,
+            endedAt,
             error instanceof DataFault
               ? error.kind
               : 'shape_invalid',
+            getter.fieldName,
           );
         }
       }
 
-      const hostAfter = captureHost();
+      lifecycleFailure = sampleLifecycleFailure();
 
-      if (hostAfter.failureClass) {
+      if (lifecycleFailure) {
         return await failAttempt(
           sequence,
           observedAt,
-          hostAfter.failureClass,
+          lifecycleFailure,
+          'hostAfter',
+        );
+      }
+
+      const hostAfter = captureHost('hostAfter');
+
+      if (hostAfter.wallInvalid) {
+        return await failAttempt(
+          sequence,
+          observedAt,
+          'shape_invalid',
+          'wallClock',
+        );
+      }
+
+      lifecycleFailure = sampleLifecycleFailure();
+
+      if (lifecycleFailure) {
+        return await failAttempt(
+          sequence,
+          observedAt,
+          lifecycleFailure,
+          'hostAfter',
         );
       }
 
       fields.hostBefore = hostBefore.field;
       fields.hostAfter = hostAfter.field;
-      const collectionEndedAt = clock();
+      const collectionEndedAt = wallClock();
+
+      if (!validWallInterval(observedAt, collectionEndedAt)) {
+        return await failAttempt(
+          sequence,
+          observedAt,
+          'shape_invalid',
+          'wallClock',
+        );
+      }
 
       const beforePublicationFailure = sampleLifecycleFailure();
 
@@ -1336,27 +1611,47 @@ export async function attachProbe({
           sequence,
           observedAt,
           beforePublicationFailure,
+          'publication',
         );
       }
+
+      const hostsComparable =
+        hostBefore.field.status === 'available' &&
+        hostAfter.field.status === 'available';
 
       const observation = {
         collection: {
           startedAt: observedAt,
           endedAt: collectionEndedAt,
           hostChangedDuringRead:
-            JSON.stringify(canonicalize(hostBefore.field.value)) !==
-            JSON.stringify(canonicalize(hostAfter.field.value)),
+            hostsComparable
+              ? JSON.stringify(
+                  canonicalize(hostBefore.field.value),
+                ) !== JSON.stringify(
+                  canonicalize(hostAfter.field.value),
+                )
+              : null,
         },
         fields,
         unknowns: [...UNKNOWN_CLAIMS],
       };
 
+      const isPartial = Object.values(fields).some(field =>
+        field.status === 'unavailable' ||
+        (
+          field.status === 'available' &&
+          Array.isArray(field.value?.gaps) &&
+          field.value.gaps.length > 0
+        ),
+      );
+
       let envelope = buildEnvelope({
         sequence,
         observedAt,
         binding,
-        result: 'complete',
+        result: isPartial ? 'partial' : 'complete',
         failureClass: null,
+        failureStage: null,
         observation,
       });
 
@@ -1379,6 +1674,7 @@ export async function attachProbe({
             sequence,
             observedAt,
             error.kind,
+            'publication',
           );
         } else {
           terminal = true;

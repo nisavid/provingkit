@@ -34,13 +34,26 @@ async function createFixture(
   await chmod(runDirectory, 0o700);
   t.after(() => rm(runDirectory, { recursive: true, force: true }));
 
-  let currentTime = 1000;
+  let wallTime = 1000;
+  let elapsedTime = 1000;
   const calls = [];
   const advance = milliseconds => {
-    currentTime += milliseconds;
+    wallTime += milliseconds;
+    elapsedTime += milliseconds;
+  };
+  const advanceElapsed = milliseconds => {
+    elapsedTime += milliseconds;
+  };
+  const rewindWall = milliseconds => {
+    wallTime -= milliseconds;
   };
 
-  const query = queryFactory?.({ calls, advance }) ?? {
+  const query = queryFactory?.({
+    calls,
+    advance,
+    advanceElapsed,
+    rewindWall,
+  }) ?? {
     accountInfo() {
       calls.push('accountInfo');
       return { apiProvider: 'firstParty' };
@@ -95,7 +108,8 @@ async function createFixture(
       processStartTicks: '123456',
       uid: process.getuid(),
     },
-    now: () => currentTime,
+    now: () => wallTime,
+    monotonicNow: () => elapsedTime,
   });
 
   const bindingKeys = [
@@ -135,6 +149,8 @@ async function createFixture(
 
   return {
     advance,
+    advanceElapsed,
+    rewindWall,
     armDocument,
     calls,
     probe,
@@ -201,6 +217,7 @@ test('one sample owns getter work and discards a hung result after observation e
   assert.equal(first.status, 'fulfilled');
   assert.equal(first.value.result, 'failed');
   assert.equal(first.value.failureClass, 'limit_exceeded');
+  assert.equal(first.value.failureStage, 'accountInfo');
 
   assert.equal(overlapping.status, 'rejected');
   assert.match(
@@ -244,15 +261,15 @@ test('one sample owns getter work and discards a hung result after observation e
   assert.deepEqual(fixture.calls, ['accountInfo']);
 });
 
-test('a resolved getter is rejected when wall-clock time passed its deadline while timers were starved', async t => {
+test('a resolved getter is rejected when monotonic time passed its deadline while timers were starved', async t => {
   const fixture = await createFixture(t, {
     armOverrides: {
       perGetterTimeoutMs: 10,
     },
-    queryFactory: ({ calls, advance }) => ({
+    queryFactory: ({ calls, advanceElapsed }) => ({
       accountInfo() {
         calls.push('accountInfo');
-        advance(11);
+        advanceElapsed(11);
         return { apiProvider: 'late-provider' };
       },
 
@@ -280,6 +297,7 @@ test('a resolved getter is rejected when wall-clock time passed its deadline whi
 
   assert.equal(envelope.result, 'failed');
   assert.equal(envelope.failureClass, 'timeout');
+  assert.equal(envelope.failureStage, 'accountInfo');
   assert.equal(fixture.probe.state, 'terminal');
   assert.deepEqual(fixture.calls, ['accountInfo']);
 
@@ -292,6 +310,119 @@ test('a resolved getter is rejected when wall-clock time passed its deadline whi
     ),
     envelope,
   );
+});
+
+test('settled getter failures remain named field evidence and do not suppress later getters', async t => {
+  const fixture = await createFixture(t, {
+    queryFactory: ({ calls }) => ({
+      accountInfo() {
+        calls.push('accountInfo');
+        throw new Error('RAW_GETTER_ERROR_CANARY');
+      },
+
+      getContextUsage() {
+        calls.push('getContextUsage');
+        return { model: 42 };
+      },
+
+      listPermissionRules() {
+        calls.push('listPermissionRules');
+        return {
+          state: {
+            rules: [],
+            workspaceDirectories: [],
+            originalCwd: '/synthetic',
+            managedOnly: false,
+            errors: [],
+          },
+        };
+      },
+    }),
+  });
+
+  const envelope = await fixture.probe.sample();
+
+  assert.equal(envelope.result, 'partial');
+  assert.equal(envelope.failureClass, null);
+  assert.equal(envelope.failureStage, null);
+  assert.equal(fixture.probe.state, 'terminal');
+  assert.deepEqual(fixture.calls, [
+    'accountInfo',
+    'getContextUsage',
+    'listPermissionRules',
+  ]);
+
+  const { fields } = envelope.observation;
+
+  assert.deepEqual(
+    {
+      status: fields.accountInfo.status,
+      failureClass: fields.accountInfo.failureClass,
+      failureStage: fields.accountInfo.failureStage,
+      value: fields.accountInfo.value,
+    },
+    {
+      status: 'unavailable',
+      failureClass: 'rejected',
+      failureStage: 'accountInfo',
+      value: null,
+    },
+  );
+
+  assert.deepEqual(
+    {
+      status: fields.getContextUsageSummary.status,
+      failureClass:
+        fields.getContextUsageSummary.failureClass,
+      failureStage:
+        fields.getContextUsageSummary.failureStage,
+      value: fields.getContextUsageSummary.value,
+    },
+    {
+      status: 'unavailable',
+      failureClass: 'shape_invalid',
+      failureStage: 'getContextUsageSummary',
+      value: null,
+    },
+  );
+
+  assert.equal(fields.listPermissionRules.status, 'available');
+  assert.deepEqual(fields.listPermissionRules.value.rules, []);
+
+  const serialized = await readFile(
+    join(fixture.runDirectory, 'sample-000001.json'),
+    'utf8',
+  );
+
+  assert.equal(serialized.includes('RAW_GETTER_ERROR_CANARY'), false);
+});
+
+test('wall-clock rollback cannot extend getter or lifecycle deadlines', async t => {
+  const fixture = await createFixture(t, {
+    queryFactory: ({ calls, advanceElapsed, rewindWall }) => ({
+      accountInfo() {
+        calls.push('accountInfo');
+        rewindWall(500);
+        advanceElapsed(2);
+        return { apiProvider: 'firstParty' };
+      },
+      getContextUsage() {
+        calls.push('getContextUsage');
+        return { model: 'must-not-be-read' };
+      },
+      listPermissionRules() {
+        calls.push('listPermissionRules');
+        return {};
+      },
+    }),
+  });
+
+  const envelope = await fixture.probe.sample();
+
+  assert.equal(envelope.result, 'failed');
+  assert.equal(envelope.failureClass, 'shape_invalid');
+  assert.equal(envelope.failureStage, 'wallClock');
+  assert.deepEqual(fixture.calls, ['accountInfo']);
 });
 
 test('arm path, read, and schema faults are terminal', async t => {

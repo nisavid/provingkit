@@ -78,6 +78,9 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
       cliReportedVersion: 'fixture-version',
       query,
       inputStream: {},
+      backend: {
+        kind: 'local',
+      },
       permissionMode: 'default',
       harnessCwd: '/fixture/worktree',
       alwaysAllowedReasons: new Set(),
@@ -147,6 +150,18 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
     assert.equal(adapter.selectReceiver('not-target'), null);
     assert.deepEqual(getCalls, []);
 
+    rawRecord.backend = { kind: 'ssh' };
+    assert.equal(adapter.selectReceiver('fixture-task'), null);
+    rawRecord.backend = { kind: 'local' };
+    rawRecord.sshConfig = {};
+    assert.equal(adapter.selectReceiver('fixture-task'), null);
+    delete rawRecord.sshConfig;
+    rawRecord.wslConfig = {};
+    assert.equal(adapter.selectReceiver('fixture-task'), null);
+    delete rawRecord.wslConfig;
+
+    assert.deepEqual(queryCalls, []);
+
     const firstView = adapter.selectReceiver('fixture-task');
     assert.equal(
       adapter.selectReceiver('fixture-task'),
@@ -185,6 +200,40 @@ test('selected Desktop receiver remains guarded until arm and invalidates on rec
       at: 1234,
       generation: 5,
     });
+
+    manager.cliOAuthTokenKeeper.spawnAccountOf = () => {
+      throw new Error('RAW_DEPENDENCY_ERROR_CANARY');
+    };
+    rawRecord.effectiveCuAllowedApps = [
+      {
+        bundleId: 42,
+        grantedAt: 1,
+      },
+    ];
+
+    const isolatedHost = projectApprovedHost(
+      firstView.host,
+      firstView.generation,
+    );
+
+    assert.equal(isolatedHost.permissionMode, 'default');
+    assert.equal(
+      isolatedHost.selectedExecutorReport.taskId,
+      'fixture-task',
+    );
+    assert.deepEqual(isolatedHost.gaps, [
+      { field: 'spawnRoute', failureClass: 'rejected' },
+      {
+        field: 'effectiveCuAllowedApps',
+        failureClass: 'shape_invalid',
+      },
+    ]);
+
+    manager.cliOAuthTokenKeeper.spawnAccountOf = record => ({
+      accountUuid: 'fixture-account',
+      orgId: 'fixture-org',
+    });
+    rawRecord.effectiveCuAllowedApps = [];
 
     const config = {
       schema: 'desktop-observer.probe-config.v1',

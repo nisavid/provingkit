@@ -227,8 +227,9 @@ test('public adapter bootstraps disarmed, accepts an exact arm, and exports one 
 
   assert.equal(probe.state, 'terminal');
   assert.equal(envelope.state, 'unqualified');
-  assert.equal(envelope.result, 'complete');
+  assert.equal(envelope.result, 'partial');
   assert.equal(envelope.failureClass, null);
+  assert.equal(envelope.failureStage, null);
 
   assert.deepEqual(calls, [
     { name: 'accountInfo', args: [] },
@@ -261,6 +262,7 @@ test('public adapter bootstraps disarmed, accepts an exact arm, and exports one 
   assert.equal(collection.startedAt, envelope.observedAt);
 
   for (const field of Object.values(fields)) {
+    assert.equal(field.status, 'available');
     assert.ok(field.startedAt >= collection.startedAt);
     assert.ok(field.endedAt >= field.startedAt);
     assert.ok(field.endedAt <= collection.endedAt);

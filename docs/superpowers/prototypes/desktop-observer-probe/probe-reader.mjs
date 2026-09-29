@@ -1,64 +1,24 @@
-const SAMPLE_SCHEMA = 'desktop-observer.sample.v1';
-const GETTER_SET_ID =
-  'desktop-query.readonly.v1:accountInfo,getContextUsage-summary,listPermissionRules';
+import {
+  BINDING_KEYS,
+  FAILURE_CLASSES,
+  FAILURE_STAGES,
+  FIELD_NAMES,
+  GETTER_SET_ID,
+  HOST_GAP_FIELDS,
+  HOST_KEYS,
+  MAX_ARRAY_ITEMS,
+  MAX_CWD_BYTES,
+  MAX_OBSERVATION_WINDOW_MS,
+  MAX_SAMPLE_BYTES,
+  MAX_TEXT_BYTES,
+  SAMPLE_SCHEMA,
+  UNKNOWN_CLAIMS,
+} from './observer-contract.mjs';
 
-const MAX_SAMPLE_BYTES = 16 * 1024;
-const MAX_OBSERVATION_WINDOW_MS = 30_000;
-const MAX_ARRAY_ITEMS = 32;
-const MAX_TEXT_BYTES = 256;
-const MAX_CWD_BYTES = 1024;
 const MAX_PARSE_DEPTH = 32;
-
-const UNKNOWN_CLAIMS = Object.freeze([
-  'current-account-route',
-  'current-model-freshness',
-  'current-permission-mode',
-  'complete-applied-permissions',
-  'current-cwd',
-  'native-address-binding',
-  'external-delivery-and-ack',
-]);
-
-const BINDING_KEYS = Object.freeze([
-  'runId',
-  'configSha256',
-  'moduleSha256',
-  'copiedAsarSha256',
-  'appStartNonce',
-  'pid',
-  'processStartTicks',
-  'targetTaskId',
-  'targetCodeSessionId',
-  'queryGeneration',
-  'getterSetId',
-]);
-
-const HOST_KEYS = Object.freeze([
-  'spawnRoute',
-  'permissionMode',
-  'modeEvent',
-  'selectedExecutorReport',
-  'harnessCwd',
-  'cwdEventProvenance',
-  'alwaysAllowedReasons',
-  'cuAllowedApps',
-  'cuGrantFlags',
-  'effectiveCuAllowedApps',
-  'effectiveCuGrantFlags',
-  'sessionPermissionUpdateTypes',
-  'flagScopeSyncPending',
-  'modeRequestsInFlight',
-  'pendingCoverage',
-]);
-
-const FAILURE_CLASSES = new Set([
-  'unsupported',
-  'limit_exceeded',
-  'timeout',
-  'identity_changed',
-  'rejected',
-  'shape_invalid',
-]);
+const FAILURE_CLASS_SET = new Set(FAILURE_CLASSES);
+const FAILURE_STAGE_SET = new Set(FAILURE_STAGES);
+const HOST_GAP_FIELD_SET = new Set(HOST_GAP_FIELDS);
 
 const invalid = () => {
   throw new Error('invalid sample');
@@ -495,6 +455,24 @@ function validateHost(value, binding) {
   if (value.modeRequestsInFlight !== null) {
     count(value.modeRequestsInFlight);
   }
+
+  boundedArray(value.gaps, gap => {
+    exactKeys(gap, ['field', 'failureClass']);
+
+    if (
+      !HOST_GAP_FIELD_SET.has(gap.field) ||
+      !FAILURE_CLASS_SET.has(gap.failureClass)
+    ) {
+      invalid();
+    }
+  });
+
+  if (
+    new Set(value.gaps.map(gap => gap.field)).size !==
+    value.gaps.length
+  ) {
+    invalid();
+  }
 }
 
 function validateAccount(value) {
@@ -564,6 +542,9 @@ function validateField(
     'freshness',
     'startedAt',
     'endedAt',
+    'status',
+    'failureClass',
+    'failureStage',
     'value',
   ]);
 
@@ -582,7 +563,26 @@ function validateField(
     invalid();
   }
 
-  validateValue(field.value);
+  if (field.status === 'available') {
+    if (
+      field.failureClass !== null ||
+      field.failureStage !== null
+    ) {
+      invalid();
+    }
+
+    validateValue(field.value);
+    return;
+  }
+
+  if (
+    field.status !== 'unavailable' ||
+    field.value !== null ||
+    !FAILURE_CLASS_SET.has(field.failureClass) ||
+    !FAILURE_STAGE_SET.has(field.failureStage)
+  ) {
+    invalid();
+  }
 }
 
 function validateObservation(observation, binding, observedAt) {
@@ -597,7 +597,10 @@ function validateObservation(observation, binding, observedAt) {
 
   timestamp(collection.startedAt);
   timestamp(collection.endedAt);
-  boolean(collection.hostChangedDuringRead);
+
+  if (collection.hostChangedDuringRead !== null) {
+    boolean(collection.hostChangedDuringRead);
+  }
 
   if (
     collection.startedAt !== observedAt ||
@@ -609,13 +612,7 @@ function validateObservation(observation, binding, observedAt) {
   }
 
   const fields = observation.fields;
-  exactKeys(fields, [
-    'accountInfo',
-    'getContextUsageSummary',
-    'listPermissionRules',
-    'hostBefore',
-    'hostAfter',
-  ]);
+  exactKeys(fields, FIELD_NAMES);
 
   validateField(fields.accountInfo, collection, {
     source: 'Query.accountInfo',
@@ -645,11 +642,18 @@ function validateObservation(observation, binding, observedAt) {
   validateField(fields.hostBefore, collection, hostDescriptor);
   validateField(fields.hostAfter, collection, hostDescriptor);
 
-  const changed =
-    canonical(fields.hostBefore.value) !==
-    canonical(fields.hostAfter.value);
+  if (
+    fields.hostBefore.status === 'available' &&
+    fields.hostAfter.status === 'available'
+  ) {
+    const changed =
+      canonical(fields.hostBefore.value) !==
+      canonical(fields.hostAfter.value);
 
-  if (collection.hostChangedDuringRead !== changed) invalid();
+    if (collection.hostChangedDuringRead !== changed) invalid();
+  } else if (collection.hostChangedDuringRead !== null) {
+    invalid();
+  }
 
   if (
     !Array.isArray(observation.unknowns) ||
@@ -661,7 +665,16 @@ function validateObservation(observation, binding, observedAt) {
     invalid();
   }
 
-  return collection;
+  const partial = Object.values(fields).some(field =>
+    field.status === 'unavailable' ||
+    (
+      field.status === 'available' &&
+      Array.isArray(field.value?.gaps) &&
+      field.value.gaps.length > 0
+    ),
+  );
+
+  return { collection, partial };
 }
 
 export function inspectProbeSample(
@@ -705,6 +718,7 @@ export function inspectProbeSample(
       'binding',
       'result',
       'failureClass',
+      'failureStage',
       'observation',
     ]);
 
@@ -720,9 +734,30 @@ export function inspectProbeSample(
     timestamp(sample.observedAt);
     validateBinding(sample.binding);
 
+    if (
+      !BINDING_KEYS.every(
+        key => sample.binding[key] === expectedBinding[key],
+      )
+    ) {
+      return unknown('binding-mismatch');
+    }
+
+    if (sample.sequence <= afterSequence) {
+      return unknown('not-newer');
+    }
+
+    if (now < sample.observedAt) {
+      return unknown('clock-before-observation');
+    }
+
+    if (now - sample.observedAt > maximumAgeMs) {
+      return unknown('expired');
+    }
+
     if (sample.result === 'failed') {
       if (
-        !FAILURE_CLASSES.has(sample.failureClass) ||
+        !FAILURE_CLASS_SET.has(sample.failureClass) ||
+        !FAILURE_STAGE_SET.has(sample.failureStage) ||
         sample.observation !== null
       ) {
         invalid();
@@ -732,37 +767,31 @@ export function inspectProbeSample(
     }
 
     if (
-      sample.result !== 'complete' ||
+      (
+        sample.result !== 'complete' &&
+        sample.result !== 'partial'
+      ) ||
       sample.failureClass !== null ||
+      sample.failureStage !== null ||
       sample.observation === null
     ) {
       invalid();
     }
 
-    const collection = validateObservation(
+    const { collection, partial } = validateObservation(
       sample.observation,
       sample.binding,
       sample.observedAt,
     );
 
     if (
-      !BINDING_KEYS.every(
-        key => sample.binding[key] === expectedBinding[key],
-      )
+      (sample.result === 'partial') !== partial
     ) {
-      return unknown('binding-mismatch');
+      invalid();
     }
 
     if (now < collection.endedAt) {
       return unknown('clock-before-observation');
-    }
-
-    if (now - collection.endedAt > maximumAgeMs) {
-      return unknown('expired');
-    }
-
-    if (sample.sequence <= afterSequence) {
-      return unknown('not-newer');
     }
 
     return {

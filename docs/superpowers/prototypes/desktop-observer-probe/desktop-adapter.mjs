@@ -14,15 +14,17 @@ import {
 } from 'node:path';
 
 import {
+  ARM_DEADLINE_MS,
+  MAX_CONFIG_BYTES,
+  MAX_SAMPLES,
+  MIN_SAMPLE_INTERVAL_MS,
+} from './observer-contract.mjs';
+import {
   attachProbe,
   projectApprovedHost,
 } from './observer-probe.mjs';
 
-const MAX_CONFIG_BYTES = 4096;
 const MAX_MODULE_BYTES = 256 * 1024;
-const ARM_DEADLINE_MS = 60_000;
-const MIN_SAMPLE_INTERVAL_MS = 5_000;
-const MAX_SAMPLES = 3;
 
 const managerScopes = new WeakMap();
 const recordStates = new WeakMap();
@@ -287,18 +289,41 @@ function bumpGeneration(record) {
 }
 
 function projectHost(manager, record, state, dependencies) {
-  const route = manager.cliOAuthTokenKeeper?.spawnAccountOf(record);
-  const requests = record.permissionModeRequestsInFlight;
+  const fieldFailures = {};
+
+  const read = (field, operation) => {
+    try {
+      return operation();
+    } catch {
+      fieldFailures[field] = 'rejected';
+      return undefined;
+    }
+  };
+
+  const route = read(
+    'spawnRoute',
+    () => manager.cliOAuthTokenKeeper?.spawnAccountOf(record),
+  );
+  const requests = read(
+    'modeRequestsInFlight',
+    () => record.permissionModeRequestsInFlight,
+  );
 
   return {
     spawnRoute:
       route === undefined || route === null
         ? undefined
         : {
-            accountUuid: route.accountUuid,
-            orgId: route.orgId,
+            accountUuid: read(
+              'spawnRoute',
+              () => route.accountUuid,
+            ),
+            orgId: read('spawnRoute', () => route.orgId),
           },
-    permissionMode: record.permissionMode,
+    permissionMode: read(
+      'permissionMode',
+      () => record.permissionMode,
+    ),
     modeEvent:
       state.modeEvent?.generation === state.generation &&
       state.modeEvent.query === record.query
@@ -309,30 +334,76 @@ function projectHost(manager, record, state, dependencies) {
           }
         : undefined,
     selectedExecutorReport: {
-      taskId: record.sessionId,
-      cliPid: record.cliPid,
-      cliPidAtMs: record.cliPidAtMs,
-      cliReportedVersion: record.cliReportedVersion,
-      currentCodeSessionId: record.cliSessionId,
+      taskId: read(
+        'selectedExecutorReport.taskId',
+        () => record.sessionId,
+      ),
+      cliPid: read(
+        'selectedExecutorReport.cliPid',
+        () => record.cliPid,
+      ),
+      cliPidAtMs: read(
+        'selectedExecutorReport.cliPidAtMs',
+        () => record.cliPidAtMs,
+      ),
+      cliReportedVersion: read(
+        'selectedExecutorReport.cliReportedVersion',
+        () => record.cliReportedVersion,
+      ),
+      currentCodeSessionId: read(
+        'selectedExecutorReport.currentCodeSessionId',
+        () => record.cliSessionId,
+      ),
     },
-    harnessCwd: record.harnessCwd,
+    harnessCwd: read('harnessCwd', () => record.harnessCwd),
     alwaysAllowedReasons:
-      record.alwaysAllowedReasons === undefined
+      read(
+        'alwaysAllowedReasons',
+        () => record.alwaysAllowedReasons,
+      ) === undefined
         ? undefined
-        : Array.from(record.alwaysAllowedReasons),
-    cuAllowedApps: record.cuAllowedApps,
-    cuGrantFlags: record.cuGrantFlags,
-    effectiveCuAllowedApps:
-      dependencies.effectiveCuAllowedApps(record),
-    effectiveCuGrantFlags:
-      dependencies.effectiveCuGrantFlags(record),
-    sessionPermissionUpdates: record.sessionPermissionUpdates,
-    flagScopeSyncPending: record.flagScopeSyncPending,
+        : read(
+            'alwaysAllowedReasons',
+            () => Array.from(record.alwaysAllowedReasons),
+          ),
+    cuAllowedApps: read(
+      'cuAllowedApps',
+      () => record.cuAllowedApps,
+    ),
+    cuGrantFlags: read(
+      'cuGrantFlags',
+      () => record.cuGrantFlags,
+    ),
+    effectiveCuAllowedApps: read(
+      'effectiveCuAllowedApps',
+      () => dependencies.effectiveCuAllowedApps(record),
+    ),
+    effectiveCuGrantFlags: read(
+      'effectiveCuGrantFlags',
+      () => dependencies.effectiveCuGrantFlags(record),
+    ),
+    sessionPermissionUpdates: read(
+      'sessionPermissionUpdateTypes',
+      () => record.sessionPermissionUpdates,
+    ),
+    flagScopeSyncPending: read(
+      'flagScopeSyncPending',
+      () => record.flagScopeSyncPending,
+    ),
     modeRequestsInFlight:
       requests?.query === record.query
         ? requests.count
         : undefined,
+    fieldFailures,
   };
+}
+
+function isLocalRecord(record) {
+  return (
+    record?.backend?.kind === 'local' &&
+    record.sshConfig === undefined &&
+    record.wslConfig === undefined
+  );
 }
 
 export function createDesktopAdapter({
@@ -371,6 +442,7 @@ export function createDesktopAdapter({
       if (
         !record ||
         record.sessionId !== targetTaskId ||
+        !isLocalRecord(record) ||
         isUnavailable(record)
       ) {
         return null;
