@@ -95,12 +95,17 @@ The two unknown result variants are exactly:
 {"state":"unknown","reason":"linux-identity-unavailable-or-changed","qualification":"unqualified","queryToOsAssociation":"unknown"}
 ```
 
-`selected-sample-unavailable-or-changed` also covers failure to acquire the
-Linux boot domain before sample selection. Without that domain the helper
-cannot validate a selected sample, so this reason does not claim that the
-sample file is missing. `linux-identity-unavailable-or-changed` applies only
-after a sample has passed boot-domain, binding, and freshness selection and
-process-identity acquisition has begun.
+`selected-sample-unavailable-or-changed` covers any failure that prevents the
+selected sample from remaining valid. This includes failure to acquire the
+Linux boot domain before selection, clock expiry or regression during later
+process-identity checks, and failure or change during final sample
+reacquisition. Without the boot domain the helper cannot validate a selected
+sample, so this reason does not claim that the sample file is missing.
+`linux-identity-unavailable-or-changed` is reserved for process-directory,
+owner, start-time, or executable identity failures after a sample has passed
+boot-domain, binding, and freshness selection. Beginning process-identity
+acquisition does not reclassify a later sample invalidation as a Linux-identity
+failure.
 
 The observed result has exactly this shape:
 
@@ -172,7 +177,9 @@ private regular, single-link `0600` file unless its creation or validation
 fails. It is an inventory and recovery record, not an executable cleanup
 script.
 
-Use schema `provingkit.desktop-probe-cleanup.v2`. The top-level shape is:
+Use schema `provingkit.desktop-probe-cleanup.v2`. The top-level shape shown
+below has no `retention` field. Retention is recorded only in the nested
+`restoration.recoveryRecord.retention` and `fixture.retention` fields:
 
 ```json
 {

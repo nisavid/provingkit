@@ -315,9 +315,11 @@ otherwise unverified, delete no package or private resource.
 
 Create the private cleanup manifest after that package-cleanup phase ends, or
 at the terminal stop when package deletion is prohibited. Use the exact status,
-reason, restoration, package-cleanup, fixture, output, retained-evidence,
-retention, and resource-role variants defined by
+reason, restoration, package-cleanup, fixture, output, retained-evidence, and
+resource-role variants defined by
 [private probe data contracts](private-data-contracts.md#private-cleanup-manifest-and-retention).
+The schema has no top-level retention field; record retention only in the
+nested `restoration.recoveryRecord.retention` and `fixture.retention` fields.
 List only files and resources actually established, preserve absent artifacts
 explicitly, and never invent a task ID, Code ID, binding, sequence, file
 identity, or removal result.
