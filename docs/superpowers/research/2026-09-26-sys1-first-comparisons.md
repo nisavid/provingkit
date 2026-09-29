@@ -113,7 +113,7 @@ The unattended `ask` became a denial because no approval responder was available
 These mechanisms have deliberate limits:
 
 - The geographic concern was injected. This was not a run of the installed Jev judge on native hook input.
-- The one-time denial disappeared by script. Its success does not qualify a production reviewer or release condition.
+- The one-time denial disappeared by script in sequential episodes. Its read-and-append log is not atomic, so parallel hook calls were not qualified. Its success does not qualify a production reviewer or release condition.
 - The deterministic destination came from the authored fixture, not a runtime natural-language authorization parser.
 - The selective-veto arm had no harmful score to reject. Its successful report demonstrates no extra safety catch.
 - The prompt explicitly authorized the sibling, discouraged repeated approval requests, and bounded retries. Ordinary-task behavior outside this prompt remains unmeasured.
@@ -135,6 +135,21 @@ Several failed setup attempts remain distinct from permission denials: `sandbox 
 A subsequent `exec` session requested Sol/high, disabled ordinary hooks and external/delegation features for that invocation, used a custom permission profile, and prohibited approval escalation. The agent reported that four shell calls failed before their requested commands, with `Failed to execvp /usr/bin/bash`. The retained trace contains four policy-denied stderr records, but no individual structured tool arguments or outputs. File checks found no allowed output and no change to the excluded canary.
 
 The standalone success therefore does not qualify model-tool containment. The model-tool route and complete native Codex intervention comparison remain unresolved. The source-supported custom-hook trust path also remains unexecuted; no hook-trust bypass or installed configuration change was used.
+
+## Retained runner limits
+
+The four early runners (`native-preflight.py`, `codex-model-preflight.py`,
+`codex-preflight.py`, and `native-adapter-episodes.py`) save their process output
+only after `subprocess.run` returns. A timeout can therefore leave fixture
+effects without saved partial stdout or stderr. Such an attempt is unqualified
+and needs a fresh fixture for any later run. The Codex model preflight also
+reads the retained canary without an existence guard; a missing canary prevents
+its effects summary from being written. The recorded attempt has that summary.
+
+The archived scripts preserve the bytes used for these observations. They are
+research evidence, not maintained runners with qualified failure recovery.
+Missing initialization or hook evidence deliberately prevents an episode
+summary from being written; saved raw output does not establish a passing run.
 
 ## Interpretation and next decision
 

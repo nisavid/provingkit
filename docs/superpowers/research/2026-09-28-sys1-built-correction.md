@@ -24,6 +24,9 @@ and normal-session rollout require separate operator decisions.
 The source check recorded 128 passing tests, lint, skill validation, build, and
 `git diff --check` at the behavior commit. The native fixtures checked the clean
 fork-maintenance commit and unchanged built inventory before and after use.
+The source test, lint, skill-validation, and build checks were not rerun at
+`ed5e7c94248d2a639d471b6cbd427ba08abef773`; the retained build inventory does not
+extend those checks to that revision.
 [Source and build identities](evidence/sys1-built-2026-09-28/source-build.json)
 retain that distinction.
 

@@ -13,8 +13,10 @@ outcomes.
 
 The runner imports the installed Jev 0.7.2 functions and uses the SDK's
 configured-fetch seam to provide closed synthetic responses. A global fetch
-tripwire prevents an unexpected real fetch. A synthetic credential and fresh
-XDG directories isolate experiment state. The runner checks six Jev module
+tripwire prevents an unexpected real fetch. This seam does not block other
+network transports, such as `http` or `net`; process-wide network denial was
+not tested. A fake synthetic credential and fresh XDG directories isolate
+experiment state. The runner checks six Jev module
 hashes before and after the comparison and records the SDK identity.
 
 For each of two proposed deletion commands, it injects eight failures through
@@ -33,8 +35,8 @@ transcript or exercise the full native supervision lifecycle.
 
 Each safety invocation made one mock fetch. The 16 combinations therefore
 produced 48 mock fetches across the source and two adapters. The supervision
-ordinary/explanation pairs produced another six mock fetches. There were no
-real service calls or subject actions.
+ordinary/explanation pairs produced another six mock fetches. No real service
+call occurred through the observed fetch seam, and no subject action executed.
 
 | Injected failure | Safety source decision | Claude and Codex adapter output |
 | --- | --- | --- |
