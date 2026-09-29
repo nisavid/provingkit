@@ -2532,20 +2532,25 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
         self.assertEqual((snapshot / relative).read_bytes(), original)
 
-    def test_prepared_source_stage_carries_member_version_validation_dependency(self) -> None:
-        relative = "scripts/member_versions.py"
+    def test_prepared_source_stage_carries_shared_member_validation_dependencies(self) -> None:
         plugins = self.module.SOURCE_STAGE_VALIDATED_PLUGINS
-        self.assertIn(relative, self.module.all_scope_paths(plugins))
-
-        snapshot = Path(self.temporary_directory.name).resolve() / "member-version-snapshot"
-        self.module.copy_release_scope(REPOSITORY, snapshot, plugins)
-        helper = snapshot / relative
-        self.assertEqual(helper.read_bytes(), (REPOSITORY / relative).read_bytes())
-
-        before = self.module.release_contract_identity(snapshot, plugins)
-        helper.write_bytes(helper.read_bytes() + b"\n")
-        after = self.module.release_contract_identity(snapshot, plugins)
-        self.assertNotEqual(before["sha256"], after["sha256"])
+        for relative in (
+            "scripts/member_versions.py",
+            "scripts/member_source_stage_cli.py",
+        ):
+            with self.subTest(relative=relative):
+                self.assertIn(relative, self.module.all_scope_paths(plugins))
+                snapshot = (
+                    Path(self.temporary_directory.name).resolve()
+                    / f"{Path(relative).stem}-snapshot"
+                )
+                self.module.copy_release_scope(REPOSITORY, snapshot, plugins)
+                helper = snapshot / relative
+                self.assertEqual(helper.read_bytes(), (REPOSITORY / relative).read_bytes())
+                before = self.module.release_contract_identity(snapshot, plugins)
+                helper.write_bytes(helper.read_bytes() + b"\n")
+                after = self.module.release_contract_identity(snapshot, plugins)
+                self.assertNotEqual(before["sha256"], after["sha256"])
 
     def test_source_stage_excludes_the_stale_source_lineage_snapshot(self) -> None:
         stale_roots = (
@@ -2847,6 +2852,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         support_modules = [
             "scripts/agent_plugins_standard.py",
             "scripts/member_versions.py",
+            "scripts/member_source_stage_cli.py",
         ]
         before = self.module.release_contract_identity(self.repository)
         self.assertEqual(before["support_modules"], support_modules)
