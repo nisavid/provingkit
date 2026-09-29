@@ -33,9 +33,11 @@ question, and the work that can continue independently.
 
 Use [the evidence record](references/evidence-record.md) for the witness,
 retained action, authorization, intent amendments, emitted output, selected
-logs, source/runtime identities, effects, and access limits. Record missing
-fields as unknown. Request only missing evidence that can change the current
-decision; a full transcript is not a default prerequisite.
+logs, source/runtime identities, effects, and access limits. Record fields not
+retained as unknown, fields outside the allowed read boundary as inaccessible,
+and fields with no role in this occurrence as not applicable. Request only
+missing evidence that can change the current decision; a full transcript is
+not a default prerequisite.
 
 Keep witness reports, source facts, authored fixtures, model responses, native
 observations, and inferences distinguishable. Preserve original evidence; make
