@@ -7,17 +7,28 @@ import {
 import { TextDecoder } from 'node:util';
 
 import {
+  MAX_CWD_BYTES,
   MAX_OBSERVATION_WINDOW_MS,
+  MAX_SAMPLES,
   MONOTONIC_CLOCK_ID,
   SELECTED_EXECUTOR_REPORT_BASIS,
   SELECTED_EXECUTOR_REPORT_KEYS,
 } from './observer-contract.mjs';
+import { isValidProbeBinding } from './probe-reader.mjs';
 
 const MAX_STAT_BYTES = 4096;
 const MAX_EXECUTABLE_BYTES = 256 * 1024 * 1024;
 const HASH_BUFFER_BYTES = 64 * 1024;
 const MAX_TEXT_BYTES = 256;
 const PROCESS_DESCRIPTOR_ROOT = '/proc/self/fd';
+const SELECTED_EXECUTOR_INPUT_KEYS = Object.freeze([
+  'afterSequence',
+  'expectedBinding',
+  'expectedUid',
+  'maximumAgeMs',
+  'runDirectory',
+  'sequence',
+]);
 
 class StaleSelectedSampleError extends Error {}
 
@@ -262,6 +273,51 @@ function descriptorChildPath(directoryHandle, childName) {
     String(directoryHandle.fd),
     childName,
   );
+}
+
+function snapshotObservationInput(input, currentUid) {
+  if (!hasExactKeys(input, SELECTED_EXECUTOR_INPUT_KEYS)) {
+    return null;
+  }
+
+  const expectedBinding = isPlainObject(input.expectedBinding)
+    ? { ...input.expectedBinding }
+    : input.expectedBinding;
+  const snapshot = {
+    afterSequence: input.afterSequence,
+    expectedBinding,
+    expectedUid: input.expectedUid,
+    maximumAgeMs: input.maximumAgeMs,
+    runDirectory: input.runDirectory,
+    sequence: input.sequence,
+  };
+
+  if (
+    !Number.isSafeInteger(currentUid) ||
+    currentUid < 0 ||
+    !Number.isSafeInteger(snapshot.expectedUid) ||
+    snapshot.expectedUid < 0 ||
+    snapshot.expectedUid !== currentUid ||
+    typeof snapshot.runDirectory !== 'string' ||
+    !isAbsolute(snapshot.runDirectory) ||
+    hasControlCharacters(snapshot.runDirectory) ||
+    Buffer.byteLength(snapshot.runDirectory, 'utf8') >
+      MAX_CWD_BYTES ||
+    !Number.isSafeInteger(snapshot.sequence) ||
+    snapshot.sequence < 1 ||
+    snapshot.sequence > MAX_SAMPLES ||
+    !Number.isSafeInteger(snapshot.afterSequence) ||
+    snapshot.afterSequence !== snapshot.sequence - 1 ||
+    !Number.isSafeInteger(snapshot.maximumAgeMs) ||
+    snapshot.maximumAgeMs < 1 ||
+    snapshot.maximumAgeMs > MAX_OBSERVATION_WINDOW_MS ||
+    !isValidProbeBinding(snapshot.expectedBinding)
+  ) {
+    return null;
+  }
+
+  Object.freeze(snapshot.expectedBinding);
+  return Object.freeze(snapshot);
 }
 
 export function createSelectedLinuxExecutorObserver({
@@ -586,21 +642,26 @@ export function createSelectedLinuxExecutorObserver({
   }
 
   return async function observeSelectedLinuxExecutor(input) {
-    if (
-      !isPlainObject(input) ||
-      typeof getuid() !== 'number' ||
-      !Number.isSafeInteger(input.expectedUid) ||
-      input.expectedUid < 0 ||
-      input.expectedUid !== getuid()
-    ) {
+    let currentUid;
+
+    try {
+      currentUid = getuid();
+    } catch {
       return unknownSample();
     }
 
-    const expectedUid = BigInt(input.expectedUid);
+    const inputSnapshot = snapshotObservationInput(
+      input,
+      currentUid,
+    );
+
+    if (!inputSnapshot) return unknownSample();
+
+    const expectedUid = BigInt(inputSnapshot.expectedUid);
     let selected;
 
     try {
-      selected = await acquire(input);
+      selected = await acquire(inputSnapshot);
     } catch {
       return unknownSample();
     }
@@ -618,7 +679,7 @@ export function createSelectedLinuxExecutorObserver({
         path: processDirectory,
         expectedUid,
         sample: selected.sample,
-        maximumAgeMs: input.maximumAgeMs,
+        maximumAgeMs: inputSnapshot.maximumAgeMs,
       });
       processDirectoryHandle = boundProcess.handle;
 
@@ -627,7 +688,7 @@ export function createSelectedLinuxExecutorObserver({
         boundState: boundProcess.state,
         expectedUid,
         sample: selected.sample,
-        maximumAgeMs: input.maximumAgeMs,
+        maximumAgeMs: inputSnapshot.maximumAgeMs,
       });
       const startBefore = await readStartTicks(
         processDirectoryHandle,
@@ -639,7 +700,7 @@ export function createSelectedLinuxExecutorObserver({
         boundState: boundProcess.state,
         expectedUid,
         sample: selected.sample,
-        maximumAgeMs: input.maximumAgeMs,
+        maximumAgeMs: inputSnapshot.maximumAgeMs,
       });
       const startBeforeHash = await readStartTicks(
         processDirectoryHandle,
@@ -651,7 +712,7 @@ export function createSelectedLinuxExecutorObserver({
         boundState: boundProcess.state,
         expectedUid,
         sample: selected.sample,
-        maximumAgeMs: input.maximumAgeMs,
+        maximumAgeMs: inputSnapshot.maximumAgeMs,
       });
       const executable = await hashExecutable(
         processDirectoryHandle,
@@ -662,7 +723,7 @@ export function createSelectedLinuxExecutorObserver({
         boundState: boundProcess.state,
         expectedUid,
         sample: selected.sample,
-        maximumAgeMs: input.maximumAgeMs,
+        maximumAgeMs: inputSnapshot.maximumAgeMs,
       });
       const startAfterReopen = await readStartTicks(
         processDirectoryHandle,
@@ -675,7 +736,7 @@ export function createSelectedLinuxExecutorObserver({
           boundState: boundProcess.state,
           expectedUid,
           sample: selected.sample,
-          maximumAgeMs: input.maximumAgeMs,
+          maximumAgeMs: inputSnapshot.maximumAgeMs,
         });
       const executableAfter =
         await readExecutableState(
@@ -706,7 +767,7 @@ export function createSelectedLinuxExecutorObserver({
       let revalidated;
 
       try {
-        revalidated = await acquire(input);
+        revalidated = await acquire(inputSnapshot);
       } catch {
         return unknownSample();
       }

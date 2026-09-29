@@ -332,6 +332,15 @@ function validateBinding(binding) {
   return binding;
 }
 
+export function isValidProbeBinding(binding) {
+  try {
+    validateBinding(binding);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function validateFlags(value) {
   if (value === null) return;
   if (!isPlainObject(value)) invalid();

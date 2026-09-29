@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import { UNKNOWN_CLAIMS } from './observer-contract.mjs';
 import { readProbeSample } from './read-probe-file.mjs';
 
 const binding = {
@@ -43,11 +44,141 @@ const failedSample = JSON.stringify({
   observation: null,
 });
 
+const unavailableField = (
+  source,
+  freshness,
+  failureStage,
+) => ({
+  source,
+  freshness,
+  startedAt: 1_000,
+  endedAt: 1_000,
+  status: 'unavailable',
+  failureClass: 'rejected',
+  failureStage,
+  value: null,
+});
+
+const usableSample = sequence => JSON.stringify({
+  schema: 'desktop-observer.sample.v1',
+  sequence,
+  observedAt: 1_000,
+  observedAtMonotonicMs: 5_000,
+  state: 'unqualified',
+  binding,
+  result: 'partial',
+  failureClass: null,
+  failureStage: null,
+  observation: {
+    collection: {
+      startedAt: 1_000,
+      endedAt: 1_000,
+      startedAtMonotonicMs: 5_000,
+      endedAtMonotonicMs: 5_000,
+      hostChangedDuringRead: null,
+    },
+    fields: {
+      accountInfo: unavailableField(
+        'Query.accountInfo',
+        'initialization-cache',
+        'accountInfo',
+      ),
+      getContextUsageSummary: unavailableField(
+        'Query.getContextUsage(summary)',
+        'query-report; freshness unproven',
+        'getContextUsageSummary',
+      ),
+      listPermissionRules: unavailableField(
+        'Query.listPermissionRules',
+        'query-report; permission coverage partial',
+        'listPermissionRules',
+      ),
+      hostBefore: unavailableField(
+        'Desktop manager projection',
+        'manager-snapshot; spawn and event values are retained',
+        'hostBefore',
+      ),
+      hostAfter: unavailableField(
+        'Desktop manager projection',
+        'manager-snapshot; spawn and event values are retained',
+        'hostAfter',
+      ),
+    },
+    unknowns: UNKNOWN_CLAIMS,
+  },
+});
+
 const unavailable = {
   state: 'unknown',
   reason: 'sample-unavailable',
   qualification: 'unqualified',
 };
+
+const invalidSample = {
+  state: 'unknown',
+  reason: 'invalid-sample',
+  qualification: 'unqualified',
+};
+
+async function readSyntheticSelectedSample(
+  envelopeSequence,
+  afterSequence,
+) {
+  const runDirectory = await mkdtemp(
+    path.join(tmpdir(), 'read-probe-file-sequence-'),
+  );
+  await chmod(runDirectory, 0o700);
+
+  const selected = path.join(
+    runDirectory,
+    'sample-000002.json',
+  );
+
+  try {
+    await writeFile(selected, usableSample(envelopeSequence), {
+      mode: 0o600,
+    });
+    await chmod(selected, 0o600);
+
+    return await readProbeSample({
+      runDirectory,
+      sequence: 2,
+      expectedBinding: binding,
+      now: 2_000,
+      afterSequence,
+      monotonicNow: 6_000,
+      monotonicClockId: binding.monotonicClockId,
+      linuxBootId: binding.linuxBootId,
+      maximumAgeMs: 1_000,
+    });
+  } finally {
+    await rm(runDirectory, {
+      recursive: true,
+      force: true,
+    });
+  }
+}
+
+test('returns a usable sample when its sequence matches the selected filename', async () => {
+  const result = await readSyntheticSelectedSample(2, 1);
+
+  assert.equal(result.state, 'usable-partial');
+  assert.equal(result.sample.sequence, 2);
+});
+
+test('rejects a usable sample with a higher sequence than the selected filename', async () => {
+  assert.deepEqual(
+    await readSyntheticSelectedSample(3, 1),
+    invalidSample,
+  );
+});
+
+test('rejects a usable sample with a lower sequence than the selected filename', async () => {
+  assert.deepEqual(
+    await readSyntheticSelectedSample(1, 0),
+    invalidSample,
+  );
+});
 
 test('acquires only a safe explicitly selected sample file', async () => {
   const runDirectory = await mkdtemp(

@@ -167,6 +167,158 @@ async function writeSyntheticProcess(
   );
 }
 
+test('malformed observation inputs are rejected before boot-ID, sample, or process I/O', async t => {
+  const missingMaximumAge = acquisitionInput();
+  delete missingMaximumAge.maximumAgeMs;
+
+  const incompleteBinding = bindingFor();
+  delete incompleteBinding.linuxBootId;
+
+  const cases = [
+    {
+      name: 'unknown input key',
+      input: {
+        ...acquisitionInput(),
+        selectedRoot: '/caller-selected-root',
+      },
+    },
+    {
+      name: 'missing input key',
+      input: missingMaximumAge,
+    },
+    {
+      name: 'sequence below range',
+      input: {
+        ...acquisitionInput(),
+        sequence: 0,
+      },
+    },
+    {
+      name: 'sequence above range',
+      input: {
+        ...acquisitionInput(),
+        sequence: 4,
+        afterSequence: 3,
+      },
+    },
+    {
+      name: 'afterSequence is not the predecessor',
+      input: {
+        ...acquisitionInput(),
+        afterSequence: 1,
+      },
+    },
+    {
+      name: 'maximumAgeMs below range',
+      input: {
+        ...acquisitionInput(),
+        maximumAgeMs: 0,
+      },
+    },
+    {
+      name: 'maximumAgeMs above range',
+      input: {
+        ...acquisitionInput(),
+        maximumAgeMs: 30001,
+      },
+    },
+    {
+      name: 'different expected UID',
+      input: {
+        ...acquisitionInput(),
+        expectedUid: process.getuid() + 1,
+      },
+    },
+    {
+      name: 'relative run directory',
+      input: {
+        ...acquisitionInput(),
+        runDirectory: 'fixture/run',
+      },
+    },
+    {
+      name: 'oversized run directory',
+      input: {
+        ...acquisitionInput(),
+        runDirectory: `/${'a'.repeat(1024)}`,
+      },
+    },
+    {
+      name: 'run directory with control characters',
+      input: {
+        ...acquisitionInput(),
+        runDirectory: '/fixture/\nrun',
+      },
+    },
+    {
+      name: 'incomplete binding',
+      input: {
+        ...acquisitionInput(),
+        expectedBinding: incompleteBinding,
+      },
+    },
+    {
+      name: 'binding with an unknown key',
+      input: {
+        ...acquisitionInput(),
+        expectedBinding: {
+          ...bindingFor(),
+          selectedRoot: '/caller-selected-root',
+        },
+      },
+    },
+    {
+      name: 'binding with a malformed digest',
+      input: {
+        ...acquisitionInput(),
+        expectedBinding: {
+          ...bindingFor(),
+          configSha256: 'not-a-digest',
+        },
+      },
+    },
+  ];
+
+  for (const fixture of cases) {
+    await t.test(fixture.name, async () => {
+      let bootIdReads = 0;
+      let sampleReads = 0;
+      let processReads = 0;
+
+      const observer = createSelectedLinuxExecutorObserver({
+        processRoot: '/synthetic-proc',
+        readProbeSample: async () => {
+          sampleReads += 1;
+          return usableInspection();
+        },
+        getuid: () => process.getuid(),
+        now: () => 1020,
+        monotonicNow: () => 5020,
+        readLinuxBootId: async () => {
+          bootIdReads += 1;
+          return LINUX_BOOT_ID;
+        },
+        lstat: async () => {
+          processReads += 1;
+          throw new Error('process directory must not be read');
+        },
+        open: async () => {
+          processReads += 1;
+          throw new Error('process file must not be opened');
+        },
+      });
+
+      assert.deepEqual(
+        await observer(fixture.input),
+        unknownSample,
+      );
+      assert.equal(bootIdReads, 0);
+      assert.equal(sampleReads, 0);
+      assert.equal(processReads, 0);
+    });
+  }
+});
+
 test('foreign process owner is rejected before any process file is opened', async () => {
   const inspection = usableInspection();
   let processFileOpens = 0;
@@ -545,7 +697,7 @@ test('replacement of the numeric PID path cannot redirect later child opens', as
   }
 });
 
-test('a validated fixture sample observes only its selected synthetic process and retains unqualified evidence', async () => {
+test('an unknown process root is rejected without I/O and a valid fixture uses only the hardwired process root', async () => {
   const root = await mkdtemp(join(tmpdir(), 'selected-executor-'));
   const runDirectory = join(root, 'run');
   const processRoot = join(root, 'synthetic-proc');
@@ -678,14 +830,22 @@ test('a validated fixture sample observes only its selected synthetic process an
     const processPaths = [];
     const processOpenPaths = [];
     let processDirectoryDescriptor;
+    let bootIdReads = 0;
+    let sampleReads = 0;
 
     const observer = createSelectedLinuxExecutorObserver({
       processRoot,
-      readProbeSample,
+      readProbeSample: async input => {
+        sampleReads += 1;
+        return readProbeSample(input);
+      },
       getuid: () => process.getuid(),
       now: () => acquisitionNow++,
       monotonicNow: () => acquisitionMonotonicNow++,
-      readLinuxBootId: async () => LINUX_BOOT_ID,
+      readLinuxBootId: async () => {
+        bootIdReads += 1;
+        return LINUX_BOOT_ID;
+      },
       lstat: async (...args) => {
         processPaths.push(args[0]);
         return lstat(...args);
@@ -703,15 +863,31 @@ test('a validated fixture sample observes only its selected synthetic process an
       },
     });
 
-    const observed = await observer({
+    const validInput = {
       runDirectory,
       sequence: sample.sequence,
       expectedBinding: sample.binding,
       maximumAgeMs: 1000,
       afterSequence: 0,
       expectedUid: process.getuid(),
-      selectedRoot: forbiddenCallerRoot,
-    });
+    };
+
+    assert.deepEqual(
+      await observer({
+        ...validInput,
+        selectedRoot: forbiddenCallerRoot,
+      }),
+      unknownSample,
+    );
+    assert.equal(bootIdReads, 0);
+    assert.equal(sampleReads, 0);
+    assert.deepEqual(processPaths, []);
+    assert.deepEqual(processOpenPaths, []);
+
+    const observed = await observer(validInput);
+
+    assert.equal(bootIdReads, 2);
+    assert.equal(sampleReads, 2);
 
     const selectedReport =
       sample.observation.fields.hostAfter.value

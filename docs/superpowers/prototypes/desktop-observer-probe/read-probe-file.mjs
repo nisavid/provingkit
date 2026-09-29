@@ -15,6 +15,12 @@ const ACQUISITION_FAILURE = Object.freeze({
   qualification: 'unqualified',
 });
 
+const INVALID_SAMPLE = Object.freeze({
+  state: 'unknown',
+  reason: 'invalid-sample',
+  qualification: 'unqualified',
+});
+
 const FILE_SNAPSHOT_KEYS = Object.freeze([
   'dev',
   'ino',
@@ -216,7 +222,7 @@ export async function readProbeSample(input) {
       fatal: true,
     }).decode(buffer.subarray(0, total));
 
-    return inspectProbeSample(serialized, expectedBinding, {
+    const result = inspectProbeSample(serialized, expectedBinding, {
       now,
       afterSequence,
       monotonicNow,
@@ -224,6 +230,15 @@ export async function readProbeSample(input) {
       linuxBootId,
       maximumAgeMs,
     });
+
+    if (
+      'sample' in result &&
+      result.sample.sequence !== sequence
+    ) {
+      return INVALID_SAMPLE;
+    }
+
+    return result;
   } catch {
     return ACQUISITION_FAILURE;
   } finally {
