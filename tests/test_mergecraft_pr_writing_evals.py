@@ -1706,8 +1706,8 @@ class PublishedRuntimeBindingTests(unittest.TestCase):
             plan["processing_identity_kind"] = "published"
             plan["client_binding"] = {
                 "path": str(Path(temporary) / "reviewed-executable-not-launched"),
-                "sha256": "0753dfe1d8b87a52436deb13eb1c549661ef4c84fee2c5aa688385eebeccb761",
-                "version": "0.155.1",
+                "sha256": "d2752c52353401f7f6efbfcea68796f4f7a3d3e4769f5d1da53fa49d4856b72f",
+                "version": "0.159.0",
             }
             validate_plan(plan)
             predecessor = {
@@ -1720,8 +1720,8 @@ class PublishedRuntimeBindingTests(unittest.TestCase):
                 **plan,
                 "client_binding": {
                     **plan["client_binding"],
-                    "sha256": "660e159a49e823ac8e5986cb238f73158ce4b957d40d9292f8de90862644b501",
-                    "version": "0.155.0",
+                    "sha256": "0753dfe1d8b87a52436deb13eb1c549661ef4c84fee2c5aa688385eebeccb761",
+                    "version": "0.155.1",
                 },
             }
             with self.assertRaisesRegex(ValueError, "changed client needs reviewed"):
