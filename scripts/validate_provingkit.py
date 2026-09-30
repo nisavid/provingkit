@@ -2356,6 +2356,16 @@ def _validate_history(repository: Path) -> None:
         if retained_in_ref.returncode != 1:
             raise ValidationError("Git history attestation unavailable")
 
+    integrity = _run_git(
+        repository,
+        "fsck",
+        "--connectivity-only",
+        "--no-reflogs",
+        "--no-dangling",
+    )
+    if integrity.returncode != 0:
+        raise ValidationError("Git ref/history integrity validation failed")
+
     tags = {
         tag.rstrip()
         for tag in _require_git_output(

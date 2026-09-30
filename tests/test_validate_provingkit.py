@@ -472,6 +472,32 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
             self.assert_unauthorized_tag(repository)
 
+    def test_source_stage_validator_rejects_dangling_symbolic_tags(self) -> None:
+        for tag in (ALPHA_TAG, f"{ALPHA_TAG}-unreviewed"):
+            with self.subTest(tag=tag):
+                with tempfile.TemporaryDirectory() as directory:
+                    repository = Path(directory) / "repository"
+                    self.clone_with_history(repository)
+                    subprocess.run(
+                        [
+                            "git",
+                            "symbolic-ref",
+                            f"refs/tags/{tag}",
+                            "refs/heads/missing",
+                        ],
+                        cwd=repository,
+                        text=True,
+                        capture_output=True,
+                        check=True,
+                    )
+
+                    result = self.validate(repository)
+                    self.assertEqual(result.returncode, 1)
+                    self.assertEqual(
+                        result.stderr,
+                        "Git ref/history integrity validation failed\n",
+                    )
+
     def test_source_stage_validator_rejects_the_alpha_tag_at_another_source(
         self,
     ) -> None:
