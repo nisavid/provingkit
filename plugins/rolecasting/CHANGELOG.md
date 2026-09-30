@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Route ordinary demanding work to GPT-6.1 Sol or Opus, prefer proven newer
+  same-name GPT/Claude versions, and require medium-or-higher effort on every
+  selection path. Bind max to all model, frontier-problem, panel-loop, and
+  capability gates; encourage useful Ultra/Ultracode panels with independently
+  selected participant efforts.
+
 - Separate ordinary same-leader invocation plans and live selection records
   from explicitly witnessed receipts, preserving native assurance limits and
   each consumer's existing authority and verification gates.

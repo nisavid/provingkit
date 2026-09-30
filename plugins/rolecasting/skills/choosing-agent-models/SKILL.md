@@ -7,18 +7,16 @@ description: Use when selecting a model or effort after delegation, classifying 
 
 ## Scope
 
-Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries or make an unrelated task a valid route. Classify the complete bounded operation before each dispatch, continuation, follow-up, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry classification forward.
+Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. Classify the complete bounded operation before each dispatch, continuation, follow-up, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry classification forward.
 
 ## Selection Order
 
-1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, exact capability, and authority pass; then stop model selection. [Check all gates](references/jev-suitability.md). Otherwise continue without a Jev call or claimed result.
+Apply [effort eligibility](references/effort-policy.md) to every route: `medium` is the minimum, including inherited or fixed selection; `max` requires every model, problem, workflow, and capability gate.
+
+1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, capability, effort eligibility, and authority pass; then stop selection. [Check all gates](references/jev-suitability.md).
 2. For actual cybersecurity work, obviously cybersecurity-related work with another primary domain, and cybersecurity-adjacent work, apply [Daybreak Blue routing and fallbacks](references/daybreak-routing.md).
-3. Otherwise use the [general tiers and preferences](references/general-tiers.md).
-
-## General Route Summary
-
-Use GPT-6 Sol or Claude Opus 5.5 for ordinary demanding work, GPT-6 Luna for bounded inexpensive-to-correct work, and proven Grok 4.7 where it fits. Prefer Claude for UI, UX, and visual design, and GPT for review. Before dispatch, recommend target reconsideration to the owning delegating workflow when an authorized other-provider route better fits; select there only after its plan changes. Preserve an operator-fixed or sole eligible target and disclose the preference limit. Reserve GPT-6 Astra or Claude Fable 5.1 for work that is **both high-stakes and** needs a listed exceptional cognitive capability. Astra is the more economical exceptional option; Fable is reserved for the choicest beneficial deep work. Opus 5.5 permits `xhigh` or lower, or `ultracode` where supported, never `max`. Select a supported effort for each role's actual judgment.
+3. Otherwise use [general tiers and preferences](references/general-tiers.md): GPT-6.1 Sol and Claude Opus 5.5 serve the same ordinary demanding roles, with existing provider preferences; Luna and proven Grok serve bounded work; Astra and proven Fable require the exceptional-tier conjunction.
 
 ## Prove Target Capability
 
-Use only a model-effort pair proven by both the target's live catalog and executor schema. Reuse unchanged observations only within their freshness window. Never invent a slug or effort, infer support from another surface, or treat selection as invocation authority. Return `adapter:model-selection-record` for ordinary same-leader selection. Read [capability and fallbacks](references/capability-probes-and-fallbacks.md) for inherited selection, witnessed receipts, Fable proof, and unavailable targets. The record proves a selected request and observed capability, not actual execution or opaque provider rerouting.
+Use the newest proven version of the same named GPT or Claude model, preserving its role and gates. Earlier Sol versions are superseded by GPT-6.1 Sol. Read [capability and fallbacks](references/capability-probes-and-fallbacks.md) for successor identity, exact catalog/schema intersection, fixed selection, Fable proof, and unavailable routes. Never invent a slug, infer support from another surface, or treat selection as invocation authority. Return `adapter:model-selection-record` for ordinary same-leader selection. It proves the selected request and observed capability, not actual execution or authority.

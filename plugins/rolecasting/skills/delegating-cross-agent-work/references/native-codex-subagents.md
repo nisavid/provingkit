@@ -25,6 +25,8 @@ initial-release dependency.
 
 ## Freeze before launch
 
+Before freezing, consume the choosing skill's [effort eligibility](../../choosing-agent-models/references/effort-policy.md) and [named-successor capability gates](../../choosing-agent-models/references/capability-probes-and-fallbacks.md#resolve-named-successors). The native adapter binds opaque plan and request digests; it does not validate model-policy eligibility. The owning selection workflow must prove it, including inherited or executor-default effort, before launch.
+
 First freeze the complete content-addressed Rolecasting plan, including its
 exact request, target version and executor, topology, model-selection-record
 identity, bounded return and stop contracts, requested authority,

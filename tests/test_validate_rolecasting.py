@@ -511,8 +511,8 @@ class ValidateRolecastingTests(unittest.TestCase):
         path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
         original = path.read_text()
         mutated = original.replace(
-            "Use GPT-6 Sol or Claude Opus 5.5 for ordinary demanding work",
-            "Use GPT-6 Astra or Claude Fable 5.1 for ordinary demanding work",
+            "GPT-6.1 Sol and Claude Opus 5.5 serve the same ordinary demanding roles",
+            "GPT-6 Astra and Claude Fable 5.1 serve the same ordinary demanding roles",
         )
         self.assertNotEqual(mutated, original)
         path.write_text(mutated)

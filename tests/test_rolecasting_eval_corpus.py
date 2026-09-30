@@ -38,7 +38,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         self.assertIn("Delegation is settled", probes[1]["query"])
         self.assertIn("model and effort", probes[1]["query"])
 
-    def test_rolecasting_has_exactly_thirty_six_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_complete_detailed_scenario_inventory(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -65,6 +65,10 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "thread-consent-state",
                 "general-tiers-and-preferences",
                 "provider-preference-target-reconsideration",
+                "named-model-successors",
+                "effort-floor-all-routes",
+                "max-effort-conjunction",
+                "ultra-panel-applicability",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",

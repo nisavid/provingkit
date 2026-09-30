@@ -7,13 +7,22 @@
    the authenticated invocation topology receipt.
 2. Require a currently fresh catalog observation. For Daybreak, including continuations, reuse an unchanged observation inside its declared freshness window; refresh only when missing, stale, or invalidated. Use `codex debug models` for a needed Codex refresh or the target harness's live model catalog for another target.
 3. Inspect the target executor tool or schema for accepted model slugs and reasoning efforts.
-4. Record the exact live-catalog and target-executor-schema intersection, and pass only a pair present in both.
+4. Resolve the newest proven same-name GPT or Claude version below, then apply [effort eligibility](effort-policy.md), including fixed and default efforts.
+5. Record the exact live-catalog and target-executor-schema intersection, and pass only a pair present in both.
 
 Catalog presence never proves that a native subagent, task, CLI, app-server,
 remote API, or peer accepts the pair. Proof for one product surface does not
 prove its paired surface. Model support also does not prove relationship,
 ownership, transport, or assurance. When the target exposes no selection
-fields, omit them and use an appropriate inherited or environment-fixed model.
+fields, omit them only when current evidence proves an eligible inherited or environment-fixed model and effort; otherwise do not dispatch.
+
+## Resolve Named Successors
+
+The written GPT and Claude versions are baselines for their named roles. Always select a newer available version of the same named model instead of any lower version, even when the written policy has not caught up. GPT-6.1 Sol supersedes every earlier Sol. Preserve the named model's role, provider preference, effort policy, authority, and all capability or proof gates; an Astra successor stays Astra, and a Sol successor stays Sol.
+
+Use current provider or target-catalog evidence that establishes the exact advertised slug, same named lineage, and version ordering. A similar slug, guessed version arithmetic, or another named family is not successor proof. Record that evidence and the chosen pair's catalog/schema intersection. Fable successors also need their own current successful target proof; an older version's proof does not transfer.
+
+When a proven newer version is advertised but its required pair is unsupported on the frozen executor, report that route unavailable rather than downgrade to an older version. When an alleged successor's identity or ordering is unproven, report the missing evidence and do not guess or silently select a lower version. A contract-preserving fallback to another eligible named family still follows the owning workflow's target and authority rules. An operator-fixed older model or immutable environment binding that conflicts with this policy requires `NEEDS_CONTEXT` or `BLOCKED`; do not silently alter it or treat it as a version exception.
 
 ## Return The Selection Record
 
@@ -21,7 +30,8 @@ For ordinary same-leader work, return `adapter:model-selection-record` bound to
 the dispatch identity, execution role, exact target, selected
 model and effort or inherited fixed-model binding, current catalog and executor
 schema observations, and existing selection authority. Record the source and
-freshness of those observations. This record establishes the selected request
+freshness of those observations, successor lineage/version evidence, and
+effort eligibility, including every `max` gate when requested. This record establishes the selected request
 and available capability; it does not attest the model that actually executed.
 The completed plan binds this record's identity before dispatch. Do not describe opaque provider rerouting as an observed execution fact.
 
@@ -46,13 +56,13 @@ Treat capability as unproven when the executable is absent, a probe exits nonzer
 
 When a task that must be isolated cannot be created or verified, do not dispatch: return `NEEDS_CONTEXT` or `BLOCKED` so the owning workflow can select its no-runnable-route disposition. Unrelated-task reuse is never a fallback.
 
-Use a sufficient native route only when it preserves the original task contract. When an appropriate inherited or environment-fixed model preserves that contract, omit unsupported model and effort fields. Otherwise, omit model and effort selection and do not dispatch: return `NEEDS_CONTEXT` with the missing fact when new evidence could establish capability, or `BLOCKED` with the failed-probe evidence when no permitted route can satisfy the contract.
+Use a sufficient native route only when it preserves the original task contract. When current evidence proves an eligible inherited or environment-fixed model and effort that preserve that contract, omit unsupported model and effort fields. Unknown or low defaults cannot satisfy it. Otherwise, omit model and effort selection and do not dispatch: return `NEEDS_CONTEXT` with the missing fact when new evidence could establish capability, or `BLOCKED` with the failed-probe evidence when no permitted route can satisfy the contract.
 
 ## Apply Fallbacks
 
-For roles without a fixed effort, choose the lowest accepted effort that preserves the task's judgment margin. Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
+For roles without a fixed effort, choose the lowest accepted medium-or-higher effort that preserves the task's judgment margin and passes [effort eligibility](effort-policy.md). Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
 
-When GPT-6 Luna fits but is absent from the target executor schema, choose an accepted GPT-6 Sol or Claude Opus 5.5 pair that preserves the task contract. If explicit selection is unavailable, inherit an appropriate fixed model. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
+When GPT-6 Luna fits but is absent from the target executor schema, choose an accepted GPT-6.1 Sol or Claude Opus 5.5 pair that preserves the task contract. If explicit selection is unavailable, inherit only a proven eligible fixed model and effort. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
 
 For another harness, inspect its local capability surface and use only its exact supported values. Report an unavailable user-requested model rather than silently substituting.
 
