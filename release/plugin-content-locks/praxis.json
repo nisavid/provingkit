@@ -40,7 +40,7 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/SKILL.md": {
       "mode": 420,
-      "sha256": "622bd32b1edf5bdc9e10b20e773dfe4dd862843d24cff12c133166a917d6949f"
+      "sha256": "4e4222fff70a751a80496ba8f731491ec829b6c5ccb18fbd2eaf93de7559bcff"
     },
     "plugins/praxis/skills/constructing-agent-policies/agents/openai.yaml": {
       "mode": 420,
