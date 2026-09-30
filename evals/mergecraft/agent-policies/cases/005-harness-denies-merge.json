@@ -282,7 +282,8 @@
         "Read",
         "Glob",
         "Grep",
-        "Skill"
+        "Skill",
+        "Monitor"
       ],
       "host_allow": [
         "Bash(gh pr view:*)",
@@ -305,7 +306,8 @@
         "Edit",
         "Write",
         "Bash(sleep:*)",
-        "Bash(gh pr merge:*)"
+        "Bash(gh pr merge:*)",
+        "Monitor"
       ]
     },
     "codex": {
