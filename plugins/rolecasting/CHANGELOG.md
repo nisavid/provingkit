@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Require independent catalog and executor proof for every fallback pair, and
+  exercise unsuitable and suitable Cursor reviews, useful Ultra without
+  panels, witnessed-route prerequisites, and concrete specialist input selection.
+
 - Clarify the discovery boundary between delegation and model selection in the
   delegation skill's description.
 
