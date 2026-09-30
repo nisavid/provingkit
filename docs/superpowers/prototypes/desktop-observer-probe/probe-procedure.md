@@ -11,7 +11,10 @@ records its immutable source revision. It must have a positive, scoped grant
 from [Authorize the disposable Desktop observer probe](https://github.com/nisavid/provingkit/issues/279).
 A closed prerequisite alone is insufficient. The grant must name the candidate,
 fixture, data access, setup prompts, application changes, launcher and argument
-identities, cleanup terms, and restoration plan.
+identities, cleanup terms, and restoration plan. A separately reviewed
+acquisition route must establish the complete fixture identity tuple before
+metadata-path or observer-configuration construction. That design is unresolved
+in [the acquisition decision](https://github.com/nisavid/provingkit/issues/341).
 
 Use the inspected package and archive identities in
 [packaging evidence](packaging-evidence.md). Assess a changed dependency through
@@ -137,8 +140,10 @@ a later adoption decision.
 The private packet binds the launcher's digest and owner, group, mode, device,
 inode, link count, and size. It also binds the exact one-argument NUL launch
 file path, digest, and identity; the selected account, organization, and
-Electron user-data root; the clean launch environment; the current-profile
-branch and existing configuration-directory identity; the flags file or
+Electron user-data root; the clean launch environment, including the exact
+absolute `SHELL` value and its separately bound executable route, identity, and
+digest; the absence or exact `5`/`6` value of `KDE_SESSION_VERSION`; the
+current-profile branch and existing configuration-directory identity; the flags file or
 absence; the readable `44.4.3` version file; the executable and
 adjacent-resources route; and the exact source-derived effective-argv
 variants. It additionally binds the two exact transient-unit names, the fixed
@@ -147,6 +152,18 @@ properties, manager-storage effect, exact-unit metadata acquisition and output
 projection, and the existing launch-working-directory identity. The ordinary
 password-store detector remains active when current state selects it, so that
 branch admits only its two source-bounded argv results.
+
+Both launches and recovery use the same reviewed shell and KDE-selector
+bindings. Follow the shell-route checks in `application-operation.md`, including
+its system-owned executable restriction and stop on a custom or changed route.
+These checks do not prove runtime shell or wallet selection. Their literal
+environment values are included in the selected configuration copied into the
+transient manager state. Adding either name to source does not authorize a
+private value read.
+
+`CLAUDE_USER_DATA_DIR` presence and unresolved third-party user-data relocation
+block the route. Do not infer the running user-data root from launcher paths,
+profile names, or diagnostic output.
 
 An absent named-profile executable remains absent and uses canonical fallback.
 An existing named executable must pass the exact no-refresh checks; otherwise
@@ -162,8 +179,8 @@ no-op; absence or drift returns for a decision and supplies no authority to
 create or clean up that directory.
 
 Revalidate the package, protected assets, root-owned launcher ancestry,
-launcher, launch file, environment, flags, profile state, no-refresh
-predicates, version file, executable, resources route, archive, and absent
+launcher, launch file, environment, shell route and identity, flags, profile
+state, no-refresh predicates, version file, executable, resources route, archive, and absent
 locks immediately before both launches. After each launch, attest the one
 selected main PID through the two exact lock paths, then compare its executable,
 bounded command line, and executable-adjacent archive with the reviewed
@@ -192,9 +209,12 @@ task.
 Reviewed source constructs the selected metadata path as
 `path.join(Electron app.getPath("userData"), "claude-code-sessions",
 currentAccountId, currentOrgId, taskId + ".json")`. Construct the absolute path
-from that reviewed source and the later selected profile, account,
-organization, and task values. The exact app-data root remains a later binding
-gap; the source-defined base is `claude-code-sessions`.
+only after a separately reviewed acquisition route establishes the exact
+selected profile, account, organization, Electron user-data root, task ID, and
+Code ID. The normal UI availability of that complete tuple is unestablished.
+The selected metadata file consumes these identities; it cannot discover the
+values needed to locate itself. The source-defined base is
+`claude-code-sessions`.
 `getSessionFilePath` is an internal source method, not an approved callable UI
 or API; never invoke it to obtain the path. Read only the constructed selected
 file and project `sessionId`, `cliSessionId`, `cwd`, `originCwd`,

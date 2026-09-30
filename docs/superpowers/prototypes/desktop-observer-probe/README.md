@@ -6,6 +6,12 @@ sample readers, and a procedure for one disposable Code task. It prepares
 Installation and live observation require the reviewed revision named by the
 separate [probe authorization](https://github.com/nisavid/provingkit/issues/279).
 
+Fixture identity acquisition remains a blocking design decision in
+[Choose how to acquire the disposable fixture identities](https://github.com/nisavid/provingkit/issues/341).
+The selected metadata file requires the profile, account, organization,
+user-data root, task ID, and Code ID to be established first. The current
+procedure does not supply that acquisition route.
+
 ## Start here
 
 - [Probe procedure](probe-procedure.md): fixture, exact setup prompt, collection,
@@ -112,6 +118,13 @@ Run from the repository root:
 
     node --test --test-timeout=25000 docs/superpowers/prototypes/desktop-observer-probe/*.test.mjs docs/superpowers/prototypes/desktop-runtime-observer/*.test.mjs
     git diff --check
+
+The launcher-input test uses invented environment inputs, public system-shell
+metadata, and temporary symlink and command-output fixtures. The tests invoke
+Bash to evaluate the extracted route checks; they do not launch Desktop or
+execute a shell through the selected `SHELL` path. The system-shell case
+requires visible host UID ownership; a sandbox that remaps root ownership
+cannot establish that case.
 
 The build takes an explicitly supplied pristine archive and a new output
 directory. It never imports or executes Desktop code:

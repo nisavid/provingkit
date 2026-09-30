@@ -30,7 +30,10 @@ or permission to edit another repository is inferred here. Adoption must name
 that source and its maintenance checks before installing durable equipment.
 
 Independent review of this increment must cover the procedure's entry
-conditions, exact inputs, clean-environment construction, current-profile
+conditions, exact inputs, clean-environment construction, exact `SHELL`
+literal and executable route, KDE-selector state, recomputed environment
+digests, prohibited `CLAUDE_USER_DATA_DIR` input and unresolved third-party
+relocation, the distinct identity-acquisition prerequisite, current-profile
 branch, existing configuration-directory identity, complete private
 account/organization/user-data/launch-file bindings, canonical configuration
 and arm encodings, named-profile no-refresh condition, password-store argv
@@ -48,6 +51,12 @@ and reusable-skill evaluation remain with the later adoption work.
 
 From this prototype directory, run
 `node --test application-operation-launch-environment.test.mjs` when reviewing
-or consuming this revision. It exercises only the named
-launcher-environment boundary with invented inputs; it supplies no runtime
-binding and no evidence of application loading or effective settings.
+or consuming this revision. The environment checks use invented inputs. The
+shell-route checks read public system-file metadata for `/bin/sh` and create
+temporary symlink and command-output fixtures. The tests invoke Bash to evaluate
+the extracted route checks; they do not launch Desktop or execute a shell
+through the selected `SHELL` path. Run these checks where host UID ownership is
+visible: a sandbox that maps root-owned files to another UID cannot verify the
+system-shell case.
+They supply no receiver binding, application-loading evidence, or observation
+of effective settings.

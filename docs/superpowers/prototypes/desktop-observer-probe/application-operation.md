@@ -38,6 +38,11 @@ expansion, or paths copied from this committed document:
 - The ordered in-memory `PROBE_LAUNCH_ENV` array reconstructed from the
   private record, and its NUL-delimited `name=value` SHA-256 as
   `PROBE_LAUNCH_ENV_SHA256`.
+- `PROBE_SHELL`, preserving the exact absolute `SHELL` value;
+  `PROBE_SHELL_RESOLVED`, naming its canonically resolved executable;
+  `PROBE_SHELL_STAT` and `PROBE_SHELL_SHA256`, binding that executable;
+  and `PROBE_SHELL_ROUTE_CONTRACT`, exactly `linux-system-shell-v1`,
+  naming the permitted path pairs and protected-route checks below.
 - `PROBE_CANDIDATE_LAUNCH_UNIT` and `PROBE_RESTORED_LAUNCH_UNIT`, the two
   distinct exact transient user-service names reserved for this run, and
   `PROBE_LAUNCH_WORKING_DIRECTORY` with its device, inode, UID, GID, and mode
@@ -54,10 +59,12 @@ expansion, or paths copied from this committed document:
 - The exact source-derived effective-argv variant or variants recorded under
   `launchRoute.execution.effectiveArgvVariants` in the private record.
 - `PROTECTED_ASSET_MANIFEST`, its SHA-256, and the exact main-executable, complete native-asset, and `chrome-sandbox` inventory.
-- The current profile, account, organization, Electron user-data root, new local Code task, new empty
-  non-Git project directory, any app-created dedicated worktree and its approved
-  expected entries, task ID, Code ID, constructed metadata path, approved
-  process bindings, and task-restoration expectations.
+- The current profile, account, organization, Electron user-data root, new
+  local Code task, new empty non-Git project directory, any app-created
+  dedicated worktree and its approved expected entries, task ID, Code ID,
+  constructed metadata path, approved process bindings, and task-restoration
+  expectations. A separately reviewed acquisition route must establish the
+  complete identity tuple before metadata-path or configuration construction.
 
 Any required root preparation is part of the later authorization packet, not a
 requirement already completed by this document. If a required root does not
@@ -118,9 +125,12 @@ This is a disposable observer fixture. Reply exactly `PROBE_READY`. Do not use t
 Reviewed source constructs the metadata path as
 `path.join(Electron app.getPath("userData"), "claude-code-sessions",
 currentAccountId, currentOrgId, taskId + ".json")`. Construct the exact path
-from that source and the later selected profile, account, organization, and
-task values. The exact app-data root remains an authorization binding gap; the
-source-defined base is `claude-code-sessions`.
+only after a separately reviewed acquisition route has established the exact
+selected profile, account, organization, Electron user-data root, task ID, and
+Code ID. The normal UI availability of that complete tuple remains
+unestablished. The selected metadata file consumes these identities; it does
+not discover the values needed to locate itself. The source-defined base is
+`claude-code-sessions`.
 `getSessionFilePath` is an internal source method, not an approved callable UI
 or API; do not invoke it. Do not enumerate the constructed path's parent
 directory. Record its projected `sessionId`, `cliSessionId`, `cwd`,
@@ -258,7 +268,10 @@ A recovery shell is a fresh Bash process with `set -euo pipefail` and
    `check_root_owned_parent_ancestors`,
    `check_reviewed_archive_verification`,
    `validate_protected_asset_manifest`, `check_reviewed_launcher`,
-   `load_reviewed_launch_argv`, and
+   `load_reviewed_launch_argv`, `read_reviewed_shell_link_bytes`,
+   `check_reviewed_shell_directory`, `check_reviewed_shell_symlink`,
+   `check_reviewed_shell_route_shape`, `collect_reviewed_shell_route`,
+   `check_reviewed_shell_route`, and
    `validate_reviewed_launch_environment`. Do not execute the rest of
    preflight as a definitions loader.
 4. Re-establish `CANDIDATE_SIZE` only after the current candidate archive again
@@ -268,7 +281,10 @@ A recovery shell is a fresh Bash process with `set -euo pipefail` and
    identities applicable to the last verified phase.
 5. Reconstruct `PROBE_LAUNCH_ENV` and the exact effective-argv variants
    manually from the existing private record. Repeat every applicable bound
-   launcher-routing check below. Recover the exact current-cycle transient
+   launcher-routing check below. Reconstruct the shell's literal path, route
+   contract, canonical target, identity, and digest from the existing private
+   record and call `check_reviewed_shell_route`; do not reacquire or replace
+   those bindings. Recover the exact current-cycle transient
    unit name and launch-working-directory binding from that record. Do not
    reacquire an ambient value merely to reconstruct lost state.
 6. Follow the restoration prechecks and remaining restoration steps from the
@@ -331,11 +347,12 @@ or application text.
 The selected user's manager keeps unit state and generated runtime unit
 configuration under `$XDG_RUNTIME_DIR/systemd/transient`. That generated
 configuration includes the exact `ExecStart` array, including the selected
-noncredential environment assignments, the candidate configuration-path
-assignment, when present, and the launcher arguments. It excludes credential
-and API-key variables because those are already prohibited from the reviewed
-launch environment. The later grant must cover this manager/runtime-file copy,
-its retention while either exact unit remains loaded, and its bounded
+noncredential environment assignments, including the literal `SHELL` and
+present `KDE_SESSION_VERSION`, the candidate configuration-path assignment,
+when present, and the launcher arguments. It excludes credential and API-key
+variables because those are already prohibited from the reviewed launch
+environment. The later grant must cover this manager/runtime-file copy, its
+retention while either exact unit remains loaded, and its bounded
 manager-mediated retirement. Do not inspect or delete a generated unit file
 manually, and do not enumerate units or processes to locate it.
 
@@ -446,9 +463,18 @@ name=value NUL name=value NUL ...
 ```
 
 Names are bytewise ascending and unique. The array contains `HOME`,
-`USER`, `LOGNAME`, `PATH`, and `CLAUDE_PROFILE`. `HOME` equals
+`USER`, `LOGNAME`, `PATH`, `SHELL`, and `CLAUDE_PROFILE`. `HOME` equals
 `PROBE_HOME`; `CLAUDE_PROFILE` is `default` or the exact current named
-profile. `PATH` contains only nonempty absolute components.
+profile. `PATH` contains only nonempty absolute components. `SHELL` is
+nonempty, absolute, contains no CR or LF, and equals the separately bound
+literal `PROBE_SHELL`; resolving the executable never changes this environment
+value.
+
+`KDE_SESSION_VERSION` is optional. Preserve absence. A present value must be
+exactly `5` or `6`; an empty, padded, or other value is rejected rather than
+normalized. At the three inspected source selections, absence and `5` select
+the `kwalletd5` branch, while `6` selects `kwalletd6`. This records only the
+source-selected branch, not runtime reachability or successful wallet use.
 
 Only these additional names may be present:
 
@@ -465,6 +491,7 @@ Only these additional names may be present:
 - `GTK_IM_MODULE`, `QT_IM_MODULE`, `XMODIFIERS`, `GDK_BACKEND`,
   `PULSE_SERVER`, `PIPEWIRE_RUNTIME_DIR`, `SSH_AUTH_SOCK`,
   `GPG_AGENT_INFO`, `GNOME_KEYRING_CONTROL`, `TERM`, `COLORTERM`,
+  `KDE_SESSION_VERSION`,
   and `DESKTOP_STARTUP_ID`;
 - `CLAUDE_CONFIG_DIR`, `CLAUDE_USE_XWAYLAND`,
   `CLAUDE_GPU_BACKEND`, `CLAUDE_DISABLE_GPU`,
@@ -481,7 +508,9 @@ prohibited in the base environment. Credential and API-key variables are not
 copied into the packet or launch environment.
 
 The later grant permits a name-only inventory of the ambient environment and
-reads of values for only the allowed names above. Do not dump the environment.
+reads of values only for names that grant explicitly approves. Adding
+`SHELL` or `KDE_SESSION_VERSION` to this source does not retroactively
+authorize either value read. Do not dump the environment.
 The presence of an unapproved name that may affect loading, execution,
 authentication, or UI routing—including a name beginning `LD_`, `NODE_`, or
 `ELECTRON_`, or `GTK_MODULES`, `GTK_PATH`, `GIO_EXTRA_MODULES`,
@@ -489,6 +518,54 @@ authentication, or UI routing—including a name beginning `LD_`, `NODE_`, or
 review without reading that value. If preserving the current account or Code
 route requires another variable, stop for that decision rather than silently
 discarding or authorizing it.
+
+`CHROME_DESKTOP` remains rejected; an assignment match in inspected source
+does not establish an inherited read. `CLAUDE_USER_DATA_DIR` is a
+route-sensitive prohibited input. Its presence stops for amended review
+without reading its value. The inspected literal-name sites do not cover
+dynamic environment access or native code and establish no general
+irrelevance claim for other variables.
+
+The separately bound shell selection accepts only these literal and canonical
+pairs under the `linux-system-shell-v1` route contract:
+
+- `/usr/bin/zsh` or `/bin/zsh` with canonical target `/usr/bin/zsh`;
+- `/usr/bin/bash` or `/bin/bash` with canonical target `/usr/bin/bash`; and
+- `/usr/bin/sh` or `/bin/sh` with canonical target `/usr/bin/bash`.
+
+The literal `SHELL` value is not rewritten. Canonicalization and direct
+symlink-target reads preserve trailing LF bytes by using `readlink -n` with a
+sentinel whose command status is retained. A result must equal the applicable
+ASCII path in the route contract exactly.
+
+The route contract requires `/`, `/usr`, and `/usr/bin` to be root-owned
+directories that are not group- or world-writable. A `/bin` spelling requires
+a root-owned `/bin` symlink whose exact target is `usr/bin` or `/usr/bin`.
+The `sh` spelling requires a root-owned `/usr/bin/sh` symlink whose exact
+target is `bash` or `/usr/bin/bash`. Each symlink must therefore be reached
+through an already protected directory, and an unlisted intermediate symlink
+route is rejected even when it reaches the expected final target. The
+canonical executable must be a root-owned, non-symlink regular executable
+that is executable and not group- or world-writable.
+
+The private record binds the exact literal environment value, the
+`linux-system-shell-v1` route contract, the byte-preserved canonical target,
+and the target's device, inode, UID, GID, mode, link count, size, and SHA-256.
+
+`check_reviewed_shell_route` collects the protected route and target binding
+twice and compares both observations with each other and with the private
+record. Call it during preflight, immediately before each candidate or
+restored launch, and when recovery reconstructs the launch. An unlisted
+literal and canonical pair, including any custom or unrelated executable,
+returns for a separate decision. Absence, resolution failure, an unprotected
+route, a nonregular or nonexecutable target, or any identity or digest drift
+stops before execution.
+
+These repeated pathname, identity, and digest checks narrow executable
+substitution risk. They are not an atomic executable open and do not prove
+which inode the application later opens. Binding the shell binary does not
+bind its startup files or executable dependencies, prove that the environment
+is preserved at runtime, or authorize reading or executing additional files.
 
 The selected paths are derived exactly as follows:
 
@@ -712,6 +789,8 @@ required=(RUN_ID PROBE_INSTALL_ROOT CANDIDATE_ARCHIVE
   PROBE_LAUNCHER PROBE_LAUNCHER_SHA256 PROBE_LAUNCHER_STAT
   LINUX_OBSERVATION_FILE PROBE_LAUNCH_ARGV_FILE PROBE_LAUNCH_ARGV_SHA256 PROBE_LAUNCH_ARGV_STAT
   PROBE_PROFILE PROBE_PROFILE_KIND PROBE_HOME PROBE_LAUNCH_ENV_SHA256
+  PROBE_SHELL PROBE_SHELL_RESOLVED PROBE_SHELL_STAT
+  PROBE_SHELL_SHA256 PROBE_SHELL_ROUTE_CONTRACT
   PROBE_CANDIDATE_LAUNCH_UNIT PROBE_RESTORED_LAUNCH_UNIT
   PROBE_LAUNCH_WORKING_DIRECTORY PROBE_LAUNCH_WORKING_DIRECTORY_STAT
   PROBE_CONFIG_DIR PROBE_CONFIG_DIR_STAT
@@ -863,6 +942,225 @@ hash_file() {
   [[ "$marker" = "  " || "$marker" = " *" ]]
   printf '%s' "$digest"
 }
+
+# BEGIN check_reviewed_shell_route
+read_reviewed_shell_link_bytes() {
+  local path="$1" mode="$2" output_name="$3"
+  local captured sentinel=$'\037'
+  local -n output="$output_name"
+
+  case "$mode" in
+    direct)
+      captured=$(
+        readlink -n -- "$path" &&
+          printf '%s' "$sentinel"
+      ) || return 1
+      ;;
+    canonical)
+      captured=$(
+        readlink -e -n -- "$path" &&
+          printf '%s' "$sentinel"
+      ) || return 1
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+
+  [[ "$captured" = *"$sentinel" ]]
+  output="${captured%"$sentinel"}"
+}
+
+check_reviewed_shell_directory() {
+  local path="$1" metadata
+  local device inode uid gid mode links size
+
+  test -d "$path"
+  test ! -L "$path"
+  metadata=$(stat -c '%d:%i:%u:%g:%a:%h:%s' -- "$path") ||
+    return 1
+  IFS=: read -r \
+    device inode uid gid mode links size <<< "$metadata" ||
+    return 1
+  [[
+    "$device" =~ ^[0-9]+$ &&
+    "$inode" =~ ^[0-9]+$ &&
+    "$uid" = "0" &&
+    "$gid" =~ ^[0-9]+$ &&
+    "$mode" =~ ^[0-7]{3,4}$ &&
+    "$links" =~ ^[1-9][0-9]*$ &&
+    "$size" =~ ^[0-9]+$
+  ]]
+  (( (8#$mode & 0022) == 0 ))
+}
+
+check_reviewed_shell_symlink() {
+  local path="$1" metadata
+  local device inode uid gid mode links size
+
+  test -L "$path"
+  metadata=$(stat -c '%d:%i:%u:%g:%a:%h:%s' -- "$path") ||
+    return 1
+  IFS=: read -r \
+    device inode uid gid mode links size <<< "$metadata" ||
+    return 1
+  [[
+    "$device" =~ ^[0-9]+$ &&
+    "$inode" =~ ^[0-9]+$ &&
+    "$uid" = "0" &&
+    "$gid" =~ ^[0-9]+$ &&
+    "$mode" =~ ^[0-7]{3,4}$ &&
+    "$links" =~ ^[1-9][0-9]*$ &&
+    "$size" =~ ^[0-9]+$
+  ]]
+}
+
+check_reviewed_shell_route_shape() {
+  local literal="$1" canonical_name="$2"
+  local expected_canonical shell_name bin_target shell_target resolved_route
+  local -n canonical_output="$canonical_name"
+
+  case "$literal" in
+    /usr/bin/zsh|/bin/zsh)
+      expected_canonical=/usr/bin/zsh
+      shell_name=zsh
+      ;;
+    /usr/bin/bash|/bin/bash)
+      expected_canonical=/usr/bin/bash
+      shell_name=bash
+      ;;
+    /usr/bin/sh|/bin/sh)
+      expected_canonical=/usr/bin/bash
+      shell_name=sh
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+
+  check_reviewed_shell_directory /
+  check_reviewed_shell_directory /usr
+  check_reviewed_shell_directory /usr/bin
+
+  case "$literal" in
+    /bin/*)
+      check_reviewed_shell_symlink /bin
+      read_reviewed_shell_link_bytes /bin direct bin_target
+      case "$bin_target" in
+        usr/bin|/usr/bin) ;;
+        *) return 1 ;;
+      esac
+      ;;
+  esac
+
+  if [[ "$shell_name" = "sh" ]]; then
+    check_reviewed_shell_symlink /usr/bin/sh
+    read_reviewed_shell_link_bytes \
+      /usr/bin/sh \
+      direct \
+      shell_target
+    case "$shell_target" in
+      bash|/usr/bin/bash) ;;
+      *) return 1 ;;
+    esac
+  else
+    test -f "$expected_canonical"
+    test ! -L "$expected_canonical"
+  fi
+
+  read_reviewed_shell_link_bytes \
+    "$literal" \
+    canonical \
+    resolved_route
+  test "$resolved_route" = "$expected_canonical"
+  canonical_output="$resolved_route"
+}
+
+collect_reviewed_shell_route() {
+  local literal="$1"
+  local resolved_name="$2" stat_name="$3"
+  local executable_digest_name="$4"
+  local canonical rechecked_canonical metadata metadata_after
+  local device inode uid gid mode links size
+  local hash_output digest marker
+  local -n resolved_output="$resolved_name"
+  local -n stat_output="$stat_name"
+  local -n executable_digest_output="$executable_digest_name"
+
+  check_reviewed_shell_route_shape "$literal" canonical
+
+  test -f "$canonical"
+  test ! -L "$canonical"
+  test -x "$canonical"
+
+  metadata=$(stat -c '%d:%i:%u:%g:%a:%h:%s' -- "$canonical") ||
+    return 1
+  IFS=: read -r \
+    device inode uid gid mode links size <<< "$metadata" ||
+    return 1
+  [[
+    "$device" =~ ^[0-9]+$ &&
+    "$inode" =~ ^[0-9]+$ &&
+    "$uid" = "0" &&
+    "$gid" =~ ^[0-9]+$ &&
+    "$mode" =~ ^[0-7]{3,4}$ &&
+    "$links" =~ ^[1-9][0-9]*$ &&
+    "$size" =~ ^[0-9]+$
+  ]]
+  (( (8#$mode & 0022) == 0 ))
+
+  hash_output=$(sha256sum -- "$canonical") || return 1
+  digest="${hash_output:0:64}"
+  marker="${hash_output:64:2}"
+  [[ "$digest" =~ ^[0-9a-f]{64}$ ]]
+  test "$marker" = "  "
+
+  metadata_after=$(
+    stat -c '%d:%i:%u:%g:%a:%h:%s' -- "$canonical"
+  ) || return 1
+  test "$metadata_after" = "$metadata"
+
+  check_reviewed_shell_route_shape \
+    "$literal" \
+    rechecked_canonical
+  test "$rechecked_canonical" = "$canonical"
+
+  resolved_output="$canonical"
+  stat_output="$metadata"
+  executable_digest_output="$digest"
+}
+
+check_reviewed_shell_route() {
+  local actual_resolved actual_stat actual_sha256
+  local rechecked_resolved rechecked_stat rechecked_sha256
+
+  test "$PROBE_SHELL_ROUTE_CONTRACT" = \
+    "linux-system-shell-v1"
+  [[ "$PROBE_SHELL_RESOLVED" = /* ]]
+  [[
+    "$PROBE_SHELL_STAT" =~ ^[0-9]+:[0-9]+:0:[0-9]+:[0-7]{3,4}:[1-9][0-9]*:[0-9]+$
+  ]]
+  [[ "$PROBE_SHELL_SHA256" =~ ^[0-9a-f]{64}$ ]]
+
+  collect_reviewed_shell_route \
+    "$PROBE_SHELL" \
+    actual_resolved \
+    actual_stat \
+    actual_sha256
+  test "$actual_resolved" = "$PROBE_SHELL_RESOLVED"
+  test "$actual_stat" = "$PROBE_SHELL_STAT"
+  test "$actual_sha256" = "$PROBE_SHELL_SHA256"
+
+  collect_reviewed_shell_route \
+    "$PROBE_SHELL" \
+    rechecked_resolved \
+    rechecked_stat \
+    rechecked_sha256
+  test "$rechecked_resolved" = "$actual_resolved"
+  test "$rechecked_stat" = "$actual_stat"
+  test "$rechecked_sha256" = "$actual_sha256"
+}
+# END check_reviewed_shell_route
 
 check_reviewed_archive_verification() {
   [[ "$REVIEWED_ARCHIVE_VERIFICATION_SHA256" =~ ^[0-9a-f]{64}$ ]]
@@ -1097,7 +1395,8 @@ validate_reviewed_launch_environment() {
       LC_PAPER|LC_TELEPHONE|LC_TIME|GTK_IM_MODULE|QT_IM_MODULE|\
       XMODIFIERS|GDK_BACKEND|PULSE_SERVER|PIPEWIRE_RUNTIME_DIR|\
       SSH_AUTH_SOCK|GPG_AGENT_INFO|GNOME_KEYRING_CONTROL|TERM|\
-      COLORTERM|DESKTOP_STARTUP_ID|CLAUDE_CONFIG_DIR|\
+      COLORTERM|KDE_SESSION_VERSION|DESKTOP_STARTUP_ID|\
+      SHELL|CLAUDE_CONFIG_DIR|\
       CLAUDE_USE_XWAYLAND|CLAUDE_GPU_BACKEND|CLAUDE_DISABLE_GPU|\
       CLAUDE_ENABLE_VULKAN|CLAUDE_PASSWORD_STORE|\
       CLAUDE_NATIVE_TITLEBAR|CLAUDE_NO_WINDOW_CONTROLS|\
@@ -1114,7 +1413,7 @@ validate_reviewed_launch_environment() {
     fi
   done
 
-  for name in HOME USER LOGNAME PATH CLAUDE_PROFILE; do
+  for name in HOME USER LOGNAME PATH SHELL CLAUDE_PROFILE; do
     [[ -n "${seen[$name]+x}" ]]
   done
 
@@ -1141,6 +1440,13 @@ validate_reviewed_launch_environment() {
         for component in "${path_components[@]}"; do
           [[ -n "$component" && "$component" = /* ]]
         done
+        ;;
+      SHELL)
+        test "$value" = "$PROBE_SHELL"
+        [[ -n "$value" && "$value" = /* ]]
+        ;;
+      KDE_SESSION_VERSION)
+        [[ "$value" = "5" || "$value" = "6" ]]
         ;;
     esac
   done
@@ -1191,6 +1497,7 @@ PROBE_LAUNCH_ENV=()
 # The operator inserts the exact reviewed name=value array here as shell data,
 # without source, eval, ambient expansion, or an additional environment read.
 validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+check_reviewed_shell_route
 unset PROBE_LAUNCH_ENV
 
 sudo test ! -e "$STAGE"
@@ -1295,6 +1602,7 @@ check_reviewed_launcher
 PROBE_LAUNCH_ENV=()
 # Insert the exact reviewed name=value array from the private record.
 validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+check_reviewed_shell_route
 
 candidate_unit_load_state=$(
   /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \
@@ -1473,6 +1781,7 @@ check_reviewed_launcher
 PROBE_LAUNCH_ENV=()
 # Insert the exact reviewed name=value array from the private record.
 validate_reviewed_launch_environment PROBE_LAUNCH_ENV
+check_reviewed_shell_route
 
 restored_unit_load_state=$(
   /usr/bin/env -i "${PROBE_LAUNCH_ENV[@]}" \

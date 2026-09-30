@@ -92,6 +92,18 @@ The populated record must contain no angle-bracket placeholder.
         }
       ]
     },
+    "shellExecutable": {
+      "environmentValue": "<exact permitted absolute SHELL value>",
+      "routeContract": "linux-system-shell-v1",
+      "resolvedPath": "<exact byte-preserved canonical executable path>",
+      "stat": "<device:inode:uid:gid:mode:links:size>",
+      "sha256": "<lowercase SHA-256>"
+    },
+    "kdeSessionVersion": {
+      "state": "<absent|present>",
+      "value": "<present only: 5|6>",
+      "sourceWalletBranch": "<kwalletd5|kwalletd6>"
+    },
     "launchControl": {
       "mechanism": "systemd-user-transient-service.v1",
       "candidateUnit": "<exact provingkit-278-...-candidate.service>",
@@ -203,20 +215,22 @@ the current bytes at that path and compares them with the bound digest; neither
 value may be independently substituted.
 
 Require `launchRoute.accountId` and `launchRoute.organizationId` to be the
-exact nonempty values already established for the selected current fixture.
-They must contain no control character or placeholder and must equal the
-values used in the selected metadata-path derivation and later fixture record.
-Do not perform another account, organization, profile, or private-data read to
-populate them.
+exact nonempty values established by a separately reviewed identity-acquisition
+route for the selected current fixture. They must contain no control character
+or placeholder and must equal the values used in the selected metadata-path
+derivation and later fixture record. The selected metadata-file procedure
+consumes these values; it does not acquire them.
 
 Require `launchRoute.userDataRoot.path` to be the exact absolute Electron
-`userData` root already established for the selected profile. Open that exact
-directory without following the final component, require a same-UID directory
-that is not group- or world-writable, compare its device, inode, UID, GID, and
-mode with `launchRoute.userDataRoot.stat`, and require the path still names
-that opened identity. The selected metadata path must be the exact join of
-this root, `claude-code-sessions`, the bound account ID, the bound organization
-ID, and the bound task filename.
+`userData` root established by that separately reviewed route for the selected
+profile. Open that exact directory without following the final component,
+require a same-UID directory that is not group- or world-writable, compare its
+device, inode, UID, GID, and mode with `launchRoute.userDataRoot.stat`, and
+require the path still names that opened identity. The selected metadata path
+must be the exact join of this root, `claude-code-sessions`, the bound account
+ID, the bound organization ID, and the bound task filename. Configuration
+construction cannot begin until the complete profile, account, organization,
+user-data-root, task-ID, and Code-ID prerequisite has been satisfied.
 
 Require `launchRoute.launchArgumentFile` to equal the reviewed
 `PROBE_LAUNCH_ARGV_FILE`, `PROBE_LAUNCH_ARGV_SHA256`, and
@@ -234,18 +248,48 @@ launch-route fragment; other documents consume it rather than restating its
 shape.
 
 The later grant permits a name-only inventory of the ambient environment.
-Read values only for names allowed by the bound launcher-routing procedure.
-Do not dump the environment, read a credential or API-key value, enumerate a
-profile directory except for the narrowly authorized named-profile
-no-refresh symlink check, or read the selected profile's JSON or JSONC
-configuration.
+Read a value only when that grant explicitly approves the name. Adding
+`SHELL` and `KDE_SESSION_VERSION` to the source allowlist does not
+retroactively authorize those value reads. Preserve the exact literal
+`SHELL`; do not replace it with its resolved path. Preserve absence of
+`KDE_SESSION_VERSION`, and preserve a present exact `5` or `6`. Do not dump
+the environment, read a credential or API-key value, enumerate a profile
+directory except for the narrowly authorized named-profile no-refresh symlink
+check, or read the selected profile's JSON or JSONC configuration.
+
+The presence of `CLAUDE_USER_DATA_DIR` is a stop for amended review without
+reading its value. It is not an allowed environment entry or evidence for the
+active Electron user-data root. `CHROME_DESKTOP` also remains rejected.
 
 Sort environment entries bytewise by `name`, reject duplicate names, and
 compute `launchRoute.environment.sha256` over exact `name=value` strings, each
 followed by one NUL byte. Preserve present empty values. Validate `HOME`,
-`PATH`, `CLAUDE_PROFILE`, XDG/config states, display/session values, and every
-`CLAUDE_` launcher variable against the procedure. A required variable outside
-the allowlist is a stop for an amended review.
+`PATH`, `SHELL`, `CLAUDE_PROFILE`, XDG/config states, display/session values,
+the optional KDE selector, and every `CLAUDE_` launcher variable against the
+procedure. Missing `SHELL` or a required variable outside the allowlist is a
+stop for an amended review.
+
+Bind `launchRoute.shellExecutable.environmentValue` to the exact `SHELL`
+entry without rewriting it. Set `routeContract` to
+`linux-system-shell-v1`. Accept only `/usr/bin/zsh` or `/bin/zsh` with
+canonical target `/usr/bin/zsh`, `/usr/bin/bash` or `/bin/bash` with canonical
+target `/usr/bin/bash`, and `/usr/bin/sh` or `/bin/sh` with canonical target
+`/usr/bin/bash`. Any other literal and canonical pair returns for a separate
+decision.
+
+Read canonical and direct symlink targets with the byte-preserving route
+check. Require the fixed route's directories to be root-owned and not group-
+or world-writable. Require every permitted symlink to be root-owned, reached
+through a protected directory, and to have the exact target spelling allowed
+by the route contract. Record the byte-preserved canonical target and the
+target's device, inode, UID, GID, mode, link count, size, and SHA-256. Do not
+record a recursive route digest or prohibited-root list.
+
+For `kdeSessionVersion.state=absent`, omit `value` and record
+`sourceWalletBranch=kwalletd5`. For a present `5`, record the same branch. For
+a present `6`, record `sourceWalletBranch=kwalletd6`. No other value or branch
+is representable. This is a source-selection binding, not evidence that the
+site was reached or that wallet access succeeded.
 
 The environment array is reconstructed manually in memory before each launch.
 The approved selected entries and their digest remain in the private record as
@@ -253,7 +297,9 @@ launch configuration and recovery input; discard only the reconstructed
 per-launch array after comparison. Do not create an environment file, write
 assignments to a shell script, or use `source` or `eval`. Because this increment
 creates no separate environment file, it adds no cleanup-manifest resource or
-later deletion step.
+later deletion step. Reconstruct the shell binding from the existing private
+record for every preflight, candidate, restored, or recovery route check; do
+not reacquire or derive a replacement `SHELL` value from ambient state.
 
 Require `launchControl.mechanism`, every ordered `clientOptions` value, every
 ordered `serviceProperties` value, both `managerStorageEffect` values,
@@ -287,11 +333,12 @@ that source.
 The transient service creates manager state and generated runtime unit
 configuration under `$XDG_RUNTIME_DIR/systemd/transient`. Its generated
 `ExecStart` setting contains the exact selected noncredential environment
-assignments, the candidate observer-configuration path assignment when
-present, and the launcher arguments. This manager-owned runtime file is not a
-separately created private-input or cleanup-manifest role, but its creation,
-retention, and manager-mediated retirement are operating effects that the
-later grant must cover. Do not inspect or delete the file manually.
+assignments, including the literal `SHELL` and present
+`KDE_SESSION_VERSION`, the candidate observer-configuration path assignment
+when present, and the launcher arguments. This manager-owned runtime file is
+not a separately created private-input or cleanup-manifest role, but its
+creation, retention, and manager-mediated retirement are operating effects
+that the later grant must cover. Do not inspect or delete the file manually.
 
 The property-show client acquires all manager-exposed properties for the exact
 addressed unit before printing the requested projection. Permit that
@@ -371,12 +418,14 @@ decision.
 Reviewed source constructs the selected manager path as
 `path.join(Electron app.getPath("userData"), "claude-code-sessions",
 currentAccountId, currentOrgId, taskId + ".json")`. Construct the exact
-absolute path from that source and the later selected profile, account,
-organization, and task values. The exact app-data root remains a later binding
-gap; the source-defined base is `claude-code-sessions`. `getSessionFilePath` is
-an internal source method, not an approved callable UI or API; never invoke it.
-Do not enumerate the containing directory, scan other task files, or read a
-transcript.
+absolute path only after a separately reviewed acquisition route has
+established the exact selected profile, account, organization, Electron
+user-data root, task ID, and Code ID. Normal UI availability of that complete
+tuple remains unestablished. The selected metadata path cannot establish the
+values required to locate itself. The source-defined base is
+`claude-code-sessions`. `getSessionFilePath` is an internal source method, not
+an approved callable UI or API; never invoke it. Do not enumerate the
+containing directory, scan other task files, or read a transcript.
 
 Acquire the selected metadata through one stable descriptor. Starting at the
 already bound `userData` directory, check each constructed path component with
