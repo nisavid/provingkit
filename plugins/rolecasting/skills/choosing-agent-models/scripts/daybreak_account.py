@@ -21,6 +21,27 @@ from daybreak_records import (
 )
 
 RPC_TIMEOUT_SECONDS = 10
+MAX_MODEL_PAGES = 100
+CHATGPT_PLAN_TYPES = {
+    "free",
+    "go",
+    "plus",
+    "pro",
+    "prolite",
+    "promax",
+    "team",
+    "self_serve_business_prolite",
+    "self_serve_business_usage_based",
+    "business",
+    "ent26",
+    "enterprise_cbp_automation",
+    "enterprise_cbp_usage_based",
+    "enterprise",
+    "edu",
+    "edu_plus",
+    "edu_pro",
+    "unknown",
+}
 
 
 class AccountError(RuntimeError):
@@ -55,7 +76,17 @@ class RpcClient:
             if message.get("id") == request_id:
                 if "error" in message:
                     error = message.get("error")
-                    code = error.get("code") if isinstance(error, dict) else "unknown"
+                    if not isinstance(error, dict) or not isinstance(
+                        error.get("message"), str
+                    ):
+                        raise AccountError(
+                            f"{method} returned RPC error with invalid payload"
+                        )
+                    code = error.get("code")
+                    if type(code) is not int or not -(2**63) <= code < 2**63:
+                        raise AccountError(
+                            f"{method} returned RPC error with invalid code"
+                        )
                     raise AccountError(f"{method} returned RPC error {code}")
                 if "result" not in message:
                     raise AccountError(f"{method} returned no result")
@@ -112,8 +143,8 @@ def build_parser() -> argparse.ArgumentParser:
     probe = subparsers.add_parser(
         "harmless-probe",
         description=(
-            "Fail closed until the supported Codex protocol can prevent built-in "
-            "task-tool execution for the fixed probe."
+            "Unavailable in this status-only helper: validate inputs, then fail "
+            "before authentication access or Codex launch."
         ),
     )
     probe.add_argument("--selection-stdin", action="store_true", required=True)
@@ -148,9 +179,11 @@ def verify_binding(selection: dict[str, str], account_home: Path) -> None:
         auth = json.loads((account_home / "auth.json").read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
         raise AccountError("selected authentication record is unavailable") from error
-    observed = (
-        auth.get("tokens", {}).get("account_id") if isinstance(auth, dict) else None
-    )
+    if not isinstance(auth, dict) or not isinstance(auth.get("tokens"), dict):
+        raise AccountError("selected authentication record is malformed")
+    observed = auth["tokens"].get("account_id")
+    if not isinstance(observed, str):
+        raise AccountError("selected authentication record is malformed")
     if observed != selection["authenticated_account_id"]:
         raise AccountError("selected binding does not match authentication state")
 
@@ -199,8 +232,9 @@ def initialize(client: RpcClient) -> None:
 
 def exposed_model(client: RpcClient, model: str, effort: str) -> dict[str, object]:
     cursor: object = None
+    seen_cursors: set[str] = set()
     matches: list[dict[str, object]] = []
-    while True:
+    for _page_number in range(MAX_MODEL_PAGES):
         page = client.request(
             "model/list", {"includeHidden": True, "limit": 100, "cursor": cursor}
         )
@@ -212,36 +246,73 @@ def exposed_model(client: RpcClient, model: str, effort: str) -> dict[str, objec
         cursor = page.get("nextCursor")
         if cursor is None:
             break
-        if not isinstance(cursor, str) or not cursor:
-            raise AccountError("model/list returned an invalid cursor")
+        if not isinstance(cursor, str) or not cursor or cursor in seen_cursors:
+            raise AccountError("model/list pagination is invalid")
+        seen_cursors.add(cursor)
+    else:
+        raise AccountError("model/list pagination is invalid")
     if len(matches) != 1:
         raise AccountError("exact model selector is not uniquely exposed")
     efforts = matches[0].get("supportedReasoningEfforts")
-    exposed_efforts = (
-        {item.get("reasoningEffort") for item in efforts if isinstance(item, dict)}
-        if isinstance(efforts, list)
-        else set()
-    )
+    if not isinstance(efforts, list):
+        raise AccountError("model/list returned an invalid result")
+    exposed_efforts = set()
+    for item in efforts:
+        if not isinstance(item, dict) or not isinstance(
+            item.get("reasoningEffort"), str
+        ):
+            raise AccountError("model/list returned an invalid result")
+        exposed_efforts.add(item["reasoningEffort"])
     if effort not in exposed_efforts:
         raise AccountError("exact model effort is not exposed")
     access = matches[0].get("availableAccessPrograms")
     cyber = access.get("cyber") if isinstance(access, dict) else None
-    if not isinstance(cyber, list) or "daybreakBlue" not in cyber:
+    if not isinstance(cyber, list) or not all(
+        isinstance(program, str) for program in cyber
+    ):
+        raise AccountError("model/list returned an invalid result")
+    if "daybreakBlue" not in cyber:
         raise AccountError("exact model does not advertise Daybreak Blue access")
     return matches[0]
 
 
+def validate_authenticated_account(account_result: object) -> None:
+    if not isinstance(account_result, dict):
+        raise AccountError("account/read returned an invalid result")
+    requires_auth = account_result.get("requiresOpenaiAuth")
+    if type(requires_auth) is not bool:
+        raise AccountError("account/read returned an invalid result")
+    account = account_result.get("account")
+    if not isinstance(account, dict) or account.get("type") != "chatgpt":
+        raise AccountError("selected app server is not authenticated with ChatGPT")
+    if "email" not in account or "planType" not in account:
+        raise AccountError("account/read returned an invalid result")
+    email = account.get("email")
+    plan_type = account.get("planType")
+    if (email is not None and not isinstance(email, str)) or (
+        not isinstance(plan_type, str) or plan_type not in CHATGPT_PLAN_TYPES
+    ):
+        raise AccountError("account/read returned an invalid result")
+
+
 def selected_capacity(rate_result: object, model: str) -> dict[str, object] | None:
-    if not isinstance(rate_result, dict):
+    if not isinstance(rate_result, dict) or not isinstance(
+        rate_result.get("rateLimits"), dict
+    ):
         raise AccountError("account/rateLimits/read returned an invalid result")
     buckets = rate_result.get("rateLimitsByLimitId")
+    if buckets is not None and not isinstance(buckets, dict):
+        raise AccountError("account/rateLimits/read returned an invalid result")
     matches = []
     if isinstance(buckets, dict):
-        matches = [
-            value
-            for value in buckets.values()
-            if isinstance(value, dict) and value.get("normalModelSlug") == model
-        ]
+        for value in buckets.values():
+            if not isinstance(value, dict):
+                raise AccountError("account/rateLimits/read returned an invalid result")
+            slug = value.get("normalModelSlug")
+            if slug is not None and not isinstance(slug, str):
+                raise AccountError("account/rateLimits/read returned an invalid result")
+            if slug == model:
+                matches.append(value)
     if len(matches) > 1:
         raise AccountError("multiple capacity buckets match the exact model")
     return allowlisted_capacity(matches[0]) if matches else None
@@ -250,6 +321,7 @@ def selected_capacity(rate_result: object, model: str) -> dict[str, object] | No
 def status_refresh(
     executable: Path,
     account_home: Path,
+    expected_account_id: str,
     selector: str,
     freshness_seconds: int,
 ) -> dict[str, object]:
@@ -261,19 +333,20 @@ def status_refresh(
     try:
         initialize(client)
         account_result = client.request("account/read", {"refreshToken": False})
-        account = (
-            account_result.get("account") if isinstance(account_result, dict) else None
-        )
+        validate_authenticated_account(account_result)
         exposed_model(client, model, effort)
         rate_result = client.request(
             "account/rateLimits/read",
             {"excludeResetCreditDetails": True, "supportsLunaReserve": False},
         )
-        ordinary = (
-            rate_result.get("ordinaryUsageAllowed")
-            if isinstance(rate_result, dict)
-            else None
-        )
+        if not isinstance(rate_result, dict):
+            raise AccountError("account/rateLimits/read returned an invalid result")
+        provider_account_id = rate_result.get("accountId")
+        if not isinstance(provider_account_id, str):
+            raise AccountError("provider account identity is unavailable")
+        if provider_account_id != expected_account_id:
+            raise AccountError("provider account does not match selected binding")
+        ordinary = rate_result.get("ordinaryUsageAllowed")
         if ordinary is not None and not isinstance(ordinary, bool):
             raise AccountError("ordinaryUsageAllowed has an invalid type")
         return {
@@ -282,7 +355,7 @@ def status_refresh(
             "observed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "freshness_seconds": freshness_seconds,
             "binding_matches": True,
-            "authenticated": account is not None,
+            "authenticated": True,
             "selector": selector,
             "selector_exposed": True,
             "ordinary_usage_allowed": ordinary,
@@ -302,6 +375,7 @@ def main(argv: list[str] | None = None) -> int:
             result = status_refresh(
                 arguments.codex,
                 account_home,
+                selection["authenticated_account_id"],
                 arguments.model,
                 arguments.freshness_seconds,
             )

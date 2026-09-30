@@ -229,6 +229,16 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             "daybreak_catalog.py select --catalog",
             "daybreak_account.py status-refresh --selection-stdin",
             "daybreak_account.py harmless-probe --selection-stdin",
+            (
+                "account_classification`, `authentication_observation`, "
+                "`configuration_topology`, `database_topology`, `usage_capacity`, "
+                "`daybreak_selector`, `harmless_probe`, and `task_data_authority"
+            ),
+            (
+                "Any missing, duplicate, or unknown binding field invalidates the "
+                "complete catalog."
+            ),
+            "This status-only helper surface provides no probe actuator.",
             "do not provide a closed-world task-tool deny",
             "does not infer authority or disposability from the workspace path",
         ):

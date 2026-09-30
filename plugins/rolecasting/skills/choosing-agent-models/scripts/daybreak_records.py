@@ -5,6 +5,13 @@ from __future__ import annotations
 import json
 
 SELECTION_SCHEMA = "rolecasting-daybreak-account-selection-v1"
+RATE_LIMIT_REACHED_TYPES = {
+    "rate_limit_reached",
+    "workspace_owner_credits_depleted",
+    "workspace_member_credits_depleted",
+    "workspace_owner_usage_limit_reached",
+    "workspace_member_usage_limit_reached",
+}
 
 
 class RecordError(ValueError):
@@ -57,25 +64,55 @@ def split_selector(selector: str) -> tuple[str, str]:
     return model, effort
 
 
-def allowlisted_window(value: object) -> dict[str, object] | None:
-    if not isinstance(value, dict):
+def _capacity_error() -> RecordError:
+    return RecordError("capacity response has an invalid type")
+
+
+def _integer(value: object, *, bits: int, nullable: bool) -> int | None:
+    if value is None and nullable:
         return None
-    fields = {
-        "used_percent": value.get("usedPercent"),
-        "resets_at": value.get("resetsAt"),
-        "window_duration_minutes": value.get("windowDurationMins"),
+    if type(value) is not int:
+        raise _capacity_error()
+    lower = -(2 ** (bits - 1))
+    upper = 2 ** (bits - 1) - 1
+    if not lower <= value <= upper:
+        raise _capacity_error()
+    return value
+
+
+def allowlisted_window(value: object) -> dict[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict) or "usedPercent" not in value:
+        raise _capacity_error()
+    return {
+        "used_percent": _integer(value["usedPercent"], bits=32, nullable=False),
+        "resets_at": _integer(value.get("resetsAt"), bits=64, nullable=True),
+        "window_duration_minutes": _integer(
+            value.get("windowDurationMins"), bits=64, nullable=True
+        ),
     }
-    return fields
 
 
 def allowlisted_capacity(value: object) -> dict[str, object] | None:
-    if not isinstance(value, dict):
+    if value is None:
         return None
+    if not isinstance(value, dict):
+        raise _capacity_error()
+    spend_control = value.get("spendControlReached")
+    if spend_control is not None and type(spend_control) is not bool:
+        raise _capacity_error()
+    reached_type = value.get("rateLimitReachedType")
+    if reached_type is not None and (
+        not isinstance(reached_type, str)
+        or reached_type not in RATE_LIMIT_REACHED_TYPES
+    ):
+        raise _capacity_error()
     return {
         "primary": allowlisted_window(value.get("primary")),
         "secondary": allowlisted_window(value.get("secondary")),
-        "spend_control_reached": value.get("spendControlReached"),
-        "rate_limit_reached_type": value.get("rateLimitReachedType"),
+        "spend_control_reached": spend_control,
+        "rate_limit_reached_type": reached_type,
     }
 
 
