@@ -567,6 +567,12 @@ class DaybreakCatalogTests(unittest.TestCase):
                     catalog_binding("one", "/synthetic/one", "one"),
                     "DC001: invalid command line",
                 ),
+                (
+                    "nul-account-home",
+                    ["inspect", "--catalog", str(catalog)],
+                    catalog_binding("one", "/private/\0catalog-home", "one"),
+                    "DC003: catalog input invalid",
+                ),
             )
             for name, arguments, content, expected in cases:
                 with self.subTest(name=name):
@@ -594,6 +600,7 @@ class DaybreakCatalogTests(unittest.TestCase):
                         "private-looking-catalog-name",
                         "private-missing",
                         "private-cli-value",
+                        "catalog-home",
                     ):
                         self.assertNotIn(private_value, result.stderr)
 
@@ -609,11 +616,9 @@ class DaybreakAccountTests(unittest.TestCase):
             poison_home = root
             selected.mkdir()
             sibling.mkdir()
-            selected_read = root / "selected-auth-read"
-            selected_writer = start_observed_fifo(
-                selected / "auth.json",
-                selected_read,
+            (selected / "auth.json").write_text(
                 json.dumps({"tokens": {"account_id": "synthetic-selected"}}),
+                encoding="utf-8",
             )
             sibling_auth = sibling / "auth.json"
             sibling_read = root / "sibling-auth-read"
@@ -665,7 +670,6 @@ class DaybreakAccountTests(unittest.TestCase):
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(selected_writer.wait(timeout=2), 0)
             sibling_writer_blocked = sibling_writer.poll() is None
             catalog_writer_blocked = catalog_writer.poll() is None
             stop_fifo_writer(sibling_writer)
@@ -675,7 +679,6 @@ class DaybreakAccountTests(unittest.TestCase):
             rpc_methods = [
                 entry["method"] for entry in transcript if "method" in entry
             ]
-            selected_was_read = selected_read.exists()
             sibling_was_read = sibling_read.exists()
             catalog_was_read = catalog_read.exists()
 
@@ -696,7 +699,6 @@ class DaybreakAccountTests(unittest.TestCase):
                 "model/list",
             ],
         )
-        self.assertTrue(selected_was_read)
         self.assertTrue(sibling_writer_blocked)
         self.assertFalse(sibling_was_read)
         self.assertTrue(catalog_writer_blocked)
@@ -711,7 +713,7 @@ class DaybreakAccountTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, result.stdout)
 
-    def test_harmless_probe_fails_closed_without_tool_prevention_control(self) -> None:
+    def test_unavailable_harmless_probe_fails_before_authentication_or_launch(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             selected = root / "selected"
@@ -767,6 +769,122 @@ class DaybreakAccountTests(unittest.TestCase):
             "daybreak-account DA031: harmless probe unavailable in status-only increment\n",
         )
 
+    def test_status_rejects_fifo_auth_without_waiting_for_a_writer(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            selected = root / "selected"
+            selected.mkdir()
+            os.mkfifo(selected / "auth.json")
+            executable = root / "fake-codex"
+            log = root / "fake.log"
+            write_fake_codex(executable)
+            selection = {
+                "schema": "rolecasting-daybreak-account-selection-v1",
+                "account_home": str(selected),
+                "authenticated_account_id": "synthetic-selected",
+            }
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(ACCOUNT),
+                    "status-refresh",
+                    "--selection-stdin",
+                    "--codex",
+                    str(executable),
+                    "--model",
+                    "gpt-daybreak-blue-latest/high",
+                    "--freshness-seconds",
+                    "1800",
+                ],
+                text=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env={**BASE_ENV, "FAKE_LOG": str(log)},
+            )
+            try:
+                stdout, stderr = process.communicate(
+                    input=json.dumps(selection), timeout=2
+                )
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.communicate(timeout=2)
+                self.fail("status refresh blocked opening nonregular authentication")
+
+            self.assertNotEqual(process.returncode, 0)
+            self.assertEqual(stdout, "")
+            self.assertEqual(
+                stderr,
+                "daybreak-account DA003: selected authentication unavailable\n",
+            )
+            self.assertFalse(log.exists())
+
+    def test_status_rejects_authentication_above_explicit_byte_ceiling(self) -> None:
+        valid = json.dumps(
+            {"tokens": {"account_id": "synthetic-selected"}},
+            separators=(",", ":"),
+        )
+        oversized = valid + " " * (1_048_577 - len(valid.encode("utf-8")))
+        with tempfile.TemporaryDirectory() as temporary:
+            result, log = run_fake_status(
+                Path(temporary), auth_content=oversized
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(
+                result.stderr,
+                "daybreak-account DA004: selected authentication malformed\n",
+            )
+            self.assertFalse(log.exists())
+
+    def test_status_accepts_auth_symlink_to_regular_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            selected = root / "selected"
+            selected.mkdir()
+            auth_target = root / "regular-auth.json"
+            auth_target.write_text(
+                json.dumps({"tokens": {"account_id": "synthetic-selected"}}),
+                encoding="utf-8",
+            )
+            (selected / "auth.json").symlink_to(auth_target)
+            executable = root / "fake-codex"
+            log = root / "fake.log"
+            write_fake_codex(executable)
+            selection = {
+                "schema": "rolecasting-daybreak-account-selection-v1",
+                "account_home": str(selected),
+                "authenticated_account_id": "synthetic-selected",
+            }
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ACCOUNT),
+                    "status-refresh",
+                    "--selection-stdin",
+                    "--codex",
+                    str(executable),
+                    "--model",
+                    "gpt-daybreak-blue-latest/high",
+                    "--freshness-seconds",
+                    "1800",
+                ],
+                input=json.dumps(selection),
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=5,
+                env={**BASE_ENV, "FAKE_LOG": str(log)},
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(
+                json.loads(result.stdout)["operation"], "status-refresh"
+            )
+            self.assertTrue(log.exists())
+
     def test_invalid_selection_and_binding_mismatch_never_launch_codex(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -808,6 +926,12 @@ class DaybreakAccountTests(unittest.TestCase):
                     json.dumps({**valid, "private_field_name": "private-value"}),
                     "DA002: invalid selection input",
                 ),
+                "nul-account-home": (
+                    json.dumps(
+                        {**valid, "account_home": "/private/\0selected-home"}
+                    ),
+                    "DA002: invalid selection input",
+                ),
                 "binding-mismatch": (
                     json.dumps(
                         {**valid, "authenticated_account_id": "different-account"}
@@ -844,6 +968,7 @@ class DaybreakAccountTests(unittest.TestCase):
                     )
                     self.assertNotIn("private_field_name", result.stderr)
                     self.assertNotIn("private-value", result.stderr)
+                    self.assertNotIn("selected-home", result.stderr)
                     self.assertNotIn(str(selected), result.stderr)
                     self.assertFalse(log.exists())
 

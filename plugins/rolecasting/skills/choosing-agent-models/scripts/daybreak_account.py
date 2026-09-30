@@ -6,6 +6,7 @@ import argparse
 import datetime
 import os
 import selectors
+import stat
 import subprocess
 import sys
 import time
@@ -21,6 +22,8 @@ from daybreak_records import (
 )
 
 RPC_TIMEOUT_SECONDS = 10
+MAX_AUTH_BYTES = 1_048_576
+AUTH_OPEN_FLAGS = os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0)
 MAX_MODEL_PAGES = 100
 MAX_RPC_FRAME_BYTES = 1_048_576
 MAX_RPC_BUFFER_BYTES = MAX_RPC_FRAME_BYTES + 1
@@ -274,14 +277,36 @@ def load_selection_input() -> tuple[dict[str, str], Path]:
     return selection, account_home
 
 
-def verify_binding(selection: dict[str, str], account_home: Path) -> None:
+def read_authentication(path: Path) -> bytes:
+    descriptor: int | None = None
     try:
-        content = (account_home / "auth.json").read_text(encoding="utf-8")
-    except (OSError, UnicodeError) as error:
+        descriptor = os.open(path, AUTH_OPEN_FLAGS)
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise AccountError("DA003")
+        stream = os.fdopen(descriptor, "rb")
+        descriptor = None
+        with stream:
+            content = stream.read(MAX_AUTH_BYTES + 1)
+    except AccountError:
+        raise
+    except (OSError, UnicodeError, ValueError) as error:
         raise AccountError("DA003") from error
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+    if len(content) > MAX_AUTH_BYTES:
+        raise AccountError("DA004")
+    return content
+
+
+def verify_binding(selection: dict[str, str], account_home: Path) -> None:
+    content = read_authentication(account_home / "auth.json")
     try:
         auth = load_strict_json(content)
-    except RecordError as error:
+    except (UnicodeDecodeError, RecordError) as error:
         raise AccountError("DA004") from error
     if not isinstance(auth, dict) or not isinstance(auth.get("tokens"), dict):
         raise AccountError("DA004")
@@ -308,7 +333,7 @@ def start_server(
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
         )
-    except (OSError, UnicodeError) as error:
+    except (OSError, UnicodeError, ValueError) as error:
         raise AccountError("DA007") from error
 
 

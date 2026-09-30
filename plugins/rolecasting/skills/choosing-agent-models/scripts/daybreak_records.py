@@ -57,6 +57,8 @@ def load_selection(content: str) -> dict[str, str]:
     for field in ("account_home", "authenticated_account_id"):
         if not isinstance(value[field], str) or not value[field]:
             raise RecordError(f"selection {field} must be a nonempty string")
+    if "\x00" in value["account_home"]:
+        raise RecordError("selection account_home contains an unsupported path control")
     return value
 
 

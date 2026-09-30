@@ -74,6 +74,8 @@ def parse_catalog(content: str) -> list[tuple[str, str]]:
                 f"binding fields do not match the supported catalog: {detail}"
             )
         account_home = fields["codex_home"]
+        if "\x00" in account_home:
+            raise CatalogError("codex_home contains an unsupported path control")
         home_relative = account_home.startswith("~/")
         relative_home = Path(account_home[2:]) if home_relative else None
         relative_parts = relative_home.parts if relative_home is not None else ()
@@ -166,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
     except CatalogError:
         print(diagnostic("DC003"), file=sys.stderr)
         return 1
-    except (OSError, UnicodeError):
+    except (OSError, UnicodeError, ValueError):
         print(diagnostic("DC002"), file=sys.stderr)
         return 1
 
