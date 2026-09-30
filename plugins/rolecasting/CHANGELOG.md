@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Grade unavailable routes on refusal and owner control; explicitly elicit
+  fallback consent actions, user-owned task prerequisites, and leader
+  responsibility assignments.
+
 - Require independent catalog and executor proof for every fallback pair, and
   exercise unsuitable and suitable Cursor reviews, useful Ultra without
   panels, witnessed-route prerequisites, and concrete specialist input selection.
