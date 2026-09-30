@@ -144,6 +144,14 @@ with open(log_path, "w", encoding="utf-8") as log:
             sys.stdout.write('{{"id":1,"result":{{"private_number":NaN}}}}\n')
             sys.stdout.flush()
             continue
+        if method == "initialize" and os.environ.get("FAKE_RPC_OVERSIZED_INTEGER"):
+            sys.stdout.write(
+                '{{"id":1,"result":{{"private_number":'
+                + "9" * 5000
+                + '}}}}\n'
+            )
+            sys.stdout.flush()
+            continue
         if method == "initialize" and transport_case == "oversized-line":
             sys.stdout.write("x" * (1048576 + 1) + "\n")
             sys.stdout.flush()
@@ -241,12 +249,17 @@ def catalog_binding(label: str, account_home: str, account_id: str) -> str:
 
 
 def run_fake_status(
-    root: Path, *, extra_env: dict[str, str] | None = None
+    root: Path,
+    *,
+    extra_env: dict[str, str] | None = None,
+    auth_content: str | None = None,
 ) -> tuple[subprocess.CompletedProcess[str], Path]:
     selected = root / "selected"
     selected.mkdir()
     (selected / "auth.json").write_text(
-        json.dumps({"tokens": {"account_id": "synthetic-selected"}}),
+        auth_content
+        if auth_content is not None
+        else json.dumps({"tokens": {"account_id": "synthetic-selected"}}),
         encoding="utf-8",
     )
     executable = root / "fake-codex"
@@ -881,6 +894,24 @@ class DaybreakAccountTests(unittest.TestCase):
         self.assertNotIn("provider-auth-secret", result.stderr)
         self.assertFalse(log.exists())
 
+    def test_oversized_integer_authentication_fails_without_traceback_or_launch(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            result, log = run_fake_status(
+                Path(temporary),
+                auth_content='{"tokens":{"account_id":' + "9" * 5000 + "}}",
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(
+                result.stderr,
+                "daybreak-account DA004: selected authentication malformed\n",
+            )
+            self.assertNotIn("Traceback", result.stderr)
+            self.assertFalse(log.exists())
+
     def test_noncanonical_authentication_json_fails_before_launch(self) -> None:
         cases = (
             '{"tokens":{"account_id":"synthetic-selected"},'
@@ -1376,6 +1407,27 @@ class DaybreakAccountTests(unittest.TestCase):
                 )
                 self.assertNotIn("provider-duplicate-secret", result.stderr)
                 self.assertEqual(transcript[-1], {"terminated": True})
+
+    def test_status_rejects_oversized_integer_rpc_without_traceback_and_stops_process(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            result, log = run_fake_status(
+                Path(temporary),
+                extra_env={"FAKE_RPC_OVERSIZED_INTEGER": "1"},
+            )
+            transcript = [
+                json.loads(line) for line in log.read_text().splitlines()
+            ]
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(
+                result.stderr,
+                "daybreak-account DA015: provider protocol message invalid\n",
+            )
+            self.assertNotIn("Traceback", result.stderr)
+            self.assertEqual(transcript[-1], {"terminated": True})
 
     def test_status_rejects_malformed_rpc_error_message(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

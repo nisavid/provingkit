@@ -39,7 +39,7 @@ def load_strict_json(content: str | bytes) -> object:
             object_pairs_hook=_unique_object,
             parse_constant=_reject_constant,
         )
-    except (json.JSONDecodeError, RecursionError) as error:
+    except (ValueError, RecursionError) as error:
         raise RecordError("JSON input must contain exactly one valid value") from error
 
 

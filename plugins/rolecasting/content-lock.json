@@ -35,7 +35,7 @@
     "skills/choosing-agent-models/references/jev-suitability.md": "0b0794a8d84fe493d403a76a2a3480c31dcd5fe1fa98b959775157a57a197826",
     "skills/choosing-agent-models/scripts/daybreak_account.py": "ceb07fa90b64f5895d73aa56578e890d623762fc87b79432a87fa63cfba0e5d0",
     "skills/choosing-agent-models/scripts/daybreak_catalog.py": "69304fb165d59f0f3d638d5c89392aadfda016e00684a6209254fc3c56eb23e7",
-    "skills/choosing-agent-models/scripts/daybreak_records.py": "31214a4c02c00880bc5fcf0f95ee9bb1ab5c2e8be6356a38b100679c510e42bb",
+    "skills/choosing-agent-models/scripts/daybreak_records.py": "af6305cf78fe3d0fab1be24296f6a105d9b010e6be0b668ac550e5525dad2f57",
     "skills/delegating-cross-agent-work/SKILL.md": "974cc959c4e560d045b188bdae046efc08159c3d75ac21135a859b6c042aeae3",
     "skills/delegating-cross-agent-work/agents/openai.yaml": "02a299ec3000226ea22d472130a54bb3b6f45d8fbe28304de2359aa38c9fdc83",
     "skills/delegating-cross-agent-work/evals/evals.json": "ee015d5aafbdb3e52a265d8fdfadb45df7b69a4c692bbb83473dcadd1daac9f6",
