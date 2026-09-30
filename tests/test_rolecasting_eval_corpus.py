@@ -38,7 +38,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         self.assertIn("Delegation is settled", probes[1]["query"])
         self.assertIn("model and effort", probes[1]["query"])
 
-    def test_rolecasting_has_exactly_thirty_six_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_complete_detailed_scenario_inventory(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -54,6 +54,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "unavailable-non-codex-capability",
                 "high-risk-independent-review",
                 "cursor-grok-consequential-review",
+                "cursor-grok-bounded-review",
                 "unrelated-task-model-is-not-a-route",
                 "daybreak-routing-matrix",
                 "daybreak-route-evidence",
@@ -65,6 +66,11 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "thread-consent-state",
                 "general-tiers-and-preferences",
                 "provider-preference-target-reconsideration",
+                "named-model-successors",
+                "effort-floor-all-routes",
+                "max-effort-conjunction",
+                "ultra-panel-applicability",
+                "sonnet-middle-tier",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
@@ -478,9 +484,12 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "reviewer-astra-xhigh",
                 "clerical-luna-separation",
                 "no-review-effort-underfit-or-max",
-                "cursor-grok-high-fit",
+                "cursor-grok-role-fit",
                 "cursor-surface-proof",
                 "foreign-review-authority-preserved",
+                "cursor-grok-bounded-fit",
+                "cursor-bounded-surface-proof",
+                "cursor-bounded-authority",
                 "task-purpose-route-gate",
                 "no-unrelated-task-reuse",
                 "routing-no-task-authority",

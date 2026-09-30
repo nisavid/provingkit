@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+- Test insufficient low effort and sufficient high effort within Grok's
+  maintained task role.
+
+- Establish Grok role suitability and high-effort judgment margin in the
+  positive current-version selection fixture.
+
+- Grade unavailable routes on refusal and owner control; explicitly elicit
+  fallback consent actions, user-owned task prerequisites, and leader
+  responsibility assignments.
+
+- Require independent catalog and executor proof for every fallback pair, and
+  exercise unsuitable and suitable Cursor reviews, useful Ultra without
+  panels, witnessed-route prerequisites, and concrete specialist input selection.
+
+- Clarify the discovery boundary between delegation and model selection in the
+  delegation skill's description.
+
+- Route ordinary demanding work to GPT-6.1 Sol or Opus, prefer proven newer
+  same-name GPT/Claude versions, restore Sonnet 5.5 for its shallow-cognition
+  middle tier, and require medium-or-higher effort for Astra/Fable and Sol/Opus.
+  Bind OpenAI/Anthropic max to all model, frontier-problem, panel-loop, and
+  capability gates; encourage useful Ultra/Ultracode panels with independently
+  selected participant efforts.
+
 - Separate ordinary same-leader invocation plans and live selection records
   from explicitly witnessed receipts, preserving native assurance limits and
   each consumer's existing authority and verification gates.
