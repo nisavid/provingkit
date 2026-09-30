@@ -1,12 +1,15 @@
 """Tests for the ``gh`` stub's fidelity fixes: inline review comments, repository merge settings, required checks,
-head placeholders, workflow-run listings, collaborator-only review requests, stable identities, and the clock."""
+head placeholders, workflow-run listings, collaborator-only review requests, stable identities, the clock, and the
+``date`` shim that follows it."""
 
 from __future__ import annotations
 
 import datetime as dt
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -601,6 +604,54 @@ class ClockAdvanceTest(StubCase):
         gh_stub.apply_patch(self.state_dir, {"advance": None})
         self.assertNear(gh_stub.current_time(self.state_dir), self.now)
         self.assertNotIn("clock", self.log()[-1] if self.log() else {})
+
+
+# ----------------------------------------------------------------------------- H11: the date shim
+
+class DateShimTest(StubCase):
+    def run_date(self, *argv, state=True):
+        shim = gh_stub.install_date_shim(self.state_dir / "bin")
+        env = {k: v for k, v in os.environ.items() if k != "GH_STUB_STATE_DIR"}
+        if state:
+            env["GH_STUB_STATE_DIR"] = str(self.state_dir)
+        done = subprocess.run([str(shim), *argv], capture_output=True, text=True, env=env)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        return done.stdout.strip()
+
+    def assertNear(self, epoch, expected, seconds=5):
+        moment = dt.datetime.fromtimestamp(int(epoch), dt.timezone.utc)
+        self.assertLess(abs((moment - expected).total_seconds()), seconds, (epoch, expected))
+
+    def test_the_shim_follows_the_stub_clock_and_passes_own_times_through(self):
+        marker = self.state_dir / "epoch0"
+        marker.write_text("")
+        os.utime(marker, (0, 0))
+        self.assertNear(self.run_date("-u", "+%s"), self.now)
+        gh_stub.apply_patch(self.state_dir, {"advance": "170m"})
+        shifted = self.now + dt.timedelta(minutes=170)
+        self.assertNear(self.run_date("-u", "+%s"), shifted)
+        self.assertNear(parse_time(self.run_date("-u", "+%Y-%m-%dT%H:%M:%SZ")).timestamp(), shifted)
+        self.assertEqual(self.run_date("-u", "-d", "@0", "+%Y"), "1970")
+        self.assertEqual(self.run_date("-u", "--date=@0", "+%Y"), "1970")
+        self.assertEqual(self.run_date("-ud", "@0", "+%Y"), "1970")
+        self.assertEqual(self.run_date("-u", "-r", str(marker), "+%Y"), "1970")
+        self.assertEqual(self.run_date("-u", f"--reference={marker}", "+%Y"), "1970")
+        self.assertTrue(self.run_date("--version").startswith("date"))
+        self.assertNear(self.run_date("-u", "+%s", state=False), self.now)
+        self.assertNear(self.run_date("+%s"), shifted)
+        self.assertEqual(self.state()["_clock_offset"], 170 * 60)
+        for argument, expected in (("-d", True), ("-d@0", True), ("--date", True), ("--date=now", True),
+                                   ("-r", True), ("--reference=x", True), ("-s", True), ("--set=now", True),
+                                   ("-f", True), ("--file=-", True), ("-ud", True), ("-Rd", True),
+                                   ("-u", False), ("-R", False), ("-I", False), ("-Iseconds", False),
+                                   ("-Idate", False), ("+%s", False), ("--utc", False), ("--debug", False),
+                                   ("-", False), ("now", False)):
+            self.assertEqual(gh_stub.date_names_a_time(argument), expected, argument)
+
+    def test_the_shim_is_plain_date_without_a_stub_state(self):
+        (self.state_dir / "state.json").unlink()
+        self.assertNear(self.run_date("-u", "+%s"), self.now)
+        self.assertEqual(self.run_date("-u", "-d", "@0", "+%Y"), "1970")
 
 
 if __name__ == "__main__":

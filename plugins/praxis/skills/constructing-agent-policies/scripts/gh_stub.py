@@ -55,7 +55,11 @@ permission of ``triage`` or above, an ``associations`` entry of ``OWNER``,
 pass, and with no evidence at all every login passes. The ``claude`` and
 ``codex`` shims ``install_model_shims`` puts beside the ``gh`` wrapper refuse
 a nested model run with exit 1 and record ``{kind: "nested-model-run",
-program, argv, turn}``.
+program, argv, turn}``. The ``date`` shim ``install_date_shim`` puts there runs
+the real ``date`` at the stub's clock (``--date=@<epoch>`` from
+:func:`current_time`) unless the call carries a time of its own (``-d``,
+``--date``, ``-r``, ``--reference``, ``-s``, ``--set``, ``-f``, ``--file``) or
+no stub state is reachable, when it passes through unchanged.
 
 The repository (``gh repo view``, REST ``GET repos/<repo>``, GraphQL
 ``repository``) allows squash, merge and rebase merges and keeps merged
@@ -84,7 +88,8 @@ State patches (``on_write`` hooks, ``on_push``, and the runner's
 keeps its own clock, wall time plus every ``advance`` applied so far (seconds,
 or ``<N>`` with unit ``s``, ``m``, ``h`` or ``d``; it moves the clock forward
 before the rest of the patch renders and never rewrites an existing time), and
-:func:`current_time` reads it. Writes, defaulted times and ``{{now}}``
+:func:`current_time` reads it, as the ``date`` shim does. Writes, defaulted
+times and ``{{now}}``
 placeholders use that clock, and once it has advanced every log record carries
 ``clock`` beside the wall-clock ``ts``. A patch's placeholders render when it
 is applied, ``{{head}}`` and ``{{base}}`` as the commits current then;
@@ -304,6 +309,60 @@ def refused_run_main(program, argv):
     return 1
 
 
+# ``date`` options that give the call a time of its own; the shim passes such a call through unchanged.
+DATE_TIME_OPTIONS = ("-d", "--date", "-r", "--reference", "-s", "--set", "-f", "--file")
+SHORT_OPTION_CLUSTER = re.compile(r"-[a-zA-Z]+")
+
+
+def install_date_shim(bin_dir):
+    """Create ``bin_dir/date`` that runs the real ``date`` at the stub's clock (see :func:`date_shim_main`)."""
+    bin_dir = Path(bin_dir)
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    program = ("import sys; sys.path.insert(0, sys.argv[1]); import gh_stub; "
+               "sys.exit(gh_stub.date_shim_main(sys.argv[2], sys.argv[3:]))")
+    shim = bin_dir / "date"
+    shim.write_text("#!/bin/sh\nexec " + " ".join(shlex.quote(part) for part in (
+        sys.executable, "-c", program, str(Path(__file__).resolve().parent), str(bin_dir))) + ' "$@"\n')
+    shim.chmod(0o755)
+    return shim
+
+
+def date_names_a_time(argument):
+    """Whether one ``date`` argument gives the call a time of its own: ``-d``/``--date``, ``-r``/``--reference``,
+    ``-s``/``--set`` or ``-f``/``--file``, attached (``-d@0``, ``--date=@0``) or in a short-option cluster
+    (``-ud``); ``-I[FMT]`` is a format, never a time."""
+    if argument.startswith("--"):
+        return argument.split("=", 1)[0] in DATE_TIME_OPTIONS
+    if not argument.startswith("-") or argument == "-" or argument.startswith("-I"):
+        return False
+    return (any(argument.startswith(option) for option in DATE_TIME_OPTIONS if not option.startswith("--"))
+            or (SHORT_OPTION_CLUSTER.fullmatch(argument) is not None and any(c in argument[1:] for c in "drsf")))
+
+
+def _real_date(bin_dir):
+    """The ``date`` the child would run without the shim: the first on ``PATH`` outside ``bin_dir``."""
+    own = Path(bin_dir).resolve()
+    directories = [d for d in os.environ.get("PATH", os.defpath).split(os.pathsep) if d and Path(d).resolve() != own]
+    return shutil.which("date", path=os.pathsep.join(directories))
+
+
+def date_shim_main(bin_dir, argv):
+    """Entry point for the ``date`` shim: run the real ``date`` at the stub's clock, or pass the call through.
+
+    A call carrying a time of its own (see :func:`date_names_a_time`), or made where no stub state is reachable,
+    runs unchanged; any other runs with ``--date=@<epoch>`` prepended, the epoch being :func:`current_time`, so a
+    child that tells time with ``date -u`` sees every ``advance`` the run applied.
+    """
+    real = _real_date(bin_dir)
+    if real is None:
+        sys.stderr.write("date: no date command is on PATH beside the stub's\n")
+        return 127
+    state_dir = os.environ.get("GH_STUB_STATE_DIR")
+    if state_dir and (Path(state_dir) / "state.json").is_file() and not any(date_names_a_time(a) for a in argv):
+        argv = [f"--date=@{int(current_time(state_dir).timestamp())}", *argv]
+    os.execv(real, [real, *argv])
+
+
 def install_post_receive(git_dir, state_dir):
     """Install the bare remote's ``post-receive`` hook that reports pushes to the stub."""
     hook = Path(git_dir) / "hooks" / "post-receive"
@@ -331,8 +390,18 @@ def set_turn(state_dir, turn):
 
 def current_time(state_dir):
     """The stub's clock as an aware UTC datetime: wall time plus every ``advance`` applied so far."""
-    with _locked(state_dir) as state:
-        return _moment(state)
+    return _moment(_read_state(state_dir))
+
+
+def _read_state(state_dir):
+    """The current state, read under the lock and never written back."""
+    directory = Path(state_dir)
+    with open(directory / ".lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            return json.loads((directory / "state.json").read_text())
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 
 class _locked:

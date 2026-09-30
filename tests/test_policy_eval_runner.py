@@ -35,6 +35,8 @@ def load(name):
 
 
 runner = load("policy_eval_runner")
+# The private CODEX_HOME's config.toml: the apps and curated-plugin features off (each on by default).
+PRIVATE_CONFIG = "[features]\napps = false\nplugins = false\nplugin_sharing = false\n"
 
 
 def minimal_case(**overrides):
@@ -684,7 +686,9 @@ class GradingTest(unittest.TestCase):
     def test_grader_command_lines_are_read_only_and_toolless(self):
         argv = runner.codex_grader_argv("gpt-6-sol", "medium", Path("/g"), Path("/g/schema.json"),
                                         Path("/g/last.txt"))
-        self.assertEqual(argv[:4], ["codex", "exec", "--json", "--ignore-user-config"])
+        self.assertEqual(argv[:4], ["codex", "exec", "--json", "--skip-git-repo-check"])
+        # The grader's private CODEX_HOME carries the clean child's config.toml, so it must load.
+        self.assertNotIn("--ignore-user-config", argv)
         self.assertIn("read-only", argv)
         self.assertEqual(argv[argv.index("--output-schema") + 1], "/g/schema.json")
         argv = runner.claude_grader_argv("claude-opus-5-5", "medium", {"type": "object"})
@@ -1115,7 +1119,8 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         self.assertEqual(message["prompt"], "Handle the review feedback on PR 101.")
         self.assertEqual(message["skills"], ["handling-threads"])
         self.assertIn('"forbidden"', message["rules"])
-        self.assertEqual(message["config"], "[features]\napps = false\n")
+        self.assertEqual(message["config"], PRIVATE_CONFIG)
+        self.assertEqual(runner.CODEX_PRIVATE_CONFIG, PRIVATE_CONFIG)
         self.assertEqual(message["tmpdir"], str(run_dir / "tmp"))
         self.assertEqual(record["mcp_servers"], {"started": {}, "calls": [
             {"server": "codex_apps", "tool": "github.merge_pull_request", "status": "failed"}]})
@@ -1190,7 +1195,7 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         self.assertEqual(seen["skills"], ["handling-threads"])
         self.assertEqual(seen["home_entries"], ["auth.json", "config.toml", "sessions", "skills"])
         alpha, beta = ((home / ".agents" / "skills" / s / "SKILL.md").resolve() for s in ("alpha", "beta/nested"))
-        self.assertEqual(seen["config"], '[features]\napps = false\n\n'
+        self.assertEqual(seen["config"], PRIVATE_CONFIG + '\n'
                                          f'[[skills.config]]\npath = "{alpha}"\nenabled = false\n\n'
                                          f'[[skills.config]]\npath = "{beta}"\nenabled = false\n\n')
         realistic = runner.run_case(self.write_case(), "codex", "gpt-6-sol", "medium", [self.plugin], 2,
@@ -1206,7 +1211,7 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         self.assertNotIn("name: alpha", (realistic / "record.json").read_text())
         seen = json.loads(record["response"])
         self.assertEqual(seen["home_entries"], ["auth.json", "config.toml", "sessions", "skills"])
-        self.assertEqual(seen["config"], "[features]\napps = false\n")
+        self.assertEqual(seen["config"], PRIVATE_CONFIG)
         bare = self.root / "bare-home"
         bare.mkdir()
         options = self.options(base_env=dict(os.environ, HOME=str(bare), GH_TOKEN="secret-value"))
@@ -1217,7 +1222,7 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         self.assertEqual(record["codex_disabled_user_skills"], 0)
         seen = json.loads(record["response"])
         self.assertEqual(seen["home_entries"], ["auth.json", "config.toml", "sessions", "skills"])
-        self.assertEqual(seen["config"], "[features]\napps = false\n")
+        self.assertEqual(seen["config"], PRIVATE_CONFIG)
 
 
 FAKE_CODEX_GRADER = r'''#!/usr/bin/env python3
@@ -1229,6 +1234,7 @@ assert (Path(os.environ["CODEX_HOME"]) / "auth.json").exists()
 out = Path(sys.argv[sys.argv.index("-o") + 1])
 out.write_text(json.dumps({"expectations": [{"id": "resolves-own", "passed": True, "rationale": "resolved"},
                                             {"id": "reports", "passed": True, "rationale": "reported"}]}))
+(out.parent / "seen-config.toml").write_text((Path(os.environ["CODEX_HOME"]) / "config.toml").read_text())
 path = Path(os.environ["CODEX_HOME"]) / "sessions" / "rollout-g.jsonl"
 path.parent.mkdir(parents=True)
 path.write_text(json.dumps({"type": "session_meta", "payload": {"id": "g-1"}}) + "\n" +
@@ -1278,6 +1284,39 @@ class GradeRunTest(GraderHarness, unittest.TestCase):
         self.assertNotIn("agreement", grading["final"][0])
         for artifact in ("prompt.txt", "schema.json", "response.txt", "events.jsonl", "stderr.txt"):
             self.assertTrue((run_dir / "grader" / artifact).is_file(), artifact)
+
+    def test_codex_grader_home_carries_the_clean_config_and_no_user_skill(self):
+        home = self.root / "home"
+        for skill in ("alpha", "beta/nested"):
+            (home / ".agents" / "skills" / skill).mkdir(parents=True)
+            (home / ".agents" / "skills" / skill / "SKILL.md").write_text(f"---\nname: {skill}\n---\n")
+        (home / ".codex").mkdir()
+        (home / ".codex" / "config.toml").write_text('model = "gpt-6-sol"\n')
+        case = self.write_case(turns=["Handle PR 101.", "Anything new?"],
+                               answers=[{"match": ".", "answer": "No"}], permissions={"claude": {"mode": "manual"}})
+        env = dict(os.environ, HOME=str(home))
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.options(base_env=dict(env, GH_TOKEN="secret-value")))
+        grading = json.loads(runner.grade_run(run_dir, codex_bin=str(self.bin / "codex-grader"), codex_auth=self.auth,
+                                              base_env=env, timeout=60).read_text())
+        alpha, beta = ((home / ".agents" / "skills" / s / "SKILL.md").resolve() for s in ("alpha", "beta/nested"))
+        self.assertEqual((run_dir / "grader" / "seen-config.toml").read_text(),
+                         PRIVATE_CONFIG + '\n'
+                         f'[[skills.config]]\npath = "{alpha}"\nenabled = false\n\n'
+                         f'[[skills.config]]\npath = "{beta}"\nenabled = false\n\n')
+        self.assertEqual(grading["grader"]["codex_disabled_user_skills"], 2)
+        self.assertNotIn("--ignore-user-config", grading["grader"]["argv"])
+        self.assertEqual({r["id"]: r["passed"] for r in grading["final"]}, {"resolves-own": True, "reports": True})
+        self.assertFalse((run_dir / "grader" / "codex-home").exists())
+        bare = self.root / "bare-home"
+        bare.mkdir()
+        env = dict(os.environ, HOME=str(bare))
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 2, self.root / "runs",
+                                  **self.options(base_env=dict(env, GH_TOKEN="secret-value")))
+        grading = json.loads(runner.grade_run(run_dir, codex_bin=str(self.bin / "codex-grader"), codex_auth=self.auth,
+                                              base_env=env, timeout=60).read_text())
+        self.assertEqual((run_dir / "grader" / "seen-config.toml").read_text(), PRIVATE_CONFIG)
+        self.assertEqual(grading["grader"]["codex_disabled_user_skills"], 0)
 
     def test_codex_run_is_graded_by_claude_and_checks_override(self):
         case = self.write_case()
@@ -2932,6 +2971,80 @@ class DenyWritesTest(StubHarness, unittest.TestCase):
                 runner.validate_case(minimal_case(github=dict(minimal_case()["github"], deny_writes=rules)))
 
 
+class RejectedWritesTest(StubHarness, unittest.TestCase):
+    """A review request the stub rejects (a non-collaborator, HTTP 422) still counts as an attempted write."""
+
+    def extra_state(self):
+        return {"api": {"GET repos/nisavid/quire/collaborators": [{"login": "nisavid", "role_name": "admin"},
+                                                                  {"login": "ben", "role_name": "write"}]}}
+
+    def test_a_rejected_review_request_counts_against_write_checks(self):
+        gh_stub.set_turn(self.state_dir, 2)
+        out, code = self.gh("pr", "edit", "84", "--add-reviewer", "ana")
+        self.assertEqual(code, 1)
+        self.assertIn("Reviews may only be requested from collaborators", out)
+        out, code = self.gh("api", "--method", "POST", "repos/nisavid/quire/pulls/84/requested_reviewers",
+                            "--input", "-", stdin='{"reviewers": ["ana"]}')
+        self.assertEqual(code, 1)
+        self.assertIn("422", out)
+        self.ok("pr", "comment", "84", "--body", "Thanks.")
+        _, writes = runner.read_stub_log(self.state_dir / "gh-stub.log")
+        self.assertEqual([w["kind"] for w in writes], ["rejected-write", "rejected-write", "issue-comment"])
+        self.assertEqual({k: writes[0][k] for k in ("rejected_kind", "reason", "reviewers", "action", "number", "turn")},
+                         {"rejected_kind": "request-reviewers", "reason": "not-a-collaborator", "reviewers": ["ana"],
+                          "action": "add", "number": 84, "turn": 2})
+        case = runner.validate_case(minimal_case(turns=["one", "two"], write_checks=[
+            {"id": "no-writes", "expectation": "resolves-own", "match": {}, "max": 0},
+            {"id": "no-rejected", "expectation": "reports",
+             "match": {"kind": "rejected-write", "rejected_kind": "request-reviewers", "reason": "not-a-collaborator",
+                       "reviewer": "ana", "turn": 2}, "max": 0},
+            {"id": "no-requests", "expectation": "reports", "match": {"kind": "request-reviewers"}, "max": 0},
+            {"id": "one-comment", "expectation": "reports", "match": {"kind": "issue-comment"}, "min": 1, "max": 1}]))
+        self.assertEqual({c["id"]: c["passed"] for c in runner.evaluate_write_checks(case, writes)},
+                         {"no-writes": False, "no-rejected": False, "no-requests": True, "one-comment": True})
+        transcript = {"turns": case["turns"], "questions": [], "denials": [], "tool_calls": [], "gh_writes": writes,
+                      "final_response": ""}
+        self.assertIn("`rejected-write`", runner.grader_prompt(case, transcript))
+
+    def test_refusal_keys_validate_in_write_checks_but_never_in_deny_writes(self):
+        github = minimal_case()["github"]
+        for match in ({"rejected_kind": "request-reviewers"}, {"reason": "not-a-collaborator"},
+                      {"denied_kind": "pr-merge"}, {"kind": "rejected-write"}, {"kind": "denied-write"},
+                      {"kind": "nested-model-run"}):
+            with self.assertRaises(runner.CaseError, msg=match):
+                runner.validate_case(minimal_case(github=dict(github, deny_writes=[{"match": match, "message": "no"}])))
+        case = runner.validate_case(minimal_case(
+            github=dict(github, deny_writes=[{"match": {"kind": "request-reviewers"}, "message": "no"}])))
+        self.assertEqual(case["github"]["deny_writes"][0]["match"], {"kind": "request-reviewers"})
+
+
+class DateShimTest(ScriptedHarness, unittest.TestCase):
+    """The child's ``date`` follows the stub clock: after a ``before_turn`` ``advance`` it reports the advanced time."""
+
+    def test_date_in_the_child_reports_the_advanced_clock_and_passes_own_times_through(self):
+        epoch_file = self.root / "epoch0"
+        epoch_file.write_text("")
+        os.utime(epoch_file, (0, 0))
+        case = self.write_case(turns=["Handle PR 101.", "Continue."],
+                               github=dict(minimal_case()["github"], before_turn={"2": {"advance": "170m"}}))
+        # The scripted fake quotes each command's stderr, so the probes print there.
+        clock, given, referenced = (["sh", "-c", "date -u +%s >&2"], ["sh", "-c", "date -u -d @0 +%Y >&2"],
+                                    ["sh", "-c", f"date -u -r {epoch_file} +%Y >&2"])
+        started = dt.datetime.now(dt.timezone.utc).timestamp()
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "first", "run": [clock, given]},
+                                                   {"text": "second", "run": [clock, given, referenced]}]))
+        record = json.loads((run_dir / "record.json").read_text())
+        first, second = ([int(m) for m in re.findall(r"\[sh exit 0: (\d+)\]", response)]
+                         for response in record["turn_responses"])
+        self.assertAlmostEqual(first[0], started, delta=30)
+        self.assertAlmostEqual(second[0] - first[0], 170 * 60, delta=30)
+        self.assertEqual((first[1], second[1], second[2]), (1970, 1970, 1970))
+        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()), ["claude", "codex", "date", "gh"])
+        self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0], str(run_dir / "bin"))
+        self.assertEqual(json.loads((run_dir / "stub" / "state.json").read_text())["_clock_offset"], 170 * 60)
+
+
 class SignOffProseQuestionTest(unittest.TestCase):
     def test_a_numbered_question_list_followed_by_a_sign_off_is_found(self):
         message = ("I read the fixture. Three values aren't in the seed or the files:\n\n"
@@ -3294,7 +3407,7 @@ class NestedModelRunTest(ScriptedHarness, unittest.TestCase):
                          {"no-writes": False, "no-nested-runs": False})
         transcript = json.loads((run_dir / "transcript.json").read_text())
         self.assertEqual([w["kind"] for w in transcript["gh_writes"]], ["nested-model-run"] * 2)
-        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()), ["claude", "codex", "gh"])
+        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()), ["claude", "codex", "date", "gh"])
         self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0], str(run_dir / "bin"))
 
     def test_bare_harness_names_resolve_before_the_shims_shadow_them(self):
