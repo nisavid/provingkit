@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Clarify the discovery boundary between delegation and model selection in the
+  delegation skill's description.
+
 - Route ordinary demanding work to GPT-6.1 Sol or Opus, prefer proven newer
   same-name GPT/Claude versions, restore Sonnet 5.5 for its shallow-cognition
   middle tier, and require medium-or-higher effort for Astra/Fable and Sol/Opus.
