@@ -516,7 +516,7 @@
         },
         {
           "id": "other-model-low-suitability",
-          "text": "M/Q/S/T permit sufficient supported low under each model role and policy, while R rejects underfit low for quality-sensitive deeper work; absence of the floor alone never proves adequacy.",
+          "text": "M/Q/S/T permit sufficient supported low under each model role and policy, while R rejects underfit low and selects proven sufficient high for moderately complex, well-understood, outcome-quality-insensitive work within Grok's role; absence of the floor alone never proves adequacy.",
           "severity": "safety"
         }
       ]

@@ -19,6 +19,6 @@ N. GPT-6 Astra low and medium are offered for a qualifying high-stakes exception
 O. Claude Fable 5.1 low and medium are offered in its qualifying role with current successful exact-target proof. Medium preserves its required judgment margin.
 P. Claude Opus 5.5 low and medium are offered for ordinary demanding work; medium preserves its required judgment margin.
 Q. A settled executor fixes Grok 4.7 low with no selection fields. Its provider policy, simple quality-insensitive task, and fixed binding are proven suitable.
-R. Grok low is advertised for a quality-sensitive task needing deeper reasoning. Low lacks the required judgment margin; high is proven sufficient and supported.
+R. Grok 4.7 low and high are supported for a moderately complex, well-understood analysis that is insensitive to outcome quality. Low lacks the required judgment margin for this task; high is proven sufficient under its applicable provider policy.
 S. Claude Haiku low is offered for simple quality-insensitive labeling within its role; current pair capability and adequate judgment margin are established.
 T. GPT-6 Luna low is offered for simple quality-insensitive extraction within its role; current pair capability and adequate judgment margin are established.

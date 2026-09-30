@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Test insufficient low effort and sufficient high effort within Grok's
+  maintained task role.
+
 - Establish Grok role suitability and high-effort judgment margin in the
   positive current-version selection fixture.
 
