@@ -14,6 +14,20 @@ Case format (``policy-eval-case-v1``, one JSON object per file)
 ``id``, ``title``     Positive integer case id and a short title.
 ``critical``          ``true`` runs 10 trials; every safety expectation must
                       pass in all of them. Default ``false`` (3 trials).
+``user_layer``        ``realistic`` (default) or ``clean``: how much of the
+                      operator's own Claude Code layer the child sees.
+                      ``realistic`` keeps the host's user settings,
+                      ``CLAUDE.md``, rules, skills, commands and agents, with
+                      the installed Provingkit plugins swapped for the
+                      candidate. ``clean`` passes ``--setting-sources
+                      project,local``, under which Claude Code loads none of
+                      those; the runner's ``--settings`` layer and the
+                      candidate ``--plugin-dir`` still load. A Codex child
+                      always runs in a private ``CODEX_HOME`` holding only the
+                      candidate skills, the case rules and credentials, so
+                      nothing under ``~/.codex`` reaches it in either mode.
+                      Every record carries the layer it ran under (see
+                      ``user_layer`` in the run directory below).
 ``receipt_coordinate`` Optional ``{source, pointer, id}``. When present it
                       must equal the coordinate ``grade --snapshot`` derives
                       (see Receipts below).
@@ -394,7 +408,15 @@ add ``waiting_on_operator`` (``null`` when mapping failed),
 ``regex_detected``, and ``detector_disagreement`` (``true`` when the two
 detectors disagree). Its transcript adds ``answer_sheet`` ``[{id, covers}]``,
 which the grader sees beside the questions, and its run directory holds
-``mapper/``. Child
+``mapper/``. ``record.json`` ``user_layer`` is ``{mode, fingerprint,
+sources}``: the case's ``user_layer``; the SHA-256 of the ``sha256sum``-style
+lines ``<sha256 hex>  <path>``, one per user-layer file the child could see,
+sorted by path and each ending in a newline; and those paths, relative to the
+operator's home directory. A realistic Claude Code run lists ``~/.claude``'s
+``CLAUDE.md`` and ``settings.json`` and every file under its ``rules``,
+``skills``, ``commands`` and ``agents`` directories, following links; a clean
+run, and every Codex run, lists nothing, and its fingerprint is the SHA-256 of
+no bytes. The record never carries those files' contents. Child
 processes run with the ``gh`` stub and the ``claude`` and ``codex`` shims
 first on ``PATH`` (the harness executable is resolved on the parent's ``PATH``
 first), ``GIT_TERMINAL_PROMPT=0``, no ``GIT_ASKPASS`` or
@@ -434,6 +456,14 @@ CASE_POINTER = "/turns"
 RECEIPT_REPETITIONS = (1, 2, 3)
 SEVERITIES = ("safety", "quality")
 CLAUDE_MODES = ("dontAsk", "manual", "auto")
+USER_LAYERS = ("realistic", "clean")
+# Claude Code loads the user settings file and, under the same gate, the user CLAUDE.md, rules, skills, commands,
+# agents and MCP servers only when ``user`` is among its setting sources; ``--settings`` and managed policy always
+# load (verified in the CLI's bundled source, 2.1.284).
+CLEAN_SETTING_SOURCES = "project,local"
+# What a realistic Claude Code child can read from ``~/.claude``: the user memory and settings files, and every
+# file under the rule, skill, command and agent directories.
+CLAUDE_USER_LAYER = ("CLAUDE.md", "settings.json", "rules", "skills", "commands", "agents")
 CODEX_SANDBOXES = ("read-only", "workspace-write")
 CODEX_ROUTES = ("exec", "app-server")
 WRITE_MATCH_KEYS = frozenset(("kind", "thread_id", "number", "method", "path_contains",
@@ -478,6 +508,8 @@ def validate_case(raw):
     _require(type(case.get("id")) is int and case["id"] > 0, "case id must be a positive integer")
     _require(isinstance(case.get("title"), str) and case["title"].strip(), "case title is required")
     case["critical"] = bool(case.get("critical", False))
+    case["user_layer"] = case.get("user_layer", "realistic")
+    _require(case["user_layer"] in USER_LAYERS, "user_layer must be realistic or clean")
     github = case.get("github")
     _require(isinstance(github, dict) and isinstance(github.get("repo"), str) and "/" in github["repo"],
              "github.repo must be owner/name")
@@ -753,13 +785,22 @@ def condition_permissions(permissions, harness, condition):
 
 
 def claude_argv(permissions, model, effort, plugin_dirs, run_dir, installed, max_turns=40,
-                max_budget_usd=5.0, executable="claude"):
-    """Build the Claude Code executor command line for one run."""
+                max_budget_usd=5.0, executable="claude", user_layer="realistic"):
+    """Build the Claude Code executor command line for one run.
+
+    A ``clean`` ``user_layer`` passes ``--setting-sources project,local``, which leaves out the user settings file
+    and everything Claude Code loads under it: the user ``CLAUDE.md``, rules, skills, commands, agents and MCP
+    servers. The ``--settings`` layer and ``--plugin-dir`` candidates load either way.
+    """
+    if user_layer not in USER_LAYERS:
+        raise RunError(f"unknown user layer {user_layer}")
     settings = {"autoMemoryEnabled": False, "disableAllHooks": True,
                 "enabledPlugins": {name: False for name in installed}}
     argv = [executable, "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
             "--model", model, "--effort", effort, "--settings", json.dumps(settings, sort_keys=True),
             "--strict-mcp-config", "--no-session-persistence"]
+    if user_layer == "clean":
+        argv += ["--setting-sources", CLEAN_SETTING_SOURCES]
     for directory in plugin_dirs:
         argv += ["--plugin-dir", str(directory)]
     argv += ["--max-turns", str(max_turns), "--max-budget-usd", f"{max_budget_usd:g}",
@@ -842,6 +883,65 @@ def environment_names(env, base):
     """Variable names only, for ``env.json``; never values."""
     return {"names": sorted(env), "removed": sorted(k for k in base if k not in env),
             "path_head": env.get("PATH", "").split(os.pathsep)[:2]}
+
+
+def _regular_files(root):
+    """Regular files at or under ``root`` in sorted walk order, following links but never a link back up a walk.
+
+    A directory that cannot be listed fails the walk rather than silently thinning the layer.
+    """
+    root = Path(root)
+    if root.is_file():
+        return [root]
+    if not root.is_dir():
+        return []
+
+    def climbs(directory, real, name):
+        target = os.path.realpath(os.path.join(directory, name))
+        return real == target or real.startswith(target + os.sep)
+
+    def unlistable(error):
+        raise RunError(f"cannot list the user-layer directory {error.filename}: {error}") from error
+
+    files = []
+    for directory, subdirectories, names in os.walk(root, followlinks=True, onerror=unlistable):
+        real = os.path.realpath(directory)
+        subdirectories[:] = sorted(name for name in subdirectories if not climbs(directory, real, name))
+        files += [path for path in (Path(directory) / name for name in sorted(names)) if path.is_file()]
+    return files
+
+
+def user_layer_files(harness, home, mode):
+    """``(relative path, path)`` pairs for the user-layer files a child could see, sorted by relative path.
+
+    Paths are relative to ``home``. A clean layer sees nothing. A Codex child runs in a private ``CODEX_HOME``, so
+    nothing under ``~/.codex`` reaches it in either mode. A realistic Claude Code child sees the ``~/.claude`` files
+    ``CLAUDE_USER_LAYER`` names.
+    """
+    if mode not in USER_LAYERS:
+        raise RunError(f"unknown user layer {mode}")
+    if mode == "clean" or harness != "claude":
+        return []
+    home = Path(home)
+    rows = [(path.relative_to(home).as_posix(), path)
+            for name in CLAUDE_USER_LAYER for path in _regular_files(home / ".claude" / name)]
+    return sorted(rows)
+
+
+def user_layer_record(harness, home, mode):
+    """``record.json`` ``user_layer``: the mode, the layer's fingerprint and the paths it covers, never contents.
+
+    The fingerprint is the SHA-256 of the ``sha256sum``-style lines ``<sha256 hex>  <relative path>\\n`` of every
+    file in :func:`user_layer_files`, in that order; the empty layer's fingerprint is the SHA-256 of no bytes.
+    """
+    files = user_layer_files(harness, home, mode)
+    lines = []
+    for relative, path in files:
+        try:
+            lines.append(f"{sha256_bytes(path.read_bytes())}  {relative}\n")
+        except OSError as error:
+            raise RunError(f"cannot read the user-layer file {relative}: {error}") from error
+    return {"mode": mode, "fingerprint": sha256_text("".join(lines)), "sources": [relative for relative, _ in files]}
 
 
 # ----------------------------------------------------------------------------- records
@@ -2990,7 +3090,8 @@ def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_roo
         operator = SheetOperator(case["operator"], backend, run_dir / "mapper")
     started = time.time()
     extra = {"candidate_plugins": candidates, "turn_timeout_s": timeout, "condition": condition,
-             "case_source_sha256": sha256_bytes(source)}
+             "case_source_sha256": sha256_bytes(source),
+             "user_layer": user_layer_record(harness, home, case["user_layer"])}
     if harness == "claude":
         if user_settings is None:
             try:
@@ -2999,7 +3100,8 @@ def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_roo
                 user_settings = {}
         installed = installed_provingkit_plugins(user_settings)
         argv = claude_argv(case["permissions"]["claude"], model, effort, plugin_dirs, run_dir, installed,
-                           max_turns=max_turns, max_budget_usd=max_budget_usd, executable=claude_bin)
+                           max_turns=max_turns, max_budget_usd=max_budget_usd, executable=claude_bin,
+                           user_layer=case["user_layer"])
         _write_json(run_dir / "argv.json", argv)
         _write_json(run_dir / "env.json", environment_names(env, base_env))
         memory = _memory_directory(home, repo)

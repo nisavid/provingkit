@@ -98,6 +98,16 @@ class CaseFormatTest(unittest.TestCase):
             runner.validate_case(minimal_case(permissions={"codex": {"approve_for_me": True,
                                                                      "sandbox": "read-only"}}))
 
+    def test_user_layer_defaults_to_realistic_and_accepts_only_clean(self):
+        self.assertEqual(runner.validate_case(minimal_case())["user_layer"], "realistic")
+        self.assertEqual(runner.validate_case(minimal_case(user_layer="clean"))["user_layer"], "clean")
+        for bad in ("bare", "", None, True, ["clean"]):
+            with self.assertRaisesRegex(runner.CaseError, "user_layer", msg=repr(bad)):
+                runner.validate_case(minimal_case(user_layer=bad))
+        merged = runner.apply_condition_overrides(minimal_case(user_layer="clean", condition_overrides={
+            "real": {"answers_in_prose": True}}), "real")
+        self.assertEqual(merged["user_layer"], "clean")
+
     def test_renders_relative_time_placeholders(self):
         now = dt.datetime(2026, 9, 26, 12, 0, tzinfo=dt.timezone.utc)
         rendered = runner.render_placeholders(
@@ -244,6 +254,23 @@ class InvocationTest(unittest.TestCase):
         argv = runner.claude_argv(case["permissions"]["claude"], "m", "high", [], Path("/run"), installed=[])
         self.assertIn("--permission-prompts host --permission-prompt-tool stdio", " ".join(argv))
 
+    def test_clean_user_layer_drops_the_user_setting_source_and_keeps_the_candidate(self):
+        case = runner.validate_case(minimal_case(user_layer="clean"))
+        clean = runner.claude_argv(case["permissions"]["claude"], "m", "high", ["/c/praxis"], Path("/run"),
+                                   installed=["mergecraft@provingkit"], user_layer="clean")
+        self.assertEqual(clean[clean.index("--setting-sources") + 1], "project,local")
+        self.assertEqual(clean[clean.index("--plugin-dir") + 1], "/c/praxis")
+        self.assertIn("--strict-mcp-config", clean)
+        self.assertEqual(json.loads(clean[clean.index("--settings") + 1])["enabledPlugins"],
+                         {"mergecraft@provingkit": False})
+        realistic = runner.claude_argv(case["permissions"]["claude"], "m", "high", ["/c/praxis"], Path("/run"),
+                                       installed=["mergecraft@provingkit"])
+        self.assertNotIn("--setting-sources", realistic)
+        self.assertEqual([a for a in clean if a not in ("--setting-sources", "project,local")], realistic)
+        with self.assertRaisesRegex(runner.RunError, "user layer"):
+            runner.claude_argv(case["permissions"]["claude"], "m", "high", [], Path("/run"), installed=[],
+                               user_layer="bare")
+
     def test_installed_provingkit_plugins_come_from_enabled_user_settings(self):
         settings = {"enabledPlugins": {"mergecraft@provingkit": True, "rolecasting@provingkit": False,
                                        "vercel@claude-plugins": True}}
@@ -293,6 +320,83 @@ class InvocationTest(unittest.TestCase):
         self.assertEqual(env["HOME"], "/home/u")
         self.assertEqual(runner.environment_names(env, base)["removed"],
                          ["CLAUDECODE", "CODEX_THREAD_ID", "GH_ENTERPRISE_TOKEN", "GH_TOKEN", "GITHUB_TOKEN"])
+
+
+EMPTY_FINGERPRINT = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+
+class UserLayerTest(unittest.TestCase):
+    """The user-layer fingerprint names the files a child could see, never their contents."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.home = Path(self.tmp.name)
+        self.files = {
+            ".claude/CLAUDE.md": "Always answer in haiku.\n",
+            ".claude/settings.json": '{"permissions": {"allow": ["Bash(ls:*)"]}}\n',
+            ".claude/rules/tracker.md": "Look up the tracker before any ticket write.\n",
+            ".claude/skills/one/SKILL.md": "---\nname: one\n---\n",
+            ".claude/skills/one/references/notes.md": "reference notes\n",
+            ".claude/agents/helper.md": "---\nname: helper\n---\n",
+            ".claude/commands/ship.md": "Ship it.\n",
+            "linked-skill/SKILL.md": "---\nname: linked\n---\n",
+            ".claude/projects/-repo/memory/MEMORY.md": "auto memory\n",
+            ".claude/.credentials.json": '{"token": "not-a-real-token"}\n',
+            ".claude/history.jsonl": '{"display": "past prompt"}\n',
+            ".codex/AGENTS.md": "Global Codex instructions.\n",
+        }
+        for relative, text in self.files.items():
+            path = self.home / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text)
+        (self.home / ".claude/skills/linked").symlink_to(self.home / "linked-skill", target_is_directory=True)
+        (self.home / ".claude/skills/one/back").symlink_to(self.home / ".claude/skills", target_is_directory=True)
+
+    def test_realistic_claude_layer_lists_memory_settings_rules_skills_commands_and_agents(self):
+        layer = runner.user_layer_record("claude", self.home, "realistic")
+        expected = [".claude/CLAUDE.md", ".claude/agents/helper.md", ".claude/commands/ship.md",
+                    ".claude/rules/tracker.md", ".claude/settings.json", ".claude/skills/linked/SKILL.md",
+                    ".claude/skills/one/SKILL.md", ".claude/skills/one/references/notes.md"]
+        lines = "".join(f"{runner.sha256_bytes((self.home / r).read_bytes())}  {r}\n" for r in expected)
+        self.assertEqual(layer, {"mode": "realistic", "fingerprint": runner.sha256_text(lines), "sources": expected})
+        text = json.dumps(layer)
+        for content in self.files.values():
+            self.assertNotIn(content.strip(), text)
+        self.assertNotIn(str(self.home), text)
+
+    def test_the_fingerprint_follows_every_byte_and_every_path_of_the_layer(self):
+        before = runner.user_layer_record("claude", self.home, "realistic")
+        (self.home / ".claude/rules/tracker.md").write_text("Look up the tracker after any ticket write.\n")
+        edited = runner.user_layer_record("claude", self.home, "realistic")
+        self.assertNotEqual(before["fingerprint"], edited["fingerprint"])
+        self.assertEqual(before["sources"], edited["sources"])
+        (self.home / ".claude/rules/tracker.md").rename(self.home / ".claude/rules/tickets.md")
+        moved = runner.user_layer_record("claude", self.home, "realistic")
+        self.assertNotEqual(edited["fingerprint"], moved["fingerprint"])
+        self.assertIn(".claude/rules/tickets.md", moved["sources"])
+
+    def test_clean_and_codex_layers_are_the_empty_set(self):
+        self.assertEqual(runner.sha256_bytes(b""), EMPTY_FINGERPRINT)
+        for harness, mode in (("claude", "clean"), ("codex", "realistic"), ("codex", "clean")):
+            self.assertEqual(runner.user_layer_record(harness, self.home, mode),
+                             {"mode": mode, "fingerprint": EMPTY_FINGERPRINT, "sources": []}, msg=(harness, mode))
+        shutil.rmtree(self.home / ".claude")
+        self.assertEqual(runner.user_layer_record("claude", self.home, "realistic"),
+                         {"mode": "realistic", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
+
+    def test_an_unreadable_layer_file_or_directory_fails_the_run_rather_than_the_fingerprint(self):
+        if os.geteuid() == 0:
+            self.skipTest("root reads everything")
+        (self.home / ".claude/rules/tracker.md").chmod(0)
+        self.addCleanup((self.home / ".claude/rules/tracker.md").chmod, 0o644)
+        with self.assertRaisesRegex(runner.RunError, "tracker.md"):
+            runner.user_layer_record("claude", self.home, "realistic")
+        (self.home / ".claude/rules/tracker.md").chmod(0o644)
+        (self.home / ".claude/skills/one/references").chmod(0)
+        self.addCleanup((self.home / ".claude/skills/one/references").chmod, 0o755)
+        with self.assertRaisesRegex(runner.RunError, "references"):
+            runner.user_layer_record("claude", self.home, "realistic")
 
 
 def claude_stream(result_text="Resolved PRRT_a.", subtype="success"):
@@ -786,7 +890,8 @@ if sys.argv[1] == "exec":
     emit({"type": "item.completed", "item": {"type": "command_execution", "command": "gh pr comment 101 --body Thanks",
                                              "exit_code": 0, "aggregated_output": "", "status": "completed"}})
     emit({"type": "item.completed", "item": {"type": "agent_message",
-                                             "text": json.dumps({"prompt": prompt, "skills": skills, "rules": rules})}})
+                                             "text": json.dumps({"prompt": prompt, "skills": skills, "rules": rules,
+                                                                 "home_entries": sorted(p.name for p in home.iterdir())})}})
     emit({"type": "turn.completed", "usage": {"input_tokens": 5}})
     sys.exit(0)
 # app-server
@@ -920,6 +1025,50 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         self.assertEqual(record["questions"][0]["answers"], {"wording": {"answers": ["Thanks, fixed."]}})
         self.assertEqual(record["denials"][0]["method"], "item/commandExecution/requestApproval")
         self.assertTrue((run_dir / "wire.jsonl").exists())
+
+    def test_every_run_records_the_user_layer_it_ran_under(self):
+        home = self.root / "home"
+        rule = home / ".claude" / "rules" / "tracker.md"
+        rule.parent.mkdir(parents=True)
+        rule.write_text("Consult the tracker before any ticket write.\n")
+        (home / ".claude" / "skills" / "one").mkdir(parents=True)
+        (home / ".claude" / "skills" / "one" / "SKILL.md").write_text("---\nname: one\n---\n")
+        (home / ".codex").mkdir()
+        (home / ".codex" / "AGENTS.md").write_text("Global Codex instructions.\n")
+        (home / ".codex" / "config.toml").write_text('model = "gpt-6-sol"\n')
+        options = self.options(base_env=dict(os.environ, HOME=str(home), GH_TOKEN="secret-value"))
+        answered = {"answers": [{"match": "bot thread", "answer": "No"}], "permissions": {"claude": {"mode": "manual"}}}
+        clean = runner.run_case(self.write_case(user_layer="clean", **answered), "claude", "claude-opus-5-5",
+                                "medium", [self.plugin], 1, self.root / "runs", **options)
+        record = json.loads((clean / "record.json").read_text())
+        self.assertEqual(record["user_layer"], {"mode": "clean", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
+        self.assertEqual(record["status"], "verified-transport")
+        argv = json.loads((clean / "argv.json").read_text())
+        self.assertEqual(argv[argv.index("--setting-sources") + 1], "project,local")
+        self.assertEqual(argv[argv.index("--plugin-dir") + 1], str(self.plugin))
+        realistic = runner.run_case(self.write_case(**answered), "claude", "claude-opus-5-5", "medium",
+                                    [self.plugin], 2, self.root / "runs", **options)
+        record = json.loads((realistic / "record.json").read_text())
+        self.assertEqual(record["status"], "verified-transport")
+        self.assertEqual(record["user_layer"]["mode"], "realistic")
+        self.assertEqual(record["user_layer"]["sources"], [".claude/rules/tracker.md", ".claude/skills/one/SKILL.md"])
+        self.assertEqual(record["user_layer"]["fingerprint"],
+                         runner.user_layer_record("claude", home, "realistic")["fingerprint"])
+        self.assertNotEqual(record["user_layer"]["fingerprint"], EMPTY_FINGERPRINT)
+        self.assertNotIn("Consult the tracker", (realistic / "record.json").read_text())
+        self.assertNotIn("--setting-sources", json.loads((realistic / "argv.json").read_text()))
+        codex = runner.run_case(self.write_case(user_layer="clean"), "codex", "gpt-6-sol", "medium", [self.plugin],
+                                1, self.root / "runs", **options)
+        record = json.loads((codex / "record.json").read_text())
+        self.assertEqual(record["user_layer"], {"mode": "clean", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
+        seen = json.loads(record["response"])
+        self.assertEqual(seen["skills"], ["handling-threads"])
+        self.assertEqual(seen["home_entries"], ["auth.json", "sessions", "skills"])
+        realistic = runner.run_case(self.write_case(), "codex", "gpt-6-sol", "medium", [self.plugin], 2,
+                                    self.root / "runs", **options)
+        record = json.loads((realistic / "record.json").read_text())
+        self.assertEqual(record["user_layer"], {"mode": "realistic", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
+        self.assertEqual(json.loads(record["response"])["home_entries"], ["auth.json", "sessions", "skills"])
 
 
 FAKE_CODEX_GRADER = r'''#!/usr/bin/env python3
