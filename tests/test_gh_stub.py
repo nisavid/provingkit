@@ -1,6 +1,6 @@
 """Tests for the ``gh`` stub's fidelity fixes: inline review comments, repository merge settings, required checks,
-head placeholders, workflow-run listings, collaborator-only review requests, stable identities, the clock, and the
-``date`` shim that follows it."""
+head placeholders, workflow-run listings, collaborator-only review requests, stable identities, the clock, the
+``date`` shim that follows it, the ``sleep`` shim that moves it, and responses delayed on it."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -652,6 +653,122 @@ class DateShimTest(StubCase):
         (self.state_dir / "state.json").unlink()
         self.assertNear(self.run_date("-u", "+%s"), self.now)
         self.assertEqual(self.run_date("-u", "-d", "@0", "+%Y"), "1970")
+
+
+# ----------------------------------------------------------------------------- virtual time: the sleep shim
+
+def run_shim(install, state_dir, *argv, state=True):
+    """Run one shim ``install`` puts in ``state_dir/bin``, with the stub state reachable unless ``state`` is false;
+    return the completed process and its real duration in seconds."""
+    shim = install(Path(state_dir) / "bin")
+    env = {k: v for k, v in os.environ.items() if k != "GH_STUB_STATE_DIR"}
+    if state:
+        env["GH_STUB_STATE_DIR"] = str(state_dir)
+    started = time.monotonic()
+    done = subprocess.run([str(shim), *argv], capture_output=True, text=True, env=env)
+    return done, time.monotonic() - started
+
+
+class SleepShimTest(StubCase):
+    def sleep(self, *argv, state=True):
+        return run_shim(gh_stub.install_sleep_shim, self.state_dir, *argv, state=state)
+
+    def assertNear(self, moment, expected, seconds=5):
+        self.assertLess(abs((moment - expected).total_seconds()), seconds, (moment, expected))
+
+    def test_sleep_moves_the_stub_clock_instead_of_waiting(self):
+        done, elapsed = self.sleep("600")
+        self.assertEqual((done.returncode, done.stdout, done.stderr), (0, "", ""))
+        self.assertLess(elapsed, 3)
+        self.assertEqual(self.state()["_clock_offset"], 600)
+        done, elapsed = self.sleep("1.5", "2m", ".5h", "1d")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertLess(elapsed, 3)
+        total = 600 + 1.5 + 120 + 1800 + 86400
+        self.assertEqual(self.state()["_clock_offset"], total)
+        self.assertNear(gh_stub.current_time(self.state_dir), self.now + dt.timedelta(seconds=total))
+        self.ok("pr", "comment", "84", "--body", "Back after a day.")
+        self.assertNear(parse_time(self.log()[-1]["clock"]), self.now + dt.timedelta(seconds=total))
+
+    def test_infinity_is_refused_and_anything_else_runs_the_real_sleep(self):
+        done, elapsed = self.sleep("infinity")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("infinity", done.stderr)
+        self.assertLess(elapsed, 3)
+        done, _ = self.sleep("--version")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertTrue(done.stdout.startswith("sleep"), done.stdout)
+        done, elapsed = self.sleep("1", state=False)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertGreaterEqual(elapsed, 1)
+        self.assertEqual(self.state()["_clock_offset"], 0)
+
+    def test_the_grammar_is_gnu_durations_summed(self):
+        for argv, seconds in ((["90"], 90), (["1.5"], 1.5), ([".5"], 0.5), (["2."], 2), (["2m"], 120),
+                              (["1h"], 3600), (["1d"], 86400), (["1m", "30s"], 90), (["0"], 0)):
+            self.assertEqual(gh_stub.sleep_seconds(argv), seconds, argv)
+        for argv in ([], ["-5"], ["soon"], ["1w"], ["--help"], ["1e3"], ["+5"], ["5", "x"], ["--", "5"],
+                     ["infinity", "--help"]):
+            self.assertIsNone(gh_stub.sleep_seconds(argv), argv)
+        for argv in (["infinity"], ["INF"], ["infm"], ["5", "Infinity"]):
+            with self.assertRaises(ValueError, msg=argv):
+                gh_stub.sleep_seconds(argv)
+
+
+# ----------------------------------------------------------------------------- virtual time: delayed responses
+
+class DelayedResponseTest(StubCase):
+    def extra_state(self):
+        return {"on_write": [
+            {"match": {"kind": "issue-comment", "body_contains": "@coderabbitai review"}, "delay": 90, "once": True,
+             "append": {"reviews": [{"author": {"login": "coderabbitai"}, "state": "COMMENTED",
+                                     "body": "Reviewed {{head}} at {{now}}."}]}},
+            {"match": {"kind": "issue-comment", "body_contains": "ping"}, "delay": "1s",
+             "append": {"issue_comments": [{"author": {"login": "ana"}, "body": "pong"}]}}]}
+
+    def assertNear(self, moment, expected, seconds=5):
+        self.assertLess(abs((moment - expected).total_seconds()), seconds, (moment, expected))
+
+    def bot_reviews(self):
+        reviews = json.loads(self.ok("pr", "view", "84", "--json", "reviews"))["reviews"]
+        return [r for r in reviews if r["author"]["login"] == "coderabbitai"]
+
+    def pongs(self):
+        return [c for c in self.state()["issue_comments"] if c["body"] == "pong"]
+
+    def test_a_delayed_review_lands_once_sleep_moves_the_clock_past_its_due_time(self):
+        self.ok("pr", "comment", "84", "--body", "@coderabbitai review")
+        self.assertEqual(self.bot_reviews(), [])
+        self.ok("pr", "comment", "84", "--body", "@coderabbitai review")
+        done, _ = run_shim(gh_stub.install_sleep_shim, self.state_dir, "120")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        [review] = self.bot_reviews()
+        self.assertNear(parse_time(review["submittedAt"]), self.now + dt.timedelta(seconds=90))
+        self.assertEqual(review["body"], f"Reviewed {HEAD} at {review['submittedAt']}.")
+        done, _ = run_shim(gh_stub.install_date_shim, self.state_dir, "-u", "+%s")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertNear(dt.datetime.fromtimestamp(int(done.stdout), dt.timezone.utc),
+                        self.now + dt.timedelta(seconds=120))
+
+    def test_any_later_stub_call_or_date_applies_what_came_due_on_the_wall_clock(self):
+        self.ok("pr", "comment", "84", "--body", "ping")
+        time.sleep(1.2)
+        self.assertEqual(self.pongs(), [])
+        comments = json.loads(self.ok("pr", "view", "84", "--json", "comments"))["comments"]
+        self.assertEqual([c["body"] for c in comments][-1], "pong")
+        self.ok("pr", "comment", "84", "--body", "ping again")
+        time.sleep(1.2)
+        self.assertEqual(len(self.pongs()), 1)
+        done, _ = run_shim(gh_stub.install_date_shim, self.state_dir, "-u", "+%s")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(len(self.pongs()), 2)
+
+    def test_a_delay_is_seconds_or_units_and_initialization_refuses_anything_else(self):
+        for bad in ("soon", -5, "1w", "90 seconds"):
+            hooks = [{"match": {"kind": "issue-comment"}, "delay": bad, "append": {}}]
+            with self.assertRaises(ValueError, msg=repr(bad)):
+                gh_stub.initialize(self.state_dir / "bad", self.render(dict(github(), on_write=hooks)),
+                                   head=HEAD, base=BASE)
 
 
 if __name__ == "__main__":

@@ -112,7 +112,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/praxis.json",
-          "sha256": "sha256:3833f2ddeee8595261decc1692631c13a0ec46fc6a7f963d26e2b3ae8d9e3cf4"
+          "sha256": "sha256:113c7cdbede62aa1e5e48ac820b410cefad565feb10270594f92476b0eff5215"
         },
         "display_name": "Praxis",
         "distribution_kind": "agent-plugin",

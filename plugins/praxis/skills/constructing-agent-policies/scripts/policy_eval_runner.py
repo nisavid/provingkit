@@ -87,8 +87,14 @@ Case format (``policy-eval-case-v1``, one JSON object per file)
                       authorAssociation}``, optional), ``branch_protection``
                       (object or ``null`` for 404), ``api`` (``{"GET path":
                       response}`` extras), ``on_write`` (``[{match, once?,
-                      append?, set?, update_threads?}]`` applied after each
-                      matching write), ``on_push`` (one ``{once?, append?,
+                      delay?, append?, set?, update_threads?}]`` applied after
+                      each matching write; with ``delay``, seconds or ``N``
+                      with unit ``s|m|h|d``, the hook is a delayed response,
+                      such as a bot review arriving after the request: it
+                      applies, rendered at its due time, once the stub clock
+                      reaches the write's time plus the delay, at the first
+                      later ``gh`` call, push, ``date`` or ``sleep``),
+                      ``on_push`` (one ``{once?, append?,
                       set?, update_threads?}`` patch, or a list, applied when a
                       push moves the head branch; also accepted at the case's
                       top level), and ``before_turn`` (``{"2": patch}``
@@ -413,13 +419,19 @@ loads no tools, skills, MCP servers or hooks. ``--grader-panel`` on
 in its own session, with its artifacts under
 ``grader/<harness>-<model>-<effort>/``. ``grading.json`` then has ``grader:
 null`` and ``panel``, one entry per grader: its identity, ``cost_usd``,
-``wall_s``, ``directory``, ``error``, and ``expectations`` ``[{id, passed,
-rationale}]``. An expectation passes only when its deterministic checks pass
-and every panel grader passes it, at either severity. Each ``final`` row
+``wall_s``, ``directory``, ``error``, ``retries``, and ``expectations`` ``[{id,
+passed, rationale}]``. An expectation passes only when its deterministic checks
+pass and every panel grader passes it, at either severity. Each ``final`` row
 records ``agreement``: ``pass`` when every grader passed it, ``fail`` when none
-did, else ``split``. If any grader returns no parseable grade, ``final`` is
-``null`` and the run is ungraded. A receipt binds one grader model, so a panel
-refuses ``--snapshot``. ``summarize`` counts every panel grader's cost and time.
+did, else ``split``. A grader whose output is malformed (not a JSON object with
+an ``expectations`` list, an expectation graded twice or without a Boolean
+``passed``, an unknown or missing expectation id) grades once more with the
+same prompt, its artifacts under ``retry/`` in its directory; its record (the
+panel entry, or ``grader``) then describes that session, with ``retries: 1``
+and both sessions' ``cost_usd`` and ``wall_s``. If a grader's second output is
+malformed too, it has no parseable grade: ``final`` is ``null`` and the run is
+ungraded. A receipt binds one grader model, so a panel refuses ``--snapshot``.
+``summarize`` counts every panel grader's cost and time.
 
 Receipts
 --------
@@ -499,12 +511,16 @@ aside) is the auto-mode classifier's no-verdict error and the agent made no
 count, so an outage never fails a cell and a cell short of its bar is
 ``insufficient-runs``, never ``pass``. The record never carries those files'
 contents. Child
-processes run with the ``gh`` stub, the ``claude`` and ``codex`` shims and a
-``date`` shim first on ``PATH`` (the harness executable is resolved on the
-parent's ``PATH`` first; the ``date`` shim runs the real ``date`` at the
-stub's clock, ``gh_stub.current_time``, unless the call carries ``-d``,
-``--date``, ``-r`` or ``-s``, so after a ``before_turn`` ``advance`` the
-agent's ``date -u`` reports the advanced time), ``GIT_TERMINAL_PROMPT=0``, no
+processes run with the ``gh`` stub, the ``claude`` and ``codex`` shims, a
+``date`` shim and a ``sleep`` shim first on ``PATH`` (the harness executable is
+resolved on the parent's ``PATH`` first; the ``date`` shim runs the real
+``date`` at the stub's clock, ``gh_stub.current_time``, unless the call carries
+``-d``, ``--date``, ``-r`` or ``-s``, so after a ``before_turn`` ``advance``
+the agent's ``date -u`` reports the advanced time; the ``sleep`` shim moves
+that clock by its GNU operands, one or more ``N[smhd]`` with ``N`` a decimal
+number, and returns after at most 0.2 real seconds, so a measured wait takes
+no turn time, refuses ``infinity``, and runs the real ``sleep`` for any other
+argument), ``GIT_TERMINAL_PROMPT=0``, no
 ``GIT_ASKPASS`` or
 ``SSH_ASKPASS``, and ``credential.helper`` and ``core.askPass`` emptied through
 ``GIT_CONFIG_COUNT``.
@@ -2837,6 +2853,7 @@ def prepare_fixture(case, run_dir, now):
     gh_stub.install(bin_dir)
     gh_stub.install_model_shims(bin_dir)
     gh_stub.install_date_shim(bin_dir)
+    gh_stub.install_sleep_shim(bin_dir)
     gh_config.mkdir()
     return {"case": rendered, "repo": repo, "remote": remote, "stub_dir": stub_dir, "bin_dir": bin_dir,
             "gh_config": gh_config, "head": head, "base": base}
@@ -3547,8 +3564,28 @@ def _parsed_grade(response, expectation_ids):
         return None, str(failure)
 
 
-def _invoke_grader(harness, model, effort, grader_dir, prompt, schema, env, home, *, claude_bin, codex_bin,
-                   codex_auth, timeout):
+def _invoke_grader(harness, model, effort, grader_dir, prompt, schema, env, home, expectation_ids, **invocation):
+    """Grade with one grader; return its record, its grade (``None`` when malformed) and the parse error.
+
+    A malformed output (see :func:`parse_grade`) runs the grader once more with the same prompt, its artifacts under
+    ``grader_dir/retry``; the record then describes that session, with both sessions' cost and time, and
+    ``retries`` counts the second session.
+    """
+    grader, response = _grader_session(harness, model, effort, grader_dir, prompt, schema, env, home, **invocation)
+    grade, error = _parsed_grade(response, expectation_ids)
+    if error is None:
+        return dict(grader, retries=0), grade, None
+    retry, response = _grader_session(harness, model, effort, grader_dir / "retry", prompt, schema, env, home,
+                                      **invocation)
+    grade, error = _parsed_grade(response, expectation_ids)
+    costs = [g["cost_usd"] for g in (grader, retry) if g["cost_usd"] is not None]
+    retry.update(retries=1, cost_usd=sum(costs) if costs else None,
+                 wall_s=round((grader["wall_s"] or 0) + (retry["wall_s"] or 0), 1))
+    return retry, grade, error
+
+
+def _grader_session(harness, model, effort, grader_dir, prompt, schema, env, home, *, claude_bin, codex_bin,
+                    codex_auth, timeout):
     """Run one grader session with its artifacts under ``grader_dir``; return its record and raw response."""
     work = grader_dir / "work"
     work.mkdir(parents=True)
@@ -3643,18 +3680,16 @@ def grade_run(run_dir, *, grader_model=None, grader_effort="medium", panel=None,
               + evaluate_question_checks(case, transcript.get("asked_questions") or [])
               + evaluate_file_checks(case, transcript.get("repository")))
     if panel is None:
-        grader, response = _invoke_grader(grader_harness, model, grader_effort, grader_dir, prompt, schema, env, home,
-                                          **invocation)
-        grade, error = _parsed_grade(response, ids)
+        grader, grade, error = _invoke_grader(grader_harness, model, grader_effort, grader_dir, prompt, schema, env,
+                                              home, ids, **invocation)
         final = combine_grades(case, grade, checks) if grade else None
         graders = {"grader": grader, "grader_expectations": grade, "grader_error": error}
     else:
         entries, grades, errors = [], [], []
         for harness, panel_model, effort in panel:
             name = f"{harness}-{panel_model}-{effort}"
-            grader, response = _invoke_grader(harness, panel_model, effort, grader_dir / name, prompt, schema, env,
-                                              home, **invocation)
-            grade, error = _parsed_grade(response, ids)
+            grader, grade, error = _invoke_grader(harness, panel_model, effort, grader_dir / name, prompt, schema,
+                                                  env, home, ids, **invocation)
             grader.update(directory=f"grader/{name}", error=error,
                           expectations=[{"id": i, **grade[i]} for i in ids] if grade else None)
             entries.append(grader)

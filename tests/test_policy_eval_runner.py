@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest import mock
 
@@ -1360,6 +1361,23 @@ print(json.dumps({"type": "result", "subtype": "success", "result": "I cannot gr
                   "total_cost_usd": 0.01, "modelUsage": {"claude-opus-5-5": {}}}))
 '''
 
+# Grades one expectation twice on its first call (a malformed grade), then grades properly; ``FLAKY_GRADER_MARKER``
+# names the file that counts its calls.
+FAKE_FLAKY_GRADER = r'''#!/usr/bin/env python3
+import json, os, sys
+prompt = sys.stdin.read()
+marker = os.environ["FLAKY_GRADER_MARKER"]
+first = not os.path.exists(marker)
+with open(marker, "a") as calls:
+    calls.write(prompt)
+expectations = ([{"id": "resolves-own", "passed": True, "rationale": "once"},
+                 {"id": "resolves-own", "passed": False, "rationale": "twice"}] if first else
+                [{"id": "resolves-own", "passed": True, "rationale": "resolved"},
+                 {"id": "reports", "passed": True, "rationale": "reported"}])
+print(json.dumps({"type": "result", "subtype": "success", "result": "", "total_cost_usd": 0.01 if first else 0.03,
+                  "modelUsage": {"claude-opus-5-5": {}}, "structured_output": {"expectations": expectations}}))
+'''
+
 PANEL_OPTION = "claude:claude-opus-5-5:medium,codex:gpt-6-sol:medium"
 PANEL = [("claude", "claude-opus-5-5", "medium"), ("codex", "gpt-6-sol", "medium")]
 
@@ -1367,9 +1385,9 @@ PANEL = [("claude", "claude-opus-5-5", "medium"), ("codex", "gpt-6-sol", "medium
 class GraderPanelTest(GraderHarness, unittest.TestCase):
     def setUp(self):
         super().setUp()
-        (self.bin / "unparseable-grader").write_text(
-            FAKE_UNPARSEABLE_GRADER.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
-        (self.bin / "unparseable-grader").chmod(0o755)
+        for name, body in (("unparseable-grader", FAKE_UNPARSEABLE_GRADER), ("flaky-grader", FAKE_FLAKY_GRADER)):
+            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+            (self.bin / name).chmod(0o755)
 
     def claude_run(self):
         case = self.write_case(turns=["Handle PR 101.", "Anything new?"],
@@ -1398,8 +1416,8 @@ class GraderPanelTest(GraderHarness, unittest.TestCase):
         self.assertEqual([(g["harness"], g["model_id"], g["requested_effort"], g["directory"]) for g in panel],
                          [("claude", "claude-opus-5-5", "medium", "grader/claude-claude-opus-5-5-medium"),
                           ("codex", "gpt-6-sol", "medium", "grader/codex-gpt-6-sol-medium")])
-        self.assertEqual([(g["cost_usd"], g["observed_model"], g["error"]) for g in panel],
-                         [(0.03, "claude-opus-5-5", None), (None, "gpt-6-sol", None)])
+        self.assertEqual([(g["cost_usd"], g["observed_model"], g["error"], g["retries"]) for g in panel],
+                         [(0.03, "claude-opus-5-5", None, 0), (None, "gpt-6-sol", None, 0)])
         self.assertTrue(all(isinstance(g["wall_s"], float) for g in panel))
         self.assertEqual(panel[0]["expectations"], [
             {"id": "resolves-own", "passed": True, "rationale": "claims it resolved"},
@@ -1425,15 +1443,52 @@ class GraderPanelTest(GraderHarness, unittest.TestCase):
         record = json.loads((run_dir / "record.json").read_text())
         self.assertAlmostEqual(summary["groups"][0]["cost_usd"], round(record["cost_usd"] + 0.03, 6))
 
-    def test_a_panel_grader_without_a_parseable_grade_leaves_the_run_ungraded(self):
+    def test_a_panel_grader_malformed_twice_leaves_the_run_ungraded(self):
         run_dir = self.claude_run()
         grading = json.loads(self.grade(run_dir, claude_grader="unparseable-grader").read_text())
         self.assertIsNone(grading["final"])
         claude, codex = grading["panel"]
-        self.assertEqual((claude["expectations"], claude["cost_usd"]), (None, 0.01))
+        self.assertEqual((claude["expectations"], claude["retries"]), (None, 1))
+        self.assertAlmostEqual(claude["cost_usd"], 0.02)
         self.assertIn("not a JSON object", claude["error"])
-        self.assertEqual((len(codex["expectations"]), codex["error"]), (2, None))
+        self.assertEqual((len(codex["expectations"]), codex["error"], codex["retries"]), (2, None, 0))
         self.assertIn("claude:claude-opus-5-5:medium", grading["grader_error"])
+        directory = run_dir / "grader" / "claude-claude-opus-5-5-medium"
+        for artifact in ("prompt.txt", "output.json", "stderr.txt"):
+            self.assertTrue((directory / "retry" / artifact).is_file(), artifact)
+        self.assertFalse((run_dir / "grader" / "codex-gpt-6-sol-medium" / "retry").exists())
+
+    def test_a_panel_grader_malformed_once_is_retried_with_the_same_prompt(self):
+        run_dir = self.claude_run()
+        marker = self.root / "flaky-calls"
+        grading = json.loads(runner.grade_run(
+            run_dir, panel=PANEL, claude_bin=str(self.bin / "flaky-grader"), codex_bin=str(self.bin / "codex-grader"),
+            codex_auth=self.auth, base_env=dict(os.environ, FLAKY_GRADER_MARKER=str(marker)), timeout=60).read_text())
+        claude, codex = grading["panel"]
+        self.assertEqual((claude["retries"], claude["error"], codex["retries"]), (1, None, 0))
+        self.assertAlmostEqual(claude["cost_usd"], 0.04)
+        self.assertEqual(claude["expectations"], [{"id": "resolves-own", "passed": True, "rationale": "resolved"},
+                                                  {"id": "reports", "passed": True, "rationale": "reported"}])
+        directory = run_dir / "grader" / "claude-claude-opus-5-5-medium"
+        prompt = (directory / "prompt.txt").read_text()
+        self.assertEqual((directory / "retry" / "prompt.txt").read_text(), prompt)
+        self.assertEqual(marker.read_text(), prompt * 2)
+        self.assertIsNone(grading["grader_error"])
+        self.assertEqual({row["id"]: row["agreement"] for row in grading["final"]},
+                         {"resolves-own": "pass", "reports": "pass"})
+
+    def test_the_single_cross_grader_is_retried_the_same_way(self):
+        run_dir = runner.run_case(self.write_case(), "codex", "gpt-6-sol", "medium", [self.plugin], 1,
+                                  self.root / "runs", **self.options())
+        marker = self.root / "flaky-calls"
+        grading = json.loads(runner.grade_run(
+            run_dir, claude_bin=str(self.bin / "flaky-grader"),
+            base_env=dict(os.environ, FLAKY_GRADER_MARKER=str(marker)), timeout=60).read_text())
+        self.assertEqual((grading["grader"]["retries"], grading["grader_error"]), (1, None))
+        self.assertAlmostEqual(grading["grader"]["cost_usd"], 0.04)
+        self.assertEqual({row["id"]: row["grader_passed"] for row in grading["final"]},
+                         {"resolves-own": True, "reports": True})
+        self.assertTrue((run_dir / "grader" / "retry" / "output.json").is_file())
 
     def test_a_panel_refuses_receipt_snapshots_and_a_single_grader_model(self):
         run_dir = self.claude_run()
@@ -3196,9 +3251,40 @@ class DateShimTest(ScriptedHarness, unittest.TestCase):
         self.assertAlmostEqual(first[0], started, delta=30)
         self.assertAlmostEqual(second[0] - first[0], 170 * 60, delta=30)
         self.assertEqual((first[1], second[1], second[2]), (1970, 1970, 1970))
-        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()), ["claude", "codex", "date", "gh"])
+        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()),
+                         ["claude", "codex", "date", "gh", "sleep"])
         self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0], str(run_dir / "bin"))
         self.assertEqual(json.loads((run_dir / "stub" / "state.json").read_text())["_clock_offset"], 170 * 60)
+
+
+class VirtualTimeTest(ScriptedHarness, unittest.TestCase):
+    """The child's ``sleep`` moves the stub clock instead of waiting, so a measured wait fits in one turn, and a
+    delayed bot response lands on that clock."""
+
+    def test_a_fifteen_minute_wait_takes_no_real_time_and_the_delayed_review_lands_during_it(self):
+        github = dict(minimal_case()["github"], on_write=[
+            {"match": {"kind": "issue-comment", "body_contains": "@coderabbitai review"}, "delay": "90s",
+             "append": {"reviews": [{"author": {"login": "coderabbitai"}, "state": "COMMENTED", "body": "LGTM"}]}}])
+        case = self.write_case(github=github)
+        count = ("gh pr view 101 --json reviews "
+                 "--jq '[.reviews[]|select(.author.login==\"coderabbitai\")]|length' >&2")
+        # The scripted fake quotes each command's stderr, so the probes print there.
+        probe = ["sh", "-c", f"date -u +%s >&2; {count}; sleep 10m 300; {count}; date -u +%s >&2"]
+        started = time.monotonic()
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "waited",
+                                                    "gh": [["pr", "comment", "101", "--body", "@coderabbitai review"]],
+                                                    "run": [probe]}], timeout=60))
+        self.assertLess(time.monotonic() - started, 60)
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual((record["status"], record["timed_out"]), ("verified-transport", False))
+        before, reviews_before, reviews_after, after = (
+            int(value) for value in re.search(r"\[sh exit 0: ([^\]]*)\]", record["response"]).group(1).split())
+        self.assertEqual((reviews_before, reviews_after), (0, 1))
+        self.assertAlmostEqual(after - before, 15 * 60, delta=5)
+        self.assertEqual(json.loads((run_dir / "stub" / "state.json").read_text())["_clock_offset"], 15 * 60)
+        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()),
+                         ["claude", "codex", "date", "gh", "sleep"])
 
 
 class SignOffProseQuestionTest(unittest.TestCase):
@@ -3563,7 +3649,8 @@ class NestedModelRunTest(ScriptedHarness, unittest.TestCase):
                          {"no-writes": False, "no-nested-runs": False})
         transcript = json.loads((run_dir / "transcript.json").read_text())
         self.assertEqual([w["kind"] for w in transcript["gh_writes"]], ["nested-model-run"] * 2)
-        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()), ["claude", "codex", "date", "gh"])
+        self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()),
+                         ["claude", "codex", "date", "gh", "sleep"])
         self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0], str(run_dir / "bin"))
 
     def test_bare_harness_names_resolve_before_the_shims_shadow_them(self):

@@ -59,7 +59,13 @@ program, argv, turn}``. The ``date`` shim ``install_date_shim`` puts there runs
 the real ``date`` at the stub's clock (``--date=@<epoch>`` from
 :func:`current_time`) unless the call carries a time of its own (``-d``,
 ``--date``, ``-r``, ``--reference``, ``-s``, ``--set``, ``-f``, ``--file``) or
-no stub state is reachable, when it passes through unchanged.
+no stub state is reachable, when it passes through unchanged. The ``sleep``
+shim ``install_sleep_shim`` puts there waits on that clock instead of the wall:
+its GNU operands (one or more ``N[smhd]``, ``N`` a decimal number, summed) move
+the clock forward under the stub's lock, apply every delayed response that came
+due, and return after a real pause of at most 0.2 seconds; ``infinity`` fails
+with exit 1, and any other argument, or no reachable stub state, runs the real
+``sleep``.
 
 The repository (``gh repo view``, REST ``GET repos/<repo>``, GraphQL
 ``repository``) allows squash, merge and rebase merges and keeps merged
@@ -87,9 +93,9 @@ State patches (``on_write`` hooks, ``on_push``, and the runner's
 ``before_turn``) are ``{advance?, append?, set?, update_threads?}``. The stub
 keeps its own clock, wall time plus every ``advance`` applied so far (seconds,
 or ``<N>`` with unit ``s``, ``m``, ``h`` or ``d``; it moves the clock forward
-before the rest of the patch renders and never rewrites an existing time), and
-:func:`current_time` reads it, as the ``date`` shim does. Writes, defaulted
-times and ``{{now}}``
+before the rest of the patch renders and never rewrites an existing time) and
+every ``sleep`` the shim took, and :func:`current_time` reads it, as the
+``date`` shim does. Writes, defaulted times and ``{{now}}``
 placeholders use that clock, and once it has advanced every log record carries
 ``clock`` beside the wall-clock ``ts``. A patch's placeholders render when it
 is applied, ``{{head}}`` and ``{{base}}`` as the commits current then;
@@ -97,6 +103,16 @@ placeholders still in the initial state render at initialization. Appended
 issue comments, reviews, and thread comments without a time take the
 application time, and ``update_threads`` keeps a restated comment's identity by
 its author and body even when its time moves.
+
+An ``on_write`` hook with ``delay`` (seconds, or ``<N>`` with unit ``s``,
+``m``, ``h`` or ``d``; :func:`initialize` refuses any other value) is a
+delayed response, such as a bot's review arriving some time after the request:
+a matching write does not apply it but makes it due at the write's clock time
+plus the delay (``once`` still fires at most one), and once the clock reaches
+that time, whatever next reads or changes the stub state (a ``gh`` call, a
+push, ``date``, ``sleep``, the runner's patches) applies it first. It renders,
+and its defaulted times fall, at its due time. A hook without ``delay``
+applies at the write.
 """
 
 from __future__ import annotations
@@ -104,6 +120,7 @@ from __future__ import annotations
 import base64
 import copy
 import datetime as dt
+import decimal
 import fcntl
 import fnmatch
 import hashlib
@@ -115,6 +132,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import time
 
 TOKEN_VARIABLES = ("GH_TOKEN", "GITHUB_TOKEN", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN")
 VALUE_FLAGS = frozenset((
@@ -146,6 +164,8 @@ COLLABORATOR_ASSOCIATIONS = frozenset(("OWNER", "MEMBER", "COLLABORATOR"))
 TERMINAL_STATES = frozenset(("SUCCESS", "FAILURE", "NEUTRAL", "SKIPPED", "CANCELLED", "TIMED_OUT", "ERROR",
                              "ACTION_REQUIRED", "STALE", "STARTUP_FAILURE"))
 LATE_KEYS = ("on_write", "on_push")
+# An ``on_write`` hook's own keys; the rest is the patch it applies.
+HOOK_KEYS = ("_fired", "match", "once", "delay")
 DURATION = re.compile(r"\+?(\d+)([smhd])")
 
 
@@ -165,13 +185,14 @@ def _now(state=None):
     return _iso(_moment(state))
 
 
-def _seconds(value):
-    """An ``advance`` value as whole seconds: a non-negative number, or ``<N>`` with unit ``s``, ``m``, ``h`` or ``d``."""
+def _seconds(value, name="advance"):
+    """An ``advance`` or ``delay`` value as whole seconds: a non-negative number, or ``<N>`` with unit ``s``, ``m``,
+    ``h`` or ``d``."""
     if isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0:
         return int(value)
     match = DURATION.fullmatch(value.strip()) if isinstance(value, str) else None
     if match is None:
-        raise ValueError(f"advance must be non-negative seconds or <N>s|m|h|d, not {value!r}")
+        raise ValueError(f"{name} must be non-negative seconds or <N>s|m|h|d, not {value!r}")
     return int(dt.timedelta(**{UNITS[match.group(2)]: int(match.group(1))}).total_seconds())
 
 
@@ -231,6 +252,9 @@ def initialize(state_dir, github, head=None, base=None, remote=None):
     state = copy.deepcopy(github)
     for key in ("review_threads", "reviews", "issue_comments", "checks", "on_write"):
         state.setdefault(key, [])
+    for hook in state["on_write"]:
+        if hook.get("delay") is not None:
+            _seconds(hook["delay"], "delay")
     state.setdefault("login", state.get("repo", "octocat/x").split("/", 1)[0])
     state.setdefault("pull_request", {})
     state["pull_request"].setdefault("number", 1)
@@ -240,6 +264,7 @@ def initialize(state_dir, github, head=None, base=None, remote=None):
     state["_remote"] = str(remote) if remote else None
     state["_turn"] = None
     state["_clock_offset"] = 0
+    state["_pending"] = []
     state["_initial_merge_state"] = state["pull_request"].get("mergeStateStatus")
     state.update(_render(state, {k: v for k, v in state.items() if k not in LATE_KEYS and not k.startswith("_")}))
     _materialize(state, _now(state))
@@ -339,11 +364,17 @@ def date_names_a_time(argument):
             or (SHORT_OPTION_CLUSTER.fullmatch(argument) is not None and any(c in argument[1:] for c in "drsf")))
 
 
-def _real_date(bin_dir):
-    """The ``date`` the child would run without the shim: the first on ``PATH`` outside ``bin_dir``."""
+def _real_program(bin_dir, name):
+    """The ``name`` the child would run without the shim: the first on ``PATH`` outside ``bin_dir``."""
     own = Path(bin_dir).resolve()
     directories = [d for d in os.environ.get("PATH", os.defpath).split(os.pathsep) if d and Path(d).resolve() != own]
-    return shutil.which("date", path=os.pathsep.join(directories))
+    return shutil.which(name, path=os.pathsep.join(directories))
+
+
+def _stub_state_dir():
+    """The stub state directory named by ``GH_STUB_STATE_DIR`` when it holds a state, else ``None``."""
+    state_dir = os.environ.get("GH_STUB_STATE_DIR")
+    return state_dir if state_dir and (Path(state_dir) / "state.json").is_file() else None
 
 
 def date_shim_main(bin_dir, argv):
@@ -351,16 +382,92 @@ def date_shim_main(bin_dir, argv):
 
     A call carrying a time of its own (see :func:`date_names_a_time`), or made where no stub state is reachable,
     runs unchanged; any other runs with ``--date=@<epoch>`` prepended, the epoch being :func:`current_time`, so a
-    child that tells time with ``date -u`` sees every ``advance`` the run applied.
+    child that tells time with ``date -u`` sees every ``advance`` and ``sleep`` the run applied.
     """
-    real = _real_date(bin_dir)
+    real = _real_program(bin_dir, "date")
     if real is None:
         sys.stderr.write("date: no date command is on PATH beside the stub's\n")
         return 127
-    state_dir = os.environ.get("GH_STUB_STATE_DIR")
-    if state_dir and (Path(state_dir) / "state.json").is_file() and not any(date_names_a_time(a) for a in argv):
+    state_dir = _stub_state_dir()
+    if state_dir and not any(date_names_a_time(a) for a in argv):
         argv = [f"--date=@{int(current_time(state_dir).timestamp())}", *argv]
     os.execv(real, [real, *argv])
+
+
+# GNU ``sleep`` operands the shim takes: a decimal number with an optional unit (seconds by default).
+SLEEP_OPERAND = re.compile(r"(\d+(?:\.\d*)?|\.\d+)([smhd]?)")
+SLEEP_INFINITY = re.compile(r"inf(?:inity)?[smhd]?", re.IGNORECASE)
+SLEEP_UNITS = {"": 1, "s": 1, "m": 60, "h": 3600, "d": 86400}
+# The real pause a shimmed ``sleep`` takes, at most, so calls from other processes still interleave with it.
+SLEEP_PAUSE = 0.2
+
+
+def install_sleep_shim(bin_dir):
+    """Create ``bin_dir/sleep`` that moves the stub's clock instead of waiting (see :func:`sleep_shim_main`)."""
+    bin_dir = Path(bin_dir)
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    program = ("import sys; sys.path.insert(0, sys.argv[1]); import gh_stub; "
+               "sys.exit(gh_stub.sleep_shim_main(sys.argv[2], sys.argv[3:]))")
+    shim = bin_dir / "sleep"
+    shim.write_text("#!/bin/sh\nexec " + " ".join(shlex.quote(part) for part in (
+        sys.executable, "-c", program, str(Path(__file__).resolve().parent), str(bin_dir))) + ' "$@"\n')
+    shim.chmod(0o755)
+    return shim
+
+
+def sleep_seconds(argv):
+    """The seconds GNU ``sleep`` waits for ``argv``: one or more ``N[smhd]`` operands (``N`` a decimal number, the
+    unit seconds by default), summed; ``None`` when any argument is anything else, options included. ``infinity``
+    (or ``inf``, in any case, with or without a unit) raises ``ValueError``: no clock reaches it."""
+    if not argv:
+        return None
+    total, endless = decimal.Decimal(0), False
+    for argument in argv:
+        match = SLEEP_OPERAND.fullmatch(argument)
+        if match:
+            total += decimal.Decimal(match.group(1)) * SLEEP_UNITS[match.group(2)]
+        elif SLEEP_INFINITY.fullmatch(argument):
+            endless = True
+        else:
+            return None
+    if endless:
+        raise ValueError(f"'{' '.join(argv)}' would never return, so it is refused here; sleep for a bounded time "
+                         "instead")
+    return int(total) if total == total.to_integral_value() else float(total)
+
+
+def advance_clock(state_dir, seconds):
+    """Move the stub's clock forward by ``seconds`` under its lock, applying every delayed response that comes due."""
+    with _locked(state_dir) as state:
+        state["_clock_offset"] = state.get("_clock_offset", 0) + seconds
+        _apply_due(state)
+
+
+def sleep_shim_main(bin_dir, argv):
+    """Entry point for the ``sleep`` shim: move the stub's clock instead of waiting, or run the real ``sleep``.
+
+    Where the stub state is reachable and :func:`sleep_seconds` parses every argument, the clock moves forward by
+    the total (see :func:`advance_clock`) and the shim returns after a real pause of at most :data:`SLEEP_PAUSE`
+    seconds, so a child's measured wait takes no real time and ``date`` reports it passed; ``infinity`` fails with
+    exit 1. Anywhere else, or with any other argument, the real ``sleep`` runs.
+    """
+    state_dir = _stub_state_dir()
+    seconds = None
+    if state_dir:
+        try:
+            seconds = sleep_seconds(argv)
+        except ValueError as refusal:
+            sys.stderr.write(f"sleep: {refusal}\n")
+            return 1
+    if seconds is None:
+        real = _real_program(bin_dir, "sleep")
+        if real is None:
+            sys.stderr.write("sleep: no sleep command is on PATH beside the stub's\n")
+            return 127
+        os.execv(real, [real, *argv])
+    advance_clock(state_dir, seconds)
+    time.sleep(min(seconds, SLEEP_PAUSE))
+    return 0
 
 
 def install_post_receive(git_dir, state_dir):
@@ -389,22 +496,16 @@ def set_turn(state_dir, turn):
 
 
 def current_time(state_dir):
-    """The stub's clock as an aware UTC datetime: wall time plus every ``advance`` applied so far."""
-    return _moment(_read_state(state_dir))
-
-
-def _read_state(state_dir):
-    """The current state, read under the lock and never written back."""
-    directory = Path(state_dir)
-    with open(directory / ".lock", "w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        try:
-            return json.loads((directory / "state.json").read_text())
-        finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
+    """The stub's clock as an aware UTC datetime: wall time plus every ``advance`` and ``sleep`` so far. Reading it
+    applies every delayed response that has come due."""
+    with _locked(state_dir) as state:
+        return _moment(state)
 
 
 class _locked:
+    """The stub state, read and written back under its lock; every delayed response that has come due applies
+    first, so nothing reads or changes the state behind the clock."""
+
     def __init__(self, state_dir):
         self.dir = Path(state_dir)
 
@@ -412,6 +513,7 @@ class _locked:
         self.lock = open(self.dir / ".lock", "w")
         fcntl.flock(self.lock, fcntl.LOCK_EX)
         self.state = json.loads((self.dir / "state.json").read_text())
+        _apply_due(self.state)
         return self.state
 
     def __exit__(self, *exc):
@@ -429,16 +531,20 @@ def _merge(target, patch):
             target[key] = copy.deepcopy(value)
 
 
-def _render(state, value, pushed=None):
-    """Render placeholders at the stub clock, with the head and base commits current now."""
-    return render_placeholders(value, _moment(state), _pull_request_raw_head(state), _base_oid(state), pushed)
+def _render(state, value, pushed=None, at=None):
+    """Render placeholders at the stub clock (or at ``at``), with the head and base commits current now."""
+    return render_placeholders(value, at or _moment(state), _pull_request_raw_head(state), _base_oid(state), pushed)
 
 
-def _apply(state, patch, pushed=None):
+def _apply(state, patch, pushed=None, at=None):
+    """Apply one patch at the stub clock, or at ``at``, the due time of a delayed response."""
     if patch.get("advance") is not None:
-        state["_clock_offset"] = state.get("_clock_offset", 0) + _seconds(patch["advance"])
-    patch = _render(state, patch, pushed)
-    now = _now(state)
+        step = _seconds(patch["advance"])
+        state["_clock_offset"] = state.get("_clock_offset", 0) + step
+        if at:
+            at += dt.timedelta(seconds=step)
+    patch = _render(state, patch, pushed, at)
+    now = _iso(at) if at else _now(state)
     for key, items in (patch.get("append") or {}).items():
         for item in items:
             item = copy.deepcopy(item)
@@ -477,6 +583,18 @@ def _apply(state, patch, pushed=None):
             merged.sort(key=lambda c: str(c.get("createdAt") or ""))
             thread["comments"] = merged
     _materialize(state, now)
+
+
+def _apply_due(state):
+    """Apply, in due order, every delayed ``on_write`` response the stub clock has reached, each at its due time."""
+    pending = state.get("_pending") or []
+    clock = _moment(state).timestamp()
+    due = sorted((entry for entry in pending if entry["due"] <= clock), key=lambda entry: entry["due"])
+    if not due:
+        return
+    state["_pending"] = [entry for entry in pending if entry["due"] > clock]
+    for entry in due:
+        _apply(state, entry["patch"], at=dt.datetime.fromtimestamp(entry["due"], dt.timezone.utc))
 
 
 def _actor_type(author, hint=None):
@@ -1788,7 +1906,12 @@ def _record_writes(state, writes, deniable=True):
             if hook.get("_fired"):
                 continue
             if write_matches(write, _render(state, hook.get("match"))):
-                _apply(state, {k: v for k, v in hook.items() if k not in ("_fired", "match", "once")})
+                patch = {k: v for k, v in hook.items() if k not in HOOK_KEYS}
+                if hook.get("delay") is not None:
+                    due = _moment(state).timestamp() + _seconds(hook["delay"], "delay")
+                    state.setdefault("_pending", []).append({"due": due, "patch": patch})
+                else:
+                    _apply(state, patch)
                 if hook.get("once"):
                     hook["_fired"] = True
         _materialize(state, _now(state))
