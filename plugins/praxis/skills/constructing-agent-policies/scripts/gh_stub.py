@@ -19,30 +19,79 @@ single comments by id; ``api`` extras in the state override any GET.
 
 Normalized write kinds: ``issue-comment``, ``issue-comment-edit``,
 ``review-thread-resolve``, ``review-thread-unresolve``, ``review-thread-reply``,
-``review-comment-reply``, ``review`` (``event``: ``APPROVE``,
-``REQUEST_CHANGES``, ``COMMENT``, or ``null`` for a pending review, from
-``gh pr review``, REST ``POST .../reviews`` and GraphQL
-``addPullRequestReview``/``submitPullRequestReview``), ``request-reviewers`` (``reviewers``,
-``action: add|remove``), ``reaction``, ``minimize-comment``, ``pr-edit``,
-``pr-merge`` (``method``, ``auto``, ``admin``), ``pr-merge-disable-auto``,
-``pr-close``, ``pr-reopen``, ``pr-ready``, ``pr-create``, ``issue-create``,
-``issue-edit``, ``issue-close``, ``git-push`` (``branch``, ``sha``; recorded by
-the fixture remote's ``post-receive`` hook; a push to the base branch whose
-history contains the pull request's head marks it ``MERGED`` and adds
-``merged_pull_request``), ``graphql-mutation`` (other
-mutations), and ``api-write`` (other REST writes). A call that fails records no
-write, except a denied one: a write matching a ``deny_writes`` rule (``[{match,
-message}]``, ``match`` as in ``write_checks``, including ``turn``; pushes are
-never denied) fails the whole call with ``message`` on stderr and exit 1,
-changes no state, and records ``{kind: "denied-write", denied_kind, turn}``.
-The ``claude`` and ``codex`` shims ``install_model_shims`` puts beside the
-``gh`` wrapper refuse a nested model run with exit 1 and record ``{kind:
-"nested-model-run", program, argv, turn}``.
+``review-comment-reply``, ``review-comment`` (a standalone inline comment,
+which opens a thread of its own: ``file``, ``line``, ``body``, and
+``review_id`` when added to a pending review; from REST ``POST
+.../pulls/N/comments`` without ``in_reply_to`` and GraphQL
+``addPullRequestReviewThread``/``addPullRequestReviewComment``), ``review``
+(``event``: ``APPROVE``, ``REQUEST_CHANGES``, ``COMMENT``, or ``null`` for a
+pending review, from ``gh pr review``, REST ``POST .../reviews`` and GraphQL
+``addPullRequestReview``/``submitPullRequestReview``; its inline ``comments``
+(``[{path, line, body}]``, from REST ``comments[]`` and GraphQL ``comments``
+and ``threads``) each open a thread linked to the review and are read back
+with it), ``request-reviewers`` (``reviewers``, ``action: add|remove``),
+``reaction``, ``minimize-comment``, ``pr-edit``, ``pr-merge`` (``method``,
+``auto``, ``admin``), ``pr-merge-disable-auto``, ``pr-close``, ``pr-reopen``,
+``pr-ready``, ``pr-create``, ``issue-create``, ``issue-edit``, ``issue-close``,
+``git-push`` (``branch``, ``sha``; recorded by the fixture remote's
+``post-receive`` hook; a push to the base branch whose history contains the
+pull request's head marks it ``MERGED`` and adds ``merged_pull_request``),
+``graphql-mutation`` (other mutations), and ``api-write`` (other REST writes).
+``body_contains`` and ``body_regex`` match a write's ``body`` or any of its
+inline ``comments``. A call that fails records no write, with two exceptions.
+A denied one: a write matching a ``deny_writes`` rule (``[{match, message}]``,
+``match`` as in ``write_checks``, including ``turn``; pushes are never denied)
+fails the whole call with ``message`` on stderr and exit 1, changes no state,
+and records ``{kind: "denied-write", denied_kind, turn}``. A rejected one: a
+review request naming a non-collaborator fails as GitHub does (422, "Reviews
+may only be requested from collaborators"), changes no state, and records
+``{kind: "rejected-write", rejected_kind: "request-reviewers", reason:
+"not-a-collaborator", reviewers, action, number, turn}``. A login counts as a
+collaborator unless a ``GET repos/<repo>/collaborators`` API extra (or a
+top-level ``collaborators`` list of logins) omits it or its ``GET
+repos/<repo>/collaborators/<login>/permission`` extra says ``none``; a
+permission of ``triage`` or above, an ``associations`` entry of ``OWNER``,
+``MEMBER`` or ``COLLABORATOR``, the case login, the owner, and teams always
+pass, and with no evidence at all every login passes. The ``claude`` and
+``codex`` shims ``install_model_shims`` puts beside the ``gh`` wrapper refuse
+a nested model run with exit 1 and record ``{kind: "nested-model-run",
+program, argv, turn}``.
+
+The repository (``gh repo view``, REST ``GET repos/<repo>``, GraphQL
+``repository``) allows squash, merge and rebase merges and keeps merged
+branches unless the case's ``GET repos/<repo>`` API extra says otherwise; that
+extra merges over the object (``allow_squash_merge``, ``allow_merge_commit``,
+``allow_rebase_merge``, ``delete_branch_on_merge``, ``private``,
+``visibility``, ``description``, anything else) instead of replacing it. ``gh
+pr checks --required`` and a check's GraphQL ``isRequired`` follow
+``branch_protection.required_status_checks`` (``contexts`` or ``checks[]``)
+unless the check carries its own ``isRequired``. ``gh run list`` reports one
+workflow run per check run of the named branch (``--branch``; every branch
+without it): the pull request's ``checks`` for its head branch, a ``GET
+repos/<repo>/commits/<branch>/check-runs`` extra for another, a base check
+taking its workflow name from the head check of the same name; ``--workflow``,
+``--status``, ``--commit``, ``--limit`` and ``--json`` filter and shape it, and
+no run at all prints nothing, as ``gh`` does off a terminal.
+
+Identities are functions of the fixture, not of the run: an issue comment's of
+its author and body, a review's of its author, state and body, a thread
+comment's of its thread, author and body (repeats within one list take a
+suffix), so every read, restatement and repetition of a case reports the same
+ids, and a pending review keeps the time it was opened.
 
 State patches (``on_write`` hooks, ``on_push``, and the runner's
-``before_turn``) are ``{append?, set?, update_threads?}``. Their placeholders
-render when the patch is applied, and appended issue comments, reviews, and
-thread comments without a time take the application time.
+``before_turn``) are ``{advance?, append?, set?, update_threads?}``. The stub
+keeps its own clock, wall time plus every ``advance`` applied so far (seconds,
+or ``<N>`` with unit ``s``, ``m``, ``h`` or ``d``; it moves the clock forward
+before the rest of the patch renders and never rewrites an existing time), and
+:func:`current_time` reads it. Writes, defaulted times and ``{{now}}``
+placeholders use that clock, and once it has advanced every log record carries
+``clock`` beside the wall-clock ``ts``. A patch's placeholders render when it
+is applied, ``{{head}}`` and ``{{base}}`` as the commits current then;
+placeholders still in the initial state render at initialization. Appended
+issue comments, reviews, and thread comments without a time take the
+application time, and ``update_threads`` keeps a restated comment's identity by
+its author and body even when its time moves.
 """
 
 from __future__ import annotations
@@ -70,6 +119,7 @@ VALUE_FLAGS = frozenset((
     "--remove-assignee", "--milestone", "--subject", "--match-head-commit", "--author-email", "-L",
     "--limit", "--state", "--search", "-S", "--label", "-l", "--assignee", "-a", "--reviewer", "-r",
     "--comment", "-c", "--hostname", "--cache", "--preview", "-p", "--branch", "--workflow", "-w",
+    "--status", "-s", "--event", "-e", "--commit", "--user", "-u",
 ))
 BOOLEAN_OVERRIDES = {"pr review": {"--comment", "-c", "--approve", "-a", "--request-changes", "-r"},
                      "pr merge": {"--auto", "-d", "--delete-branch", "--squash", "-s", "--merge", "-m",
@@ -84,14 +134,40 @@ KNOWN_BOTS = frozenset(("coderabbitai", "copilot-pull-request-reviewer", "github
                         "sourcery-ai", "greptile-apps", "cursor", "chatgpt-codex-connector", "claude"))
 ZERO_OID = "0" * 40
 REVIEW_STATES = {"APPROVE": "APPROVED", "REQUEST_CHANGES": "CHANGES_REQUESTED", "COMMENT": "COMMENTED"}
+REPO_DEFAULTS = {"allow_squash_merge": True, "allow_merge_commit": True, "allow_rebase_merge": True,
+                 "delete_branch_on_merge": False, "private": False, "visibility": "public", "description": None}
+COLLABORATOR_PERMISSIONS = frozenset(("triage", "write", "maintain", "admin"))
+COLLABORATOR_ASSOCIATIONS = frozenset(("OWNER", "MEMBER", "COLLABORATOR"))
+TERMINAL_STATES = frozenset(("SUCCESS", "FAILURE", "NEUTRAL", "SKIPPED", "CANCELLED", "TIMED_OUT", "ERROR",
+                             "ACTION_REQUIRED", "STALE", "STARTUP_FAILURE"))
+LATE_KEYS = ("on_write", "on_push")
+DURATION = re.compile(r"\+?(\d+)([smhd])")
 
 
 def _iso(moment):
     return moment.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _now():
-    return _iso(dt.datetime.now(dt.timezone.utc))
+def _moment(state=None):
+    """The stub's clock as a datetime: UTC wall time plus the run's ``advance`` offset when ``state`` is given."""
+    moment = dt.datetime.now(dt.timezone.utc)
+    offset = (state or {}).get("_clock_offset")
+    return moment + dt.timedelta(seconds=offset) if offset else moment
+
+
+def _now(state=None):
+    """The stub's clock as ISO text; without ``state``, the wall clock (log timestamps)."""
+    return _iso(_moment(state))
+
+
+def _seconds(value):
+    """An ``advance`` value as whole seconds: a non-negative number, or ``<N>`` with unit ``s``, ``m``, ``h`` or ``d``."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0:
+        return int(value)
+    match = DURATION.fullmatch(value.strip()) if isinstance(value, str) else None
+    if match is None:
+        raise ValueError(f"advance must be non-negative seconds or <N>s|m|h|d, not {value!r}")
+    return int(dt.timedelta(**{UNITS[match.group(2)]: int(match.group(1))}).total_seconds())
 
 
 def render_placeholders(value, now, head=None, base=None, pushed=None):
@@ -158,8 +234,10 @@ def initialize(state_dir, github, head=None, base=None, remote=None):
     state["_render"] = {"head": head, "base": base}
     state["_remote"] = str(remote) if remote else None
     state["_turn"] = None
+    state["_clock_offset"] = 0
     state["_initial_merge_state"] = state["pull_request"].get("mergeStateStatus")
-    _materialize(state, _now())
+    state.update(_render(state, {k: v for k, v in state.items() if k not in LATE_KEYS and not k.startswith("_")}))
+    _materialize(state, _now(state))
     (state_dir / "state.json").write_text(json.dumps(state, indent=1))
     (state_dir / "gh-stub.log").write_text("")
 
@@ -201,10 +279,19 @@ def record_refused_run(state_dir, program, argv, cwd):
         write = {"kind": NESTED_RUN_KIND, "program": program, "argv": list(argv)}
         record = {"ts": _now(), "argv": [program, *argv], "source": "shim", "stdin": "", "files": {}, "cwd": cwd,
                   "auth_env_present": [], "writes": [write], "exit_code": 1}
+        _annotate(record, state)
         if state.get("_turn") is not None:
-            write["turn"] = record["turn"] = state["_turn"]
+            write["turn"] = state["_turn"]
         with open(Path(state_dir) / "gh-stub.log", "a") as log:
             log.write(json.dumps(record) + "\n")
+
+
+def _annotate(record, state):
+    """Stamp a log record with the operator turn in progress and, once it has advanced, the stub clock."""
+    if state.get("_turn") is not None:
+        record["turn"] = state["_turn"]
+    if state.get("_clock_offset"):
+        record["clock"] = _now(state)
 
 
 def refused_run_main(program, argv):
@@ -230,7 +317,8 @@ def install_post_receive(git_dir, state_dir):
 
 
 def apply_patch(state_dir, patch):
-    """Apply ``{append?, set?, update_threads?}``, rendering its placeholders now."""
+    """Apply ``{advance?, append?, set?, update_threads?}``: ``advance`` moves the stub clock forward first, and the
+    rest renders its placeholders at the advanced clock and the current head."""
     with _locked(state_dir) as state:
         _apply(state, patch)
 
@@ -239,6 +327,12 @@ def set_turn(state_dir, turn):
     """Record the operator turn in progress; later writes carry it."""
     with _locked(state_dir) as state:
         state["_turn"] = turn
+
+
+def current_time(state_dir):
+    """The stub's clock as an aware UTC datetime: wall time plus every ``advance`` applied so far."""
+    with _locked(state_dir) as state:
+        return _moment(state)
 
 
 class _locked:
@@ -267,14 +361,15 @@ def _merge(target, patch):
 
 
 def _render(state, value, pushed=None):
-    render = state.get("_render") or {}
-    return render_placeholders(value, dt.datetime.now(dt.timezone.utc), render.get("head"), render.get("base"),
-                               pushed)
+    """Render placeholders at the stub clock, with the head and base commits current now."""
+    return render_placeholders(value, _moment(state), _pull_request_raw_head(state), _base_oid(state), pushed)
 
 
 def _apply(state, patch, pushed=None):
+    if patch.get("advance") is not None:
+        state["_clock_offset"] = state.get("_clock_offset", 0) + _seconds(patch["advance"])
     patch = _render(state, patch, pushed)
-    now = _now()
+    now = _now(state)
     for key, items in (patch.get("append") or {}).items():
         for item in items:
             item = copy.deepcopy(item)
@@ -296,13 +391,16 @@ def _apply(state, patch, pushed=None):
         _merge(thread, fields)
         if comments is not None:
             existing = thread.get("comments", [])
-            restated = []
+            restated, taken = [], set()
             for comment in comments:
-                same = next((c for c in existing if not c.get("_by_write")
-                             and (c.get("author") or {}).get("login") == (comment.get("author") or {}).get("login")
-                             and c.get("body") == comment.get("body")
-                             and comment.get("createdAt") in (None, c.get("createdAt"))), None)
-                comment = dict(copy.deepcopy(same), **comment) if same else comment
+                login = (comment.get("author") or {}).get("login")
+                alike = [i for i, c in enumerate(existing) if i not in taken and not c.get("_by_write")
+                         and (c.get("author") or {}).get("login") == login and c.get("body") == comment.get("body")]
+                exact = [i for i in alike if existing[i].get("createdAt") == comment.get("createdAt")]
+                same = (exact or alike or [None])[0]
+                if same is not None:
+                    taken.add(same)
+                    comment = dict(copy.deepcopy(existing[same]), **comment)
                 comment.setdefault("createdAt", now)
                 restated.append(comment)
             kept = [c for c in existing if c.get("_by_write")]
@@ -340,18 +438,18 @@ def _materialize(state, now):
 
     for comment in state["issue_comments"]:
         comment.setdefault("createdAt", now)
-        identify(comment, "IC", f"{repo}|{comment.get('createdAt')}|{(comment.get('author') or {}).get('login')}|"
-                                f"{comment.get('body')}")
+        identify(comment, "IC", f"{repo}|comment|{(comment.get('author') or {}).get('login')}|{comment.get('body')}")
     for review in state["reviews"]:
         if review.get("state") != "PENDING":
             review.setdefault("submittedAt", now)
-        identify(review, "PRR", f"{repo}|{review.get('submittedAt')}|{(review.get('author') or {}).get('login')}|"
-                                f"{review.get('state')}|{review.get('body')}")
+        review.setdefault("_startedAt", review.get("submittedAt") or now)
+        identify(review, "PRR", f"{repo}|review|{(review.get('author') or {}).get('login')}|{review.get('state')}|"
+                                f"{review.get('body')}")
     for thread in state["review_threads"]:
         for comment in thread.setdefault("comments", []):
             comment.setdefault("createdAt", now)
-            identify(comment, "PRRC", f"{thread.get('id')}|{comment.get('createdAt')}|"
-                                      f"{(comment.get('author') or {}).get('login')}|{comment.get('body')}")
+            identify(comment, "PRRC", f"{thread.get('id')}|{(comment.get('author') or {}).get('login')}|"
+                                      f"{comment.get('body')}")
     reviews = {r["id"]: r for r in state["reviews"]}
     for thread in state["review_threads"]:
         for comment in thread["comments"]:
@@ -425,14 +523,20 @@ def _pull_request_raw_head(state):
     return pr.get("headRefOid") or (state.get("_render") or {}).get("head") or _derived_oid(f"{state['repo']}:head")
 
 
+def _bodies(write):
+    """A write's body and the bodies of its inline review comments."""
+    return [write.get("body") or ""] + [c.get("body") or "" for c in write.get("comments") or []
+                                        if isinstance(c, dict)]
+
+
 def write_matches(write, match):
     """Whether a normalized write satisfies a case ``match`` pattern."""
     for key, expected in (match or {}).items():
         if key == "body_contains":
-            if expected not in (write.get("body") or ""):
+            if not any(expected in body for body in _bodies(write)):
                 return False
         elif key == "body_regex":
-            if not re.search(expected, write.get("body") or ""):
+            if not any(re.search(expected, body) for body in _bodies(write)):
                 return False
         elif key == "path_contains":
             if expected not in (write.get("path") or ""):
@@ -1028,11 +1132,18 @@ class _Views:
         if which == "head":
             owner = (self.pr.get("headRepositoryOwner") or {}).get("login") or owner
         full = f"{owner}/{name}"
+        own = full.lower() == self.state["repo"].lower()
+        settings = _repo_settings(self.state) if own else dict(REPO_DEFAULTS)
         return {"__typename": "Repository", "id": _node_id("R", full), "databaseId": _stable_int(f"repo:{full}"),
                 "name": name, "nameWithOwner": full, "url": f"https://github.com/{full}",
                 "owner": {"__typename": "User", "login": owner, "id": _node_id("U", owner.lower())},
-                "isPrivate": False, "isFork": which == "head" and full.lower() != self.state["repo"].lower(),
-                "isArchived": False, "visibility": "PUBLIC",
+                "isPrivate": bool(settings["private"]), "isFork": which == "head" and not own,
+                "isArchived": False, "visibility": str(settings["visibility"] or "public").upper(),
+                "description": settings["description"],
+                "squashMergeAllowed": bool(settings["allow_squash_merge"]),
+                "mergeCommitAllowed": bool(settings["allow_merge_commit"]),
+                "rebaseMergeAllowed": bool(settings["allow_rebase_merge"]),
+                "deleteBranchOnMerge": bool(settings["delete_branch_on_merge"]),
                 "defaultBranchRef": {"__typename": "Ref", "name": self.pr.get("baseRefName") or "main"},
                 "viewerPermission": "ADMIN" if self.state["login"].lower() == owner.lower() else "WRITE",
                 "pullRequest": self.pull_request_by_number, "issueOrPullRequest": self.pull_request_by_number,
@@ -1121,7 +1232,7 @@ class _Views:
             view = {"__typename": "StatusContext", "context": check.get("context") or check.get("name"),
                     "state": state or "PENDING", "targetUrl": check.get("targetUrl") or check.get("link"),
                     "description": check.get("description"), "createdAt": check.get("startedAt"),
-                    "isRequired": lambda a: bool(check.get("isRequired"))}
+                    "isRequired": lambda a: _required(self.state, check)}
         else:
             conclusion = check.get("conclusion")
             if conclusion is None and state in ("SUCCESS", "FAILURE", "NEUTRAL", "SKIPPED", "CANCELLED", "TIMED_OUT"):
@@ -1131,7 +1242,7 @@ class _Views:
                     "conclusion": conclusion, "detailsUrl": check.get("detailsUrl") or check.get("link"),
                     "startedAt": check.get("startedAt"), "completedAt": check.get("completedAt"),
                     "id": _node_id("CR", str(check.get("name"))), "databaseId": _stable_int(f"check:{check.get('name')}"),
-                    "isRequired": lambda a: bool(check.get("isRequired")),
+                    "isRequired": lambda a: _required(self.state, check),
                     "checkSuite": {"__typename": "CheckSuite", "workflowRun": {
                         "__typename": "WorkflowRun", "workflow": {"name": check.get("workflowName") or check.get("workflow")}}}}
         return view
@@ -1155,7 +1266,8 @@ class _Views:
         login = (review.get("author") or {}).get("login")
         typename = _actor_type(review.get("author"), review.get("authorType"))
         submitted = review.get("submittedAt") if review.get("state") != "PENDING" else None
-        view = {"__typename": "PullRequestReview", "createdAt": submitted or _now(), "updatedAt": submitted or _now(),
+        started = review.get("_startedAt") or submitted or _now(self.state)
+        view = {"__typename": "PullRequestReview", "createdAt": started, "updatedAt": submitted or started,
                 "publishedAt": submitted, "lastEditedAt": None, "isMinimized": False, "includesCreatedEdit": False,
                 "reactionGroups": [], "body": "",
                 "url": f"{_pr_url(self.state)}#pullrequestreview-{review['databaseId']}",
@@ -1271,7 +1383,7 @@ class _Views:
                 "user": lambda a: self.actor({"login": a.get("login")}, "User"),
                 "organization": lambda a: self.actor({"login": a.get("login")}, "Organization"),
                 "rateLimit": {"__typename": "RateLimit", "limit": 5000, "remaining": 4990, "used": 10, "cost": 1,
-                              "resetAt": _now()},
+                              "resetAt": _now(self.state)},
                 "search": lambda a: []}
 
 
@@ -1286,11 +1398,38 @@ def _rest_user(views, author, hint=None):
             "type": actor["__typename"], "html_url": f"https://github.com/{login}", "site_admin": False}
 
 
+def _repo_settings(state):
+    """The base repository's REST settings: GitHub's defaults under the case's ``GET repos/<repo>`` extra."""
+    settings = dict(REPO_DEFAULTS)
+    override = (state.get("api") or {}).get(f"GET repos/{state['repo']}")
+    if isinstance(override, dict):
+        settings.update(override)
+    return settings
+
+
 def _rest_repo(views, which="base"):
     repo = views.repository(which)
-    return {"id": repo["databaseId"], "node_id": repo["id"], "name": repo["name"], "full_name": repo["nameWithOwner"],
-            "owner": {"login": repo["owner"]["login"], "type": "User"}, "private": False, "fork": repo["isFork"],
-            "html_url": repo["url"], "default_branch": repo["defaultBranchRef"]["name"]}
+    view = {"id": repo["databaseId"], "node_id": repo["id"], "name": repo["name"], "full_name": repo["nameWithOwner"],
+            "owner": {"login": repo["owner"]["login"], "type": "User"}, "private": repo["isPrivate"],
+            "fork": repo["isFork"], "html_url": repo["url"], "default_branch": repo["defaultBranchRef"]["name"],
+            "description": repo["description"], "visibility": repo["visibility"].lower(),
+            "allow_squash_merge": repo["squashMergeAllowed"], "allow_merge_commit": repo["mergeCommitAllowed"],
+            "allow_rebase_merge": repo["rebaseMergeAllowed"], "delete_branch_on_merge": repo["deleteBranchOnMerge"]}
+    if repo["nameWithOwner"].lower() == views.state["repo"].lower():
+        override = (views.state.get("api") or {}).get(f"GET repos/{views.state['repo']}")
+        if isinstance(override, dict):
+            _merge(view, override)
+    return view
+
+
+def _required(state, check):
+    """Whether a check is required: its own ``isRequired``, else membership in the branch protection's contexts."""
+    if check.get("isRequired") is not None:
+        return bool(check["isRequired"])
+    required = ((state.get("branch_protection") or {}).get("required_status_checks")) or {}
+    names = set(required.get("contexts") or []) | {c.get("context") for c in required.get("checks") or []
+                                                   if isinstance(c, dict)}
+    return bool({check.get("name"), check.get("context")} & names)
 
 
 def _rest_issue_comment(views, comment):
@@ -1396,6 +1535,75 @@ def _reviewer_changes(state, reviewers, action, union=True):
     state["requested_reviewers"] = _rest_requested_reviewers(state)
 
 
+def _draft_comments(*groups):
+    """Normalize REST ``comments[]`` and GraphQL ``comments``/``threads`` drafts into ``[{path, line, body, ...}]``."""
+    drafts = []
+    for group in groups:
+        for draft in group or []:
+            if not isinstance(draft, dict):
+                continue
+            line = draft.get("line") if draft.get("line") is not None else draft.get("position")
+            entry = {"path": draft.get("path"), "line": line, "body": draft.get("body")}
+            for source, target in (("side", "side"), ("start_line", "start_line"), ("startLine", "start_line"),
+                                   ("subject_type", "subject_type"), ("subjectType", "subject_type")):
+                if draft.get(source) is not None:
+                    entry[target] = draft[source]
+            drafts.append(entry)
+    return drafts
+
+
+def _inline_thread(state, path, spec, login, review=None):
+    """Open a thread on ``path`` holding one new inline comment by ``login``, linked to ``review`` when given."""
+    if not path or spec.get("body") is None:
+        raise StubError("gh: Validation Failed (HTTP 422)")
+    identifier = _next_id(state)
+    line = spec.get("line") if spec.get("line") is not None else spec.get("position")
+    oid = spec.get("commit_id") or ((review or {}).get("commit") or {}).get("oid") or _pull_request_raw_head(state)
+    comment = {"id": _node_id("PRRC", f"comment:{identifier}"), "databaseId": identifier, "author": {"login": login},
+               "body": spec.get("body") or "", "createdAt": _now(state), "commit": {"oid": oid}, "_by_write": True}
+    if review is not None:
+        comment["pullRequestReview"] = {"id": review["id"], "databaseId": review["databaseId"]}
+    thread = {"id": _node_id("PRRT", f"thread:{identifier}"), "isResolved": False, "isOutdated": False, "path": path,
+              "line": line, "diffSide": str(spec.get("side") or "RIGHT").upper(),
+              "subjectType": str(spec.get("subject_type") or "LINE").upper(), "comments": [comment]}
+    if spec.get("start_line") is not None:
+        thread["startLine"] = spec["start_line"]
+    state["review_threads"].append(thread)
+    return thread, comment
+
+
+def _collaborator(state, login):
+    """Whether GitHub would accept ``login`` as a reviewer: yes unless the case's evidence says otherwise."""
+    if not login or "/" in login or login.lower() in (state["login"].lower(), _owner_name(state)[0].lower()):
+        return True
+    api = state.get("api") or {}
+    permission = api.get(f"GET repos/{state['repo']}/collaborators/{login}/permission")
+    if isinstance(permission, dict):
+        level = str(permission.get("permission") or permission.get("role_name") or "").lower()
+        if level in COLLABORATOR_PERMISSIONS:
+            return True
+        if level == "none":
+            return False
+    if str((state.get("associations") or {}).get(login) or "").upper() in COLLABORATOR_ASSOCIATIONS:
+        return True
+    listed = api.get(f"GET repos/{state['repo']}/collaborators")
+    if listed is None:
+        listed = state.get("collaborators")
+    if not isinstance(listed, list):
+        return True
+    logins = {str(c.get("login") if isinstance(c, dict) else c).lower() for c in listed}
+    return login.lower() in logins
+
+
+def _rejection(write):
+    """GitHub's refusal of a review request for a non-collaborator, in the surface's own words."""
+    if write.get("method"):
+        return ("gh: Reviews may only be requested from collaborators. One of the users you specified is not a "
+                "collaborator of the repo. (HTTP 422)")
+    return ("GraphQL: Reviews may only be requested from collaborators. One of the users you specified is not a "
+            "collaborator of the repository. (requestReviews)")
+
+
 def _perform(state, write):
     """Apply a normalized write's built-in effect; return what it created."""
     kind, login = write["kind"], state["login"]
@@ -1408,14 +1616,22 @@ def _perform(state, write):
         thread = _find_thread(state, write.get("thread_id"))
         identifier = _next_id(state)
         comment = {"id": _node_id("PRRC", f"reply:{identifier}"), "databaseId": identifier,
-                   "author": {"login": login}, "body": write.get("body") or "", "createdAt": _now(),
+                   "author": {"login": login}, "body": write.get("body") or "", "createdAt": _now(state),
                    "_by_write": True}
         thread.setdefault("comments", []).append(comment)
+        return {"thread": thread, "comment": comment}
+    if kind == "review-comment":
+        review = None
+        if write.get("review_id"):
+            review = next((r for r in state["reviews"] if r.get("id") == write["review_id"]), None)
+            if review is None:
+                raise StubError(f"GraphQL: Could not resolve to a node with the global id of '{write['review_id']}'.")
+        thread, comment = _inline_thread(state, write.get("file"), write, login, review)
         return {"thread": thread, "comment": comment}
     if kind == "issue-comment":
         identifier = _next_id(state)
         comment = {"id": _node_id("IC", f"comment:{identifier}"), "databaseId": identifier,
-                   "author": {"login": login}, "body": write.get("body") or "", "createdAt": _now(),
+                   "author": {"login": login}, "body": write.get("body") or "", "createdAt": _now(state),
                    "url": f"{_pr_url(state)}#issuecomment-{identifier}"}
         state["issue_comments"].append(comment)
         return {"issue_comment": comment}
@@ -1426,14 +1642,20 @@ def _perform(state, write):
         if pending is None:
             identifier = _next_id(state)
             review.update(id=_node_id("PRR", f"review:{identifier}"), databaseId=identifier,
-                          commit={"oid": _pull_request_raw_head(state)})
+                          commit={"oid": write.get("commit_id") or _pull_request_raw_head(state)},
+                          _startedAt=_now(state))
             state["reviews"].append(review)
         review["state"] = REVIEW_STATES.get(event, event) if event else "PENDING"
         if write.get("body") is not None:
             review["body"] = write["body"]
-        review["submittedAt"] = _now() if review["state"] != "PENDING" else None
+        review["submittedAt"] = _now(state) if review["state"] != "PENDING" else None
+        for draft in write.get("comments") or []:
+            _inline_thread(state, draft.get("path"), draft, login, review)
         return {"review": review}
     if kind == "request-reviewers":
+        if write.get("action", "add") == "add" and any(not _collaborator(state, r)
+                                                       for r in write.get("reviewers") or []):
+            raise RejectedWrite(_rejection(write), write, "not-a-collaborator")
         _reviewer_changes(state, write.get("reviewers") or [], write.get("action", "add"), write.get("union", True))
         return {}
     pr = state["pull_request"]
@@ -1446,11 +1668,12 @@ def _perform(state, write):
         if expected and expected != _pull_request_raw_head(state):
             raise StubError("GraphQL: Head branch was modified. Review and try the merge again. (mergePullRequest)")
         if write.get("auto") and pr.get("mergeStateStatus", "CLEAN") != "CLEAN":
-            pr["autoMergeRequest"] = {"enabledAt": _now(), "mergeMethod": str(write.get("method") or "merge").upper(),
+            pr["autoMergeRequest"] = {"enabledAt": _now(state),
+                                      "mergeMethod": str(write.get("method") or "merge").upper(),
                                       "enabledBy": {"login": login}}
         else:
             pr["state"] = "MERGED"
-            pr.setdefault("mergedAt", _now())
+            pr.setdefault("mergedAt", _now(state))
             pr.setdefault("mergedBy", {"login": login})
     elif kind == "pr-merge-disable-auto":
         pr["autoMergeRequest"] = None
@@ -1471,6 +1694,14 @@ class DeniedWrite(StubError):
         self.write = write
 
 
+class RejectedWrite(StubError):
+    """GitHub would refuse the write; the call fails with GitHub's message and changes nothing."""
+
+    def __init__(self, message, write, reason):
+        super().__init__(message)
+        self.write, self.reason = write, reason
+
+
 def _denial(state, write):
     """The first ``deny_writes`` rule matching a write (with its turn), else ``None``."""
     scoped = dict(write, turn=state.get("_turn")) if state.get("_turn") is not None else write
@@ -1487,12 +1718,11 @@ def _record_writes(state, writes, deniable=True):
         for hook in state.get("on_write", []):
             if hook.get("_fired"):
                 continue
-            rendered = _render(state, {k: v for k, v in hook.items() if k != "_fired"})
-            if write_matches(write, rendered.get("match")):
-                _apply(state, rendered)
+            if write_matches(write, _render(state, hook.get("match"))):
+                _apply(state, {k: v for k, v in hook.items() if k not in ("_fired", "match", "once")})
                 if hook.get("once"):
                     hook["_fired"] = True
-        _materialize(state, _now())
+        _materialize(state, _now(state))
     return made
 
 
@@ -1555,10 +1785,15 @@ def _pr_command(state, verb, rest, stdin):
             text += "\n" + "\n".join(f"{(c.get('author') or {}).get('login')}: {c.get('body')}" for c in state["issue_comments"])
         return text, []
     if verb == "checks":
+        required = "--required" in flags
+        checks = [c for c in state["checks"] if not required or _required(state, c)]
         if "--json" in flags:
-            return [_json_fields(check, _first(flags, "--json")) for check in state["checks"]], []
+            return [_json_fields(check, _first(flags, "--json")) for check in checks], []
+        if not checks:
+            return (f"no required checks reported on the '{_pull_request(state).get('headRefName')}' branch"
+                    if required else "no checks reported"), []
         return "\n".join(f"{c.get('name')}\t{c.get('bucket', c.get('state', ''))}\t0s\t{c.get('link', '')}"
-                         for c in state["checks"]) or "no checks reported", []
+                         for c in checks), []
     if verb == "diff":
         return _diff(state), []
     if verb == "comment":
@@ -1687,6 +1922,16 @@ def _mutation_write(state, views, name, data):
         write = {"kind": "review-comment-reply", "thread_id": thread["id"] if thread else data["inReplyTo"],
                  "body": data.get("body")}
         return write, lambda made: {"comment": views_after().thread_comment(made["thread"], made["comment"])}
+    if name in ("addPullRequestReviewComment", "addPullRequestReviewThread"):
+        write = {"kind": "review-comment", "number": pr["number"], "body": data.get("body"), "file": data.get("path"),
+                 "line": data.get("line") if data.get("line") is not None else data.get("position")}
+        for source, target in (("side", "side"), ("startLine", "start_line"), ("subjectType", "subject_type"),
+                               ("commitOID", "commit_id"), ("pullRequestReviewId", "review_id")):
+            if data.get(source) is not None:
+                write[target] = data[source]
+        if name == "addPullRequestReviewThread":
+            return write, lambda made: {"thread": views_after().thread(made["thread"])}
+        return write, lambda made: {"comment": views_after().thread_comment(made["thread"], made["comment"])}
     if name == "addComment":
         write = {"kind": "issue-comment", "subject_id": data.get("subjectId"), "body": data.get("body")}
         if data.get("subjectId") == pr.get("id"):
@@ -1698,6 +1943,11 @@ def _mutation_write(state, views, name, data):
                  "body": data.get("body")}
         if name == "submitPullRequestReview":
             write["review_id"] = data.get("pullRequestReviewId")
+        comments = _draft_comments(data.get("comments"), data.get("threads"))
+        if comments:
+            write["comments"] = comments
+        if data.get("commitOID"):
+            write["commit_id"] = data["commitOID"]
         return write, lambda made: {"pullRequestReview": views_after().review(made["review"])}
     if name in ("requestReviews", "requestReviewsByLogin"):
         reviewers = [views.known_actor_by_id(i) or i for i in data.get("userIds") or []]
@@ -1802,7 +2052,7 @@ def _api(state, rest, stdin):
         except (ValueError, TypeError):
             pass
     key = f"{method} {endpoint}"
-    if key in state["api"]:
+    if key in state["api"] and key != f"GET repos/{state['repo']}":
         return state["api"][key], [], False
     views = _Views(state)
     number = state["pull_request"]["number"]
@@ -1837,7 +2087,7 @@ def _rest_get(state, views, endpoint, prefix, number, fields):
         return {"login": state["login"], "id": actor["databaseId"], "node_id": actor["id"], "type": "User",
                 "html_url": actor["url"]}
     if re.fullmatch(prefix, endpoint, re.I):
-        return dict(_rest_repo(views), description=None, visibility="public")
+        return _rest_repo(views)
     if re.fullmatch(prefix + r"/pulls", endpoint, re.I):
         wanted = fields.get("state", "open")
         pr = _rest_pr(views)
@@ -1922,9 +2172,25 @@ def _rest_write(state, views, method, endpoint, prefix, fields):
             raise StubError(f"gh: Not Found (HTTP 404) for review comment {comment_id}")
         return {"kind": "review-comment-reply", "comment_id": comment_id, "thread_id": thread,
                 "body": fields.get("body"), "method": method, "path": path}
+    match = re.fullmatch(prefix + r"/pulls/(\d+)/comments", endpoint, re.I)
+    if method == "POST" and match:
+        write = {"kind": "review-comment", "number": int(match.group(1)), "body": fields.get("body"),
+                 "file": fields.get("path"),
+                 "line": fields.get("line") if fields.get("line") is not None else fields.get("position")}
+        for key in ("side", "start_line", "subject_type", "commit_id"):
+            if fields.get(key) is not None:
+                write[key] = fields[key]
+        write.update(method=method, path=path)
+        return write
     if method == "POST" and re.fullmatch(prefix + r"/pulls/\d+/reviews", endpoint, re.I):
-        return {"kind": "review", "event": _review_event(fields.get("event")), "body": fields.get("body"),
-                "method": method, "path": path}
+        write = {"kind": "review", "event": _review_event(fields.get("event")), "body": fields.get("body"),
+                 "method": method, "path": path}
+        comments = _draft_comments(fields.get("comments"))
+        if comments:
+            write["comments"] = comments
+        if fields.get("commit_id"):
+            write["commit_id"] = fields["commit_id"]
+        return write
     if method in ("POST", "DELETE") and re.fullmatch(prefix + r"/pulls/\d+/requested_reviewers", endpoint, re.I):
         reviewers = list(fields.get("reviewers") or []) + [
             t if "/" in t else f"{_owner_name(state)[0]}/{t}" for t in fields.get("team_reviewers") or []]
@@ -1968,18 +2234,17 @@ def _respond(state, argv, stdin):
                     "  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'"), [], False
         raise StubError("no oauth token found for github.com")
     if command == "repo" and verb == "view":
-        owner, name = _owner_name(state)
-        repo_view = {"nameWithOwner": state["repo"], "name": name, "owner": {"login": owner},
-                     "defaultBranchRef": {"name": _pull_request(state).get("baseRefName") or "main"},
-                     "url": f"https://github.com/{state['repo']}", "isPrivate": False, "visibility": "PUBLIC"}
         flags, _ = _options(rest)
-        return (_json_fields(repo_view, _first(flags, "--json")) if "--json" in flags else state["repo"]), [], False
+        return (_json_fields(_repo_view(state), _first(flags, "--json")) if "--json" in flags
+                else state["repo"]), [], False
     if command == "pr":
         output, writes = _pr_command(state, verb, rest, stdin)
     elif command == "issue":
         output, writes = _issue_command(state, verb, rest, stdin)
     elif command == "api":
         return _api(state, argv[1:], stdin)
+    elif command == "run" and verb == "list":
+        return _run_list(state, rest), [], False
     elif command in ("run", "workflow", "label", "search", "status"):
         return ("[]" if "--json" in argv else ""), [], False
     else:
@@ -1996,6 +2261,101 @@ def _respond(state, argv, stdin):
                 output = _pr_url(state)
         return output, writes, True
     return output, [], False
+
+
+def _repo_view(state):
+    """The repository as ``gh repo view --json`` reports it."""
+    repo = _Views(state).repository("base")
+    view = {key: repo[key] for key in ("id", "name", "nameWithOwner", "url", "isPrivate", "isFork", "isArchived",
+                                        "visibility", "description", "squashMergeAllowed", "mergeCommitAllowed",
+                                        "rebaseMergeAllowed", "deleteBranchOnMerge", "viewerPermission")}
+    view.update(owner={"login": repo["owner"]["login"]}, defaultBranchRef={"name": repo["defaultBranchRef"]["name"]})
+    return view
+
+
+def _run_state(check):
+    """A check's ``(status, conclusion)`` as ``gh run list`` spells them, from either fixture or REST shapes."""
+    state = str(check.get("state") or "").upper()
+    conclusion = str(check.get("conclusion") or "").upper()
+    if not conclusion and state in TERMINAL_STATES:
+        conclusion = state
+    status = str(check.get("status") or "").upper() or ("COMPLETED" if conclusion else "IN_PROGRESS")
+    return status.lower(), conclusion.lower()
+
+
+def _workflow_name(check):
+    return (check.get("workflowName") or check.get("workflow") or check.get("workflow_name")
+            or (((check.get("check_suite") or {}).get("workflow") or {}).get("name")))
+
+
+def _run_branches(state):
+    """The branches ``gh run list`` covers without ``--branch``: the head, then every branch with a check-runs extra."""
+    head = _pull_request(state).get("headRefName")
+    pattern = re.compile(rf"GET repos/{re.escape(state['repo'])}/commits/([^/]+)/check-runs", re.I)
+    extras = [m.group(1) for m in (pattern.fullmatch(key) for key in state.get("api") or {}) if m]
+    return [head] + [b for b in extras if b != head and not re.fullmatch(r"[0-9a-f]{7,40}", b)]
+
+
+def _workflow_runs(state, branch):
+    """One workflow run per check run of ``branch``: the pull request's checks on its head, a check-runs extra elsewhere."""
+    pr = _pull_request(state)
+    if branch == pr.get("headRefName"):
+        checks, sha, title = state["checks"], pr.get("headRefOid"), pr.get("headCommitMessage") or pr.get("title")
+    else:
+        listing = (state.get("api") or {}).get(f"GET repos/{state['repo']}/commits/{branch}/check-runs")
+        checks = listing.get("check_runs") if isinstance(listing, dict) else listing if isinstance(listing, list) else []
+        sha, title = pr.get("baseRefOid") if branch == pr.get("baseRefName") else None, None
+    by_name = {c.get("name"): c for c in state["checks"] if isinstance(c, dict)}
+    runs = []
+    for index, check in enumerate([c for c in checks or [] if isinstance(c, dict)], 1):
+        if (check.get("__typename") or ("StatusContext" if "context" in check else "CheckRun")) != "CheckRun":
+            continue
+        name = check.get("name") or ""
+        workflow = _workflow_name(check) or _workflow_name(by_name.get(name) or {}) or name
+        head_sha = check.get("head_sha") or check.get("headSha") or sha or ""
+        status, conclusion = _run_state(check)
+        identifier = _stable_int(f"run:{state['repo']}:{branch}:{workflow}:{name}:{head_sha}")
+        started = check.get("started_at") or check.get("startedAt")
+        completed = check.get("completed_at") or check.get("completedAt")
+        runs.append({"databaseId": identifier, "number": index, "attempt": 1, "name": workflow, "workflowName": workflow,
+                     "workflowDatabaseId": _stable_int(f"workflow:{state['repo']}:{workflow}"),
+                     "displayTitle": title or workflow, "headBranch": branch, "headSha": head_sha, "status": status,
+                     "conclusion": conclusion, "event": "push", "createdAt": started, "startedAt": started,
+                     "updatedAt": completed or started,
+                     "url": check.get("details_url") or check.get("detailsUrl") or check.get("html_url")
+                     or check.get("link") or f"https://github.com/{state['repo']}/actions/runs/{identifier}"})
+    return runs
+
+
+def _run_list(state, rest):
+    """``gh run list``: workflow runs of ``--branch`` (every branch without it), filtered and shaped by its flags."""
+    flags, _ = _options(rest, "run list")
+    branch = _first(flags, "--branch", "-b")
+    runs = [run for name in ([branch] if branch else _run_branches(state)) for run in _workflow_runs(state, name)]
+    workflow = _first(flags, "--workflow", "-w")
+    if workflow:
+        wanted = re.sub(r"\.ya?ml$", "", str(workflow).lower())
+        runs = [r for r in runs if wanted in (r["workflowName"].lower(), str(r["workflowDatabaseId"]))]
+    status = _first(flags, "--status", "-s")
+    if status:
+        runs = [r for r in runs if str(status).lower() in (r["status"], r["conclusion"])]
+    commit = _first(flags, "--commit")
+    if commit:
+        runs = [r for r in runs if r["headSha"].startswith(str(commit))]
+    limit = _first(flags, "--limit", "-L")
+    runs = runs[:int(limit) if isinstance(limit, str) and limit.isdigit() else 20]
+    if "--json" in flags:
+        return [_json_fields(run, _first(flags, "--json")) for run in runs]
+
+    def elapsed(run):
+        started, completed = _time(run["startedAt"]), _time(run["updatedAt"])
+        seconds = int((completed - started).total_seconds()) if started and completed else 0
+        return f"{seconds // 60}m{seconds % 60}s" if seconds >= 60 else f"{seconds}s"
+
+    return "\n".join("\t".join(str(v) for v in (run["status"], run["conclusion"], run["displayTitle"],
+                                                run["workflowName"], run["headBranch"], run["event"],
+                                                run["databaseId"], elapsed(run), run["startedAt"] or ""))
+                     for run in runs)
 
 
 def _jq(output, expression):
@@ -2023,8 +2383,7 @@ def invoke(argv, stdin, state_dir, environ=None):
               "auth_env_present": sorted(k for k in TOKEN_VARIABLES if environ.get(k)),
               "gh_config_dir": environ.get("GH_CONFIG_DIR"), "writes": [], "exit_code": 0}
     with _locked(state_dir) as state:
-        if state.get("_turn") is not None:
-            record["turn"] = state["_turn"]
+        _annotate(record, state)
         snapshot = copy.deepcopy(state)
         try:
             output, writes, _ = _respond(state, argv, stdin)
@@ -2046,6 +2405,12 @@ def invoke(argv, stdin, state_dir, environ=None):
                 if state.get("_turn") is not None:
                     denied["turn"] = state["_turn"]
                 record["writes"] = [denied]
+            elif isinstance(error, RejectedWrite):
+                rejected = {"kind": "rejected-write", "rejected_kind": error.write.get("kind"), "reason": error.reason}
+                rejected.update({k: error.write[k] for k in ("reviewers", "action", "number") if k in error.write})
+                if state.get("_turn") is not None:
+                    rejected["turn"] = state["_turn"]
+                record["writes"] = [rejected]
         record["exit_code"] = code
         with open(Path(state_dir) / "gh-stub.log", "a") as log:
             log.write(json.dumps(record) + "\n")
@@ -2111,7 +2476,7 @@ def record_push(state_dir, updates, git_dir):
                                 patch["_fired"] = True
             elif (not deleted and branch == (pr.get("baseRefName") or "main")
                   and (pr.get("state") or "OPEN") == "OPEN" and _contains(git_dir, _pull_request_raw_head(state), new)):
-                pr.update(state="MERGED", mergedAt=_now(), mergedBy={"login": state["login"]},
+                pr.update(state="MERGED", mergedAt=_now(state), mergedBy={"login": state["login"]},
                           mergeCommit={"oid": new})
                 write["merged_pull_request"] = pr["number"]
             writes.append(write)
@@ -2119,8 +2484,7 @@ def record_push(state_dir, updates, git_dir):
         record = {"ts": _now(), "argv": ["git", "push", "origin", *[w["branch"] for w in writes]], "source": "git",
                   "stdin": "", "files": {}, "cwd": str(git_dir), "auth_env_present": [], "writes": writes,
                   "exit_code": 0}
-        if state.get("_turn") is not None:
-            record["turn"] = state["_turn"]
+        _annotate(record, state)
         with open(Path(state_dir) / "gh-stub.log", "a") as log:
             log.write(json.dumps(record) + "\n")
 
