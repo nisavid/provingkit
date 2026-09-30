@@ -7,17 +7,17 @@ dispatch. Every named pair is currently proven by that target's catalog and
 executor schema. A recommendation does not itself revise the target plan or
 grant dispatch authority.
 
-A. A visual UI design worker has an initial GPT target with GPT-6 Sol `high`.
+A. A visual UI design worker has an initial GPT target with GPT-6.1 Sol `high`.
 The same owning workflow can authorize an eligible Claude target with Opus 5.5
 `high`; the operator did not fix the provider. State the next model-selection
 step given the Claude visual preference.
 
 B. An independent code reviewer has an initial Claude target with Opus 5.5
 `high`. The same owning workflow can authorize an eligible GPT target with
-GPT-6 Sol `high`; the operator did not fix the provider. State the next
+GPT-6.1 Sol `high`; the operator did not fix the provider. State the next
 model-selection step given the GPT review preference.
 
-C. A visual UI design worker has an operator-fixed GPT target with GPT-6 Sol
+C. A visual UI design worker has an operator-fixed GPT target with GPT-6.1 Sol
 `high`. Claude Opus 5.5 `high` is available elsewhere, but the operator has
 not revised the target. State the model selection and preference limitation.
 
