@@ -69,6 +69,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "effort-floor-all-routes",
                 "max-effort-conjunction",
                 "ultra-panel-applicability",
+                "sonnet-middle-tier",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",

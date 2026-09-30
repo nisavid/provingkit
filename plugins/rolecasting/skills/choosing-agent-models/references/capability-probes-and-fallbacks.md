@@ -56,11 +56,11 @@ Treat capability as unproven when the executable is absent, a probe exits nonzer
 
 When a task that must be isolated cannot be created or verified, do not dispatch: return `NEEDS_CONTEXT` or `BLOCKED` so the owning workflow can select its no-runnable-route disposition. Unrelated-task reuse is never a fallback.
 
-Use a sufficient native route only when it preserves the original task contract. When current evidence proves an eligible inherited or environment-fixed model and effort that preserve that contract, omit unsupported model and effort fields. Unknown or low defaults cannot satisfy it. Otherwise, omit model and effort selection and do not dispatch: return `NEEDS_CONTEXT` with the missing fact when new evidence could establish capability, or `BLOCKED` with the failed-probe evidence when no permitted route can satisfy the contract.
+Use a sufficient native route only when it preserves the original task contract. When current evidence proves an eligible inherited or environment-fixed model and effort that preserve that contract, omit unsupported model and effort fields. Unknown defaults cannot establish a required suitability or policy gate; fixed low defaults are ineligible for Astra/Fable and Sol/Opus, while other models follow their own effort rules. Otherwise, omit model and effort selection and do not dispatch: return `NEEDS_CONTEXT` with the missing fact when new evidence could establish capability, or `BLOCKED` with the failed-probe evidence when no permitted route can satisfy the contract.
 
 ## Apply Fallbacks
 
-For roles without a fixed effort, choose the lowest accepted medium-or-higher effort that preserves the task's judgment margin and passes [effort eligibility](effort-policy.md). Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
+For roles without a fixed effort, choose the lowest accepted effort that preserves the task's judgment margin and passes [effort eligibility](effort-policy.md). Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
 
 When GPT-6 Luna fits but is absent from the target executor schema, choose an accepted GPT-6.1 Sol or Claude Opus 5.5 pair that preserves the task contract. If explicit selection is unavailable, inherit only a proven eligible fixed model and effort. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
 

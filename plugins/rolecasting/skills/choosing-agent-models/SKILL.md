@@ -11,7 +11,7 @@ Own model and effort selection after [delegating-cross-agent-work](../delegating
 
 ## Selection Order
 
-Apply [effort eligibility](references/effort-policy.md) to every route: `medium` is the minimum, including inherited or fixed selection; `max` requires every model, problem, workflow, and capability gate.
+Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fable and Sol/Opus require `medium` or higher, including inherited or fixed selection; OpenAI and Anthropic `max` requires every model, problem, workflow, and capability gate. Other models retain their applicable effort and suitability rules.
 
 1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, capability, effort eligibility, and authority pass; then stop selection. [Check all gates](references/jev-suitability.md).
 2. For actual cybersecurity work, obviously cybersecurity-related work with another primary domain, and cybersecurity-adjacent work, apply [Daybreak Blue routing and fallbacks](references/daybreak-routing.md).

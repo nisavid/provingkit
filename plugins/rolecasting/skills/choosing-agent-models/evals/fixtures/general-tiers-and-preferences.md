@@ -56,4 +56,4 @@ proven GPT-6 Luna `xhigh`, Opus 5.5 `low`, and Grok 4.7 `high`. Name eligible
 alternatives without imposing a fixed preference.
 
 N. A simple, well-understood, non-quality-sensitive classification has proven
-GPT-6 Luna `high` and Grok 4.7 `low`. Name eligible alternatives.
+GPT-6 Luna `high` and Grok 4.7 `low`, with adequate judgment margin and provider-policy support for either. Name eligible alternatives.

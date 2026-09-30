@@ -22,3 +22,7 @@ Q. Fable has only a catalog advertisement, without successful proof or proof-onl
 R. Astra is offered for ordinary recoverable implementation without the exceptional-tier conjunction; all other reference facts hold.
 S. Problem-frontier status is unproven; all other reference facts hold.
 T. Substitute a proven Daybreak max pair for a security role; all applicable Daybreak authority and route gates and the reference problem/workflow hold.
+U. Substitute Grok max with exact catalog/schema support, existing invocation authority, and a provider-specific policy that affirmatively permits max for this suitable task. This provider's policy does not require a frontier problem or loop; those reference conditions are absent.
+V. The same Grok role and provider policy apply, but its executor supports only high, not max.
+W. Grok max is advertised and schema-supported, but no applicable provider policy or task judgment evidence establishes max suitability. The only justification is that the OpenAI/Anthropic restriction does not cover Grok.
+X. Substitute Claude Sonnet 5.5 max with exact catalog/schema support and the reference problem/workflow; its role is the shallow-cognition middle tier.

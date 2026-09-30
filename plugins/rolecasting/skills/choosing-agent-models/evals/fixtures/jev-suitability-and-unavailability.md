@@ -35,6 +35,6 @@ State what the partial label can and cannot establish.
 F. Route one public support ticket into one of four known queues. This is the
 entire bounded operation: a typed text judgment over supplied state, with an
 uncertain answer held for review. Current Jev availability, exact capability,
-and invocation authority are proven. Its synthetic target has an explicit
-current catalog/schema-proven `medium` reasoning-effort binding. A non-Jev route is also available. State
+and invocation authority are proven. Its typed-judgment service exposes no reasoning-effort selection field; its
+complete-operation interface semantics and suitability are proven. A non-Jev route is also available. State
 the selected route without executing it.

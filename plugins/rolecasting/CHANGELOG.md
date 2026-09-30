@@ -3,8 +3,9 @@
 ## Unreleased
 
 - Route ordinary demanding work to GPT-6.1 Sol or Opus, prefer proven newer
-  same-name GPT/Claude versions, and require medium-or-higher effort on every
-  selection path. Bind max to all model, frontier-problem, panel-loop, and
+  same-name GPT/Claude versions, restore Sonnet 5.5 for its shallow-cognition
+  middle tier, and require medium-or-higher effort for Astra/Fable and Sol/Opus.
+  Bind OpenAI/Anthropic max to all model, frontier-problem, panel-loop, and
   capability gates; encourage useful Ultra/Ultracode panels with independently
   selected participant efforts.
 
