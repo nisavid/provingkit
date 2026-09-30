@@ -216,6 +216,25 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             with self.subTest(source="eval", phrase=phrase):
                 self.assertIn(phrase, expected_output)
 
+    def test_daybreak_routing_exposes_separate_effect_bounded_clis(self) -> None:
+        choosing_root = PLUGIN_ROOT / "skills" / "choosing-agent-models"
+        routing = " ".join(
+            (choosing_root / "references" / "daybreak-routing.md")
+            .read_text()
+            .split()
+        )
+
+        for phrase in (
+            "daybreak_catalog.py inspect --catalog",
+            "daybreak_catalog.py select --catalog",
+            "daybreak_account.py status-refresh --selection-stdin",
+            "daybreak_account.py harmless-probe --selection-stdin",
+            "do not provide a closed-world task-tool deny",
+            "does not infer authority or disposability from the workspace path",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, routing)
+
     def test_delegation_skill_batches_small_same_shape_work(self) -> None:
         skill = (
             PLUGIN_ROOT
