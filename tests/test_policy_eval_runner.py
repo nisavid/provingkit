@@ -2207,6 +2207,162 @@ class ShellPolicyTest(unittest.TestCase):
         self.assertTrue(self.decide("gh pr merge 84", allow=["Bash(gh pr merge:*)"])[0])
 
 
+UNTIL_LOOP = "until gh pr view 84 --json reviews | grep -q APPROVED; do sleep 30; done"
+FOR_LOOP = "for i in $(seq 1 20); do sleep 30; gh pr checks 84; done"
+WAIT_ALLOW = ["Bash(gh pr view:*)", "Bash(gh pr checks:*)", "Bash(sleep:*)"]
+
+
+class WaitLoopPolicyTest(unittest.TestCase):
+    def decide(self, command, allow=None, deny=()):
+        return runner.bash_decision(command, WAIT_ALLOW if allow is None else allow, deny)
+
+    def test_loops_of_allowed_commands_are_allowed(self):
+        for command in (UNTIL_LOOP, FOR_LOOP,
+                        "while ! gh pr view 84 --json state | grep -q MERGED; do sleep 10; done",
+                        "until gh pr view 84 --json reviews | grep -q APPROVED\ndo\n  sleep 30\ndone",
+                        "for n in 1 2 3; do gh pr checks 84 && echo \"try $n\"; sleep 5; done",
+                        "for i in $(seq 1 3); do if gh pr view 84 | grep -q OPEN; then sleep 5; else echo no; fi; done",
+                        "if ! gh pr checks 84 | grep -q pending; then echo settled; elif gh pr view 84; then date; fi",
+                        UNTIL_LOOP + "; gh pr view 84 --json reviews",
+                        "until state=$(gh pr view 84 --json state) && echo \"$state\" | grep -q MERGED; do sleep 5; "
+                        "done"):
+            allowed, reason = self.decide(command)
+            self.assertTrue(allowed, (command, reason))
+
+    def test_seq_is_a_read_only_command(self):
+        for command in ("seq 1 20", "seq 3 | wc -l", "echo $(seq 1 3)"):
+            allowed, reason = self.decide(command, allow=[])
+            self.assertTrue(allowed, (command, reason))
+
+    def test_a_loop_holding_a_command_that_is_not_allowed_is_refused_naming_it(self):
+        for command, named in (
+                ("until gh pr view 84 --json reviews | grep -q APPROVED; do rm -rf .; done", "`rm -rf .`"),
+                ("until gh pr view 84 --json reviews | grep -q APPROVED; do sleep 30; gh pr merge 84; done",
+                 "`gh pr merge 84`"),
+                ("until gh pr merge 84; do sleep 30; done", "`gh pr merge 84`"),
+                ("while ! rm -rf .; do sleep 1; done", "`rm -rf .`"),
+                ("for i in $(seq 1 20); do sleep 30; gh pr merge 84; done", "`gh pr merge 84`"),
+                ("for i in $(rm -rf x); do sleep 30; done", "`rm -rf x`"),
+                ("for i in 1 2; do if gh pr view 84; then rm -rf .; fi; done", "`rm -rf .`"),
+                ("if gh pr view 84; then sleep 1; else gh pr merge 84; fi", "`gh pr merge 84`"),
+                (UNTIL_LOOP + "; rm -rf .", "`rm -rf .`")):
+            allowed, reason = self.decide(command)
+            self.assertFalse(allowed, command)
+            self.assertIn(named, reason, command)
+        allowed, reason = self.decide(UNTIL_LOOP, allow=["Bash(gh pr view:*)"])
+        self.assertFalse(allowed)
+        self.assertIn("`sleep 30`", reason)
+
+    def test_only_unquoted_leading_keywords_and_whole_headers_are_loop_syntax(self):
+        for command in ("'until' gh pr view 84", '"do" gh pr view 84', "\\do gh pr view 84",
+                        "X=1 do gh pr view 84", "done gh pr view 84", "fi; done gh pr view 84",
+                        "for i; do sleep 1; done", "for $x in 1 2; do sleep 1; done",
+                        "for 'i' in 1 2; do sleep 1; done", "for i in 1 2; do $CMD; done",
+                        "until gh pr view 84 > out; do sleep 1; done",
+                        "until gh pr view 84; do sleep 1 & done",
+                        "while gh pr view 84; do { sleep 1; }; done",
+                        "select x in 1 2; do sleep 1; done",
+                        "case $x in a) sleep 1;; esac"):
+            allowed, reason = self.decide(command)
+            self.assertFalse(allowed, command)
+            self.assertTrue(reason, command)
+
+    def test_host_deny_covers_a_command_inside_a_loop(self):
+        allow, deny = WAIT_ALLOW + ["Bash(gh pr merge:*)"], ["Bash(gh pr merge:*)"]
+        for command in ("until gh pr merge 84; do sleep 30; done",
+                        "until gh pr view 84 | grep -q APPROVED; do sleep 30; gh pr merge 84; done",
+                        "while ! gh pr merge 84; do sleep 30; done",
+                        "for i in $(gh pr merge 84); do sleep 30; done",
+                        "if gh pr view 84; then sleep 1; else gh pr merge 84; fi"):
+            self.assertTrue(self.decide(command, allow=allow)[0], command)
+            allowed, reason = self.decide(command, allow=allow, deny=deny)
+            self.assertFalse(allowed, command)
+            self.assertIn("host_deny", reason, command)
+
+
+class MonitorHostDecisionTest(unittest.TestCase):
+    MONITOR = {"description": "review lands", "timeout_ms": 900000}
+
+    def decide(self, command, allow, deny=(), tool="Monitor"):
+        tool_input = {"command": command} if tool == "Bash" else dict(self.MONITOR, command=command)
+        return runner.host_decision({"host_allow": list(allow), "host_deny": list(deny)}, tool, tool_input)
+
+    def test_a_monitor_call_needs_a_monitor_rule(self):
+        for command in (UNTIL_LOOP, FOR_LOOP, "gh pr view 84", "date"):
+            allowed, source, reason = self.decide(command, WAIT_ALLOW)
+            self.assertFalse(allowed, command)
+            self.assertEqual(source, "host")
+            self.assertIn("Monitor", reason)
+
+    def test_a_polling_loop_may_test_and_break(self):
+        command = ('for i in $(seq 1 30); do s=$(gh pr view 84 --json reviewDecision | jq -r .reviewDecision); '
+                   '[ "$s" != "REVIEW_REQUIRED" ] && break; sleep 30; done')
+        self.assertEqual(self.decide(command, WAIT_ALLOW + ["Monitor"]), (True, "host", None))
+        self.assertEqual(self.decide("while true; do gh pr checks 84; sleep 30; done", WAIT_ALLOW + ["Monitor"]),
+                         (True, "host", None))
+        allowed, _, reason = self.decide('[ -f x ] && rm x', WAIT_ALLOW + ["Monitor"])
+        self.assertFalse(allowed)
+        self.assertIn("`rm x`", reason)
+
+    def test_a_refused_monitor_command_is_told_why(self):
+        message = runner.host_denial_message("Monitor", "host", WAIT_ALLOW + ["Monitor"], "segment `rm x` is refused")
+        self.assertIn("segment `rm x` is refused", message)
+        self.assertIn("wait loop", message)
+        self.assertEqual(runner.host_denial_message("Monitor", "host_deny"), runner.HOST_DENIAL)
+
+    def test_a_monitor_rule_approves_no_command_by_itself(self):
+        for rule in ("Monitor", "Monitor(gh pr merge:*)", "Monitor(rm -rf .)"):
+            for command in ("rm -rf .", "gh pr merge 84", "gh pr view 84", UNTIL_LOOP, "gh pr view 84 > out", ""):
+                allowed, source, reason = self.decide(command, [rule])
+                self.assertEqual((allowed, source), (False, "host"), (rule, command))
+                self.assertTrue(reason, (rule, command))
+        allowed, source, reason = runner.host_decision({"host_allow": ["Monitor"]}, "Monitor", dict(self.MONITOR))
+        self.assertEqual((allowed, source, reason), (False, "host", "empty command"))
+        self.assertFalse(runner.host_decision({"host_allow": ["Monitor"]}, "Monitor", None)[0])
+
+    def test_wait_loops_of_allowed_commands_are_allowed_with_the_rule(self):
+        for rule in ("Monitor", "Monitor(until:*)"):
+            for command in (UNTIL_LOOP, FOR_LOOP, "gh pr checks 84"):
+                self.assertEqual(self.decide(command, WAIT_ALLOW + [rule]), (True, "host", None), (rule, command))
+        allowed, source, reason = self.decide(UNTIL_LOOP, ["Bash(gh pr view:*)", "Monitor"])
+        self.assertEqual((allowed, source), (False, "host"))
+        self.assertIn("`sleep 30`", reason)
+
+    def test_a_loop_body_that_is_not_allowed_is_refused_naming_the_command(self):
+        for body, named in (("rm -rf .", "`rm -rf .`"), ("gh pr merge 84", "`gh pr merge 84`")):
+            command = f"until gh pr view 84 --json reviews | grep -q APPROVED; do {body}; done"
+            allowed, source, reason = self.decide(command, WAIT_ALLOW + ["Monitor"])
+            self.assertEqual((allowed, source), (False, "host"), command)
+            self.assertIn(named, reason)
+
+    def test_host_deny_still_wins(self):
+        allow = WAIT_ALLOW + ["Bash(gh pr merge:*)", "Monitor"]
+        merging = "until gh pr view 84 --json reviews | grep -q APPROVED; do sleep 30; done; gh pr merge 84"
+        self.assertTrue(self.decide(merging, allow)[0])
+        for deny, command in ((["Bash(gh pr merge:*)"], merging),
+                              (["Bash(gh pr merge:*)"], "until gh pr merge 84; do sleep 30; done"),
+                              (["Monitor"], UNTIL_LOOP), (["Monitor(gh pr checks:*)"], "gh pr checks 84"),
+                              (["Bash"], UNTIL_LOOP)):
+            allowed, source, reason = self.decide(command, allow, deny)
+            self.assertEqual((allowed, source), (False, "host_deny"), (deny, command))
+            self.assertIn(deny[0], reason)
+        self.assertEqual(self.decide(UNTIL_LOOP, allow, ["Bash(gh pr merge:*)", "Monitor(gh pr merge:*)"]),
+                         (True, "host", None))
+        allowed, source, reason = self.decide(merging, WAIT_ALLOW + ["Bash(gh pr merge:*)"], ["Bash(gh pr merge:*)"])
+        self.assertEqual((allowed, source), (False, "host_deny"))
+
+    def test_bash_and_monitor_judge_the_same_command_identically(self):
+        allow, deny = WAIT_ALLOW + ["Monitor"], ["Bash(gh pr merge:*)"]
+        for command in (UNTIL_LOOP, FOR_LOOP, "gh pr view 84 | jq .", "seq 1 3",
+                        "until gh pr view 84 | grep -q APPROVED; do rm -rf .; done",
+                        "until gh pr view 84 | grep -q APPROVED; do gh pr comment 84 --body x; done",
+                        "for i in $(seq 1 20); do sleep 30; gh pr merge 84; done",
+                        "for i in $(rm -rf x); do sleep 30; done",
+                        "until gh pr view 84 > out; do sleep 1; done", "'until' gh pr view 84", ""):
+            self.assertEqual(self.decide(command, allow, deny, tool="Bash"), self.decide(command, allow, deny),
+                             command)
+
+
 class EvidenceCheckTest(unittest.TestCase):
     def test_turn_and_flag_scoped_write_checks(self):
         case = runner.validate_case(minimal_case(turns=["a", "b"], write_checks=[

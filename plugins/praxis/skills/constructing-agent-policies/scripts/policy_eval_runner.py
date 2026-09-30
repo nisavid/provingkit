@@ -277,7 +277,15 @@ Background tasks      A Claude result that arrives while
                       ``sha256sum``, ``sha1sum``, ``md5sum``, ``shasum``,
                       ``mktemp`` (alone or with ``-d``, ``-q`` or ``-u``: no
                       template, no other directory), ``basename``,
-                      ``dirname``, ``realpath``, ``readlink``.
+                      ``dirname``, ``realpath``, ``readlink``, ``seq``.
+                      A loop or conditional is allowed when every command in
+                      it would be allowed alone: a segment's leading unquoted
+                      ``until``, ``while``, ``do``, ``then``, ``if``,
+                      ``elif``, ``else`` and ``!`` are dropped before it is
+                      judged, and a bare ``done`` or ``fi`` and a
+                      ``for NAME in WORDS`` header hold no command (a
+                      substitution in ``WORDS`` is still checked). A refusal
+                      names the command that is not allowed.
                       A heredoc may only
                       feed ``gh ... --body-file -`` or ``--input -`` (an
                       unquoted delimiter's body may not contain ``$`` or a
@@ -289,7 +297,14 @@ Background tasks      A Claude result that arrives while
                       Any other redirection, backticks, other expansions, or
                       background ``&`` deny the whole command. A
                       ``host_deny`` Bash rule denies a command when any
-                      segment matches it. ``codex``: ``{route:
+                      segment matches it.
+                      A ``Monitor`` call is allowed only when ``host_allow``
+                      holds a ``Monitor`` rule (``Monitor`` or
+                      ``Monitor(...)``) and its ``command`` passes every
+                      check a Bash command does, against the same
+                      ``Bash(...)`` rules, read-only commands and
+                      ``host_deny`` Bash rules. A ``Monitor`` rule approves
+                      no command by itself. ``codex``: ``{route:
                       exec|app-server, sandbox, approval_policy, rules:
                       [{pattern, decision, justification}], approve_for_me}``.
                       The app-server route is chosen automatically for several
@@ -2244,7 +2259,8 @@ def rule_allows(rule, tool, tool_input):
 
 READ_ONLY_FILTERS = frozenset(("jq", "head", "tail", "grep", "sed", "wc", "sort", "uniq", "cut", "tr", "cat",
                                "echo", "printf", "date", "cd", "ls", "pwd", "find", "sha256sum", "sha1sum",
-                               "md5sum", "shasum", "mktemp", "basename", "dirname", "realpath", "readlink"))
+                               "md5sum", "shasum", "mktemp", "basename", "dirname", "realpath", "readlink",
+                               "seq", "test", "[", "true", "false", "break", "continue"))
 MKTEMP_FLAGS = frozenset(("-d", "--directory", "-q", "--quiet", "-u", "--dry-run"))
 FIND_ACTIONS = ("-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fprint0", "-fprintf", "-fls")
 STDERR_REDIRECTS = ("2>&1", "2>/dev/null")
@@ -2254,22 +2270,34 @@ RULE = re.compile(r"([A-Za-z_]\w*)(?:\((.*)\))?", re.S)
 EXPANSION = re.compile(r"\$(?:\{[A-Za-z_][A-Za-z0-9_]*\}|[A-Za-z_][A-Za-z0-9_]*|[?$#0-9])")
 ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
 SUBSTITUTION_MARK = "$(…)"
+# Loop and conditional syntax, read from a segment's raw text so that a quoted or escaped word is never a keyword.
+SHELL_KEYWORD = re.compile(r"(?:until|while|do|then|if|elif|else|!)(?:\s+|$)")
+SHELL_CLOSERS = ("done", "fi")
+FOR_HEADER = re.compile(r"for\s+[A-Za-z_][A-Za-z0-9_]*\s+in(?:\s|$)")
 
 
 class ShellSegment:
     """One simple command of a compound Bash command.
 
     ``substitutions`` holds the inner commands of its ``$(...)`` substitutions, which stand in the text as
-    ``$(…)``; ``command_words`` are its words after any leading ``NAME=value`` assignments.
+    ``$(…)``. ``command_text`` is the text after its leading ``until``, ``while``, ``do``, ``then``, ``if``,
+    ``elif``, ``else`` and ``!`` keywords; ``command_words`` are the words of that text after any leading
+    ``NAME=value`` assignments, and are empty for a bare ``done`` or ``fi`` and for a ``for NAME in WORDS`` header.
     """
 
     def __init__(self, text, heredoc=False, substitutions=()):
         self.text, self.heredoc, self.substitutions = text.strip(), heredoc, list(substitutions)
         self.words = shlex.split(self.text)
+        rest, keyword = self.text, SHELL_KEYWORD.match(self.text)
+        while keyword:
+            rest = rest[keyword.end():]
+            keyword = SHELL_KEYWORD.match(rest)
+        self.command_text = rest
+        words = [] if rest in SHELL_CLOSERS or FOR_HEADER.match(rest) else shlex.split(rest)
         index = 0
-        while index < len(self.words) and ASSIGNMENT.match(self.words[index]):
+        while index < len(words) and ASSIGNMENT.match(words[index]):
             index += 1
-        self.command_words = self.words[index:]
+        self.command_words = words[index:]
 
 
 def _substitution_end(command, start):
@@ -2583,12 +2611,13 @@ def bash_decision(command, allow_rules, deny_rules=()):
         if not segment.command_words:
             continue
         if segment.command_words[0].startswith("$"):
-            return False, f"segment `{segment.text}` takes its command from an expansion"
+            return False, f"segment `{segment.command_text}` takes its command from an expansion"
         if any(_segment_matches(spec, segment) for spec in bash_rules):
             continue
         if _read_only_filter(segment.command_words):
             continue
-        return False, f"segment `{segment.text}` matches no host_allow rule and is not a read-only command"
+        return False, (f"segment `{segment.command_text}` matches no host_allow rule and is not a read-only "
+                       "command")
     return True, None
 
 
@@ -2600,31 +2629,37 @@ def host_denial_message(tool, source, allow_rules=(), reason=None):
 
     A refused command is told why, which ``Bash`` rules and read-only inspection this session allows, to run an
     allowed command on its own rather than in a compound command, and that the Read, Grep and Glob tools read files.
+    A refused ``Monitor`` command is told the same, since its command is judged like a ``Bash`` command.
     """
-    if tool == "Bash" and source == "host":
+    if tool in ("Bash", "Monitor") and source == "host":
         rules = [rule for rule in allow_rules if _rule_parts(rule)[0] == "Bash"]
         allowed = (f"{', '.join(rules)}, and " if rules else "only ") + "read-only inspection (cat, ls, grep, head, " \
             "sed -n, find)"
         why = f" ({reason[:160]})" if reason else ""
         return (f"Denied: this session does not allow that command{why}. It was not performed. It allows {allowed}; "
-                "run an allowed command on its own rather than in a compound command. The Read, Grep and Glob tools "
-                "can read files.")
+                "run an allowed command on its own rather than in a compound command; a wait loop (until, while or "
+                "for around sleep) made only of allowed commands is fine. The Read, Grep and Glob tools can read files.")
     return HOST_DENIAL
 
 
 def host_decision(permissions, tool, tool_input):
     """``(allowed, source, reason)`` for one manual-mode permission prompt other than a question."""
     tool_input = tool_input or {}
-    if tool == "Bash":
-        denied = bash_denial(tool_input.get("command"), permissions.get("host_deny", []))
+    allow_rules, deny_rules = permissions.get("host_allow", []), permissions.get("host_deny", [])
+    if tool != "Bash":
+        for rule in deny_rules:
+            if rule_allows(rule, tool, tool_input):
+                return False, "host_deny", f"matches host_deny rule {rule}"
+    if tool in ("Bash", "Monitor"):
+        denied = bash_denial(tool_input.get("command"), deny_rules)
         if denied:
             return False, "host_deny", f"matches host_deny rule {denied}"
-        allowed, reason = bash_decision(tool_input.get("command"), permissions.get("host_allow", []))
+        # A Monitor rule only admits the tool: the command it runs is judged as a Bash command.
+        if tool == "Monitor" and not any(_rule_parts(rule)[0] == "Monitor" for rule in allow_rules):
+            return False, "host", "host_allow holds no Monitor rule"
+        allowed, reason = bash_decision(tool_input.get("command"), allow_rules)
         return allowed, "host", reason
-    for rule in permissions.get("host_deny", []):
-        if rule_allows(rule, tool, tool_input):
-            return False, "host_deny", f"matches host_deny rule {rule}"
-    if any(rule_allows(rule, tool, tool_input) for rule in permissions.get("host_allow", [])):
+    if any(rule_allows(rule, tool, tool_input) for rule in allow_rules):
         return True, "host", None
     return False, "host", "matches no host_allow rule"
 
