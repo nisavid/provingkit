@@ -165,4 +165,26 @@ class, and its expected resolver.
 
 ## Waiting on reviews and checks
 
-<!-- method pending: nisavid/provingkit#210 -->
+Three waits at merge closeout are bot or CI processes with measured
+durations: CodeRabbit reviewing the current head, required checks still
+running, and a posted `@coderabbitai` command awaiting the bot's response.
+Each wait is a schedule, not a fixed timeout.
+
+- **Budget:** 15 minutes for a review or for pending checks, 60 minutes for
+  a command, whatever the urgency tier.
+- **Checks:** reread the pull request's live state at 2, 5, 10, 20, and 30
+  minutes after the wait begins. Continue only while the event is still
+  pending and its expected remaining time fits the budget; otherwise stop
+  and report the state, the head or check name, and the elapsed time.
+- **Expected remaining time:** the 90th percentile of recorded durations at
+  least as long as the current wait, from this repository when it has 20 or
+  more recorded, else pooled. Without records, use the operator's survey of
+  2026-09-27 across 617 pull requests: reviews finish in a median 26 s and
+  95% within 9.4 min; check runs in a median 27 s and 95% within 11 min;
+  commands get a visible response in a median 77 s, and 17% get none within
+  an hour.
+- **Commands:** check every 2 minutes, stop at 60 with the no-response state,
+  and never repost the command.
+
+Delta size, pull-request size, and time of day did not predict the slow
+tail in that survey; only the repository did.
