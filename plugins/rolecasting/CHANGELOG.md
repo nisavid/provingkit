@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Establish Grok role suitability and high-effort judgment margin in the
+  positive current-version selection fixture.
+
 - Grade unavailable routes on refusal and owner control; explicitly elicit
   fallback consent actions, user-owned task prerequisites, and leader
   responsibility assignments.

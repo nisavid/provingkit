@@ -28,7 +28,9 @@ cognitive task.
 
 F. An authorized Cursor worker has Grok 4.7 `high` and Grok 4.6 `high`
 advertised, but only Grok 4.7 `high` is in the current executor-schema and
-catalog intersection. It performs a bounded ordinary analysis.
+catalog intersection. It performs a moderately complex, well-understood analysis
+that is insensitive to outcome quality. The established judgment margin is
+adequate at Grok 4.7 `high`.
 
 G. Opus 5.5 supports `xhigh`, `high`, and `ultracode` on this target. A
 well-defined, highly parallel orchestration request benefits from `ultracode`.
