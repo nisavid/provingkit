@@ -69,6 +69,7 @@ CONTENT_LOCK_SCHEMA_VERSION = 1
 ROOT_FILES = {
     ".claude-plugin/plugin.json",
     "CHANGELOG.md",
+    "DEVELOPING.md",
     "LICENSE",
     "README.md",
     "plugin.json",

@@ -8,6 +8,7 @@ from scripts.build_release_artifacts import _build_snapshot, build
 
 
 ROOT = Path(__file__).resolve().parents[1]
+TARGETS = ("agent-plugins", "claude", "cursor")
 
 
 class ReleaseArtifactBuilderTests(unittest.TestCase):
@@ -92,6 +93,14 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             manifest = json.loads((output / "plugins/rolecasting/.cursor-plugin/plugin.json").read_text())
             self.assertEqual(manifest["skills"], "./skills/")
             self.assertNotIn("agents", manifest)
+
+    def test_developer_pages_stay_in_source(self):
+        members = ["praxis"]
+        for member in members:
+            self.assertTrue((ROOT / "plugins" / member / "DEVELOPING.md").is_file())
+        for target in TARGETS:
+            for output, _ in self.stage(target, members):
+                self.assertFalse(any(p.name == "DEVELOPING.md" for p in output.rglob("*")))
 
     def test_staging_is_deterministic(self):
         with tempfile.TemporaryDirectory() as tmp:

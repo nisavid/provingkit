@@ -26,13 +26,17 @@
       "mode": 420,
       "sha256": "dfd5d5683936eedbda8997dc26109d2686457ae485bb7226d4fccb9162e5b9c9"
     },
+    "plugins/praxis/DEVELOPING.md": {
+      "mode": 420,
+      "sha256": "75f333acfeb581dc8c8bef749d3a1a1008bb69adfe4fb336e63600a23c4cff4b"
+    },
     "plugins/praxis/LICENSE": {
       "mode": 420,
       "sha256": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8"
     },
     "plugins/praxis/README.md": {
       "mode": 420,
-      "sha256": "b888fe97f579d2dd44550f429a16bc28a48fddf4ea374ff062cdc71403835ba2"
+      "sha256": "e5db6ca0e54283bda0609392d0340d9367c01f26fe836464703f714d49022953"
     },
     "plugins/praxis/plugin.json": {
       "mode": 420,
@@ -76,7 +80,7 @@
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,
-      "sha256": "188130029d882c6a9fc88c84878feabc41ce413218fdee1991420410674ee2b5"
+      "sha256": "5c4dddf64c84ca2f5a42fbf3fb06513c54b5f7866e69e6a4290421d421a2cbca"
     }
   },
   "plugin_root": "plugins/praxis",

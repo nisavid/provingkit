@@ -93,6 +93,13 @@ class PraxisContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("direct-child skill inventory drift", result.stderr)
 
+    def test_missing_developer_page_is_rejected(self) -> None:
+        self.write_lock()
+        (self.repo / "plugins/praxis/DEVELOPING.md").unlink()
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("component inventory drift", result.stderr)
+
     def test_declared_corpora_and_their_readme_are_locked(self) -> None:
         self.write_lock()
         lock = json.loads((self.repo / LOCK).read_text())

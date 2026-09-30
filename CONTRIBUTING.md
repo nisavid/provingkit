@@ -66,7 +66,7 @@ python scripts/validate_praxis.py .
 
 These commands validate public source contracts. They do not grant release,
 installation, runtime, or host-mutation authority. The Praxis check binds the
-[member's governed inputs](plugins/praxis/README.md#validation) to
+[member's governed inputs](plugins/praxis/DEVELOPING.md#repository-release-validation) to
 `release/plugin-content-locks/praxis.json`; it does not run a model or assert
 live behavior. `tests.test_policy_eval_runner` exercises the constructor's
 runner against fake harnesses and recording tool stubs.
@@ -113,7 +113,7 @@ authored source is stable, review its complete diff, then run the ordinary
 validator. Never edit a digest merely to make validation green. CI regenerates
 supported derived locks and requires a clean diff. Praxis writes only
 `release/plugin-content-locks/praxis.json`. Its
-[member validation contract](plugins/praxis/README.md#validation) names the
+[member validation contract](plugins/praxis/DEVELOPING.md#repository-release-validation) names the
 complete input inventory and the supported regeneration command.
 
 ## Pull requests
