@@ -1,12 +1,15 @@
 # Pull-request participation
 
-Decide whether a top-level pull-request comment, including a bot command, is
-posted, and by whom. Mergecraft decides whether a contribution is worth posting;
-Proseweaving owns register and prose mechanics;
+Decide whether a participant's own contribution to a pull request (a top-level
+comment, a bot command, or a reviewer's own finding) is posted, and by whom;
+an author's adjudicated response to an exact source comment follows the
+feedback owner's route instead. Mergecraft decides whether a contribution is
+worth posting; Proseweaving owns register and prose mechanics;
 `writing-github-issue-and-pr-markdown` owns the exact bytes; and the
 [`coderabbit-top-level-comment` actuator](../../getting-prs-merged/scripts/post_coderabbit_comment.py)
 posts them. This is a situational rule, not a per-comment permission prompt:
-when standing and worth hold and the request carries the comment, post it.
+when standing and worth hold and the request carries the contribution, post it
+as a top-level comment.
 
 ## Standing
 

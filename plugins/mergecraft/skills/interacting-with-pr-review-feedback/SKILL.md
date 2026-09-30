@@ -129,14 +129,15 @@ evidence and reconcile before any further write for that intent. Credit an
 exactly verified response even when post-write drift ends the epoch; report the
 drift without claiming that all feedback is addressed.
 
-## Top-level comments and bot commands
+## Participant contributions and bot commands
 
-A top-level pull-request comment that answers no exact source comment,
-including a bot command such as a CodeRabbit re-review request, bypasses steps
+A contribution that is not the author's adjudicated response to an exact
+source comment, such as a top-level comment, a bot command like a CodeRabbit
+re-review request, or the operator's own finding as a reviewer, bypasses steps
 1–7: follow [PR participation](references/pr-participation.md), which settles
-standing and worth, the body's authoring contract, and posting through the
-`coderabbit-top-level-comment` actuator. Report its reread receipt or
-reconciliation in place of an `Intent handoff`.
+standing and worth, the body's authoring contract, and posting as a top-level
+comment through the `coderabbit-top-level-comment` actuator. Report its reread
+receipt or reconciliation in place of an `Intent handoff`.
 
 ## Completion and handoff
 

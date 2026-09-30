@@ -29,8 +29,10 @@ coordinator.
 
 Immediately before the write, rebind repository, PR, base, head SHA, policy,
 feedback, checks, approvals, mergeability, method, and authority. Reject drift
-or any missing gate. Perform exactly one merge write using the selected method,
-then reread the PR and verify the merged state and head identity.
+or any missing gate. Perform exactly one merge write using the selected method
+through the repository's `gh` (`gh pr merge --match-head-commit <head>`), never
+a third-party GitHub connector, then reread the PR and verify the merged state
+and head identity.
 
 This interface cannot choose policy, adjudicate feedback, repair CI, publish PR
 text or Git refs, post comments, resolve threads, start review loops, delete
