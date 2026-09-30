@@ -280,9 +280,11 @@ class InvocationTest(unittest.TestCase):
         case = runner.validate_case(minimal_case())
         argv = runner.codex_exec_argv(case["permissions"]["codex"], "gpt-6-sol", "medium", Path("/r/repo"),
                                       Path("/r/stub"))
-        self.assertEqual(argv, ["codex", "exec", "--json", "--ignore-user-config", "-m", "gpt-6-sol",
+        self.assertEqual(argv, ["codex", "exec", "--json", "-m", "gpt-6-sol",
                                 "-c", 'model_reasoning_effort="medium"', "-C", "/r/repo", "--add-dir", "/r/stub",
                                 "--sandbox", "workspace-write", "-c", 'approval_policy="never"', "-"])
+        # The private CODEX_HOME's config.toml carries the clean layer's skill switches, so it must load.
+        self.assertNotIn("--ignore-user-config", argv)
         auto = runner.validate_case(minimal_case(permissions={"codex": {"approve_for_me": True}}))
         argv = runner.codex_exec_argv(auto["permissions"]["codex"], "gpt-6-sol", "low", Path("/r/repo"),
                                       Path("/r/stub"))
@@ -341,6 +343,10 @@ class UserLayerTest(unittest.TestCase):
             ".claude/agents/helper.md": "---\nname: helper\n---\n",
             ".claude/commands/ship.md": "Ship it.\n",
             "linked-skill/SKILL.md": "---\nname: linked\n---\n",
+            ".agents/skills/alpha/SKILL.md": "---\nname: alpha\n---\n",
+            ".agents/skills/alpha/references/notes.md": "alpha notes\n",
+            ".agents/skills/beta/nested/SKILL.md": "---\nname: beta\n---\n",
+            "linked-agent-skill/SKILL.md": "---\nname: linked-agent\n---\n",
             ".claude/projects/-repo/memory/MEMORY.md": "auto memory\n",
             ".claude/.credentials.json": '{"token": "not-a-real-token"}\n',
             ".claude/history.jsonl": '{"display": "past prompt"}\n',
@@ -352,6 +358,7 @@ class UserLayerTest(unittest.TestCase):
             path.write_text(text)
         (self.home / ".claude/skills/linked").symlink_to(self.home / "linked-skill", target_is_directory=True)
         (self.home / ".claude/skills/one/back").symlink_to(self.home / ".claude/skills", target_is_directory=True)
+        (self.home / ".agents/skills/linked").symlink_to(self.home / "linked-agent-skill", target_is_directory=True)
 
     def test_realistic_claude_layer_lists_memory_settings_rules_skills_commands_and_agents(self):
         layer = runner.user_layer_record("claude", self.home, "realistic")
@@ -376,14 +383,31 @@ class UserLayerTest(unittest.TestCase):
         self.assertNotEqual(edited["fingerprint"], moved["fingerprint"])
         self.assertIn(".claude/rules/tickets.md", moved["sources"])
 
-    def test_clean_and_codex_layers_are_the_empty_set(self):
+    def test_realistic_codex_layer_lists_every_file_under_the_agents_skills_root(self):
+        layer = runner.user_layer_record("codex", self.home, "realistic")
+        expected = [".agents/skills/alpha/SKILL.md", ".agents/skills/alpha/references/notes.md",
+                    ".agents/skills/beta/nested/SKILL.md", ".agents/skills/linked/SKILL.md"]
+        lines = "".join(f"{runner.sha256_bytes((self.home / r).read_bytes())}  {r}\n" for r in expected)
+        self.assertEqual(layer, {"mode": "realistic", "fingerprint": runner.sha256_text(lines), "sources": expected})
+        self.assertNotIn(".agents", json.dumps(runner.user_layer_record("claude", self.home, "realistic")))
+        self.assertEqual(runner.codex_user_skills(self.home),
+                         sorted({(self.home / r).resolve() for r in expected if r.endswith("SKILL.md")}))
+        self.assertEqual(runner.codex_skill_switches_text([Path("/h/.agents/skills/a/SKILL.md"),
+                                                           Path('/h/q"uote/SKILL.md')]),
+                         '[[skills.config]]\npath = "/h/.agents/skills/a/SKILL.md"\nenabled = false\n\n'
+                         '[[skills.config]]\npath = "/h/q\\"uote/SKILL.md"\nenabled = false\n\n')
+
+    def test_clean_layers_are_the_empty_set(self):
         self.assertEqual(runner.sha256_bytes(b""), EMPTY_FINGERPRINT)
-        for harness, mode in (("claude", "clean"), ("codex", "realistic"), ("codex", "clean")):
-            self.assertEqual(runner.user_layer_record(harness, self.home, mode),
-                             {"mode": mode, "fingerprint": EMPTY_FINGERPRINT, "sources": []}, msg=(harness, mode))
+        for harness in ("claude", "codex"):
+            self.assertEqual(runner.user_layer_record(harness, self.home, "clean"),
+                             {"mode": "clean", "fingerprint": EMPTY_FINGERPRINT, "sources": []}, msg=harness)
         shutil.rmtree(self.home / ".claude")
-        self.assertEqual(runner.user_layer_record("claude", self.home, "realistic"),
-                         {"mode": "realistic", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
+        shutil.rmtree(self.home / ".agents")
+        for harness in ("claude", "codex"):
+            self.assertEqual(runner.user_layer_record(harness, self.home, "realistic"),
+                             {"mode": "realistic", "fingerprint": EMPTY_FINGERPRINT, "sources": []}, msg=harness)
+        self.assertEqual(runner.codex_user_skills(self.home), [])
 
     def test_an_unreadable_layer_file_or_directory_fails_the_run_rather_than_the_fingerprint(self):
         if os.geteuid() == 0:
@@ -874,6 +898,7 @@ home = Path(os.environ["CODEX_HOME"])
 assert (home / "auth.json").exists()
 skills = sorted(p.name for p in (home / "skills").iterdir())
 rules = (home / "rules" / "case.rules").read_text() if (home / "rules" / "case.rules").exists() else ""
+config = (home / "config.toml").read_text() if (home / "config.toml").exists() else None
 def emit(obj):
     print(json.dumps(obj), flush=True)
 def rollout(thread):
@@ -891,6 +916,7 @@ if sys.argv[1] == "exec":
                                              "exit_code": 0, "aggregated_output": "", "status": "completed"}})
     emit({"type": "item.completed", "item": {"type": "agent_message",
                                              "text": json.dumps({"prompt": prompt, "skills": skills, "rules": rules,
+                                                                 "config": config,
                                                                  "home_entries": sorted(p.name for p in home.iterdir())})}})
     emit({"type": "turn.completed", "usage": {"input_tokens": 5}})
     sys.exit(0)
@@ -1036,6 +1062,9 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         (home / ".codex").mkdir()
         (home / ".codex" / "AGENTS.md").write_text("Global Codex instructions.\n")
         (home / ".codex" / "config.toml").write_text('model = "gpt-6-sol"\n')
+        for skill in ("alpha", "beta/nested"):
+            (home / ".agents" / "skills" / skill).mkdir(parents=True)
+            (home / ".agents" / "skills" / skill / "SKILL.md").write_text(f"---\nname: {skill}\n---\n")
         options = self.options(base_env=dict(os.environ, HOME=str(home), GH_TOKEN="secret-value"))
         answered = {"answers": [{"match": "bot thread", "answer": "No"}], "permissions": {"claude": {"mode": "manual"}}}
         clean = runner.run_case(self.write_case(user_layer="clean", **answered), "claude", "claude-opus-5-5",
@@ -1061,14 +1090,39 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
                                 1, self.root / "runs", **options)
         record = json.loads((codex / "record.json").read_text())
         self.assertEqual(record["user_layer"], {"mode": "clean", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
+        self.assertEqual(record["codex_disabled_user_skills"], 2)
+        self.assertNotIn("--ignore-user-config", json.loads((codex / "argv.json").read_text()))
         seen = json.loads(record["response"])
         self.assertEqual(seen["skills"], ["handling-threads"])
-        self.assertEqual(seen["home_entries"], ["auth.json", "sessions", "skills"])
+        self.assertEqual(seen["home_entries"], ["auth.json", "config.toml", "sessions", "skills"])
+        alpha, beta = ((home / ".agents" / "skills" / s / "SKILL.md").resolve() for s in ("alpha", "beta/nested"))
+        self.assertEqual(seen["config"], f'[[skills.config]]\npath = "{alpha}"\nenabled = false\n\n'
+                                         f'[[skills.config]]\npath = "{beta}"\nenabled = false\n\n')
         realistic = runner.run_case(self.write_case(), "codex", "gpt-6-sol", "medium", [self.plugin], 2,
                                     self.root / "runs", **options)
         record = json.loads((realistic / "record.json").read_text())
-        self.assertEqual(record["user_layer"], {"mode": "realistic", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
-        self.assertEqual(json.loads(record["response"])["home_entries"], ["auth.json", "sessions", "skills"])
+        self.assertEqual(record["user_layer"]["mode"], "realistic")
+        self.assertEqual(record["user_layer"]["sources"],
+                         [".agents/skills/alpha/SKILL.md", ".agents/skills/beta/nested/SKILL.md"])
+        self.assertEqual(record["user_layer"]["fingerprint"],
+                         runner.user_layer_record("codex", home, "realistic")["fingerprint"])
+        self.assertNotEqual(record["user_layer"]["fingerprint"], EMPTY_FINGERPRINT)
+        self.assertEqual(record["codex_disabled_user_skills"], 0)
+        self.assertNotIn("name: alpha", (realistic / "record.json").read_text())
+        seen = json.loads(record["response"])
+        self.assertEqual(seen["home_entries"], ["auth.json", "sessions", "skills"])
+        self.assertIsNone(seen["config"])
+        bare = self.root / "bare-home"
+        bare.mkdir()
+        options = self.options(base_env=dict(os.environ, HOME=str(bare), GH_TOKEN="secret-value"))
+        codex = runner.run_case(self.write_case(user_layer="clean"), "codex", "gpt-6-sol", "medium", [self.plugin],
+                                3, self.root / "runs", **options)
+        record = json.loads((codex / "record.json").read_text())
+        self.assertEqual(record["user_layer"], {"mode": "clean", "fingerprint": EMPTY_FINGERPRINT, "sources": []})
+        self.assertEqual(record["codex_disabled_user_skills"], 0)
+        seen = json.loads(record["response"])
+        self.assertEqual(seen["home_entries"], ["auth.json", "sessions", "skills"])
+        self.assertIsNone(seen["config"])
 
 
 FAKE_CODEX_GRADER = r'''#!/usr/bin/env python3

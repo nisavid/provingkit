@@ -15,7 +15,7 @@ Case format (``policy-eval-case-v1``, one JSON object per file)
 ``critical``          ``true`` runs 10 trials; every safety expectation must
                       pass in all of them. Default ``false`` (3 trials).
 ``user_layer``        ``realistic`` (default) or ``clean``: how much of the
-                      operator's own Claude Code layer the child sees.
+                      operator's own user layer the child sees.
                       ``realistic`` keeps the host's user settings,
                       ``CLAUDE.md``, rules, skills, commands and agents, with
                       the installed Provingkit plugins swapped for the
@@ -25,9 +25,14 @@ Case format (``policy-eval-case-v1``, one JSON object per file)
                       candidate ``--plugin-dir`` still load. A Codex child
                       always runs in a private ``CODEX_HOME`` holding only the
                       candidate skills, the case rules and credentials, so
-                      nothing under ``~/.codex`` reaches it in either mode.
-                      Every record carries the layer it ran under (see
-                      ``user_layer`` in the run directory below).
+                      nothing under ``~/.codex`` reaches it in either mode;
+                      but Codex reads ``~/.agents/skills`` as a user skill
+                      root from the home directory, so ``realistic`` leaves
+                      it in place and ``clean`` disables each skill found
+                      there through a ``[[skills.config]]`` entry in the
+                      private ``config.toml``. Every record carries the layer
+                      it ran under (see ``user_layer`` in the run directory
+                      below).
 ``receipt_coordinate`` Optional ``{source, pointer, id}``. When present it
                       must equal the coordinate ``grade --snapshot`` derives
                       (see Receipts below).
@@ -414,9 +419,14 @@ lines ``<sha256 hex>  <path>``, one per user-layer file the child could see,
 sorted by path and each ending in a newline; and those paths, relative to the
 operator's home directory. A realistic Claude Code run lists ``~/.claude``'s
 ``CLAUDE.md`` and ``settings.json`` and every file under its ``rules``,
-``skills``, ``commands`` and ``agents`` directories, following links; a clean
-run, and every Codex run, lists nothing, and its fingerprint is the SHA-256 of
-no bytes. The record never carries those files' contents. Child
+``skills``, ``commands`` and ``agents`` directories, following links; a
+realistic Codex run lists every file under ``~/.agents/skills``, the user
+skill root Codex reads from the home directory (nothing under ``~/.codex``
+reaches its private ``CODEX_HOME``); a clean run lists nothing, and its
+fingerprint is the SHA-256 of no bytes. A Codex record also carries
+``codex_disabled_user_skills``, the number of ``~/.agents/skills`` skills its
+clean layer disabled through ``skills.config`` (``0`` under the realistic
+layer). The record never carries those files' contents. Child
 processes run with the ``gh`` stub and the ``claude`` and ``codex`` shims
 first on ``PATH`` (the harness executable is resolved on the parent's ``PATH``
 first), ``GIT_TERMINAL_PROMPT=0``, no ``GIT_ASKPASS`` or
@@ -464,6 +474,9 @@ CLEAN_SETTING_SOURCES = "project,local"
 # What a realistic Claude Code child can read from ``~/.claude``: the user memory and settings files, and every
 # file under the rule, skill, command and agent directories.
 CLAUDE_USER_LAYER = ("CLAUDE.md", "settings.json", "rules", "skills", "commands", "agents")
+# What a Codex child reads from the operator's home directory whatever ``CODEX_HOME`` holds: Codex 0.159.0 resolves
+# ``~/.agents/skills`` as a user skill root against the home directory, not ``CODEX_HOME``.
+CODEX_USER_LAYER = (".agents/skills",)
 CODEX_SANDBOXES = ("read-only", "workspace-write")
 CODEX_ROUTES = ("exec", "app-server")
 WRITE_MATCH_KEYS = frozenset(("kind", "thread_id", "number", "method", "path_contains",
@@ -817,8 +830,12 @@ def claude_argv(permissions, model, effort, plugin_dirs, run_dir, installed, max
 
 
 def codex_exec_argv(permissions, model, effort, repo, stub_dir, executable="codex", extra_dirs=()):
-    """Build the ``codex exec`` executor command line; the prompt arrives on stdin."""
-    argv = [executable, "exec", "--json", "--ignore-user-config", "-m", model,
+    """Build the ``codex exec`` executor command line; the prompt arrives on stdin.
+
+    The private ``CODEX_HOME``'s ``config.toml`` is the runner's own (see ``_private_codex_home``) and carries the
+    clean layer's skill switches, so the child loads it rather than passing ``--ignore-user-config``.
+    """
+    argv = [executable, "exec", "--json", "-m", model,
             "-c", f'model_reasoning_effort="{effort}"', "-C", str(repo), "--add-dir", str(stub_dir)]
     for directory in extra_dirs:
         argv += ["--add-dir", str(directory)]
@@ -854,6 +871,18 @@ def codex_rules_text(rules):
                       % (json.dumps(rule["pattern"]), json.dumps(rule["decision"]),
                          json.dumps(rule.get("justification", "evaluation policy"))))
     return "".join(blocks)
+
+
+def codex_user_skills(home):
+    """Resolved paths of every ``SKILL.md`` under the ``CODEX_USER_LAYER`` roots, sorted without duplicates."""
+    return sorted({path.resolve() for _, path in user_layer_files("codex", home, "realistic")
+                   if path.name == "SKILL.md"})
+
+
+def codex_skill_switches_text(paths):
+    """Render one disabling ``[[skills.config]]`` entry per skill path for the private ``CODEX_HOME/config.toml``."""
+    return "".join(f"[[skills.config]]\npath = {json.dumps(str(path), ensure_ascii=False)}\nenabled = false\n\n"
+                   for path in paths)
 
 
 GIT_SCRUBBED = re.compile(r"^(?:GIT_ASKPASS|SSH_ASKPASS|GIT_CONFIG_COUNT|GIT_CONFIG_(?:KEY|VALUE)_\d+|GIT_DIR|"
@@ -914,18 +943,19 @@ def _regular_files(root):
 def user_layer_files(harness, home, mode):
     """``(relative path, path)`` pairs for the user-layer files a child could see, sorted by relative path.
 
-    Paths are relative to ``home``. A clean layer sees nothing. A Codex child runs in a private ``CODEX_HOME``, so
-    nothing under ``~/.codex`` reaches it in either mode. A realistic Claude Code child sees the ``~/.claude`` files
-    ``CLAUDE_USER_LAYER`` names.
+    Paths are relative to ``home``. A clean layer sees nothing. A realistic Claude Code child sees the ``~/.claude``
+    files ``CLAUDE_USER_LAYER`` names. A Codex child runs in a private ``CODEX_HOME``, so nothing under ``~/.codex``
+    reaches it, but Codex reads the ``CODEX_USER_LAYER`` skill roots from the home directory itself, so a realistic
+    Codex child sees every file under them.
     """
     if mode not in USER_LAYERS:
         raise RunError(f"unknown user layer {mode}")
-    if mode == "clean" or harness != "claude":
+    if mode == "clean":
         return []
     home = Path(home)
-    rows = [(path.relative_to(home).as_posix(), path)
-            for name in CLAUDE_USER_LAYER for path in _regular_files(home / ".claude" / name)]
-    return sorted(rows)
+    roots = ([home / ".claude" / name for name in CLAUDE_USER_LAYER] if harness == "claude"
+             else [home / name for name in CODEX_USER_LAYER])
+    return sorted((path.relative_to(home).as_posix(), path) for root in roots for path in _regular_files(root))
 
 
 def user_layer_record(harness, home, mode):
@@ -2971,7 +3001,14 @@ def _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir, timeout, op
     return returncode, observation, host
 
 
-def _private_codex_home(codex_home, plugin_dirs, rules, auth_source):
+def _private_codex_home(codex_home, plugin_dirs, rules, auth_source, user_layer, home):
+    """Build the child's private ``CODEX_HOME``; return the installed candidate skills and the disabled skill count.
+
+    Nothing under ``~/.codex`` reaches the child, but Codex reads ``~/.agents/skills`` from the home directory, so a
+    clean layer writes ``config.toml`` with one disabling ``[[skills.config]]`` entry per ``SKILL.md`` found there,
+    and no file when there is none. The runner is that file's only writer, and no ``-c`` override in the child's
+    argv touches ``skills``.
+    """
     (codex_home / "skills").mkdir(parents=True)
     installed = []
     for plugin in plugin_dirs:
@@ -2984,11 +3021,14 @@ def _private_codex_home(codex_home, plugin_dirs, rules, auth_source):
     if rules:
         (codex_home / "rules").mkdir()
         (codex_home / "rules" / "case.rules").write_text(codex_rules_text(rules))
+    disabled = codex_user_skills(home) if user_layer == "clean" else []
+    if disabled:
+        (codex_home / "config.toml").write_text(codex_skill_switches_text(disabled))
     if not Path(auth_source).is_file():
         raise RunError(f"Codex credentials are unavailable at {auth_source}")
     shutil.copy2(auth_source, codex_home / "auth.json")
     (codex_home / "auth.json").chmod(0o600)
-    return installed
+    return installed, len(disabled)
 
 
 def _collect_rollouts(codex_home, destination):
@@ -3129,7 +3169,8 @@ def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_roo
         env["CODEX_HOME"] = str(codex_home)
         auth = Path(codex_auth) if codex_auth else home / ".codex" / "auth.json"
         try:
-            extra["codex_candidate_skills"] = _private_codex_home(codex_home, plugin_dirs, permissions["rules"], auth)
+            extra["codex_candidate_skills"], extra["codex_disabled_user_skills"] = _private_codex_home(
+                codex_home, plugin_dirs, permissions["rules"], auth, case["user_layer"], home)
             if permissions["route"] == "exec":
                 argv = codex_exec_argv(permissions, model, effort, repo, stub_dir, executable=codex_bin,
                                        extra_dirs=[fixture["remote"]])

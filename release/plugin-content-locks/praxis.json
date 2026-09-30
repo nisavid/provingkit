@@ -4,7 +4,7 @@
   "files": {
     "evals/praxis/constructing-agent-policies/README.md": {
       "mode": 420,
-      "sha256": "de5aa375cb4987c2ea74657e8e2867973c47177b8d5a560c314dc83f42bc1c68"
+      "sha256": "5b929510a485cc4dd180424d6003bbc04fc6958848fffe4ea3624a4de7937253"
     },
     "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json": {
       "mode": 420,
@@ -64,7 +64,7 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "dcdb7cc05bea8463877f70f5a258e438b7b1d13f8d25acc6960887913aeaa902"
+      "sha256": "56923e706b8ef4b52f99d9262bc5ef8763e95c4a694927c19dfa5190d5a4cf05"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -72,7 +72,7 @@
     },
     "tests/test_policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "4f0b733475afcd56cea74304f3730630c63bb8d266fac5b2639820f66e9ba09d"
+      "sha256": "2a4d4ba568c8f8e79d6b571a4a6c255bb46fd8ed119cbcb1663ae12b2c2bafc0"
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,

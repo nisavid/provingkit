@@ -128,7 +128,10 @@ real user state.
 
 The constructor cases also run under a clean user layer (`user_layer: clean`):
 the Claude Code child loads no user settings, `CLAUDE.md`, rules, skills,
-commands, or agents from `~/.claude`, so the run shows what the constructor
-does on its own. The Mergecraft cases keep the realistic layer. Every run
-record carries the layer it ran under, with a fingerprint of the user-layer
-files the child could see.
+commands, or agents from `~/.claude`, and the Codex child, which never sees
+`~/.codex`, has every skill under `~/.agents/skills` (a user root Codex reads
+from the home directory) disabled through `skills.config` in its private
+`CODEX_HOME`, so the run shows what the constructor does on its own. The
+Mergecraft cases keep the realistic layer, under which a Codex child sees
+`~/.agents/skills`. Every run record carries the layer it ran under, with a
+fingerprint of the user-layer files the child could see.
