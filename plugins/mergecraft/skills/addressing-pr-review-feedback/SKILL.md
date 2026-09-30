@@ -1,6 +1,6 @@
 ---
 name: addressing-pr-review-feedback
-description: Use when a caller needs a complete read-only GitHub review-feedback snapshot for orientation, such as which threads are open and who is being waited on, or an author needs to adjudicate and address requested changes, unresolved threads, or stale review comments, notify reviewers, or resolve addressed bot threads.
+description: "Use when the pull request's author, or their agent, must adjudicate and address review feedback: requested changes, unresolved threads, stale review comments, reviewer notices, and addressed bot threads. Other Mergecraft skills may call its read-only feedback snapshot for orientation, such as which threads are open and who is being waited on; a code review, a standalone comment or bot command, and a merge belong elsewhere."
 ---
 
 # Addressing PR Review Feedback

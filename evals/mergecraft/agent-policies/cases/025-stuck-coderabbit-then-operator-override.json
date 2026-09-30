@@ -321,7 +321,7 @@
   "turns": [
     "Get #84 merged.",
     "Continue.",
-    "CodeRabbit's stuck. Resolve the jitter thread yourself."
+    "CodeRabbit's stuck. Resolve the jitter thread on `src/quire/upload.py` yourself."
   ],
   "timeout": 2700,
   "permissions": {

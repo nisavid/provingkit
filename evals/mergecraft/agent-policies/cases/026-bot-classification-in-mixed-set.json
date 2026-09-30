@@ -508,7 +508,7 @@
     {
       "id": "q3-report",
       "severity": "quality",
-      "text": "Reports ana's elapsed wait, ben's ~36h, and a 36h maximum for the human set."
+      "text": "Reports ana's wait as ended (zero remaining), ben's ~36h remaining, and the 36h maximum for the set."
     }
   ],
   "write_checks": [

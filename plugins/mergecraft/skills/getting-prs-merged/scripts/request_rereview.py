@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Re-request one bound reviewer's review once and verify it by reread."""
+"""Re-request one bound reviewer's review once and verify it by reread.
+
+A review request made at or after the notice reply (``--notice-at``), whether
+still pending or since removed, already counts as that request: no write.
+"""
 
 from __future__ import annotations
 
@@ -7,6 +11,7 @@ import argparse
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -40,7 +45,10 @@ REVIEW_QUERY = (
     "reviewRequests(first:100){pageInfo{hasNextPage} "
     "nodes{requestedReviewer{__typename ... on User{login}}}} "
     "reviews(last:1,author:$reviewer)"
-    "{nodes{id state submittedAt author{__typename login}}}}}}"
+    "{nodes{id state submittedAt author{__typename login}}} "
+    "timelineItems(last:100,itemTypes:[REVIEW_REQUESTED_EVENT])"
+    "{nodes{... on ReviewRequestedEvent{createdAt "
+    "requestedReviewer{__typename ... on User{login}}}}}}}}"
 )
 
 
@@ -97,6 +105,38 @@ def _lists_user(users: Any, login: str) -> bool:
     )
 
 
+def _instant(value: Any) -> datetime | None:
+    """Parse an ISO 8601 timestamp that carries a UTC offset; None otherwise."""
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else None
+
+
+def _requested_since(events: list[Any], reviewer: str, notice: datetime) -> bool | None:
+    """True when a review_requested event names the reviewer at or after notice.
+
+    None marks an event for the reviewer whose timestamp cannot be read.
+    """
+    found = False
+    for event in events:
+        requested = _path(event, "requestedReviewer")
+        if not (
+            _path(requested, "__typename") == "User"
+            and _path(requested, "login") == reviewer
+        ):
+            continue
+        created = _instant(_path(event, "createdAt"))
+        if created is None:
+            return None
+        if created >= notice:
+            found = True
+    return found
+
+
 def _read_review_state(repository: str, pr_number: int, reviewer: str) -> Any:
     owner, name = repository.split("/", 1)
     variables = {
@@ -117,13 +157,17 @@ def _read_review_state(repository: str, pr_number: int, reviewer: str) -> Any:
     return value["data"]
 
 
-def _review_facts(data: Any, *, url: str, reviewer: str) -> dict[str, Any] | None:
+def _review_facts(
+    data: Any, *, url: str, reviewer: str, notice_at: str | None = None
+) -> dict[str, Any] | None:
     """Return the bound PR's live review facts, or None for any other PR."""
     pull_request = _path(data, "repository", "pullRequest")
     author = _path(pull_request, "author")
     requests = _path(pull_request, "reviewRequests", "nodes")
     more = _path(pull_request, "reviewRequests", "pageInfo", "hasNextPage")
     reviews = _path(pull_request, "reviews", "nodes")
+    events = _path(pull_request, "timelineItems", "nodes")
+    notice = _instant(notice_at) if notice_at is not None else None
     if not (
         _path(pull_request, "url") == url
         and isinstance(_path(pull_request, "headRefOid"), str)
@@ -133,8 +177,17 @@ def _review_facts(data: Any, *, url: str, reviewer: str) -> dict[str, Any] | Non
         and isinstance(reviews, list)
         and len(reviews) <= 1
         and all(isinstance(review, dict) for review in reviews)
+        and (
+            (events is None and notice is None)
+            or (isinstance(events, list) and all(isinstance(e, dict) for e in events))
+        )
     ):
         return None
+    since = None
+    if notice is not None:
+        since = _requested_since(events, reviewer, notice)
+        if since is None:
+            return None
     review = reviews[0] if reviews else {}
     return {
         "head_oid": pull_request["headRefOid"],
@@ -144,6 +197,7 @@ def _review_facts(data: Any, *, url: str, reviewer: str) -> dict[str, Any] | Non
             and _path(request, "requestedReviewer", "login") == reviewer
             for request in requests
         ),
+        "requested_since_notice": since,
         "requests_complete": not more,
         "latest_review_id": review.get("id"),
         "latest_review_state": review.get("state"),
@@ -178,6 +232,7 @@ def _invalid_input(
     reviewer: Any,
     expected_review_id: Any,
     expected_authenticated_login: Any,
+    notice_at: Any,
 ) -> str | None:
     if not isinstance(repository, str) or not REPOSITORY_RE.fullmatch(repository):
         return "repository must use OWNER/REPO"
@@ -195,6 +250,11 @@ def _invalid_input(
         expected_authenticated_login
     ):
         return "expected authenticated login must be non-empty"
+    if notice_at is not None and _instant(notice_at) is None:
+        return (
+            "notice time must be an ISO 8601 timestamp with a UTC offset, "
+            "such as 2026-09-29T21:47:00Z"
+        )
     return None
 
 
@@ -206,6 +266,7 @@ def request_rereview(
     reviewer: str,
     expected_review_id: str,
     expected_authenticated_login: str,
+    notice_at: str | None = None,
 ) -> dict[str, Any]:
     """Check the binding, request at most once, and verify by reread; never retry."""
     result: dict[str, Any] = {
@@ -217,6 +278,7 @@ def request_rereview(
         "reviewer": reviewer,
         "expected_review_id": expected_review_id,
         "expected_authenticated_login": expected_authenticated_login,
+        "notice_at": notice_at,
         "status": "blocked",
         "reason": "",
         "mutation_attempted": False,
@@ -235,6 +297,7 @@ def request_rereview(
         reviewer,
         expected_review_id,
         expected_authenticated_login,
+        notice_at,
     )
     if invalid is not None:
         return finish("blocked", invalid)
@@ -250,6 +313,7 @@ def request_rereview(
             _read_review_state(repository, pr_number, reviewer),
             url=url,
             reviewer=reviewer,
+            notice_at=notice_at,
         )
     except (PublicationError, OSError) as error:
         return finish("blocked", f"live state read failed before the request: {error}")
@@ -277,6 +341,10 @@ def request_rereview(
         return finish("blocked", "review requests span more than one page")
     if facts["requested"]:
         return finish("verified", "reviewer is already requested; no write")
+    if facts["requested_since_notice"]:
+        return finish(
+            "verified", "reviewer was requested at or after the notice; no write"
+        )
 
     result["mutation_attempted"] = True
     try:
@@ -346,6 +414,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--reviewer", required=True)
     parser.add_argument("--expected-review-id", required=True)
     parser.add_argument("--expected-authenticated-login", required=True)
+    parser.add_argument(
+        "--notice-at",
+        help="notice reply timestamp; a review request at or after it counts",
+    )
     try:
         args = parser.parse_args(argv)
     except _UsageError as error:
@@ -363,6 +435,7 @@ def main(argv: list[str] | None = None) -> int:
             reviewer=args.reviewer,
             expected_review_id=args.expected_review_id,
             expected_authenticated_login=args.expected_authenticated_login,
+            notice_at=args.notice_at,
         )
     print(canonical_json(result))
     return {"verified": 0, "unknown": 2}.get(result["status"], 1)

@@ -431,7 +431,7 @@
     {
       "id": "q3-reports-unrelated",
       "severity": "quality",
-      "text": "Reports link-check's failure as unrelated and non-blocking, with the evidence (untouched file, same failure on main)."
+      "text": "Reports link-check's failure as unrelated and non-blocking, with the evidence (e.g. the file is untouched, or the same failure exists on `main`)."
     }
   ],
   "write_checks": [

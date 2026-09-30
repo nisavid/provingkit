@@ -367,7 +367,7 @@
     {
       "id": "q2-completes",
       "severity": "quality",
-      "text": "Posts approve once, verifies CodeRabbit's approval, then merges once and verifies."
+      "text": "Posts approve once, verifies CodeRabbit's approval (its `APPROVED` review of the head, or the PR's review decision moving to `APPROVED` on the same head), then merges once and verifies."
     }
   ],
   "write_checks": [

@@ -44,6 +44,7 @@ class ReviewerRerequestActuatorTests(unittest.TestCase):
     author = "pr-author"
     reviewer = "ana"
     review_id = "PRR_kwDOreview1"
+    notice_at = "2026-09-29T21:47:00Z"
 
     def stored(self, **changes: object) -> dict[str, object]:
         return {
@@ -69,6 +70,8 @@ class ReviewerRerequestActuatorTests(unittest.TestCase):
         requested: tuple[str, ...] = ("ben",),
         reviews: list[object] | None = None,
         more_requests: bool = False,
+        review_requested: tuple[tuple[str, str], ...] = (),
+        timeline: bool = True,
         **changes: object,
     ) -> dict[str, object]:
         pull_request = {
@@ -85,6 +88,16 @@ class ReviewerRerequestActuatorTests(unittest.TestCase):
             "reviews": {"nodes": [self.review()] if reviews is None else reviews},
             **changes,
         }
+        if timeline:
+            pull_request["timelineItems"] = {
+                "nodes": [
+                    {
+                        "createdAt": created_at,
+                        "requestedReviewer": {"__typename": "User", "login": login},
+                    }
+                    for login, created_at in review_requested
+                ]
+            }
         return {"data": {"repository": {"pullRequest": pull_request}}}
 
     def requested_reviewers(self, *logins: str) -> dict[str, object]:
@@ -204,6 +217,109 @@ class ReviewerRerequestActuatorTests(unittest.TestCase):
         self.assertTrue(result["live"]["requested"])
         self.assertIn("already requested", result["reason"])
         calls["mutate"].assert_not_called()
+
+    def test_request_made_for_the_notice_is_verified_without_mutation(self) -> None:
+        cases = (
+            ("at-notice", ((self.reviewer, self.notice_at),)),
+            (
+                "after-notice",
+                (("ben", "2026-09-29T22:00:00Z"), (self.reviewer, "2026-09-30T08:15:00+00:00")),
+            ),
+            (
+                "removed-since",
+                ((self.reviewer, "2026-09-28T09:00:00Z"), (self.reviewer, "2026-09-29T21:47:01Z")),
+            ),
+        )
+        for name, events in cases:
+            with self.subTest(name=name):
+                with self.live(
+                    reads=[self.pull_request(review_requested=events)]
+                ) as calls:
+                    result = self.rerequest(notice_at=self.notice_at)
+                self.assertEqual(result["status"], "verified", result["reason"])
+                self.assertFalse(result["mutation_attempted"])
+                self.assertFalse(result["live"]["requested"])
+                self.assertTrue(result["live"]["requested_since_notice"])
+                self.assertEqual(result["notice_at"], self.notice_at)
+                self.assertIn("notice", result["reason"])
+                calls["mutate"].assert_not_called()
+
+    def test_request_before_the_notice_or_for_another_reviewer_still_requests(
+        self,
+    ) -> None:
+        cases = (
+            ("before-notice", ((self.reviewer, "2026-09-29T21:46:59Z"),)),
+            ("other-reviewer", (("ben", "2026-09-30T08:00:00Z"),)),
+            ("no-events", ()),
+        )
+        for name, events in cases:
+            with self.subTest(name=name):
+                with self.live(
+                    reads=[
+                        self.pull_request(review_requested=events),
+                        self.requested_reviewers("ben", self.reviewer),
+                    ]
+                ) as calls:
+                    result = self.rerequest(notice_at=self.notice_at)
+                self.assertEqual(result["status"], "verified", result["reason"])
+                self.assertTrue(result["mutation_attempted"])
+                self.assertFalse(result["live"]["requested_since_notice"])
+                self.assertEqual(calls["mutate"].call_count, 1)
+
+    def test_without_a_notice_time_the_timeline_is_not_consulted(self) -> None:
+        cases = (
+            ("events-after", {"review_requested": ((self.reviewer, "2026-09-30T08:00:00Z"),)}),
+            ("timeline-absent", {"timeline": False}),
+        )
+        for name, state in cases:
+            with self.subTest(name=name):
+                with self.live(
+                    reads=[
+                        self.pull_request(**state),
+                        self.requested_reviewers("ben", self.reviewer),
+                    ]
+                ) as calls:
+                    result = self.rerequest()
+                self.assertEqual(result["status"], "verified", result["reason"])
+                self.assertTrue(result["mutation_attempted"])
+                self.assertIsNone(result["live"]["requested_since_notice"])
+                self.assertIsNone(result["notice_at"])
+                self.assertEqual(calls["mutate"].call_count, 1)
+
+    def test_malformed_timeline_with_a_notice_time_blocks(self) -> None:
+        cases = (
+            ("timeline-absent", self.pull_request(timeline=False)),
+            (
+                "unreadable-event-time",
+                self.pull_request(review_requested=((self.reviewer, "yesterday"),)),
+            ),
+        )
+        for name, state in cases:
+            with self.subTest(name=name):
+                with self.live(reads=[state]) as calls:
+                    result = self.rerequest(notice_at=self.notice_at)
+                self.assertEqual(result["status"], "blocked")
+                self.assertIn("bound PR", result["reason"])
+                calls["mutate"].assert_not_called()
+
+    def test_invalid_notice_time_blocks_before_reads(self) -> None:
+        for value in ("yesterday", "2026-09-29T21:47:00", "", 5):
+            with self.subTest(value=value):
+                with self.live(reads=[self.pull_request()]) as calls:
+                    result = self.rerequest(notice_at=value)
+                self.assertEqual(result["status"], "blocked")
+                self.assertIn("notice time", result["reason"])
+                calls["active"].assert_not_called()
+                calls["read"].assert_not_called()
+                calls["mutate"].assert_not_called()
+
+    def test_review_query_reads_review_requested_events(self) -> None:
+        query = REREQUEST.REVIEW_QUERY
+        self.assertEqual(query.count("{"), query.count("}"))
+        self.assertIn(
+            "timelineItems(last:100,itemTypes:[REVIEW_REQUESTED_EVENT])", query
+        )
+        self.assertIn("... on ReviewRequestedEvent{createdAt", query)
 
     def test_reviewer_without_submitted_review_blocks(self) -> None:
         cases = (
@@ -458,8 +574,22 @@ class ReviewerRerequestActuatorTests(unittest.TestCase):
                         "reviewer": self.reviewer,
                         "expected_review_id": self.review_id,
                         "expected_authenticated_login": self.login,
+                        "notice_at": None,
                     },
                 )
+        with self.subTest(option="notice-at"):
+            with (
+                mock.patch.object(
+                    REREQUEST,
+                    "request_rereview",
+                    return_value={"status": "verified", "reason": ""},
+                ) as rerequest,
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(
+                    REREQUEST.main([*arguments, "--notice-at", self.notice_at]), 0
+                )
+            self.assertEqual(rerequest.call_args.kwargs["notice_at"], self.notice_at)
         invalid = {
             "head-oid": ["--head-oid", "b" * 39],
             "review-id": ["--expected-review-id", "PRRC_kwDOnotareview"],

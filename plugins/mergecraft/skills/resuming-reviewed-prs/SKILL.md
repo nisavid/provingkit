@@ -1,6 +1,6 @@
 ---
 name: resuming-reviewed-prs
-description: Use when returning to a stale, neglected, conflicted, CI-blocked, or otherwise long-running reviewed pull request and needing to recover its exact target, local checkout, authority, and next lifecycle owner.
+description: Use when the operator says to continue, resume, or pick up a reviewed pull request by number or branch, or when returning to a stale, neglected, conflicted, CI-blocked, or otherwise long-running one, to recover its exact target, local checkout, authority, and next lifecycle owner.
 ---
 
 # Resuming Reviewed PRs

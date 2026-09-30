@@ -40,6 +40,14 @@
     "should_trigger": true
   },
   {
+    "query": "would be good to get #84 in soon",
+    "should_trigger": true
+  },
+  {
+    "query": "#84 needs to make the release cut",
+    "should_trigger": true
+  },
+  {
     "query": "Please open a PR for these local changes but leave it as a draft; I am not ready to merge.",
     "should_trigger": false
   },
@@ -77,6 +85,10 @@
   },
   {
     "query": "Create a conventional commit for these files, but do not push yet.",
+    "should_trigger": false
+  },
+  {
+    "query": "Continue with #84.",
     "should_trigger": false
   }
 ]

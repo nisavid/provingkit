@@ -48,9 +48,13 @@ Under a hard rule that reserves a thread for someone else:
 - report the rule and the thread as the gate;
 - ask the operator at most one question, and only about an exception.
 
-An exception counts only from an authority at or above the rule's scope; a
-repository owner cannot waive an organization rule. Verify that authority from
-repository or organization permissions, never by asking.
+An exception counts only from an authority at or above the rule's scope,
+verified from repository or organization permissions rather than by asking:
+for a repository rule, a direction on this pull request from someone with
+`maintain` or `admin` permission; for an organization rule, an organization
+owner, since a repository owner cannot waive it. Such a direction governs this
+pull request over the written rule; re-entry check 4's disagreement rule is
+for copies of one rule.
 
 ## Urgency
 
@@ -82,8 +86,9 @@ disposition and its evidence. If the commenter submitted a review, it also
 requests their re-review once through the
 [`reviewer-rerequest` helper](../scripts/request_rereview.py). The commenter's
 clock starts at the reply's timestamp; measure it against the current time you
-read. A post-fix reply that already `@`-mentions them, or a pending review
-request, already counts as that notice.
+read. A post-fix reply that already `@`-mentions them, or a review request made
+for that reply (pending or since removed; read the timeline), already counts as
+that notice.
 
 **Clocks.** Nothing restarts a clock.
 
@@ -95,9 +100,10 @@ request, already counts as that notice.
 - If the announced fix is reverted or replaced, post a correcting reply. If the
   disposition becomes won't-fix, that reply is also a fresh notice with a fresh
   wait.
-- If a reviewer loses access, their clock runs on while they can still read the
-  pull request, and their wait ends if they cannot. Report the change either
-  way.
+- On re-entry read the reviewer's current repository permission. If it
+  dropped, their clock runs on while they can still read the pull request, and
+  their wait ends if they cannot; report the change either way, with the
+  review request GitHub removed when it removed one.
 
 **Aggregate wait.** Take the maximum remaining wait over the unresolved human
 threads you would resolve; clocks run from notice even while other gates are
@@ -157,11 +163,19 @@ thread: return it to the re-entry checks.
 
 ## Report
 
-For each human thread, report its author, the governing rule or convention, the
-notice time, the tier with the operator's words and any deadline evidence, the
-remaining wait, and its state; then the aggregate maximum and when the set is
-next checked. For each bot thread, report its class, the evidence for that
-class, and its expected resolver.
+Read the clock once (`date -u`) before measuring any wait. For each human
+thread, and for each reviewer clock on it (a reraiser has their own), report
+its author; the governing rule or convention, with its declared scope and any
+exception (who granted it, where); the notice time; the tier with the
+operator's words and any deadline evidence; the remaining wait as a duration
+with its end time; and its state. Then report the aggregate maximum and when
+the set is next checked. For each bot thread, report its class, the evidence
+for that class, and its expected resolver. One line each, for example:
+
+- `ana: notice 2026-09-29T21:47Z, nonurgent ("Continue with #84"), wait over`
+- `ben: notice 2026-09-29T13:47Z, nonurgent, 38h remaining (ends 2026-10-01T13:47Z)`
+- `lintwarden: unknown bot; no docs or config here, nisavid resolved its earlier thread; resolve after the re-entry checks`
+- `maximum remaining: 38h (ben); next check 2026-10-01T13:47Z`
 
 ## Waiting on reviews and checks
 
@@ -185,6 +199,3 @@ Each wait is a schedule, not a fixed timeout.
   an hour.
 - **Commands:** check every 2 minutes, stop at 60 with the no-response state,
   and never repost the command.
-
-Delta size, pull-request size, and time of day did not predict the slow
-tail in that survey; only the repository did.

@@ -18,8 +18,11 @@ when standing and worth hold and the request carries the comment, post it.
 - A prior or assigned reviewer, an established contributor, and a participant
   who meets an explicit participation policy, or, absent one, whose
   contribution would reasonably be welcome, also have standing.
-- When standing is uncertain, research it (roles, assignments, contribution
-  history, participation policy) before asking anyone.
+- On a pull request the operator neither owns nor authored, read the
+  participation policy (`CONTRIBUTING`, repository documentation, agent
+  instruction files, organization policy) and the actor's role and review
+  requests before posting; that reading settles standing, and the operator's
+  request settles only worth.
 - When a participation rule excludes the actor, post nothing: explain the rule
   and offer a draft for a venue it allows.
 
@@ -76,8 +79,9 @@ they act on every thread or change code instead of reviewing the current head.
 Read the body, the whole discussion, and earlier requests. A first needed
 request is worth posting; a duplicate, or one for a different head, is not. When
 an earlier post may have gone through, find it by actor, pull request, head,
-body, and time before any repost: credit it if it landed, and post only when
-live state shows none.
+body, and time before any repost: credit it if it landed, record the post, the
+bot's response to it, and the state that followed, and post only when live
+state shows none.
 
 ## Posting
 

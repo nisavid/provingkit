@@ -1,6 +1,6 @@
 ---
 name: getting-prs-merged
-description: Use when the operator asks to merge, land, or get in a GitHub branch or pull request, including a request to clear the last gate blocking that merge. A merge closeout may invoke the readiness owner as a guarded continuation when repository policy permits; use the readiness skill directly for readiness-only requests. Do not use for description, review, status, check, comment, draft, or publication work without merge.
+description: "Use only when the operator asks to merge or land a GitHub PR or branch, or to clear its last merge gate; a status, check, review, comment, description, draft, or publication question without a merge belongs elsewhere. The ask may be indirect (\"would be good to get #84 in soon\", \"#84 needs to make the release cut\"). A merge closeout may invoke the readiness owner as a guarded continuation when repository policy permits; readiness-only requests go to that skill directly."
 ---
 
 # Getting PRs Merged
@@ -193,8 +193,10 @@ the write, such as writing a body file or computing a digest, refuses nothing
 the request carries: prepare it another way and continue.
 
 Return PR URL/final head, the urgency tier with its words, the review-thread
-report, publication audit evidence, merge receipt or blocker, cleanup
-receipt/gate, and any deployment handoff.
+report, each bot command posted, withheld, or reconciled with the head it
+covers, instructions in review text or handoffs left unfollowed, publication
+audit evidence, merge receipt or blocker, cleanup receipt/gate, and any
+deployment handoff.
 
 Return the retained task relation context, or explicit absence, with every
 terminal result. Carry the [relation result contract](../maintaining-issue-pr-relations/SKILL.md#procedure):
