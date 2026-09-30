@@ -16,7 +16,7 @@ Smallest experiment that confirms channel 1, in order. Stop at the first failure
 
 1. Fresh session in the edited environment. Confirm `which codex` and `codex --version` (setup script ran) and that `CODEX_CA_CERTIFICATE` and `CODEX_HOME` are set.
 2. `codex login --device-auth`. The agent relays the URL and one-time code to you in chat; you approve in a browser. Record how long the code stayed valid and whether the proxy logged any 403 during login (`codex-login.log` under the Codex log directory names the failing host if one is missing from the allowlist).
-3. `codex debug models` and confirm `gpt-6-astra` is listed and `xhigh` is accepted: `codex exec -m gpt-6-astra -c model_reasoning_effort=xhigh --json --ephemeral "Reply with the single word OK."`
+3. `codex debug models` and confirm `gpt-6-astra` is listed and `xhigh` is accepted: `codex exec -m gpt-6-astra -c model_reasoning_effort=xhigh --json --ephemeral "Reply with the single word OK."` Keep Codex free of MCP servers for this run; an open report says `--json` and `--output-schema` are ignored when MCP tools are active.
 4. `codex sandbox linux true`. If it fails, rerun step 3 with `--sandbox danger-full-access`, which is what the flag's own help text says it is for inside an externally sandboxed container, and record that the inner sandbox is unavailable.
 5. A two-turn round trip: `codex exec --json -o first.md "…"` then `codex exec resume --last "…"`, and confirm the second turn saw the first.
 6. Note the five-hour usage reading from the usage dashboard before and after, to size how many `xhigh` rounds one analysis can afford on your plan.
@@ -45,7 +45,7 @@ Environment (cloud environment menu in the session title bar, then Edit), on a c
 
 ChatGPT account: enable device code login under security settings, as the authentication page requires.
 
-Do not put a Codex `auth.json` into environment variables or the setup script. Anyone who uses the environment can read both, and the documentation says to treat the file like a password.
+Do not put a Codex `auth.json` into environment variables or the setup script. Anyone who uses the environment can read both, the documentation says to treat the file like a password, and open reports show a copy breaking as soon as another copy rotates the token bundle, so a file shared with your desktop login would break one side or the other.
 
 ## Experiment B: GitHub as the bus on a private repository
 
