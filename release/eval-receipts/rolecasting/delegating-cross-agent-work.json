@@ -21,7 +21,7 @@
     "runtime_inputs_complete": true
   },
   "processing": {
-    "revision": "f1b235b6ffd433320dcda8994ee3248f8832d6ce",
+    "revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
     "inputs": {
       "scripts/behavior_eval_receipts.py": {
         "sha256": "740e17694ff43711c2b191b2307923817d82e938d6c01d6586ffb869d2718355",
@@ -45,10 +45,10 @@
       }
     }
   },
-  "candidate_revision": "f1b235b6ffd433320dcda8994ee3248f8832d6ce",
+  "candidate_revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
   "snapshot": {
     "schema_version": 1,
-    "candidate_revision": "f1b235b6ffd433320dcda8994ee3248f8832d6ce",
+    "candidate_revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
     "skill": {
       "plugin": "rolecasting",
       "skill": "delegating-cross-agent-work",
@@ -198,7 +198,7 @@
         "mode": "100644"
       },
       "plugins/rolecasting/content-lock.json": {
-        "sha256": "94aa9ea06b666746c389e837867b0c36efb62bd2e105998fe8e3d57c8e9c63ff",
+        "sha256": "181a031070e7d9d894a5d2b96d3bcd116c2644be99d48522e401c5fcecad7637",
         "mode": "100644"
       },
       "plugins/rolecasting/evals/delivery.json": {
@@ -370,7 +370,7 @@
         "mode": "100644"
       },
       "release/provingkit/definition-v1.json": {
-        "sha256": "5b3cb4476945e7da578436b3e8cdfbad2669d4241efc7a6b766311a67c568d29",
+        "sha256": "cefbd8011c604889e6aca4f01ecf1aa20f67733b8fa06754291edc1f9788c90a",
         "mode": "100644"
       }
     }

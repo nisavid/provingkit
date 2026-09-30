@@ -21,7 +21,7 @@
     "runtime_inputs_complete": true
   },
   "processing": {
-    "revision": "f1b235b6ffd433320dcda8994ee3248f8832d6ce",
+    "revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
     "inputs": {
       "scripts/behavior_eval_receipts.py": {
         "sha256": "740e17694ff43711c2b191b2307923817d82e938d6c01d6586ffb869d2718355",
@@ -45,10 +45,10 @@
       }
     }
   },
-  "candidate_revision": "f1b235b6ffd433320dcda8994ee3248f8832d6ce",
+  "candidate_revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
   "snapshot": {
     "schema_version": 1,
-    "candidate_revision": "f1b235b6ffd433320dcda8994ee3248f8832d6ce",
+    "candidate_revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
     "skill": {
       "plugin": "rolecasting",
       "skill": "choosing-agent-models",
@@ -243,7 +243,7 @@
         "mode": "100644"
       },
       "plugins/rolecasting/content-lock.json": {
-        "sha256": "94aa9ea06b666746c389e837867b0c36efb62bd2e105998fe8e3d57c8e9c63ff",
+        "sha256": "181a031070e7d9d894a5d2b96d3bcd116c2644be99d48522e401c5fcecad7637",
         "mode": "100644"
       },
       "plugins/rolecasting/evals/delivery.json": {
@@ -259,7 +259,7 @@
         "mode": "100644"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json": {
-        "sha256": "fceeb0fd52dc2de34323e556a0c6d1d5b3fa019d26c430e2abc620e929cc3fd5",
+        "sha256": "aeb2d112cf3c3a8294a15ce17e7ef1b954d9360b40b39284906703b87207f4c2",
         "mode": "100644"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/cursor-grok-bounded-review.md": {
@@ -283,7 +283,7 @@
         "mode": "100644"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/effort-floor-all-routes.md": {
-        "sha256": "a44674a4e9d6f5c348d8c599bbdc4a7f27a22584528c57eb8a8e700809bc5037",
+        "sha256": "d390e2e37d42dda77ddedac4aa6552f356138a9dce77e64c6f7a4dc7d66e8830",
         "mode": "100644"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/engineering-and-security-judgment.md": {
@@ -299,7 +299,7 @@
         "mode": "100644"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": {
-        "sha256": "846ef35ad50ffa7b81db633fe83a3c81731aaa20fcc413793adb0f4da1700281",
+        "sha256": "23e59341935371a5020bf5700353b404aed7d0588722c27ba185ee97d6751dea",
         "mode": "100644"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/high-risk-independent-review.md": {
@@ -423,7 +423,7 @@
         "mode": "100644"
       },
       "release/provingkit/definition-v1.json": {
-        "sha256": "5b3cb4476945e7da578436b3e8cdfbad2669d4241efc7a6b766311a67c568d29",
+        "sha256": "cefbd8011c604889e6aca4f01ecf1aa20f67733b8fa06754291edc1f9788c90a",
         "mode": "100644"
       }
     }
@@ -9858,20 +9858,20 @@
           "passed": true
         }
       ],
-      "executor_output_sha256": "a0ee2d9330d80be487402496cf54bc7fbfc9d2458b99c662ee1d43e459b75d10",
-      "grading_sha256": "633b0617214f6d045d547eb8e4eb53f8d0d30e3804c5c8934a3613d46d38f16e",
+      "executor_output_sha256": "83f01eef4e98e85463b2c754b4061ed1f1093021209ef8faf760f9e0c7dbcb02",
+      "grading_sha256": "e9eb132423201fc00e6156c37f4645f22641c03e357d306830ec09812a6252ac",
       "reconciliation": {
         "execution_record": {
-          "sha256": "5dcdedb09c122a7208c556b62318522454c7337ab89c1a70a137b49e2a2f5b6e",
+          "sha256": "cdeac4309ff70bab645c82aa597634069555e29872f42e3f28508e754ecda5fe",
           "format": "json",
           "pointer": ""
         },
         "execution_identity": {
           "basis": "recorded-thread",
-          "identity_sha256": "33c0039e51d4cefa84ce0b4adcbe327f927b435ab17e9e04a40ab764c5fd20d8"
+          "identity_sha256": "7acb4d14197a179271beb230ac91912e0cb2ba1a52d7a0fbdde74224665630b6"
         },
-        "original_revision": "e35f860af1fbd8b92815e8359f6c79630e66b57c",
-        "original_corpus_sha256": "d9ba93a93842c8de7b217dac3c0c624d3a7a5dda53703186e356ea7727cc54f6",
+        "original_revision": "203702ce43fe39175bc4f434f88f5b68d31b7c14",
+        "original_corpus_sha256": "fceeb0fd52dc2de34323e556a0c6d1d5b3fa019d26c430e2abc620e929cc3fd5",
         "original_expectations_sha256": "0910d3cdae1d34320e66f7d7120b8771a866a393cc4e7d969edbb9f1ce1ffb50",
         "inputs": {
           "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",
@@ -9887,7 +9887,7 @@
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "0f98df746432eaec062f639558e5cdee9e0909c249ae15fbacabfb2baea5d51f",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": "d3df411cb31446fbe28ea714d3295e010c8c111f05d00edd6653ffa0f4a96433",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
-          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": "846ef35ad50ffa7b81db633fe83a3c81731aaa20fcc413793adb0f4da1700281"
+          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": "23e59341935371a5020bf5700353b404aed7d0588722c27ba185ee97d6751dea"
         },
         "prompt_sha256": "2712078a48a3064c6d0a3212e515b789c7e4b5dbbfb2b5dcce476653972d4e4e",
         "executor_model_basis": "configured",
@@ -9896,132 +9896,132 @@
         "adjudication": null,
         "evidence": [
           {
-            "sha256": "5dcdedb09c122a7208c556b62318522454c7337ab89c1a70a137b49e2a2f5b6e",
+            "sha256": "cdeac4309ff70bab645c82aa597634069555e29872f42e3f28508e754ecda5fe",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "623ea65623f883f1df114dc6b47159e8b241e4dade4f57f7c21f1987ae84d3cf",
+            "sha256": "def3ee57103fd9573c17c5a76b03ed9016557c2c7665efcd007e0e1a249133fa",
             "format": "json",
             "pointer": "/source_revision"
           },
           {
-            "sha256": "180a70923d8cca4e581826030bfedc5bdab1d22ebbd6d58f4eab405035860c56",
+            "sha256": "36b5d8e7bbb50d9bf3d4056ee18c0407e5dcb095522c498bb052814d2eb592d0",
             "format": "json",
             "pointer": "/inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1evals.json/sha256"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1SKILL.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1capability-probes-and-fallbacks.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1classifying-security-work.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1daybreak-routing.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1effort-policy.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1general-tiers.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1jev-suitability.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1SKILL.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1dispatch-evidence.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1foreign-harness-peers.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1invocation-topology-receipt.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1native-codex-subagents.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1scarce-specialist-handoffs.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/fixture_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1fixtures~1general-tiers-and-preferences.md"
           },
           {
-            "sha256": "0cddb077d2862e9d23b651bcc244e1fbb062d4e329420c72b0efb0fa44ea8bb5",
+            "sha256": "4e530477faf070d6ddce5df585e332aae3ae248805314d7773a209d94c5929a0",
             "format": "json",
             "pointer": "/case_prompt"
           },
           {
-            "sha256": "a0ee2d9330d80be487402496cf54bc7fbfc9d2458b99c662ee1d43e459b75d10",
+            "sha256": "83f01eef4e98e85463b2c754b4061ed1f1093021209ef8faf760f9e0c7dbcb02",
             "format": "utf8",
             "pointer": ""
           },
           {
-            "sha256": "623ea65623f883f1df114dc6b47159e8b241e4dade4f57f7c21f1987ae84d3cf",
+            "sha256": "def3ee57103fd9573c17c5a76b03ed9016557c2c7665efcd007e0e1a249133fa",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "8dd659eeb1be8014f4fa722fd17656dc278f752dae478a4a5d23d16abb17f8b7",
+            "sha256": "858511e181f1a668c8be1b76b72691ce0cfb875d283591f904ea16a6813540ad",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "633b0617214f6d045d547eb8e4eb53f8d0d30e3804c5c8934a3613d46d38f16e",
+            "sha256": "e9eb132423201fc00e6156c37f4645f22641c03e357d306830ec09812a6252ac",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "8368b89e4a964fe90a0e5e7409af689e9fb7d52efec81f2a179a563d05866b5f",
+            "sha256": "ae00446ee3982b8732393958869ff69d95dc871f82d77c0ceb592913e3e586f6",
             "format": "json",
             "pointer": "/responses/0/response"
           },
           {
-            "sha256": "8368b89e4a964fe90a0e5e7409af689e9fb7d52efec81f2a179a563d05866b5f",
+            "sha256": "ae00446ee3982b8732393958869ff69d95dc871f82d77c0ceb592913e3e586f6",
             "format": "json",
             "pointer": "/expectations"
           },
           {
-            "sha256": "4f3abff2c81d2aea91d2b46e897daac1ca250dbf58318a704436d4e527a32a42",
+            "sha256": "37ad0f82df2fb1090eb9101cb879fcfa7e4d3f1894f25ba8c8b4cda2490722f9",
             "format": "json",
             "pointer": "/cases/16/raw/expectations"
           },
           {
-            "sha256": "57ef91339fa0ca938d17582d97b2e469166335c2d87ef110a9b1e6fbd676993c",
+            "sha256": "28e83b7d35565d7259530c2914fe5b98d24a7ac95ceb808771636aac2885182e",
             "format": "json",
             "pointer": "/expectations"
           }
@@ -10052,20 +10052,20 @@
           "passed": true
         }
       ],
-      "executor_output_sha256": "af74487cd85532fd9710d50925c2aa5a15b962a1851bdc713cd08a3807efc086",
-      "grading_sha256": "633b0617214f6d045d547eb8e4eb53f8d0d30e3804c5c8934a3613d46d38f16e",
+      "executor_output_sha256": "430a0a736154f99b391b6e412bbcfad7695fe757e06b036e7944a04c0d3556a6",
+      "grading_sha256": "e9eb132423201fc00e6156c37f4645f22641c03e357d306830ec09812a6252ac",
       "reconciliation": {
         "execution_record": {
-          "sha256": "f5c9241e33ed557a9cad46b01bdf25d6c4b531d711c08fa0605651958d643cfa",
+          "sha256": "658f1d1178bee4f2948b9088d50d52248d42eb6347ef436f2d19481a79d5c3ed",
           "format": "json",
           "pointer": ""
         },
         "execution_identity": {
           "basis": "recorded-thread",
-          "identity_sha256": "0dde14e825cbcce7372f11bf001601726fd62543255cb212743928cf0e938882"
+          "identity_sha256": "4c00ab3680e4eb4797acc1fd89e829a812819e677050de94c0cf5db681aaf58b"
         },
-        "original_revision": "e35f860af1fbd8b92815e8359f6c79630e66b57c",
-        "original_corpus_sha256": "d9ba93a93842c8de7b217dac3c0c624d3a7a5dda53703186e356ea7727cc54f6",
+        "original_revision": "203702ce43fe39175bc4f434f88f5b68d31b7c14",
+        "original_corpus_sha256": "fceeb0fd52dc2de34323e556a0c6d1d5b3fa019d26c430e2abc620e929cc3fd5",
         "original_expectations_sha256": "0910d3cdae1d34320e66f7d7120b8771a866a393cc4e7d969edbb9f1ce1ffb50",
         "inputs": {
           "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",
@@ -10081,7 +10081,7 @@
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "0f98df746432eaec062f639558e5cdee9e0909c249ae15fbacabfb2baea5d51f",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": "d3df411cb31446fbe28ea714d3295e010c8c111f05d00edd6653ffa0f4a96433",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
-          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": "846ef35ad50ffa7b81db633fe83a3c81731aaa20fcc413793adb0f4da1700281"
+          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": "23e59341935371a5020bf5700353b404aed7d0588722c27ba185ee97d6751dea"
         },
         "prompt_sha256": "2712078a48a3064c6d0a3212e515b789c7e4b5dbbfb2b5dcce476653972d4e4e",
         "executor_model_basis": "configured",
@@ -10090,132 +10090,132 @@
         "adjudication": null,
         "evidence": [
           {
-            "sha256": "f5c9241e33ed557a9cad46b01bdf25d6c4b531d711c08fa0605651958d643cfa",
+            "sha256": "658f1d1178bee4f2948b9088d50d52248d42eb6347ef436f2d19481a79d5c3ed",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "641fe74767547212e05c470e4de502170972d45938dc43c868ddd9360895d6bc",
+            "sha256": "fb56f60e108fd74c4d1b7bc93fd46ebd72df1ecefbc8df757b2864152812923a",
             "format": "json",
             "pointer": "/source_revision"
           },
           {
-            "sha256": "180a70923d8cca4e581826030bfedc5bdab1d22ebbd6d58f4eab405035860c56",
+            "sha256": "36b5d8e7bbb50d9bf3d4056ee18c0407e5dcb095522c498bb052814d2eb592d0",
             "format": "json",
             "pointer": "/inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1evals.json/sha256"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1SKILL.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1capability-probes-and-fallbacks.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1classifying-security-work.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1daybreak-routing.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1effort-policy.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1general-tiers.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1jev-suitability.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1SKILL.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1dispatch-evidence.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1foreign-harness-peers.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1invocation-topology-receipt.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1native-codex-subagents.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1scarce-specialist-handoffs.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/fixture_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1fixtures~1general-tiers-and-preferences.md"
           },
           {
-            "sha256": "5019ccf57bfa0255f7bffad1131ae81eaa25ded108172a13de0db9bc8a0187ea",
+            "sha256": "0d2ca7190c174cd46306359c5df89c7630f53ce5512f4118eee7871e168007ed",
             "format": "json",
             "pointer": "/case_prompt"
           },
           {
-            "sha256": "af74487cd85532fd9710d50925c2aa5a15b962a1851bdc713cd08a3807efc086",
+            "sha256": "430a0a736154f99b391b6e412bbcfad7695fe757e06b036e7944a04c0d3556a6",
             "format": "utf8",
             "pointer": ""
           },
           {
-            "sha256": "641fe74767547212e05c470e4de502170972d45938dc43c868ddd9360895d6bc",
+            "sha256": "fb56f60e108fd74c4d1b7bc93fd46ebd72df1ecefbc8df757b2864152812923a",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "8dd659eeb1be8014f4fa722fd17656dc278f752dae478a4a5d23d16abb17f8b7",
+            "sha256": "858511e181f1a668c8be1b76b72691ce0cfb875d283591f904ea16a6813540ad",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "633b0617214f6d045d547eb8e4eb53f8d0d30e3804c5c8934a3613d46d38f16e",
+            "sha256": "e9eb132423201fc00e6156c37f4645f22641c03e357d306830ec09812a6252ac",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "8368b89e4a964fe90a0e5e7409af689e9fb7d52efec81f2a179a563d05866b5f",
+            "sha256": "ae00446ee3982b8732393958869ff69d95dc871f82d77c0ceb592913e3e586f6",
             "format": "json",
             "pointer": "/responses/1/response"
           },
           {
-            "sha256": "8368b89e4a964fe90a0e5e7409af689e9fb7d52efec81f2a179a563d05866b5f",
+            "sha256": "ae00446ee3982b8732393958869ff69d95dc871f82d77c0ceb592913e3e586f6",
             "format": "json",
             "pointer": "/expectations"
           },
           {
-            "sha256": "4f3abff2c81d2aea91d2b46e897daac1ca250dbf58318a704436d4e527a32a42",
+            "sha256": "37ad0f82df2fb1090eb9101cb879fcfa7e4d3f1894f25ba8c8b4cda2490722f9",
             "format": "json",
             "pointer": "/cases/16/raw/expectations"
           },
           {
-            "sha256": "486762c93a9d893821b75bcfde256c433469b613e2b9eb9ec51fd12668b7f7f0",
+            "sha256": "0827fdbe421cae9c730a135c6b26afb817598a7992388f7efbb451b76851d856",
             "format": "json",
             "pointer": "/expectations"
           }
@@ -10246,20 +10246,20 @@
           "passed": true
         }
       ],
-      "executor_output_sha256": "198508dfa969112277fdb3fe13a554b6a01d553b0bd9e8e38911f494b0b76fe9",
-      "grading_sha256": "633b0617214f6d045d547eb8e4eb53f8d0d30e3804c5c8934a3613d46d38f16e",
+      "executor_output_sha256": "889e4ffb2021ef5898918548027eb84a7554ea583722448404687a9bfdd0fa63",
+      "grading_sha256": "e9eb132423201fc00e6156c37f4645f22641c03e357d306830ec09812a6252ac",
       "reconciliation": {
         "execution_record": {
-          "sha256": "b5c1291e7e246206a363af9d8efc8edbca121737fc5c9a9b2ddc0b07c371b740",
+          "sha256": "2d4f73be497a76019ed4f89b9651799eecdc43e5d26e013c898cd2cec11578ea",
           "format": "json",
           "pointer": ""
         },
         "execution_identity": {
           "basis": "recorded-thread",
-          "identity_sha256": "5d52c2481350910f5a52caf974f8def2b09c17862b8768365918a3cb5d3fca26"
+          "identity_sha256": "f1aeaba38e630caf47a92764808a112204006a9ec8d09c82b1232081b88a2a36"
         },
-        "original_revision": "e35f860af1fbd8b92815e8359f6c79630e66b57c",
-        "original_corpus_sha256": "d9ba93a93842c8de7b217dac3c0c624d3a7a5dda53703186e356ea7727cc54f6",
+        "original_revision": "203702ce43fe39175bc4f434f88f5b68d31b7c14",
+        "original_corpus_sha256": "fceeb0fd52dc2de34323e556a0c6d1d5b3fa019d26c430e2abc620e929cc3fd5",
         "original_expectations_sha256": "0910d3cdae1d34320e66f7d7120b8771a866a393cc4e7d969edbb9f1ce1ffb50",
         "inputs": {
           "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",
@@ -10275,7 +10275,7 @@
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "0f98df746432eaec062f639558e5cdee9e0909c249ae15fbacabfb2baea5d51f",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": "d3df411cb31446fbe28ea714d3295e010c8c111f05d00edd6653ffa0f4a96433",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
-          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": "846ef35ad50ffa7b81db633fe83a3c81731aaa20fcc413793adb0f4da1700281"
+          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": "23e59341935371a5020bf5700353b404aed7d0588722c27ba185ee97d6751dea"
         },
         "prompt_sha256": "2712078a48a3064c6d0a3212e515b789c7e4b5dbbfb2b5dcce476653972d4e4e",
         "executor_model_basis": "configured",
@@ -10284,132 +10284,132 @@
         "adjudication": null,
         "evidence": [
           {
-            "sha256": "b5c1291e7e246206a363af9d8efc8edbca121737fc5c9a9b2ddc0b07c371b740",
+            "sha256": "2d4f73be497a76019ed4f89b9651799eecdc43e5d26e013c898cd2cec11578ea",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "9ab75696309019d97da739e899e91ae3bdc601c134dc776a24a4a104c7c0bc93",
+            "sha256": "1985a9408639b9b7b5eedca083af45a65b7937b2d692becb2d3cb6a87357414a",
             "format": "json",
             "pointer": "/source_revision"
           },
           {
-            "sha256": "180a70923d8cca4e581826030bfedc5bdab1d22ebbd6d58f4eab405035860c56",
+            "sha256": "36b5d8e7bbb50d9bf3d4056ee18c0407e5dcb095522c498bb052814d2eb592d0",
             "format": "json",
             "pointer": "/inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1evals.json/sha256"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1SKILL.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1capability-probes-and-fallbacks.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1classifying-security-work.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1daybreak-routing.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1effort-policy.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1general-tiers.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1jev-suitability.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1SKILL.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1dispatch-evidence.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1foreign-harness-peers.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1invocation-topology-receipt.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1native-codex-subagents.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1scarce-specialist-handoffs.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/fixture_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1fixtures~1general-tiers-and-preferences.md"
           },
           {
-            "sha256": "539ec2b44beca6c9181752812737b9f9e5b3420f4b2c406e86eac6927205cc5e",
+            "sha256": "e386d5b11da58baf4d3d972ca05da5f4e09dc4b773667875838ee750cb168372",
             "format": "json",
             "pointer": "/case_prompt"
           },
           {
-            "sha256": "198508dfa969112277fdb3fe13a554b6a01d553b0bd9e8e38911f494b0b76fe9",
+            "sha256": "889e4ffb2021ef5898918548027eb84a7554ea583722448404687a9bfdd0fa63",
             "format": "utf8",
             "pointer": ""
           },
           {
-            "sha256": "9ab75696309019d97da739e899e91ae3bdc601c134dc776a24a4a104c7c0bc93",
+            "sha256": "1985a9408639b9b7b5eedca083af45a65b7937b2d692becb2d3cb6a87357414a",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "8dd659eeb1be8014f4fa722fd17656dc278f752dae478a4a5d23d16abb17f8b7",
+            "sha256": "858511e181f1a668c8be1b76b72691ce0cfb875d283591f904ea16a6813540ad",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "633b0617214f6d045d547eb8e4eb53f8d0d30e3804c5c8934a3613d46d38f16e",
+            "sha256": "e9eb132423201fc00e6156c37f4645f22641c03e357d306830ec09812a6252ac",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "8368b89e4a964fe90a0e5e7409af689e9fb7d52efec81f2a179a563d05866b5f",
+            "sha256": "ae00446ee3982b8732393958869ff69d95dc871f82d77c0ceb592913e3e586f6",
             "format": "json",
             "pointer": "/responses/2/response"
           },
           {
-            "sha256": "8368b89e4a964fe90a0e5e7409af689e9fb7d52efec81f2a179a563d05866b5f",
+            "sha256": "ae00446ee3982b8732393958869ff69d95dc871f82d77c0ceb592913e3e586f6",
             "format": "json",
             "pointer": "/expectations"
           },
           {
-            "sha256": "4f3abff2c81d2aea91d2b46e897daac1ca250dbf58318a704436d4e527a32a42",
+            "sha256": "37ad0f82df2fb1090eb9101cb879fcfa7e4d3f1894f25ba8c8b4cda2490722f9",
             "format": "json",
             "pointer": "/cases/16/raw/expectations"
           },
           {
-            "sha256": "4beeb8489ef340fce4000d50451fc86196e621dfccdafdbc7fb01d288bb870bf",
+            "sha256": "9ddfb66be1f5f41e089607e7aa34480d50888b83992083b3340f1d01972521b1",
             "format": "json",
             "pointer": "/expectations"
           }
@@ -11604,21 +11604,21 @@
           "passed": true
         }
       ],
-      "executor_output_sha256": "c43ce04873b73571509ff6f98f202af59c83c13b5b4e4e08a0458f9f708a802d",
-      "grading_sha256": "999b020492bfd0d8bb650c1da354182401bc1b4488d1c430c67ace282f6ec356",
+      "executor_output_sha256": "c2bf5600f915e7bbbc7638e8110b5d8c0d6ac8461b3e11a94bd9fe95c2879253",
+      "grading_sha256": "1317c783bae227dd50a49f0530027da94f626f0873f60a4f0c75278d1b5c4f23",
       "reconciliation": {
         "execution_record": {
-          "sha256": "accbbf9d7659f8b136709b7b1f2c627558c3e3dadf3b6b2ffc7ed925682f2c44",
+          "sha256": "bfc05cd133acecce056fc1a412cd0162a3754da717e8e32b11357c08c8318f76",
           "format": "json",
           "pointer": ""
         },
         "execution_identity": {
           "basis": "recorded-thread",
-          "identity_sha256": "8a4350f6431aa9d376e3b3d1028ec25f91b9f0108ad98f2374bd5a43364cb1ee"
+          "identity_sha256": "a128131905a4d46e6433b6959d48a36b115ea9670646b39ce9a47b588edac1e9"
         },
-        "original_revision": "e35f860af1fbd8b92815e8359f6c79630e66b57c",
-        "original_corpus_sha256": "d9ba93a93842c8de7b217dac3c0c624d3a7a5dda53703186e356ea7727cc54f6",
-        "original_expectations_sha256": "0de25581b0ed1d425f29bb80fd8b55df8c53c2fb14d401c605b3210414e90592",
+        "original_revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
+        "original_corpus_sha256": "aeb2d112cf3c3a8294a15ce17e7ef1b954d9360b40b39284906703b87207f4c2",
+        "original_expectations_sha256": "ec42fa8e5f6fabaacc2ca3c89e8d55a77a9af41bd0237268253ad8616446a8c7",
         "inputs": {
           "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",
           "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": "68daf6a7ff51aa6671421810ba26e5a2d6504217fc837789d414b0759f889b74",
@@ -11633,7 +11633,7 @@
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "0f98df746432eaec062f639558e5cdee9e0909c249ae15fbacabfb2baea5d51f",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": "d3df411cb31446fbe28ea714d3295e010c8c111f05d00edd6653ffa0f4a96433",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
-          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/effort-floor-all-routes.md": "a44674a4e9d6f5c348d8c599bbdc4a7f27a22584528c57eb8a8e700809bc5037"
+          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/effort-floor-all-routes.md": "d390e2e37d42dda77ddedac4aa6552f356138a9dce77e64c6f7a4dc7d66e8830"
         },
         "prompt_sha256": "ae5dd9e48dd245e0ff811090b8d464aa552612f7a7836f9d26ca036492c485bb",
         "executor_model_basis": "configured",
@@ -11642,132 +11642,132 @@
         "adjudication": null,
         "evidence": [
           {
-            "sha256": "accbbf9d7659f8b136709b7b1f2c627558c3e3dadf3b6b2ffc7ed925682f2c44",
+            "sha256": "bfc05cd133acecce056fc1a412cd0162a3754da717e8e32b11357c08c8318f76",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "609f217f1d2ab99a1409e3d4eada222f138ffc52ca9ca739ddeb68fc4fee38b4",
+            "sha256": "43540146d8fa6a8b7760c8da4c9f6034199fb2dc8b23c9a61d31e9bf3448a965",
             "format": "json",
             "pointer": "/source_revision"
           },
           {
-            "sha256": "180a70923d8cca4e581826030bfedc5bdab1d22ebbd6d58f4eab405035860c56",
+            "sha256": "91a48e3a2ef2729b4a4bb26a92ca357d938bdbdbdd8d636d50a16db08fefd6e6",
             "format": "json",
             "pointer": "/inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1evals.json/sha256"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1SKILL.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1capability-probes-and-fallbacks.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1classifying-security-work.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1daybreak-routing.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1effort-policy.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1general-tiers.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1jev-suitability.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1SKILL.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1dispatch-evidence.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1foreign-harness-peers.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1invocation-topology-receipt.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1native-codex-subagents.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1scarce-specialist-handoffs.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/fixture_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1fixtures~1effort-floor-all-routes.md"
           },
           {
-            "sha256": "7906ebb19b1b44c97a844123115a9f6c167822cd1d25d16f18532099167dbbe4",
+            "sha256": "a9989abebfbe6a152dca4b0fae5f2bf2f1c96a09da63d7ee6cadb9cc88d4bae9",
             "format": "json",
             "pointer": "/case_prompt"
           },
           {
-            "sha256": "c43ce04873b73571509ff6f98f202af59c83c13b5b4e4e08a0458f9f708a802d",
+            "sha256": "c2bf5600f915e7bbbc7638e8110b5d8c0d6ac8461b3e11a94bd9fe95c2879253",
             "format": "utf8",
             "pointer": ""
           },
           {
-            "sha256": "609f217f1d2ab99a1409e3d4eada222f138ffc52ca9ca739ddeb68fc4fee38b4",
+            "sha256": "43540146d8fa6a8b7760c8da4c9f6034199fb2dc8b23c9a61d31e9bf3448a965",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "7549a15ea492b4b8ef71b380ab810283b661761dc8af6dd6f4bfbd72c6109ddc",
+            "sha256": "0cb52ebd16e0d78d3fa2f942745b926aba9edd1f65d6bc037d480f68db335d10",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "999b020492bfd0d8bb650c1da354182401bc1b4488d1c430c67ace282f6ec356",
+            "sha256": "1317c783bae227dd50a49f0530027da94f626f0873f60a4f0c75278d1b5c4f23",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "bafb6421fc94789dfb923e29bd4f4c54ebe578027a9a4623acc7b13619e97cde",
+            "sha256": "40313d1eab6056354a01d5adffef9707004595b7aec7ea68cd1a09c9b23de0d5",
             "format": "json",
             "pointer": "/responses/0/response"
           },
           {
-            "sha256": "bafb6421fc94789dfb923e29bd4f4c54ebe578027a9a4623acc7b13619e97cde",
+            "sha256": "40313d1eab6056354a01d5adffef9707004595b7aec7ea68cd1a09c9b23de0d5",
             "format": "json",
             "pointer": "/expectations"
           },
           {
-            "sha256": "4f3abff2c81d2aea91d2b46e897daac1ca250dbf58318a704436d4e527a32a42",
+            "sha256": "719dec68fd3664a910454a845960d7269fd4e63e31b9422571cd14bd7ae4598d",
             "format": "json",
             "pointer": "/cases/19/raw/expectations"
           },
           {
-            "sha256": "d244b9ce6e191194c2b3cb637c6ea2ed37cee6769a2ffe55372e13d7a046c623",
+            "sha256": "592a23b8108ac9777c2ebd237b7bff13821380eb4ad73de6c3110122d0443bd3",
             "format": "json",
             "pointer": "/expectations"
           }
@@ -11798,21 +11798,21 @@
           "passed": true
         }
       ],
-      "executor_output_sha256": "2dbcc2ac3f6ef60658b771b27241f5e852d2a72c65cd62aa8df98c342a5bd81a",
-      "grading_sha256": "999b020492bfd0d8bb650c1da354182401bc1b4488d1c430c67ace282f6ec356",
+      "executor_output_sha256": "87cd4a04e57eefe25abd14b4689e7156df38358bd3b2509ee52cc6d7980aba01",
+      "grading_sha256": "1317c783bae227dd50a49f0530027da94f626f0873f60a4f0c75278d1b5c4f23",
       "reconciliation": {
         "execution_record": {
-          "sha256": "0911bae7f0d65474eaf412360bc79f7651e0c7474be6d7daf7d3a9d9e0b1690a",
+          "sha256": "1358c7d83f1c2b24afd5dba0393decba6690f2fdb43683a299cc49fe93a3d06b",
           "format": "json",
           "pointer": ""
         },
         "execution_identity": {
           "basis": "recorded-thread",
-          "identity_sha256": "957a0f86ccb39adbaa219ec09acc82241dfb1be351c709f703e9892a173e21f1"
+          "identity_sha256": "f6f26ceae44b61b10eae88ce7fb59d17452593df7d6e7ecccfa0aebd132c9ad8"
         },
-        "original_revision": "e35f860af1fbd8b92815e8359f6c79630e66b57c",
-        "original_corpus_sha256": "d9ba93a93842c8de7b217dac3c0c624d3a7a5dda53703186e356ea7727cc54f6",
-        "original_expectations_sha256": "0de25581b0ed1d425f29bb80fd8b55df8c53c2fb14d401c605b3210414e90592",
+        "original_revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
+        "original_corpus_sha256": "aeb2d112cf3c3a8294a15ce17e7ef1b954d9360b40b39284906703b87207f4c2",
+        "original_expectations_sha256": "ec42fa8e5f6fabaacc2ca3c89e8d55a77a9af41bd0237268253ad8616446a8c7",
         "inputs": {
           "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",
           "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": "68daf6a7ff51aa6671421810ba26e5a2d6504217fc837789d414b0759f889b74",
@@ -11827,7 +11827,7 @@
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "0f98df746432eaec062f639558e5cdee9e0909c249ae15fbacabfb2baea5d51f",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": "d3df411cb31446fbe28ea714d3295e010c8c111f05d00edd6653ffa0f4a96433",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
-          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/effort-floor-all-routes.md": "a44674a4e9d6f5c348d8c599bbdc4a7f27a22584528c57eb8a8e700809bc5037"
+          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/effort-floor-all-routes.md": "d390e2e37d42dda77ddedac4aa6552f356138a9dce77e64c6f7a4dc7d66e8830"
         },
         "prompt_sha256": "ae5dd9e48dd245e0ff811090b8d464aa552612f7a7836f9d26ca036492c485bb",
         "executor_model_basis": "configured",
@@ -11836,132 +11836,132 @@
         "adjudication": null,
         "evidence": [
           {
-            "sha256": "0911bae7f0d65474eaf412360bc79f7651e0c7474be6d7daf7d3a9d9e0b1690a",
+            "sha256": "1358c7d83f1c2b24afd5dba0393decba6690f2fdb43683a299cc49fe93a3d06b",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "1888b7ece48d9a457b0aa863e78f546f189c75a9b2c0ddd6361316896071e151",
+            "sha256": "c329f6ebf1bea71320a25ccd82dd16025f1e43e515e60f204dcc0dbb27344990",
             "format": "json",
             "pointer": "/source_revision"
           },
           {
-            "sha256": "180a70923d8cca4e581826030bfedc5bdab1d22ebbd6d58f4eab405035860c56",
+            "sha256": "91a48e3a2ef2729b4a4bb26a92ca357d938bdbdbdd8d636d50a16db08fefd6e6",
             "format": "json",
             "pointer": "/inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1evals.json/sha256"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1SKILL.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1capability-probes-and-fallbacks.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1classifying-security-work.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1daybreak-routing.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1effort-policy.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1general-tiers.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1jev-suitability.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1SKILL.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1dispatch-evidence.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1foreign-harness-peers.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1invocation-topology-receipt.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1native-codex-subagents.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1scarce-specialist-handoffs.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/fixture_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1fixtures~1effort-floor-all-routes.md"
           },
           {
-            "sha256": "1e20eec6cf6d62d1a73fb7b3c302cbbf1a27f4e1fd523303e04233e156c3a686",
+            "sha256": "fbc94175a017b91e4770c82c6754535b2414e22a5b61c8d70a14af4ad97dccbb",
             "format": "json",
             "pointer": "/case_prompt"
           },
           {
-            "sha256": "2dbcc2ac3f6ef60658b771b27241f5e852d2a72c65cd62aa8df98c342a5bd81a",
+            "sha256": "87cd4a04e57eefe25abd14b4689e7156df38358bd3b2509ee52cc6d7980aba01",
             "format": "utf8",
             "pointer": ""
           },
           {
-            "sha256": "1888b7ece48d9a457b0aa863e78f546f189c75a9b2c0ddd6361316896071e151",
+            "sha256": "c329f6ebf1bea71320a25ccd82dd16025f1e43e515e60f204dcc0dbb27344990",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "7549a15ea492b4b8ef71b380ab810283b661761dc8af6dd6f4bfbd72c6109ddc",
+            "sha256": "0cb52ebd16e0d78d3fa2f942745b926aba9edd1f65d6bc037d480f68db335d10",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "999b020492bfd0d8bb650c1da354182401bc1b4488d1c430c67ace282f6ec356",
+            "sha256": "1317c783bae227dd50a49f0530027da94f626f0873f60a4f0c75278d1b5c4f23",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "bafb6421fc94789dfb923e29bd4f4c54ebe578027a9a4623acc7b13619e97cde",
+            "sha256": "40313d1eab6056354a01d5adffef9707004595b7aec7ea68cd1a09c9b23de0d5",
             "format": "json",
             "pointer": "/responses/1/response"
           },
           {
-            "sha256": "bafb6421fc94789dfb923e29bd4f4c54ebe578027a9a4623acc7b13619e97cde",
+            "sha256": "40313d1eab6056354a01d5adffef9707004595b7aec7ea68cd1a09c9b23de0d5",
             "format": "json",
             "pointer": "/expectations"
           },
           {
-            "sha256": "4f3abff2c81d2aea91d2b46e897daac1ca250dbf58318a704436d4e527a32a42",
+            "sha256": "719dec68fd3664a910454a845960d7269fd4e63e31b9422571cd14bd7ae4598d",
             "format": "json",
             "pointer": "/cases/19/raw/expectations"
           },
           {
-            "sha256": "bd523dde2b002e91efb49c63136b3509ebc5af409921b0364c13529eb239817a",
+            "sha256": "a7ea1d15612b70a766f22f9453f1b4685f61c37b0504b88fb3d17b65e8554a8c",
             "format": "json",
             "pointer": "/expectations"
           }
@@ -11992,21 +11992,21 @@
           "passed": true
         }
       ],
-      "executor_output_sha256": "66ea7daf90a1511d3d3207924332cbf7fc8b44c735331620899749e925580321",
-      "grading_sha256": "999b020492bfd0d8bb650c1da354182401bc1b4488d1c430c67ace282f6ec356",
+      "executor_output_sha256": "3d8fd4c05e42dd6b84e32e52d3fe3cf5934621546fd7ff2eef93507b5f2f51af",
+      "grading_sha256": "1317c783bae227dd50a49f0530027da94f626f0873f60a4f0c75278d1b5c4f23",
       "reconciliation": {
         "execution_record": {
-          "sha256": "7f3d45a7138d9d522714c9d6d3a5c72b7e9d692c2fb15c639addda95c2566b88",
+          "sha256": "8c8f91cc9d66654f00e776e777412b506c0ca9bc80d65add5c46ab4bc4e8fc5d",
           "format": "json",
           "pointer": ""
         },
         "execution_identity": {
           "basis": "recorded-thread",
-          "identity_sha256": "ccec43e3879841248c983622b42d66c872a948f73fe52647a151cd8fc169e9c6"
+          "identity_sha256": "99328e2658dd0a47ea07fca5e01232f8c608000584444eff09712e8a96ab2490"
         },
-        "original_revision": "e35f860af1fbd8b92815e8359f6c79630e66b57c",
-        "original_corpus_sha256": "d9ba93a93842c8de7b217dac3c0c624d3a7a5dda53703186e356ea7727cc54f6",
-        "original_expectations_sha256": "0de25581b0ed1d425f29bb80fd8b55df8c53c2fb14d401c605b3210414e90592",
+        "original_revision": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
+        "original_corpus_sha256": "aeb2d112cf3c3a8294a15ce17e7ef1b954d9360b40b39284906703b87207f4c2",
+        "original_expectations_sha256": "ec42fa8e5f6fabaacc2ca3c89e8d55a77a9af41bd0237268253ad8616446a8c7",
         "inputs": {
           "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",
           "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": "68daf6a7ff51aa6671421810ba26e5a2d6504217fc837789d414b0759f889b74",
@@ -12021,7 +12021,7 @@
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "0f98df746432eaec062f639558e5cdee9e0909c249ae15fbacabfb2baea5d51f",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": "d3df411cb31446fbe28ea714d3295e010c8c111f05d00edd6653ffa0f4a96433",
           "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
-          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/effort-floor-all-routes.md": "a44674a4e9d6f5c348d8c599bbdc4a7f27a22584528c57eb8a8e700809bc5037"
+          "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/effort-floor-all-routes.md": "d390e2e37d42dda77ddedac4aa6552f356138a9dce77e64c6f7a4dc7d66e8830"
         },
         "prompt_sha256": "ae5dd9e48dd245e0ff811090b8d464aa552612f7a7836f9d26ca036492c485bb",
         "executor_model_basis": "configured",
@@ -12030,132 +12030,132 @@
         "adjudication": null,
         "evidence": [
           {
-            "sha256": "7f3d45a7138d9d522714c9d6d3a5c72b7e9d692c2fb15c639addda95c2566b88",
+            "sha256": "8c8f91cc9d66654f00e776e777412b506c0ca9bc80d65add5c46ab4bc4e8fc5d",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "84fff6622a5e27d3e7a0e0104e9bfb26c97a580ea764b1129a3e0efe0e66c15c",
+            "sha256": "c9e415b600ae10b9455e5665e6ca0df7c58f7472079509fc41482ee04173f517",
             "format": "json",
             "pointer": "/source_revision"
           },
           {
-            "sha256": "180a70923d8cca4e581826030bfedc5bdab1d22ebbd6d58f4eab405035860c56",
+            "sha256": "91a48e3a2ef2729b4a4bb26a92ca357d938bdbdbdd8d636d50a16db08fefd6e6",
             "format": "json",
             "pointer": "/inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1evals.json/sha256"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1SKILL.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1capability-probes-and-fallbacks.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1classifying-security-work.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1daybreak-routing.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1effort-policy.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1general-tiers.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1references~1jev-suitability.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1SKILL.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1dispatch-evidence.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1foreign-harness-peers.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1invocation-topology-receipt.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1native-codex-subagents.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/runtime_inputs/plugins~1rolecasting~1skills~1delegating-cross-agent-work~1references~1scarce-specialist-handoffs.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/fixture_inputs/plugins~1rolecasting~1skills~1choosing-agent-models~1evals~1fixtures~1effort-floor-all-routes.md"
           },
           {
-            "sha256": "36f3734b5dc9898c2135a05df71303efeb558b2befd934b1ed0b3ea0042f46ca",
+            "sha256": "e3f398cfe1bbc0628db7ef9d23c057a808417faf24cb80af38ea1de0ca391b16",
             "format": "json",
             "pointer": "/case_prompt"
           },
           {
-            "sha256": "66ea7daf90a1511d3d3207924332cbf7fc8b44c735331620899749e925580321",
+            "sha256": "3d8fd4c05e42dd6b84e32e52d3fe3cf5934621546fd7ff2eef93507b5f2f51af",
             "format": "utf8",
             "pointer": ""
           },
           {
-            "sha256": "84fff6622a5e27d3e7a0e0104e9bfb26c97a580ea764b1129a3e0efe0e66c15c",
+            "sha256": "c9e415b600ae10b9455e5665e6ca0df7c58f7472079509fc41482ee04173f517",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "7549a15ea492b4b8ef71b380ab810283b661761dc8af6dd6f4bfbd72c6109ddc",
+            "sha256": "0cb52ebd16e0d78d3fa2f942745b926aba9edd1f65d6bc037d480f68db335d10",
             "format": "json",
             "pointer": "/requested_model"
           },
           {
-            "sha256": "999b020492bfd0d8bb650c1da354182401bc1b4488d1c430c67ace282f6ec356",
+            "sha256": "1317c783bae227dd50a49f0530027da94f626f0873f60a4f0c75278d1b5c4f23",
             "format": "json",
             "pointer": ""
           },
           {
-            "sha256": "bafb6421fc94789dfb923e29bd4f4c54ebe578027a9a4623acc7b13619e97cde",
+            "sha256": "40313d1eab6056354a01d5adffef9707004595b7aec7ea68cd1a09c9b23de0d5",
             "format": "json",
             "pointer": "/responses/2/response"
           },
           {
-            "sha256": "bafb6421fc94789dfb923e29bd4f4c54ebe578027a9a4623acc7b13619e97cde",
+            "sha256": "40313d1eab6056354a01d5adffef9707004595b7aec7ea68cd1a09c9b23de0d5",
             "format": "json",
             "pointer": "/expectations"
           },
           {
-            "sha256": "4f3abff2c81d2aea91d2b46e897daac1ca250dbf58318a704436d4e527a32a42",
+            "sha256": "719dec68fd3664a910454a845960d7269fd4e63e31b9422571cd14bd7ae4598d",
             "format": "json",
             "pointer": "/cases/19/raw/expectations"
           },
           {
-            "sha256": "be9c7e703cb82c5e811f3dc2257b4db8675b6ba5442d316930592e6c1c2e9ad1",
+            "sha256": "d3ac1498ef048cf6a9adfbe0d229b05cf00fe643b39d9055eb32d3ff99d6d746",
             "format": "json",
             "pointer": "/expectations"
           }
@@ -14944,7 +14944,7 @@
     }
   ],
   "private_evidence": {
-    "manifest_sha256": "5b7d225b24e1b4aa7420006670613d4aaa92463c50bc9d25cacec39401d0c8b3"
+    "manifest_sha256": "73a2896f274f3be41ab78b0d0ff0a50adda5bc516211741c7bcd1b051e9342b4"
   },
   "attestation": null
 }
