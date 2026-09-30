@@ -241,6 +241,11 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             "This status-only helper surface provides no probe actuator.",
             "do not provide a closed-world task-tool deny",
             "does not infer authority or disposability from the workspace path",
+            "uses a separate provider-identity admission phase",
+            "A missing or mismatched identity stops the operation without `model/list`",
+            "processes at most 128 messages for one request",
+            "Notifications have no status consumer and are discarded",
+            "fixed diagnostic vocabulary",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, routing)

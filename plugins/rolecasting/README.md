@@ -102,9 +102,11 @@ valid result rather than being discarded.
 The catalog program validates one explicitly supplied maintained-format Markdown
 catalog and can emit redacted positions or one explicit private selection. The
 status-only account program accepts only that strict selection on standard
-input. Its status operation binds selected authentication state and the
-provider usage account, then queries an explicit Codex executable without
-creating a task thread. Its harmless-probe operation is explicitly unavailable
+input. Its status operation uses the provider's identity-bearing rate-limit
+bootstrap reply to bind the selected account before model discovery, then
+queries the exact model without creating a task thread. Its bounded transport
+discards unused notifications and exposes only fixed diagnostics. Its
+harmless-probe operation is explicitly unavailable
 and fails before authentication access or launch because the public Codex
 controls do not provide a closed-world task-tool deny. The skill's
 `references/daybreak-routing.md` owns the full invocation and effect contract.

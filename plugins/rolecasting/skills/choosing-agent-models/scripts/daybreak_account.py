@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import json
 import os
 import selectors
 import subprocess
@@ -17,11 +16,16 @@ from daybreak_records import (
     allowlisted_capacity,
     dump_json,
     load_selection,
+    load_strict_json,
     split_selector,
 )
 
 RPC_TIMEOUT_SECONDS = 10
 MAX_MODEL_PAGES = 100
+MAX_RPC_FRAME_BYTES = 1_048_576
+MAX_RPC_BUFFER_BYTES = MAX_RPC_FRAME_BYTES + 1
+MAX_RPC_MESSAGES_PER_REQUEST = 128
+RPC_READ_BYTES = 65_536
 CHATGPT_PLAN_TYPES = {
     "free",
     "go",
@@ -47,86 +51,179 @@ CHATGPT_PLAN_TYPES = {
 class AccountError(RuntimeError):
     """A selected-account operation failed without authorizing fallback."""
 
+    MESSAGES = {
+        "DA001": "invalid command line",
+        "DA002": "invalid selection input",
+        "DA003": "selected authentication unavailable",
+        "DA004": "selected authentication malformed",
+        "DA005": "selected authentication does not match selection",
+        "DA006": "invalid Codex executable",
+        "DA007": "Codex launch failed",
+        "DA008": "provider transport setup failed",
+        "DA009": "provider transport write failed",
+        "DA010": "provider transport read failed",
+        "DA011": "provider transport closed",
+        "DA012": "provider response timed out",
+        "DA013": "provider frame exceeds limit",
+        "DA014": "provider message limit exceeded",
+        "DA015": "provider protocol message invalid",
+        "DA016": "provider requested unsupported client action",
+        "DA017": "provider RPC failed",
+        "DA018": "provider account response invalid",
+        "DA019": "provider is not authenticated with ChatGPT",
+        "DA020": "provider identity unavailable",
+        "DA021": "provider identity does not match selection",
+        "DA022": "provider model response invalid",
+        "DA023": "provider model pagination invalid",
+        "DA024": "exact model is not uniquely exposed",
+        "DA025": "exact model effort is not exposed",
+        "DA026": "exact model lacks Daybreak Blue access",
+        "DA027": "provider rate-limit response invalid",
+        "DA028": "provider usage response invalid",
+        "DA029": "provider capacity response invalid",
+        "DA030": "freshness interval invalid",
+        "DA031": "harmless probe unavailable in status-only increment",
+        "DA032": "provider teardown failed",
+        "DA033": "invalid exact model selector",
+        "DA034": "invalid probe workspace",
+        "DA035": "status output failed",
+    }
+
+    def __init__(self, code: str):
+        if code not in self.MESSAGES:
+            raise ValueError("unknown account diagnostic code")
+        self.code = code
+        super().__init__(self.MESSAGES[code])
+
+    def public_diagnostic(self) -> str:
+        return f"{self.code}: {self.MESSAGES[self.code]}"
+
+
+class FixedArgumentParser(argparse.ArgumentParser):
+    def error(self, message: str) -> None:
+        raise AccountError("DA001")
+
 
 class RpcClient:
     def __init__(self, process: subprocess.Popen[bytes]):
         self.process = process
         self.sequence = 0
         self.buffer = b""
-        self.notifications: list[dict[str, object]] = []
-        self.selector = selectors.DefaultSelector()
         assert process.stdout is not None
-        self.selector.register(process.stdout, selectors.EVENT_READ)
+        try:
+            self.selector = selectors.DefaultSelector()
+            self.selector.register(process.stdout, selectors.EVENT_READ)
+        except (OSError, UnicodeError, ValueError) as error:
+            if hasattr(self, "selector"):
+                try:
+                    self.selector.close()
+                except (OSError, ValueError):
+                    pass
+            raise AccountError("DA008") from error
 
-    def close(self) -> None:
-        self.selector.close()
+    def close(self) -> bool:
+        try:
+            self.selector.close()
+        except (OSError, ValueError):
+            return False
+        return True
 
     def send(self, message: dict[str, object]) -> None:
         assert self.process.stdin is not None
-        self.process.stdin.write(dump_json(message).encode("utf-8"))
-        self.process.stdin.flush()
+        try:
+            self.process.stdin.write(dump_json(message).encode("utf-8"))
+            self.process.stdin.flush()
+        except (OSError, UnicodeError, ValueError) as error:
+            raise AccountError("DA009") from error
 
     def request(self, method: str, params: object) -> object:
         self.sequence += 1
         request_id = self.sequence
         self.send({"id": request_id, "method": method, "params": params})
         deadline = time.monotonic() + RPC_TIMEOUT_SECONDS
-        while True:
+        for _message_number in range(MAX_RPC_MESSAGES_PER_REQUEST):
             message = self.read_message(deadline)
+            has_id = "id" in message
+            has_method = "method" in message
+            if has_method and not isinstance(message.get("method"), str):
+                raise AccountError("DA015")
+            if has_id and has_method:
+                raise AccountError("DA016")
+            if has_id and type(message.get("id")) is not int:
+                raise AccountError("DA015")
             if message.get("id") == request_id:
+                if ("error" in message) == ("result" in message):
+                    raise AccountError("DA015")
                 if "error" in message:
                     error = message.get("error")
                     if not isinstance(error, dict) or not isinstance(
                         error.get("message"), str
                     ):
-                        raise AccountError(
-                            f"{method} returned RPC error with invalid payload"
-                        )
+                        raise AccountError("DA015")
                     code = error.get("code")
                     if type(code) is not int or not -(2**63) <= code < 2**63:
-                        raise AccountError(
-                            f"{method} returned RPC error with invalid code"
-                        )
-                    raise AccountError(f"{method} returned RPC error {code}")
+                        raise AccountError("DA015")
+                    raise AccountError("DA017")
                 if "result" not in message:
-                    raise AccountError(f"{method} returned no result")
+                    raise AccountError("DA015")
                 return message["result"]
-            if "id" in message and "method" in message:
-                raise AccountError("app server requested an unsupported client action")
-            if "method" in message:
-                self.notifications.append(message)
+            if has_id:
+                raise AccountError("DA015")
+            if has_method:
+                continue
+            raise AccountError("DA015")
+        raise AccountError("DA014")
 
     def read_message(self, deadline: float) -> dict[str, object]:
         while b"\n" not in self.buffer:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise AccountError("app server response timed out")
-            events = self.selector.select(timeout=remaining)
+                raise AccountError("DA012")
+            try:
+                events = self.selector.select(timeout=remaining)
+            except (OSError, ValueError) as error:
+                raise AccountError("DA010") from error
             if not events:
-                raise AccountError("app server response timed out")
+                raise AccountError("DA012")
             assert self.process.stdout is not None
-            chunk = os.read(self.process.stdout.fileno(), 65536)
+            available = MAX_RPC_BUFFER_BYTES - len(self.buffer)
+            if available <= 0:
+                raise AccountError("DA013")
+            try:
+                chunk = os.read(
+                    self.process.stdout.fileno(), min(RPC_READ_BYTES, available)
+                )
+            except (OSError, ValueError) as error:
+                raise AccountError("DA010") from error
             if not chunk:
-                raise AccountError("app server terminated before completing")
+                raise AccountError("DA011")
             self.buffer += chunk
+            if b"\n" not in self.buffer and len(self.buffer) > MAX_RPC_FRAME_BYTES:
+                raise AccountError("DA013")
+        newline = self.buffer.index(b"\n")
+        if newline > MAX_RPC_FRAME_BYTES:
+            raise AccountError("DA013")
         line, self.buffer = self.buffer.split(b"\n", 1)
         try:
-            message = json.loads(line)
-        except (UnicodeDecodeError, json.JSONDecodeError) as error:
-            raise AccountError("app server returned malformed JSON") from error
+            message = load_strict_json(line)
+        except (UnicodeDecodeError, RecordError) as error:
+            raise AccountError("DA015") from error
         if not isinstance(message, dict):
-            raise AccountError("app server returned a non-object message")
+            raise AccountError("DA015")
         return message
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = FixedArgumentParser(
+        prog="daybreak-account",
         description=(
             "Use one strict selection from stdin. The supplied Codex executable may "
             "read and write its selected CODEX_HOME and contact its provider."
         )
     )
-    subparsers = parser.add_subparsers(dest="operation", required=True)
+    subparsers = parser.add_subparsers(
+        dest="operation", required=True, parser_class=FixedArgumentParser
+    )
     status = subparsers.add_parser(
         "status-refresh",
         description=(
@@ -155,44 +252,51 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def load_selection_input() -> tuple[dict[str, str], Path]:
-    selection = load_selection(sys.stdin.read())
-    raw_home = selection["account_home"]
-    account_home = Path(raw_home)
-    if raw_home.startswith("~/"):
-        relative = Path(raw_home[2:])
-        if (
-            relative.is_absolute()
-            or not relative.parts
-            or {".", ".."}.intersection(relative.parts)
-        ):
-            raise RecordError("selection account_home has invalid ~/PATH syntax")
-        account_home = Path.home() / relative
-    elif not account_home.is_absolute():
-        raise RecordError(
-            "selection account_home must be absolute or use ~/PATH syntax"
-        )
+    try:
+        selection = load_selection(sys.stdin.read())
+        raw_home = selection["account_home"]
+        account_home = Path(raw_home)
+        if raw_home.startswith("~/"):
+            relative = Path(raw_home[2:])
+            if (
+                relative.is_absolute()
+                or not relative.parts
+                or {".", ".."}.intersection(relative.parts)
+            ):
+                raise AccountError("DA002")
+            account_home = Path.home() / relative
+        elif not account_home.is_absolute():
+            raise AccountError("DA002")
+    except AccountError:
+        raise
+    except (OSError, UnicodeError, RecordError, RuntimeError, ValueError) as error:
+        raise AccountError("DA002") from error
     return selection, account_home
 
 
 def verify_binding(selection: dict[str, str], account_home: Path) -> None:
     try:
-        auth = json.loads((account_home / "auth.json").read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise AccountError("selected authentication record is unavailable") from error
+        content = (account_home / "auth.json").read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        raise AccountError("DA003") from error
+    try:
+        auth = load_strict_json(content)
+    except RecordError as error:
+        raise AccountError("DA004") from error
     if not isinstance(auth, dict) or not isinstance(auth.get("tokens"), dict):
-        raise AccountError("selected authentication record is malformed")
+        raise AccountError("DA004")
     observed = auth["tokens"].get("account_id")
     if not isinstance(observed, str):
-        raise AccountError("selected authentication record is malformed")
+        raise AccountError("DA004")
     if observed != selection["authenticated_account_id"]:
-        raise AccountError("selected binding does not match authentication state")
+        raise AccountError("DA005")
 
 
 def start_server(
     executable: Path, account_home: Path, cwd: Path
 ) -> subprocess.Popen[bytes]:
     if not executable.is_absolute():
-        raise AccountError("codex executable must be an absolute path")
+        raise AccountError("DA006")
     environment = dict(os.environ)
     environment["CODEX_HOME"] = str(account_home)
     try:
@@ -204,19 +308,23 @@ def start_server(
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
         )
-    except OSError as error:
-        raise AccountError("supplied codex executable could not be launched") from error
+    except (OSError, UnicodeError) as error:
+        raise AccountError("DA007") from error
 
 
-def stop_server(process: subprocess.Popen[bytes]) -> None:
-    if process.poll() is not None:
-        return
-    process.terminate()
+def stop_server(process: subprocess.Popen[bytes]) -> bool:
     try:
-        process.wait(timeout=2)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait()
+        if process.poll() is not None:
+            return True
+        process.terminate()
+        try:
+            process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=2)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return False
+    return True
 
 
 def initialize(client: RpcClient) -> None:
@@ -233,89 +341,95 @@ def initialize(client: RpcClient) -> None:
 def exposed_model(client: RpcClient, model: str, effort: str) -> dict[str, object]:
     cursor: object = None
     seen_cursors: set[str] = set()
-    matches: list[dict[str, object]] = []
+    match: dict[str, object] | None = None
+    match_count = 0
     for _page_number in range(MAX_MODEL_PAGES):
         page = client.request(
             "model/list", {"includeHidden": True, "limit": 100, "cursor": cursor}
         )
         if not isinstance(page, dict) or not isinstance(page.get("data"), list):
-            raise AccountError("model/list returned an invalid result")
+            raise AccountError("DA022")
         for candidate in page["data"]:
             if isinstance(candidate, dict) and candidate.get("model") == model:
-                matches.append(candidate)
+                match_count += 1
+                if match is None:
+                    match = candidate
         cursor = page.get("nextCursor")
         if cursor is None:
             break
         if not isinstance(cursor, str) or not cursor or cursor in seen_cursors:
-            raise AccountError("model/list pagination is invalid")
+            raise AccountError("DA023")
         seen_cursors.add(cursor)
     else:
-        raise AccountError("model/list pagination is invalid")
-    if len(matches) != 1:
-        raise AccountError("exact model selector is not uniquely exposed")
-    efforts = matches[0].get("supportedReasoningEfforts")
+        raise AccountError("DA023")
+    if match_count != 1 or match is None:
+        raise AccountError("DA024")
+    efforts = match.get("supportedReasoningEfforts")
     if not isinstance(efforts, list):
-        raise AccountError("model/list returned an invalid result")
+        raise AccountError("DA022")
     exposed_efforts = set()
     for item in efforts:
         if not isinstance(item, dict) or not isinstance(
             item.get("reasoningEffort"), str
         ):
-            raise AccountError("model/list returned an invalid result")
+            raise AccountError("DA022")
         exposed_efforts.add(item["reasoningEffort"])
     if effort not in exposed_efforts:
-        raise AccountError("exact model effort is not exposed")
-    access = matches[0].get("availableAccessPrograms")
+        raise AccountError("DA025")
+    access = match.get("availableAccessPrograms")
     cyber = access.get("cyber") if isinstance(access, dict) else None
     if not isinstance(cyber, list) or not all(
         isinstance(program, str) for program in cyber
     ):
-        raise AccountError("model/list returned an invalid result")
+        raise AccountError("DA022")
     if "daybreakBlue" not in cyber:
-        raise AccountError("exact model does not advertise Daybreak Blue access")
-    return matches[0]
+        raise AccountError("DA026")
+    return match
 
 
 def validate_authenticated_account(account_result: object) -> None:
     if not isinstance(account_result, dict):
-        raise AccountError("account/read returned an invalid result")
+        raise AccountError("DA018")
     requires_auth = account_result.get("requiresOpenaiAuth")
     if type(requires_auth) is not bool:
-        raise AccountError("account/read returned an invalid result")
+        raise AccountError("DA018")
     account = account_result.get("account")
     if not isinstance(account, dict) or account.get("type") != "chatgpt":
-        raise AccountError("selected app server is not authenticated with ChatGPT")
+        raise AccountError("DA019")
     if "email" not in account or "planType" not in account:
-        raise AccountError("account/read returned an invalid result")
+        raise AccountError("DA018")
     email = account.get("email")
     plan_type = account.get("planType")
     if (email is not None and not isinstance(email, str)) or (
         not isinstance(plan_type, str) or plan_type not in CHATGPT_PLAN_TYPES
     ):
-        raise AccountError("account/read returned an invalid result")
+        raise AccountError("DA018")
 
 
 def selected_capacity(rate_result: object, model: str) -> dict[str, object] | None:
     if not isinstance(rate_result, dict) or not isinstance(
         rate_result.get("rateLimits"), dict
     ):
-        raise AccountError("account/rateLimits/read returned an invalid result")
+        raise AccountError("DA027")
     buckets = rate_result.get("rateLimitsByLimitId")
     if buckets is not None and not isinstance(buckets, dict):
-        raise AccountError("account/rateLimits/read returned an invalid result")
+        raise AccountError("DA027")
     matches = []
     if isinstance(buckets, dict):
         for value in buckets.values():
             if not isinstance(value, dict):
-                raise AccountError("account/rateLimits/read returned an invalid result")
+                raise AccountError("DA027")
             slug = value.get("normalModelSlug")
             if slug is not None and not isinstance(slug, str):
-                raise AccountError("account/rateLimits/read returned an invalid result")
+                raise AccountError("DA027")
             if slug == model:
                 matches.append(value)
     if len(matches) > 1:
-        raise AccountError("multiple capacity buckets match the exact model")
-    return allowlisted_capacity(matches[0]) if matches else None
+        raise AccountError("DA027")
+    try:
+        return allowlisted_capacity(matches[0]) if matches else None
+    except RecordError as error:
+        raise AccountError("DA029") from error
 
 
 def status_refresh(
@@ -326,29 +440,33 @@ def status_refresh(
     freshness_seconds: int,
 ) -> dict[str, object]:
     if freshness_seconds <= 0:
-        raise AccountError("freshness-seconds must be positive")
-    model, effort = split_selector(selector)
-    process = start_server(executable, account_home, account_home)
-    client = RpcClient(process)
+        raise AccountError("DA030")
     try:
+        model, effort = split_selector(selector)
+    except RecordError as error:
+        raise AccountError("DA033") from error
+    process = start_server(executable, account_home, account_home)
+    client: RpcClient | None = None
+    try:
+        client = RpcClient(process)
         initialize(client)
         account_result = client.request("account/read", {"refreshToken": False})
         validate_authenticated_account(account_result)
-        exposed_model(client, model, effort)
         rate_result = client.request(
             "account/rateLimits/read",
             {"excludeResetCreditDetails": True, "supportsLunaReserve": False},
         )
         if not isinstance(rate_result, dict):
-            raise AccountError("account/rateLimits/read returned an invalid result")
+            raise AccountError("DA027")
         provider_account_id = rate_result.get("accountId")
         if not isinstance(provider_account_id, str):
-            raise AccountError("provider account identity is unavailable")
+            raise AccountError("DA020")
         if provider_account_id != expected_account_id:
-            raise AccountError("provider account does not match selected binding")
+            raise AccountError("DA021")
+        exposed_model(client, model, effort)
         ordinary = rate_result.get("ordinaryUsageAllowed")
         if ordinary is not None and not isinstance(ordinary, bool):
-            raise AccountError("ordinaryUsageAllowed has an invalid type")
+            raise AccountError("DA028")
         return {
             "schema": "rolecasting-daybreak-status-v1",
             "operation": "status-refresh",
@@ -362,13 +480,16 @@ def status_refresh(
             "capacity": selected_capacity(rate_result, model),
         }
     finally:
-        client.close()
-        stop_server(process)
+        close_ok = client.close() if client is not None else True
+        stop_ok = stop_server(process)
+        if not close_ok or not stop_ok:
+            if sys.exc_info()[0] is None:
+                raise AccountError("DA032")
 
 
 def main(argv: list[str] | None = None) -> int:
-    arguments = build_parser().parse_args(argv)
     try:
+        arguments = build_parser().parse_args(argv)
         selection, account_home = load_selection_input()
         if arguments.operation == "status-refresh":
             verify_binding(selection, account_home)
@@ -380,19 +501,27 @@ def main(argv: list[str] | None = None) -> int:
                 arguments.freshness_seconds,
             )
         else:
-            split_selector(arguments.model)
+            try:
+                split_selector(arguments.model)
+            except RecordError as error:
+                raise AccountError("DA033") from error
             if not arguments.codex.is_absolute():
-                raise AccountError("codex executable must be an absolute path")
+                raise AccountError("DA006")
             if not arguments.workspace.is_absolute():
-                raise AccountError("workspace must be an absolute path")
-            raise AccountError(
-                "supported Codex controls do not provide a closed-world task-tool "
-                "deny; no Codex process was launched"
-            )
-    except (AccountError, RecordError) as error:
-        print(f"daybreak_account: {error}", file=sys.stderr)
+                raise AccountError("DA034")
+            raise AccountError("DA031")
+    except AccountError as error:
+        print(f"daybreak-account {error.public_diagnostic()}", file=sys.stderr)
         return 1
-    sys.stdout.write(dump_json(result))
+    try:
+        sys.stdout.write(dump_json(result))
+        sys.stdout.flush()
+    except (OSError, UnicodeError, ValueError):
+        print(
+            f"daybreak-account {AccountError('DA035').public_diagnostic()}",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

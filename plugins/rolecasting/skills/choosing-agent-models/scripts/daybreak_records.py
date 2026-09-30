@@ -31,15 +31,23 @@ def _reject_constant(value: str) -> None:
     raise RecordError(f"non-finite JSON value: {value}")
 
 
-def load_selection(content: str) -> dict[str, str]:
-    """Load the one strict selection object accepted by the account CLI."""
+def load_strict_json(content: str | bytes) -> object:
+    """Load one JSON value without duplicate keys or non-finite constants."""
     try:
-        value = json.loads(
+        return json.loads(
             content,
             object_pairs_hook=_unique_object,
             parse_constant=_reject_constant,
         )
-    except json.JSONDecodeError as error:
+    except (json.JSONDecodeError, RecursionError) as error:
+        raise RecordError("JSON input must contain exactly one valid value") from error
+
+
+def load_selection(content: str) -> dict[str, str]:
+    """Load the one strict selection object accepted by the account CLI."""
+    try:
+        value = load_strict_json(content)
+    except RecordError as error:
         raise RecordError("selection must be exactly one JSON value") from error
     required = {"schema", "account_home", "authenticated_account_id"}
     if not isinstance(value, dict) or set(value) != required:

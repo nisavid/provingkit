@@ -30,6 +30,28 @@ class CatalogError(ValueError):
     """A supplied catalog does not contain complete public binding blocks."""
 
 
+CATALOG_DIAGNOSTICS = {
+    "DC001": "invalid command line",
+    "DC002": "catalog input unavailable",
+    "DC003": "catalog input invalid",
+    "DC004": "catalog position unavailable",
+    "DC005": "catalog output failed",
+}
+
+
+class CatalogCliError(ValueError):
+    """The command line is outside the public catalog CLI contract."""
+
+
+class FixedArgumentParser(argparse.ArgumentParser):
+    def error(self, message: str) -> None:
+        raise CatalogCliError
+
+
+def diagnostic(code: str) -> str:
+    return f"daybreak-catalog {code}: {CATALOG_DIAGNOSTICS[code]}"
+
+
 def parse_catalog(content: str) -> list[tuple[str, str]]:
     """Parse every supported Markdown binding block in a catalog document."""
     lines = content.splitlines()
@@ -103,13 +125,16 @@ def parse_catalog(content: str) -> list[tuple[str, str]]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = FixedArgumentParser(
+        prog="daybreak-catalog",
         description=(
             "Read only the explicitly supplied catalog; do not access account state "
             "or launch Codex."
         )
     )
-    subparsers = parser.add_subparsers(dest="operation", required=True)
+    subparsers = parser.add_subparsers(
+        dest="operation", required=True, parser_class=FixedArgumentParser
+    )
     inspect_parser = subparsers.add_parser(
         "inspect",
         description=(
@@ -131,11 +156,18 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    arguments = build_parser().parse_args(argv)
+    try:
+        arguments = build_parser().parse_args(argv)
+    except CatalogCliError:
+        print(diagnostic("DC001"), file=sys.stderr)
+        return 1
     try:
         bindings = parse_catalog(arguments.catalog.read_text(encoding="utf-8"))
-    except (CatalogError, OSError, UnicodeDecodeError) as error:
-        print(f"daybreak_catalog: {error}", file=sys.stderr)
+    except CatalogError:
+        print(diagnostic("DC003"), file=sys.stderr)
+        return 1
+    except (OSError, UnicodeError):
+        print(diagnostic("DC002"), file=sys.stderr)
         return 1
 
     if arguments.operation == "inspect":
@@ -146,24 +178,31 @@ def main(argv: list[str] | None = None) -> int:
                 {"position": position} for position in range(1, len(bindings) + 1)
             ],
         }
-        sys.stdout.write(dump_json(result))
+        try:
+            sys.stdout.write(dump_json(result))
+            sys.stdout.flush()
+        except (OSError, UnicodeError, ValueError):
+            print(diagnostic("DC005"), file=sys.stderr)
+            return 1
         return 0
     if not 1 <= arguments.position <= len(bindings):
-        print(
-            "daybreak_catalog: position is outside the supplied catalog",
-            file=sys.stderr,
-        )
+        print(diagnostic("DC004"), file=sys.stderr)
         return 1
     account_home, account_id = bindings[arguments.position - 1]
-    sys.stdout.write(
-        dump_json(
-            {
-                "schema": "rolecasting-daybreak-account-selection-v1",
-                "account_home": account_home,
-                "authenticated_account_id": account_id,
-            }
+    try:
+        sys.stdout.write(
+            dump_json(
+                {
+                    "schema": "rolecasting-daybreak-account-selection-v1",
+                    "account_home": account_home,
+                    "authenticated_account_id": account_id,
+                }
+            )
         )
-    )
+        sys.stdout.flush()
+    except (OSError, UnicodeError, ValueError):
+        print(diagnostic("DC005"), file=sys.stderr)
+        return 1
     return 0
 
 
