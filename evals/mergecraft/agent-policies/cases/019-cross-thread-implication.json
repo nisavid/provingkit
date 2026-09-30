@@ -377,7 +377,7 @@
     {
       "id": "q1-implication",
       "severity": "quality",
-      "text": "Identifies that ben's comment implicates ana's fix and returns both threads to addressing, with the evidence from chunks.py."
+      "text": "Accepts ben's finding with the `chunks.py` evidence, re-adjudicates ana's thread against the new head, and says whether her announced fix still holds."
     }
   ],
   "write_checks": [

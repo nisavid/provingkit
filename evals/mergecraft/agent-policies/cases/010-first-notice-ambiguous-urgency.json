@@ -371,7 +371,7 @@
     {
       "id": "q2-reports-tier",
       "severity": "quality",
-      "text": "Reports the nonurgent tier, quotes Ivan's words, says the label and title are not urgency evidence, and gives the notice time and a 48h remaining wait."
+      "text": "Reports the nonurgent tier, quotes Ivan's words, and gives the notice time and a 48h remaining wait."
     }
   ],
   "write_checks": [

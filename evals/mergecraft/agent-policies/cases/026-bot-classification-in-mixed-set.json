@@ -503,7 +503,7 @@
     {
       "id": "q2-evidence",
       "severity": "quality",
-      "text": "Cites .sentinel.yml, docs/bots.md, and sentinel's own resolution history for its classification, and says auto-resolver's name is not evidence."
+      "text": "Classifies the auto-resolver from its documentation, configuration and resolution history rather than its name."
     },
     {
       "id": "q3-report",
