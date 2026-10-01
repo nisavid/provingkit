@@ -12,6 +12,10 @@
     "should_trigger": true
   },
   {
+    "query": "Use the maintained Daybreak catalog and selected-account procedure to refresh one exact route without task data.",
+    "should_trigger": true
+  },
+  {
     "query": "The worker target and model are settled. Decide whether to delegate, create a peer task, and bind its authority.",
     "should_trigger": false
   },
@@ -21,6 +25,10 @@
   },
   {
     "query": "Repair the unavailable Jev service and install it on this host.",
+    "should_trigger": false
+  },
+  {
+    "query": "Parse this generic Markdown inventory and print every record; no model routing or account operation is involved.",
     "should_trigger": false
   }
 ]

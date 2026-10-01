@@ -57,7 +57,9 @@
         "model-selection",
         "model-selection-record",
         "reasoning-effort-selection",
-        "capability-proof"
+        "capability-proof",
+        "daybreak-catalog-inspection",
+        "daybreak-single-account-interaction"
       ],
       "may_call": []
     }

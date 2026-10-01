@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import re
@@ -66,6 +67,15 @@ NATIVE_CODEX_REFERENCE = (
     "skills/delegating-cross-agent-work/references/native-codex-subagents.md"
 )
 NATIVE_CODEX_RUNTIME = "skills/delegating-cross-agent-work/scripts/native_codex.py"
+DAYBREAK_CATALOG_RUNTIME = (
+    "skills/choosing-agent-models/scripts/daybreak_catalog.py"
+)
+DAYBREAK_ACCOUNT_RUNTIME = (
+    "skills/choosing-agent-models/scripts/daybreak_account.py"
+)
+DAYBREAK_RECORDS_RUNTIME = (
+    "skills/choosing-agent-models/scripts/daybreak_records.py"
+)
 TASK_WITNESS_PROVIDER = "task-witness-provider.json"
 DISPATCH_EVIDENCE_CONTRACT = "rolecasting-dispatch-evidence-v2"
 PROVIDER_CONTRACT = "task-witness-provider-declaration-v1"
@@ -396,6 +406,12 @@ def validate_topology(root: Path) -> dict:
         owner_to_skill.get("invocation-plan") == DELEGATING_SKILL
         and owner_to_skill.get("model-selection-record") == CHOOSING_SKILL,
         "operational handoff ownership drift",
+    )
+    require(
+        owner_to_skill.get("daybreak-catalog-inspection") == CHOOSING_SKILL
+        and owner_to_skill.get("daybreak-single-account-interaction")
+        == CHOOSING_SKILL,
+        "Daybreak helper ownership drift",
     )
     require(
         "invocation-topology-receipt" in skills[DELEGATING_SKILL]["owns"]
@@ -948,6 +964,66 @@ def validate_delivery(root: Path) -> dict:
     return delivery
 
 
+def imported_roots(content: str, relative: str) -> tuple[ast.AST, set[str]]:
+    try:
+        tree = ast.parse(content, filename=relative)
+    except SyntaxError as error:
+        raise ContractError(f"invalid Python in {relative}: {error.msg}") from error
+    imports = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imports.update(alias.name.partition(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            imports.add((node.module or "").partition(".")[0])
+    return tree, imports
+
+
+def validate_daybreak_helpers(root: Path) -> set[str]:
+    paths = {
+        DAYBREAK_CATALOG_RUNTIME,
+        DAYBREAK_ACCOUNT_RUNTIME,
+        DAYBREAK_RECORDS_RUNTIME,
+    }
+    sources = {path: read(root, path) for path in paths}
+    records_tree, records_imports = imported_roots(
+        sources[DAYBREAK_RECORDS_RUNTIME], DAYBREAK_RECORDS_RUNTIME
+    )
+    require(
+        records_imports <= {"__future__", "json"},
+        "Daybreak shared records import boundary drift",
+    )
+    for node in ast.walk(records_tree):
+        require(
+            not (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id
+                in {"__import__", "compile", "eval", "exec", "input", "open"}
+            ),
+            "Daybreak shared records ambient effect boundary drift",
+        )
+
+    _catalog_tree, catalog_imports = imported_roots(
+        sources[DAYBREAK_CATALOG_RUNTIME], DAYBREAK_CATALOG_RUNTIME
+    )
+    require(
+        not catalog_imports.intersection(
+            {"http", "os", "selectors", "socket", "subprocess", "urllib"}
+        )
+        and "daybreak_account" not in sources[DAYBREAK_CATALOG_RUNTIME],
+        "Daybreak catalog effect boundary drift",
+    )
+    _account_tree, account_imports = imported_roots(
+        sources[DAYBREAK_ACCOUNT_RUNTIME], DAYBREAK_ACCOUNT_RUNTIME
+    )
+    require(
+        "daybreak_catalog" not in account_imports
+        and "daybreak-account-bindings" not in sources[DAYBREAK_ACCOUNT_RUNTIME],
+        "Daybreak account catalog-isolation boundary drift",
+    )
+    return paths
+
+
 def build_executor_payload(
     *,
     prompt: str,
@@ -1291,6 +1367,7 @@ def inspect_contract(root: Path) -> tuple[dict, set[str]]:
     bodies, prompts, semantic_files = validate_skills(root, topology)
     validate_manifests(root, topology, prompts)
     semantic_files |= validate_task_witness_provider(root)
+    semantic_files |= validate_daybreak_helpers(root)
     delivery = validate_delivery(root)
     semantic_files |= {
         ".claude-plugin/plugin.json",
