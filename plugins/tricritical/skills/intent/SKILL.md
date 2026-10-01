@@ -9,7 +9,7 @@ Read and apply [the shared review-input boundary](references/review-input-bounda
 
 Read and apply [the shared review-output contract](references/review-output-contract.md).
 
-Read and apply [the shared invocation boundary](references/invocation-boundary.md), using [topology.json](references/topology.json) as the graph authority.
+Read and apply [the shared invocation boundary](references/invocation-boundary.md).
 
 Read [references/rubric.md](references/rubric.md), then test the frozen candidate against the requested outcome and explicit non-goals. Challenge omissions and misleading completion claims, not merely implementation style.
 

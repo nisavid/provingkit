@@ -9,7 +9,7 @@ Read and apply [the shared review-input boundary](references/review-input-bounda
 
 Read and apply [the shared review-output contract](references/review-output-contract.md).
 
-Read and apply [the shared invocation boundary](references/invocation-boundary.md), using [topology.json](references/topology.json) as the graph authority.
+Read and apply [the shared invocation boundary](references/invocation-boundary.md).
 
 Read [references/rubric.md](references/rubric.md), then trace changed behavior through real entry points, callers, contracts, data, and failure paths. Seek reachable failures, not speculative lists.
 

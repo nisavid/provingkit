@@ -309,7 +309,6 @@ def _projection_sources(source, skill):
         for constant in ("SHARED_INPUT_BOUNDARY_PATH", "SHARED_INVOCATION_BOUNDARY_PATH"):
             if constant in constants:
                 pairs[constants[constant]] = constants[constant]
-        pairs["references/topology.json"] = "topology.json"
         if name in constants.get("REVIEW_OUTPUT_SKILLS", []):
             pairs[constants["SHARED_OUTPUT_CONTRACT_PATH"]] = constants["SHARED_OUTPUT_CONTRACT_PATH"]
     return {f"plugins/{plugin}/skills/{name}/{local}": f"plugins/{plugin}/{canonical}"
