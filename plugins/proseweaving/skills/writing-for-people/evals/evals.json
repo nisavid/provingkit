@@ -584,7 +584,7 @@
       "expectations": [
         {
           "id": "ambiguity-visible",
-          "text": "The reply explains that two chats share the requested title and seeks the distinguishing project or detail.",
+          "text": "The reply explains that two chats share the requested title and seeks the distinguishing project or detail. If it offers links to the two alternatives, each clickable label includes the verified title Release checkpoint plus its corresponding project qualifier; project-only labels do not satisfy the title-label contract.",
           "severity": "quality"
         },
         {

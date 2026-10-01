@@ -83,7 +83,10 @@ When a reference helps the reader find work, evidence, or a resource, give it a
 usable destination for this audience and venue. Link the verified title or a
 clear description of the resource rather than leaving a known destination
 behind a bare name or opaque identifier. In a client conversation that supports
-chat links, use the chat's current verified title as the clickable label.
+chat links, use the chat's current verified title as the clickable label. When
+identical titles need disambiguation, keep the title in each link label and add
+verified context, such as `Release checkpoint (Atlas)` and
+`Release checkpoint (Beacon)`.
 
 Resolve available identities through the client's supported lookup and link
 contract. Match each title and destination to the same resource; a matching
