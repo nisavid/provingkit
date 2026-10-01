@@ -1,0 +1,27 @@
+{
+  "id": "cached-open",
+  "clock": {
+    "setup_at": "2026-09-17T12:00:00+00:00",
+    "entry_at": "2026-09-17T12:05:00+00:00"
+  },
+  "binding": true,
+  "registrations": [
+    {
+      "task_id": "synthetic-task-a",
+      "episode": "cached-open-episode-a",
+      "gate": {
+        "kind": "quota_recovery",
+        "account": "synthetic-account-a",
+        "route": "synthetic-route",
+        "bucket": "weekly",
+        "policy_revision": "synthetic-policy-1"
+      }
+    }
+  ],
+  "notice_baseline": "No prior notice selected or acknowledged.",
+  "cache_remaining": 40,
+  "cadence": {
+    "policy": "adaptive"
+  },
+  "native_control": "Accepted send and emitted notice are synthetic typed assertions, never native delivery evidence."
+}

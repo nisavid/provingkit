@@ -1,0 +1,41 @@
+{
+  "id": "partial-observation",
+  "clock": {
+    "setup_at": "2026-09-17T12:00:00+00:00",
+    "entry_at": "2026-09-17T13:05:00+00:00"
+  },
+  "binding": true,
+  "registrations": [
+    {
+      "task_id": "synthetic-task-a",
+      "episode": "partial-observation-episode-a",
+      "gate": {
+        "kind": "quota_recovery",
+        "account": "synthetic-account-a",
+        "route": "synthetic-route",
+        "bucket": "weekly",
+        "policy_revision": "synthetic-policy-1"
+      }
+    },
+    {
+      "task_id": "synthetic-task-b",
+      "episode": "partial-observation-episode-b",
+      "gate": {
+        "kind": "quota_recovery",
+        "account": "synthetic-account-b",
+        "route": "synthetic-route",
+        "bucket": "weekly",
+        "policy_revision": "synthetic-policy-1"
+      }
+    }
+  ],
+  "notice_baseline": "No prior notice selected or acknowledged.",
+  "cache_remaining": 0,
+  "cadence": {
+    "policy": "adaptive"
+  },
+  "controls": {
+    "observation": "partial",
+    "unanswered_task_id": "synthetic-task-b"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "held",
+  "clock": {
+    "setup_at": "2026-09-17T12:00:00+00:00",
+    "entry_at": "2026-09-17T13:20:00+00:00"
+  },
+  "binding": true,
+  "registrations": [
+    {
+      "task_id": "synthetic-task-a",
+      "episode": "held-episode-a",
+      "gate": {
+        "kind": "quota_recovery",
+        "account": "synthetic-account-a",
+        "route": "synthetic-route",
+        "bucket": "weekly",
+        "policy_revision": "synthetic-policy-1"
+      }
+    }
+  ],
+  "notice_baseline": "Setup at 13:05 acknowledged the held:policy-revision-mismatch notice; no notice remains pending.",
+  "cache_remaining": 0,
+  "cadence": {
+    "policy": "adaptive"
+  },
+  "controls": {
+    "observation": "held"
+  },
+  "prelude": {
+    "at": "2026-09-17T13:05:00+00:00",
+    "until": "complete"
+  }
+}

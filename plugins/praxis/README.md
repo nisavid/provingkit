@@ -170,15 +170,14 @@ From the repository root:
 
 ```sh
 python -m unittest tests.test_validate_praxis
-python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding
+python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding tests.test_aeon_bell_fixtures
 python scripts/validate_praxis.py .
 ```
 
 - `scripts/validate_praxis.py` is the plugin validator. It checks the manifest
   identity and Claude projection, the topology, skill discovery and resource
   links, the Python runtime scripts and Node-free ECMAScript resource,
-  inventory and portability, and the content
-  lock. `tests/test_validate_praxis.py` owns it: most cases exercise it
+  fixture inventory and portability, and the content lock. `tests/test_validate_praxis.py` owns it: most cases exercise it
   against temporary synthetic fixtures, and one case requires the checked-in
   source candidate to pass against its content lock.
 - `tests/test_aeon_bell.py`, `tests/test_aeon_bell_codex_status.py`, and
@@ -197,16 +196,32 @@ python scripts/validate_praxis.py .
   failed or superseded trials stay in the corpus rather than being dropped.
   Read each record's status and source digests before using it as evidence
   for a candidate.
-- `evals/praxis/corpus.json` is the raw control-plane scenario definition
-  consumed by `evals/control-plane-matrix.json`. It declares one scenario and
-  its expectations; it carries no executed run, grade, or gate result.
+- `evals/praxis/corpus.json` declares 16 current application cases with
+  explicit expectation IDs and `safety`/`quality` severity. It covers the
+  fourteen monitor branches, shared-gate reuse, and paused/expired owner
+  state. The shared-gate case remains the control-plane matrix's selected
+  scenario and begins with a due query; its fresh open answer arrives after
+  the issued observation action. Cached-open reuse is a separate case.
+  Case definitions and expected outcomes carry no executed agent run, grade,
+  or gate result.
+- `evals/praxis/fixtures/` carries one synthetic JSON recipe per case.
+  `tests/praxis_fixture.py` constructs their state through public commands
+  and supplies recording controls; `tests/test_aeon_bell_fixtures.py` checks
+  their behavior through the real engine. Each repetition requires a fresh
+  test-owned store and captures returned IDs, entry references, and active
+  artifact paths. Synthetic controls never execute an issued native action
+  or status-adapter command. Fixture rehearsals establish constructed engine
+  interactions, without supplying agent repetitions or operating evidence.
+  The helper is controller-side raw engine preparation; an actor runner
+  must separately configure the required structured binding, native-result
+  association, and semantic classification channels.
 - `evals/praxis/skills/aeon-bell/trigger-evals.json` declares the six Boolean
   discovery inputs. It preserves the historical queries and expected choices,
   and carries no observed invocation or passing grade. Its skill-specific path
   supplies ownership to the ordinary behavior-evaluation inventory.
 - `release/plugin-content-locks/praxis.json` is the governed content identity.
-  It pins the plugin bytes, all three public test modules, the retained trial
-  history, and the application and discovery inputs.
+  It pins the plugin bytes, the public test modules and fixture controller,
+  the retained trial history, and all application fixtures and discovery inputs.
   `python scripts/validate_praxis.py --write-content-lock .` is the only
   supported writer; run it after an authored change, then run the ordinary
   validator.
@@ -219,6 +234,15 @@ inclusion in a Provingkit release needs its own evidence.
 For a current ordinary behavior Receipt, load the maintained
 [behavior-evaluation procedure](https://github.com/nisavid/provingkit/blob/main/docs/behavior-eval-receipts.md)
 from its reviewed revision. The retained trial summaries supply no current
-application repetitions or discovery observations. The raw application
-scenario still needs a reviewed rubric and complete current coverage before
-fresh evaluation; the member Receipt CLI joins the source Kit integration.
+application repetitions or discovery observations. The current policy requires three fresh repetitions per application case
+(48 total) and six independent discovery observations. Deliver the raw case
+prompt and recipe, the candidate skill and routed references, and configured
+structured entry/state/control channels. Keep expectation objects, grader
+instructions, rehearsal assertions, and expected outcomes out of executor
+inputs. Retain actual tool interactions separately from the strict ordinary
+execution envelope; each grade binds the execution bytes and assesses the
+observed interaction against every current expectation. These `safety` labels
+select the ordinary all-three threshold, without claiming security assurance.
+Freeze committed cases, controller, skill, references, and the content lock
+before execution. The member Receipt CLI and final closure join source Kit
+integration; source preparation supplies no ready member Receipt.

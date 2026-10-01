@@ -62,15 +62,36 @@ PUBLIC_TESTS = (
     "tests/test_aeon_bell.py",
     "tests/test_aeon_bell_codex_status.py",
     "tests/test_aeon_bell_binding.py",
+    "tests/test_aeon_bell_fixtures.py",
+)
+PUBLIC_FIXTURE_RUNNER = "tests/praxis_fixture.py"
+APPLICATION_CASE_IDS = (
+    'empty',
+    'cached-closed',
+    'cached-open',
+    'due-closed',
+    'due-open',
+    'held',
+    'pending',
+    'adapter-failure',
+    'restart-send',
+    'restart-notice',
+    'partial-observation',
+    'schedule-unavailable',
+    'missing-binding',
+    'missing-binding-repeat',
+    'shared-gate-single-wake',
+    'paused-expired',
 )
 EVAL_CORPUS_ROOT = "evals/praxis"
-# Closed source inventory: retained trials, the control-plane application
-# definition, and the current Boolean discovery inputs. These bytes supply no
-# newly executed observations or grades.
+# Closed source inventory: retained trials, current application definitions
+# and fixtures, and Boolean discovery inputs. These bytes supply no newly
+# executed agent observations or grades.
 EVAL_CORPORA = (
     "evals/praxis/experiment.json",
     "evals/praxis/corpus.json",
     "evals/praxis/skills/aeon-bell/trigger-evals.json",
+    *(f"evals/praxis/fixtures/{case_id}.json" for case_id in APPLICATION_CASE_IDS),
 )
 TRIGGER_CORPUS = "evals/praxis/skills/aeon-bell/trigger-evals.json"
 CONTENT_LOCK_RELATIVE = Path("release/plugin-content-locks/praxis.json")
@@ -638,6 +659,7 @@ def validate_javascript_runtime_resource(root: Path, relative: str) -> None:
 def validate_public_evidence(repository: Path) -> None:
     for relative in PUBLIC_TESTS:
         validate_python_source(repository, relative, "public test", credentials=False)
+    validate_python_source(repository, PUBLIC_FIXTURE_RUNNER, "public fixture runner", credentials=False)
     corpus_root = contained_path(repository, EVAL_CORPUS_ROOT, "eval corpus root")
     for relative in EVAL_CORPORA:
         corpus = load_json(
@@ -669,7 +691,7 @@ def locked_inputs(repository: Path, plugin: Path) -> dict[str, Path]:
         (PLUGIN_RELATIVE / relative).as_posix(): path
         for relative, path in plugin_inventory(plugin).items()
     }
-    for relative in (*PUBLIC_TESTS, *EVAL_CORPORA):
+    for relative in (*PUBLIC_TESTS, PUBLIC_FIXTURE_RUNNER, *EVAL_CORPORA):
         inputs[relative] = contained_path(repository, relative, "locked input")
     return inputs
 

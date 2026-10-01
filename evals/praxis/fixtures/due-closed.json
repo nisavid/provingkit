@@ -1,0 +1,29 @@
+{
+  "id": "due-closed",
+  "clock": {
+    "setup_at": "2026-09-17T12:00:00+00:00",
+    "entry_at": "2026-09-17T13:05:00+00:00"
+  },
+  "binding": true,
+  "registrations": [
+    {
+      "task_id": "synthetic-task-a",
+      "episode": "due-closed-episode-a",
+      "gate": {
+        "kind": "quota_recovery",
+        "account": "synthetic-account-a",
+        "route": "synthetic-route",
+        "bucket": "weekly",
+        "policy_revision": "synthetic-policy-1"
+      },
+      "expected_open_at": "2026-09-17T19:05:00+00:00"
+    }
+  ],
+  "notice_baseline": "No prior notice selected or acknowledged.",
+  "cadence": {
+    "policy": "adaptive"
+  },
+  "controls": {
+    "observation": "closed"
+  }
+}

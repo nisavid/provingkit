@@ -27,6 +27,29 @@ EVAL_CORPORA_RELATIVE = (
     EVAL_CORPUS_RELATIVE, SCENARIO_CORPUS_RELATIVE, TRIGGER_CORPUS_RELATIVE,
 )
 
+CASE_IDS = (
+    'empty',
+    'cached-closed',
+    'cached-open',
+    'due-closed',
+    'due-open',
+    'held',
+    'pending',
+    'adapter-failure',
+    'restart-send',
+    'restart-notice',
+    'partial-observation',
+    'schedule-unavailable',
+    'missing-binding',
+    'missing-binding-repeat',
+    'shared-gate-single-wake',
+    'paused-expired',
+)
+
+EVAL_CORPORA_RELATIVE += tuple(
+    Path(f"evals/praxis/fixtures/{case_id}.json") for case_id in CASE_IDS
+)
+
 # PyYAML is a test dependency, as for the sibling validator suites: a missing
 # module fails this module loudly instead of skipping every contract check.
 import yaml  # noqa: E402,F401
@@ -174,6 +197,13 @@ class ValidatePraxisTests(unittest.TestCase):
             }]) + "\n",
             encoding="utf-8",
         )
+        fixtures = self.repo / "evals/praxis/fixtures"
+        fixtures.mkdir(exist_ok=True)
+        for case_id in CASE_IDS:
+            (fixtures / f"{case_id}.json").write_text(
+                json.dumps({"case_id": case_id, "synthetic": True}) + "\n")
+        (self.repo / "tests/praxis_fixture.py").write_text(SYNTHETIC_RUNTIME)
+        (self.repo / "tests/test_aeon_bell_fixtures.py").write_text(SYNTHETIC_PUBLIC_TEST)
         for path in self.repo.rglob("*"):
             if path.is_file():
                 path.chmod(0o755 if path == runtime else 0o644)
@@ -211,6 +241,22 @@ class ValidatePraxisTests(unittest.TestCase):
         self.assertIn("aeon-bell", result.stderr)
         self.assertNotIn("Traceback", result.stderr)
         self.assertFalse((self.repo / LOCK_RELATIVE).exists())
+
+    def test_admits_fresh_case_fixtures_and_locks_their_bytes(self) -> None:
+        fixture_dir = self.repo / "evals/praxis/fixtures"
+        fixture_dir.mkdir(exist_ok=True)
+        for case_id in CASE_IDS:
+            (fixture_dir / f"{case_id}.json").write_text(
+                json.dumps({"case_id": case_id, "synthetic": True}) + "\n")
+        (self.repo / "tests/praxis_fixture.py").write_text(SYNTHETIC_RUNTIME)
+        (self.repo / "tests/test_aeon_bell_fixtures.py").write_text(SYNTHETIC_PUBLIC_TEST)
+        result = self.validate("--write-content-lock")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        locked = self.lock()["files"]
+        self.assertIn("tests/praxis_fixture.py", locked)
+        self.assertIn("evals/praxis/fixtures/empty.json", locked)
+        (fixture_dir / "empty.json").write_text('{"synthetic":"changed"}\n')
+        self.assert_rejected("content lock")
 
     def test_checked_in_candidate_passes_validation_against_its_content_lock(self) -> None:
         # The checked-in tree is a complete locked candidate: the Aeon Bell
@@ -286,6 +332,27 @@ class ValidatePraxisTests(unittest.TestCase):
         )
         for case in json.loads(triggers):
             self.assertEqual(set(case), {"id", "query", "should_trigger"})
+
+    def test_fresh_application_inputs_resolve_without_expectation_mappings(self) -> None:
+        from scripts import behavior_eval_corpora as corpora
+        path = SCENARIO_CORPUS_RELATIVE.as_posix()
+        content = (REPO_ROOT / path).read_bytes()
+        inspected = corpora.inspect_document(path, content, plugin="praxis")
+        documents = {path: content}
+        for record in inspected["records"]:
+            for fixture in record["fixtures"]:
+                target = REPO_ROOT / fixture["path"]
+                if target.is_file():
+                    documents[fixture["path"]] = target.read_bytes()
+        normalized = corpora.normalize_records(
+            inspected["records"], {"schema_version": 1, "entries": []}, documents)
+        self.assertEqual(normalized["diagnostics"], [])
+        self.assertEqual([case["case_id"]["id"] for case in normalized["cases"]], list(CASE_IDS))
+        self.assertTrue(all(case["status"] == "ready" for case in normalized["cases"]))
+        self.assertTrue(all(len(case["fixtures"]) == 2 for case in normalized["cases"]))
+        expectations = [item for case in normalized["cases"] for item in case["expectations"]]
+        self.assertTrue(all(item["severity"] in ("safety", "quality") for item in expectations))
+        self.assertEqual(len({item["id"] for item in expectations}), len(expectations))
 
     def test_validation_requires_the_generated_content_lock(self) -> None:
         self.assert_rejected("content lock is missing")

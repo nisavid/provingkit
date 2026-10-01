@@ -4,11 +4,75 @@
   "files": {
     "evals/praxis/corpus.json": {
       "mode": 420,
-      "sha256": "295b9ff98699b0e2ff1e2e23605c164a5fffead23ff7e2b0b66ccd1778e89189"
+      "sha256": "a14053c7f8c726f3457a0972975f7040fc85b29656cd78702dd85e8f1e0087bf"
     },
     "evals/praxis/experiment.json": {
       "mode": 420,
       "sha256": "bb51c80f66e7e86c21827ae18aa7f56d120cc05de202ecc7b2ad96e48f4fe7a2"
+    },
+    "evals/praxis/fixtures/adapter-failure.json": {
+      "mode": 420,
+      "sha256": "4b6dc23d804d7fd187ad44f42f620f9708e504d28ed8ab7ab19e4fcf3b28899c"
+    },
+    "evals/praxis/fixtures/cached-closed.json": {
+      "mode": 420,
+      "sha256": "bc25beb8f0456b6736726cf1fc16c1fec80d836226cbee961746386c92b843da"
+    },
+    "evals/praxis/fixtures/cached-open.json": {
+      "mode": 420,
+      "sha256": "a9dba6fe6b1686626c86cc3b907540a7722bcdbcb553a3ef181a41cb5fef5f0f"
+    },
+    "evals/praxis/fixtures/due-closed.json": {
+      "mode": 420,
+      "sha256": "cbc3956fa2cd22d165eb416df0f7e93c0973f3275162f5e3ae1f6e00da8858e5"
+    },
+    "evals/praxis/fixtures/due-open.json": {
+      "mode": 420,
+      "sha256": "9b296c6f295cc4bb54f8a32a55896d828fc210e1359f39aecbc2d95450dcc39a"
+    },
+    "evals/praxis/fixtures/empty.json": {
+      "mode": 420,
+      "sha256": "9f641f8af1164c334f6932277aebce12546cc9b51f1af4ad9234c45906b05b1a"
+    },
+    "evals/praxis/fixtures/held.json": {
+      "mode": 420,
+      "sha256": "d2fafeef127e2b1c258b6e50faf3301c57b7259030959d9724c94bc1f8196e04"
+    },
+    "evals/praxis/fixtures/missing-binding-repeat.json": {
+      "mode": 420,
+      "sha256": "78246a33bfd3525c9913f25608668097d7b443737d2a208667a42dacad002282"
+    },
+    "evals/praxis/fixtures/missing-binding.json": {
+      "mode": 420,
+      "sha256": "10f946e72bc45bb34b34a0d9feea5670784344b1c16d634c486bd255826d749e"
+    },
+    "evals/praxis/fixtures/partial-observation.json": {
+      "mode": 420,
+      "sha256": "46adbadc72ce836da3dc3972a8f5e523b9c632995f9a88cc51112b3ce93cf737"
+    },
+    "evals/praxis/fixtures/paused-expired.json": {
+      "mode": 420,
+      "sha256": "c6c44c61b6066c8e81055fae9a43db81b43d8bbb258a73ea4d2f28eeee4a1827"
+    },
+    "evals/praxis/fixtures/pending.json": {
+      "mode": 420,
+      "sha256": "3bd1d9cf1556e579dec1f4c9ba425b8fc22a29bfb8d5ea15f642d58209599e16"
+    },
+    "evals/praxis/fixtures/restart-notice.json": {
+      "mode": 420,
+      "sha256": "c4376be34d204ecd7c883219de0105471a6821ac85e7b201058aa57248c3e24d"
+    },
+    "evals/praxis/fixtures/restart-send.json": {
+      "mode": 420,
+      "sha256": "0fd9c36fcece3e86d59a188cc13fc3ae3dc28380135bd4bec3abe9c43fe18a3f"
+    },
+    "evals/praxis/fixtures/schedule-unavailable.json": {
+      "mode": 420,
+      "sha256": "0ddaa98551619bbf5210bb7cf2759bf33d27484c6b29078808dce1b8931cdb29"
+    },
+    "evals/praxis/fixtures/shared-gate-single-wake.json": {
+      "mode": 420,
+      "sha256": "93e4185c03e923806779c04d5d016b607ab25d483e67c8e1dbec17eb3ec6314e"
     },
     "evals/praxis/skills/aeon-bell/trigger-evals.json": {
       "mode": 420,
@@ -28,7 +92,7 @@
     },
     "plugins/praxis/README.md": {
       "mode": 420,
-      "sha256": "ac75861615f3aad4c4dc2006a0b78f3cd5c05876e8793d720c20fe1fca982302"
+      "sha256": "154bea216ada422799142f754fc671e31c70f41814826448b3a1b167c0912df3"
     },
     "plugins/praxis/plugin.json": {
       "mode": 420,
@@ -74,6 +138,10 @@
       "mode": 420,
       "sha256": "d96c55f96c26272a77ad4c413626faa09e192443fba85c990246fbeeb579e33a"
     },
+    "tests/praxis_fixture.py": {
+      "mode": 420,
+      "sha256": "ddb20f2c6a791e53234f07bde549fc496c6f8d182ed308dcafb2ac4bd5ab8276"
+    },
     "tests/test_aeon_bell.py": {
       "mode": 420,
       "sha256": "ae80134b4902c8357d50b2f9312a2660e3ccaad5f0e6c1042411aee4d4c91cbb"
@@ -85,6 +153,10 @@
     "tests/test_aeon_bell_codex_status.py": {
       "mode": 420,
       "sha256": "1c53e1e7d3cd880d91bd98acf9ef79ee7ddf035972b8c55d1c8cccb923e7feee"
+    },
+    "tests/test_aeon_bell_fixtures.py": {
+      "mode": 420,
+      "sha256": "10237a9a6d5c4411425e5a748214858c703243529e88a4aca9bcfbfa85f5f55a"
     }
   },
   "plugin_root": "plugins/praxis",
