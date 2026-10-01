@@ -53,6 +53,25 @@ the reader's understanding or decision and everyday verbs elsewhere. When a
 reader shows that an explanation did not land, recover the missing common
 ground and explain more simply.
 
+Use meaningful names for workflow stages and activities. Never use opaque
+project-local alphanumeric workflow codes in committed or published
+documentation, posts, descriptions, comments, or other durable/public prose.
+A legend does not make those codes suitable for that prose.
+
+Avoid those codes in communication with the operator or agents in other
+projects unless their shorthand benefit outweighs the overhead of a legend
+and a legend alongside the message defines every referenced code. Do not
+assume humans or project-colocated agents remember a code catalog; shorthand
+usually loses its value once a feature stabilizes.
+
+Before asking for a decision, identify the system, purpose, and interface
+whenever these are not established in the shared context. Distinguish an
+existing interface from a proposed one: an unbuilt command-line tool is a
+design option, not a command the reader can already run. Recover missing
+context from verified inputs; ask for a material fact only when it cannot be
+recovered. Workflow codes are distinct from literal commands, code symbols,
+versions, revision identifiers, and ticket references that identify the subject.
+
 ## Let Content Pick The Shape
 
 Make the central point easy to find, then supply the motivation, evidence, and
