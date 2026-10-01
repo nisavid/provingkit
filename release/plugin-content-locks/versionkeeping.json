@@ -15,7 +15,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/SKILL.md": {
-      "sha256": "9a2df150a566135fe5e3d1f9031e302030ac72b44fa9cf48c5d99381b9c0228f",
+      "sha256": "e662e76b6da1114b0dc2b33a1e736a8006d97ca84d2df1da30e5da50ac4320e5",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/agents/openai.yaml": {
@@ -35,7 +35,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/references/terminal-cleanup.md": {
-      "sha256": "ec9d1a682274427dbd56a9d35d923833ff6f0427046a0a6a295f48b6d9ddcd4e",
+      "sha256": "2ef7a120bb872180a1cdf18e2cda348a0fd671ca20a87c89c999645aab594353",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/scripts/check_eval_gate.py": {
@@ -95,7 +95,7 @@
       "mode": 420
     },
     "skills/using-persistent-git-worktrees/SKILL.md": {
-      "sha256": "32663f2cca9bf378dc5c2f09f0cb00a60d491a3551774815220be96ce6841fc7",
+      "sha256": "f619df05d4e66f9c7db72973ebfe859c80e73e99d0d7b87f38fe6f1fcfc18a9d",
       "mode": 420
     },
     "skills/using-persistent-git-worktrees/agents/openai.yaml": {

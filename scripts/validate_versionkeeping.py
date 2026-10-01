@@ -136,6 +136,13 @@ REQUIRED_COMMIT_POLICY_TERMS = (
     "release authority",
 )
 REQUIRED_TERMINAL_TERMS = (
+    "A task owns cleanup of a resource it created for its exclusive use",
+    "cleanup responsibility it explicitly accepted from another owner",
+    "disposable, retained, or transferred",
+    "An attachment list is discovery evidence, not a complete ownership record",
+    "Archiving a task and removing its resources are separate operations",
+    "including ignored files",
+    "Raw Git removal requires a supported manager fallback that preserves its bookkeeping",
     "dirty, directly agent-created worktree has a retention-only route",
     "durable, operator-visible, same-filesystem quarantine",
     "retain its Git worktree registration and branch",

@@ -68,6 +68,13 @@ checkout and active worktree and name the active path.
 
 ## Move, Repair, And Handoff
 
+At creation or accepted handoff, record the exact path, responsible task,
+creation or transfer evidence, and whether the worktree is disposable or retained.
+Use the checkpointing skill's [cleanup ownership definition](../checkpointing-and-publishing-git-work/references/terminal-cleanup.md#cleanup-ownership).
+Using a worktree or inheriting it through a fork does not transfer its cleanup
+responsibility. Keep native attachments current through available supported
+controls; retain the ownership record when those controls are unavailable.
+
 Prefer `git worktree move <old-path> <new-path>` for a wrongly placed worktree.
 Never copy a worktree with `cp -a`. If moving fails and the worktree is clean,
 remove and recreate only after confirming its identity. If it has uncommitted

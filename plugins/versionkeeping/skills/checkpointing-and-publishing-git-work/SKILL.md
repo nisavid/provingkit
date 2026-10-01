@@ -1,6 +1,6 @@
 ---
 name: checkpointing-and-publishing-git-work
-description: "Use when Git-backed changes require a baseline, task-only commit, exact-lease publication, separately authorized remote-ref deletion, local merge/keep/discard choice, or provenance-aware branch/worktree cleanup. Owns Git/index/ref/push safety, local integration, remote deletion, and terminal cleanup."
+description: "Use when Git-backed changes require a baseline, task-only commit, exact-lease publication, separately authorized remote-ref deletion, local merge/keep/discard choice, branch/worktree cleanup, or task archival with Git resources. Owns Git/index/ref/push safety, local integration, remote deletion, and terminal cleanup."
 ---
 
 # Checkpoint, Publish, And Finish Git Work
@@ -99,7 +99,9 @@ removal requires its exact SHA in `removal_authorized_commits`.
 For completed, verified named branches without an outcome, offer local merge, keep, or
 discard. Detached HEAD permits keep/report or explicit branch publication, never
 discard. Before merge/discard/deletion/cleanup, read [terminal cleanup](references/terminal-cleanup.md)
-and apply its provenance and confirmation rules.
+and apply its cleanup ownership, provenance, and confirmation rules. For task
+archival with Git resources, use the same reference; task archival can proceed
+with explicitly recorded pending resource cleanup.
 
 Before preparing or grading behavior evaluations, read
 [evaluation integrity](references/evaluation-integrity.md). It owns isolation,
