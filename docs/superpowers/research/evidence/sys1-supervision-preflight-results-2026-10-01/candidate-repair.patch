@@ -1,0 +1,41 @@
+--- a/native-supervision/hook_receipts.py
++++ b/native-supervision/hook_receipts.py
+@@ -55,0 +56 @@
++        key = (session, None if self.harness == "claude" else params.get("turnId"), ident)
+@@ -57,2 +58,2 @@
+-            require(ident not in self.started, "duplicate hook start")
+-            self.started[ident] = identity
++            require(key not in self.started, "duplicate hook start")
++            self.started[key] = identity
+@@ -60 +61 @@
+-            require(self.started.get(ident) == identity and ident not in self.completed,
++            require(self.started.get(key) == identity and key not in self.completed,
+@@ -63 +64 @@
+-                self.completed[ident] = identity
++                self.completed[key] = identity
+@@ -82 +83,3 @@
+-        return {"completed_native_ids": sorted(self.completed), "event_counts": dict(counts),
++        return {"completed_native_invocations": [
++                    {"session_id": item[0], "turn_id": item[1], "hook_id": item[2]}
++                    for item in sorted(self.completed, key=json.dumps)], "event_counts": dict(counts),
+--- a/native-supervision/test_preflight.py
++++ b/native-supervision/test_preflight.py
+@@ -75,0 +76,18 @@
++
++    def test_codex_stop_id_can_repeat_in_distinct_turns(self):
++        from hook_receipts import HookReceipts
++        tracker = HookReceipts("codex", "/fixture/.codex/hooks.json")
++        for index, turn in enumerate(("first", "second")):
++            run = {"id": "stop:11:project-hook", "eventName": "stop",
++                   "sourcePath": "/fixture/.codex/hooks.json", "handlerType": "command",
++                   "executionMode": "sync", "entries": [], "status": "running",
++                   "scope": "turn", "startedAt": 123 + index}
++            event = {"method": "hook/started", "params": {"threadId": "session", "turnId": turn, "run": run}}
++            self.assertTrue(tracker.receive(event, "session"))
++            event["method"] = "hook/completed"
++            run["status"] = "completed"
++            self.assertTrue(tracker.receive(event, "session"))
++            event["method"] = "hook/started"
++            run["status"] = "running"
++            with self.assertRaisesRegex(ValueError, "duplicate hook start"):
++                tracker.receive(event, "session")

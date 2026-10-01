@@ -1,0 +1,58 @@
+{
+  "scope": "local synthetic checks only; no native harness or model call",
+  "command": [
+    "python",
+    "-m",
+    "unittest",
+    "test_preflight"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "........\n----------------------------------------------------------------------\nRan 8 tests in 1.321s\n\nOK\n",
+  "sources": {
+    "native-supervision-followup/hook_receipts.py": "1d3300d2b7068a73abd1becdf409aef02df589beccdf24ccf5c3d45feca49000",
+    "native-supervision-followup/test_preflight.py": "cffd21b00f0ee9f553d849cf82769c6c5c25d506a9daa3f8120f44b39a9adffc"
+  },
+  "regression_red": {
+    "scope": "local single test against original receipt parser",
+    "test": "test_codex_stop_id_can_repeat_in_distinct_turns",
+    "exit_code": 1,
+    "error": "ValueError: duplicate hook start"
+  },
+  "retained_replay": {
+    "scope": "read-only replay of retained native receipts; no native launch; missing completion remains missing",
+    "results": [
+      {
+        "candidate": "native-supervision",
+        "case": "codex-parser-discovery",
+        "accepted_native_lifecycle_messages": 20,
+        "receipt_error": null,
+        "uncompleted_hooks": 0,
+        "reconcile": "passed"
+      },
+      {
+        "candidate": "native-supervision",
+        "case": "codex-report-sort",
+        "accepted_native_lifecycle_messages": 26,
+        "receipt_error": "duplicate hook start",
+        "uncompleted_hooks": 0
+      },
+      {
+        "candidate": "native-supervision-followup",
+        "case": "codex-parser-discovery",
+        "accepted_native_lifecycle_messages": 20,
+        "receipt_error": null,
+        "uncompleted_hooks": 0,
+        "reconcile": "passed"
+      },
+      {
+        "candidate": "native-supervision-followup",
+        "case": "codex-report-sort",
+        "accepted_native_lifecycle_messages": 27,
+        "receipt_error": null,
+        "uncompleted_hooks": 1,
+        "reconcile": "unfinished native hook receipts"
+      }
+    ]
+  }
+}

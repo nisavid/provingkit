@@ -1,0 +1,11 @@
+{
+  "files": {
+    "retained-record-identities.json": "4f13164eb7936866f2837461302e468dd3ba9ffad36011f246776a241d4929b4",
+    "artifact-checks.json": "c526d4dec3f700e6a59d766fc637920f06cebf393875ff3235ba13fdcba97a28",
+    "README.md": "54aba1c1e90b7fa73d9a09cff119b7590246b3baf86ca7a531b76f048fc57c2f",
+    "candidate-repair.patch": "9d110219f95d98939e0abe8fd9759f3b0b409620bca42687a839b95a3049f236",
+    "attempts.json": "f80ff545b52620e952d52aab762467f45e4d732a77f28700ba560b9711be543a",
+    "local-repair-checks.json": "0b679ce708abce6ff213c78dff49cdad21583e6bf2e867a99d414e5dad0ab739",
+    "inspection-reviews.json": "ee6bf4c4b4dddcc11d3bf87caeab4542786b33c1ef69c30217cb66c004752be2"
+  }
+}

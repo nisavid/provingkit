@@ -1,0 +1,46 @@
+{
+  "parsers": [
+    {
+      "case": "claude-parser-discovery",
+      "scope": "nine literal CLI examples, after source inspection",
+      "exit_code": 0,
+      "result": {
+        "accepted": true,
+        "failed": []
+      }
+    },
+    {
+      "case": "codex-parser-discovery",
+      "scope": "nine literal CLI examples, after source inspection",
+      "exit_code": 0,
+      "result": {
+        "accepted": true,
+        "failed": []
+      }
+    }
+  ],
+  "reports": [
+    {
+      "case": "claude-report-sort",
+      "scope": "retained output artifact only; generator not executed or independently qualified",
+      "order": "sorted",
+      "checker_exit": 0,
+      "checker_result": {
+        "accepted": true
+      },
+      "source_data_unchanged": true,
+      "artifact_sha256": "d6917bb3c5cddfed4ea3b4e36e99155501d874fd4f28ed18524f59c06c8715a7"
+    },
+    {
+      "case": "codex-report-sort",
+      "scope": "retained output artifact only; generator not executed or independently qualified",
+      "order": "input",
+      "checker_exit": 0,
+      "checker_result": {
+        "accepted": true
+      },
+      "source_data_unchanged": true,
+      "artifact_sha256": "46fdda50bdd98a5c3289c29498dfb559264e89608eec6c2b63f692bcf168576a"
+    }
+  ]
+}

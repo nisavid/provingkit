@@ -1,0 +1,191 @@
+{
+  "source_commit": "588b54afc3f54940e4d6eaf7271401f9f7b9089d",
+  "attempts": [
+    {
+      "case": "claude-parser-discovery",
+      "manifest_sha256": "2da3272f5541e025fb1b851ae89bba41b0765b4679a556679b652e33d4c2880f",
+      "launch_status": "observed",
+      "launch_error": null,
+      "launch_elapsed_seconds": 27.702913712,
+      "started_wall": "2026-10-01T00:35:24.845500+00:00",
+      "ended_wall": "2026-10-01T00:35:52.548420+00:00",
+      "turns_acknowledged": 1,
+      "turns_reconciled": 1,
+      "captured_hooks": {
+        "PostToolUse": 5,
+        "Stop": 1
+      },
+      "cadence_eligible_posttooluse": 0,
+      "capture_body_elapsed_seconds": 0.25903784,
+      "native_terminal_observed": true,
+      "measurement_scope": "passive preparation qualification; no Jev assessment; not a comparison-arm cost",
+      "usage": {
+        "scope": "final cumulative modelUsage, counted once",
+        "modelUsage": {
+          "claude-opus-5-5": {
+            "inputTokens": 12,
+            "outputTokens": 1811,
+            "cacheReadInputTokens": 37308,
+            "cacheCreationInputTokens": 9286,
+            "webSearchRequests": 0,
+            "costUSD": 0.1180176,
+            "contextWindow": 1000000,
+            "maxOutputTokens": 128000,
+            "thinkingTokens": 280,
+            "canonicalModel": "claude-opus-5-5",
+            "provider": "firstParty",
+            "costBasis": "list"
+          }
+        },
+        "list_basis_cost_usd": 0.1180176,
+        "per_turn_duration_ms": [
+          26538
+        ],
+        "final_cumulative_api_duration_ms": 23299
+      }
+    },
+    {
+      "case": "claude-report-sort",
+      "manifest_sha256": "70ae331cc62204108f615220d55a8e7e1575681d7e3056c7b045b0ccc09967eb",
+      "launch_status": "observed",
+      "launch_error": null,
+      "launch_elapsed_seconds": 43.54505481,
+      "started_wall": "2026-10-01T00:36:30.702434+00:00",
+      "ended_wall": "2026-10-01T00:37:14.247491+00:00",
+      "turns_acknowledged": 3,
+      "turns_reconciled": 3,
+      "captured_hooks": {
+        "PostToolUse": 6,
+        "Stop": 3
+      },
+      "cadence_eligible_posttooluse": 0,
+      "capture_body_elapsed_seconds": 0.346973862,
+      "native_terminal_observed": true,
+      "measurement_scope": "passive preparation qualification; no Jev assessment; not a comparison-arm cost",
+      "usage": {
+        "scope": "final cumulative modelUsage, counted once",
+        "modelUsage": {
+          "claude-opus-5-5": {
+            "inputTokens": 18,
+            "outputTokens": 4202,
+            "cacheReadInputTokens": 80913,
+            "cacheCreationInputTokens": 11179,
+            "webSearchRequests": 0,
+            "costUSD": 0.1897266,
+            "contextWindow": 1000000,
+            "maxOutputTokens": 128000,
+            "thinkingTokens": 305,
+            "canonicalModel": "claude-opus-5-5",
+            "provider": "firstParty",
+            "costBasis": "list"
+          }
+        },
+        "list_basis_cost_usd": 0.1897266,
+        "per_turn_duration_ms": [
+          17316,
+          15012,
+          10148
+        ],
+        "final_cumulative_api_duration_ms": 40388
+      }
+    },
+    {
+      "case": "codex-parser-discovery",
+      "manifest_sha256": "48546ebfd2754fc24af587c031893a8a479020a107caa19c383a4b032332abc1",
+      "launch_status": "observed",
+      "launch_error": null,
+      "launch_elapsed_seconds": 58.191341237,
+      "started_wall": "2026-10-01T00:38:02.260634+00:00",
+      "ended_wall": "2026-10-01T00:39:00.451976+00:00",
+      "turns_acknowledged": 1,
+      "turns_reconciled": 1,
+      "captured_hooks": {
+        "PostToolUse": 9,
+        "Stop": 1
+      },
+      "cadence_eligible_posttooluse": 0,
+      "capture_body_elapsed_seconds": 0.38306398,
+      "native_terminal_observed": true,
+      "measurement_scope": "passive preparation qualification; no Jev assessment; not a comparison-arm cost",
+      "usage": {
+        "scope": "latest retained cumulative total; cached input is a subset of input; reasoning output is a subset of output",
+        "censored": false,
+        "total": {
+          "totalTokens": 172558,
+          "inputTokens": 171262,
+          "cachedInputTokens": 143744,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 1296,
+          "reasoningOutputTokens": 67
+        }
+      }
+    },
+    {
+      "case": "codex-report-sort",
+      "manifest_sha256": "3b25ed9d45e9825ac683ddf1db66c73ba81c1323fdbdb85bb84a103982ceaf1d",
+      "launch_status": "native-episode-failed",
+      "launch_error": "duplicate hook start",
+      "launch_elapsed_seconds": 113.721761301,
+      "started_wall": "2026-10-01T00:39:38.271304+00:00",
+      "ended_wall": "2026-10-01T00:41:31.993066+00:00",
+      "turns_acknowledged": 2,
+      "turns_reconciled": 1,
+      "captured_hooks": {
+        "PostToolUse": 12,
+        "Stop": 1
+      },
+      "cadence_eligible_posttooluse": 1,
+      "capture_body_elapsed_seconds": 0.610178066,
+      "native_terminal_observed": false,
+      "measurement_scope": "passive preparation qualification; no Jev assessment; not a comparison-arm cost",
+      "usage": {
+        "scope": "latest retained cumulative total; cached input is a subset of input; reasoning output is a subset of output",
+        "censored": true,
+        "total": {
+          "totalTokens": 254814,
+          "inputTokens": 251824,
+          "cachedInputTokens": 221440,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 2990,
+          "reasoningOutputTokens": 225
+        }
+      }
+    }
+  ],
+  "unknowns": [
+    "actual billing",
+    "quota and constrained capacity",
+    "operator effort",
+    "preparation and review costs",
+    "maintenance",
+    "provider routing",
+    "unobserved concurrent workload interference"
+  ],
+  "no_retries": true,
+  "native_stop_identity_example": [
+    {
+      "method": "hook/started",
+      "session": "same-session",
+      "turn": 1,
+      "id": "stop:11:<project>/.codex/hooks.json",
+      "startedAt": 1790815250,
+      "status": "running"
+    },
+    {
+      "method": "hook/completed",
+      "session": "same-session",
+      "turn": 1,
+      "id": "stop:11:<project>/.codex/hooks.json",
+      "startedAt": 1790815250,
+      "status": "completed"
+    },
+    {
+      "method": "hook/started",
+      "session": "same-session",
+      "turn": 2,
+      "id": "stop:11:<project>/.codex/hooks.json",
+      "startedAt": 1790815291,
+      "status": "running"
+    }
+  ]
+}

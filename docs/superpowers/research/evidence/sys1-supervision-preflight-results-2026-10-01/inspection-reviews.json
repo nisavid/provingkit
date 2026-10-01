@@ -1,0 +1,14 @@
+{
+  "scope": "two independent read-only inspections of the frozen attempts; no native execution or model-assessment work delegated",
+  "context": {
+    "binding_sha256": "bdc742cc6406ca1ceeee6526f5c606e9c6853003e77bf558d9895174870ffd46",
+    "review_sha256": "52dc57ceb3872bad5d2de6f07cf043730389c0cee73747c8454f36e146aecca2"
+  },
+  "accounting": {
+    "binding_sha256": "e7989d221b23061cf734d965fdbde9d9b8155426be39bf14653816954ed2d632",
+    "review_sha256": "0334be19b65316d00c8f8673d2e3b420019561f64ceffa7195bfe0a04f6a83ce"
+  },
+  "input_hashes_verified_before_and_after": true,
+  "frozen_record_files": 183,
+  "adjudication": "Three observed terminal outcomes and one controller-censored attempt. Per-property input facts survive; complete three-turn PostToolUse context contrast is unqualified. All measured usage remains research cost."
+}
