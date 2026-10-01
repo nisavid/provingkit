@@ -61,13 +61,29 @@ meaning and reads naturally; conversational speech is one register among
 several.
 
 For a brief-derived message, check whether its opening repeats internal roles,
-powers, or sequencing instead of orienting the reader. Resolve unexplained
-workflow identifiers and questions the draft answers for the recipient. For
-peer coordination, check that terse wording still sounds collegial; use the
+powers, or sequencing instead of orienting the reader. Resolve questions the
+draft answers for the recipient. For peer coordination, check that terse
+wording still sounds collegial; use the
 [heads-up guidance](threaded-conversation.md#send-a-collegial-heads-up) when
 that is the message's purpose.
 
+Check workflow names against the main skill's naming rule. Replace opaque
+workflow codes in durable/public prose even when the draft defines them. In
+operator or cross-project messages, retain them only when both exception
+conditions hold. Reread the opening and each ask for enough system, purpose,
+and interface context. State whether an interface exists or is proposed;
+removing a code alone does not repair an under-grounded question. Preserve
+useful technical identifiers and protected spans under the owning surface
+contract; flag a naming defect in protected text rather than silently editing it.
+
 ## 6. Recheck Every Fact
+
+Apply the main skill's usable-reference rule to the finished text. For each
+resource the reader needs to find, check that the label and destination identify
+the same resource and that the link works for this audience and venue. Repair
+an omitted link when its destination is verified; resolve a stale or mismatched
+title, ambiguous identity, or inaccessible reference against the available
+inputs. Preserve protected spans and report a defect within them separately.
 
 Fluent rewriting is where facts drift: "should fail" becomes "fails", a
 range becomes a point, a question becomes a commitment. Check each fact

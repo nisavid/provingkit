@@ -54,6 +54,12 @@ in context: a phrase inside a required quotation, a useful label, or deliberate
 parallel instructions is not disposable boilerplate. Mark concrete defects,
 not a quota of changes.
 
+Include its usable-reference check: compare labels and destinations with the
+available source identities, and repair missing or mismatched links for this
+audience and venue. A plausible-looking link in the draft is not verification
+of its destination. Keep the protected-span rule when a reference is quoted
+or otherwise fixed.
+
 For a batch, compare openings, closing moves, and length or structure across
 pieces as well as within each one. Repair repetitive scaffolding from each
 piece's own content. Keep order, separators, distinct recipients, and required

@@ -58,8 +58,45 @@ the reader's understanding or decision and everyday verbs elsewhere. When a
 reader shows that an explanation did not land, recover the missing common
 ground and explain more simply.
 
-Use a workflow identifier only when the same or a recent message establishes
-what it means for this reader. Otherwise explain it where needed or omit it.
+Use meaningful names for workflow stages and activities. Never use opaque
+project-local alphanumeric workflow codes in committed or published
+documentation, posts, descriptions, comments, or other durable/public prose.
+A legend does not make those codes suitable for that prose.
+
+Avoid those codes in communication with the operator or agents in other
+projects unless their shorthand benefit outweighs the overhead of a legend
+and a legend alongside the message defines every referenced code. Do not
+assume humans or project-colocated agents remember a code catalog; shorthand
+usually loses its value once a feature stabilizes.
+
+Before asking for a decision, identify the system, purpose, and interface
+whenever these are not established in the shared context. Distinguish an
+existing interface from a proposed one: an unbuilt command-line tool is a
+design option, not a command the reader can already run. Recover missing
+context from verified inputs; ask for a material fact only when it cannot be
+recovered. Workflow codes are distinct from literal commands, code symbols,
+versions, revision identifiers, and ticket references that identify the subject.
+
+## Make References Usable
+
+When a reference helps the reader find work, evidence, or a resource, give it a
+usable destination for this audience and venue. Link the verified title or a
+clear description of the resource rather than leaving a known destination
+behind a bare name or opaque identifier. In a client conversation that supports
+chat links, use the chat's current verified title as the clickable label.
+
+Resolve available identities through the client's supported lookup and link
+contract. Match each title and destination to the same resource; a matching
+title alone cannot distinguish two chats. Recover available context to resolve
+ambiguity, and ask only for a material distinction that remains unknown. When a
+destination cannot be recovered, give the useful known information and state
+the narrow gap without inventing a link or claiming it was verified.
+
+Use a public issue, PR, document, or other accessible reference when the audience
+cannot use a private client link. A document delivered in chat still follows its
+own audience's access and medium. If no accessible reference is available, keep
+the supported information and state the access limitation where the reader
+needs the source; do not invent a public equivalent or imply access.
 
 ## Let Content Pick The Shape
 

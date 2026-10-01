@@ -46,5 +46,45 @@
   {
     "query": "Explain why a canned closing sentence can weaken a reply. Give two examples; there is no draft to edit.",
     "should_trigger": false
+  },
+  {
+    "query": "Give this finished internal handoff a final edit and link the named Codex chat using the verified lookup in the brief.",
+    "should_trigger": true
+  },
+  {
+    "query": "These two chat titles in the finished update point to the same thread. Check each against the supplied lookup and fix the links.",
+    "should_trigger": true
+  },
+  {
+    "query": "The finished reply links a same-title chat, but the lookup lists two matches. Check the draft against that ambiguity.",
+    "should_trigger": true
+  },
+  {
+    "query": "Edit this final note for accuracy: its Codex chat link has no verified destination in the supplied lookup.",
+    "should_trigger": true
+  },
+  {
+    "query": "This finished public issue update cites a private Codex chat. Edit it using the verified public issue and PR references while keeping the quoted note.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a new handoff from notes and link the known chat. No draft exists yet.",
+    "should_trigger": false
+  },
+  {
+    "query": "Open the Codex chat from this URL and tell me what it says.",
+    "should_trigger": false
+  },
+  {
+    "query": "Post this approved draft with its existing chat links as exact bytes. Do not edit it.",
+    "should_trigger": false
+  },
+  {
+    "query": "Check whether the chat ID resolves in the Codex app; I need a lookup, not a prose edit.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review the code change in PR 57 for bugs. The description happens to mention a chat.",
+    "should_trigger": false
   }
 ]
