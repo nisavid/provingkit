@@ -1,0 +1,42 @@
+{
+  "fidelity": {
+    "binding_sha256": "ec2882873f776828538b38cf9fbd51d57aabd327f35da97ab8c35e43ed484f76",
+    "plan_sha256": "99f004a50a9d78cbc5b61440ad02db56a0d6887a90a472cdf22aa82b545bc7c3",
+    "request_sha256": "eef6b5322471d069ae6d7d61d9a7ae42a1f4a82f049a9e2d1800fc66a86c39c4",
+    "result_sha256": "e6bea0219c420b9457faca4449183b943b722ec6ef5fa9931f36928b7293bd96",
+    "public_review_sha256": "cf101f966fea927c94fdd50bdabecaf90b706d4a8b1408f713fcab50f98dd8ac",
+    "reviewed_inputs": 487,
+    "clean": true,
+    "prior_result_sha256": [
+      "a77d80ae5d11e7677a24ba8e7482d988ea496c33ac4b036bba4080c10c18e339",
+      "2f077a13f86112937559815eef5bb881c3acd846600ff207a5d3fac90e16f437"
+    ],
+    "projection": "Local path prefixes and line-link syntax normalized; original reviews retained privately.",
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "effective_model_attested": false
+  },
+  "accounting": {
+    "binding_sha256": "89dbac09bb0c0db9b8d811386e10bc2b3e4305df90a72852156cb54ce00391f2",
+    "plan_sha256": "2ed0accb663edbf52e26b905494f6acdb46fe9f3f44d544c5c70802213941aa8",
+    "request_sha256": "07921538ab71f6edf46841e092cbec3d51715aac6619f68c457959bb7c76c210",
+    "result_sha256": "46211c5e57958c7147a4b9fae59d5d779e3bcdbb441e6a2464b7e63ff8846c61",
+    "public_review_sha256": "5ce033cbcc4581b341086a213ebf5798eadd826b19006b1f79a3804a642c7b22",
+    "reviewed_inputs": 487,
+    "clean": true,
+    "prior_result_sha256": [
+      "859eda2dec82dff588c416f3a4ea872aaa1e9ef437d06222a8140a4d8556972e",
+      "48fb75c803a70dfb7b346d5f759a078fd0ffefd06d704e8be267486f7fd6b2cf"
+    ],
+    "projection": "Local path prefixes and line-link syntax normalized; original reviews retained privately.",
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "effective_model_attested": false
+  },
+  "adjudication": {
+    "deadline_boundary": "Corrected to begin after controller validation; launcher elapsed retains the wider interval.",
+    "artifact_failures": "Retained separately without censoring subsequent amendments.",
+    "obsolete_report_property": "Cannot pass when an output artifact error is recorded.",
+    "native_execution": "Not started; separate operator acceptance is required."
+  }
+}

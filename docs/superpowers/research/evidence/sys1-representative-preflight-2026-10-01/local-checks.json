@@ -1,0 +1,36 @@
+{
+  "observed_at": "2026-10-01T02:02:50.031597+00:00",
+  "seed_cli_tests": {
+    "count": 3,
+    "result": "passed",
+    "scope": "seed public command only"
+  },
+  "runner_and_artifact_tests": {
+    "count": 14,
+    "result": "passed",
+    "scope": "local, synthetic, no native harness"
+  },
+  "prepared_manifests": [
+    {
+      "harness": "claude",
+      "case": "representative-report",
+      "sha256": "53667d294061ab493839870db79f2d9bb71d761b5fd3160a400fe5e2bea05b51"
+    },
+    {
+      "harness": "codex",
+      "case": "representative-report",
+      "sha256": "1ce430113ebf12ca76fbb5cef5d0ab9f358e17146f3f1710c2c99990fdce5f3d"
+    }
+  ],
+  "native_versions_observed": {
+    "claude": "2.1.284 (Claude Code)",
+    "codex": "codex-cli 0.159.0"
+  },
+  "native_episodes_started": 0,
+  "accepted_scope": "One representative task per harness; execution awaits separate reviewed-contract acceptance.",
+  "preparation_only_superseded_batches": [
+    "representative-native-preflight-9csuwmrx",
+    "representative-native-preflight-32sjzkg7",
+    "representative-native-preflight-e7ithdqq"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "consumer_issue": 336,
+  "source_revision": "a999943377c1c3d0f83fa96163730eaf4756a878",
+  "explicit_invocation": "Loaded skill and comparison contract before protocol design; matched unchanged reviewed bytes and recorded evidence limits.",
+  "files": {
+    ".agents/skills/handling-sys1-incidents/SKILL.md": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac",
+    ".agents/skills/handling-sys1-incidents/references/evidence-record.md": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+    ".agents/skills/handling-sys1-incidents/references/comparison-contract.md": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981"
+  },
+  "accepted_scope_sha256": "c0c12d90c6fd5b32592ad73bb486139a7d3895b2188ac8b919e81165c9d97b21",
+  "report_sha256": "d6e51cf0064704262f1f70404b7ebdf9f94021923156bb57edaac035c4143c69",
+  "model_or_hook_experiment_started": false,
+  "public_projection": {
+    "original_sha256": "780da55a04523f33e78d5b8dff4879e244a3079cd4c61a62952931b9b5e5363b",
+    "normalization": "Host-specific preparation, source-checkout, and batch prefixes replaced with logical names; original records remain local."
+  }
+}
