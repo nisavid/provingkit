@@ -75,6 +75,8 @@ with open(log_path, "w", encoding="utf-8") as log:
                 result["nextCursor"] = "repeated-cursor"
             elif cursor_mode == "unique" and model_page <= 101:
                 result["nextCursor"] = "cursor-" + str(model_page)
+            elif cursor_mode == "write-stall" and model_page == 1:
+                result["nextCursor"] = "x" * 900000
             if os.environ.get("FAKE_MODEL_CASE") == "bad-effort":
                 result["data"][1]["supportedReasoningEfforts"][0]["reasoningEffort"] = {{"secret": "provider-effort-secret"}}
         elif method == "account/rateLimits/read":
@@ -186,6 +188,12 @@ with open(log_path, "w", encoding="utf-8") as log:
         sys.stdout.flush()
         log.write(json.dumps(message, sort_keys=True) + "\n")
         log.flush()
+        if (
+            method == "model/list"
+            and os.environ.get("FAKE_MODEL_CURSOR_MODE") == "write-stall"
+            and model_page == 1
+        ):
+            signal.pause()
 """
 
 
@@ -253,6 +261,7 @@ def run_fake_status(
     *,
     extra_env: dict[str, str] | None = None,
     auth_content: str | None = None,
+    timeout: float = 5,
 ) -> tuple[subprocess.CompletedProcess[str], Path]:
     selected = root / "selected"
     selected.mkdir()
@@ -287,7 +296,7 @@ def run_fake_status(
         text=True,
         capture_output=True,
         check=False,
-        timeout=5,
+        timeout=timeout,
         env={**BASE_ENV, "FAKE_LOG": str(log), **(extra_env or {})},
     )
     return result, log
@@ -302,7 +311,10 @@ class DaybreakTransportUnitTests(unittest.TestCase):
         ):
             with self.assertRaises(daybreak_account_module.AccountError) as caught:
                 daybreak_account_module.RpcClient(
-                    SimpleNamespace(stdout=SimpleNamespace())
+                    SimpleNamespace(
+                        stdout=SimpleNamespace(),
+                        stdin=SimpleNamespace(),
+                    )
                 )
         self.assertEqual(
             caught.exception.public_diagnostic(),
@@ -310,16 +322,20 @@ class DaybreakTransportUnitTests(unittest.TestCase):
         )
 
         class BrokenInput:
-            def write(self, _value: bytes) -> None:
-                raise BrokenPipeError("private-pipe-detail")
-
-            def flush(self) -> None:
-                raise AssertionError("write should fail first")
+            def fileno(self) -> int:
+                return 123
 
         writer = object.__new__(daybreak_account_module.RpcClient)
         writer.process = SimpleNamespace(stdin=BrokenInput())
-        with self.assertRaises(daybreak_account_module.AccountError) as caught:
-            writer.send({"method": "synthetic"})
+        writer.write_selector = mock.Mock()
+        writer.write_selector.select.return_value = [object()]
+        with mock.patch.object(
+            daybreak_account_module.os,
+            "write",
+            side_effect=BrokenPipeError("private-pipe-detail"),
+        ):
+            with self.assertRaises(daybreak_account_module.AccountError) as caught:
+                writer.send({"method": "synthetic"})
         self.assertEqual(
             caught.exception.public_diagnostic(),
             "DA009: provider transport write failed",
@@ -768,6 +784,82 @@ class DaybreakAccountTests(unittest.TestCase):
             result.stderr,
             "daybreak-account DA031: harmless probe unavailable in status-only increment\n",
         )
+
+    def test_invalid_status_arguments_fail_before_authentication_access(self) -> None:
+        cases = (
+            (
+                "invalid-selector",
+                "/synthetic/codex",
+                "invalid selector",
+                "1800",
+                "DA033: invalid exact model selector",
+            ),
+            (
+                "invalid-freshness",
+                "/synthetic/codex",
+                "gpt-daybreak-blue-latest/high",
+                "0",
+                "DA030: freshness interval invalid",
+            ),
+            (
+                "relative-executable",
+                "relative-codex",
+                "gpt-daybreak-blue-latest/high",
+                "1800",
+                "DA006: invalid Codex executable",
+            ),
+        )
+        for name, executable, selector, freshness, diagnostic in cases:
+            with self.subTest(name=name):
+                with tempfile.TemporaryDirectory() as temporary:
+                    root = Path(temporary)
+                    selected = root / "selected"
+                    selected.mkdir()
+                    auth_read = root / "status-auth-read"
+                    auth_writer = start_observed_fifo(
+                        selected / "auth.json",
+                        auth_read,
+                        json.dumps(
+                            {"tokens": {"account_id": "synthetic-selected"}}
+                        ),
+                    )
+                    selection = {
+                        "schema": "rolecasting-daybreak-account-selection-v1",
+                        "account_home": str(selected),
+                        "authenticated_account_id": "synthetic-selected",
+                    }
+
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            str(ACCOUNT),
+                            "status-refresh",
+                            "--selection-stdin",
+                            "--codex",
+                            executable,
+                            "--model",
+                            selector,
+                            "--freshness-seconds",
+                            freshness,
+                        ],
+                        input=json.dumps(selection),
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                        timeout=2,
+                        env=BASE_ENV,
+                    )
+
+                    time.sleep(0.05)
+                    auth_writer_blocked = auth_writer.poll() is None
+                    stop_fifo_writer(auth_writer)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual(result.stdout, "")
+                    self.assertEqual(
+                        result.stderr, f"daybreak-account {diagnostic}\n"
+                    )
+                    self.assertTrue(auth_writer_blocked)
+                    self.assertFalse(auth_read.exists())
 
     def test_status_rejects_fifo_auth_without_waiting_for_a_writer(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1684,6 +1776,32 @@ class DaybreakAccountTests(unittest.TestCase):
                 self.assertEqual(result.stdout, "")
                 self.assertEqual(result.stderr, f"daybreak-account {diagnostic}\n")
                 self.assertNotIn("Traceback", result.stderr)
+
+    def test_status_bounds_provider_controlled_request_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            started = time.monotonic()
+            result, log = run_fake_status(
+                Path(temporary),
+                extra_env={"FAKE_MODEL_CURSOR_MODE": "write-stall"},
+                timeout=15,
+            )
+            elapsed = time.monotonic() - started
+            transcript = [json.loads(line) for line in log.read_text().splitlines()]
+            model_requests = [
+                entry
+                for entry in transcript
+                if entry.get("method") == "model/list"
+            ]
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(
+            result.stderr,
+            "daybreak-account DA009: provider transport write failed\n",
+        )
+        self.assertLess(elapsed, 14)
+        self.assertEqual(len(model_requests), 1)
+        self.assertEqual(transcript[-1], {"terminated": True})
 
     def test_status_discards_supported_notifications_without_accumulating(self) -> None:
         for transport_case in ("legitimate-notifications", "maximum-valid-frame"):

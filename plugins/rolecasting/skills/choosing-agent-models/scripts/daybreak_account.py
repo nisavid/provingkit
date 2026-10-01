@@ -22,6 +22,7 @@ from daybreak_records import (
 )
 
 RPC_TIMEOUT_SECONDS = 10
+RPC_WRITE_TIMEOUT_SECONDS = 10
 MAX_AUTH_BYTES = 1_048_576
 AUTH_OPEN_FLAGS = os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0)
 MAX_MODEL_PAGES = 100
@@ -113,31 +114,62 @@ class RpcClient:
         self.sequence = 0
         self.buffer = b""
         assert process.stdout is not None
+        assert process.stdin is not None
         try:
             self.selector = selectors.DefaultSelector()
+            self.write_selector = selectors.DefaultSelector()
             self.selector.register(process.stdout, selectors.EVENT_READ)
+            os.set_blocking(process.stdin.fileno(), False)
+            self.write_selector.register(process.stdin, selectors.EVENT_WRITE)
         except (OSError, UnicodeError, ValueError) as error:
-            if hasattr(self, "selector"):
+            for selector in (
+                getattr(self, "selector", None),
+                getattr(self, "write_selector", None),
+            ):
+                if selector is None:
+                    continue
                 try:
-                    self.selector.close()
+                    selector.close()
                 except (OSError, ValueError):
                     pass
             raise AccountError("DA008") from error
 
     def close(self) -> bool:
-        try:
-            self.selector.close()
-        except (OSError, ValueError):
-            return False
-        return True
+        close_ok = True
+        for selector in (self.selector, self.write_selector):
+            try:
+                selector.close()
+            except (OSError, ValueError):
+                close_ok = False
+        return close_ok
 
     def send(self, message: dict[str, object]) -> None:
         assert self.process.stdin is not None
         try:
-            self.process.stdin.write(dump_json(message).encode("utf-8"))
-            self.process.stdin.flush()
+            payload = dump_json(message).encode("utf-8")
         except (OSError, UnicodeError, ValueError) as error:
             raise AccountError("DA009") from error
+        deadline = time.monotonic() + RPC_WRITE_TIMEOUT_SECONDS
+        offset = 0
+        while offset < len(payload):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise AccountError("DA009")
+            try:
+                events = self.write_selector.select(timeout=remaining)
+            except (OSError, ValueError) as error:
+                raise AccountError("DA009") from error
+            if not events:
+                raise AccountError("DA009")
+            try:
+                written = os.write(self.process.stdin.fileno(), payload[offset:])
+            except BlockingIOError:
+                continue
+            except (OSError, ValueError) as error:
+                raise AccountError("DA009") from error
+            if written <= 0:
+                raise AccountError("DA009")
+            offset += written
 
     def request(self, method: str, params: object) -> object:
         self.sequence += 1
@@ -457,6 +489,19 @@ def selected_capacity(rate_result: object, model: str) -> dict[str, object] | No
         raise AccountError("DA029") from error
 
 
+def validate_status_arguments(
+    executable: Path, selector: str, freshness_seconds: int
+) -> None:
+    if freshness_seconds <= 0:
+        raise AccountError("DA030")
+    try:
+        split_selector(selector)
+    except RecordError as error:
+        raise AccountError("DA033") from error
+    if not executable.is_absolute():
+        raise AccountError("DA006")
+
+
 def status_refresh(
     executable: Path,
     account_home: Path,
@@ -464,12 +509,8 @@ def status_refresh(
     selector: str,
     freshness_seconds: int,
 ) -> dict[str, object]:
-    if freshness_seconds <= 0:
-        raise AccountError("DA030")
-    try:
-        model, effort = split_selector(selector)
-    except RecordError as error:
-        raise AccountError("DA033") from error
+    validate_status_arguments(executable, selector, freshness_seconds)
+    model, effort = split_selector(selector)
     process = start_server(executable, account_home, account_home)
     client: RpcClient | None = None
     try:
@@ -517,6 +558,11 @@ def main(argv: list[str] | None = None) -> int:
         arguments = build_parser().parse_args(argv)
         selection, account_home = load_selection_input()
         if arguments.operation == "status-refresh":
+            validate_status_arguments(
+                arguments.codex,
+                arguments.model,
+                arguments.freshness_seconds,
+            )
             verify_binding(selection, account_home)
             result = status_refresh(
                 arguments.codex,
