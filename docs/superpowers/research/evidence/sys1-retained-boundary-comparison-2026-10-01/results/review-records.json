@@ -1,0 +1,54 @@
+[
+  {
+    "focus": "fidelity",
+    "status": "clean",
+    "binding_sha256": "a9fbf275781202522c6091da52b7821ecabc9e075265461687565fdcfa0baca3",
+    "plan_sha256": "a97cbed43c43dfffb86878696ea38b5b84fbcaab01570e7f89fd964876062bfe",
+    "request_sha256": "e5880b48295f8d05361cc899123cb0832ebe302e35f74844f110e0bc38c65a32",
+    "review_sha256": "2d568e9094b98379d512a59e58262d596fcf9e88f3a21417c7e0858b17aae9ce",
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "execution_model_attested": false,
+    "portable_evidence": false,
+    "reviewed_public_inputs": {
+      "docs/superpowers/research/2026-10-01-jev-axi-retained-boundary-comparison.md": "d2e0afdfe416bf94b5bae71b7e62d45ba3ac829d4829d2ba851d2645ea025c46",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/results/accounting.json": "c1089718282dc12b0cf961cedd85ca9df32e2b626fd17a6ad91185d5e98e7bec",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/results/outcomes.json": "4d12765e976ece0f7aaac7dc2b9809a5ff29e2cdeed81345004b1b29eb7adee3",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/results/evidence-identities.json": "712584673c58941b44c6db8618c59f72d1aa540e0847bd0d418586f5c9ba2900",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/contract.md": "0c08401705661835b97d8cde37efaa3245a0072d01fbe80af98039d93e635538",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/runner.mjs": "510370038f76c4b5eb0bd12c9e5aaea726431ebc3a6dbb740db8774363668161",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/launch.py": "08ebc1ef354cd59156d34d749b60bc88fadb78a5dd95a1aa7a5c1a1dda6eea2f",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/packet-metadata.json": "07fcdb9b8040ff9d7dca8b544b8d56b27cabed7fca666dd89b7844877731d320",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/source-identities.json": "c0bdc29d07a08a49c0e12feb61230ff52216c06fc8e0da6afc883814ca8310e5",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/review-records.json": "8e4fbff146ab950e4a97b0b4c5a1919abc8c0c465f47bdbd3fab4492a94d9836"
+    },
+    "private_input_count": 32,
+    "private_packet_sha256": "8cb0021051cb52a92696ec3862f25d87526d31a57f710977471474409d5cef15"
+  },
+  {
+    "focus": "accounting",
+    "status": "clean",
+    "binding_sha256": "75cc570fcc0c65419653152bf7ce67951c3cd71d5bf92d491a7c6510d173ddc6",
+    "plan_sha256": "b3c9e32bb2c51a79b255e41413b6411a3ed6b9a77565301670113c81a0e58426",
+    "request_sha256": "c893fc971808a55c4b71c3967548f5e90517454a14af0f3ee9693f2f74baf1d4",
+    "review_sha256": "66974092767946addd8c598813ff94bcb68dcad32690b2aae5458c3a61d8c1ea",
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "medium",
+    "execution_model_attested": false,
+    "portable_evidence": false,
+    "reviewed_public_inputs": {
+      "docs/superpowers/research/2026-10-01-jev-axi-retained-boundary-comparison.md": "d2e0afdfe416bf94b5bae71b7e62d45ba3ac829d4829d2ba851d2645ea025c46",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/results/accounting.json": "c1089718282dc12b0cf961cedd85ca9df32e2b626fd17a6ad91185d5e98e7bec",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/results/outcomes.json": "4d12765e976ece0f7aaac7dc2b9809a5ff29e2cdeed81345004b1b29eb7adee3",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/results/evidence-identities.json": "712584673c58941b44c6db8618c59f72d1aa540e0847bd0d418586f5c9ba2900",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/contract.md": "0c08401705661835b97d8cde37efaa3245a0072d01fbe80af98039d93e635538",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/runner.mjs": "510370038f76c4b5eb0bd12c9e5aaea726431ebc3a6dbb740db8774363668161",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/launch.py": "08ebc1ef354cd59156d34d749b60bc88fadb78a5dd95a1aa7a5c1a1dda6eea2f",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/packet-metadata.json": "07fcdb9b8040ff9d7dca8b544b8d56b27cabed7fca666dd89b7844877731d320",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/source-identities.json": "c0bdc29d07a08a49c0e12feb61230ff52216c06fc8e0da6afc883814ca8310e5",
+      "docs/superpowers/research/evidence/sys1-retained-boundary-comparison-2026-10-01/review-records.json": "8e4fbff146ab950e4a97b0b4c5a1919abc8c0c465f47bdbd3fab4492a94d9836"
+    },
+    "private_input_count": 32,
+    "private_packet_sha256": "8cb0021051cb52a92696ec3862f25d87526d31a57f710977471474409d5cef15"
+  }
+]

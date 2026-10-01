@@ -1,0 +1,362 @@
+[
+  {
+    "cell": "B10",
+    "arm": "B",
+    "boundary": 10,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "8c7724aedaa49d0910f0881e048bc343642e69fb26dd349d6c1c243477014277",
+    "response_body_sha256": "974bb364ef5df74d5b8b0055d21bc946c97293ce28b076fe95599533bad05b18",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.92,
+      "worker_stuck": 0.11,
+      "work_off_track": 0.12,
+      "needs_human": 0.05
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.92,
+      "worker_stuck": 0.11,
+      "work_off_track": 0.12,
+      "needs_human": 0.05
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "verdict": "continue",
+    "action": "none",
+    "projected_output": "",
+    "masked_steering": false,
+    "negative_case_pass": true,
+    "usage": {
+      "input_tokens": 2483,
+      "output_tokens": 78
+    },
+    "duration_ms": 580.6901770000001
+  },
+  {
+    "cell": "C10",
+    "arm": "C",
+    "boundary": 10,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "56c312ed1909eebe66a33fc34c761dd8eaf1e5b06b15a6807ac5fbac92fd62fe",
+    "response_body_sha256": "8d4bec0cc155cb9540c670d04e2acb8d4121fdb3189c230238045a7f71ac70d6",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.93,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.13,
+      "needs_human": 0.05
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.93,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.13,
+      "needs_human": 0.05
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "verdict": "continue",
+    "action": "none",
+    "projected_output": "",
+    "masked_steering": false,
+    "negative_case_pass": true,
+    "usage": {
+      "input_tokens": 2806,
+      "output_tokens": 78
+    },
+    "duration_ms": 161.37277399999994
+  },
+  {
+    "cell": "C20",
+    "arm": "C",
+    "boundary": 20,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "906cdc19b2c69b689dd5f9e0ffec7745fd88774ef067a1bfd893d99d22b32d92",
+    "response_body_sha256": "c8a5b93319dfaef28855e1dc796e8b4f3b63d64cb84a790f036f459bfac10a80",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.95,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.22,
+      "needs_human": 0.05
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.95,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.22,
+      "needs_human": 0.05
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "verdict": "continue",
+    "action": "none",
+    "projected_output": "",
+    "masked_steering": false,
+    "negative_case_pass": true,
+    "usage": {
+      "input_tokens": 7515,
+      "output_tokens": 78
+    },
+    "duration_ms": 207.984918
+  },
+  {
+    "cell": "B20",
+    "arm": "B",
+    "boundary": 20,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "226b279cc4eb32c9ad406003ff11332b184f69d04d33e04e5ae323b6db51955d",
+    "response_body_sha256": "11dcd6d74688cb0514c3a20fc562075e048e5b86565acd37d513d9fa0bc5bdb8",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.95,
+      "worker_stuck": 0.09,
+      "work_off_track": 0.22,
+      "needs_human": 0.06
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.95,
+      "worker_stuck": 0.09,
+      "work_off_track": 0.22,
+      "needs_human": 0.06
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "verdict": "continue",
+    "action": "none",
+    "projected_output": "",
+    "masked_steering": false,
+    "negative_case_pass": true,
+    "usage": {
+      "input_tokens": 4685,
+      "output_tokens": 78
+    },
+    "duration_ms": 166.0874990000001
+  },
+  {
+    "cell": "B30",
+    "arm": "B",
+    "boundary": 30,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "1701e29140d10c6d4ced0099ac10cd26c415cbf6ce21f400263c2d2d3b97a83e",
+    "response_body_sha256": "2f97a524cbda2a5f337c542ce9755134ebc8343ecdd9746abef1ed0dfff83552",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.96,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.19,
+      "needs_human": 0.04
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.96,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.19,
+      "needs_human": 0.04
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "verdict": "continue",
+    "action": "none",
+    "projected_output": "",
+    "masked_steering": false,
+    "negative_case_pass": true,
+    "usage": {
+      "input_tokens": 6531,
+      "output_tokens": 78
+    },
+    "duration_ms": 188.99025899999992
+  },
+  {
+    "cell": "C30",
+    "arm": "C",
+    "boundary": 30,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "f374ca5171e3ea0c5c592dbde34908991449ebeda9ff8df1c0c10803246e8f01",
+    "response_body_sha256": "7a2511d8ef87bea78f6f653f4fd752e1523a17a32bf1784101811a3fc238e364",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.96,
+      "worker_stuck": 0.07,
+      "work_off_track": 0.21,
+      "needs_human": 0.04
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.96,
+      "worker_stuck": 0.07,
+      "work_off_track": 0.21,
+      "needs_human": 0.04
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "verdict": "continue",
+    "action": "none",
+    "projected_output": "",
+    "masked_steering": false,
+    "negative_case_pass": true,
+    "usage": {
+      "input_tokens": 7012,
+      "output_tokens": 78
+    },
+    "duration_ms": 185.9939710000001
+  },
+  {
+    "cell": "C40",
+    "arm": "C",
+    "boundary": 40,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "fbe5ba9ffaed0dcf39ba27cef1d6cc8208179f5be5a448bcf0fdce8c374ac1e8",
+    "response_body_sha256": "d5fbc9b2ed0715436b8c704c705c010fe433d0677bfcb79cf0c6ad054932f6a8",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.95,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.17,
+      "needs_human": 0.1
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.95,
+      "worker_stuck": 0.08,
+      "work_off_track": 0.17,
+      "needs_human": 0.1
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": false,
+      "needs_human": false
+    },
+    "verdict": "continue",
+    "action": "none",
+    "projected_output": "",
+    "masked_steering": false,
+    "negative_case_pass": true,
+    "usage": {
+      "input_tokens": 7273,
+      "output_tokens": 78
+    },
+    "duration_ms": 179.9239160000002
+  },
+  {
+    "cell": "B40",
+    "arm": "B",
+    "boundary": 40,
+    "status": "assessed",
+    "fetch_invocations": 1,
+    "request_sha256": "57c478107ef716496182413f02267eade2721e0a1ff31fa4a1dd3423ffd62306",
+    "response_body_sha256": "7aea27eaf4d6e5497b6792edb8f1d80cf096fd7749a11fd5754ec5c925aa07bd",
+    "requested_model": "jev-1.13.0",
+    "returned_model": "jev-1.13.0",
+    "scores": {
+      "meaningful_progress": 0.94,
+      "worker_stuck": 0.09,
+      "work_off_track": 0.73,
+      "needs_human": 0.1
+    },
+    "rounded_scores": {
+      "meaningful_progress": 0.94,
+      "worker_stuck": 0.09,
+      "work_off_track": 0.73,
+      "needs_human": 0.1
+    },
+    "raw_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": true,
+      "needs_human": false
+    },
+    "rounded_flags": {
+      "meaningful_progress": true,
+      "worker_stuck": false,
+      "work_off_track": true,
+      "needs_human": false
+    },
+    "verdict": "steer",
+    "action": "note",
+    "projected_output": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"jev-axi supervision: the recent tool calls look unrelated to the job (work_off_track 0.73). Reconsider the approach against the original request; ignore this note if it is wrong.\"}}",
+    "masked_steering": false,
+    "negative_case_pass": false,
+    "usage": {
+      "input_tokens": 6618,
+      "output_tokens": 78
+    },
+    "duration_ms": 195.30644499999994
+  }
+]
