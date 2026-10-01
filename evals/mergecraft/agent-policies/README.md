@@ -50,7 +50,7 @@ python3 -c 'import json,sys; sys.path.insert(0,"plugins/praxis/skills/constructi
 
 ## Acceptance bar
 
-The bar applies separately to each executor: GPT-6 Sol at medium effort in
+The bar applies separately to each executor: GPT-6.1 Sol at medium effort in
 Codex and Claude Opus 5.5 at medium effort in Claude Code. Each run is graded
 by the other harness's model plus the case's deterministic checks.
 
