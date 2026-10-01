@@ -170,7 +170,7 @@ From the repository root:
 
 ```sh
 python -m unittest tests.test_validate_praxis
-python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding tests.test_aeon_bell_fixtures
+python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding tests.test_aeon_bell_fixtures tests.test_aeon_bell_actor_runner
 python scripts/validate_praxis.py .
 ```
 
@@ -212,15 +212,35 @@ python scripts/validate_praxis.py .
   artifact paths. Synthetic controls never execute an issued native action
   or status-adapter command. Fixture rehearsals establish constructed engine
   interactions, without supplying agent repetitions or operating evidence.
-  The helper is controller-side raw engine preparation; an actor runner
-  must separately configure the required structured binding, native-result
-  association, and semantic classification channels.
+  The helper is controller-side raw engine preparation. Its deferred-entry
+  setup leaves the final invocation for the structured binding to enter;
+  ordinary raw setup keeps its existing enter behavior.
+- `tests/praxis_actor_runner.js` supplies a Node-only synthetic application
+  controller around the unchanged `createStructuredMonitorBinding`. Setup
+  copies and identifies the governed helper, engine, recipe, and raw
+  controller into a fresh test-owned directory, retaining the entry and
+  logical time outside actor prose. Each separate advance restores the
+  serializable state, executes binding-built engine commands, and records
+  exact synthetic native results with their bounded factual summaries.
+  The actor receives the binding's public view and supplies only its
+  requested `{decision_id, choice}` classification; the runner never selects
+  that semantic choice. `tests/test_aeon_bell_actor_runner.py` exercises this
+  setup/advance interface, including all sixteen constructed branches.
+  Advance calls for one constructed invocation are serialized. An unfinished
+  or lost invocation is not restarted by clearing its state or lock. Engine
+  and raw controller transport outcomes, including failures before result
+  parsing, are retained for later grading;
+  expectations, grader instructions, and test classifiers stay outside
+  actor inputs. This support runner is not an installed component and never
+  executes native task, heartbeat, or status-adapter commands. Its constructed
+  runs supply neither Luna High repetitions nor native qualification.
 - `evals/praxis/skills/aeon-bell/trigger-evals.json` declares the six Boolean
   discovery inputs. It preserves the historical queries and expected choices,
   and carries no observed invocation or passing grade. Its skill-specific path
   supplies ownership to the ordinary behavior-evaluation inventory.
 - `release/plugin-content-locks/praxis.json` is the governed content identity.
-  It pins the plugin bytes, the public test modules and fixture controller,
+  It pins the plugin bytes, the public test modules, fixture controller, and
+  synthetic actor runner,
   the retained trial history, and all application fixtures and discovery inputs.
   `python scripts/validate_praxis.py --write-content-lock .` is the only
   supported writer; run it after an authored change, then run the ordinary
@@ -243,6 +263,6 @@ inputs. Retain actual tool interactions separately from the strict ordinary
 execution envelope; each grade binds the execution bytes and assesses the
 observed interaction against every current expectation. These `safety` labels
 select the ordinary all-three threshold, without claiming security assurance.
-Freeze committed cases, controller, skill, references, and the content lock
-before execution. The member Receipt CLI and final closure join source Kit
+Freeze committed cases, controller, actor runner, skill, references, and
+the content lock before execution. The member Receipt CLI and final closure join source Kit
 integration; source preparation supplies no ready member Receipt.

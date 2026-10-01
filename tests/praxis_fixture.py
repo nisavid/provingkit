@@ -51,7 +51,7 @@ class Fixture:
     def command(self, *argv):
         argv = list(map(str, argv))
         process = subprocess.run([sys.executable, '-B', str(self.engine), *argv],
-                                 capture_output=True, cwd=self.directory,
+                                 capture_output=True, cwd=self.directory, timeout=20,
                                  env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
         record = {'argv': argv, 'exit_code': process.returncode,
                   'stdout': process.stdout.decode(), 'stderr': process.stderr.decode()}
@@ -107,9 +107,11 @@ class Fixture:
                             '--result-json', json.dumps(result), '--now', self.now)
 
     def finish(self, reply):
-        while reply['status'] != 'complete':
+        for _ in range(64):
+            if reply['status'] == 'complete':
+                return reply
             reply = self.submit(reply, self.controller.result(reply))
-        return reply
+        raise RuntimeError('Synthetic fixture exceeded 64 actions')
 
 
 class Controller:
@@ -168,7 +170,7 @@ class Controller:
         raise ValueError('No synthetic result for ' + action['kind'])
 
 
-def construct(recipe, directory, *, engine=None):
+def construct(recipe, directory, *, engine=None, enter=True):
     engine = engine or Path(__file__).resolve().parents[1] / 'plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py'
     fixture = Fixture(recipe, directory, engine)
     for specification in fixture.recipe['registrations']:
@@ -183,19 +185,27 @@ def construct(recipe, directory, *, engine=None):
         fixture.now = fixture.recipe['prelude']['at']
         reply = fixture.enter()
         if fixture.recipe['prelude'].get('stop_kind'):
-            while reply['action']['kind'] != fixture.recipe['prelude']['stop_kind']:
+            for _ in range(64):
+                if reply['action']['kind'] == fixture.recipe['prelude']['stop_kind']:
+                    break
                 reply = fixture.submit(reply, fixture.controller.result(reply))
+            else:
+                raise RuntimeError('Synthetic prelude did not reach stop_kind')
             fixture.setup_pending = reply
         elif fixture.recipe['prelude'].get('fail_notice'):
-            while reply['action']['purpose'] != 'notice':
+            for _ in range(64):
+                if reply['action']['purpose'] == 'notice':
+                    break
                 reply = fixture.submit(reply, fixture.controller.result(reply))
+            else:
+                raise RuntimeError('Synthetic prelude did not reach notice')
             fixture.setup_notice = reply['action']
             reply = fixture.submit(reply, {'disposition': 'failed', 'reason': 'synthetic print channel closed'})
         if not fixture.recipe['prelude'].get('stop_kind'):
             fixture.prelude_final = fixture.finish(reply)
     fixture.now = fixture.recipe['clock']['entry_at']
     fixture.before = fixture.inspect()
-    fixture.initial = fixture.enter()
+    fixture.initial = fixture.enter() if enter else None
     return fixture
 
 
@@ -206,6 +216,7 @@ def main():
     setup.add_argument('case')
     setup.add_argument('--directory', required=True)
     setup.add_argument('--engine')
+    setup.add_argument('--defer-enter', action='store_true')
     control = commands.add_parser('control')
     control.add_argument('--directory', required=True)
     control.add_argument('--reply', required=True)
@@ -213,7 +224,7 @@ def main():
     directory = Path(args.directory)
     if args.command == 'setup':
         recipe = Path(__file__).resolve().parents[1] / 'evals/praxis/fixtures' / (args.case + '.json')
-        fixture = construct(recipe, directory, engine=args.engine)
+        fixture = construct(recipe, directory, engine=args.engine, enter=not args.defer_enter)
         entry = {'case_id': fixture.recipe['id'], 'entry_ref': fixture.bound['entry_ref'],
                  'initial': fixture.initial, 'now': fixture.now, 'engine': str(fixture.engine)}
         state = {'recipe': fixture.recipe, 'registrations': fixture.registrations,

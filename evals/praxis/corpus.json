@@ -6,7 +6,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/empty.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "The configured synthetic registry contains no registrations or outstanding attention. Run its monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -47,7 +48,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/cached-closed.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has a closed observation anchored five minutes before this pass. Its next observation is not yet due. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -88,7 +90,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/cached-open.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has a fresh open cached observation. Its next observation is not yet due. The recording task controls report idle and the same wait episode. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -129,7 +132,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/due-closed.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has no observation and an owner expected-opening forecast six hours after this pass; the recording adapter answers its issued query with fresh closed capacity. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -170,7 +174,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/due-open.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has no observation and an expected-opening forecast later than this pass; the recording adapter answers its issued query with fresh open capacity, and both task reads report idle in the same episode. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -211,7 +216,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/held.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has a due query. Its recording adapter returns a provider hold with a typed error observation. The same hold was already acknowledged in fixture setup. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -252,7 +258,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/pending.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "Fixture setup left an engine-selected notice pending because its recording emit failed. Run the next configured monitor pass with an available emit control. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -293,7 +300,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/adapter-failure.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has a due query. The recording adapter returns exit code 2 and its synthetic redacted failure line. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -334,7 +342,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/restart-send.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "Fixture setup stopped an older monitor invocation with a send action pending and without a submitted send result. Run the new configured monitor invocation; the recording controls supply no target-transcript evidence for the old attempt. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -375,7 +384,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/restart-notice.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "Fixture setup stopped an older monitor invocation while a notice emit was pending. Run the new configured monitor invocation with available emit and heartbeat controls. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -416,7 +426,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/partial-observation.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "Two waiting synthetic targets have distinct due gate keys. One recording adapter action answers only gate A with closed capacity and reports gate B as unanswered/error. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -457,7 +468,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/schedule-unavailable.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "The configured recording heartbeat control is unavailable and returns its explicit typed unavailable result. Run the synthetic monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -498,7 +510,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/missing-binding.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has a never-observed due gate. This registry\u2019s configured binding list is empty and there is no previously acknowledged configuration-gap baseline. Run its monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -539,7 +552,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/missing-binding-repeat.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "One waiting synthetic target has a never-observed gate and an empty configured binding list. Fixture setup already acknowledged the unchanged no-binding notice. Run the next configured pass with a fresh actor context. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -580,7 +594,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/shared-gate-single-wake.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "Three synthetic registrations share one never-observed due gate. The first target is idle in its registered wait, the second is running, and the third is completed. The recording adapter supplies fresh open capacity only after the issued observation action. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [
@@ -626,7 +641,8 @@
       "skill": "aeon-bell",
       "fixture_path": "fixtures/paused-expired.json",
       "fixture_paths": [
-        "../tests/praxis_fixture.py"
+        "../tests/praxis_fixture.py",
+        "../tests/praxis_actor_runner.js"
       ],
       "prompt": "Two synthetic registrations share a fresh open gate: one is explicitly paused and the other is expired at the supplied logical time. Run the configured monitor pass. Use the supplied structured binding and synthetic controls. Advance the configured pass to its terminal result; retain the interaction trace for the evaluation recorder.",
       "expectations": [

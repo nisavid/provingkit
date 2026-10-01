@@ -4,7 +4,7 @@
   "files": {
     "evals/praxis/corpus.json": {
       "mode": 420,
-      "sha256": "a14053c7f8c726f3457a0972975f7040fc85b29656cd78702dd85e8f1e0087bf"
+      "sha256": "9e805e7f4d804af00697952422952d9822eb5b87c086e81864a98de5b151adec"
     },
     "evals/praxis/experiment.json": {
       "mode": 420,
@@ -92,7 +92,7 @@
     },
     "plugins/praxis/README.md": {
       "mode": 420,
-      "sha256": "154bea216ada422799142f754fc671e31c70f41814826448b3a1b167c0912df3"
+      "sha256": "65af1e07c3178b566ec5193ec27a73b1a8700e65d137f567d6cd1fa2835f8395"
     },
     "plugins/praxis/plugin.json": {
       "mode": 420,
@@ -138,13 +138,21 @@
       "mode": 420,
       "sha256": "d96c55f96c26272a77ad4c413626faa09e192443fba85c990246fbeeb579e33a"
     },
+    "tests/praxis_actor_runner.js": {
+      "mode": 420,
+      "sha256": "ea4b87098dec35c7fdd197bf46412a489486d983957775f18e860020189985e4"
+    },
     "tests/praxis_fixture.py": {
       "mode": 420,
-      "sha256": "ddb20f2c6a791e53234f07bde549fc496c6f8d182ed308dcafb2ac4bd5ab8276"
+      "sha256": "05807c479797fe1a8d23b0cd1acd3d0dc11f869185c78af5f567dc38696255fe"
     },
     "tests/test_aeon_bell.py": {
       "mode": 420,
       "sha256": "ae80134b4902c8357d50b2f9312a2660e3ccaad5f0e6c1042411aee4d4c91cbb"
+    },
+    "tests/test_aeon_bell_actor_runner.py": {
+      "mode": 420,
+      "sha256": "f8c9284aac027004c45b22b643d5af8bc852b06288c1e0135b335ac828820ed6"
     },
     "tests/test_aeon_bell_binding.py": {
       "mode": 420,

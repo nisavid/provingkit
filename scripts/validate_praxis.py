@@ -2,10 +2,10 @@
 """Validate the Praxis Agent Plugin, its Claude projection, and its content lock.
 
 The lock at ``release/plugin-content-locks/praxis.json`` pins the canonical
-plugin bytes (including the Aeon Bell runtime resources), the three public Aeon
-Bell test modules, and the closed public eval corpus inventory under
-``evals/praxis`` at a candidate revision: retained Aeon Bell trials, the raw
-control-plane scenario definition, and current discovery inputs. It verifies
+plugin bytes (including the Aeon Bell runtime resources), the public Aeon Bell
+test modules and synthetic controller/actor runner, and the closed public eval
+corpus inventory under ``evals/praxis`` at a candidate revision: retained trial
+history, current application recipes and criteria, and discovery definitions. It verifies
 source identity only: it does not run those tests, does not execute or grade any
 scenario (a scenario definition is not executed model evidence), does not
 assert that the Aeon Bell engine or Codex status adapter behaves correctly,
@@ -63,8 +63,10 @@ PUBLIC_TESTS = (
     "tests/test_aeon_bell_codex_status.py",
     "tests/test_aeon_bell_binding.py",
     "tests/test_aeon_bell_fixtures.py",
+    "tests/test_aeon_bell_actor_runner.py",
 )
 PUBLIC_FIXTURE_RUNNER = "tests/praxis_fixture.py"
+PUBLIC_ACTOR_RUNNER = "tests/praxis_actor_runner.js"
 APPLICATION_CASE_IDS = (
     'empty',
     'cached-closed',
@@ -660,6 +662,8 @@ def validate_public_evidence(repository: Path) -> None:
     for relative in PUBLIC_TESTS:
         validate_python_source(repository, relative, "public test", credentials=False)
     validate_python_source(repository, PUBLIC_FIXTURE_RUNNER, "public fixture runner", credentials=False)
+    actor_runner = contained_path(repository, PUBLIC_ACTOR_RUNNER, "synthetic actor runner")
+    validate_portable_file(actor_runner, PUBLIC_ACTOR_RUNNER)
     corpus_root = contained_path(repository, EVAL_CORPUS_ROOT, "eval corpus root")
     for relative in EVAL_CORPORA:
         corpus = load_json(
@@ -691,7 +695,7 @@ def locked_inputs(repository: Path, plugin: Path) -> dict[str, Path]:
         (PLUGIN_RELATIVE / relative).as_posix(): path
         for relative, path in plugin_inventory(plugin).items()
     }
-    for relative in (*PUBLIC_TESTS, PUBLIC_FIXTURE_RUNNER, *EVAL_CORPORA):
+    for relative in (*PUBLIC_TESTS, PUBLIC_FIXTURE_RUNNER, PUBLIC_ACTOR_RUNNER, *EVAL_CORPORA):
         inputs[relative] = contained_path(repository, relative, "locked input")
     return inputs
 

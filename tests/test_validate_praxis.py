@@ -20,6 +20,8 @@ BINDING_RELATIVE = SKILL_RELATIVE / "scripts" / "monitor_binding.js"
 PUBLIC_TEST_RELATIVE = Path("tests/test_aeon_bell.py")
 ADAPTER_TEST_RELATIVE = Path("tests/test_aeon_bell_codex_status.py")
 BINDING_TEST_RELATIVE = Path("tests/test_aeon_bell_binding.py")
+ACTOR_RUNNER_RELATIVE = Path("tests/praxis_actor_runner.js")
+ACTOR_TEST_RELATIVE = Path("tests/test_aeon_bell_actor_runner.py")
 EVAL_CORPUS_RELATIVE = Path("evals/praxis/experiment.json")
 SCENARIO_CORPUS_RELATIVE = Path("evals/praxis/corpus.json")
 TRIGGER_CORPUS_RELATIVE = Path("evals/praxis/skills/aeon-bell/trigger-evals.json")
@@ -55,7 +57,7 @@ EVAL_CORPORA_RELATIVE += tuple(
 import yaml  # noqa: E402,F401
 
 # Every fixture below is synthetic.  The Aeon Bell skill, its engine and status
-# adapter scripts, both public test modules, and the eval corpus are authored
+# adapter scripts, public test modules, and the eval corpus are authored
 # independently; these stand-ins exercise only the validator's source contract
 # and never stand for the real equipment or its behavioral evidence.
 SYNTHETIC_SKILL = """---
@@ -204,6 +206,8 @@ class ValidatePraxisTests(unittest.TestCase):
                 json.dumps({"case_id": case_id, "synthetic": True}) + "\n")
         (self.repo / "tests/praxis_fixture.py").write_text(SYNTHETIC_RUNTIME)
         (self.repo / "tests/test_aeon_bell_fixtures.py").write_text(SYNTHETIC_PUBLIC_TEST)
+        (self.repo / ACTOR_RUNNER_RELATIVE).write_text("\"use strict\"; // synthetic runner stand-in\n")
+        (self.repo / ACTOR_TEST_RELATIVE).write_text(SYNTHETIC_PUBLIC_TEST)
         for path in self.repo.rglob("*"):
             if path.is_file():
                 path.chmod(0o755 if path == runtime else 0o644)
@@ -250,6 +254,8 @@ class ValidatePraxisTests(unittest.TestCase):
                 json.dumps({"case_id": case_id, "synthetic": True}) + "\n")
         (self.repo / "tests/praxis_fixture.py").write_text(SYNTHETIC_RUNTIME)
         (self.repo / "tests/test_aeon_bell_fixtures.py").write_text(SYNTHETIC_PUBLIC_TEST)
+        (self.repo / ACTOR_RUNNER_RELATIVE).write_text("\"use strict\"; // synthetic runner stand-in\n")
+        (self.repo / ACTOR_TEST_RELATIVE).write_text(SYNTHETIC_PUBLIC_TEST)
         result = self.validate("--write-content-lock")
         self.assertEqual(result.returncode, 0, result.stderr)
         locked = self.lock()["files"]
@@ -349,7 +355,9 @@ class ValidatePraxisTests(unittest.TestCase):
         self.assertEqual(normalized["diagnostics"], [])
         self.assertEqual([case["case_id"]["id"] for case in normalized["cases"]], list(CASE_IDS))
         self.assertTrue(all(case["status"] == "ready" for case in normalized["cases"]))
-        self.assertTrue(all(len(case["fixtures"]) == 2 for case in normalized["cases"]))
+        self.assertTrue(all(len(case["fixtures"]) == 3 for case in normalized["cases"]))
+        for case in normalized["cases"]:
+            self.assertIn("tests/praxis_actor_runner.js", {item["path"] for item in case["fixtures"]})
         expectations = [item for case in normalized["cases"] for item in case["expectations"]]
         self.assertTrue(all(item["severity"] in ("safety", "quality") for item in expectations))
         self.assertEqual(len({item["id"] for item in expectations}), len(expectations))
@@ -393,6 +401,8 @@ class ValidatePraxisTests(unittest.TestCase):
         self.assertIn(PUBLIC_TEST_RELATIVE.as_posix(), files)
         self.assertIn(ADAPTER_TEST_RELATIVE.as_posix(), files)
         self.assertIn(BINDING_TEST_RELATIVE.as_posix(), files)
+        self.assertIn(ACTOR_RUNNER_RELATIVE.as_posix(), files)
+        self.assertIn(ACTOR_TEST_RELATIVE.as_posix(), files)
         self.assertIn(EVAL_CORPUS_RELATIVE.as_posix(), files)
         self.assertIn(SCENARIO_CORPUS_RELATIVE.as_posix(), files)
         self.assertEqual(
@@ -409,6 +419,12 @@ class ValidatePraxisTests(unittest.TestCase):
         self.assertEqual(files[RUNTIME_RELATIVE.as_posix()]["mode"], 0o755)
         self.assertEqual(files[ADAPTER_RELATIVE.as_posix()]["mode"], 0o644)
         self.assertEqual(files[BINDING_RELATIVE.as_posix()]["mode"], 0o644)
+
+    def test_actor_runner_bytes_are_locked(self) -> None:
+        self.write_lock()
+        path = self.repo / ACTOR_RUNNER_RELATIVE
+        path.write_text(path.read_text() + "// Changed synthetic runner input\n")
+        self.assert_rejected("content lock")
 
     def test_lock_regeneration_is_byte_reproducible(self) -> None:
         self.write_lock()
