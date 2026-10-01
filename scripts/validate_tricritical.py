@@ -9,6 +9,7 @@ import hashlib
 import html
 import json
 import os
+import posixpath
 import re
 import stat
 import sys
@@ -161,7 +162,6 @@ SHARED_OUTPUT_CONTRACT_LINK = (
 SHARED_INVOCATION_BOUNDARY_LINK = (
     "[the shared invocation boundary](references/invocation-boundary.md)"
 )
-SKILL_LOCAL_TOPOLOGY_LINK = "[topology.json](references/topology.json)"
 REVIEW_COMPLETENESS_LINK = (
     "[the completeness and synthesis rules](references/completeness-and-synthesis.md)"
 )
@@ -979,7 +979,6 @@ def skill_local_projection_sources(skill: str) -> dict[str, str]:
     projections = {
         "references/invocation-boundary.md": SHARED_INVOCATION_BOUNDARY_PATH,
         "references/review-input-boundary.md": SHARED_INPUT_BOUNDARY_PATH,
-        "references/topology.json": "topology.json",
     }
     if skill in REVIEW_OUTPUT_SKILLS:
         projections["references/review-output-contract.md"] = (
@@ -1137,15 +1136,32 @@ def validate_public_skill_boundaries(root: Path, skill: str) -> None:
     expected_output_links = 1 if skill in REVIEW_OUTPUT_SKILLS else 0
     if content.count(SHARED_OUTPUT_CONTRACT_LINK) != expected_output_links:
         fail(f"{skill} does not preserve the shared review-output contract link")
-    if content.count(SKILL_LOCAL_TOPOLOGY_LINK) != 1:
-        fail(f"{skill} must load the skill-local topology projection exactly once")
     bundle = resolve_candidate_skill_bundle(root, skill)
-    prefix = f"skills/{skill}/references"
-    if (
-        f"{prefix}/invocation-boundary.md" not in bundle
-        or f"{prefix}/topology.json" not in bundle
-    ):
-        fail(f"{skill} bundle omits invocation policy or graph authority")
+    if f"skills/{skill}/references/invocation-boundary.md" not in bundle:
+        fail(f"{skill} bundle omits the invocation policy")
+    # An installed skill root is self-contained: release projections omit
+    # topology.json, and only SKILL.md may leave the root, via declared edges.
+    for relative_path in sorted(expected_skill_files(skill)):
+        content = read_regular_bytes(root, f"skills/{skill}/{relative_path}")
+        if b"topology.json" in content:
+            fail(f"{skill} skill root cites the source-stage topology")
+        if relative_path == "SKILL.md" or Path(relative_path).suffix.casefold() not in {
+            ".json",
+            ".md",
+            ".txt",
+            ".yaml",
+            ".yml",
+        }:
+            continue
+        for raw_target in markdown_link_targets(content.decode("utf-8")):
+            target = normalize_markdown_target(raw_target)
+            if not target or re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
+                continue
+            resolved = posixpath.normpath(
+                posixpath.join(posixpath.dirname(relative_path), target)
+            )
+            if resolved == ".." or resolved.startswith(("../", "/")):
+                fail(f"{skill} {relative_path} links outside its skill root")
 
 
 def validate_input_boundaries(root: Path) -> None:
@@ -1184,9 +1200,7 @@ def semantic_skill_paths() -> tuple[str, ...]:
     }
     for skill in CORE_SKILLS:
         for relative_path in expected_skill_files(skill):
-            if relative_path.endswith(".md") or relative_path in (
-                "references/topology.json",
-            ):
+            if relative_path.endswith(".md"):
                 paths.add(f"skills/{skill}/{relative_path}")
     return tuple(sorted(paths))
 
@@ -1580,6 +1594,18 @@ def validate_authority_topology(root: Path, topology: dict) -> None:
         derived_calls = [target for _, target in linked_edges]
         if derived_calls != skills[skill]["calls"]:
             fail(f"{skill} executable call edges differ from topology.json")
+        # Installed skills read sibling links as their declared edges, so every
+        # link that leaves the skill root must be one of those exact edges.
+        outside_links = sorted(
+            target
+            for target in (
+                posixpath.normpath(normalize_markdown_target(raw))
+                for raw in markdown_link_targets(content)
+            )
+            if target.startswith("../")
+        )
+        if outside_links != sorted(f"../{call}/SKILL.md" for call in derived_calls):
+            fail(f"{skill} links sibling skills beyond its declared call edges")
     mutation_owners = [
         skill
         for skill, content in contents.items()

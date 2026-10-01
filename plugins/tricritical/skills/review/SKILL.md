@@ -9,7 +9,7 @@ Read and apply [the shared review-input boundary](references/review-input-bounda
 
 Read and apply [the shared review-output contract](references/review-output-contract.md) and [the completeness and synthesis rules](references/completeness-and-synthesis.md).
 
-Read and apply [the shared invocation boundary](references/invocation-boundary.md), using [topology.json](references/topology.json) as the graph authority.
+Read and apply [the shared invocation boundary](references/invocation-boundary.md).
 
 Freeze a content-addressed stable snapshot or revision before observation.
 Record the current increment and exact review input defined by the shared

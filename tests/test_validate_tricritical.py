@@ -591,7 +591,6 @@ class ValidateTricriticalTests(unittest.TestCase):
         canonical = {
             "review-input-boundary.md": "references/review-input-boundary.md",
             "invocation-boundary.md": "references/invocation-boundary.md",
-            "topology.json": "topology.json",
         }
         for skill in CORE_SKILLS:
             with self.subTest(skill=skill):
@@ -618,6 +617,54 @@ class ValidateTricriticalTests(unittest.TestCase):
                         (self.plugin_root / canonical_path).read_bytes(),
                     )
                     self.assertIn(f"(references/{local_name})", descriptor)
+                self.assertFalse(
+                    (installed_root / "references" / "topology.json").exists()
+                )
+                self.assertNotIn("topology.json", descriptor)
+
+    def test_rejects_skill_root_citing_source_stage_topology(self):
+        for relative_path, addition in (
+            ("references/rubric.md", "\nConsult `topology.json`.\n"),
+            ("agents/openai.yaml", "# Consult topology.json.\n"),
+        ):
+            with self.subTest(path=relative_path):
+                path = self.plugin_root / "skills" / "intent" / relative_path
+                original = path.read_text()
+                path.write_text(original + addition)
+                result = self.run_validator()
+                path.write_text(original)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    "intent skill root cites the source-stage topology", result.stderr
+                )
+
+    def test_rejects_reference_links_outside_the_skill_root(self):
+        cases = (
+            ("intent", "references/rubric.md", "[loop](../../loop/SKILL.md)"),
+            ("intent", "references/rubric.md", "[the loop skill](../../loop/SKILL.md)"),
+            (
+                "review",
+                "references/completeness-and-synthesis.md",
+                "[revise](../../revise/SKILL.md)",
+            ),
+            (
+                "intent",
+                "references/rubric.md",
+                "[shared](../../../references/invocation-boundary.md)",
+            ),
+        )
+        for skill, relative_path, link in cases:
+            with self.subTest(skill=skill, link=link):
+                path = self.plugin_root / "skills" / skill / relative_path
+                original = path.read_text()
+                path.write_text(f"{original}\nSee {link}\n")
+                result = self.run_validator()
+                path.write_text(original)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    f"{skill} {relative_path} links outside its skill root",
+                    result.stderr,
+                )
 
     def test_rejects_missing_skill_local_shared_resource_projection(self):
         projection = (
@@ -895,6 +942,28 @@ class ValidateTricriticalTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("executable call edges", result.stderr)
 
+    def test_rejects_undeclared_sibling_skill_links_in_any_link_form(self):
+        cases = (
+            ("intent", "[the loop skill](../loop/SKILL.md)"),
+            ("intent", "[Loop](../loop/SKILL.md)"),
+            ("intent", "[loop](../loop/SKILL.md#completion)"),
+            ("intent", "[loop](<../loop/SKILL.md>)"),
+            ("intent", "[loop][l]\n\n[l]: ../loop/SKILL.md"),
+            ("review", "[the adjudicator](../adjudicate/SKILL.md)"),
+        )
+        for skill, link in cases:
+            with self.subTest(skill=skill, link=link):
+                skill_path = self.plugin_root / "skills" / skill / "SKILL.md"
+                original = skill_path.read_text()
+                skill_path.write_text(f"{original}\nSee {link}\n")
+                result = self.run_validator()
+                skill_path.write_text(original)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    "links sibling skills beyond its declared call edges",
+                    result.stderr,
+                )
+
     def test_rejects_readme_projection_drift(self):
         readme_path = self.plugin_root / "README.md"
         original = readme_path.read_text()
@@ -987,7 +1056,6 @@ class ValidateTricriticalTests(unittest.TestCase):
                 "skills/intent/references/review-input-boundary.md",
                 "skills/intent/references/review-output-contract.md",
                 "skills/intent/references/rubric.md",
-                "skills/intent/references/topology.json",
             ),
         )
 
@@ -1002,25 +1070,21 @@ class ValidateTricriticalTests(unittest.TestCase):
                 "skills/intent/references/review-input-boundary.md",
                 "skills/intent/references/review-output-contract.md",
                 "skills/intent/references/rubric.md",
-                "skills/intent/references/topology.json",
                 "skills/review/SKILL.md",
                 "skills/review/references/completeness-and-synthesis.md",
                 "skills/review/references/invocation-boundary.md",
                 "skills/review/references/review-input-boundary.md",
                 "skills/review/references/review-output-contract.md",
-                "skills/review/references/topology.json",
                 "skills/runtime/SKILL.md",
                 "skills/runtime/references/invocation-boundary.md",
                 "skills/runtime/references/review-input-boundary.md",
                 "skills/runtime/references/review-output-contract.md",
                 "skills/runtime/references/rubric.md",
-                "skills/runtime/references/topology.json",
                 "skills/structure/SKILL.md",
                 "skills/structure/references/invocation-boundary.md",
                 "skills/structure/references/review-input-boundary.md",
                 "skills/structure/references/review-output-contract.md",
                 "skills/structure/references/rubric.md",
-                "skills/structure/references/topology.json",
             ),
         )
         self.assertNotIn("README.md", review_bundle)
@@ -1034,7 +1098,7 @@ class ValidateTricriticalTests(unittest.TestCase):
                 self.assertIn(
                     f"skills/{skill}/references/invocation-boundary.md", bundle
                 )
-                self.assertIn(f"skills/{skill}/references/topology.json", bundle)
+                self.assertNotIn(f"skills/{skill}/references/topology.json", bundle)
 
     def test_candidate_skill_bundle_rejects_reference_escape(self):
         intent_path = self.plugin_root / "skills" / "intent" / "SKILL.md"
