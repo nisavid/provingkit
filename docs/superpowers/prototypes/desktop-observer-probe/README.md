@@ -6,11 +6,11 @@ sample readers, and a procedure for one disposable Code task. It prepares
 Installation and live observation require the reviewed revision named by the
 separate [probe authorization](https://github.com/nisavid/provingkit/issues/279).
 
-Fixture identity acquisition remains a blocking design decision in
-[Choose how to acquire the disposable fixture identities](https://github.com/nisavid/provingkit/issues/341).
-The selected metadata file requires the profile, account, organization,
-user-data root, task ID, and Code ID to be established first. The current
-procedure does not supply that acquisition route.
+Fixture identity acquisition awaits adoption in
+[Decide whether to incorporate the fixture-identity receipt](https://github.com/nisavid/provingkit/issues/353).
+The [source design](../../research/2026-09-30-fixture-identity-acquisition-design.md)
+proposes acquisition before final observer configuration. The current candidate
+and procedure do not implement that route.
 
 ## Start here
 

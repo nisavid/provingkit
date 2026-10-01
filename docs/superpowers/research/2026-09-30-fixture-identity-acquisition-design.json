@@ -1,0 +1,92 @@
+{
+  "schema": "provingkit.fixture-identity-source-design-evidence.v1",
+  "recorded_at": "2026-10-01T02:45:51.805044+00:00",
+  "ticket": "https://github.com/nisavid/provingkit/issues/352",
+  "adoption_decision": "https://github.com/nisavid/provingkit/issues/353",
+  "scope": "source design and navigation only",
+  "public_source_base": "13424a53e87abc78fdcebd379c0fcab2f0889d45",
+  "source_basis": {
+    "package": "claude-desktop-extra 2.9939.4-1",
+    "app_asar_sha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
+    "manager_member": ".vite/build/index.chunk-B9SZqsi8.js",
+    "manager_sha256": "bd2144a3653bb843f4b75fe652124a4e478f273b5f6c2e10a2139fa3a9a3152f",
+    "route_member": ".vite/build/index.chunk-COPWZCsC.js",
+    "route_sha256": "b22a9dc34684cef348f9c0e72abe88c433bbfc2d350d9a3e61faf7ae22858950",
+    "helper_member": ".vite/build/index.chunk-DuaKZOPP.js",
+    "helper_sha256": "f160a24940ee11cea6a788a9038e95c14fb150889977dcfa331fd9b07aba0c96",
+    "serializer_member": ".vite/build/index.chunk-CKt-cwRV.js",
+    "serializer_sha256": "dad88ac66fe13f72d0225c49d48e124d238ff643ff96426c4a2020482621e62d"
+  },
+  "reviewed_files": {
+    "docs/superpowers/research/2026-09-30-fixture-identity-acquisition-design.md": "10ff3e1cb8c1834b0b24b0fc6866c049b5824bb7c51508b3c2a5212faa5718a1",
+    "docs/superpowers/prototypes/desktop-observer-probe/README.md": "993c5543836a8a6cf90edc9b4c680c711f7a347ca1a9a42daa003233c1e4684c",
+    "docs/superpowers/prototypes/desktop-observer-probe/probe-procedure.md": "89a6e4a4a46fe48e213f35fe51c3e686ffcaff71adcaaf24310d942f9de38104"
+  },
+  "final_replacement_chain": [
+    {
+      "base_sha256": "5530de0c8a09339dfe89825b36642476ae156d34b9c2783a233cf75f9f40a162",
+      "writer_request_sha256": "b5551db4163190ee2b09b8d197c116a9aa8cf32ddaab6d89db9b029cf009721f",
+      "writer_result_sha256": "4947f4e29b90f74e01a064457434b67b48a402af62c29043bd80371a29bce93f",
+      "replacement_count": 11,
+      "result_sha256": "e6ebc867cfee72b1593c5567f2519a172a74cf023c6a7dc732d871db4207d245",
+      "unchanged_segments_preserved": true
+    },
+    {
+      "base_sha256": "e6ebc867cfee72b1593c5567f2519a172a74cf023c6a7dc732d871db4207d245",
+      "writer_request_sha256": "2f7ec544d2fcf631dc06122c9ca69d8809bada1fa06f469d5602fe3efdf56143",
+      "writer_result_sha256": "bf76c5e031ca61a801d979c7588387d27396c17332224c2fb77c7511aa0edea9",
+      "replacement_count": 19,
+      "result_sha256": "d65e235d2fe7955ebe344303ddb5978830c3d115a5865ecda2187eeade7cf6a5",
+      "unchanged_segments_preserved": true
+    },
+    {
+      "base_sha256": "d65e235d2fe7955ebe344303ddb5978830c3d115a5865ecda2187eeade7cf6a5",
+      "writer_request_sha256": "38a851805c1ef6a6114b21236a02d8d8d04299f58bdf70f8c88c87ce722a3f88",
+      "writer_result_sha256": "de5e9b52f6ed5d68ec3a6d2d7fe62f840a84699b1aefa8eddab4e6d419fb1032",
+      "replacement_count": 2,
+      "result_sha256": "c48c3e9552cb601ba5719460b8a474a74a9f1b4d432d12209f4b3b960bbdcf3e",
+      "unchanged_segments_preserved": true
+    },
+    {
+      "base_sha256": "c48c3e9552cb601ba5719460b8a474a74a9f1b4d432d12209f4b3b960bbdcf3e",
+      "writer_request_sha256": "8c78edd58cb7fbbd23a2214adbf32c70c9e013f0c3dab00a89038624e765f3a1",
+      "writer_result_sha256": "cf6cf244504a4f7e729f8e09afbdbb7ad02069e9c8fdfdb091b4a2982f1bcc58",
+      "replacement_count": 3,
+      "result_sha256": "38de8f70e2650889ffd83a3296ee84f1864e97b3b1ac54df25f56243990f8ae4",
+      "unchanged_segments_preserved": true
+    },
+    {
+      "base_sha256": "38de8f70e2650889ffd83a3296ee84f1864e97b3b1ac54df25f56243990f8ae4",
+      "writer_request_sha256": "3754524bf62ee94f8dff731bc9680a1b4e6d2c63a59bd2ec6f468a38af4604c5",
+      "writer_result_sha256": "b93ac503010c8f1590c70258cc44ddb9821a9bb34ccefc8058d7ae8c792a144b",
+      "replacement_count": 2,
+      "result_sha256": "10ff3e1cb8c1834b0b24b0fc6866c049b5824bb7c51508b3c2a5212faa5718a1",
+      "unchanged_segments_preserved": true
+    }
+  ],
+  "independent_review": {
+    "request_sha256": "ce3345b02aa760368c2b5e9ad5fb14347a59a002b3d63490919e458e0a84a432",
+    "result_sha256": "2f9acb02faa121bb2a3621951f57b4c690655337edee2e5ac350be2b3be88ea8",
+    "report_sha256": "10ff3e1cb8c1834b0b24b0fc6866c049b5824bb7c51508b3c2a5212faa5718a1",
+    "requested_model": "gpt-daybreak-blue-latest",
+    "requested_effort": "high",
+    "execution_model_attested": false,
+    "surface": "codex CLI 0.159.0",
+    "distinct_session_observed": true,
+    "tools_observed": [],
+    "outcome": "PASS",
+    "result": "PASS",
+    "finished_at": "2026-10-01T02:44:58.446806+00:00"
+  },
+  "verification": {
+    "exact_final_bytes": true,
+    "static_diff_check": "passed",
+    "relative_navigation_links": "passed",
+    "machine_local_paths": "absent",
+    "implementation_changed": false,
+    "implementation_tests_run": false,
+    "live_fixture_access_performed": false,
+    "live_qualification": "not established"
+  },
+  "next_gate": "Operator adoption of the source proposal, including one setup prompt, exact-query continuation, extra private acquisition files and reads, and the proposed admission-decision bound."
+}

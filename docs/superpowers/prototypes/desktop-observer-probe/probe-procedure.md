@@ -11,10 +11,12 @@ records its immutable source revision. It must have a positive, scoped grant
 from [Authorize the disposable Desktop observer probe](https://github.com/nisavid/provingkit/issues/279).
 A closed prerequisite alone is insufficient. The grant must name the candidate,
 fixture, data access, setup prompts, application changes, launcher and argument
-identities, cleanup terms, and restoration plan. A separately reviewed
-acquisition route must establish the complete fixture identity tuple before
-metadata-path or observer-configuration construction. That design is unresolved
-in [the acquisition decision](https://github.com/nisavid/provingkit/issues/341).
+identities, cleanup terms, and restoration plan. A separately reviewed acquisition route must establish the complete fixture
+identity tuple before dependent metadata-path or observer-configuration
+construction. The [source proposal](../../research/2026-09-30-fixture-identity-acquisition-design.md)
+awaits [Decide whether to incorporate the fixture-identity receipt](https://github.com/nisavid/provingkit/issues/353).
+The procedure below retains its existing sequence until adoption and
+implementation reconcile it with that proposal.
 
 Use the inspected package and archive identities in
 [packaging evidence](packaging-evidence.md). Assess a changed dependency through
