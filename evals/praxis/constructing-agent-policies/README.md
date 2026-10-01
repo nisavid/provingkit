@@ -94,7 +94,7 @@ The floor is the existing receipt policy:
 - every quality expectation passes in at least two of three;
 - every trigger is correct.
 
-The floor applies separately to GPT-6 Sol at medium effort in Codex and to
+The floor applies separately to GPT-6.1 Sol at medium effort in Codex and to
 Claude Opus 5.5 at medium effort in Claude Code. The other harness's model
 grades each run, alongside the deterministic checks.
 

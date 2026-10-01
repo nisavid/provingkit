@@ -90,7 +90,7 @@
       {
         "id": "models",
         "covers": "Which models, harnesses, and reasoning efforts the policy and its tests target.",
-        "answer": "It runs on GPT-6 Sol at medium effort in Codex and Claude Opus 5.5 at medium effort in Claude Code."
+        "answer": "It runs on GPT-6.1 Sol at medium effort in Codex and Claude Opus 5.5 at medium effort in Claude Code."
       },
       {
         "id": "tests-form",

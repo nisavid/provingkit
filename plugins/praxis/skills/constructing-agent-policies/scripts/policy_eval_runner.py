@@ -415,7 +415,7 @@ feature switches and one disabling ``[[skills.config]]`` entry per
 loads no tools, skills, MCP servers or hooks. ``--grader-panel`` on
 ``grade`` and ``run --grade`` names several graders instead, as
 ``harness:model:effort`` items separated by commas (for example
-``claude:claude-opus-5-5:medium,codex:gpt-6-sol:medium``). Each grades the run
+``claude:claude-opus-5-5:medium,codex:gpt-6.1-sol:medium``). Each grades the run
 in its own session, with its artifacts under
 ``grader/<harness>-<model>-<effort>/``. ``grading.json`` then has ``grader:
 null`` and ``panel``, one entry per grader: its identity, ``cost_usd``,
@@ -1353,7 +1353,7 @@ def codex_record(observation, rollouts, *, case_id, repetition, returncode, sour
 
 # ----------------------------------------------------------------------------- checks and grading
 
-GRADERS = {"claude": ("codex", "gpt-6-sol"), "codex": ("claude", "claude-opus-5-5")}
+GRADERS = {"claude": ("codex", "gpt-6.1-sol"), "codex": ("claude", "claude-opus-5-5")}
 
 
 class GradeError(ValueError):
@@ -3868,7 +3868,7 @@ def summary_markdown(summary):
 
 
 PANEL_HELP = ("grade with these graders instead of the other harness's model: comma-separated "
-              "harness:model:effort, e.g. claude:claude-opus-5-5:medium,codex:gpt-6-sol:medium")
+              "harness:model:effort, e.g. claude:claude-opus-5-5:medium,codex:gpt-6.1-sol:medium")
 
 
 def main(argv=None):
