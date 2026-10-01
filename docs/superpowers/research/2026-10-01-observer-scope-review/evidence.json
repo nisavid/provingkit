@@ -1,0 +1,197 @@
+{
+  "base": "c1d77f8dd6a5dab58f6dfd96275dff0ea6015ae0",
+  "artifacts": [
+    {
+      "artifact": "conceptual-first.md",
+      "captured_sha256": "7f7760ab4f64159f7e2552cdfe146ea69bc68609ed46d11c47ade4f6caa8e8fe",
+      "published_sha256": "35b3915b2f5a49a5e9c3567c212b151343c619e7fa9dd3cf4fd3f089e1154e86",
+      "editorial_changes": "Repository links made immutable; local packet links made relative; installed skill named; decision link expanded; first-round historical notice added. Findings unchanged."
+    },
+    {
+      "artifact": "survey-first.md",
+      "captured_sha256": "46331009bece56667016216c164c18477359658e8861f63d3dce9f4e441188cd",
+      "published_sha256": "1e25c9e9de4c56e20763ef4990c01bbcbc82a0449bd4df42ef988132017f80e3",
+      "editorial_changes": "Repository links made immutable; local packet links made relative; installed skill named; decision link expanded; first-round historical notice added. Findings unchanged."
+    },
+    {
+      "artifact": "native-first.md",
+      "captured_sha256": "ab9287ffa01835c4cbf5e2c2b5274a74518b94a7908e5168ac4b71b5f8a14153",
+      "published_sha256": "90f69acfd576d1f82bf8b9e804134a27c4851295169b4bd08461aca31373845f",
+      "editorial_changes": "Repository links made immutable; local packet links made relative; installed skill named; decision link expanded; first-round historical notice added. Findings unchanged."
+    },
+    {
+      "artifact": "conceptual-followup.md",
+      "captured_sha256": "1cd60605a989954c6e2a722b1ceaaea55f2c875cc0f07ad66985bbe7aa1368c7",
+      "published_sha256": "4b135b7fa13ff074b581000e169bf8e38c4b6afc062775219f244f67a35baf18",
+      "editorial_changes": "Repository links made immutable; local packet links made relative; installed skill named; decision link expanded; first-round historical notice added. Findings unchanged."
+    },
+    {
+      "artifact": "survey-followup.md",
+      "captured_sha256": "72e3d3b95d37a9be109c23156c849fc61753688e768ea238db600a39fcc06e57",
+      "published_sha256": "15daac711189b4f2bcbdd6af930de95a930261f01a7e015549ee4db4255e4e72",
+      "editorial_changes": "Repository links made immutable; local packet links made relative; installed skill named; decision link expanded; first-round historical notice added. Findings unchanged."
+    },
+    {
+      "artifact": "native-followup.md",
+      "captured_sha256": "0ffe0d6fa261885e73e65f0d701d0a38525516af1ed698a5e41bf1bc6749ccf8",
+      "published_sha256": "83afb9605c33287ff0dca6a09a7e05ec8c1450cfd5c8b7770224217e3b887778",
+      "editorial_changes": "Repository links made immutable; local packet links made relative; installed skill named; decision link expanded; first-round historical notice added. Findings unchanged."
+    },
+    {
+      "artifact": "history-trace.md",
+      "captured_sha256": "a518ce6caeaf8713fb7b7aa2fe01976210f3cead321def3ff01b5b58dd73581b",
+      "published_sha256": "a518ce6caeaf8713fb7b7aa2fe01976210f3cead321def3ff01b5b58dd73581b",
+      "editorial_changes": "Repository links made immutable; local packet links made relative; installed skill named; decision link expanded; first-round historical notice added. Findings unchanged."
+    },
+    {
+      "artifact": "native-source-delta.md",
+      "captured_sha256": "c6a716378b97c01d8ddda94adc393b52085cdf1f5e67403fd7cfc1b1df235888",
+      "published_sha256": "b1f518b883eaf96a6f62379bba3899763e1288d3fac399e6313ea15edfed46a4",
+      "editorial_changes": "Corrected metadata filename versus Code ID distinction against named source offsets; appended explicit coordinator correction."
+    }
+  ],
+  "first_round_exchange": {
+    "capture": "Coordinator transcription of terminal native Markdown reports; table whitespace may be normalized. Reports retain initial errors for explicit cross-examination.",
+    "frozen_before_exchange": true,
+    "history_trace_sha256": "a518ce6caeaf8713fb7b7aa2fe01976210f3cead321def3ff01b5b58dd73581b",
+    "reports": {
+      "conceptual": "7f7760ab4f64159f7e2552cdfe146ea69bc68609ed46d11c47ade4f6caa8e8fe",
+      "native": "ab9287ffa01835c4cbf5e2c2b5274a74518b94a7908e5168ac4b71b5f8a14153",
+      "survey": "46331009bece56667016216c164c18477359658e8861f63d3dce9f4e441188cd"
+    },
+    "round": 1
+  },
+  "source_verification": {
+    "base": "c1d77f8dd6a5dab58f6dfd96275dff0ea6015ae0",
+    "checks": {
+      "desktop-adapter.mjs": true,
+      "observer-contract.mjs": true,
+      "observer-probe.mjs": true,
+      "manager-patch.json": true,
+      "archive.mjs": true,
+      "build-dependency-identity.mjs": true,
+      "build-dependency-manifest.json": true,
+      "build-candidate.mjs": true,
+      "pristine-manager": true,
+      "ten-unique-anchors": true
+    },
+    "candidateRuntimeExecuted": false,
+    "scope": "offline source hashes and anchor occurrence counts; no archive rebuild, tests, or app execution"
+  },
+  "public_source_verification": [
+    {
+      "url": "https://github.com/S40911120/recensa/blob/aee7df884284b0f3656385a9c3bb6525fd9f5519/backend/src/ingestion/watcher.js",
+      "sha256": "17883466dd70410400166422ba431404e703530f4fa07d901f1b347f7dd86cf6",
+      "bytes": 4036,
+      "capture": "S40911120-recensa-watcher.js"
+    },
+    {
+      "url": "https://github.com/S40911120/recensa/blob/aee7df884284b0f3656385a9c3bb6525fd9f5519/backend/src/services/messageService.js",
+      "sha256": "5886db96018b75bf571dd1499192f7326a208e24e330508c5c5916cbe13c647b",
+      "bytes": 23444,
+      "capture": "S40911120-recensa-messageService.js"
+    },
+    {
+      "url": "https://github.com/es617/cc-tap/blob/b18e9a2f448bc83b338f444262e4f19d96f6c0c8/PROTOCOL.md",
+      "sha256": "8c6abacaf2fca34a108ec42159a78d034045169f23cabaf6688168f88fe01d5e",
+      "bytes": 12830,
+      "capture": "es617-cc-tap-PROTOCOL.md"
+    },
+    {
+      "url": "https://github.com/es617/cc-tap/blob/b18e9a2f448bc83b338f444262e4f19d96f6c0c8/cc_tap/client.py",
+      "sha256": "32346ee8bee50b2a0638beed9c71545b49fcf518e41aae484564cdcc2ef3d701",
+      "bytes": 4695,
+      "capture": "es617-cc-tap-client.py"
+    },
+    {
+      "url": "https://github.com/es617/cc-tap/blob/b18e9a2f448bc83b338f444262e4f19d96f6c0c8/cc_tap/server.py",
+      "sha256": "ee4b0928c22af147f64eb52da1f4cc53af5ec5f86f88b576a2af9d6393d52c6f",
+      "bytes": 8218,
+      "capture": "es617-cc-tap-server.py"
+    },
+    {
+      "url": "https://github.com/gitrishiom/claude-code-dm/blob/5012841e0af8fb6a56bd19373dbc4bb93a0e5640/src/bus.ts",
+      "sha256": "8aa7187d972bbfba02364a53eb402cabcf874bcc7993e13c39cfcc6761ad8e91",
+      "bytes": 6994,
+      "capture": "gitrishiom-claude-code-dm-bus.ts"
+    },
+    {
+      "url": "https://github.com/gitrishiom/claude-code-dm/blob/5012841e0af8fb6a56bd19373dbc4bb93a0e5640/src/server.ts",
+      "sha256": "095616a989dd235ab59b73b2ea652b9df2b5cae9ee564099753830c52985b7d9",
+      "bytes": 9897,
+      "capture": "gitrishiom-claude-code-dm-server.ts"
+    },
+    {
+      "url": "https://github.com/gvorwaller/claude-relay/blob/573d1963e719cc317ade100d573394ba00a77839/scripts/relay-receipts-hook.js",
+      "sha256": "bb081ce1e5d80748fa7960bb7d939c8c7e6ad057ee9dfa72aea30cfe5e596ebf",
+      "bytes": 10100,
+      "capture": "gvorwaller-claude-relay-relay-receipts-hook.js"
+    },
+    {
+      "url": "https://github.com/yohasebe/tmux-ccm/blob/32799c9d1ec9362101417c5beceaeb81aff88994/hooks/on-notification.sh",
+      "sha256": "c7f7985928c0de4f443cf9ae1c90a04666276fc90e7f39ab037235f0b9583f55",
+      "bytes": 4092,
+      "capture": "yohasebe-tmux-ccm-on-notification.sh"
+    },
+    {
+      "url": "https://github.com/yohasebe/tmux-ccm/blob/32799c9d1ec9362101417c5beceaeb81aff88994/lib/ccm_jsonl.py",
+      "sha256": "df79841df0f0ca48366e81c7b38d1f24da97071d2eab658093f866e9d8b9b4b8",
+      "bytes": 37198,
+      "capture": "yohasebe-tmux-ccm-ccm_jsonl.py"
+    },
+    {
+      "url": "https://github.com/yohasebe/tmux-ccm/blob/32799c9d1ec9362101417c5beceaeb81aff88994/lib/ccm_send.py",
+      "sha256": "c97a4aaa2226e67939ffba18d018686ffa63d3b48e3aa93227ca351b560da690",
+      "bytes": 62655,
+      "capture": "yohasebe-tmux-ccm-ccm_send.py"
+    }
+  ],
+  "runtime_qualification": false,
+  "license_observations": [
+    {
+      "repo": "es617/cc-tap",
+      "revision": "b18e9a2f448bc83b338f444262e4f19d96f6c0c8",
+      "path": "LICENSE",
+      "first_lines": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 Enrico Santagati"
+      ]
+    },
+    {
+      "repo": "yohasebe/tmux-ccm",
+      "revision": "32799c9d1ec9362101417c5beceaeb81aff88994",
+      "path": "LICENSE",
+      "first_lines": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 Yoichiro Hasebe"
+      ]
+    },
+    {
+      "repo": "S40911120/recensa",
+      "revision": "aee7df884284b0f3656385a9c3bb6525fd9f5519",
+      "path": "LICENSE",
+      "first_lines": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 Justin Chen"
+      ]
+    },
+    {
+      "repo": "gitrishiom/claude-code-dm",
+      "revision": "5012841e0af8fb6a56bd19373dbc4bb93a0e5640",
+      "path": "LICENSE",
+      "first_lines": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 Shaikh Akram Ahmed"
+      ]
+    },
+    {
+      "repo": "gvorwaller/claude-relay",
+      "revision": "573d1963e719cc317ade100d573394ba00a77839",
+      "top_level_license_files": []
+    }
+  ]
+}
