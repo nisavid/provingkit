@@ -837,6 +837,15 @@ class PolicyGate(RuntimeError):
         self.context = dict(context)
 
 
+@dataclass(frozen=True)
+class ConfigValue:
+    """The value Git's precedence selects for a single-valued key, and its source."""
+
+    value: str
+    scope: str
+    file: str
+
+
 class GitObjectFormat:
     def __init__(self, name: str, oid_width: int):
         self.name = name
@@ -1362,9 +1371,119 @@ class GitRepository:
             raise RuntimeError(f"unable to read Git config key {key}")
         return result.stdout.splitlines()
 
+    def config_value(self, key: str) -> Optional[ConfigValue]:
+        """Read a key the caller treats as single-valued (ADR 0003).
+
+        A definition repeated within one file, or present in both global
+        files, is an accidental repeat and fails closed even when the values
+        agree. Every other repeat follows Git's precedence: a later scope
+        overrides an earlier one, and an included file overrides the file that
+        includes it.
+        """
+        entries = self._config_entries(key, includes=True)
+        if not entries:
+            return None
+        global_files: list[str] = []
+        for scope, origin, _value in self._config_entries(key, includes=False):
+            if scope == "global" and origin not in global_files:
+                global_files.append(origin)
+        if len(global_files) > 1:
+            raise PolicyGate(
+                "GIT_CONFIG_DUPLICATE_DEFINITION",
+                key=key,
+                scope="global",
+                files=[self._symbolic_config_file(origin) for origin in global_files],
+            )
+        seen: set[tuple[str, str]] = set()
+        for scope, origin, _value in entries:
+            if (scope, origin) in seen:
+                raise PolicyGate(
+                    "GIT_CONFIG_DUPLICATE_DEFINITION",
+                    key=key,
+                    scope=scope,
+                    files=[self._symbolic_config_file(origin)],
+                )
+            seen.add((scope, origin))
+        scope, origin, value = entries[-1]
+        return ConfigValue(
+            value=value, scope=scope, file=self._symbolic_config_file(origin)
+        )
+
+    def _config_entries(self, key: str, *, includes: bool) -> list[tuple[str, str, str]]:
+        result = self.run(
+            [
+                "config",
+                "--null",
+                "--show-scope",
+                "--show-origin",
+                "--includes" if includes else "--no-includes",
+                "--get-all",
+                "--",
+                key,
+            ],
+            check=False,
+        )
+        if result.returncode == 1:
+            return []
+        if result.returncode != 0:
+            raise PolicyGate("GIT_CONFIGURATION_UNAVAILABLE")
+        fields = result.stdout.split("\0")
+        if fields and fields[-1] == "":
+            fields.pop()
+        if len(fields) % 3 != 0:
+            raise PolicyGate("GIT_CONFIGURATION_INVENTORY_MALFORMED")
+        return [
+            (fields[index], fields[index + 1], fields[index + 2])
+            for index in range(0, len(fields), 3)
+        ]
+
+    def _symbolic_config_file(self, origin: str) -> str:
+        """Name a config file without exposing the user's home layout."""
+        kind, separator, location = origin.partition(":")
+        if kind != "file" or not separator:
+            return kind
+        path = Path(location)
+        if not path.is_absolute():
+            path = self.path / path
+        for label, anchor in self._config_file_anchors():
+            relative = _relative_path(path, anchor)
+            if relative is not None:
+                return f"{label}/{relative}"
+        return path.as_posix()
+
+    def _config_file_anchors(self) -> list[tuple[str, Path]]:
+        common_dir = Path(self.output(["rev-parse", "--git-common-dir"]))
+        if not common_dir.is_absolute():
+            common_dir = self.path / common_dir
+        anchors = [
+            ("$GIT_DIR", Path(self.output(["rev-parse", "--absolute-git-dir"]))),
+            ("$GIT_DIR", common_dir),
+        ]
+        home = self.env.get("HOME")
+        xdg_config_home = self.env.get("XDG_CONFIG_HOME") or (
+            str(Path(home) / ".config") if home else None
+        )
+        if xdg_config_home:
+            anchors.append(("$XDG_CONFIG_HOME", Path(xdg_config_home)))
+        if home:
+            anchors.append(("~", Path(home)))
+        return anchors
+
     def git_path(self, name: str) -> Path:
         value = Path(self.output(["rev-parse", "--git-path", name]))
         return value if value.is_absolute() else self.path / value
+
+
+def _relative_path(path: Path, anchor: Path) -> Optional[str]:
+    for candidate, base in (
+        (os.path.normpath(path), os.path.normpath(anchor)),
+        (os.path.realpath(path), os.path.realpath(anchor)),
+    ):
+        try:
+            return Path(candidate).relative_to(base).as_posix()
+        except ValueError:
+            continue
+    return None
 
 
 def _blocked(request: PublicationRequest, gate: PolicyGate) -> dict:
@@ -1529,15 +1648,18 @@ def _select_remote(
     remotes: list[str],
     branch: str,
     upstream_remote: Optional[str],
+    config_sources: dict,
 ) -> tuple[str, str]:
-    push_remote = repo.config_all(f"branch.{branch}.pushRemote")
-    push_default_remote = repo.config_all("remote.pushDefault")
-    if len(push_remote) > 1 or len(push_default_remote) > 1:
-        raise PolicyGate("DESTINATION_REMOTE_AMBIGUOUS")
-    if push_remote:
-        remote, selection = push_remote[0], "branch.pushRemote"
-    elif push_default_remote:
-        remote, selection = push_default_remote[0], "remote.pushDefault"
+    push_remote = _read_single_value(
+        repo, f"branch.{branch}.pushRemote", config_sources
+    )
+    push_default_remote = _read_single_value(
+        repo, "remote.pushDefault", config_sources
+    )
+    if push_remote is not None:
+        remote, selection = push_remote, "branch.pushRemote"
+    elif push_default_remote is not None:
+        remote, selection = push_default_remote, "remote.pushDefault"
     elif upstream_remote:
         remote, selection = upstream_remote, "upstream"
     elif len(remotes) == 1:
@@ -1559,11 +1681,10 @@ def _select_push_ref(
     branch_ref: str,
     upstream_remote: Optional[str],
     upstream_ref: Optional[str],
+    config_sources: dict,
 ) -> tuple[str, str, list[str]]:
-    push_default_values = repo.config_all("push.default")
-    if len(push_default_values) > 1:
-        raise PolicyGate("PUSH_DEFAULT_AMBIGUOUS", count=len(push_default_values))
-    mode = push_default_values[0] if push_default_values else "simple"
+    configured_mode = _read_single_value(repo, "push.default", config_sources)
+    mode = "simple" if configured_mode is None else configured_mode
     default_ref = _default_push_ref(
         mode, branch_ref, remote, upstream_remote, upstream_ref
     )
@@ -1593,9 +1714,12 @@ def _resolve_destination(
         raise PolicyGate("DETACHED_HEAD_REQUIRES_EXPLICIT_DESTINATION")
     branch = branch_ref[len("refs/heads/") :]
     upstream_remote, upstream_ref = _upstream(repo, branch_ref)
-    remote, selection = _select_remote(repo, remotes, branch, upstream_remote)
+    config_sources: dict = {}
+    remote, selection = _select_remote(
+        repo, remotes, branch, upstream_remote, config_sources
+    )
     ref, mode, remote_push_values = _select_push_ref(
-        repo, remote, branch_ref, upstream_remote, upstream_ref
+        repo, remote, branch_ref, upstream_remote, upstream_ref, config_sources
     )
     return (
         remote,
@@ -1605,8 +1729,21 @@ def _resolve_destination(
             "branch_ref": branch_ref,
             "push_default": mode,
             "remote_push": remote_push_values,
+            # Hashed into config_digest so a value that moves to another file
+            # after review blocks execution (ADR 0003).
+            "config_sources": config_sources,
         },
     )
+
+
+def _read_single_value(
+    repo: GitRepository, key: str, config_sources: dict
+) -> Optional[str]:
+    configured = repo.config_value(key)
+    if configured is None:
+        return None
+    config_sources[key] = {"scope": configured.scope, "file": configured.file}
+    return configured.value
 
 
 def _fingerprint(endpoint: str) -> str:

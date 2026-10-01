@@ -52,7 +52,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/versionkeeping.json",
-          "sha256": "sha256:394fe93053a0ae5613ff547336cc3fdd5dda7eeb0eca06a8ff030f6d2fc57bf2"
+          "sha256": "sha256:1f3ed3813a41e367cbd2acf44bc5ab0839848305a52a6fbd0504723e50036c07"
         },
         "display_name": "Versionkeeping",
         "distribution_kind": "agent-plugin",
