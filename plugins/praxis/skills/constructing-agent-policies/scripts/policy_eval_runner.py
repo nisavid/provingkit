@@ -236,7 +236,10 @@ Answer sheets         In a sheet case the sheet answers every tool, async and
                       takes any backend callable (see ``SheetOperator``).
                       Successful mappings are cached in the run directory as
                       ``mapper/<key>.json``, keyed by a hash of the kind,
-                      message, sheet ids and coverage, and model. A backend
+                      message, sheet ids and coverage, model, and the
+                      SHA-256 of the mapping prompt (recorded as the cached
+                      request's ``prompt_sha256``), so a changed prompt never
+                      reuses an old mapping. A backend
                       failure or a malformed mapping (unknown ids, a question
                       count that differs from the tool call's, or prose
                       questions without waiting or waiting without questions)
@@ -433,6 +436,48 @@ malformed too, it has no parseable grade: ``final`` is ``null`` and the run is
 ungraded. A receipt binds one grader model, so a panel refuses ``--snapshot``.
 ``summarize`` counts every panel grader's cost and time.
 
+Staging
+-------
+
+Claude Code looks for ``CLAUDE.md``, ``CLAUDE.local.md``, ``AGENTS.md`` and
+``.claude/`` instructions in every directory above its working directory,
+whatever its setting sources: a clean-layer child in a run directory under the
+home directory read ``~/.claude/rules`` as an ancestor's rules, and the same
+child under ``/var/tmp`` read none (probe, 2026-09-30). So every model process
+the runner starts (the executor, each grader and the answer-sheet mapper) runs
+from a working directory under a staging root outside the home tree:
+``--staging-root`` on ``run``, ``grade`` and ``probe`` (``staging_root=`` in
+Python), else ``PROVINGKIT_EVAL_STAGING_ROOT`` (from ``base_env``), else
+``/var/tmp/provingkit-evals-<uid>``. The root is created owner-only when
+missing and refused when another user owns it. A run builds its whole run
+directory in a fresh ``<root>/<group>-<run id>-<random>/`` (the executor works
+in its ``repo/``, the mapper in ``mapper/work``), and grading builds ``grader/``
+in a fresh ``<root>/grade-<run id>-<random>/`` (each grader works in its
+``work/``). When the run or the grading ends, successfully or not, that
+directory moves to its durable place, ``<out>/<group>/<run id>`` or the run
+directory's ``grader/``, and none of it stays under the root. ``record.json``
+and ``grading.json`` record the staged directory as ``staging_dir``, and the
+files keep the paths the children saw (``argv.json``, Claude's
+``--debug-file``, rollout ``cwd`` values, tool calls, the stub log, a grader's
+``argv``): a path under ``staging_dir`` names the same relative path under the
+run directory. The paths the runner records itself (``rollouts``, ``env.json``
+``tmpdir``, a panel grader's ``directory``) are relative to the run directory,
+and a link whose target lies under the staged directory (Claude Code's
+``latest`` beside its ``--debug-file``) becomes a relative link to the same
+place, so a moved or copied run keeps it.
+
+Before it starts a child, and once at the staging root before it creates
+anything, the runner walks the child's working directory and every directory
+above it, leaving out the fixture repository itself (its files are the
+case's), for ``CLAUDE.md``, ``CLAUDE.local.md``, ``AGENTS.md``, ``.claude``
+and ``.agents``. An empty directory does not count: Codex's Linux sandbox
+leaves empty ``.agents`` mount targets in its writable roots, ``/tmp`` among
+them, while a command runs. Any other one refuses each child that runs clean,
+with ``RunError``: a ``clean``-layer executor, every grader, and a sheet case's
+default mapper (``ClaudeMapper`` itself raises ``MapperError``). A
+``realistic`` executor runs, and its ``user_layer.sources`` also lists what it
+could read there (see below).
+
 Receipts
 --------
 
@@ -463,20 +508,26 @@ the run's private ``TMPDIR`` relative to the run directory), ``tmp/`` (that
 through ``/tmp``), ``input.jsonl`` and ``stream.jsonl`` (Claude),
 ``events.jsonl`` or ``wire.jsonl`` plus ``rollouts/`` (Codex), ``stderr.txt``,
 ``gh-stub.log``, ``transcript.json`` (what the grader sees, including
-``asked_questions`` ``[{turn, kind, question, answer, answer_sent?}]``,
+``asked_questions`` ``[{turn, kind, question, answer, answer_sent?,
+after_tool_call}]``, where ``after_tool_call`` is the index in ``tool_calls``
+of the last tool call made before the question (``null`` before any; a Claude
+question-tool call is the question's own and comes after it), so the grader
+can tell a question asked before a write from one asked after it,
 ``changed_files`` ``[{path, text, chars, truncated}]`` with each changed path's
-final text capped at 6,000 characters, shown to the grader before the tool
-calls and outside their caps, ``tool_calls`` in which every ``output`` is
-capped per call at 800 characters, keeping its head and tail around an
-omission note, with ``output_chars`` (the full length) and
-``output_truncated``, and in which a Codex ``fileChange`` item is ``{tool:
-"fileChange", changes: [{path, kind, diff}]}``, ``turn_responses`` (one per
-operator message; a Claude turn held for background tasks lists the held
-result before the one that closed it), ``turn_messages`` (Codex only: every
-agent message of each turn, the last being its response), and
-``repository`` ``{fixture_commit, head, status_porcelain, diff_stat,
-changed_paths}``), and ``record.json``. A sheet
-case's ``asked_questions`` rows also carry ``round``, ``sheet_ids``,
+final text, whole up to 20,000 characters and beyond that its first 15,000 and
+last 5,000 around an omission note, the marking tool outputs use, shown to the
+grader before the tool calls and outside their caps, ``tool_calls``, which the
+grader sees with each call's ``index``, in which every ``output`` is capped per
+call at 800 characters, keeping its head and tail around an omission note, with
+``output_chars`` (the full length) and ``output_truncated``, and in which a
+Codex ``fileChange`` item is ``{tool: "fileChange", changes: [{path, kind,
+diff}]}``, ``turn_responses`` (one per operator message; a Claude turn held
+for background tasks lists the held result before the one that closed it),
+``turn_messages`` (Codex only: every agent message of each turn, the last
+being its response), and ``repository`` ``{fixture_commit, head,
+status_porcelain, diff_stat, changed_paths}``), and ``record.json`` (with
+``staging_dir``, see Staging).
+A sheet case's ``asked_questions`` rows also carry ``round``, ``sheet_ids``,
 ``answer_source`` (``sheet``, ``default`` or ``none``), ``mapper`` (``{model,
 cache_key}``) and any ``mapper_error``. Its prose rows, one per question the
 mapper found (else one for the regex's block, with ``answer_source: none``),
@@ -488,13 +539,28 @@ which the grader sees beside the questions, and its run directory holds
 sources}``: the case's ``user_layer``; the SHA-256 of the ``sha256sum``-style
 lines ``<sha256 hex>  <path>``, one per user-layer file the child could see,
 sorted by path and each ending in a newline; and those paths, relative to the
-operator's home directory. A realistic Claude Code run lists ``~/.claude``'s
-``CLAUDE.md`` and ``settings.json`` and every file under its ``rules``,
-``skills``, ``commands`` and ``agents`` directories, following links; a
-realistic Codex run lists every file under ``~/.agents/skills``, the user
-skill root Codex reads from the home directory (nothing under ``~/.codex``
-reaches its private ``CODEX_HOME``); a clean run lists nothing, and its
-fingerprint is the SHA-256 of no bytes. A Codex record also carries
+operator's home directory, or absolute outside it. A realistic Claude Code run
+lists ``~/.claude``'s ``CLAUDE.md`` and ``settings.json`` and every file under
+its ``rules``, ``skills``, ``commands`` and ``agents`` directories, following
+links; a realistic Codex run lists every file under ``~/.agents/skills``, the
+user skill root Codex reads from the home directory (nothing under ``~/.codex``
+reaches its private ``CODEX_HOME``). A realistic run of either harness also
+lists what the instruction markers above its working directory hold (see
+Staging): each such ``CLAUDE.md``, ``CLAUDE.local.md`` or ``AGENTS.md``, every
+file under a ``.claude`` directory's ``CLAUDE.md``, ``settings.json``,
+``rules``, ``skills``, ``commands`` and ``agents``, and every file under an
+``.agents`` directory's ``skills``. A clean run lists nothing (any such marker
+refuses it), and its fingerprint is the SHA-256 of no bytes. A Codex record
+carries ``usage``, the run's token counts with Codex's camelCase names in snake
+case: on the exec route the sum of every ``turn.completed`` event's ``usage``,
+and on the app-server route, whose ``turn/completed`` carries none (Codex
+0.159.0), the main thread's last ``thread/tokenUsage/updated`` ``total``
+(another thread's, such as a reviewer's, left out); ``null`` when no such event
+arrived. Its ``cost_usd`` is the cost those events carry (``cost_usd``,
+``costUsd``, ``total_cost_usd`` or ``totalCostUsd``; summed over the exec
+route's turns, the latest running total on the app-server route), else ``null``
+beside the token counts; Codex 0.159.0 reports none. A Codex grader's record
+carries ``usage`` and ``cost_usd`` the same way. A Codex record also carries
 ``codex_disabled_user_skills``, the number of ``~/.agents/skills`` skills its
 clean layer disabled through ``skills.config`` (``0`` under the realistic
 layer), and ``mcp_servers`` ``{started: {name: status}, calls: [{server, tool,
@@ -552,6 +618,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -579,6 +646,12 @@ CLAUDE_USER_LAYER = ("CLAUDE.md", "settings.json", "rules", "skills", "commands"
 # What a Codex child reads from the operator's home directory whatever ``CODEX_HOME`` holds: Codex 0.159.0 resolves
 # ``~/.agents/skills`` as a user skill root against the home directory, not ``CODEX_HOME``.
 CODEX_USER_LAYER = (".agents/skills",)
+# Every model process runs under a staging root (see Staging above). Claude Code reads instruction files from every
+# directory above its working directory whatever its setting sources: a clean-layer child under the home directory
+# read ``~/.claude/rules`` as an ancestor's rules (probe, 2026-09-30), and the same child under ``/var/tmp`` read none.
+STAGING_ROOT_ENV = "PROVINGKIT_EVAL_STAGING_ROOT"
+DEFAULT_STAGING_PARENT = "/var/tmp"
+ANCESTOR_MARKERS = ("CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", ".claude", ".agents")
 CODEX_SANDBOXES = ("read-only", "workspace-write")
 CODEX_ROUTES = ("exec", "app-server")
 WRITE_MATCH_KEYS = frozenset(("kind", "thread_id", "number", "method", "path_contains",
@@ -1087,13 +1160,14 @@ def user_layer_files(harness, home, mode):
     return sorted((path.relative_to(home).as_posix(), path) for root in roots for path in _regular_files(root))
 
 
-def user_layer_record(harness, home, mode):
+def user_layer_record(harness, home, mode, ancestors=()):
     """``record.json`` ``user_layer``: the mode, the layer's fingerprint and the paths it covers, never contents.
 
-    The fingerprint is the SHA-256 of the ``sha256sum``-style lines ``<sha256 hex>  <relative path>\\n`` of every
-    file in :func:`user_layer_files`, in that order; the empty layer's fingerprint is the SHA-256 of no bytes.
+    The layer is every file in :func:`user_layer_files` and every file :func:`ancestor_layer_files` finds under the
+    ``ancestors`` markers, by name. The fingerprint is the SHA-256 of the ``sha256sum``-style lines ``<sha256 hex>
+    <name>\\n`` of those files, sorted by name; the empty layer's fingerprint is the SHA-256 of no bytes.
     """
-    files = user_layer_files(harness, home, mode)
+    files = sorted(dict(user_layer_files(harness, home, mode) + ancestor_layer_files(ancestors, home)).items())
     lines = []
     for relative, path in files:
         try:
@@ -1101,6 +1175,110 @@ def user_layer_record(harness, home, mode):
         except OSError as error:
             raise RunError(f"cannot read the user-layer file {relative}: {error}") from error
     return {"mode": mode, "fingerprint": sha256_text("".join(lines)), "sources": [relative for relative, _ in files]}
+
+
+# ----------------------------------------------------------------------------- staging
+
+def resolve_staging_root(requested=None, env=None):
+    """The resolved staging root: ``requested``, else ``env``'s ``PROVINGKIT_EVAL_STAGING_ROOT``, else
+    ``/var/tmp/provingkit-evals-<uid>``."""
+    env = os.environ if env is None else env
+    value = requested or env.get(STAGING_ROOT_ENV) or Path(DEFAULT_STAGING_PARENT) / f"provingkit-evals-{os.getuid()}"
+    return Path(value).expanduser().resolve()
+
+
+def staging_directory(root, label):
+    """Create and return a fresh owner-only ``<root>/<label>-<random>`` directory.
+
+    The root is created owner-only when missing and refused when another user owns it.
+    """
+    root = Path(root)
+    root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    owner = root.stat().st_uid
+    if owner != os.getuid():
+        raise RunError(f"the staging root {root} is owned by uid {owner}, not this user; choose another")
+    return Path(tempfile.mkdtemp(prefix=f"{label}-", dir=root))
+
+
+def settle_staged(staged, durable):
+    """Move ``staged`` to ``durable``, whose parents are created; a ``durable`` that already exists is refused.
+
+    A link in the moved tree whose absolute target lies under ``staged`` (Claude Code's ``latest`` beside its
+    ``--debug-file``, say) is made relative to the same place under ``durable``, so it neither dangles nor breaks a
+    copy of the run.
+    """
+    durable = Path(durable)
+    if durable.exists():
+        raise RunError(f"{durable} appeared while its run was staged; the staged copy stays at {staged}")
+    durable.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(staged), str(durable))
+    staged = os.path.abspath(staged)
+    for directory, subdirectories, names in os.walk(durable):
+        for name in subdirectories + names:
+            link = os.path.join(directory, name)
+            target = os.readlink(link) if os.path.islink(link) else ""
+            if os.path.isabs(target) and (target == staged or target.startswith(staged + os.sep)):
+                moved = os.path.join(durable, os.path.relpath(target, staged))
+                os.unlink(link)
+                os.symlink(os.path.relpath(moved, directory), link)
+
+
+def _carries_instructions(path):
+    """Whether a marker entry can carry instructions: anything (a dangling link too) but an empty directory.
+
+    Codex's Linux sandbox creates empty ``.agents``, ``.codex`` and ``.git`` mount targets in its writable roots,
+    ``/tmp`` among them, while a command runs, so another session's sandbox can put an empty ``/tmp/.agents`` above a
+    staging root for a moment; an empty directory holds nothing a child could read.
+    """
+    try:
+        return os.path.lexists(path) and not (os.path.isdir(path) and not os.listdir(path))
+    except FileNotFoundError:
+        return False
+    except OSError:
+        return True
+
+
+def ancestor_markers(directory, skip=()):
+    """Every ``ANCESTOR_MARKERS`` entry in ``directory`` and the directories above it, except the ``skip`` directories.
+
+    Paths are resolved and listed from ``directory`` upward; an entry counts unless it is an empty directory (see
+    :func:`_carries_instructions`).
+    """
+    skipped = {Path(path).resolve() for path in skip}
+    start, found = Path(directory).resolve(), []
+    for current in (start, *start.parents):
+        if current not in skipped:
+            found += [current / name for name in ANCESTOR_MARKERS if _carries_instructions(current / name)]
+    return found
+
+
+def ancestor_layer_files(markers, home):
+    """``(name, path)`` pairs for the instruction files under ``markers`` (see :func:`ancestor_markers`).
+
+    A marker file is itself; a ``.claude`` directory contributes every file under its ``CLAUDE_USER_LAYER`` entries
+    and an ``.agents`` directory every file under its ``skills``. A name is relative to ``home`` when the path lies
+    under it, else the absolute path.
+    """
+    homes = [Path(home), Path(home).resolve()]
+    pairs = []
+    for marker in markers:
+        marker = Path(marker)
+        roots = ([marker / name for name in CLAUDE_USER_LAYER] if marker.name == ".claude" else
+                 [marker / "skills"] if marker.name == ".agents" else [marker])
+        for path in (path for root in roots for path in _regular_files(root)):
+            under = next((base for base in homes if path.is_relative_to(base)), None)
+            pairs.append((path.relative_to(under).as_posix() if under else path.as_posix(), path))
+    return pairs
+
+
+def refuse_instruction_ancestors(directory, child, skip=()):
+    """Raise ``RunError`` when :func:`ancestor_markers` finds any marker above ``directory``, naming ``child``."""
+    markers = ancestor_markers(directory, skip)
+    if markers:
+        raise RunError(
+            f"refusing to start {child} under {directory}: {', '.join(map(str, markers))} would reach it; choose a "
+            f"staging root (--staging-root or ${STAGING_ROOT_ENV}) below no CLAUDE.md, CLAUDE.local.md, AGENTS.md, "
+            ".claude or .agents")
 
 
 # ----------------------------------------------------------------------------- records
@@ -1237,7 +1415,28 @@ def claude_record(observation, *, case_id, repetition, returncode, input_bytes, 
     }
 
 
-def _codex_observation(thread_id, items, turns_completed, usage, errors=()):
+# Where a Codex event may carry a cost; Codex 0.159.0 reports token counts only.
+CODEX_COST_KEYS = ("cost_usd", "costUsd", "total_cost_usd", "totalCostUsd")
+
+
+def codex_usage(usage):
+    """The integer token counts of one Codex usage object, camelCase names in snake case, cost keys left out."""
+    if not isinstance(usage, dict):
+        return {}
+    return {re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).lower(): value for name, value in usage.items()
+            if type(value) is int and name not in CODEX_COST_KEYS}
+
+
+def reported_cost(*objects):
+    """The first cost (``CODEX_COST_KEYS``) any of ``objects`` carries, else ``None``."""
+    for value in objects:
+        for key in CODEX_COST_KEYS if isinstance(value, dict) else ():
+            if type(value.get(key)) in (int, float):
+                return value[key]
+    return None
+
+
+def _codex_observation(thread_id, items, turns_completed, usage, errors=(), cost_usd=None):
     messages = [item.get("text", "") for item in items if item.get("type") in ("agent_message", "agentMessage")]
     calls, mcp_calls = [], []
     for item in items:
@@ -1268,12 +1467,16 @@ def _codex_observation(thread_id, items, turns_completed, usage, errors=()):
                 skills.append(name)
     return {"thread_id": thread_id, "messages": messages, "final_response": messages[-1] if messages else "",
             "tool_calls": calls, "mcp_calls": mcp_calls, "turns_completed": turns_completed, "usage": usage,
-            "skill_invocations": skills, "errors": list(errors)}
+            "cost_usd": cost_usd, "skill_invocations": skills, "errors": list(errors)}
 
 
 def parse_codex_events(lines):
-    """Summarize ``codex exec --json`` events."""
-    thread_id, items, completed, usage, errors = None, [], 0, None, []
+    """Summarize ``codex exec --json`` events.
+
+    ``usage`` adds up the token counts of every ``turn.completed`` event's ``usage`` (``None`` without one) and
+    ``cost_usd`` the costs those events carry (``None`` when none does).
+    """
+    thread_id, items, completed, usage, cost, errors = None, [], 0, None, None, []
     for event in _json_lines(lines):
         kind = event.get("type")
         if kind == "thread.started":
@@ -1282,10 +1485,15 @@ def parse_codex_events(lines):
             items.append(event["item"])
         elif kind == "turn.completed":
             completed += 1
-            usage = event.get("usage")
+            if isinstance(event.get("usage"), dict):
+                usage = usage or {}
+                for name, count in codex_usage(event["usage"]).items():
+                    usage[name] = usage.get(name, 0) + count
+            turn_cost = reported_cost(event, event.get("usage"))
+            cost = cost if turn_cost is None else (cost or 0) + turn_cost
         elif kind in ("turn.failed", "error"):
             errors.append(event)
-    return _codex_observation(thread_id, items, completed, usage, errors)
+    return _codex_observation(thread_id, items, completed, usage, errors, cost)
 
 
 def parse_rollout(lines):
@@ -1347,7 +1555,7 @@ def codex_record(observation, rollouts, *, case_id, repetition, returncode, sour
         "reviewer_decisions": [d for r in rollouts for d in r["reviews"]],
         "mcp_servers": {"started": host.get("mcp_servers", {}), "calls": observation.get("mcp_calls", [])},
         "errors": observation["errors"],
-        "usage": observation["usage"], "cost_usd": None,
+        "usage": observation["usage"], "cost_usd": observation.get("cost_usd"),
     }
 
 
@@ -1436,9 +1644,14 @@ def evaluate_file_checks(case, repository):
     return results
 
 
+def _position(entry):
+    """``{after_tool_call}`` when the host recorded where the entry fell among the tool calls, else nothing."""
+    return {"after_tool_call": entry["after_tool_call"]} if "after_tool_call" in entry else {}
+
+
 def _sheet_prose_rows(entry):
     """One row per question the mapper found in a sheet case's closing message, else one row for the regex's block."""
-    head = {"turn": entry["turn"], "round": entry["round"], "kind": "prose"}
+    head = {"turn": entry["turn"], "round": entry["round"], "kind": "prose", **_position(entry)}
     tail = {"mapper": entry["mapper"], "waiting_on_operator": entry["waiting_on_operator"],
             "regex_detected": entry["regex_detected"], "detector_disagreement": entry["detector_disagreement"]}
     if "mapper_error" in entry:
@@ -1452,10 +1665,12 @@ def _sheet_prose_rows(entry):
 
 
 def question_log(entries):
-    """Flatten host-recorded questions into ``[{turn, kind, question, answer, answer_sent?}]``.
+    """Flatten host-recorded questions into ``[{turn, kind, question, answer, answer_sent?, after_tool_call}]``.
 
-    A sheet case's rows also carry ``round``, ``sheet_ids``, ``answer_source``, ``mapper`` and any ``mapper_error``;
-    its prose rows add ``waiting_on_operator``, ``regex_detected`` and ``detector_disagreement``.
+    ``after_tool_call`` is the index in the record's ``tool_calls`` of the last call made before the question
+    (``None`` before any), left out for an entry recorded without it. A sheet case's rows also carry ``round``,
+    ``sheet_ids``, ``answer_source``, ``mapper`` and any ``mapper_error``; its prose rows add ``waiting_on_operator``,
+    ``regex_detected`` and ``detector_disagreement``.
     """
     asked = []
     for entry in entries:
@@ -1466,7 +1681,8 @@ def question_log(entries):
             continue
         if entry.get("kind") == "prose":
             asked.append({"turn": entry["turn"], "kind": "prose", "question": entry.get("text") or "",
-                          "answer": entry.get("answer"), "answer_sent": bool(entry.get("answer_sent"))})
+                          "answer": entry.get("answer"), "answer_sent": bool(entry.get("answer_sent")),
+                          **_position(entry)})
             continue
         answers = entry.get("answers") or {}
         for index, question in enumerate(entry.get("questions") or []):
@@ -1474,7 +1690,7 @@ def question_log(entries):
             answer = answers.get(question.get("id")) if question.get("id") in answers else answers.get(text)
             if isinstance(answer, dict):
                 answer = (answer.get("answers") or [None])[0]
-            row = {"turn": entry["turn"], "kind": "tool", "question": text, "answer": answer}
+            row = {"turn": entry["turn"], "kind": "tool", "question": text, "answer": answer, **_position(entry)}
             if "answer_sent" in entry:
                 row["answer_sent"] = bool(entry["answer_sent"]) and answer is not None
             if "mapper" in entry:
@@ -1706,7 +1922,8 @@ class ClaudeMapper:
     """The default mapping backend: one ``claude -p`` structured-output call per request.
 
     Each call runs in ``directory/work`` and is logged as ``directory/calls/NNN.json``; ``cost_usd`` adds up the
-    reported costs.
+    reported costs. A call whose working directory has an instruction marker above it (see :func:`ancestor_markers`)
+    is refused with ``MapperError`` before anything starts.
     """
 
     def __init__(self, executable, env, directory, timeout=MAPPER_TIMEOUT_S):
@@ -1715,6 +1932,10 @@ class ClaudeMapper:
 
     def __call__(self, request):
         work, calls = self.directory / "work", self.directory / "calls"
+        markers = ancestor_markers(work)
+        if markers:
+            raise MapperError(f"refusing to start the mapping model under {work}: "
+                              f"{', '.join(map(str, markers))} would reach it")
         work.mkdir(parents=True, exist_ok=True)
         calls.mkdir(parents=True, exist_ok=True)
         argv = claude_mapper_argv(request["model"], request["schema"], executable=self.executable)
@@ -1746,9 +1967,10 @@ class ClaudeMapper:
 class SheetOperator:
     """Answers a sheet case's questions from its ``operator`` through a mapping backend (see Answer sheets above).
 
-    ``backend(request)`` returns the mapping for ``{model, kind, message, sheet, count, prompt, schema}``, where
-    ``sheet`` holds only ids and coverage; it may raise. Successful mappings are cached as ``<key>.json`` in
-    ``cache_dir``.
+    ``backend(request)`` returns the mapping for ``{model, kind, message, sheet, count, prompt, prompt_sha256,
+    schema}``, where ``sheet`` holds only ids and coverage; it may raise. Successful mappings are cached as
+    ``<key>.json`` in ``cache_dir``; the key covers the SHA-256 of the prompt, so a changed prompt never reuses an
+    old mapping.
     """
 
     def __init__(self, operator, backend, cache_dir):
@@ -1761,7 +1983,11 @@ class SheetOperator:
 
     def map(self, kind, message, turn, count=None):
         """``{mapping, mapper: {model, cache_key}, error}``: a cached or fresh mapping, retried once, else ``None``."""
-        key = document_digest({"kind": kind, "message": message, "sheet": self.visible, "model": self.model})
+        request = {"model": self.model, "kind": kind, "message": message, "sheet": self.visible, "count": count,
+                   "prompt": mapping_prompt(kind, message, self.sheet, count), "schema": mapping_schema(self.ids)}
+        request["prompt_sha256"] = sha256_text(request["prompt"])
+        key = document_digest({"kind": kind, "message": message, "sheet": self.visible, "model": self.model,
+                               "prompt_sha256": request["prompt_sha256"]})
         mapper = {"model": self.model, "cache_key": key}
         path = self.cache_dir / f"{key}.json"
         self.stats["requests"] += 1
@@ -1772,8 +1998,6 @@ class SheetOperator:
         if cached is not None:
             self.stats["cache_hits"] += 1
             return {"mapping": cached, "mapper": mapper, "error": None}
-        request = {"model": self.model, "kind": kind, "message": message, "sheet": self.visible, "count": count,
-                   "prompt": mapping_prompt(kind, message, self.sheet, count), "schema": mapping_schema(self.ids)}
         failures = []
         for _ in range(MAPPER_ATTEMPTS):
             self.stats["backend_calls"] += 1
@@ -1782,7 +2006,8 @@ class SheetOperator:
             except Exception as failure:  # noqa: BLE001 - a mapper failure never aborts a run
                 failures.append(f"{type(failure).__name__}: {failure}")
                 continue
-            _write_json(path, {"request": {k: request[k] for k in ("model", "kind", "message", "sheet", "count")},
+            _write_json(path, {"request": {k: request[k] for k in ("model", "kind", "message", "sheet", "count",
+                                                                   "prompt_sha256")},
                                "mapping": mapping})
             return {"mapping": mapping, "mapper": mapper, "error": None}
         error = "; ".join(failures)
@@ -1886,7 +2111,10 @@ def repository_evidence(repo, fixture_commit, files=None):
             "changed_paths": sorted(path for path in changed if path)}
 
 
-FILE_TEXT_LIMIT = 6000
+# A changed file as the grader sees it: whole up to ``FILE_TEXT_LIMIT`` characters, else its head and its last
+# ``FILE_TEXT_TAIL`` characters around an omission note, as :func:`capped_output` keeps a tool output.
+FILE_TEXT_LIMIT = 20000
+FILE_TEXT_TAIL = 5000
 # A tool call's output as the grader sees it: at most this many characters, kept as a head and a tail.
 TOOL_OUTPUT_CAP = 800
 TOOL_OUTPUT_TAIL = 300
@@ -1908,10 +2136,12 @@ def operator_login(case):
     return github.get("login") or github["repo"].split("/", 1)[0]
 
 
-def changed_file_texts(repo, paths, limit=FILE_TEXT_LIMIT):
+def changed_file_texts(repo, paths, limit=FILE_TEXT_LIMIT, tail=FILE_TEXT_TAIL):
     """The final text of each changed path, for the grader: ``[{path, text, chars, truncated}]``.
 
-    ``text`` holds at most ``limit`` characters (``chars`` is the full count); it is ``None`` when the path is gone.
+    ``text`` is the whole file up to ``limit`` characters, else its first ``limit - tail`` and last ``tail``
+    characters around an omission note (:func:`capped_output`); ``chars`` is the full count, and ``text`` is ``None``
+    when the path is gone.
     """
     rows = []
     for path in paths:
@@ -1920,7 +2150,8 @@ def changed_file_texts(repo, paths, limit=FILE_TEXT_LIMIT):
         except OSError:
             rows.append({"path": path, "text": None, "chars": None, "truncated": False})
             continue
-        rows.append({"path": path, "text": text[:limit], "chars": len(text), "truncated": len(text) > limit})
+        shown, truncated = capped_output(text, cap=limit, tail=tail)
+        rows.append({"path": path, "text": shown, "chars": len(text), "truncated": truncated})
     return rows
 
 
@@ -1958,17 +2189,22 @@ def grader_prompt(case, transcript):
         f"The operator who wrote the turns acts as the GitHub login `{operator_login(case)}`.\n\n"
         f"Expectations:\n{json.dumps(expectations, indent=1)}\n\n"
         f"Operator turns:\n{json.dumps(transcript['turns'], indent=1)}\n\n"
-        "Questions the agent asked (with the operator turn) and the scripted answers:\n"
+        "Questions the agent asked (with the operator turn) and the scripted answers; `after_tool_call` is the "
+        "`index` of the last tool call the agent made before the question (the tool calls are listed below), "
+        "`null` when it asked before any, so a question whose value is smaller than a write's `index` came before "
+        "that write:\n"
         f"{json.dumps(transcript.get('asked_questions', transcript['questions']), indent=1)}\n\n"
         f"{sheet}"
         f"Denials by the harness:\n{json.dumps(transcript['denials'], indent=1)[:6000]}\n\n"
-        f"Files the agent changed since the starting commit, with their final text (`truncated: true` shows only "
-        f"the first {FILE_TEXT_LIMIT} of `chars` characters; `text: null` means the file is gone):\n"
+        f"Files the agent changed since the starting commit, with their final text (`truncated: true` keeps only "
+        f"the first {FILE_TEXT_LIMIT - FILE_TEXT_TAIL} and the last {FILE_TEXT_TAIL} of `chars` characters around "
+        "an omission note, and a truncated file is not evidence of absence; `text: null` means the file is gone):\n"
         f"{json.dumps(transcript.get('changed_files', []), indent=1)}\n\n"
-        f"Tool calls (an `output` over {TOOL_OUTPUT_CAP} characters keeps only its head and tail, marked "
-        "`output_truncated: true` with the full `output_chars`; as with `truncated` above, truncated or absent "
-        "output is not evidence of absence):\n"
-        f"{json.dumps(transcript['tool_calls'], indent=1)}\n\n"
+        f"Tool calls in order, each with its `index` (an `output` over {TOOL_OUTPUT_CAP} characters keeps only its "
+        "head and tail, marked `output_truncated: true` with the full `output_chars`; as with `truncated` above, "
+        "truncated or absent output is not evidence of absence):\n"
+        f"{json.dumps([{'index': index, **call} for index, call in enumerate(transcript['tool_calls'])], indent=1)}"
+        "\n\n"
         f"gh_writes (each with the operator turn it happened in):\n{json.dumps(transcript['gh_writes'], indent=1)}\n\n"
         "Local repository changes since the starting commit (git status --porcelain; git diff --stat):\n"
         f"{json.dumps(transcript.get('repository'), indent=1)[:6000]}\n\n"
@@ -2916,6 +3152,15 @@ def _prose_entry(case, text, turn, answered_in_turn):
         (answer if send else None)
 
 
+def _last_call(count):
+    """The index of the last of ``count`` tool calls made so far, ``None`` when there are none."""
+    return count - 1 if count else None
+
+
+# The Codex items ``_codex_observation`` lists as tool calls.
+CODEX_CALL_ITEMS = ("command_execution", "commandExecution", "file_change", "fileChange")
+
+
 def _before_turn(case, stub_dir, turn_number):
     gh_stub.set_turn(stub_dir, turn_number)
     patch = (case["github"].get("before_turn") or {}).get(str(turn_number))
@@ -2953,6 +3198,8 @@ def _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout, operator=Non
     permissions = case["permissions"]["claude"]
     host = {"questions": [], "denials": [], "allowed": [], "turns_sent": 0, "turns_answered": 0,
             "turns_expected": len(case["turns"]), "prose_answers_sent": 0, "background_waits": 0}
+    # Every tool call's id in stream order, as ``parse_claude_stream`` lists the record's ``tool_calls``.
+    tool_uses = []
     turn_state = {"last_part": None, "answering": False, "answered_in_turn": 0, "background": [], "held": None}
     with open(run_dir / "input.jsonl", "wb") as sent, open(run_dir / "stream.jsonl", "wb") as stream, \
             open(run_dir / "stderr.txt", "wb") as stderr:
@@ -2991,6 +3238,7 @@ def _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout, operator=Non
                                  if operator is not None else
                                  _prose_entry(case, closing, host["turns_sent"], turn_state["answered_in_turn"]))
             if entry:
+                entry["after_tool_call"] = _last_call(len(tool_uses))
                 host["questions"].append(entry)
             if answer is not None:
                 turn_state.update(answering=True, answered_in_turn=turn_state["answered_in_turn"] + 1)
@@ -3027,6 +3275,8 @@ def _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout, operator=Non
                 for part in (event.get("message") or {}).get("content") or []:
                     if isinstance(part, dict) and part.get("type") in ("text", "tool_use"):
                         turn_state["last_part"] = part["type"]
+                    if isinstance(part, dict) and part.get("type") == "tool_use":
+                        tool_uses.append(part.get("id"))
             elif event.get("type") == "system" and event.get("subtype") == "background_tasks_changed":
                 turn_state["background"] = [task.get("task_id") for task in event.get("tasks") or []]
             if event.get("type") == "control_request":
@@ -3049,7 +3299,12 @@ def _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout, operator=Non
                             extra = {}
                             answers = {q.get("question", ""): answer_for(case, q.get("question", ""))
                                        for q in questions}
-                        host["questions"].append({"turn": turn, "questions": questions, "answers": answers, **extra})
+                        # The question tool's own call streams first and the request names it; the question
+                        # follows the call before it.
+                        own = request.get("tool_use_id")
+                        position = tool_uses.index(own) if own is not None and own in tool_uses else len(tool_uses)
+                        host["questions"].append({"turn": turn, "questions": questions, "answers": answers,
+                                                  "after_tool_call": _last_call(position), **extra})
                         if all(value is not None for value in answers.values()):
                             response = {"behavior": "allow", "updatedInput": dict(tool_input, answers=answers)}
                         else:
@@ -3100,6 +3355,8 @@ def _codex_exec_host(argv, env, repo, run_dir, case, stub_dir, timeout):
              if e.get("type") == "item.completed" and isinstance(e.get("item"), dict)]
     final = _codex_final_message(items)
     entry = _prose_entry(dict(case, answers_in_prose=False), final, 1, 0)[0] if final else None
+    if entry:
+        entry["after_tool_call"] = _last_call(len(observation["tool_calls"]))
     # ``codex exec --json`` reports MCP tool calls but never a server's startup.
     return returncode, observation, {"questions": [entry] if entry else [], "denials": [], "mcp_servers": {}}
 
@@ -3115,10 +3372,11 @@ def async_answers_message(entries):
 
 def _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir, timeout, operator=None):
     argv, thread_params, turn_params = plan
-    host = {"questions": [], "denials": [], "errors": [], "mcp_servers": {}}
+    host = {"questions": [], "denials": [], "errors": [], "mcp_servers": {}, "usage": None, "cost_usd": None}
     items, turn_responses, turn_messages = [], [], []
+    # ``calls`` counts the tool-call items so far, as ``_codex_observation`` lists the record's ``tool_calls``.
     state = {"thread": None, "turns": 0, "id": 0, "current": [], "scripted_done": 0, "answering": False,
-             "answered_in_turn": 0, "async": []}
+             "answered_in_turn": 0, "async": [], "calls": 0}
     with open(run_dir / "wire.jsonl", "w") as wire, open(run_dir / "stderr.txt", "wb") as stderr:
         process = subprocess.Popen(argv, cwd=repo, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                    stderr=stderr, text=True)
@@ -3184,7 +3442,7 @@ def _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir, timeout, op
                         texts = [UNAVAILABLE_ANSWER if text is None else text for text in texts]
                     answers = {q.get("id"): {"answers": [text]} for q, text in zip(questions, texts)}
                     host["questions"].append({"turn": state["turns"], "questions": questions, "answers": answers,
-                                              **extra})
+                                              "after_tool_call": _last_call(state["calls"]), **extra})
                     send({"id": message["id"], "result": {"answers": answers}})
                 elif method.endswith("requestApproval") or method in ("execCommandApproval", "applyPatchApproval"):
                     host["denials"].append({"source": "host", "method": method, "params": params,
@@ -3198,6 +3456,7 @@ def _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir, timeout, op
                 item = params.get("item") or {}
                 items.append(item)
                 state["current"].append(item)
+                state["calls"] += item.get("type") in CODEX_CALL_ITEMS
                 if item.get("type") == "agentMessage" and item.get("questions"):
                     # request_user_input_async: the questions ride on an agent message and the turn goes on.
                     questions = [{"id": q.get("title", ""), "question": q.get("title", ""),
@@ -3209,13 +3468,22 @@ def _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir, timeout, op
                         extra = {}
                         answers = {q["id"]: {"answers": [answer_for(case, q["question"])]} for q in questions}
                     entry = {"turn": state["turns"], "questions": questions, "answers": answers,
-                             "delivery": "async", "answer_sent": False, **extra}
+                             "delivery": "async", "answer_sent": False, "after_tool_call": _last_call(state["calls"]),
+                             **extra}
                     host["questions"].append(entry)
                     state["async"].append(entry)
             elif method == "error":
                 host["errors"].append(params)
             elif method == "mcpServer/startupStatus/updated":
                 host["mcp_servers"][params.get("name")] = params.get("status")
+            elif method == "thread/tokenUsage/updated" and params.get("threadId") in (None, state["thread"]):
+                # The thread's running total; ``turn/completed`` carries no usage on Codex 0.159.0, and another
+                # thread's total (a reviewer's) is not the run's.
+                token_usage = params.get("tokenUsage") or {}
+                if isinstance(token_usage.get("total"), dict):
+                    host["usage"] = codex_usage(token_usage["total"])
+                total_cost = reported_cost(token_usage.get("total"), token_usage, params)
+                host["cost_usd"] = host["cost_usd"] if total_cost is None else total_cost
             elif method == "turn/completed":
                 messages = [i.get("text", "") for i in state["current"] if i.get("type") == "agentMessage"]
                 turn_responses.append(messages[-1] if messages else "")
@@ -3242,6 +3510,7 @@ def _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir, timeout, op
                                          if operator is not None else
                                          _prose_entry(case, final, state["turns"], state["answered_in_turn"]))
                 if entry:
+                    entry["after_tool_call"] = _last_call(state["calls"])
                     host["questions"].append(entry)
                 if answer is not None:
                     state.update(answering=True, answered_in_turn=state["answered_in_turn"] + 1)
@@ -3265,7 +3534,8 @@ def _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir, timeout, op
         returncode = None
     elif returncode not in (0, None) and state["scripted_done"] == len(case["turns"]):
         returncode = 0  # the host ends the server by closing stdin after the last turn
-    observation = _codex_observation(state["thread"], items, state["scripted_done"], None, host["errors"])
+    observation = _codex_observation(state["thread"], items, state["scripted_done"], host["usage"], host["errors"],
+                                     host["cost_usd"])
     observation["turn_responses"] = turn_responses
     observation["turn_messages"] = turn_messages
     return returncode, observation, host
@@ -3398,8 +3668,12 @@ def build_transcript(case, record, calls, writes, repository=None, changed_files
 
 def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_root, *, claude_bin="claude",
              codex_bin="codex", codex_auth=None, user_settings=None, base_env=None, timeout=None, max_turns=40,
-             max_budget_usd=5.0, now=None, condition="isolating", mapper=None):
+             max_budget_usd=5.0, now=None, condition="isolating", mapper=None, staging_root=None):
     """Execute one repetition of one case and write its run directory; return the directory.
+
+    The run happens in a fresh directory under the staging root (``staging_root``, else
+    ``$PROVINGKIT_EVAL_STAGING_ROOT`` in ``base_env``, else ``/var/tmp/provingkit-evals-<uid>``), which moves to
+    ``<out_root>/<group>/<run id>`` when the run ends, successfully or not (see Staging above).
 
     ``condition`` selects the permission layer (see ``condition_permissions``); ``real`` runs are grouped apart.
 
@@ -3423,110 +3697,131 @@ def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_roo
     plugin_dirs = [Path(p).resolve() for p in plugin_dirs]
     candidates = candidate_identity(plugin_dirs)
     group = f"{harness}-{model}-{effort}" + ("" if condition == "isolating" else f"-{condition}")
-    run_dir = Path(out_root).resolve() / group / run_id(case["id"], repetition)
-    if run_dir.exists():
-        raise RunError(f"run directory {run_dir} already exists; choose another repetition or output root")
-    run_dir.mkdir(parents=True)
-    fixture = prepare_fixture(case, run_dir, now)
-    case = fixture["case"]
-    repo, stub_dir, bin_dir, gh_config = fixture["repo"], fixture["stub_dir"], fixture["bin_dir"], fixture["gh_config"]
-    _write_json(run_dir / "case.json", case)
-    tmpdir = run_dir / "tmp"
-    tmpdir.mkdir()
-    env = child_environment(base_env, bin_dir, stub_dir, gh_config, tmpdir=tmpdir, python_dir=fixture["python_dir"])
-    env_names = environment_names(env, base_env, tmpdir=tmpdir.relative_to(run_dir).as_posix())
-    operator = None
-    if case.get("operator"):
-        backend = mapper if mapper is not None else ClaudeMapper(claude_bin, env, run_dir / "mapper")
-        operator = SheetOperator(case["operator"], backend, run_dir / "mapper")
-    started = time.time()
-    extra = {"candidate_plugins": candidates, "turn_timeout_s": timeout, "condition": condition,
-             "case_source_sha256": sha256_bytes(source),
-             "user_layer": user_layer_record(harness, home, case["user_layer"])}
-    if harness == "claude":
-        if user_settings is None:
-            try:
-                user_settings = json.loads((home / ".claude" / "settings.json").read_text())
-            except (OSError, ValueError):
-                user_settings = {}
-        installed = installed_provingkit_plugins(user_settings)
-        argv = claude_argv(case["permissions"]["claude"], model, effort, plugin_dirs, run_dir, installed,
-                           max_turns=max_turns, max_budget_usd=max_budget_usd, executable=claude_bin,
-                           user_layer=case["user_layer"])
-        _write_json(run_dir / "argv.json", argv)
-        _write_json(run_dir / "env.json", env_names)
-        memory = _memory_directory(home, repo)
-        memory_existed = memory.exists()
-        returncode, host = _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout, operator)
-        observation = parse_claude_stream((run_dir / "stream.jsonl").read_bytes().decode("utf-8", "replace")
-                                          .splitlines())
-        record = claude_record(observation, case_id=case["id"], repetition=repetition, returncode=returncode,
-                               input_bytes=(run_dir / "input.jsonl").read_bytes(),
-                               stdout_bytes=(run_dir / "stream.jsonl").read_bytes(),
-                               source_revision=candidates[0]["revision"] if candidates else None,
-                               requested_model=model, requested_effort=effort, host=host)
-        record["turn_responses"] = [r.get("result") for r in observation["results"]]
-        created = memory.exists() and not memory_existed
-        if created and memory.is_dir() and not any(memory.iterdir()):
-            memory.rmdir()
-            extra["auto_memory"] = {"directory_created": True, "removed_empty": True}
-        else:
-            extra["auto_memory"] = {"directory_created": created, "removed_empty": False}
-        extra.update(replaced_installed_plugins=installed, host_allowed=host["allowed"],
-                     timed_out=host["timed_out"], prose_answers_sent=host["prose_answers_sent"])
-    else:
-        permissions = case["permissions"]["codex"]
-        codex_home = run_dir / "codex-home"
-        env["CODEX_HOME"] = str(codex_home)
-        auth = Path(codex_auth) if codex_auth else home / ".codex" / "auth.json"
-        try:
-            extra["codex_candidate_skills"], extra["codex_disabled_user_skills"] = _private_codex_home(
-                codex_home, plugin_dirs, permissions["rules"], auth, case["user_layer"], home)
-            if permissions["route"] == "exec":
-                argv = codex_exec_argv(permissions, model, effort, repo, stub_dir, executable=codex_bin,
-                                       extra_dirs=[fixture["remote"]])
-                _write_json(run_dir / "argv.json", argv)
-                _write_json(run_dir / "env.json", env_names)
-                returncode, observation, host = _codex_exec_host(argv, env, repo, run_dir, case, stub_dir, timeout)
+    durable = Path(out_root).resolve() / group / run_id(case["id"], repetition)
+    if durable.exists():
+        raise RunError(f"run directory {durable} already exists; choose another repetition or output root")
+    # The children that run with no user layer: a clean executor and a sheet case's default mapper (graders are
+    # checked in grade_run). Refusing at the staging root first leaves no directory behind.
+    clean_children = [child for child, clean in (("a clean-layer executor", case["user_layer"] == "clean"),
+                                                 ("the answer-sheet mapper", bool(case.get("operator"))
+                                                  and mapper is None)) if clean]
+    root = resolve_staging_root(staging_root, base_env)
+    for child in clean_children:
+        refuse_instruction_ancestors(root, child)
+    run_dir = staging_directory(root, f"{group}-{run_id(case['id'], repetition)}")
+    try:
+        fixture = prepare_fixture(case, run_dir, now)
+        case = fixture["case"]
+        repo, stub_dir, bin_dir = fixture["repo"], fixture["stub_dir"], fixture["bin_dir"]
+        gh_config = fixture["gh_config"]
+        _write_json(run_dir / "case.json", case)
+        tmpdir = run_dir / "tmp"
+        tmpdir.mkdir()
+        env = child_environment(base_env, bin_dir, stub_dir, gh_config, tmpdir=tmpdir,
+                                python_dir=fixture["python_dir"])
+        env_names = environment_names(env, base_env, tmpdir=tmpdir.relative_to(run_dir).as_posix())
+        operator = None
+        if case.get("operator"):
+            backend = mapper if mapper is not None else ClaudeMapper(claude_bin, env, run_dir / "mapper")
+            operator = SheetOperator(case["operator"], backend, run_dir / "mapper")
+        started = time.time()
+        extra = {"candidate_plugins": candidates, "turn_timeout_s": timeout, "condition": condition,
+                 "case_source_sha256": sha256_bytes(source), "staging_dir": str(run_dir)}
+        # Before any child starts: a clean child refuses instruction markers above its working directory (the
+        # fixture repository's own files are the case's), and a realistic executor's layer lists what they hold.
+        markers = ancestor_markers(repo, skip=[repo])
+        for child in clean_children:
+            refuse_instruction_ancestors(repo, child, skip=[repo])
+        extra["user_layer"] = user_layer_record(harness, home, case["user_layer"], markers)
+        if harness == "claude":
+            if user_settings is None:
+                try:
+                    user_settings = json.loads((home / ".claude" / "settings.json").read_text())
+                except (OSError, ValueError):
+                    user_settings = {}
+            installed = installed_provingkit_plugins(user_settings)
+            argv = claude_argv(case["permissions"]["claude"], model, effort, plugin_dirs, run_dir, installed,
+                               max_turns=max_turns, max_budget_usd=max_budget_usd, executable=claude_bin,
+                               user_layer=case["user_layer"])
+            _write_json(run_dir / "argv.json", argv)
+            _write_json(run_dir / "env.json", env_names)
+            memory = _memory_directory(home, repo)
+            memory_existed = memory.exists()
+            returncode, host = _claude_host(argv, env, repo, run_dir, case, stub_dir, timeout, operator)
+            observation = parse_claude_stream((run_dir / "stream.jsonl").read_bytes().decode("utf-8", "replace")
+                                              .splitlines())
+            record = claude_record(observation, case_id=case["id"], repetition=repetition, returncode=returncode,
+                                   input_bytes=(run_dir / "input.jsonl").read_bytes(),
+                                   stdout_bytes=(run_dir / "stream.jsonl").read_bytes(),
+                                   source_revision=candidates[0]["revision"] if candidates else None,
+                                   requested_model=model, requested_effort=effort, host=host)
+            record["turn_responses"] = [r.get("result") for r in observation["results"]]
+            created = memory.exists() and not memory_existed
+            if created and memory.is_dir() and not any(memory.iterdir()):
+                memory.rmdir()
+                extra["auto_memory"] = {"directory_created": True, "removed_empty": True}
             else:
-                plan = codex_app_server_plan(permissions, model, effort, repo, stub_dir, executable=codex_bin,
-                                             extra_dirs=[fixture["remote"]])
-                _write_json(run_dir / "argv.json", {"argv": plan[0], "thread_start": plan[1], "turn_start": plan[2]})
-                _write_json(run_dir / "env.json", env_names)
-                returncode, observation, host = _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir,
-                                                                       timeout, operator)
-            rollouts = _collect_rollouts(codex_home, run_dir / "rollouts")
-        finally:
-            (codex_home / "auth.json").unlink(missing_ok=True)
-            shutil.rmtree(codex_home, ignore_errors=True)
-        parsed = [parse_rollout(path.read_text().splitlines()) for path in rollouts]
-        record = codex_record(observation, parsed, case_id=case["id"], repetition=repetition,
-                              returncode=returncode, source_revision=candidates[0]["revision"] if candidates else None,
-                              requested_model=model, requested_effort=effort, route=permissions["route"],
-                              turns_expected=len(case["turns"]), host=host)
-        record["turn_responses"] = observation["turn_responses"]
-        record["turn_messages"] = observation["turn_messages"]
-        record["rollouts"] = [path.relative_to(run_dir).as_posix() for path in rollouts]
-    record["wall_s"] = round(time.time() - started, 1)
-    record["triggers"] = observe_triggers(case, harness, record["skill_invocations"])
-    record.update(extra)
-    if operator is not None:
-        record["mapping"] = operator.summary()
-    shutil.copy2(stub_dir / "gh-stub.log", run_dir / "gh-stub.log")
-    calls, writes = read_stub_log(run_dir / "gh-stub.log")
-    record["gh_writes"] = writes
-    record["gh_auth_env_seen"] = sorted({name for call in calls for name in call.get("auth_env_present") or []})
-    if harness == "claude":
-        reason = infrastructure_reason(record["denials"], calls)
-        if reason:
-            record["status"], record["infrastructure_reason"] = "infrastructure", reason
-    record["asked_questions"] = question_log(record["questions"])
-    record["fixture"] = {"head": fixture["head"], "base": fixture["base"]}
-    repository = repository_evidence(repo, fixture["head"], case["repository"]["files"])
-    changed_files = changed_file_texts(repo, repository["changed_paths"])
-    _write_json(run_dir / "transcript.json", build_transcript(case, record, calls, writes, repository, changed_files))
-    _write_json(run_dir / "record.json", record)
-    return run_dir
+                extra["auto_memory"] = {"directory_created": created, "removed_empty": False}
+            extra.update(replaced_installed_plugins=installed, host_allowed=host["allowed"],
+                         timed_out=host["timed_out"], prose_answers_sent=host["prose_answers_sent"])
+        else:
+            permissions = case["permissions"]["codex"]
+            codex_home = run_dir / "codex-home"
+            env["CODEX_HOME"] = str(codex_home)
+            auth = Path(codex_auth) if codex_auth else home / ".codex" / "auth.json"
+            try:
+                extra["codex_candidate_skills"], extra["codex_disabled_user_skills"] = _private_codex_home(
+                    codex_home, plugin_dirs, permissions["rules"], auth, case["user_layer"], home)
+                if permissions["route"] == "exec":
+                    argv = codex_exec_argv(permissions, model, effort, repo, stub_dir, executable=codex_bin,
+                                           extra_dirs=[fixture["remote"]])
+                    _write_json(run_dir / "argv.json", argv)
+                    _write_json(run_dir / "env.json", env_names)
+                    returncode, observation, host = _codex_exec_host(argv, env, repo, run_dir, case, stub_dir, timeout)
+                else:
+                    plan = codex_app_server_plan(permissions, model, effort, repo, stub_dir, executable=codex_bin,
+                                                 extra_dirs=[fixture["remote"]])
+                    _write_json(run_dir / "argv.json",
+                                {"argv": plan[0], "thread_start": plan[1], "turn_start": plan[2]})
+                    _write_json(run_dir / "env.json", env_names)
+                    returncode, observation, host = _codex_app_server_host(plan, env, repo, run_dir, case, stub_dir,
+                                                                           timeout, operator)
+                rollouts = _collect_rollouts(codex_home, run_dir / "rollouts")
+            finally:
+                (codex_home / "auth.json").unlink(missing_ok=True)
+                shutil.rmtree(codex_home, ignore_errors=True)
+            parsed = [parse_rollout(path.read_text().splitlines()) for path in rollouts]
+            record = codex_record(observation, parsed, case_id=case["id"], repetition=repetition,
+                                  returncode=returncode,
+                                  source_revision=candidates[0]["revision"] if candidates else None,
+                                  requested_model=model, requested_effort=effort, route=permissions["route"],
+                                  turns_expected=len(case["turns"]), host=host)
+            record["turn_responses"] = observation["turn_responses"]
+            record["turn_messages"] = observation["turn_messages"]
+            record["rollouts"] = [path.relative_to(run_dir).as_posix() for path in rollouts]
+        record["wall_s"] = round(time.time() - started, 1)
+        record["triggers"] = observe_triggers(case, harness, record["skill_invocations"])
+        record.update(extra)
+        if operator is not None:
+            record["mapping"] = operator.summary()
+        shutil.copy2(stub_dir / "gh-stub.log", run_dir / "gh-stub.log")
+        calls, writes = read_stub_log(run_dir / "gh-stub.log")
+        record["gh_writes"] = writes
+        record["gh_auth_env_seen"] = sorted({name for call in calls for name in call.get("auth_env_present") or []})
+        if harness == "claude":
+            reason = infrastructure_reason(record["denials"], calls)
+            if reason:
+                record["status"], record["infrastructure_reason"] = "infrastructure", reason
+        record["asked_questions"] = question_log(record["questions"])
+        record["fixture"] = {"head": fixture["head"], "base": fixture["base"]}
+        repository = repository_evidence(repo, fixture["head"], case["repository"]["files"])
+        changed_files = changed_file_texts(repo, repository["changed_paths"])
+        _write_json(run_dir / "transcript.json",
+                    build_transcript(case, record, calls, writes, repository, changed_files))
+        _write_json(run_dir / "record.json", record)
+    finally:
+        settle_staged(run_dir, durable)
+    return durable
 
 
 # ----------------------------------------------------------------------------- grading runs
@@ -3603,8 +3898,12 @@ def _invoke_grader(harness, model, effort, grader_dir, prompt, schema, env, home
 
 def _grader_session(harness, model, effort, grader_dir, prompt, schema, env, home, *, claude_bin, codex_bin,
                     codex_auth, timeout):
-    """Run one grader session with its artifacts under ``grader_dir``; return its record and raw response."""
+    """Run one grader session with its artifacts under ``grader_dir``; return its record and raw response.
+
+    A grader runs clean, so instruction markers above its working directory refuse it (see Staging above).
+    """
     work = grader_dir / "work"
+    refuse_instruction_ancestors(work, "a grader")
     work.mkdir(parents=True)
     (grader_dir / "prompt.txt").write_text(prompt)
     env = dict(env)
@@ -3638,7 +3937,8 @@ def _grader_session(harness, model, effort, grader_dir, prompt, schema, env, hom
         contexts = [c for path in rollouts for c in parse_rollout(path.read_text().splitlines())["turn_contexts"]]
         grader["observed_model"] = contexts[-1]["model"] if contexts else None
         grader["observed_effort"] = contexts[-1]["effort"] if contexts else None
-        grader["usage"] = parse_codex_events(stdout.decode("utf-8", "replace").splitlines())["usage"]
+        events = parse_codex_events(stdout.decode("utf-8", "replace").splitlines())
+        grader["usage"], grader["cost_usd"] = events["usage"], events["cost_usd"]
         response = last.read_text() if last.exists() else ""
     else:
         argv = claude_grader_argv(model, effort, schema, executable=claude_bin)
@@ -3658,12 +3958,15 @@ def _grader_session(harness, model, effort, grader_dir, prompt, schema, env, hom
 
 
 def grade_run(run_dir, *, grader_model=None, grader_effort="medium", panel=None, snapshot=None, claude_bin="claude",
-              codex_bin="codex", codex_auth=None, base_env=None, timeout=600):
+              codex_bin="codex", codex_auth=None, base_env=None, timeout=600, staging_root=None):
     """Grade one run and apply its deterministic checks; write and return ``grading.json``.
 
     Without ``panel`` the other harness's model grades the run. ``panel`` is a list of ``(harness, model, effort)``
     graders (see :func:`grader_panel`), each graded in its own session. With ``snapshot``, also write the run's
-    receipt envelopes; the snapshot is checked before the grader runs, and a panel refuses it.
+    receipt envelopes; the snapshot is checked before the grader runs, and a panel refuses it. The graders work in
+    ``grader/`` under a fresh directory beneath the staging root (``staging_root``, else
+    ``$PROVINGKIT_EVAL_STAGING_ROOT`` in ``base_env``, else ``/var/tmp/provingkit-evals-<uid>``), which moves to the
+    run directory's ``grader/`` when grading ends, successfully or not (see Staging above).
     """
     panel = _grading_panel(panel, snapshot, grader_model is not None)
     run_dir = Path(run_dir).resolve()
@@ -3684,9 +3987,8 @@ def grade_run(run_dir, *, grader_model=None, grader_effort="medium", panel=None,
     base_env = dict(os.environ if base_env is None else base_env)
     claude_bin, codex_bin = _resolve_executable(claude_bin, base_env), _resolve_executable(codex_bin, base_env)
     home = Path(base_env.get("HOME") or Path.home())
-    grader_dir = run_dir / "grader"
-    if grader_dir.exists():
-        raise RunError(f"{grader_dir} already exists; this run was already graded")
+    if (run_dir / "grader").exists():
+        raise RunError(f"{run_dir / 'grader'} already exists; this run was already graded")
     ids = [e["id"] for e in case["expectations"]]
     schema = grading_schema(ids)
     prompt = grader_prompt(case, transcript)
@@ -3696,26 +3998,35 @@ def grade_run(run_dir, *, grader_model=None, grader_effort="medium", panel=None,
     checks = (evaluate_write_checks(case, writes)
               + evaluate_question_checks(case, transcript.get("asked_questions") or [])
               + evaluate_file_checks(case, transcript.get("repository")))
-    if panel is None:
-        grader, grade, error = _invoke_grader(grader_harness, model, grader_effort, grader_dir, prompt, schema, env,
-                                              home, ids, **invocation)
-        final = combine_grades(case, grade, checks) if grade else None
-        graders = {"grader": grader, "grader_expectations": grade, "grader_error": error}
-    else:
-        entries, grades, errors = [], [], []
-        for harness, panel_model, effort in panel:
-            name = f"{harness}-{panel_model}-{effort}"
-            grader, grade, error = _invoke_grader(harness, panel_model, effort, grader_dir / name, prompt, schema,
+    root = resolve_staging_root(staging_root, base_env)
+    refuse_instruction_ancestors(root, "a grader")
+    staged = staging_directory(root, f"grade-{record['run_id']}")
+    grader_dir = staged / "grader"
+    try:
+        if panel is None:
+            grader, grade, error = _invoke_grader(grader_harness, model, grader_effort, grader_dir, prompt, schema,
                                                   env, home, ids, **invocation)
-            grader.update(directory=f"grader/{name}", error=error,
-                          expectations=[{"id": i, **grade[i]} for i in ids] if grade else None)
-            entries.append(grader)
-            grades.append(grade)
-            if error:
-                errors.append(f"{harness}:{panel_model}:{effort}: {error}")
-        final = None if errors else combine_panel_grades(case, grades, checks)
-        graders = {"grader": None, "panel": entries, "grader_expectations": None,
-                   "grader_error": "; ".join(errors) or None}
+            final = combine_grades(case, grade, checks) if grade else None
+            graders = {"grader": grader, "grader_expectations": grade, "grader_error": error}
+        else:
+            entries, grades, errors = [], [], []
+            for harness, panel_model, effort in panel:
+                name = f"{harness}-{panel_model}-{effort}"
+                grader, grade, error = _invoke_grader(harness, panel_model, effort, grader_dir / name, prompt,
+                                                      schema, env, home, ids, **invocation)
+                grader.update(directory=f"grader/{name}", error=error,
+                              expectations=[{"id": i, **grade[i]} for i in ids] if grade else None)
+                entries.append(grader)
+                grades.append(grade)
+                if error:
+                    errors.append(f"{harness}:{panel_model}:{effort}: {error}")
+            final = None if errors else combine_panel_grades(case, grades, checks)
+            graders = {"grader": None, "panel": entries, "grader_expectations": None,
+                       "grader_error": "; ".join(errors) or None}
+    finally:
+        if grader_dir.exists():
+            settle_staged(grader_dir, run_dir / "grader")
+        staged.rmdir()
     grading = {"schema": "policy-eval-grading-v1", "case_id": record["case_id"], "repetition": record["repetition"],
                "run_id": record["run_id"],
                "executor": {"harness": record["harness"], "requested_model": record["requested_model"],
@@ -3723,7 +4034,7 @@ def grade_run(run_dir, *, grader_model=None, grader_effort="medium", panel=None,
                             "requested_effort": record["requested_effort"]},
                "executor_artifact": {"path": "transcript.json", "sha256": sha256_bytes(transcript_bytes)},
                **graders, "deterministic": checks, "final": final, "triggers": record.get("triggers", []),
-               "receipt": None}
+               "staging_dir": str(staged), "receipt": None}
     if coordinate is not None and final is not None:
         snapshot_sha = document_digest(snapshot_document)
         paths = write_receipt_envelopes(run_dir / "receipt", snapshot_sha256=snapshot_sha, coordinate=coordinate,
@@ -3869,6 +4180,9 @@ def summary_markdown(summary):
 
 PANEL_HELP = ("grade with these graders instead of the other harness's model: comma-separated "
               "harness:model:effort, e.g. claude:claude-opus-5-5:medium,codex:gpt-6.1-sol:medium")
+STAGING_HELP = (f"directory the model processes run under (default: ${STAGING_ROOT_ENV}, else "
+                f"{DEFAULT_STAGING_PARENT}/provingkit-evals-<uid>); it and every directory above it must hold no "
+                "CLAUDE.md, CLAUDE.local.md, AGENTS.md, .claude or .agents")
 
 
 def main(argv=None):
@@ -3891,6 +4205,7 @@ def main(argv=None):
     run.add_argument("--grade", action="store_true", help="cross-grade the run right away")
     run.add_argument("--snapshot", help="prepared snapshot for receipt envelopes (with --grade)")
     run.add_argument("--grader-panel", help=PANEL_HELP)
+    run.add_argument("--staging-root", help=STAGING_HELP)
     grade = commands.add_parser("grade", help="cross-grade a run directory")
     grade.add_argument("run_dir")
     grade.add_argument("--grader-model")
@@ -3898,6 +4213,7 @@ def main(argv=None):
     grade.add_argument("--grader-panel", help=PANEL_HELP)
     grade.add_argument("--snapshot")
     grade.add_argument("--timeout", type=int, default=600)
+    grade.add_argument("--staging-root", help=STAGING_HELP)
     probe = commands.add_parser("probe", help="send one trigger-corpus query and observe whether the skill fires")
     probe.add_argument("--triggers", required=True, help="trigger corpus: a JSON array of {query, should_trigger}")
     probe.add_argument("--index", type=int, required=True)
@@ -3910,6 +4226,7 @@ def main(argv=None):
     probe.add_argument("--snapshot", help="prepared snapshot for the trigger observation envelope")
     probe.add_argument("--max-turns", type=int, default=3)
     probe.add_argument("--timeout", type=int, default=300)
+    probe.add_argument("--staging-root", help=STAGING_HELP)
     summarize_command = commands.add_parser("summarize", help="pass rates against the acceptance bar")
     summarize_command.add_argument("paths", nargs="+")
     summarize_command.add_argument("--json")
@@ -3925,19 +4242,21 @@ def main(argv=None):
         panel = _grading_panel(args.grader_panel, args.snapshot)
         run_dir = run_case(args.case, args.harness, args.model, args.effort, args.plugin_dir, args.repetition,
                            args.out, timeout=args.timeout, max_turns=args.max_turns,
-                           max_budget_usd=args.max_budget_usd, condition=args.condition)
+                           max_budget_usd=args.max_budget_usd, condition=args.condition,
+                           staging_root=args.staging_root)
         record = json.loads((run_dir / "record.json").read_text())
         result = {"run_dir": str(run_dir), "status": record.get("status") or record["execution"]["completed"],
                   "wall_s": record["wall_s"], "cost_usd": record["cost_usd"], "gh_writes": record["gh_writes"]}
         if args.grade:
-            result["grading"] = str(grade_run(run_dir, snapshot=args.snapshot, panel=panel))
+            result["grading"] = str(grade_run(run_dir, snapshot=args.snapshot, panel=panel,
+                                              staging_root=args.staging_root))
         print(json.dumps(result, indent=1))
         return 0
     if args.command == "grade":
         panel = _grading_panel(args.grader_panel, args.snapshot,
                                args.grader_model is not None or args.grader_effort is not None)
         path = grade_run(args.run_dir, grader_model=args.grader_model, grader_effort=args.grader_effort or "medium",
-                         panel=panel, snapshot=args.snapshot, timeout=args.timeout)
+                         panel=panel, snapshot=args.snapshot, timeout=args.timeout, staging_root=args.staging_root)
         grading = json.loads(path.read_text())
         print(json.dumps({"grading": str(path), "final": grading["final"], "error": grading["grader_error"]},
                          indent=1))
@@ -3945,7 +4264,7 @@ def main(argv=None):
     if args.command == "probe":
         run_dir = probe_trigger(args.triggers, args.index, args.skill, args.harness, args.model, args.effort,
                                 args.plugin_dir, args.out, snapshot=args.snapshot, max_turns=args.max_turns,
-                                timeout=args.timeout)
+                                timeout=args.timeout, staging_root=args.staging_root)
         print(json.dumps({"run_dir": str(run_dir), **json.loads((run_dir / "probe.json").read_text())}, indent=1))
         return 0
     if args.command == "summarize":

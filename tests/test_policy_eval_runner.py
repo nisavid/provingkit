@@ -563,6 +563,23 @@ class RecordTest(unittest.TestCase):
         self.assertFalse(record["execution"]["completed"])
         self.assertIsNone(record["observed_effort"])
 
+    def test_codex_usage_adds_up_the_turn_completion_events_and_cost_is_null_unless_one_carries_it(self):
+        lines = codex_events() + [json.dumps({"type": "turn.completed", "usage": {
+            "input_tokens": 50, "cached_input_tokens": 20, "output_tokens": 5}})]
+        observation = runner.parse_codex_events(lines)
+        self.assertEqual((observation["usage"], observation["cost_usd"]),
+                         ({"input_tokens": 150, "cached_input_tokens": 20, "output_tokens": 15}, None))
+        record = runner.codex_record(observation, [], case_id=12, repetition=1, returncode=0, source_revision=None,
+                                     requested_model="gpt-6.1-sol", requested_effort="medium", route="exec",
+                                     turns_expected=2)
+        self.assertEqual((record["usage"], record["cost_usd"]), (observation["usage"], None))
+        priced = lines + [json.dumps({"type": "turn.completed", "cost_usd": 0.25, "usage": {"input_tokens": 1}}),
+                          json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1, "cost_usd": 0.5}})]
+        observation = runner.parse_codex_events(priced)
+        self.assertEqual((observation["usage"]["input_tokens"], observation["cost_usd"]), (152, 0.75))
+        self.assertNotIn("cost_usd", observation["usage"])
+        self.assertEqual(runner.parse_codex_events(codex_events()[:-1])["usage"], None)
+
 
 class DeterministicCheckTest(unittest.TestCase):
     def setUp(self):
@@ -1010,6 +1027,7 @@ if sys.argv[1] == "exec":
     emit({"type": "item.completed", "item": {"type": "agent_message",
                                              "text": json.dumps({"prompt": prompt, "skills": skills, "rules": rules,
                                                                  "config": config, "tmpdir": os.environ.get("TMPDIR"),
+                                                                 "cwd": os.getcwd(),
                                                                  "home_entries": sorted(p.name for p in home.iterdir())})}})
     emit({"type": "turn.completed", "usage": {"input_tokens": 5}})
     sys.exit(0)
@@ -1040,6 +1058,16 @@ for line in sys.stdin:
             emit({"id": 100, "method": "item/commandExecution/requestApproval", "params": {"command": "gh pr merge"}})
             json.loads(sys.stdin.readline())
         emit({"method": "item/completed", "params": {"item": {"type": "agentMessage", "text": f"turn {turns}: {text}"}}})
+        # The thread's running total, as Codex 0.159.0 reports it; another thread's (a reviewer's) is not the run's.
+        total = {"totalTokens": 110 * turns, "inputTokens": 100 * turns, "cachedInputTokens": 40 * turns,
+                 "cacheWriteInputTokens": 0, "outputTokens": 10 * turns, "reasoningOutputTokens": 2 * turns}
+        usage = {"total": total, "last": total, "modelContextWindow": 258400}
+        if os.environ.get("FAKE_CODEX_COST"):
+            usage["costUsd"] = float(os.environ["FAKE_CODEX_COST"]) * turns
+        emit({"method": "thread/tokenUsage/updated", "params": {"threadId": "thr-2", "turnId": f"turn-{turns}",
+                                                                "tokenUsage": usage}})
+        emit({"method": "thread/tokenUsage/updated", "params": {"threadId": "thr-reviewer", "turnId": "r",
+                                                                "tokenUsage": {"total": {"inputTokens": 99999}}}})
         emit({"method": "turn/completed", "params": {"threadId": "thr-2", "turn": {"id": f"turn-{turns}", "status": "completed"}}})
 '''
 
@@ -1051,6 +1079,12 @@ class FakeHarness:
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
+        # Children run under this staging root, not the default under /var/tmp; every base_env built from os.environ
+        # carries it.
+        self.staging = self.root / "staging"
+        environment = mock.patch.dict(os.environ, {runner.STAGING_ROOT_ENV: str(self.staging)})
+        environment.start()
+        self.addCleanup(environment.stop)
         self.bin = self.root / "fakebin"
         self.bin.mkdir()
         for name, body in (("claude", FAKE_CLAUDE), ("codex", FAKE_CODEX)):
@@ -1097,6 +1131,8 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         first = json.loads(record["turn_responses"][0])
         self.assertEqual(first, {"answers": {"Resolve the bot thread too?": "No"}, "merge": "deny"})
         self.assertEqual(record["questions"][0]["answers"], {"Resolve the bot thread too?": "No"})
+        # The question came after the GraphQL call, the only tool call before it.
+        self.assertEqual(record["questions"][0]["after_tool_call"], 0)
         self.assertEqual(record["denials"][-1]["input"], {"command": "gh pr merge 101"})
         self.assertEqual(record["source_revision"], subprocess.run(
             ["git", "-C", str(self.plugin), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip())
@@ -1135,11 +1171,14 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         self.assertIn('"forbidden"', message["rules"])
         self.assertEqual(message["config"], PRIVATE_CONFIG)
         self.assertEqual(runner.CODEX_PRIVATE_CONFIG, PRIVATE_CONFIG)
-        self.assertEqual(message["tmpdir"], str(run_dir / "tmp"))
+        # The child ran in the staged run directory, which then moved to the output root.
+        staged = Path(record["staging_dir"])
+        self.assertEqual(message["tmpdir"], str(staged / "tmp"))
         self.assertEqual(record["mcp_servers"], {"started": {}, "calls": [
             {"server": "codex_apps", "tool": "github.merge_pull_request", "status": "failed"}]})
         argv = json.loads((run_dir / "argv.json").read_text())
-        self.assertEqual(argv[argv.index("--add-dir") + 1], str(run_dir / "repo" / ".git"))
+        self.assertEqual(argv[argv.index("--add-dir") + 1], str(staged / "repo" / ".git"))
+        self.assertEqual((record["usage"], record["cost_usd"]), ({"input_tokens": 5}, None))
         self.assertTrue(list((run_dir / "rollouts").glob("*.jsonl")))
         self.assertFalse((run_dir / "codex-home").exists())
         self.assertFalse(list(run_dir.rglob("auth.json")))
@@ -1163,7 +1202,21 @@ class HostLoopTest(FakeHarness, unittest.TestCase):
         self.assertEqual(record["mcp_servers"], {"started": {"codex-security": "ready"}, "calls": [
             {"server": "codex-security", "tool": "scan", "status": "completed"}]})
         plan = json.loads((run_dir / "argv.json").read_text())
-        self.assertEqual(plan["turn_start"]["sandboxPolicy"]["writableRoots"][0], str(run_dir / "repo" / ".git"))
+        self.assertEqual(plan["turn_start"]["sandboxPolicy"]["writableRoots"][0],
+                         str(Path(record["staging_dir"]) / "repo" / ".git"))
+        # The thread's last running total, with Codex's names in snake case; no event carried a cost.
+        self.assertEqual(record["usage"], {"total_tokens": 220, "input_tokens": 200, "cached_input_tokens": 80,
+                                           "cache_write_input_tokens": 0, "output_tokens": 20,
+                                           "reasoning_output_tokens": 4})
+        self.assertIsNone(record["cost_usd"])
+
+    def test_codex_app_server_records_a_cost_the_usage_events_carry(self):
+        case = self.write_case(turns=["Post a comment on PR 101.", "Done?"],
+                               answers=[{"match": "wording", "answer": "Thanks, fixed."}])
+        options = self.options(base_env=dict(os.environ, FAKE_CODEX_COST="0.125"))
+        record = json.loads((runner.run_case(case, "codex", "gpt-6.1-sol", "medium", [self.plugin], 1,
+                                             self.root / "runs", **options) / "record.json").read_text())
+        self.assertEqual((record["usage"]["input_tokens"], record["cost_usd"]), (200, 0.25))
 
     def test_every_run_records_the_user_layer_it_ran_under(self):
         home = self.root / "home"
@@ -1292,6 +1345,7 @@ class GradeRunTest(GraderHarness, unittest.TestCase):
         self.assertEqual(grading["grader"]["observed_model"], "gpt-6.1-sol")
         self.assertEqual(grading["executor_artifact"], {"path": "transcript.json", "sha256": runner.sha256_bytes(
             (run_dir / "transcript.json").read_bytes())})
+        self.assertEqual((grading["grader"]["usage"], grading["grader"]["cost_usd"]), ({"input_tokens": 9}, None))
         self.assertEqual({r["id"]: r["passed"] for r in grading["final"]}, {"resolves-own": True, "reports": True})
         self.assertFalse(list((run_dir / "grader").rglob("auth.json")))
         self.assertNotIn("panel", grading)
@@ -2507,7 +2561,8 @@ class HostEvidenceTest(FakeHarness, unittest.TestCase):
         self.assertEqual(argv[argv.index("--disallowedTools") + 1], "WebFetch")
         transcript = json.loads((run_dir / "transcript.json").read_text())
         self.assertEqual(transcript["asked_questions"],
-                         [{"turn": 1, "kind": "tool", "question": "Resolve the bot thread too?", "answer": "No"}])
+                         [{"turn": 1, "kind": "tool", "question": "Resolve the bot thread too?", "answer": "No",
+                           "after_tool_call": 0}])
         self.assertEqual(transcript["repository"]["changed_paths"], [])
         self.assertEqual(transcript["gh_writes"][0]["turn"], 1)
         case_json = json.loads((run_dir / "case.json").read_text())
@@ -2523,9 +2578,9 @@ class HostEvidenceTest(FakeHarness, unittest.TestCase):
         transcript = json.loads((run_dir / "transcript.json").read_text())
         self.assertEqual(transcript["asked_questions"],
                          [{"turn": 1, "kind": "tool", "question": "Which wording should the comment use?",
-                           "answer": "Thanks, fixed."},
+                           "answer": "Thanks, fixed.", "after_tool_call": None},
                           {"turn": 2, "kind": "prose", "question": "turn 2: Done?", "answer": None,
-                           "answer_sent": False}])
+                           "answer_sent": False, "after_tool_call": None}])
 
 
 class HelperConformanceTest(unittest.TestCase):
@@ -2862,6 +2917,13 @@ import json, os, subprocess, sys, time
 script = json.loads(os.environ["FAKE_SCRIPT"])
 def emit(obj):
     print(json.dumps(obj), flush=True)
+def tool_use(name, number, result=True):
+    ident = "u%d-%d" % (index, number)
+    emit({"type": "assistant", "message": {"model": "claude-opus-5-5", "content": [
+        {"type": "tool_use", "id": ident, "name": name, "input": {}}]}})
+    if result:
+        emit({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": ident, "content": "ok"}]}})
+    return ident
 emit({"type": "system", "subtype": "init", "session_id": "s-2", "model": "claude-opus-5-5",
       "permissionMode": "dontAsk", "plugins": [], "skills": [], "tools": ["Bash"]})
 index = 0
@@ -2888,19 +2950,26 @@ while True:
     for path, body in (step.get("files") or {}).items():
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         open(path, "w").write(body)
-    reply = step.get("text", "ok").replace("{input}", text)
+    for number, name in enumerate(step.get("tools", [])):
+        tool_use(name, number)
+    reply = step.get("text", "ok").replace("{input}", text).replace("{cwd}", os.getcwd())
     for argv in step.get("run", []):
         done = subprocess.run(argv, capture_output=True, text=True)
         reply += " [%s exit %d: %s]" % (argv[0], done.returncode, done.stderr.strip())
     for number, questions in enumerate(step.get("ask", [])):
-        emit({"type": "control_request", "request_id": "ask-%d-%d" % (index, number), "request": {
-            "subtype": "can_use_tool", "tool_name": "AskUserQuestion", "input": {"questions": questions}}})
+        request = {"subtype": "can_use_tool", "tool_name": "AskUserQuestion", "input": {"questions": questions}}
+        if step.get("ask_tool_use"):
+            # As Claude Code does: the question tool's own call streams first, and the request names it.
+            request["tool_use_id"] = tool_use("AskUserQuestion", 50 + number, result=False)
+        emit({"type": "control_request", "request_id": "ask-%d-%d" % (index, number), "request": request})
         while True:
             response = json.loads(sys.stdin.readline())
             if response.get("type") == "control_response":
                 break
         decision = response["response"]["response"]
         reply = "answers: %s\n\n%s" % (json.dumps((decision.get("updatedInput") or {}).get("answers")), reply)
+    for number, name in enumerate(step.get("tools_after", [])):
+        tool_use(name, 100 + number)
     background = step.get("background")
     if background:
         emit({"type": "system", "subtype": "background_tasks_changed",
@@ -2931,9 +3000,13 @@ def emit(obj):
 if sys.argv[1] == "exec":
     sys.stdin.read()
     emit({"type": "thread.started", "thread_id": "thr-4"})
+    for command in script[0].get("commands", []):
+        emit({"type": "item.completed", "item": {"type": "command_execution", "command": command, "exit_code": 0,
+                                                 "aggregated_output": "", "status": "completed"}})
     for text in script[0].get("messages", []):
         emit({"type": "item.completed", "item": {"type": "agent_message", "text": text}})
-    emit({"type": "item.completed", "item": {"type": "agent_message", "text": script[0]["text"]}})
+    emit({"type": "item.completed", "item": {"type": "agent_message",
+                                             "text": script[0]["text"].replace("{cwd}", os.getcwd())}})
     emit({"type": "turn.completed", "usage": {}})
     sys.exit(0)
 index = 0
@@ -2952,6 +3025,9 @@ for line in sys.stdin:
         time.sleep(step.get("sleep", 0))
         for argv in step.get("gh", []):
             subprocess.run(["gh", *argv], capture_output=True, text=True)
+        for command in step.get("commands", []):
+            emit({"method": "item/completed", "params": {"item": {"type": "commandExecution", "command": command,
+                                                                  "exitCode": 0, "status": "completed"}}})
         if step.get("async_questions"):
             questions = step["async_questions"]
             emit({"method": "item/completed", "params": {"item": {
@@ -2962,7 +3038,7 @@ for line in sys.stdin:
                 "type": "fileChange", "id": "exec-1", "status": "completed",
                 "changes": [{"path": step["file_change"]["path"], "kind": {"type": "add"},
                              "diff": step["file_change"]["diff"]}]}}})
-        said = step.get("text", "ok").replace("{input}", text)
+        said = step.get("text", "ok").replace("{input}", text).replace("{cwd}", os.getcwd())
         for number, questions in enumerate(step.get("ask", [])):
             emit({"id": 900 + number, "method": "item/tool/requestUserInput", "params": {"questions": questions}})
             reply = json.loads(sys.stdin.readline())
@@ -3032,7 +3108,7 @@ class ProseQuestionHostTest(ScriptedHarness, unittest.TestCase):
         transcript = json.loads((run_dir / "transcript.json").read_text())
         self.assertEqual(transcript["asked_questions"], [
             {"turn": 1, "kind": "prose", "question": "Should I post the header point too?", "answer": "No, skip it.",
-             "answer_sent": True}])
+             "answer_sent": True, "after_tool_call": None}])
         self.assertEqual([(w["kind"], w["turn"]) for w in transcript["gh_writes"]], [("issue-comment", 1)])
         case = json.loads((run_dir / "case.json").read_text())
         self.assertTrue(runner.evaluate_question_checks(case, transcript["asked_questions"])[0]["passed"])
@@ -3051,7 +3127,7 @@ class ProseQuestionHostTest(ScriptedHarness, unittest.TestCase):
         transcript = json.loads((run_dir / "transcript.json").read_text())
         self.assertEqual(transcript["asked_questions"], [
             {"turn": 1, "kind": "prose", "question": "Should I post the header point too?", "answer": "No, skip it.",
-             "answer_sent": False}])
+             "answer_sent": False, "after_tool_call": None}])
 
     def test_a_question_followed_by_a_tool_call_is_not_a_prose_question(self):
         case = self.write_case(answers_in_prose=True, answers=[{"match": "merge", "answer": "Yes"}])
@@ -3076,11 +3152,12 @@ class ProseQuestionHostTest(ScriptedHarness, unittest.TestCase):
     def test_codex_exec_prose_question_is_recorded_without_an_answer(self):
         case = self.write_case(answers_in_prose=True)
         run_dir = runner.run_case(case, "codex", "gpt-6.1-sol", "medium", [self.plugin], 1, self.root / "runs",
-                                  **self.scripted([{"text": "Resolved PRRT_a.\n\nShall I merge #101 as well?"}]))
+                                  **self.scripted([{"text": "Resolved PRRT_a.\n\nShall I merge #101 as well?",
+                                                    "commands": ["gh pr view 101"]}]))
         self.assertEqual(json.loads((run_dir / "record.json").read_text())["route"], "exec")
         self.assertEqual(json.loads((run_dir / "transcript.json").read_text())["asked_questions"], [
             {"turn": 1, "kind": "prose", "question": "Shall I merge #101 as well?", "answer": None,
-             "answer_sent": False}])
+             "answer_sent": False, "after_tool_call": 0}])
 
 
 if __name__ == "__main__":
@@ -3266,7 +3343,8 @@ class DateShimTest(ScriptedHarness, unittest.TestCase):
         self.assertEqual((first[1], second[1], second[2]), (1970, 1970, 1970))
         self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()),
                          ["claude", "codex", "date", "gh", "sleep"])
-        self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0], str(run_dir / "bin"))
+        self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0],
+                         str(Path(record["staging_dir"]) / "bin"))
         self.assertEqual(json.loads((run_dir / "stub" / "state.json").read_text())["_clock_offset"], 170 * 60)
 
 
@@ -3474,7 +3552,7 @@ class PassOneProseQuestionHostTest(ScriptedHarness, unittest.TestCase):
         asked = json.loads((run_dir / "transcript.json").read_text())["asked_questions"]
         decisions = PASS_ONE_CASE_201_MESSAGE.index("## Decisions I need from you")
         self.assertEqual(asked, [{"turn": 1, "kind": "prose", "question": PASS_ONE_CASE_201_MESSAGE[decisions:],
-                                  "answer": answer, "answer_sent": True}])
+                                  "answer": answer, "answer_sent": True, "after_tool_call": None}])
 
 
 OLD_OID = "5a1c0b2d3e4f5061728394a5b6c7d8e9f0a1b2c3"
@@ -3536,19 +3614,24 @@ class CommentCommitTest(StubHarness, unittest.TestCase):
 
 
 class TranscriptFilesTest(unittest.TestCase):
-    def test_changed_files_carry_their_final_text_capped_per_file(self):
+    def test_changed_files_are_whole_up_to_twenty_thousand_characters_then_keep_head_and_tail(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
             (repo / "policies").mkdir()
             (repo / "policies" / "alerts.md").write_text("# Alerts\nPage on impact.\n")
-            (repo / "big.md").write_text("x" * (runner.FILE_TEXT_LIMIT + 500))
-            files = runner.changed_file_texts(repo, ["policies/alerts.md", "big.md", "gone.md"])
+            (repo / "cases.json").write_text("c" * 20000)
+            (repo / "big.md").write_text("h" * 20000 + "t" * 10000)
+            files = runner.changed_file_texts(repo, ["policies/alerts.md", "cases.json", "big.md", "gone.md"])
         self.assertEqual(files[0], {"path": "policies/alerts.md", "text": "# Alerts\nPage on impact.\n",
                                     "chars": 25, "truncated": False})
-        self.assertEqual((files[1]["path"], len(files[1]["text"]), files[1]["chars"], files[1]["truncated"]),
-                         ("big.md", runner.FILE_TEXT_LIMIT, runner.FILE_TEXT_LIMIT + 500, True))
-        self.assertEqual(files[2], {"path": "gone.md", "text": None, "chars": None, "truncated": False})
-        self.assertEqual(runner.FILE_TEXT_LIMIT, 6000)
+        self.assertEqual(files[1], {"path": "cases.json", "text": "c" * 20000, "chars": 20000, "truncated": False})
+        big = files[2]
+        self.assertTrue(big["text"].startswith("h" * 15000) and big["text"].endswith("t" * 5000))
+        self.assertNotIn("h" * 15001, big["text"])
+        self.assertNotIn("t" * 5001, big["text"])
+        self.assertIn("\n[... 10000 characters omitted ...]\n", big["text"])
+        self.assertEqual((big["path"], big["chars"], big["truncated"]), ("big.md", 30000, True))
+        self.assertEqual(files[3], {"path": "gone.md", "text": None, "chars": None, "truncated": False})
 
     def test_grader_prompt_shows_changed_files_before_tool_calls_and_outside_their_caps(self):
         case = runner.validate_case(minimal_case())
@@ -3566,7 +3649,9 @@ class TranscriptFilesTest(unittest.TestCase):
         # Every call renders: the cap is per call, not a slice of the list.
         self.assertIn("gh pr view 199", prompt)
         self.assertIn("not evidence of absence", prompt[prompt.index("Tool calls"):prompt.index("gh pr view 0")])
-        self.assertIn("truncated", prompt[prompt.index("Files the agent changed"):prompt.index("policies/alerts.md")])
+        files = prompt[prompt.index("Files the agent changed"):prompt.index("policies/alerts.md")]
+        self.assertIn("`truncated: true` keeps only the first 15000 and the last 5000 of `chars` characters", files)
+        self.assertIn("a truncated file is not evidence of absence", files)
         self.assertIn("Judge the written equipment; a case need not have been run unless the text says so.", prompt)
 
     def test_tool_outputs_keep_their_head_and_tail_over_the_cap_and_say_how_much_is_missing(self):
@@ -3679,20 +3764,29 @@ class ClaudeHostEvidenceTest(ScriptedHarness, unittest.TestCase):
 
     def test_files_the_agent_wrote_are_shown_to_the_grader(self):
         case = self.write_case()
-        text = "# Alerts\n" + "rule\n" * 2000
+        cases = '{"cases": [' + ", ".join(['{"id": %d}' % n for n in range(1000)]) + "]}\n"
+        text = "# Alerts\n" + "rule\n" * 6000
         run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
-                                  **self.scripted([{"text": "Written.", "files": {"policies/alerts.md": text,
-                                                                                    "README.md": "changed\n"}}]))
+                                  **self.scripted([{"text": "Written.", "files": {
+                                      "policies/alerts.md": text, "tests/cases.json": cases,
+                                      "README.md": "changed\n"}}]))
         transcript = json.loads((run_dir / "transcript.json").read_text())
-        self.assertEqual(transcript["repository"]["changed_paths"], ["README.md", "policies/alerts.md"])
+        self.assertEqual(transcript["repository"]["changed_paths"], ["README.md", "policies/alerts.md",
+                                                                     "tests/cases.json"])
         self.assertEqual(transcript["changed_files"][0],
                          {"path": "README.md", "text": "changed\n", "chars": 8, "truncated": False})
+        # A test file of some 12,000 characters reaches the grader whole.
+        self.assertEqual(transcript["changed_files"][2],
+                         {"path": "tests/cases.json", "text": cases, "chars": len(cases), "truncated": False})
         shown = transcript["changed_files"][1]
+        kept = runner.capped_output(text, runner.FILE_TEXT_LIMIT, runner.FILE_TEXT_TAIL)[0]
         self.assertEqual((shown["path"], shown["chars"], shown["truncated"], shown["text"]),
-                         ("policies/alerts.md", len(text), True, text[:runner.FILE_TEXT_LIMIT]))
+                         ("policies/alerts.md", len(text), True, kept))
+        self.assertTrue(kept.endswith(text[-runner.FILE_TEXT_TAIL:]))
         self.assertLess(list(transcript).index("changed_files"), list(transcript).index("tool_calls"))
-        self.assertIn(json.dumps(text[:runner.FILE_TEXT_LIMIT]),
-                      runner.grader_prompt(json.loads((run_dir / "case.json").read_text()), transcript))
+        prompt = runner.grader_prompt(json.loads((run_dir / "case.json").read_text()), transcript)
+        self.assertIn(json.dumps(kept), prompt)
+        self.assertIn(json.dumps(cases), prompt)
 
 
 class NestedModelRunTest(ScriptedHarness, unittest.TestCase):
@@ -3717,7 +3811,8 @@ class NestedModelRunTest(ScriptedHarness, unittest.TestCase):
         self.assertEqual([w["kind"] for w in transcript["gh_writes"]], ["nested-model-run"] * 2)
         self.assertEqual(sorted(p.name for p in (run_dir / "bin").iterdir()),
                          ["claude", "codex", "date", "gh", "sleep"])
-        self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0], str(run_dir / "bin"))
+        self.assertEqual(json.loads((run_dir / "env.json").read_text())["path_head"][0],
+                         str(Path(record["staging_dir"]) / "bin"))
 
     def test_bare_harness_names_resolve_before_the_shims_shadow_them(self):
         case = self.write_case()
@@ -3807,16 +3902,16 @@ class CodexAsyncQuestionTest(ScriptedHarness, unittest.TestCase):
                                                     "Revised with your answers.", "done: Wrap up."])
         self.assertEqual(self.turn_texts(run_dir), ["Draft the policy.", self.MESSAGE, "Wrap up."])
         self.assertEqual(record["questions"], [{
-            "turn": 1, "delivery": "async", "answer_sent": True,
+            "turn": 1, "delivery": "async", "answer_sent": True, "after_tool_call": None,
             "questions": [{"id": q["title"], "question": q["title"], "options": q["options"]} for q in self.QUESTIONS],
             "answers": {"What hours count as overnight?": {"answers": ["22:00-07:00 America/New_York."]},
                         "Page when impact is unclear?": {"answers": [None]}}}])
         transcript = json.loads((run_dir / "transcript.json").read_text())
         self.assertEqual(transcript["asked_questions"], [
             {"turn": 1, "kind": "tool", "question": "What hours count as overnight?",
-             "answer": "22:00-07:00 America/New_York.", "answer_sent": True},
+             "answer": "22:00-07:00 America/New_York.", "answer_sent": True, "after_tool_call": None},
             {"turn": 1, "kind": "tool", "question": "Page when impact is unclear?", "answer": None,
-             "answer_sent": False}])
+             "answer_sent": False, "after_tool_call": None}])
         self.assertTrue(runner.evaluate_question_checks(case_from(run_dir), transcript["asked_questions"])[0]["passed"])
 
     def test_unanswerable_async_questions_are_recorded_without_a_message(self):
@@ -3831,7 +3926,7 @@ class CodexAsyncQuestionTest(ScriptedHarness, unittest.TestCase):
         self.assertEqual((record["questions"][0]["answer_sent"], record["questions"][0]["delivery"]), (False, "async"))
         self.assertEqual(json.loads((run_dir / "transcript.json").read_text())["asked_questions"], [
             {"turn": 1, "kind": "tool", "question": "What hours count as overnight?", "answer": None,
-             "answer_sent": False}])
+             "answer_sent": False, "after_tool_call": None}])
 
     def test_a_file_change_item_reaches_the_record(self):
         case = self.write_case(permissions={"codex": {"route": "app-server"}})
@@ -4080,6 +4175,22 @@ class SheetOperatorTest(unittest.TestCase):
         self.assertEqual(len(keys), 4)
         self.assertEqual({k: operator.summary()[k] for k in ("requests", "cache_hits", "backend_calls")},
                          {"requests": 2, "cache_hits": 1, "backend_calls": 1})
+
+    def test_a_changed_mapping_prompt_never_reuses_a_cached_mapping(self):
+        message = "1. Which hours count as overnight?"
+        operator, backend = self.operator()
+        first = operator.map("prose", message, 1)
+        stored = json.loads((self.cache / f"{first['mapper']['cache_key']}.json").read_text())
+        self.assertEqual(stored["request"]["prompt_sha256"], runner.sha256_text(backend.requests[0]["prompt"]))
+        original = runner.mapping_prompt
+        with mock.patch.object(runner, "mapping_prompt",
+                               lambda *args, **kwargs: original(*args, **kwargs) + "\n\nReturn ids in sheet order."):
+            reworded, backend = self.operator()
+            second = reworded.map("prose", message, 1)
+        self.assertNotEqual(second["mapper"]["cache_key"], first["mapper"]["cache_key"])
+        self.assertEqual(len(backend.requests), 1)
+        self.assertTrue(backend.requests[0]["prompt"].endswith("Return ids in sheet order."))
+        self.assertEqual(reworded.summary()["cache_hits"], 0)
 
     def test_a_malformed_mapping_is_retried_once(self):
         replies = [{"waiting_on_operator": True, "questions": []}]
@@ -4333,3 +4444,262 @@ class AnswerSheetHostTest(ScriptedHarness, unittest.TestCase):
         self.assertEqual([(r["kind"], r["answer"], r["answer_source"]) for r in rows],
                          [("tool", SHEET_DEFAULT, "default"), ("prose", None, "none")])
         self.assertTrue(all("model unavailable" in r["mapper_error"] for r in rows))
+
+
+# ----------------------------------------------------------------------------- where each question fell
+
+
+class QuestionPositionTest(ScriptedHarness, unittest.TestCase):
+    """Each asked question records the tool call it followed, and the grader sees every call's index."""
+
+    def test_claude_questions_record_the_tool_call_before_them(self):
+        case = self.write_case(answers=[{"match": "window", "answer": "22:00-07:00."}])
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"tools": ["Read"], "ask": [[{"question": "Which window?"}]],
+                                                    "ask_tool_use": True, "tools_after": ["Write"],
+                                                    "text": "Wrote the policy.\n\nShould I open a pull request?"}]))
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        self.assertEqual([call["tool"] for call in transcript["tool_calls"]], ["Read", "AskUserQuestion", "Write"])
+        # The tool question followed the Read (its own call is the question) and came before the Write; the closing
+        # prose question followed the Write.
+        self.assertEqual(transcript["asked_questions"], [
+            {"turn": 1, "kind": "tool", "question": "Which window?", "answer": "22:00-07:00.", "after_tool_call": 0},
+            {"turn": 1, "kind": "prose", "question": "Should I open a pull request?", "answer": None,
+             "answer_sent": False, "after_tool_call": 2}])
+        prompt = runner.grader_prompt(case_from(run_dir), transcript)
+        calls = [dict(index=index, **call) for index, call in enumerate(transcript["tool_calls"])]
+        self.assertIn(json.dumps(calls, indent=1), prompt[prompt.index("Tool calls"):prompt.index("gh_writes (")])
+        questions = prompt[prompt.index("Questions the agent asked"):prompt.index("Denials by the harness")]
+        self.assertIn("`after_tool_call` is the `index` of the last tool call", questions)
+        self.assertIn('"after_tool_call": 2', questions)
+
+    def test_codex_questions_record_the_tool_call_before_them(self):
+        case = self.write_case(turns=["Draft the policy.", "Wrap up."])
+        steps = [{"commands": ["cat seed.md"], "async_questions": [{"title": "Which window?", "options": ["Night"]}],
+                  "file_change": {"path": "/r/policies/alerts.md", "diff": "+# Alerts\n"}, "text": "Drafted."},
+                 {"ask": [[{"id": "pr", "question": "Open a pull request?"}]], "text": "Done.\n\nShould I merge it?"}]
+        run_dir = runner.run_case(case, "codex", "gpt-6.1-sol", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted(steps))
+        transcript = json.loads((run_dir / "transcript.json").read_text())
+        self.assertEqual([call["tool"] for call in transcript["tool_calls"]], ["shell", "fileChange"])
+        self.assertEqual([(row["turn"], row["kind"], row["question"], row["after_tool_call"])
+                          for row in transcript["asked_questions"]],
+                         [(1, "tool", "Which window?", 0), (2, "tool", "Open a pull request?", 1),
+                          (2, "prose", "Should I merge it?", 1)])
+
+
+# ----------------------------------------------------------------------------- staging
+
+
+class StagingTest(ScriptedHarness, GraderHarness, unittest.TestCase):
+    """Every model process runs under the staging root, and nothing carrying user instructions sits above it."""
+
+    def dirty_root(self):
+        """A staging root under a directory holding every instruction marker, and the files a child could read."""
+        dirty = self.root / "dirty"
+        files = {"CLAUDE.md": "Leave tickets unlabeled.\n", "CLAUDE.local.md": "Local notes.\n",
+                 "AGENTS.md": "Codex notes.\n", ".claude/rules/tracker.md": "Run /setup-matt-pocock-skills.\n",
+                 ".claude/projects/-x/session.jsonl": "{}\n", ".agents/skills/a/SKILL.md": "---\nname: a\n---\n"}
+        for relative, text in files.items():
+            (dirty / relative).parent.mkdir(parents=True, exist_ok=True)
+            (dirty / relative).write_text(text)
+        visible = sorted(str((dirty / relative).resolve()) for relative in files if "projects" not in relative)
+        return dirty / "staging", visible
+
+    def home_env(self, **extra):
+        """An environment with an empty home directory; the scripted fakes answer with their working directory."""
+        home = self.root / "home"
+        home.mkdir(exist_ok=True)
+        return dict(os.environ, **{"HOME": str(home), "FAKE_SCRIPT": json.dumps([{"text": "cwd={cwd}"}]), **extra})
+
+    def test_the_staging_root_is_the_option_else_the_environment_else_under_var_tmp(self):
+        self.assertEqual(runner.resolve_staging_root(None, {}),
+                         Path(f"/var/tmp/provingkit-evals-{os.getuid()}").resolve())
+        variable = {runner.STAGING_ROOT_ENV: str(self.root / "from-env")}
+        self.assertEqual(runner.resolve_staging_root(None, variable), (self.root / "from-env").resolve())
+        self.assertEqual(runner.resolve_staging_root(self.root / "option", variable), (self.root / "option").resolve())
+
+    def test_a_run_happens_under_the_staging_root_and_moves_to_its_output_root(self):
+        options = self.options(base_env=self.home_env())
+        for harness, model in (("claude", "claude-opus-5-5"), ("codex", "gpt-6.1-sol")):
+            run_dir = runner.run_case(self.write_case(), harness, model, "medium", [self.plugin], 1,
+                                      self.root / "runs", **options)
+            self.assertEqual(run_dir, (self.root / "runs" / f"{harness}-{model}-medium" / "case-07-rep-1").resolve())
+            record = json.loads((run_dir / "record.json").read_text())
+            staged = Path(record["staging_dir"])
+            self.assertEqual(staged.parent, self.staging.resolve())
+            self.assertTrue(staged.name.startswith(f"{harness}-{model}-medium-case-07-rep-1-"), staged.name)
+            self.assertFalse(staged.exists())
+            self.assertEqual(record["response"], f"cwd={staged / 'repo'}")
+            argv = json.loads((run_dir / "argv.json").read_text())
+            flag, path = ("--debug-file", staged / "debug.log") if harness == "claude" else ("-C", staged / "repo")
+            self.assertEqual(argv[argv.index(flag) + 1], str(path))
+            self.assertTrue((run_dir / "repo" / "README.md").is_file())
+            self.assertEqual(json.loads((run_dir / "env.json").read_text())["tmpdir"], "tmp")
+        self.assertEqual(list(self.staging.iterdir()), [])
+
+    def test_links_into_the_staged_directory_follow_it_to_the_output_root(self):
+        # Claude Code links ``latest`` beside its --debug-file, by the staged path; a copy of the run must not break.
+        link = ["sh", "-c", 'ln -s "$PWD/README.md" ../latest && ln -s /etc/hostname ../elsewhere']
+        options = self.options(base_env=self.home_env(FAKE_SCRIPT=json.dumps([{"text": "ok", "run": [link]}])))
+        run_dir = runner.run_case(self.write_case(), "claude", "claude-opus-5-5", "medium", [self.plugin], 1,
+                                  self.root / "runs", **options)
+        self.assertEqual(os.readlink(run_dir / "latest"), "repo/README.md")
+        self.assertEqual((run_dir / "latest").read_text(), "fixture\n")
+        self.assertEqual(os.readlink(run_dir / "elsewhere"), "/etc/hostname")
+        shutil.copytree(run_dir, self.root / "copy", symlinks=False, ignore_dangling_symlinks=False)
+
+    def test_the_mapper_works_in_the_staged_run_directory(self):
+        made = []
+
+        def mapper_at(executable, env, directory):
+            made.append(Path(directory))
+            return FakeMapper()
+
+        case = self.write_case(operator={"sheet": SHEET, "default": SHEET_DEFAULT})
+        with mock.patch.object(runner, "ClaudeMapper", mapper_at):
+            run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1,
+                                      self.root / "runs", **self.options(base_env=self.home_env()))
+        self.assertEqual(made, [Path(json.loads((run_dir / "record.json").read_text())["staging_dir"]) / "mapper"])
+
+    def test_a_failed_run_still_moves_to_its_output_root(self):
+        with self.assertRaisesRegex(runner.RunError, "credentials"):
+            runner.run_case(self.write_case(), "codex", "gpt-6.1-sol", "medium", [self.plugin], 1, self.root / "runs",
+                            **self.options(base_env=self.home_env(), codex_auth=self.root / "missing.json"))
+        run_dir = self.root / "runs" / "codex-gpt-6.1-sol-medium" / "case-07-rep-1"
+        self.assertTrue((run_dir / "repo" / "README.md").is_file())
+        self.assertFalse((run_dir / "record.json").exists())
+        self.assertEqual(list(self.staging.iterdir()), [])
+
+    def test_every_instruction_marker_above_a_directory_is_found_unless_its_directory_is_skipped(self):
+        top = self.root / "tree"
+        work = top / "a" / "b"
+        work.mkdir(parents=True)
+        baseline = runner.ancestor_markers(top)
+        for name in ("CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", ".claude", ".agents"):
+            marker = top / "a" / name
+            if name.startswith("."):
+                marker.mkdir()
+                # An empty directory, such as the mount target Codex's sandbox leaves for a moment, holds nothing.
+                self.assertEqual(runner.ancestor_markers(work), baseline, name)
+                (marker / "rules").mkdir()
+                (marker / "rules" / "x.md").write_text("x\n")
+            else:
+                marker.write_text("x\n")
+            self.assertEqual(runner.ancestor_markers(work), [marker.resolve()] + baseline, name)
+            self.assertEqual(runner.ancestor_markers(work, skip=[top / "a"]), baseline, name)
+            shutil.rmtree(marker) if marker.is_dir() else marker.unlink()
+        (top / "a" / "CLAUDE.md").symlink_to(top / "gone.md")
+        self.assertEqual(runner.ancestor_markers(work), [(top / "a").resolve() / "CLAUDE.md"] + baseline)
+        (top / "a" / "CLAUDE.md").unlink()
+        self.assertEqual(runner.ancestor_markers(work), baseline)
+
+    def test_a_clean_layer_child_is_refused_under_instruction_files_and_a_realistic_one_records_them(self):
+        staging, visible = self.dirty_root()
+        options = self.options(base_env=self.home_env(), staging_root=staging)
+        marker = re.escape(str((staging.parent / ".claude").resolve()))
+        for harness, model in (("claude", "claude-opus-5-5"), ("codex", "gpt-6.1-sol")):
+            with self.assertRaisesRegex(runner.RunError, marker, msg=harness):
+                runner.run_case(self.write_case(user_layer="clean"), harness, model, "medium", [self.plugin], 1,
+                                self.root / "refused", **options)
+        self.assertFalse((self.root / "refused").exists())
+        self.assertFalse(staging.exists())
+        for harness, model in (("claude", "claude-opus-5-5"), ("codex", "gpt-6.1-sol")):
+            run_dir = runner.run_case(self.write_case(), harness, model, "medium", [self.plugin], 1,
+                                      self.root / "runs", **options)
+            record = json.loads((run_dir / "record.json").read_text())
+            self.assertTrue(record.get("status") == "verified-transport" or record["execution"]["completed"])
+            lines = "".join(f"{runner.sha256_bytes(Path(path).read_bytes())}  {path}\n" for path in visible)
+            self.assertEqual(record["user_layer"], {"mode": "realistic", "fingerprint": runner.sha256_text(lines),
+                                                    "sources": visible}, harness)
+            self.assertNotIn("setup-matt-pocock-skills", (run_dir / "record.json").read_text())
+
+    def test_the_fixture_repositorys_own_instruction_files_never_refuse_a_clean_child(self):
+        case = self.write_case(user_layer="clean", repository={"files": {
+            "README.md": "fixture\n", "AGENTS.md": "Repository rules.\n", "CLAUDE.md": "Repository memory.\n",
+            ".claude/settings.json": "{}\n"}})
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.options(base_env=self.home_env()))
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual((record["status"], record["user_layer"]["sources"]), ("verified-transport", []))
+
+    def test_graders_run_under_the_staging_root_and_move_into_the_run_directory(self):
+        run_dir = runner.run_case(self.write_case(), "claude", "claude-opus-5-5", "medium", [self.plugin], 1,
+                                  self.root / "runs", **self.options(base_env=self.home_env()))
+        grading = json.loads(runner.grade_run(run_dir, codex_bin=str(self.bin / "codex-grader"), codex_auth=self.auth,
+                                              base_env=self.home_env(), timeout=60).read_text())
+        staged = Path(grading["staging_dir"])
+        self.assertEqual(staged.parent, self.staging.resolve())
+        self.assertTrue(staged.name.startswith("grade-case-07-rep-1-"), staged.name)
+        argv = grading["grader"]["argv"]
+        self.assertEqual(argv[argv.index("-C") + 1], str(staged / "grader" / "work"))
+        self.assertEqual(argv[argv.index("-o") + 1], str(staged / "grader" / "response.txt"))
+        self.assertFalse(staged.exists())
+        self.assertEqual(list(self.staging.iterdir()), [])
+        for artifact in ("prompt.txt", "schema.json", "response.txt", "events.jsonl", "stderr.txt", "seen-config.toml"):
+            self.assertTrue((run_dir / "grader" / artifact).is_file(), artifact)
+        self.assertIsNotNone(grading["final"])
+
+    def test_a_grader_is_refused_under_instruction_files(self):
+        run_dir = runner.run_case(self.write_case(), "claude", "claude-opus-5-5", "medium", [self.plugin], 1,
+                                  self.root / "runs", **self.options(base_env=self.home_env()))
+        staging, _ = self.dirty_root()
+        for panel in (None, PANEL):
+            with self.assertRaisesRegex(runner.RunError, "grader", msg=panel):
+                runner.grade_run(run_dir, panel=panel, claude_bin=str(self.bin / "claude-grader"),
+                                 codex_bin=str(self.bin / "codex-grader"), codex_auth=self.auth,
+                                 base_env=self.home_env(), timeout=60, staging_root=staging)
+        self.assertFalse((run_dir / "grader").exists())
+        self.assertFalse((run_dir / "grading.json").exists())
+        self.assertFalse(staging.exists())
+
+    def test_a_default_mapper_is_refused_under_instruction_files(self):
+        staging, _ = self.dirty_root()
+        case = self.write_case(operator={"sheet": SHEET, "default": SHEET_DEFAULT})
+        with self.assertRaisesRegex(runner.RunError, "mapper"):
+            runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "refused",
+                            **self.options(base_env=self.home_env(), staging_root=staging))
+        self.assertFalse(staging.exists())
+        # A mapping backend the caller supplies is not a child the runner starts.
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.options(base_env=self.home_env(), staging_root=staging, mapper=FakeMapper()))
+        self.assertEqual(json.loads((run_dir / "record.json").read_text())["status"], "verified-transport")
+        work = staging.parent / "mapper"
+        mapper = runner.ClaudeMapper(str(self.bin / "claude"), self.home_env(), work, timeout=30)
+        request = {"model": runner.MAPPING_MODEL, "kind": "prose", "message": "1. Hours?", "count": None,
+                   "sheet": [{"id": "window", "covers": "Hours."}], "prompt": "PROMPT",
+                   "schema": runner.mapping_schema(["window"])}
+        with self.assertRaisesRegex(runner.MapperError, re.escape(str((staging.parent / ".claude").resolve()))):
+            mapper(request)
+        self.assertFalse((work / "calls").exists())
+
+    def test_a_staging_root_another_user_owns_is_refused(self):
+        self.staging.mkdir()
+        with mock.patch.object(runner.os, "getuid", return_value=os.getuid() + 1):
+            with self.assertRaisesRegex(runner.RunError, "owned by"):
+                runner.staging_directory(self.staging, "case-07-rep-1")
+        self.assertEqual(list(self.staging.iterdir()), [])
+
+    def test_the_command_line_passes_the_staging_root_on(self):
+        run_dir = self.root / "run"
+        run_dir.mkdir()
+        (run_dir / "record.json").write_text(json.dumps({"status": "verified-transport", "wall_s": 1.0,
+                                                         "cost_usd": 0.1, "gh_writes": []}))
+        (run_dir / "probe.json").write_text(json.dumps({"triggered": True}))
+        grading = self.root / "grading.json"
+        grading.write_text(json.dumps({"final": [], "grader_error": None}))
+        staging = str(self.root / "elsewhere")
+        with mock.patch.object(runner, "run_case", return_value=run_dir) as run_case, \
+                mock.patch.object(runner, "grade_run", return_value=grading) as grade_run, \
+                mock.patch.object(runner, "probe_trigger", return_value=run_dir) as probe_trigger, \
+                contextlib.redirect_stdout(io.StringIO()):
+            runner.main(["run", "--case", "case.json", "--harness", "claude", "--model", "m", "--effort", "medium",
+                         "--plugin-dir", "candidate", "--repetition", "1", "--out", "runs", "--grade",
+                         "--staging-root", staging])
+            runner.main(["grade", str(run_dir), "--staging-root", staging])
+            runner.main(["probe", "--triggers", "t.json", "--index", "0", "--skill", "p:s", "--harness", "claude",
+                         "--model", "m", "--effort", "medium", "--plugin-dir", "candidate", "--out", "probes",
+                         "--staging-root", staging])
+        self.assertEqual(run_case.call_args.kwargs["staging_root"], staging)
+        self.assertEqual([call.kwargs["staging_root"] for call in grade_run.call_args_list], [staging, staging])
+        self.assertEqual(probe_trigger.call_args.kwargs["staging_root"], staging)

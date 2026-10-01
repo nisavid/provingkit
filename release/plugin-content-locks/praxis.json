@@ -68,7 +68,7 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "ba973e28e1db57693a9cecf40c5118871e8397c289a579a5aedba2ea1cdd5413"
+      "sha256": "94aec1e3bca360901392d02eb04bf1f61f64d1142c144e5d3ef75d0fa6919e58"
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/stub_clock.py": {
       "mode": 420,
@@ -80,7 +80,7 @@
     },
     "tests/test_policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "fdee5b4ce55d7e752ab8fc2e1fd401402d0dfc8ccb0ab27d1acdf3b7bdca0dbf"
+      "sha256": "477d72baef310cb26b23b874060920e1c5ad8b45330dbbc61626e09b2ebb8df1"
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,
