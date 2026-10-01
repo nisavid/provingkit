@@ -81,6 +81,18 @@ class ValidateRolecastingTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_rejects_ambient_effect_import_in_shared_daybreak_records(self) -> None:
+        path = (
+            self.plugin
+            / "skills"
+            / "choosing-agent-models"
+            / "scripts"
+            / "daybreak_records.py"
+        )
+        path.write_text(path.read_text() + "\nimport os\n", encoding="utf-8")
+
+        self.assert_rejected("Daybreak shared records import boundary")
+
     def test_registers_exact_task_witness_dispatch_evidence_owner(self) -> None:
         provider_path = self.plugin / "task-witness-provider.json"
         raw = provider_path.read_bytes()

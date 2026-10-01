@@ -48,7 +48,7 @@ The current harness is Codex with an OpenAI login but configured for a non-OpenA
 
 ## Case L
 
-The current harness is OpenAI-authenticated Codex. A permitted account route has no current observation, and the routing decision needs fresh selector, authentication, entitlement, capacity, exact-model, and model-runnability facts. The workflow grants no standing or task-specific authority for task-data transfer, task workspace or task-tool use, external action, delegated work, or executed work. This is an actual task-work authority gap. Run the no-task-data local status refresh automatically, record a timestamped redacted result with a stable local account label, and keep every task-work gate closed.
+The current harness is OpenAI-authenticated Codex. A permitted account route has no current observation, and the routing decision needs fresh selector, authentication, entitlement, capacity, and exact-model exposure facts. The workflow grants no standing or task-specific authority for task-data transfer, task workspace or task-tool use, external action, delegated work, or executed work. This is an actual task-work authority gap. Run the no-task-data local status refresh automatically, record a timestamped redacted result with a stable local account label, treat runnability as still unproved without the separate harmless probe, and keep every task-work gate closed.
 
 ## Case M
 

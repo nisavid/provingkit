@@ -36,7 +36,7 @@ pull-request work.
 | Public name                                | Responsibility                                                                                                                             |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `$rolecasting:delegating-cross-agent-work` | Freeze target, relationship, ownership, transport, assurance, and authority; batch same-shape work, use bounded waits, and retain leader integration. |
-| `$rolecasting:choosing-agent-models`       | Select a model-effort pair proven by the live-catalog and target-executor-schema intersection after delegation is settled.                 |
+| `$rolecasting:choosing-agent-models`       | Select a model-effort pair proven by the live-catalog and target-executor-schema intersection after delegation is settled, including effect-separated Daybreak account-home routing. |
 
 ## Layout
 
@@ -70,8 +70,9 @@ cross-harness evidence contract. Without it, the pure validator can check
 structure and identity, while issuer or producer authority remains unavailable.
 
 The owner interface is documented in the delegating skill's
-`dispatch-evidence.md` reference. Rolecasting exposes no trust-path or runtime-
-path CLI and does not interpret review or publication semantics. Its separate
+`dispatch-evidence.md` reference. Rolecasting's dispatch evidence exposes no
+trust-path or worker-launch CLI and does not interpret review or publication
+semantics. Its separate
 native adapter deterministically freezes supplied, already-observed execution
 facts; it does not launch workers or claim to authenticate observations the
 harness has not supplied. Its `rolecasting-bootstrap-adapter-v2` issuer contract
@@ -95,6 +96,21 @@ The validator preserves both clean and nonclean execution evidence: `usable` is
 a strict Boolean carried into every execution projection, and `false` remains a
 valid result rather than being discarded.
 
+### Daybreak account-home routing
+
+`choosing-agent-models` carries separate catalog and selected-account programs.
+The catalog program validates one explicitly supplied maintained-format Markdown
+catalog and can emit redacted positions or one explicit private selection. The
+status-only account program accepts only that strict selection on standard
+input. Its status operation uses the provider's identity-bearing rate-limit
+bootstrap reply to bind the selected account before model discovery, then
+queries the exact model without creating a task thread. Its bounded transport
+discards unused notifications and exposes only fixed diagnostics. Its
+harmless-probe operation is explicitly unavailable
+and fails before authentication access or launch because the public Codex
+controls do not provide a closed-world task-tool deny. The skill's
+`references/daybreak-routing.md` owns the full invocation and effect contract.
+
 ## Validation
 
 From the repository root, run:
@@ -106,6 +122,7 @@ uv run --with PyYAML python -m unittest tests/test_validate_rolecasting.py
 python3 -m unittest tests/test_rolecasting_eval_corpus.py
 python3 -m unittest tests/plugins/test_rolecasting_dispatch_evidence.py
 python3 -m unittest tests/plugins/test_rolecasting_native_codex.py
+python3 -m unittest tests/plugins/test_rolecasting_daybreak_routing.py
 ```
 
 The validator rejects Agent Plugins schema drift, duplicate keys and non-finite
