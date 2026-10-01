@@ -1,0 +1,105 @@
+{
+  "claude": {
+    "manifest_sha256": "53667d294061ab493839870db79f2d9bb71d761b5fd3160a400fe5e2bea05b51",
+    "outcome": {
+      "status": "failed",
+      "manifest_sha256": "53667d294061ab493839870db79f2d9bb71d761b5fd3160a400fe5e2bea05b51",
+      "error": "passive observer unavailable",
+      "ended_monotonic_ns": 126146865058084
+    },
+    "launcher_elapsed_seconds": 7.50407169,
+    "launcher_status": "native-episode-failed",
+    "deliveries": 1,
+    "acknowledgments": 1,
+    "completed_turns": 0,
+    "hook_event_counts": {
+      "PostToolUse": 1
+    },
+    "captured_hooks": 0,
+    "cadence_counts": [],
+    "artifact_checks": {},
+    "hook_capture_seconds": 0.000612352,
+    "version": "2.1.284 (Claude Code)",
+    "requested_model": "claude-opus-5-5",
+    "requested_effort": "medium",
+    "model_execution_attested": false,
+    "native_deadline_seconds": 480,
+    "observed_native_tool_bound": 40,
+    "launch_surface": "outer coordinator tool sandbox",
+    "native_process": {
+      "callback_consumed_stdout_bytes": 11300,
+      "exit_code": 143,
+      "received_bytes": 19492,
+      "retained_prefix_limit": 2097152,
+      "stdout_scope": "raw bytes including undelivered tail; use callback offset for delivered evidence",
+      "terminal_callback_stdout_offset": null
+    },
+    "version_stdout": "2.1.284 (Claude Code)"
+  },
+  "codex": {
+    "manifest_sha256": "1ce430113ebf12ca76fbb5cef5d0ab9f358e17146f3f1710c2c99990fdce5f3d",
+    "outcome": {
+      "status": "failed",
+      "manifest_sha256": "1ce430113ebf12ca76fbb5cef5d0ab9f358e17146f3f1710c2c99990fdce5f3d",
+      "error": "observed native tool-call bound exceeded",
+      "ended_monotonic_ns": 126841785844258
+    },
+    "launcher_elapsed_seconds": 461.661470567,
+    "launcher_status": "native-episode-failed",
+    "deliveries": 3,
+    "acknowledgments": 3,
+    "completed_turns": 2,
+    "hook_event_counts": {
+      "PostToolUse": 41,
+      "Stop": 2
+    },
+    "captured_hooks": 43,
+    "cadence_counts": [
+      10,
+      20,
+      30,
+      40
+    ],
+    "artifact_checks": {
+      "artifacts-000.json": {
+        "phase": 0,
+        "known_format_and_obsolete_report": true,
+        "literal_result": true,
+        "source_data_unchanged": true,
+        "artifact_errors": {},
+        "passed": true
+      },
+      "artifacts-001.json": {
+        "phase": 1,
+        "known_format_and_obsolete_report": true,
+        "literal_result": true,
+        "source_data_unchanged": true,
+        "artifact_errors": {},
+        "passed": true
+      }
+    },
+    "hook_capture_seconds": 1.773762385,
+    "version": "codex-cli 0.159.0",
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "medium",
+    "model_execution_attested": false,
+    "native_deadline_seconds": 480,
+    "observed_native_tool_bound": 40,
+    "launch_surface": "host process with reviewed native workspace-write sandbox",
+    "late_transcript": {
+      "sha256": "91ec76fb97563e2fdb02179400c28ce0a11a7335381ef9cccdf4b4815003d021",
+      "bytes": 728568,
+      "captured_at": "2026-10-01T02:33:53.286578+00:00",
+      "scope": "Post-termination snapshot; not retroactive hook-time input."
+    },
+    "native_process": {
+      "callback_consumed_stdout_bytes": 1119708,
+      "exit_code": 0,
+      "received_bytes": 1120119,
+      "retained_prefix_limit": 2097152,
+      "stdout_scope": "raw bytes including undelivered tail; use callback offset for delivered evidence",
+      "terminal_callback_stdout_offset": null
+    },
+    "version_stdout": "codex-cli 0.159.0"
+  }
+}

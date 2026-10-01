@@ -1,0 +1,152 @@
+{
+  "claude": {
+    "scope": "One delivered assistant-message fragment; not final session usage. No result or total_cost_usd received.",
+    "assistant_fragments": [
+      {
+        "message_id": "msg_011CfaicJXSjhU6vED3roSsQ",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 6121,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 6121
+          },
+          "output_tokens": 17,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    ],
+    "final_session_usage": null,
+    "money": null,
+    "capacity": null
+  },
+  "codex": {
+    "scope": "Latest retained cumulative native reports; session interrupted during third request. Cached input is a subset of input; reasoning output is a subset of output.",
+    "report_count": 23,
+    "latest_cumulative": {
+      "totalTokens": 847000,
+      "inputTokens": 835637,
+      "cachedInputTokens": 779008,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 11363,
+      "reasoningOutputTokens": 902
+    },
+    "per_request": [
+      {
+        "request_index": 0,
+        "completed": true,
+        "cumulative": {
+          "totalTokens": 302804,
+          "inputTokens": 297387,
+          "cachedInputTokens": 261120,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 5417,
+          "reasoningOutputTokens": 402
+        },
+        "reported_delta": {
+          "totalTokens": 302804,
+          "inputTokens": 297387,
+          "cachedInputTokens": 261120,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 5417,
+          "reasoningOutputTokens": 402
+        }
+      },
+      {
+        "request_index": 1,
+        "completed": true,
+        "cumulative": {
+          "totalTokens": 692713,
+          "inputTokens": 682185,
+          "cachedInputTokens": 629760,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 10528,
+          "reasoningOutputTokens": 811
+        },
+        "reported_delta": {
+          "totalTokens": 389909,
+          "inputTokens": 384798,
+          "cachedInputTokens": 368640,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 5111,
+          "reasoningOutputTokens": 409
+        }
+      },
+      {
+        "request_index": 2,
+        "completed": false,
+        "cumulative": {
+          "totalTokens": 847000,
+          "inputTokens": 835637,
+          "cachedInputTokens": 779008,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 11363,
+          "reasoningOutputTokens": 902
+        },
+        "reported_delta": {
+          "totalTokens": 154287,
+          "inputTokens": 153452,
+          "cachedInputTokens": 149248,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 835,
+          "reasoningOutputTokens": 91
+        }
+      }
+    ],
+    "money": null,
+    "capacity": null,
+    "post_termination_snapshot": {
+      "scope": "Retained after interruption, not available retroactively to hook-time decisions. Partial session; no final completed sorting turn.",
+      "unique_response_reports": 24,
+      "cumulative": {
+        "input_tokens": 889177,
+        "cached_input_tokens": 831488,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12426,
+        "reasoning_output_tokens": 1064,
+        "total_tokens": 901603
+      },
+      "per_request": [
+        {
+          "request_index": 0,
+          "completed": true,
+          "turn_usage": {
+            "input_tokens": 297387,
+            "cached_input_tokens": 261120,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5417,
+            "reasoning_output_tokens": 402,
+            "total_tokens": 302804
+          }
+        },
+        {
+          "request_index": 1,
+          "completed": true,
+          "turn_usage": {
+            "input_tokens": 384798,
+            "cached_input_tokens": 368640,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5111,
+            "reasoning_output_tokens": 409,
+            "total_tokens": 389909
+          }
+        },
+        {
+          "request_index": 2,
+          "completed": false,
+          "turn_usage": {
+            "input_tokens": 206992,
+            "cached_input_tokens": 201728,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1898,
+            "reasoning_output_tokens": 253,
+            "total_tokens": 208890
+          }
+        }
+      ],
+      "additional_reported_tokens_after_last_delivered_update": 54603
+    }
+  }
+}

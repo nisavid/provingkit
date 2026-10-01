@@ -1,0 +1,16 @@
+{
+  "source_commit": "36df3997e04fb803aa314cf965fcbdb1a60257e8",
+  "operator_execution_choice": "Accept and run the two episodes (Recommended)",
+  "accepted_episodes": 2,
+  "launched_episodes": 2,
+  "retries": 0,
+  "jev_assessments": 0,
+  "steering_emissions": 0,
+  "live_hook_changes": 0,
+  "upstream_submissions": 0,
+  "method_revision": "a999943377c1c3d0f83fa96163730eaf4756a878",
+  "procedure": "handling-sys1-incidents",
+  "method_change": "None; bounded experiment findings remain research evidence.",
+  "source_preserved": true,
+  "limits": "Research instrumentation and native context evidence only. No task-level utility, safety, economic, containment, or full-workflow qualification claim."
+}

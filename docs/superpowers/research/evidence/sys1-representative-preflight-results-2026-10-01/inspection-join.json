@@ -1,0 +1,43 @@
+{
+  "context": {
+    "binding_sha256": "49cb8b563fbd2b7e295bbe5a78b5db3f402bd20cfeb1643927b19e8fab8b00b8",
+    "plan_sha256": "aff87460fa56a0c7f1dfc0b6673264a1dfbee86e04a2a0fdff50a9d6b0659b86",
+    "request_sha256": "dcee76db7d517aeb1b43d977fc9ad6721e000f787bf145dd0e4b54e652877c07",
+    "result_sha256": "06147e5e2bfd853c1738afce4982dda3e2379273a2c66a7e2168ffdbc3b60a22",
+    "public_projection_sha256": "4b563f32703bcd42d904c9d9bb6819355fe1f4d4192e1028df235a5a3d0ba6ed",
+    "verified_input_files": 159,
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "effective_model_attested": false,
+    "projection": "Host path prefix normalized where present; original return retained privately."
+  },
+  "accounting": {
+    "binding_sha256": "ebf51dfde189360d931cecba7eb95be83436ab79fb607556c1898b89137db464",
+    "plan_sha256": "55dfba56eb43032e188ea49d64d23374d19ae2e3677c88f58ed9c5637ce6c54d",
+    "request_sha256": "298b85956e2707397eb78ab29c89592c3eaa6f8ceb90c479a57ed0d074e585a0",
+    "result_sha256": "9c3c9902ad33aa3895ea7f126505b8c81b5885f613e9024f1f367bdf3d37e235",
+    "public_projection_sha256": "3a2086825a8de557945677cb0000f354e221408ed8175d7e9f911efdf64755f1",
+    "verified_input_files": 159,
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "effective_model_attested": false,
+    "projection": "Host path prefix normalized where present; original return retained privately."
+  },
+  "adjudication": {
+    "accepted": "Codex cadence inputs and completed artifact checks, plus partial costs and preparation failures.",
+    "new_limits": [
+      "Hook-time transcript can lag current tool output.",
+      "Native heredoc still fails despite project-local scratch configuration.",
+      "Post-termination transcript reports more usage than last delivered update."
+    ],
+    "unqualified": [
+      "Claude representative capture",
+      "completed sorting",
+      "supervision benefit",
+      "containment",
+      "whole-workflow economic ranking"
+    ],
+    "record_assurance": "Same-controller observation; not portable attestation.",
+    "publication_review": "Separate final projection review required."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "files": {
+    "docs/superpowers/research/2026-10-01-jev-axi-representative-preflight.md": "20c0dc68be441d830a2acd69cee28d113098167668fd8b40b23e704392d5300d",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/accounting-final-review.md": "6523a44e2d2f8ee2dbfd307378a81eb0340822397d8eba675fd0e7e6dd1792f8",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/accounting-inspection.md": "3a2086825a8de557945677cb0000f354e221408ed8175d7e9f911efdf64755f1",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/artifact-checks.json": "9919f3f921e0e81a0b877055d60b3f47c3ca454888228d936c419577fd5ac303",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/attempts.json": "42db7a7dcd1225a21f80cc7e3c34ca22dc7c63c9ce3d3fde1b1167fd4a8b539a",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/context-final-review.md": "08b02dfd689b4a169ff0d41ea015019f106816e8bbb597f0bae6a78c90b369b4",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/context-inspection.md": "4b563f32703bcd42d904c9d9bb6819355fe1f4d4192e1028df235a5a3d0ba6ed",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/final-review-join.json": "2e84ebca47f666d520940c9ff47a01ef358fe15cc58d087da509b29537a05c28",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/hook-summary.json": "c4c6664dc224a0c4bb0262da98d57a1791e887e6df0e62935d71d74b9c355a55",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/inspection-join.json": "a4889f740cd92e3b042d5843617e2c5131a38b8df931a6f8ac260c8fccc0aaf7",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/reported-usage.json": "4388c973931387d54b952dcb4a409a7a80e1b73ea4beac01597e457b5f1139f5",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/retained-record-identities.json": "c14d97ad45ff16b0b526b662b85bffd98b235cf8ca275607ef1d9802165fcb81",
+    "docs/superpowers/research/evidence/sys1-representative-preflight-results-2026-10-01/scope.json": "13ad62b41c98bf5ede5b8513fe85720c77f542a1789a28fa658f55e57257bd62"
+  },
+  "claim": "Publication identities of the reviewed report, result projections, and review records."
+}

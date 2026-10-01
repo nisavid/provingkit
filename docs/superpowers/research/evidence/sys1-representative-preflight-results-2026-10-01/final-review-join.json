@@ -1,0 +1,25 @@
+{
+  "context": {
+    "binding_sha256": "f04c17552916b34269da903a761897708c9a2bd06fff97b7546c789356ab3d26",
+    "original_result_sha256": "cdcf1d46f5c07f157572f7e036b87855fd6e588e94ccec9917ebf68751aa1aba",
+    "public_result_sha256": "08b02dfd689b4a169ff0d41ea015019f106816e8bbb597f0bae6a78c90b369b4",
+    "reviewed_input_files": 170,
+    "report_sha256": "20c0dc68be441d830a2acd69cee28d113098167668fd8b40b23e704392d5300d",
+    "clean": true,
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "effective_model_attested": false
+  },
+  "accounting": {
+    "binding_sha256": "c0877cc9ea36c22601844229ed3b1d9fbae8387d356628094218f3f505c17313",
+    "original_result_sha256": "5f378aeb594a67dfc3a98912d626c30b87e0e47fe98f980e85a8115457243201",
+    "public_result_sha256": "6523a44e2d2f8ee2dbfd307378a81eb0340822397d8eba675fd0e7e6dd1792f8",
+    "reviewed_input_files": 170,
+    "report_sha256": "20c0dc68be441d830a2acd69cee28d113098167668fd8b40b23e704392d5300d",
+    "clean": true,
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "high",
+    "effective_model_attested": false
+  },
+  "scope": "Final public report and frozen result projections; same-controller observations, not portable evidence or native utility qualification."
+}

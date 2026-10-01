@@ -1,0 +1,50 @@
+{
+  "codex/artifacts-000.json": {
+    "original_sha256": "0a6ab8637b729dbd9b94eb6d7b491089ff8a0a0e00aee8de26af18b13f2a1912",
+    "snapshot": {
+      "artifact_errors": {},
+      "invalid_bytes_base64": {},
+      "reports": {
+        "report.csv": "category,total_units\r\ntools,27\r\nbooks,10\r\nart,10\r\n"
+      },
+      "schema": "sys1-report-artifacts/v1",
+      "scope": "Known report files and source data only; CLI behavior, tests, docs, and unrelated-file preservation need separate inspection.",
+      "source_sha256": {
+        "returns.csv": "ecce250e93f1381e479a44f2b4d6c94422326de465d7fd59af7e500d35a56d42",
+        "source.csv": "617cf3e317280150961691934a839c70a7dd6bd801cb95d006aa53b529af16c4"
+      }
+    },
+    "read_only_grader": {
+      "phase": 0,
+      "known_format_and_obsolete_report": true,
+      "literal_result": true,
+      "source_data_unchanged": true,
+      "artifact_errors": {},
+      "passed": true
+    }
+  },
+  "codex/artifacts-001.json": {
+    "original_sha256": "5203cc4a0330f8bfdae2807d5ab3d7c52326ab20fad96a109117dd31b0deeb69",
+    "snapshot": {
+      "artifact_errors": {},
+      "invalid_bytes_base64": {},
+      "reports": {
+        "report.json": "[\n  {\n    \"category\": \"tools\",\n    \"total_units\": 27\n  },\n  {\n    \"category\": \"books\",\n    \"total_units\": 10\n  },\n  {\n    \"category\": \"art\",\n    \"total_units\": 10\n  }\n]\n"
+      },
+      "schema": "sys1-report-artifacts/v1",
+      "scope": "Known report files and source data only; CLI behavior, tests, docs, and unrelated-file preservation need separate inspection.",
+      "source_sha256": {
+        "returns.csv": "ecce250e93f1381e479a44f2b4d6c94422326de465d7fd59af7e500d35a56d42",
+        "source.csv": "617cf3e317280150961691934a839c70a7dd6bd801cb95d006aa53b529af16c4"
+      }
+    },
+    "read_only_grader": {
+      "phase": 1,
+      "known_format_and_obsolete_report": true,
+      "literal_result": true,
+      "source_data_unchanged": true,
+      "artifact_errors": {},
+      "passed": true
+    }
+  }
+}
