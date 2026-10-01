@@ -2,6 +2,8 @@
 
 This reference selects a model-routing disposition for actual cybersecurity work, obviously cybersecurity-related work with another primary domain, and cybersecurity-adjacent work. It does not decide whether to delegate, create tasks, mutate trackers, or perform actions. The owning delegating workflow retains action authority and topology.
 
+Apply [effort eligibility](effort-policy.md) to the selected pair and every fallback, including inherited or default effort. An incapable effort route does not waive consent, refusal, authority, or target gates.
+
 First apply [scope classification and block diagnosis](classifying-security-work.md) to the complete bounded operation. A suitable, available, and authorized Jev route for that entire narrow System One judgment is first. Otherwise prefer a genuinely runnable Daybreak Blue route for all three security classes. This reference overrides the general model matrix for those classes. A safety refusal is not a capability failure that authorizes fallback.
 
 Route the bounded security operation to Daybreak Blue whenever a permitted route is genuinely runnable. Resolve its exact live model slug through the target capability gates; the name alone is not a selector proof. Daybreak executes the work, rather than merely selecting another worker. These rules do not govern unrelated work.
