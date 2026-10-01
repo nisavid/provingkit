@@ -5,8 +5,10 @@ Rolecasting, Tricritical, Versionkeeping, Mergecraft, Proseweaving, and Praxis
 skills. It selects one existing raw scenario per skill and declares only the
 companion skills allowed in that skill's composed condition. The Praxis
 scenario comes from `praxis/corpus.json`, a focused raw scenario definition in
-the runner's simple-corpus shape; `praxis/aeon-bell.json` is the separate
-Praxis application-evidence corpus and is not consumed by this definition. The
+the runner's simple-corpus shape; `praxis/experiment.json` is the separate
+Praxis trial history, classified as retained evidence and not consumed by
+this definition. `praxis/skills/aeon-bell/trigger-evals.json` separately declares
+the current Boolean discovery inputs without observed results. The
 matrix is Phase 1 four-condition behavior evidence, not proof that every
 publication, deployment, hook, or runtime control-plane action is integrated
 correctly. Those claims need their own end-to-end evidence. Adding a skill to

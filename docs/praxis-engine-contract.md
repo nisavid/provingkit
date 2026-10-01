@@ -75,7 +75,10 @@ assertions) are enumerated in the engine reference.
 - `tests/test_aeon_bell.py`, `tests/test_aeon_bell_codex_status.py`, and
   `tests/test_aeon_bell_binding.py` cover the engine, adapter, and binding
   through their public interfaces against constructed fixtures.
-- `evals/praxis/aeon-bell.json` is the public behavior-evaluation corpus.
+- `evals/praxis/experiment.json` preserves the trial history as retained
+  evidence, including adverse observations.
+- `evals/praxis/skills/aeon-bell/trigger-evals.json` declares current Boolean
+  discovery inputs without observed results.
 - `evals/praxis/corpus.json` is the raw control-plane scenario definition, not
   executed model evidence.
 

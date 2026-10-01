@@ -2,13 +2,17 @@
   "algorithm": "sha256",
   "contract": "praxis-content-lock-v1",
   "files": {
-    "evals/praxis/aeon-bell.json": {
-      "mode": 420,
-      "sha256": "bb51c80f66e7e86c21827ae18aa7f56d120cc05de202ecc7b2ad96e48f4fe7a2"
-    },
     "evals/praxis/corpus.json": {
       "mode": 420,
       "sha256": "295b9ff98699b0e2ff1e2e23605c164a5fffead23ff7e2b0b66ccd1778e89189"
+    },
+    "evals/praxis/experiment.json": {
+      "mode": 420,
+      "sha256": "bb51c80f66e7e86c21827ae18aa7f56d120cc05de202ecc7b2ad96e48f4fe7a2"
+    },
+    "evals/praxis/skills/aeon-bell/trigger-evals.json": {
+      "mode": 420,
+      "sha256": "82e01cd9ca4eda6f78b1843c0e8a8c9e022be1ef84cd1550825a02182bde7b8f"
     },
     "plugins/praxis/.claude-plugin/plugin.json": {
       "mode": 420,
@@ -16,7 +20,7 @@
     },
     "plugins/praxis/CHANGELOG.md": {
       "mode": 420,
-      "sha256": "0d0af92b97d7021903ca090151f586656bb9ff1b129dbb82bbe11f28119bd377"
+      "sha256": "685e560cce13dccb34b6c32fa0bb839c2f8e4ee7269b04279d7babd708d70959"
     },
     "plugins/praxis/LICENSE": {
       "mode": 420,
@@ -24,7 +28,7 @@
     },
     "plugins/praxis/README.md": {
       "mode": 420,
-      "sha256": "6231f12d7db8441581c73b10383caea27bff3f31901ca58956eb8f35fb39bfae"
+      "sha256": "ac75861615f3aad4c4dc2006a0b78f3cd5c05876e8793d720c20fe1fca982302"
     },
     "plugins/praxis/plugin.json": {
       "mode": 420,

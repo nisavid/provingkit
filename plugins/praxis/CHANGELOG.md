@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Separate current discovery inputs from the unchanged Aeon Bell trial history
+  and bind both in the source inventory and content lock.
+
 - Establish Praxis as the plugin for work stewardship, with independent
   workflows and optional integrations.
 - Define Aeon Bell as the first equipment for shared gate observation, task

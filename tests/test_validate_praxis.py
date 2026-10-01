@@ -20,9 +20,12 @@ BINDING_RELATIVE = SKILL_RELATIVE / "scripts" / "monitor_binding.js"
 PUBLIC_TEST_RELATIVE = Path("tests/test_aeon_bell.py")
 ADAPTER_TEST_RELATIVE = Path("tests/test_aeon_bell_codex_status.py")
 BINDING_TEST_RELATIVE = Path("tests/test_aeon_bell_binding.py")
-EVAL_CORPUS_RELATIVE = Path("evals/praxis/aeon-bell.json")
+EVAL_CORPUS_RELATIVE = Path("evals/praxis/experiment.json")
 SCENARIO_CORPUS_RELATIVE = Path("evals/praxis/corpus.json")
-EVAL_CORPORA_RELATIVE = (EVAL_CORPUS_RELATIVE, SCENARIO_CORPUS_RELATIVE)
+TRIGGER_CORPUS_RELATIVE = Path("evals/praxis/skills/aeon-bell/trigger-evals.json")
+EVAL_CORPORA_RELATIVE = (
+    EVAL_CORPUS_RELATIVE, SCENARIO_CORPUS_RELATIVE, TRIGGER_CORPUS_RELATIVE,
+)
 
 # PyYAML is a test dependency, as for the sibling validator suites: a missing
 # module fails this module loudly instead of skipping every contract check.
@@ -161,6 +164,16 @@ class ValidatePraxisTests(unittest.TestCase):
         (self.repo / SCENARIO_CORPUS_RELATIVE).write_text(
             json.dumps(SYNTHETIC_SCENARIO_CORPUS, indent=2) + "\n", encoding="utf-8"
         )
+        trigger = self.repo / TRIGGER_CORPUS_RELATIVE
+        trigger.parent.mkdir(parents=True)
+        trigger.write_text(
+            json.dumps([{
+                "id": "synthetic-trigger",
+                "query": "Synthetic shared wait",
+                "should_trigger": True,
+            }]) + "\n",
+            encoding="utf-8",
+        )
         for path in self.repo.rglob("*"):
             if path.is_file():
                 path.chmod(0o755 if path == runtime else 0o644)
@@ -201,8 +214,8 @@ class ValidatePraxisTests(unittest.TestCase):
 
     def test_checked_in_candidate_passes_validation_against_its_content_lock(self) -> None:
         # The checked-in tree is a complete locked candidate: the Aeon Bell
-        # skill, both runtime scripts, both public test modules, both eval
-        # corpora, and the generated lock are all present.  The validator must
+        # skill, runtime resources, public test modules, evaluation inputs,
+        # and generated lock are all present.  The validator must
         # pass outright.  A fail-closed message here means a locked input
         # drifted or the lock is stale; the release owner regenerates the lock
         # through --write-content-lock, and this test never tolerates it.
@@ -213,13 +226,13 @@ class ValidatePraxisTests(unittest.TestCase):
         self.assertEqual(result.stdout, "Praxis contract validation passed\n")
         self.assertTrue((REPO_ROOT / LOCK_RELATIVE).is_file())
 
-    def test_checked_in_eval_corpus_inventory_is_the_closed_two_file_set(self) -> None:
-        # The validator's closed corpus inventory names exactly the checked-in
-        # files under evals/praxis: the application-evidence corpus and the raw
-        # control-plane scenario definition.  Neither is executed here.
+    def test_checked_in_eval_inputs_are_the_closed_corpus_inventory(self) -> None:
+        # The closed source inventory contains the trial history, raw
+        # application scenario, and current discovery inputs.
         observed = sorted(
             path.relative_to(REPO_ROOT).as_posix()
-            for path in (REPO_ROOT / "evals" / "praxis").iterdir()
+            for path in (REPO_ROOT / "evals" / "praxis").rglob("*")
+            if path.is_file()
         )
         self.assertEqual(
             observed, sorted(relative.as_posix() for relative in EVAL_CORPORA_RELATIVE)
@@ -229,6 +242,50 @@ class ValidatePraxisTests(unittest.TestCase):
         self.assertNotIn("Traceback", result.stderr)
         self.assertNotIn("eval corpus inventory drift", result.stderr)
         self.assertNotIn("eval corpus is missing", result.stderr)
+
+    def test_reader_separates_discovery_inputs_from_retained_trials(self) -> None:
+        from scripts import behavior_eval_corpora
+        import hashlib
+
+        history_path = "evals/praxis/experiment.json"
+        history = (REPO_ROOT / history_path).read_bytes()
+        self.assertEqual(
+            hashlib.sha256(history).hexdigest(),
+            "bb51c80f66e7e86c21827ae18aa7f56d120cc05de202ecc7b2ad96e48f4fe7a2",
+        )
+        retained = behavior_eval_corpora.inspect_document(
+            history_path, history, plugin="praxis"
+        )
+        self.assertEqual(retained["role"], "retained-evidence")
+        self.assertFalse(any(
+            record["role"] in ("application", "trigger")
+            for record in retained["records"]
+        ))
+
+        trigger_path = "evals/praxis/skills/aeon-bell/trigger-evals.json"
+        triggers = (REPO_ROOT / trigger_path).read_bytes()
+        parsed = behavior_eval_corpora.inspect_document(
+            trigger_path, triggers, plugin="praxis", skill="aeon-bell"
+        )
+        self.assertEqual(parsed["diagnostics"], [])
+        self.assertEqual(
+            [(record["id"], record["expected"]) for record in parsed["records"]],
+            [
+                ("shared-quota-waits", True),
+                ("registry-maintenance", True),
+                ("monitor-recovery", True),
+                ("one-off-reminder", False),
+                ("pr-review", False),
+                ("choose-worker", False),
+            ],
+        )
+        declarations = json.loads(history)["discovery"]
+        self.assertEqual(
+            [record["query"] for record in parsed["records"]],
+            [case["prompt"] for case in declarations],
+        )
+        for case in json.loads(triggers):
+            self.assertEqual(set(case), {"id", "query", "should_trigger"})
 
     def test_validation_requires_the_generated_content_lock(self) -> None:
         self.assert_rejected("content lock is missing")
@@ -348,6 +405,7 @@ class ValidatePraxisTests(unittest.TestCase):
             (BINDING_TEST_RELATIVE, "public test is missing"),
             (EVAL_CORPUS_RELATIVE, "eval corpus is missing"),
             (SCENARIO_CORPUS_RELATIVE, "eval corpus is missing"),
+            (TRIGGER_CORPUS_RELATIVE, "eval corpus is missing"),
         ):
             with self.subTest(relative=relative.as_posix()):
                 path = self.repo / relative
@@ -363,7 +421,7 @@ class ValidatePraxisTests(unittest.TestCase):
 
     def test_rejects_eval_corpus_that_is_not_a_nonempty_object(self) -> None:
         self.write_lock()
-        for relative in EVAL_CORPORA_RELATIVE:
+        for relative in (EVAL_CORPUS_RELATIVE, SCENARIO_CORPUS_RELATIVE):
             path = self.repo / relative
             original = path.read_bytes()
             for content in ("[]\n", "{}\n", "not json\n"):
@@ -372,6 +430,23 @@ class ValidatePraxisTests(unittest.TestCase):
                     self.assert_rejected("eval corpus")
             path.write_bytes(original)
         self.assertEqual(self.validate().returncode, 0)
+
+    def test_trigger_array_is_locked_without_observed_results(self) -> None:
+        self.write_lock()
+        trigger = self.repo / TRIGGER_CORPUS_RELATIVE
+        original = trigger.read_bytes()
+        self.assertIn(TRIGGER_CORPUS_RELATIVE.as_posix(), self.lock()["files"])
+        for malformed in ("{}\n", "[]\n", "null\n", "not json\n"):
+            with self.subTest(content=malformed):
+                trigger.write_text(malformed, encoding="utf-8")
+                self.assert_rejected("eval corpus")
+        trigger.write_bytes(original)
+        self.assertEqual(self.validate().returncode, 0)
+
+    def test_rejects_unlisted_nested_eval_input(self) -> None:
+        self.write_lock()
+        (self.repo / TRIGGER_CORPUS_RELATIVE).with_name("unlisted.json").write_text("[]\n")
+        self.assert_rejected("eval corpus inventory drift")
 
     def test_scenario_definition_is_locked_as_source_without_evidence_fields(self) -> None:
         # A raw scenario definition carries no observed model result.  The lock

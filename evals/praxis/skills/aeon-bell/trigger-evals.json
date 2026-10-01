@@ -1,0 +1,32 @@
+[
+  {
+    "id": "shared-quota-waits",
+    "query": "Several existing tasks are waiting for the same quota reset. I want one persistent monitor to check the shared condition and continue only tasks still waiting for it.",
+    "should_trigger": true
+  },
+  {
+    "id": "registry-maintenance",
+    "query": "Pause one registered continuation, inspect unresolved wake attempts, and rearm another task for a new waiting episode.",
+    "should_trigger": true
+  },
+  {
+    "id": "monitor-recovery",
+    "query": "The shared monitor stopped after reserving a wake. Recover its state without blindly sending the continuation again.",
+    "should_trigger": true
+  },
+  {
+    "id": "one-off-reminder",
+    "query": "Remind me in twenty minutes to take the bread out of the oven.",
+    "should_trigger": false
+  },
+  {
+    "id": "pr-review",
+    "query": "Review the diff in this pull request and report actionable defects.",
+    "should_trigger": false
+  },
+  {
+    "id": "choose-worker",
+    "query": "Select an appropriate model and effort for this bounded code review.",
+    "should_trigger": false
+  }
+]

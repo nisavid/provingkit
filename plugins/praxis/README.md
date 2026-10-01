@@ -122,7 +122,7 @@ This source snapshot establishes the installable procedure, the engine with
 its adaptive schedule and directed tick, and the status adapter with
 constructed tests. It also establishes the source-stage structured binding
 and synthetic conformance traces, plus the controlled agent trials recorded in
-`evals/praxis/aeon-bell.json`. The tick tests drive the public commands with
+`evals/praxis/experiment.json`. The tick tests drive the public commands with
 synthetic native results and the fake Codex executable only. Neither the
 source nor those trials establish a live operating monitor, qualification of
 the adapter against an installed Codex, the native heartbeat controls the
@@ -190,8 +190,8 @@ python scripts/validate_praxis.py .
   fake `codex` executable on a controlled `PATH` and synthetic auth metadata.
   The binding tests use a pinned Node runner with recording adapters; installed
   operation remains V8-only. None makes live calls.
-- `evals/praxis/aeon-bell.json` records controlled agent discovery and
-  application trials for `aeon-bell`. Discovery ran against a controlled
+- `evals/praxis/experiment.json` preserves the controlled discovery and
+  application trial history for `aeon-bell` as retained evidence. Discovery ran against a controlled
   catalog, not installed automatic discovery. Each retained record binds
   digests of the exact source it ran against and of its raw report, and
   failed or superseded trials stay in the corpus rather than being dropped.
@@ -200,13 +200,25 @@ python scripts/validate_praxis.py .
 - `evals/praxis/corpus.json` is the raw control-plane scenario definition
   consumed by `evals/control-plane-matrix.json`. It declares one scenario and
   its expectations; it carries no executed run, grade, or gate result.
+- `evals/praxis/skills/aeon-bell/trigger-evals.json` declares the six Boolean
+  discovery inputs. It preserves the historical queries and expected choices,
+  and carries no observed invocation or passing grade. Its skill-specific path
+  supplies ownership to the ordinary behavior-evaluation inventory.
 - `release/plugin-content-locks/praxis.json` is the governed content identity.
-  It pins the plugin bytes, all three public test modules, and both eval corpora.
+  It pins the plugin bytes, all three public test modules, the retained trial
+  history, and the application and discovery inputs.
   `python scripts/validate_praxis.py --write-content-lock .` is the only
   supported writer; run it after an authored change, then run the ordinary
   validator.
 
 The content lock verifies source identity only. Passing validation does not
-run the behavioral tests, execute or grade either corpus, prove the runtime
+run the behavioral tests, execute or grade the evaluation inputs, prove the runtime
 behaves correctly, or grant release, installation, or host-mutation authority;
 inclusion in a Provingkit release needs its own evidence.
+
+For a current ordinary behavior Receipt, load the maintained
+[behavior-evaluation procedure](https://github.com/nisavid/provingkit/blob/main/docs/behavior-eval-receipts.md)
+from its reviewed revision. The retained trial summaries supply no current
+application repetitions or discovery observations. The raw application
+scenario still needs a reviewed rubric and complete current coverage before
+fresh evaluation; the member Receipt CLI joins the source Kit integration.

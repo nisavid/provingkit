@@ -4,9 +4,9 @@
 The lock at ``release/plugin-content-locks/praxis.json`` pins the canonical
 plugin bytes (including the Aeon Bell runtime resources), the three public Aeon
 Bell test modules, and the closed public eval corpus inventory under
-``evals/praxis`` at a candidate revision: the Aeon Bell application-evidence
-corpus and the raw control-plane scenario definition.  It verifies source
-identity only: it does not run those tests, does not execute or grade any
+``evals/praxis`` at a candidate revision: retained Aeon Bell trials, the raw
+control-plane scenario definition, and current discovery inputs. It verifies
+source identity only: it does not run those tests, does not execute or grade any
 scenario (a scenario definition is not executed model evidence), does not
 assert that the Aeon Bell engine or Codex status adapter behaves correctly,
 and source membership grants no release, installation, or host-mutation
@@ -64,14 +64,15 @@ PUBLIC_TESTS = (
     "tests/test_aeon_bell_binding.py",
 )
 EVAL_CORPUS_ROOT = "evals/praxis"
-# Closed inventory of the public eval corpus directory.  ``aeon-bell.json`` is
-# the application-evidence corpus; ``corpus.json`` is the raw control-plane
-# scenario definition consumed by ``evals/control-plane-matrix.json``.  Both
-# are locked as source bytes; neither is executed model evidence.
+# Closed source inventory: retained trials, the control-plane application
+# definition, and the current Boolean discovery inputs. These bytes supply no
+# newly executed observations or grades.
 EVAL_CORPORA = (
-    "evals/praxis/aeon-bell.json",
+    "evals/praxis/experiment.json",
     "evals/praxis/corpus.json",
+    "evals/praxis/skills/aeon-bell/trigger-evals.json",
 )
+TRIGGER_CORPUS = "evals/praxis/skills/aeon-bell/trigger-evals.json"
 CONTENT_LOCK_RELATIVE = Path("release/plugin-content-locks/praxis.json")
 CONTENT_LOCK_CONTRACT = "praxis-content-lock-v1"
 CONTENT_LOCK_SCHEMA_VERSION = 1
@@ -210,7 +211,9 @@ def read_text(root: Path, relative: str | Path, *, field: str = "file") -> str:
         raise ContractError(f"{field} is not UTF-8 text: {relative}") from error
 
 
-def load_json(root: Path, relative: str | Path, field: str) -> dict:
+def load_json(
+    root: Path, relative: str | Path, field: str, *, array: bool = False
+) -> dict | list:
     def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict:
         value: dict = {}
         for key, item in pairs:
@@ -229,7 +232,8 @@ def load_json(root: Path, relative: str | Path, field: str) -> dict:
         )
     except json.JSONDecodeError as error:
         raise ContractError(f"{field} is not valid JSON") from error
-    require(isinstance(value, dict), f"{field} must be an object")
+    kind, label = (list, "array") if array else (dict, "object")
+    require(isinstance(value, kind), f"{field} must be an {label}")
     return value
 
 
@@ -636,20 +640,27 @@ def validate_public_evidence(repository: Path) -> None:
         validate_python_source(repository, relative, "public test", credentials=False)
     corpus_root = contained_path(repository, EVAL_CORPUS_ROOT, "eval corpus root")
     for relative in EVAL_CORPORA:
-        corpus = load_json(repository, relative, "eval corpus")
-        require(bool(corpus), f"eval corpus must be a nonempty object: {relative}")
+        corpus = load_json(
+            repository, relative, "eval corpus", array=relative == TRIGGER_CORPUS
+        )
+        require(bool(corpus), f"eval corpus must be nonempty: {relative}")
         portable_document(corpus, relative)
     require(
         corpus_root.is_dir() and not corpus_root.is_symlink(),
         f"eval corpus is missing: {EVAL_CORPUS_ROOT}",
     )
+    expected = set(EVAL_CORPORA)
+    for relative in EVAL_CORPORA:
+        parent = Path(relative).parent
+        while parent != Path(EVAL_CORPUS_ROOT):
+            expected.add(parent.as_posix())
+            parent = parent.parent
     observed = sorted(
-        (Path(EVAL_CORPUS_ROOT) / path.name).as_posix()
-        for path in corpus_root.iterdir()
+        path.relative_to(repository).as_posix() for path in corpus_root.rglob("*")
     )
     require(
-        observed == sorted(EVAL_CORPORA),
-        f"eval corpus inventory drift: expected {sorted(EVAL_CORPORA)}, observed {observed}",
+        observed == sorted(expected),
+        f"eval corpus inventory drift: expected {sorted(expected)}, observed {observed}",
     )
 
 
