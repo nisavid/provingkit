@@ -28,7 +28,7 @@
     },
     "plugins/praxis/DEVELOPING.md": {
       "mode": 420,
-      "sha256": "75f333acfeb581dc8c8bef749d3a1a1008bb69adfe4fb336e63600a23c4cff4b"
+      "sha256": "b13820ab0aaaee0406e582b9b3dcb23e21930e5ae849e329c9bae2789099b58b"
     },
     "plugins/praxis/LICENSE": {
       "mode": 420,
@@ -64,11 +64,15 @@
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/gh_stub.py": {
       "mode": 420,
-      "sha256": "50ec017d2ff224fa17e3f3ef1b5edf27ff98885af5a1f082ec9c44135344ed50"
+      "sha256": "58b546cdabebaf9dc8372d2b52793de21d376c577705f1c8b96c6e23c1da6b11"
     },
     "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "ec110f9794634a6e757e6cecf23044021d20b597203461f11dc1bfeed9869af1"
+      "sha256": "d28b31e5cdec0a303347b155d56ca0c32f33442e074b72f559135f99bf1a1220"
+    },
+    "plugins/praxis/skills/constructing-agent-policies/scripts/stub_clock.py": {
+      "mode": 420,
+      "sha256": "3ec9aea2b2562077cf6f6beae35f61f78f01e26018ec3fae1f15802fa133d1fb"
     },
     "plugins/praxis/topology.json": {
       "mode": 420,
@@ -76,11 +80,11 @@
     },
     "tests/test_policy_eval_runner.py": {
       "mode": 420,
-      "sha256": "f9a97faa2a8a23debb8c36ad651f13b466ddb8e7eb9659a823a9752cb6287378"
+      "sha256": "81d131d6146dce4a002e05999d32da4c5c545927cd010e847263722a2be5eca1"
     },
     "tests/test_validate_praxis.py": {
       "mode": 420,
-      "sha256": "5c4dddf64c84ca2f5a42fbf3fb06513c54b5f7866e69e6a4290421d421a2cbca"
+      "sha256": "b70b02278e9ad4abd125ad99f74d8998708c0a49a1ab7def1863b08c81047400"
     }
   },
   "plugin_root": "plugins/praxis",

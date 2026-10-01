@@ -29,6 +29,7 @@ RESOURCES = (
     f"{SKILL}/references/evaluation.md",
     f"{SKILL}/scripts/policy_eval_runner.py",
     f"{SKILL}/scripts/gh_stub.py",
+    f"{SKILL}/scripts/stub_clock.py",
     f"{SKILL}/agents/openai.yaml",
 )
 

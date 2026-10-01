@@ -118,6 +118,7 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
         runtime = (
             "plugins/praxis/skills/constructing-agent-policies/scripts/policy_eval_runner.py",
             "plugins/praxis/skills/constructing-agent-policies/scripts/gh_stub.py",
+            "plugins/praxis/skills/constructing-agent-policies/scripts/stub_clock.py",
         )
         adapter = "plugins/praxis/skills/constructing-agent-policies/agents/openai.yaml"
         for target in ("agent-plugins", "claude", "cursor"):

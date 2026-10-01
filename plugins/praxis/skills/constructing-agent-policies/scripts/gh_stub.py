@@ -65,7 +65,10 @@ its GNU operands (one or more ``N[smhd]``, ``N`` a decimal number, summed) move
 the clock forward under the stub's lock, apply every delayed response that came
 due, and return after a real pause of at most 0.2 seconds; ``infinity`` fails
 with exit 1, and any other argument, or no reachable stub state, runs the real
-``sleep``.
+``sleep``. Every Python the stub starts (the ``gh`` wrapper, these shims, the
+push hook) runs without ``site`` (``-S``, see :func:`python_command`), so the
+startup hook that puts a child's Python on the stub's clock (``stub_clock.py``)
+never reaches the stub, which reads the wall clock and adds its offset once.
 
 The repository (``gh repo view``, REST ``GET repos/<repo>``, GraphQL
 ``repository``) allows squash, merge and rebase merges and keeps merged
@@ -94,8 +97,9 @@ State patches (``on_write`` hooks, ``on_push``, and the runner's
 keeps its own clock, wall time plus every ``advance`` applied so far (seconds,
 or ``<N>`` with unit ``s``, ``m``, ``h`` or ``d``; it moves the clock forward
 before the rest of the patch renders and never rewrites an existing time) and
-every ``sleep`` the shim took, and :func:`current_time` reads it, as the
-``date`` shim does. Writes, defaulted times and ``{{now}}``
+every wait :func:`virtual_sleep` took (the ``sleep`` shim's, and a child's
+Python ``time.sleep``), and :func:`current_time` reads it, as the ``date`` shim
+does. Writes, defaulted times and ``{{now}}``
 placeholders use that clock, and once it has advanced every log record carries
 ``clock`` beside the wall-clock ``ts``. A patch's placeholders render when it
 is applied, ``{{head}}`` and ``{{base}}`` as the commits current then;
@@ -110,7 +114,8 @@ delayed response, such as a bot's review arriving some time after the request:
 a matching write does not apply it but makes it due at the write's clock time
 plus the delay (``once`` still fires at most one), and once the clock reaches
 that time, whatever next reads or changes the stub state (a ``gh`` call, a
-push, ``date``, ``sleep``, the runner's patches) applies it first. It renders,
+push, ``date``, ``sleep`` or a Python ``time.sleep``, the runner's patches)
+applies it first. It renders,
 and its defaulted times fall, at its due time. A hook without ``delay``
 applies at the write.
 """
@@ -272,13 +277,18 @@ def initialize(state_dir, github, head=None, base=None, remote=None):
     (state_dir / "gh-stub.log").write_text("")
 
 
+def python_command(*arguments):
+    """A shell command running ``arguments`` with the current interpreter and without ``site`` (``-S``), so no
+    ``sitecustomize``, the child's clock hook (``stub_clock.py``) included, ever reaches the stub."""
+    return " ".join(shlex.quote(part) for part in (sys.executable, "-S", *arguments))
+
+
 def install(bin_dir):
     """Create ``bin_dir/gh`` that runs this stub with the current interpreter."""
     bin_dir = Path(bin_dir)
     bin_dir.mkdir(parents=True, exist_ok=True)
     wrapper = bin_dir / "gh"
-    wrapper.write_text(f"#!/bin/sh\nexec {shlex.quote(sys.executable)} {shlex.quote(str(Path(__file__).resolve()))}"
-                       ' "$@"\n')
+    wrapper.write_text("#!/bin/sh\nexec " + python_command(str(Path(__file__).resolve())) + ' "$@"\n')
     wrapper.chmod(0o755)
     return wrapper
 
@@ -296,8 +306,8 @@ def install_model_shims(bin_dir, programs=MODEL_PROGRAMS):
     shims = []
     for name in programs:
         shim = bin_dir / name
-        shim.write_text("#!/bin/sh\nexec " + " ".join(shlex.quote(part) for part in (
-            sys.executable, "-c", program, str(Path(__file__).resolve().parent), name)) + ' "$@"\n')
+        shim.write_text("#!/bin/sh\nexec " + python_command("-c", program, str(Path(__file__).resolve().parent), name)
+                        + ' "$@"\n')
         shim.chmod(0o755)
         shims.append(shim)
     return shims
@@ -346,8 +356,8 @@ def install_date_shim(bin_dir):
     program = ("import sys; sys.path.insert(0, sys.argv[1]); import gh_stub; "
                "sys.exit(gh_stub.date_shim_main(sys.argv[2], sys.argv[3:]))")
     shim = bin_dir / "date"
-    shim.write_text("#!/bin/sh\nexec " + " ".join(shlex.quote(part) for part in (
-        sys.executable, "-c", program, str(Path(__file__).resolve().parent), str(bin_dir))) + ' "$@"\n')
+    shim.write_text("#!/bin/sh\nexec " + python_command("-c", program, str(Path(__file__).resolve().parent),
+                                                        str(bin_dir)) + ' "$@"\n')
     shim.chmod(0o755)
     return shim
 
@@ -409,8 +419,8 @@ def install_sleep_shim(bin_dir):
     program = ("import sys; sys.path.insert(0, sys.argv[1]); import gh_stub; "
                "sys.exit(gh_stub.sleep_shim_main(sys.argv[2], sys.argv[3:]))")
     shim = bin_dir / "sleep"
-    shim.write_text("#!/bin/sh\nexec " + " ".join(shlex.quote(part) for part in (
-        sys.executable, "-c", program, str(Path(__file__).resolve().parent), str(bin_dir))) + ' "$@"\n')
+    shim.write_text("#!/bin/sh\nexec " + python_command("-c", program, str(Path(__file__).resolve().parent),
+                                                        str(bin_dir)) + ' "$@"\n')
     shim.chmod(0o755)
     return shim
 
@@ -443,13 +453,19 @@ def advance_clock(state_dir, seconds):
         _apply_due(state)
 
 
+def virtual_sleep(state_dir, seconds):
+    """Wait ``seconds`` on the stub's clock: move it forward (see :func:`advance_clock`), then pause for at most
+    :data:`SLEEP_PAUSE` real seconds. The ``sleep`` shim and a child's Python ``time.sleep`` both wait this way."""
+    advance_clock(state_dir, seconds)
+    time.sleep(min(seconds, SLEEP_PAUSE))
+
+
 def sleep_shim_main(bin_dir, argv):
     """Entry point for the ``sleep`` shim: move the stub's clock instead of waiting, or run the real ``sleep``.
 
-    Where the stub state is reachable and :func:`sleep_seconds` parses every argument, the clock moves forward by
-    the total (see :func:`advance_clock`) and the shim returns after a real pause of at most :data:`SLEEP_PAUSE`
-    seconds, so a child's measured wait takes no real time and ``date`` reports it passed; ``infinity`` fails with
-    exit 1. Anywhere else, or with any other argument, the real ``sleep`` runs.
+    Where the stub state is reachable and :func:`sleep_seconds` parses every argument, the shim waits the total on
+    the stub's clock (see :func:`virtual_sleep`), so a child's measured wait takes no real time and ``date`` reports
+    it passed; ``infinity`` fails with exit 1. Anywhere else, or with any other argument, the real ``sleep`` runs.
     """
     state_dir = _stub_state_dir()
     seconds = None
@@ -465,8 +481,7 @@ def sleep_shim_main(bin_dir, argv):
             sys.stderr.write("sleep: no sleep command is on PATH beside the stub's\n")
             return 127
         os.execv(real, [real, *argv])
-    advance_clock(state_dir, seconds)
-    time.sleep(min(seconds, SLEEP_PAUSE))
+    virtual_sleep(state_dir, seconds)
     return 0
 
 
@@ -476,8 +491,8 @@ def install_post_receive(git_dir, state_dir):
     hook.parent.mkdir(parents=True, exist_ok=True)
     program = ("import sys; sys.path.insert(0, sys.argv[1]); import gh_stub; "
                "sys.exit(gh_stub.post_receive_main(sys.argv[2]))")
-    hook.write_text("#!/bin/sh\nexec " + " ".join(shlex.quote(part) for part in (
-        sys.executable, "-c", program, str(Path(__file__).resolve().parent), str(Path(state_dir).resolve()))) + "\n")
+    hook.write_text("#!/bin/sh\nexec " + python_command("-c", program, str(Path(__file__).resolve().parent),
+                                                        str(Path(state_dir).resolve())) + "\n")
     hook.chmod(0o755)
     return hook
 

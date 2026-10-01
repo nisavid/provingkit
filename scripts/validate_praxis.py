@@ -44,6 +44,7 @@ RUNTIME_SCRIPTS = {
     "constructing-agent-policies": (
         "skills/constructing-agent-policies/scripts/policy_eval_runner.py",
         "skills/constructing-agent-policies/scripts/gh_stub.py",
+        "skills/constructing-agent-policies/scripts/stub_clock.py",
     ),
 }
 REQUIRED_RESOURCES = (

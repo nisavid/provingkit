@@ -38,6 +38,9 @@ def load(name):
 runner = load("policy_eval_runner")
 # The private CODEX_HOME's config.toml: the apps and curated-plugin features off (each on by default).
 PRIVATE_CONFIG = "[features]\napps = false\nplugins = false\nplugin_sharing = false\n"
+# The fakes stand in for Claude Code and Codex, which are not Python and so never load a Python startup hook: they
+# run without ``site``, so the runner's clock hook reaches only the Pythons their commands start.
+FAKE_SHEBANG = f"#!{sys.executable} -S"
 
 
 def minimal_case(**overrides):
@@ -339,6 +342,16 @@ class InvocationTest(unittest.TestCase):
         self.assertEqual(names["tmpdir"], "tmp")
         self.assertNotIn("/r/tmp", json.dumps(names))
         self.assertIsNone(runner.environment_names(env, base)["tmpdir"])
+
+    def test_child_environment_puts_the_python_clock_hook_first_on_pythonpath(self):
+        stub = (Path("/r/bin"), Path("/r/stub"), Path("/r/ghcfg"))
+        env = runner.child_environment({"PATH": "/usr/bin", "PYTHONPATH": "/p/one:/p/two"}, *stub,
+                                       python_dir=Path("/r/python"))
+        self.assertEqual(env["PYTHONPATH"], "/r/python:/p/one:/p/two")
+        env = runner.child_environment({"PATH": "/usr/bin"}, *stub, python_dir=Path("/r/python"))
+        self.assertEqual(env["PYTHONPATH"], "/r/python")
+        self.assertNotIn("PYTHONPATH", runner.child_environment({"PATH": "/usr/bin"}, *stub))
+        self.assertEqual(runner.child_environment({"PYTHONPATH": "/p/one"}, *stub)["PYTHONPATH"], "/p/one")
 
 
 EMPTY_FINGERPRINT = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -1041,7 +1054,7 @@ class FakeHarness:
         self.bin = self.root / "fakebin"
         self.bin.mkdir()
         for name, body in (("claude", FAKE_CLAUDE), ("codex", FAKE_CODEX)):
-            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", FAKE_SHEBANG, 1))
             (self.bin / name).chmod(0o755)
         self.plugin = self.root / "candidate"
         (self.plugin / "skills" / "handling-threads").mkdir(parents=True)
@@ -1262,7 +1275,7 @@ class GraderHarness(FakeHarness):
     def setUp(self):
         super().setUp()
         for name, body in (("codex-grader", FAKE_CODEX_GRADER), ("claude-grader", FAKE_CLAUDE_GRADER)):
-            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", FAKE_SHEBANG, 1))
             (self.bin / name).chmod(0o755)
 
 
@@ -1386,7 +1399,7 @@ class GraderPanelTest(GraderHarness, unittest.TestCase):
     def setUp(self):
         super().setUp()
         for name, body in (("unparseable-grader", FAKE_UNPARSEABLE_GRADER), ("flaky-grader", FAKE_FLAKY_GRADER)):
-            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", FAKE_SHEBANG, 1))
             (self.bin / name).chmod(0o755)
 
     def claude_run(self):
@@ -1597,7 +1610,7 @@ class ReceiptRunTest(GraderHarness, unittest.TestCase):
     def setUp(self):
         super().setUp()
         probe = self.bin / "claude-probe"
-        probe.write_text(FAKE_CLAUDE_PROBE.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+        probe.write_text(FAKE_CLAUDE_PROBE.replace("#!/usr/bin/env python3", FAKE_SHEBANG, 1))
         probe.chmod(0o755)
         self.validate = receipt_schema_validator()
         self.triggers = self.root / "trigger-evals.json"
@@ -2968,7 +2981,7 @@ class ScriptedHarness(FakeHarness):
     def setUp(self):
         super().setUp()
         for name, body in (("claude", FAKE_CLAUDE_SCRIPTED), ("codex", FAKE_CODEX_SCRIPTED)):
-            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+            (self.bin / name).write_text(body.replace("#!/usr/bin/env python3", FAKE_SHEBANG, 1))
 
     def scripted(self, steps, **extra):
         return self.options(base_env=dict(os.environ, FAKE_SCRIPT=json.dumps(steps)), **extra)
@@ -3287,6 +3300,59 @@ class VirtualTimeTest(ScriptedHarness, unittest.TestCase):
                          ["claude", "codex", "date", "gh", "sleep"])
 
 
+class PythonClockTest(ScriptedHarness, unittest.TestCase):
+    """A Python the child starts tells time by the stub's clock, and its ``time.sleep`` moves that clock as the
+    ``sleep`` shim does, while the stub keeps the wall clock in its own records."""
+
+    # Reads the state file directly, so only the sleep itself can have applied the delayed review.
+    PROBE = """
+import datetime, json, os, sys, time
+state = os.path.join(os.environ["GH_STUB_STATE_DIR"], "state.json")
+def bot_reviews():
+    return sum(r["author"]["login"] == "coderabbitai" for r in json.load(open(state))["reviews"])
+started, before, pending = time.monotonic(), time.time(), bot_reviews()
+time.sleep(600)
+print("PROBE", json.dumps({"before": before, "after": time.time(), "took": time.monotonic() - started,
+                           "now": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                           "bot_reviews": [pending, bot_reviews()]}), file=sys.stderr)
+"""
+
+    def test_a_ten_minute_python_sleep_takes_no_real_time_and_the_delayed_review_lands_during_it(self):
+        github = dict(minimal_case()["github"], on_write=[
+            {"match": {"kind": "issue-comment", "body_contains": "@coderabbitai review"}, "delay": "90s",
+             "append": {"reviews": [{"author": {"login": "coderabbitai"}, "state": "COMMENTED", "body": "LGTM"}]}}])
+        case = self.write_case(github=github)
+        count = ("gh pr view 101 --json reviews "
+                 "--jq '[.reviews[]|select(.author.login==\"coderabbitai\")]|length' >&2")
+        # The scripted fake quotes each command's stderr, so the probes print there.
+        started = time.time()
+        run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
+                                  **self.scripted([{"text": "waited",
+                                                    "gh": [["pr", "comment", "101", "--body", "@coderabbitai review"]],
+                                                    "run": [[sys.executable, "-c", self.PROBE],
+                                                            ["sh", "-c", f"date -u +%s >&2; {count}"]]}], timeout=60))
+        finished = time.time()
+        record = json.loads((run_dir / "record.json").read_text())
+        self.assertEqual((record["status"], record["timed_out"]), ("verified-transport", False))
+        probe = json.loads(re.search(r"PROBE (\{[^{}]*\})", record["response"]).group(1))
+        date, reviews = (int(v) for v in re.search(r"\[sh exit 0: ([^\]]*)\]", record["response"]).group(1).split())
+        self.assertLess(probe["took"], 1)
+        self.assertAlmostEqual(probe["after"] - probe["before"], 600, delta=5)
+        self.assertAlmostEqual(dt.datetime.fromisoformat(probe["now"]).timestamp(), probe["after"], delta=2)
+        self.assertAlmostEqual(date, probe["after"], delta=5)
+        self.assertEqual((probe["bot_reviews"], reviews), ([0, 1], 1))
+        self.assertEqual(json.loads((run_dir / "stub" / "state.json").read_text())["_clock_offset"], 600)
+        # The stub runs without the hook: its wall-clock ``ts`` is unshifted and its ``clock`` counts the sleep once.
+        comment, view = [json.loads(line) for line in (run_dir / "gh-stub.log").read_text().splitlines()]
+        self.assertNotIn("clock", comment)
+        logged = dt.datetime.fromisoformat(view["ts"].replace("Z", "+00:00")).timestamp()
+        self.assertTrue(started - 2 <= logged <= finished + 2, (view["ts"], started, finished))
+        clock = dt.datetime.fromisoformat(view["clock"].replace("Z", "+00:00")).timestamp()
+        self.assertAlmostEqual(clock - logged, 600, delta=3)
+        self.assertTrue((run_dir / "python" / "sitecustomize.py").is_file())
+        self.assertIn("PYTHONPATH", json.loads((run_dir / "env.json").read_text())["names"])
+
+
 class SignOffProseQuestionTest(unittest.TestCase):
     def test_a_numbered_question_list_followed_by_a_sign_off_is_found(self):
         message = ("I read the fixture. Three values aren't in the seed or the files:\n\n"
@@ -3601,7 +3667,7 @@ class DenialMessageTest(unittest.TestCase):
 class ClaudeHostEvidenceTest(ScriptedHarness, unittest.TestCase):
     def test_changed_files_reach_the_transcript_and_the_denial_names_the_allowlist(self):
         case = self.write_case(permissions={"claude": {"mode": "manual", "host_allow": ["Bash(gh pr view:*)"]}})
-        (self.bin / "claude").write_text(FAKE_CLAUDE.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+        (self.bin / "claude").write_text(FAKE_CLAUDE.replace("#!/usr/bin/env python3", FAKE_SHEBANG, 1))
         run_dir = runner.run_case(case, "claude", "claude-opus-5-5", "medium", [self.plugin], 1, self.root / "runs",
                                   **self.options())
         responses = [json.loads(line) for line in (run_dir / "input.jsonl").read_text().splitlines()
@@ -4130,7 +4196,7 @@ class ClaudeMapperTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             fake, log = root / "claude", root / "log.jsonl"
-            fake.write_text(FAKE_CLAUDE_MAPPER.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1))
+            fake.write_text(FAKE_CLAUDE_MAPPER.replace("#!/usr/bin/env python3", FAKE_SHEBANG, 1))
             fake.chmod(0o755)
             env = dict(os.environ, FAKE_MAPPER_LOG=str(log))
             mapper = runner.ClaudeMapper(str(fake), env, root / "mapper", timeout=30)

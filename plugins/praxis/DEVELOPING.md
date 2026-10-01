@@ -13,7 +13,7 @@ copy. The [README](README.md) is the page for people using the plugin.
     │   └── constructing-agent-policies/
     │       ├── SKILL.md
     │       ├── references/              # policy-design.md and evaluation.md
-    │       ├── scripts/                 # policy_eval_runner.py and gh_stub.py
+    │       ├── scripts/                 # policy_eval_runner.py, gh_stub.py, stub_clock.py
     │       ├── agents/openai.yaml       # Codex skill adapter
     │       └── evals/trigger-evals.json # Trigger corpus
     ├── topology.json                    # One-skill roster and its ownership

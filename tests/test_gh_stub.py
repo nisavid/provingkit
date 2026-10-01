@@ -1,6 +1,7 @@
 """Tests for the ``gh`` stub's fidelity fixes: inline review comments, repository merge settings, required checks,
 head placeholders, workflow-run listings, collaborator-only review requests, stable identities, the clock, the
-``date`` shim that follows it, the ``sleep`` shim that moves it, and responses delayed on it."""
+``date`` shim that follows it, the ``sleep`` shim that moves it, responses delayed on it, and the Python startup
+hook (``stub_clock``) that puts a child's ``time`` and ``datetime`` on it."""
 
 from __future__ import annotations
 
@@ -9,6 +10,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -28,6 +30,7 @@ def load(name):
 
 
 gh_stub = load("gh_stub")
+stub_clock = load("stub_clock")
 
 HEAD = "3f9c2e1b7a4d5e6f8091a2b3c4d5e6f708192a3b"
 BASE = "9b1e4d27c3a8f0e5d6b7c8a9e0f1a2b3c4d5e6f7"
@@ -750,6 +753,15 @@ class DelayedResponseTest(StubCase):
         self.assertNear(dt.datetime.fromtimestamp(int(done.stdout), dt.timezone.utc),
                         self.now + dt.timedelta(seconds=120))
 
+    def test_a_delayed_review_lands_during_a_python_time_sleep(self):
+        self.ok("pr", "comment", "84", "--body", "@coderabbitai review")
+        done, _ = run_python(self.state_dir, "import time; time.sleep(120)")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        state = self.state()  # read directly, so nothing but the sleep can have applied the review
+        self.assertEqual((state["_clock_offset"], state["_pending"]), (120, []))
+        [review] = [r for r in state["reviews"] if r["author"]["login"] == "coderabbitai"]
+        self.assertNear(parse_time(review["submittedAt"]), self.now + dt.timedelta(seconds=90))
+
     def test_any_later_stub_call_or_date_applies_what_came_due_on_the_wall_clock(self):
         self.ok("pr", "comment", "84", "--body", "ping")
         time.sleep(1.2)
@@ -769,6 +781,154 @@ class DelayedResponseTest(StubCase):
             with self.assertRaises(ValueError, msg=repr(bad)):
                 gh_stub.initialize(self.state_dir / "bad", self.render(dict(github(), on_write=hooks)),
                                    head=HEAD, base=BASE)
+
+
+# ----------------------------------------------------------------------------- virtual time: Python's clock
+
+def run_python(state_dir, program, *, state=True, python_path=()):
+    """Run ``program`` in a child Python whose ``PYTHONPATH`` is the directory holding the ``sitecustomize``
+    :func:`stub_clock.install` writes in ``state_dir/python``, then ``python_path``, with the stub state reachable
+    unless ``state`` is false; return the completed process and its real duration in seconds."""
+    loader = stub_clock.install(Path(state_dir) / "python")
+    env = {k: v for k, v in os.environ.items() if k not in ("GH_STUB_STATE_DIR", "PYTHONPATH")}
+    env["PYTHONPATH"] = os.pathsep.join([str(loader.parent), *(str(p) for p in python_path)])
+    if state:
+        env["GH_STUB_STATE_DIR"] = str(state_dir)
+    started = time.monotonic()
+    done = subprocess.run([sys.executable, "-c", program], capture_output=True, text=True, env=env)
+    return done, time.monotonic() - started
+
+
+CLOCK_PROBE = """
+import calendar, datetime, json, time
+started, counter = time.monotonic(), time.perf_counter()
+before = time.time()
+time.sleep(600)
+print(json.dumps({
+    "before": before, "after": time.time(), "after_ns": time.time_ns(),
+    "now_utc": datetime.datetime.now(datetime.timezone.utc).timestamp(),
+    "now_local": datetime.datetime.now().timestamp(), "today": datetime.datetime.today().timestamp(),
+    "utcnow": datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).timestamp(),
+    "date": datetime.date.today().isoformat(),
+    "gmtime": calendar.timegm(time.gmtime()), "localtime": time.mktime(time.localtime()),
+    "ctime": time.ctime(), "strftime": time.strftime("%Y-%m-%d %H:%M"),
+    "monotonic": time.monotonic() - started, "perf_counter": time.perf_counter() - counter}))
+"""
+
+# The probe unpickles only what it pickled itself, to show the swapped classes and functions round-trip.
+DATETIME_PROBE = """
+import datetime, json, pickle, time
+zone = datetime.timezone(datetime.timedelta(hours=-4), "EDT")
+now = datetime.datetime.now(zone)
+class Mine(datetime.datetime):
+    pass
+print(json.dumps({
+    "zone": now.tzinfo is zone and now.utcoffset() == datetime.timedelta(hours=-4),
+    "instant": abs(now.timestamp() - time.time()) < 2,
+    "types": isinstance(now, datetime.datetime) and isinstance(now, datetime.date)
+             and issubclass(datetime.datetime, datetime.date),
+    "real values": isinstance(datetime.datetime.min, datetime.datetime)
+                   and isinstance(datetime.date.min, datetime.date),
+    "a date is no datetime": not isinstance(datetime.date.today(), datetime.datetime),
+    "subclasses": isinstance(Mine(2020, 1, 2), datetime.datetime)
+                  and not isinstance(datetime.datetime(2020, 1, 2), Mine),
+    "pickles": pickle.loads(pickle.dumps(now)) == now and pickle.loads(pickle.dumps(time.sleep)) is time.sleep,
+    "no instance dict": not hasattr(now, "__dict__"),
+    "repr": [repr(datetime.datetime(2020, 1, 2, 3, 4)), repr(datetime.date(2020, 1, 2)), repr(datetime.datetime)],
+    "patched": [type(time.time).__name__, datetime.datetime.__bases__[0].__name__]}))
+"""
+
+INERT_PROBE = """
+import datetime, json, time
+started = time.monotonic()
+time.sleep(0.3)
+print(json.dumps({"time": time.time(), "slept": time.monotonic() - started,
+                  "patched": [type(time.time).__name__, datetime.datetime.__bases__[0].__name__]}))
+"""
+
+
+class PythonClockTest(StubCase):
+    """A child's Python tells time by the stub's clock through the ``sitecustomize`` hook; the stub never does."""
+
+    def assertNear(self, value, expected, seconds=5):
+        self.assertLess(abs(value - expected), seconds, (value, expected))
+
+    def probe(self, program, **options):
+        done, elapsed = run_python(self.state_dir, program, **options)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        return json.loads(done.stdout), elapsed
+
+    def test_time_sleep_moves_the_stub_clock_and_every_reading_follows_it(self):
+        result, elapsed = self.probe(CLOCK_PROBE)
+        wall = time.time()
+        self.assertLess(elapsed, 3)
+        self.assertLess(result["monotonic"], 1)
+        self.assertLess(result["perf_counter"], 1)
+        self.assertEqual(json.loads((self.state_dir / "state.json").read_text())["_clock_offset"], 600)
+        after = result["after"]
+        self.assertNear(after - result["before"], 600)
+        self.assertNear(after, wall + 600)
+        for key in ("now_utc", "now_local", "today", "utcnow", "gmtime", "localtime"):
+            self.assertNear(result[key], after, 2)
+        self.assertNear(result["after_ns"] / 1e9, after, 1)
+        moments = (after, after + 1)
+        self.assertIn(result["date"], {dt.date.fromtimestamp(t).isoformat() for t in moments})
+        self.assertIn(result["ctime"], {time.ctime(t) for t in moments})
+        self.assertIn(result["strftime"], {time.strftime("%Y-%m-%d %H:%M", time.localtime(t)) for t in moments})
+
+    def test_the_swapped_datetime_classes_keep_zones_types_pickling_and_repr(self):
+        result, _ = self.probe(DATETIME_PROBE)
+        self.assertEqual(result.pop("repr"), ["datetime.datetime(2020, 1, 2, 3, 4)", "datetime.date(2020, 1, 2)",
+                                              "<class 'datetime.datetime'>"])
+        self.assertEqual(result.pop("patched"), ["function", "datetime"])
+        self.assertEqual(result, dict.fromkeys(result, True))
+
+    def test_the_hook_is_inert_where_no_stub_state_is_reachable(self):
+        result, _ = self.probe(INERT_PROBE, state=False)
+        self.assertEqual(result["patched"], ["builtin_function_or_method", "date"])
+        self.assertGreaterEqual(result["slept"], 0.3)
+        self.assertNear(result["time"], time.time())
+        self.assertEqual(self.state()["_clock_offset"], 0)
+        (self.state_dir / "state.json").unlink()
+        result, _ = self.probe(INERT_PROBE)
+        self.assertEqual(result["patched"], ["builtin_function_or_method", "date"])
+        self.assertGreaterEqual(result["slept"], 0.3)
+
+    def test_a_sitecustomize_later_on_the_path_still_runs(self):
+        other = self.state_dir / "other"
+        other.mkdir()
+        (other / "sitecustomize.py").write_text("import builtins\nbuiltins.shadowed_ran = True\n")
+        program = "import builtins, time; print(getattr(builtins, 'shadowed_ran', False), type(time.time).__name__)"
+        for state, patched in ((True, "function"), (False, "builtin_function_or_method")):
+            done, _ = run_python(self.state_dir, program, state=state, python_path=[other])
+            self.assertEqual((done.returncode, done.stdout.split()), (0, ["True", patched]), done.stderr)
+
+    def test_the_stub_and_its_shims_never_load_the_hook(self):
+        loader = stub_clock.install(self.state_dir / "python")
+        bin_dir = self.state_dir / "bin"
+        programs = [gh_stub.install(bin_dir), *gh_stub.install_model_shims(bin_dir),
+                    gh_stub.install_date_shim(bin_dir), gh_stub.install_sleep_shim(bin_dir),
+                    gh_stub.install_post_receive(self.state_dir / "origin.git", self.state_dir)]
+        for program in programs:
+            command = shlex.split(program.read_text().splitlines()[1])
+            self.assertEqual(command[:3], ["exec", sys.executable, "-S"], program)
+        gh_stub.advance_clock(self.state_dir, 600)
+        env = dict(os.environ, GH_STUB_STATE_DIR=str(self.state_dir), PYTHONPATH=str(loader.parent))
+        started = time.time()
+        for argv in (["gh", "pr", "comment", "84", "--body", "Checked."], ["claude", "-p", "hello"]):
+            subprocess.run([str(bin_dir / argv[0]), *argv[1:]], stdin=subprocess.DEVNULL, capture_output=True,
+                           env=env)
+        date = subprocess.run([str(bin_dir / "date"), "-u", "+%s"], capture_output=True, text=True, env=env)
+        finished = time.time()
+        self.assertEqual(subprocess.run([str(bin_dir / "sleep"), "30"], env=env).returncode, 0)
+        comment, refused = self.log()
+        for record in (comment, refused):
+            logged = parse_time(record["ts"]).timestamp()
+            self.assertTrue(started - 2 <= logged <= finished + 2, (record["ts"], started, finished))
+            self.assertNear(parse_time(record["clock"]).timestamp(), logged + 600, 3)
+        self.assertEqual(refused["writes"][0]["kind"], gh_stub.NESTED_RUN_KIND)
+        self.assertNear(int(date.stdout), started + 600)
+        self.assertEqual(self.state()["_clock_offset"], 630)
 
 
 if __name__ == "__main__":

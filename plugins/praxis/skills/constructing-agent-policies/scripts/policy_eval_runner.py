@@ -520,9 +520,18 @@ the agent's ``date -u`` reports the advanced time; the ``sleep`` shim moves
 that clock by its GNU operands, one or more ``N[smhd]`` with ``N`` a decimal
 number, and returns after at most 0.2 real seconds, so a measured wait takes
 no turn time, refuses ``infinity``, and runs the real ``sleep`` for any other
-argument), ``GIT_TERMINAL_PROMPT=0``, no
-``GIT_ASKPASS`` or
-``SSH_ASKPASS``, and ``credential.helper`` and ``core.askPass`` emptied through
+argument), the run's ``python/`` directory first on ``PYTHONPATH`` (any
+``PYTHONPATH`` the parent had follows it; its ``sitecustomize``, written by
+``stub_clock.install``, puts every Python the agent starts on the same clock:
+``time.time`` and ``time.time_ns`` read it, ``time.sleep(n)`` moves it by ``n``
+as the ``sleep`` shim does and returns after at most 0.2 real seconds, the
+``time`` functions called without a time and ``datetime.datetime.now``,
+``utcnow`` and ``today`` and ``datetime.date.today`` read it, and
+``time.monotonic``, ``perf_counter`` and ``process_time`` stay real; it does
+nothing where no stub state is reachable, and neither the runner nor the stub
+loads it, every Python the stub and its shims start running with ``-S``),
+``GIT_TERMINAL_PROMPT=0``, no ``GIT_ASKPASS`` or ``SSH_ASKPASS``, and
+``credential.helper`` and ``core.askPass`` emptied through
 ``GIT_CONFIG_COUNT``.
 """
 
@@ -551,6 +560,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import gh_stub  # noqa: E402
+import stub_clock  # noqa: E402
 
 CASE_SCHEMA = "policy-eval-case-v1"
 # The pointer scripts/behavior_eval_corpora.py gives a case's one application record.
@@ -997,15 +1007,20 @@ GIT_SCRUBBED = re.compile(r"^(?:GIT_ASKPASS|SSH_ASKPASS|GIT_CONFIG_COUNT|GIT_CON
 GIT_CHILD_CONFIG = (("credential.helper", ""), ("core.askPass", ""))
 
 
-def child_environment(base, bin_dir, stub_dir, gh_config_dir, tmpdir=None):
+def child_environment(base, bin_dir, stub_dir, gh_config_dir, tmpdir=None, python_dir=None):
     """Environment for a child run: stub first on PATH, no GitHub or Git credentials, no prompts, its own TMPDIR.
 
     ``tmpdir`` (the run's ``tmp/``) becomes ``TMPDIR``, so nothing the agent or its scripts keep under the
     temporary directory is shared between runs through ``/tmp``; the Codex sandbox writes there by default.
+    ``python_dir`` (the run's ``python/``, holding the ``sitecustomize`` ``stub_clock.install`` writes) goes first
+    on ``PYTHONPATH``, before any ``PYTHONPATH`` the base had, so every Python the child starts tells time by the
+    stub's clock.
     """
     env = {key: value for key, value in base.items()
            if key not in SCRUBBED_VARIABLES and not GIT_SCRUBBED.match(key)}
     env["PATH"] = os.pathsep.join([str(bin_dir)] + [p for p in base.get("PATH", "").split(os.pathsep) if p])
+    if python_dir is not None:
+        env["PYTHONPATH"] = os.pathsep.join(filter(None, [str(python_dir), base.get("PYTHONPATH")]))
     env["GH_CONFIG_DIR"] = str(gh_config_dir)
     env["GH_STUB_STATE_DIR"] = str(stub_dir)
     env["GH_PROMPT_DISABLED"] = "1"
@@ -2797,6 +2812,7 @@ def prepare_fixture(case, run_dir, now):
     """
     run_dir = Path(run_dir)
     repo, stub_dir, bin_dir, gh_config = run_dir / "repo", run_dir / "stub", run_dir / "bin", run_dir / "ghcfg"
+    python_dir = run_dir / "python"
     owner, name = case["github"]["repo"].split("/", 1)
     remote = run_dir / "origin" / f"{name}.git"
     pr = case["github"]["pull_request"]
@@ -2854,9 +2870,10 @@ def prepare_fixture(case, run_dir, now):
     gh_stub.install_model_shims(bin_dir)
     gh_stub.install_date_shim(bin_dir)
     gh_stub.install_sleep_shim(bin_dir)
+    stub_clock.install(python_dir)
     gh_config.mkdir()
     return {"case": rendered, "repo": repo, "remote": remote, "stub_dir": stub_dir, "bin_dir": bin_dir,
-            "gh_config": gh_config, "head": head, "base": base}
+            "python_dir": python_dir, "gh_config": gh_config, "head": head, "base": base}
 
 
 class _Watchdog:
@@ -3416,7 +3433,7 @@ def run_case(case_path, harness, model, effort, plugin_dirs, repetition, out_roo
     _write_json(run_dir / "case.json", case)
     tmpdir = run_dir / "tmp"
     tmpdir.mkdir()
-    env = child_environment(base_env, bin_dir, stub_dir, gh_config, tmpdir=tmpdir)
+    env = child_environment(base_env, bin_dir, stub_dir, gh_config, tmpdir=tmpdir, python_dir=fixture["python_dir"])
     env_names = environment_names(env, base_env, tmpdir=tmpdir.relative_to(run_dir).as_posix())
     operator = None
     if case.get("operator"):
