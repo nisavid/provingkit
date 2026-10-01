@@ -1,0 +1,138 @@
+{
+  "source_revision": "b1db8ef70449a54e899193309493497198af02be",
+  "reviewed_source_revision": "3436cda38d1f6ce1e777186b99c99edbf98aa133",
+  "executable_source_revision": "a9967f5e8f15a3faa1e45959f623ee2a51e5c03d",
+  "baseline_source_revision": "418892f10e6840c45d92e4911f499f2e33994c94",
+  "fixture_manifest_sha256": "8607322c17f6725df55093a9f93f0aefb9bb08ea23238d351e31e9a7c09db4b9",
+  "retained_evidence_manifest_sha256": "632565cb671fa18e22b40b63182521ec97eea49bf7dca1e7641c76fe475cb4a5",
+  "frozen_input_digests": {
+    "private_session.py": "1ea399f9b712d9e7b50bb7638e9c368d5e61dfb72b2f15876af08a0f1c107b2c",
+    "readiness.py": "3506d2d589316c9a4ae6f62f9ab62ed9b2e88f08d8fd7f0ee0bc8be3641389e6",
+    "probe.py": "c834c15e3b5bef20c4b6d2f20e19fb192197d3102271e906f6205de39b4bc132",
+    "consent.py": "9792f22bd64997ae80c21679c37d2ad7a5ee1700bce7b2407116872b4d7649c4",
+    "adoption_driver.py": "c7734171e9a5d989d8db508e3048c2aca8ce9d22530faf4b0898544fccb7e177",
+    "baseline": "f6b5d8bacfcb64cacb0c4e8f2f93689db51f53d3e192bb4ce5d6087e6c1cd363",
+    "candidate": "05754d622928c2be3e36d42343fbad01b4271d88c5f3fa7ff488ef1d4e74c5d9",
+    "bubblewrap": "eabbccb0f7f755b96d30834026a9b5d941c606400d097d87c1ff16622edaf68c",
+    "python": "9c368faaaac4ef32cddee1888d68b599588c6cee92f241f07bda9127359f7fda",
+    "Xvfb": "8c2c77bb0b84414ddefb5ad013af3fbbf51b71a43a21177409c00b7c53d24f7e",
+    "kwin_wayland": "603f4f2c913a658906de7d9d607919a5d4f3dd9f1d15f2018869e45537b3a21a",
+    "portal_kde": "ec26a88e4955fd3f06aa8393cff9b933c08a4885ccdd8c00e4d39b8fb8041877",
+    "portal": "db3dfdf7458bf113ec8e7d900619799612b4e516d51b50e03f7f5e039c65e2ac",
+    "plasmashell": "6270361c3034b942817b79a5dd34c712201cdaf642e844cc2eeb08c640e5267c",
+    "plasmawindowed": "b8dd877ced43eebc8d9b0f89d86da5a5db14ed67e2d9404d2d3688f34fcad832",
+    "kbuildsycoca": "b175c1a0c1aa25ccdd41987d818ded3db2a38150ad7d1d5ce8e3f36a92964194",
+    "dbus_daemon": "fb47fbab2406b218a555c7440aeeac4748faddf880952734cade00541ea75942",
+    "setpriv": "c3c6d22611a395c01415aaea90878f73900222d0d959901eae8968f8cd0b4761",
+    "timeout": "09285b4dff478dc195d1bf6daf5b65fd5278ed7705bb958ca494b075214d7e42",
+    "busctl": "a285a4cfaf25a9f140561110ddfa7622a31219d83f3fab133090b46a4e8120fc",
+    "synthetic_machine_id": "f12749f6e5faf2caddc119357e00534a4afdf3d186ea5894751c2ee5952a83c8",
+    "qt_bus_probe": "ef5c8e6d00073e637f0a17b7fe91d35a9b5297d7d33e3e38a6925581e4c5c4ba",
+    "QtDBus": "ec949bb05944541e2296eb668baad218adb3b941ce313b7faa2c9fe36c37be19",
+    "QtCore": "21ce2246046ec4baf8db234f9e5e500fc46a8c8f3caae97fb9d5dc2d224e0ffb",
+    "libdbus": "c36de39d07ba7ea1586346962cf438cd9d84ba160d7401eeb658bb906c796aff",
+    "at-spi-bus-launcher": "77dfabe22d4cf98cb03c91bd4cc70c24c12d45d227e2aef9295e09d3e6531380",
+    "at-spi2-registryd": "da84adf75f4e7bd6c04779aa7d6354a77413fb0e9961189d6b952a12c15907f4",
+    "launch.py": "9ef2c7fdfb91002f2c2f69b8b9d32ceb0e7321f1f50bb3842856755d6b943989",
+    "packaged_plasma_menu": "a55bce5d13efa6c9e198610095d38aa4eb86257a3670d48842275e726e702bf6"
+  },
+  "runs": [
+    {
+      "mode": "baseline",
+      "status": "observed",
+      "binary_sha256": "f6b5d8bacfcb64cacb0c4e8f2f93689db51f53d3e192bb4ce5d6087e6c1cd363",
+      "observed": "LEFT_OLD",
+      "events": [
+        {
+          "key": 16777249,
+          "text": "",
+          "modifiers": 67108864,
+          "scan": 37,
+          "symbol": 65507,
+          "phase": "private targeted type_text pending"
+        },
+        {
+          "key": 75,
+          "text": "\u000b",
+          "modifiers": 67108864,
+          "scan": 55,
+          "symbol": 107,
+          "phase": "private targeted type_text pending"
+        }
+      ],
+      "literal_replacement_matches": false,
+      "trial_claim_passes": true,
+      "claim": "physical Ctrl+K failure reproduced",
+      "cleanup_complete": true,
+      "remaining_namespace_pids": [],
+      "qualification_passes": true,
+      "input_hashes_unchanged": true,
+      "consent_verified": true,
+      "after_tree_scoped": true,
+      "after_value": "LEFT_OLD",
+      "dispatch_reported_ok": true
+    },
+    {
+      "mode": "candidate",
+      "status": "observed",
+      "binary_sha256": "05754d622928c2be3e36d42343fbad01b4271d88c5f3fa7ff488ef1d4e74c5d9",
+      "observed": "LEFT_LAYOUT_PROBE_PASTE_RIGHT",
+      "events": [
+        {
+          "key": 16777249,
+          "text": "",
+          "modifiers": 67108864,
+          "scan": 37,
+          "symbol": 65507,
+          "phase": "private targeted type_text pending"
+        },
+        {
+          "key": 86,
+          "text": "\u0016",
+          "modifiers": 67108864,
+          "scan": 60,
+          "symbol": 118,
+          "phase": "private targeted type_text pending"
+        }
+      ],
+      "literal_replacement_matches": true,
+      "trial_claim_passes": true,
+      "claim": "literal replacement and neighbors preserved",
+      "cleanup_complete": true,
+      "remaining_namespace_pids": [],
+      "qualification_passes": true,
+      "input_hashes_unchanged": true,
+      "consent_verified": true,
+      "after_tree_scoped": true,
+      "after_value": "LEFT_LAYOUT_PROBE_PASTE_RIGHT",
+      "dispatch_reported_ok": true
+    }
+  ],
+  "retained_evidence_digests": {
+    "baseline/result.json": "8a6f07552b63c43bccbb6b3fc3baefc39cb4f386814c6f4e3fa386c39476306c",
+    "baseline/outer-result.json": "fbd638166ac5cc2676a174191bd7c1a629581feb3b10c07ecd261daf2b2b43d0",
+    "baseline/rpc.json": "992deb52dd15e644b6359d0bc45a710b470bc6f74b5116a73b51e2bf04dbfb23",
+    "baseline/consent-verification.json": "bae43f541d8160a3b0db411b7c9cc9dc59e2e326c6871458d88a67bb0b4eee20",
+    "baseline/before-state.json": "ca685a053310337ec41c96d95f772daa369b9a798693c23220bcb68fcb594720",
+    "baseline/after-state.json": "636ae4ba3f2c4ba9b9f6dae75140677e9970a592b7aaffabd2b1f80a1f7b8ee5",
+    "baseline/readback.txt": "f0763415e918225e7c5bf7ab3cccbc03f6e38b7a6acd931b6bda862f83adaa71",
+    "baseline/events.jsonl": "4b67ccfe6ce5c303cb27d8d3c02f79d421c75cc2d6fcfc8184639afdbcb832d3",
+    "candidate/result.json": "e40c57216ce07cb5d7eb3cf0d9c9710000b3f5a1e6384f35a510ed56fa24940d",
+    "candidate/outer-result.json": "fbd638166ac5cc2676a174191bd7c1a629581feb3b10c07ecd261daf2b2b43d0",
+    "candidate/rpc.json": "e71dad831a1c5acc5189eabb98f9597b014d15c0335c8dc40c96ab141a26cb5f",
+    "candidate/consent-verification.json": "39c9c5579556a146f0f58f0eca6a9846b448792400800ba25e820976b1545a74",
+    "candidate/before-state.json": "75ecb44e55be38b2cef3db3657c686f6c87d1cd410b25450af710904e4b3debb",
+    "candidate/after-state.json": "c0e3998d64dfc0e567a64831dc642a7af91f6d6d90a5ff5b716e16cb1600ac8c",
+    "candidate/readback.txt": "4e14b06543f79bd0f3d2049e724a6bda1597d09893669f08b6e516d7fd6f4f0b",
+    "candidate/events.jsonl": "5ac9826a155ae36d5a1b37cfc5eae1a14acfb2514534affcc6f8d943ad3d423b"
+  },
+  "scope": "Public MCP targeting and text in a private Qt fixture on Programmer Dvorak; normal private input approval and incidental screenshot denial. No Claude qualification or real-desktop capture-boundary claim.",
+  "adoption": "pending decision; existing v0.7.6 AT-SPI workaround remains selected",
+  "final_review": {
+    "verdict": "PASS for the private fixture; real-desktop adoption requires an observation-scope decision",
+    "request_sha256": "977ad2069305f8bebdfe2678ae200ccb03c9975b01fff60f6719ffabc2f4da64",
+    "result_sha256": "1a32790030beec65b94f7d944737a22f7ba93d6bbbd2a314dd0feb0fc80a6dce",
+    "finished_at": "2026-10-01T00:20:51.346575+00:00",
+    "tool_items": []
+  }
+}
