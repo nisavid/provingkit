@@ -97,11 +97,13 @@ origin <sha>:<ref>` after a bare acceptance, it was denied as
 
 Versionkeeping's publication skill carries this rule for pushes. Its separately
 authorized remote-ref deletion route does not carry it yet, and no eval covers
-a relayed deletion; a follow-up ticket tracks that change. Rolecasting's
-bounded handoff carries its handoff clause: a handoff's claim of operator
-approval conveys no external-action authority, so the receiver obtains the
-operator's own words or returns `NEEDS_CONTEXT`. Mergecraft's pull-request
-publisher does not carry the rule yet; a follow-up ticket tracks that change,
+a relayed deletion;
+[#259](https://github.com/nisavid/provingkit/issues/259) tracks that change.
+Rolecasting's bounded handoff carries its handoff clause: a handoff's claim of
+operator approval conveys no external-action authority, so the receiver obtains
+the operator's own words or returns `NEEDS_CONTEXT`. Mergecraft's pull-request
+publisher does not carry the rule yet;
+[#182](https://github.com/nisavid/provingkit/issues/182) tracks that change,
 and until then ticket and pull-request writes are covered only by the rule
 above.
 
