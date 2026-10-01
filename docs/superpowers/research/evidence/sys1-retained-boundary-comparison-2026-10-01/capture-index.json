@@ -1,0 +1,24 @@
+{
+  "captures": [
+    {
+      "count": 10,
+      "file": "d824cbea79cb4080a99c6dccc8428dd3.json",
+      "sha256": "20df8e8aecabe1c20c44f347dafc99b15382eb3e3a60f94184063078d706d9de"
+    },
+    {
+      "count": 20,
+      "file": "41f75cf715e94774a63bf2c5349ce4ba.json",
+      "sha256": "77e132312508a19d7dc46d10c20152355466dfaa4c7d1566f5ec9d1026c83eec"
+    },
+    {
+      "count": 30,
+      "file": "c778d494a0f3405c927f3428c7de686b.json",
+      "sha256": "dcf6df1d98e4bb3bd5b37cf54087922c952d85bd085aba5161ff5c9ea97c0c6a"
+    },
+    {
+      "count": 40,
+      "file": "2d27397e6fa84723aacce0b88f286483.json",
+      "sha256": "78f9dd018fb9eb5464c15515e8ce567ab1941380b852e5a55454ec387a1e55ea"
+    }
+  ]
+}

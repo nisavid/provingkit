@@ -1,0 +1,23 @@
+{
+  "kind": "coordinator_observed_local_checks",
+  "node_tests": {
+    "passed": 9,
+    "exit_code": 0,
+    "output": "✔ preparation retains baseline values and adds only ordered requests and the current full result (1.033759ms)\n✔ preparation freezes the eight requests and rejects changed source captures (2.515314ms)\n✔ a failed first response stops the batch, preserves its attempt, and prevents reuse (24.282525ms)\n✔ SDK retains failure for 529, malformed JSON, and a stalled response body without a second request (28.980293ms)\n✔ failed attempts retain diagnostic causes and invariant names without the authentication value (0.739948ms)\n✔ all eight synthetic successes preserve order, literal zero-call omission, and independent records (22.781741ms)\n✔ context extraction rejects duplicate or mismatched current items and preserves empty ordered task entries (0.370519ms)\n✔ pinned SDK sends exact bytes once, records the complete response, and does not retry a 429 (1.069917ms)\n✔ projected notes follow source rounding and precedence without hiding masked concerns (0.892503ms)\nℹ tests 9\nℹ suites 0\nℹ pass 9\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 121.536234\n"
+  },
+  "launcher_tests": {
+    "passed": 1,
+    "exit_code": 0,
+    "output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.403s\n\nOK\n"
+  },
+  "diff_check_exit_code": 0,
+  "exact_packet_mock": {
+    "packet_sha256": "8cb0021051cb52a92696ec3862f25d87526d31a57f710977471474409d5cef15",
+    "status": "complete",
+    "mocked_fetches": 8,
+    "real_provider_requests": 0,
+    "assessment_outputs": "synthetic only"
+  },
+  "limitations": "Synthetic transport and controlled local process only; no Jev accuracy or native-task effect evidence.",
+  "exact_packet_mock_revision": "after diagnostic and timing corrections"
+}

@@ -1,0 +1,37 @@
+{
+  "node": "v24.21.0",
+  "sdk": "0.6.0",
+  "model": "jev-1.13.0",
+  "retained_preflight_commit": "36df3997e04fb803aa314cf965fcbdb1a60257e8",
+  "prior_result_commit": "a6a69d744d2c0cf59baaedd9c786ed75ad689f17",
+  "files": {
+    "jev-axi/src/supervise.ts": {
+      "bytes": 11781,
+      "sha256": "c33252b34a86d3a31f347b94760cfa51bc7f3953f3bdd20abec2af11899f00f4"
+    },
+    "jev-axi/src/recipes/questions.ts": {
+      "bytes": 21451,
+      "sha256": "0019ca5ef45c6fc12edeb2a45cda34979bf74374f711949946dd3481ad7fc017"
+    },
+    "jev-axi/src/commands/hook.ts": {
+      "bytes": 17130,
+      "sha256": "d57158d1eb9b2861512c8f2402ae75cbcfc3d405ad324eb8c054be826926f8bc"
+    },
+    "jev-axi/src/format.ts": {
+      "bytes": 3146,
+      "sha256": "4ac0bc6e9ebd22da072f3c646471f8a845f5a9b1c600ac7b5b2331710af095d2"
+    },
+    "jev-axi/src/safety.ts": {
+      "bytes": 14564,
+      "sha256": "ee22ebc58df513796e4c52e295d683e8696831741d83a378593623877532d439"
+    },
+    "sdk/dist/index.mjs": {
+      "bytes": 28819,
+      "sha256": "bbb851dfe375c586c5bee3c082a04ab71882813dde39df0e95eaa23f30ec7012"
+    },
+    "sdk/package.json": {
+      "bytes": 2385,
+      "sha256": "b94bd1d862b166be53b0b91a36a2af27a0b14e397ffea8f0c53cbfcc9718c508"
+    }
+  }
+}

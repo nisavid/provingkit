@@ -1,0 +1,95 @@
+{
+  "packet_sha256": "8cb0021051cb52a92696ec3862f25d87526d31a57f710977471474409d5cef15",
+  "cells": [
+    {
+      "id": "B10",
+      "sha256": "8c7724aedaa49d0910f0881e048bc343642e69fb26dd349d6c1c243477014277",
+      "utf8_bytes": 7698,
+      "utf16_units": 7696
+    },
+    {
+      "id": "C10",
+      "sha256": "56c312ed1909eebe66a33fc34c761dd8eaf1e5b06b15a6807ac5fbac92fd62fe",
+      "utf8_bytes": 9076,
+      "utf16_units": 9074
+    },
+    {
+      "id": "C20",
+      "sha256": "906cdc19b2c69b689dd5f9e0ffec7745fd88774ef067a1bfd893d99d22b32d92",
+      "utf8_bytes": 27343,
+      "utf16_units": 27341
+    },
+    {
+      "id": "B20",
+      "sha256": "226b279cc4eb32c9ad406003ff11332b184f69d04d33e04e5ae323b6db51955d",
+      "utf8_bytes": 14948,
+      "utf16_units": 14946
+    },
+    {
+      "id": "B30",
+      "sha256": "1701e29140d10c6d4ced0099ac10cd26c415cbf6ce21f400263c2d2d3b97a83e",
+      "utf8_bytes": 20988,
+      "utf16_units": 20986
+    },
+    {
+      "id": "C30",
+      "sha256": "f374ca5171e3ea0c5c592dbde34908991449ebeda9ff8df1c0c10803246e8f01",
+      "utf8_bytes": 23071,
+      "utf16_units": 23069
+    },
+    {
+      "id": "C40",
+      "sha256": "fbe5ba9ffaed0dcf39ba27cef1d6cc8208179f5be5a448bcf0fdce8c374ac1e8",
+      "utf8_bytes": 24440,
+      "utf16_units": 24440
+    },
+    {
+      "id": "B40",
+      "sha256": "57c478107ef716496182413f02267eade2721e0a1ff31fa4a1dd3423ffd62306",
+      "utf8_bytes": 21511,
+      "utf16_units": 21511
+    }
+  ],
+  "provenance": [
+    {
+      "count": 10,
+      "user_record_indices": [
+        9
+      ],
+      "current_record": 45,
+      "result_utf16_units": 1766,
+      "result_utf8_bytes": 1766
+    },
+    {
+      "count": 20,
+      "user_record_indices": [
+        9,
+        98
+      ],
+      "current_record": 103,
+      "result_utf16_units": 12129,
+      "result_utf8_bytes": 12129
+    },
+    {
+      "count": 30,
+      "user_record_indices": [
+        9,
+        98
+      ],
+      "current_record": 135,
+      "result_utf16_units": 2484,
+      "result_utf8_bytes": 2484
+    },
+    {
+      "count": 40,
+      "user_record_indices": [
+        9,
+        98,
+        169
+      ],
+      "current_record": 188,
+      "result_utf16_units": 2634,
+      "result_utf8_bytes": 2634
+    }
+  ]
+}

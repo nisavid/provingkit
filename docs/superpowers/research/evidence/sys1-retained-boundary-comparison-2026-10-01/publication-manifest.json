@@ -1,0 +1,61 @@
+{
+  "files": {
+    "LICENSE.jev-axi": {
+      "sha256": "0d3ec93d780f31677b36e049dce13ffdea9ea4da1480f560b210adf908c2ae1b",
+      "bytes": 1088
+    },
+    "accounting-review.md": {
+      "sha256": "b01bc647d86642ff9cbf7d0a3f6b6ee2ac97f84bd078cb11542a10f4f2122a21",
+      "bytes": 990
+    },
+    "capture-index.json": {
+      "sha256": "73e0cce7b391c1e2a6a5f4390a16a06e15705645db71465376dc26175c719e25",
+      "bytes": 703
+    },
+    "contract.md": {
+      "sha256": "0c08401705661835b97d8cde37efaa3245a0072d01fbe80af98039d93e635538",
+      "bytes": 12662
+    },
+    "design-decision.md": {
+      "sha256": "f92a4d3f6cc91914e19aba5ea812c2cab3079a3fa0011cbed29595ded9059981",
+      "bytes": 7627
+    },
+    "fidelity-review.md": {
+      "sha256": "33956823f89bbcc5a14519f69cfd905b64545c487261c109dc0ad7bf868fb73f",
+      "bytes": 1217
+    },
+    "launch.py": {
+      "sha256": "08ebc1ef354cd59156d34d749b60bc88fadb78a5dd95a1aa7a5c1a1dda6eea2f",
+      "bytes": 4625
+    },
+    "local-checks.json": {
+      "sha256": "3f54260daf64fcf3b278a1f44427c10ea35e474e82a9dc24840d3e0b3ed92d31",
+      "bytes": 1897
+    },
+    "packet-metadata.json": {
+      "sha256": "07fcdb9b8040ff9d7dca8b544b8d56b27cabed7fca666dd89b7844877731d320",
+      "bytes": 2243
+    },
+    "review-records.json": {
+      "sha256": "8e4fbff146ab950e4a97b0b4c5a1919abc8c0c465f47bdbd3fab4492a94d9836",
+      "bytes": 3253
+    },
+    "runner.mjs": {
+      "sha256": "510370038f76c4b5eb0bd12c9e5aaea726431ebc3a6dbb740db8774363668161",
+      "bytes": 11228
+    },
+    "runner.test.mjs": {
+      "sha256": "03f801f8c48e7b72650eaf1cc55b76716cc705ab76fd8d56fce23fd37eeeedbb",
+      "bytes": 9940
+    },
+    "source-identities.json": {
+      "sha256": "c0bdc29d07a08a49c0e12feb61230ff52216c06fc8e0da6afc883814ca8310e5",
+      "bytes": 1241
+    },
+    "test_launch.py": {
+      "sha256": "3a851a987683c8793d3a386f3dc714d865c2367c646455b8be3e219d9a4ccfa8",
+      "bytes": 2235
+    }
+  },
+  "excluded": "private captures, request bodies, raw provider/transport records, and local bindings"
+}
