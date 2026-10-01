@@ -4,7 +4,7 @@
     {
       "id": 1,
       "name": "no-user-owned-task-without-explicit-request",
-      "prompt": "Choose the worker lifecycle and authority boundary from the fixture. Do not use tools.",
+      "prompt": "Choose the worker lifecycle and authority boundary from the fixture. State the user-request prerequisite for creating or steering a user-owned task, and name the owner of later model and effort selection after topology settles and before dispatch. Do not use tools.",
       "fixture_paths": ["evals/fixtures/user-owned-task-authority.md"],
       "expected_output": "Use a bounded native subagent; do not create or steer a user-owned task without an explicit request.",
       "expectations": [
@@ -28,7 +28,7 @@
     {
       "id": 2,
       "name": "foreign-peer-bounded-authority",
-      "prompt": "Define the peer contract and reserved leader decisions. Do not use tools.",
+      "prompt": "Define the peer contract and reserved leader decisions. Name the owner of final diagnosis or root-cause determination, integration, and publication separately. Do not use tools.",
       "fixture_paths": ["evals/fixtures/foreign-peer-authority.md"],
       "expected_output": "Limit the peer to read-only QA; reserve scope, subdelegation, publication, and product decisions.",
       "expectations": [
@@ -250,7 +250,7 @@
     {
       "id": 11,
       "name": "assurance-consumer-minima",
-      "prompt": "Classify the available assurance and decide both the ordinary-delegation and publication gates. Do not use tools.",
+      "prompt": "Classify the available assurance and decide both the ordinary-delegation and publication gates. Name the exact target, relationship, qualified issuer, and assurance prerequisites for witnessed publication, and explain which self-reported facts can satisfy a hard gate. Do not use tools.",
       "fixture_paths": ["evals/fixtures/assurance-consumer-minima.md"],
       "expected_output": "Use the ordinary same-leader plan, live selection record, and verified native observations within their assurance limits; retain publication authority with its owning workflow and require no authenticated receipts for that ordinary handoff. Keep explicitly witnessed publication blocked until a qualified issuer provides product-attested ChatGPT Codex child evidence.",
       "expectations": [
@@ -418,13 +418,13 @@
     {
       "id": 18,
       "name": "scarce-specialist-decision-handoff",
-      "prompt": "Define the scarce-specialist handoff, returned artifact, coordinator work, and invalidation rule from the fixture. Do not use tools.",
+      "prompt": "Choose the named artifacts for the smallest sufficient frozen specialist packet, then define the bounded handoff, exact return, coordinator work, and invalidation rule. Do not use tools.",
       "fixture_paths": ["evals/fixtures/scarce-specialist-decision-handoff.md"],
-      "expected_output": "Freeze one smallest content-addressed packet for one bounded specialist decision horizon; require the exact byte-stable artifact, identity and SHA-256 digest, assumptions, and remaining fog; leave discovery, setup, waiting, exact-byte relay or separately authorized publication, verification, byte-preserving integration, and tracker work to the coordinator; and return any change to meaning, supported inputs, or evidence bytes to the specialist in a newly frozen packet.",
+      "expected_output": "Freeze necessary artifacts A through E, including the adverse evidence, and leave unrelated F through H with the coordinator. Give the specialist one bounded decision horizon; require an exact byte-stable artifact, identity and SHA-256 digest, assumptions, and remaining fog. Keep lifecycle work and byte-preserving relay with the coordinator under separate publication authority; any change to meaning, supported inputs, or evidence bytes returns to the specialist in a newly frozen packet.",
       "expectations": [
         {
           "id": "scarce-specialist-bounded-horizon",
-          "text": "Limits the scarce specialist to one bounded decision horizon over the smallest content-addressed frozen input packet.",
+          "text": "Selects necessary artifacts A through E, including the adverse check, and excludes unrelated F through H from the content-addressed frozen packet for one bounded specialist decision horizon.",
           "severity": "quality"
         },
         {

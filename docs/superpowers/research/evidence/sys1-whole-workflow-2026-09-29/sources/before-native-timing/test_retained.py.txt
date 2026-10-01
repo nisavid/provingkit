@@ -1,0 +1,69 @@
+"""Verify replay evidence selection and reservation without candidate/model runs."""
+import json
+import hashlib
+from unittest.mock import patch
+from types import SimpleNamespace
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+
+HERE=Path(__file__).resolve().parent
+
+class RetainedTests(unittest.TestCase):
+    def test_replays_keep_actual_messages_bound_and_variants_evaluator_only(self):
+        with tempfile.TemporaryDirectory() as parent:
+            root=Path(parent)/'replay'
+            p=subprocess.run([sys.executable,str(HERE/'retained.py'),'prepare','--root',str(root)],text=True,capture_output=True,check=True)
+            prepared=json.loads(p.stdout);manifest=json.loads((root/'manifest.json').read_text());labels=json.loads((root/'labels.json').read_text())
+            self.assertEqual(len(manifest['cases']),12)
+            for offset in range(0,12,3):
+                cases=manifest['cases'][offset:offset+3];requests=[json.loads((root/x['id']/'request.json').read_text()) for x in cases]
+                self.assertTrue(all(x['context']==requests[0]['context'] for x in requests))
+                self.assertEqual(len({x['proposed_file']['path'] for x in requests}),2)
+                self.assertEqual(len({x['proposed_file']['content'] for x in requests}),2)
+                for case,request in zip(cases,requests):
+                    self.assertNotIn('current_authorization',request);self.assertFalse(labels[case['id']]['native_catch_opportunity'])
+                    self.assertNotIn('unattributed_startup',[x['origin'] for x in request['context']['messages']])
+                    self.assertEqual(len(request['context']['watermark']['transcript_sha256']),64)
+            (root/'run-reservation.json').write_text('preserve\n')
+            p=subprocess.run([sys.executable,str(HERE/'retained.py'),'run','--manifest',prepared['manifest'],'--sha256',prepared['sha256']],text=True,capture_output=True)
+            self.assertNotEqual(p.returncode,0);self.assertEqual((root/'run-reservation.json').read_text(),'preserve\n')
+            self.assertFalse(any(root.glob('*/A-started.json')))
+
+    def test_changed_capture_refuses_before_reservation_or_candidate(self):
+        import retained
+        with tempfile.TemporaryDirectory() as parent:
+            root=Path(parent)/'replay'
+            retained.prepare(SimpleNamespace(root=str(root)))
+            path=root/'manifest.json';manifest=json.loads(path.read_text())
+            witness=root/'capture.json';witness.write_text('original\n')
+            for case in manifest['cases']:
+                case['source_files']={str(witness):hashlib.sha256(witness.read_bytes()).hexdigest()}
+            path.write_text(json.dumps(manifest));digest=hashlib.sha256(path.read_bytes()).hexdigest()
+            witness.write_text('changed\n')
+            (root/'run-reservation.json').write_text('preserve\n')
+            with self.assertRaisesRegex(RuntimeError,'capture drift'):
+                retained.run(SimpleNamespace(manifest=str(path),sha256=digest))
+            self.assertEqual((root/'run-reservation.json').read_text(),'preserve\n')
+            self.assertFalse(any(root.glob('*/A-started.json')))
+
+    def test_timed_out_candidate_preserves_buffered_streams_and_stops(self):
+        import retained
+        with tempfile.TemporaryDirectory() as parent:
+            root=Path(parent)/'replay'
+            retained.prepare(SimpleNamespace(root=str(root)))
+            path=root/'manifest.json';digest=hashlib.sha256(path.read_bytes()).hexdigest()
+            timeout=subprocess.TimeoutExpired(['candidate'],15,output=b'partial-out\n',stderr=b'partial-error\n')
+            with patch('subprocess.run',side_effect=timeout):
+                self.assertEqual(retained.run(SimpleNamespace(manifest=str(path),sha256=digest)),1)
+            self.assertEqual((root/'n01/A-stdout.json').read_bytes(),b'partial-out\n')
+            self.assertEqual((root/'n01/A-stderr.txt').read_bytes(),b'partial-error\n')
+            result=json.loads((root/'n01/A-result.json').read_text())
+            self.assertEqual(result['status'],'incomplete')
+            self.assertEqual(result['error_type'],'TimeoutExpired')
+            self.assertFalse((root/'n01/B-started.json').exists())
+            self.assertEqual(len(json.loads((root/'partial-results.json').read_text())),1)
+
+if __name__=='__main__':unittest.main()

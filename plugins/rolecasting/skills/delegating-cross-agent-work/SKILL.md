@@ -1,6 +1,6 @@
 ---
 name: delegating-cross-agent-work
-description: Use when deciding whether and how to delegate across child, peer, external, leader-owned, or user-owned worker surfaces.
+description: Use when choosing delegation, topology, authority, or handoffs. Model and effort selection after settled delegation uses choosing-agent-models.
 ---
 
 # Delegating Cross-Agent Work

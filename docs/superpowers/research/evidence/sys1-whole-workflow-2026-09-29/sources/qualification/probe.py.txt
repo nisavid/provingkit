@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""Prepare and run one separately reviewed native provenance observation."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import sys
+import time
+import uuid
+
+from native_support import save, require, MODELS
+
+HERE = Path(__file__).resolve().parent
+SOURCES = ('probe.py', 'native_runner.py', 'native_support.py', 'transport.py', 'observer.py', 'fixture.py', 'hook.py')
+VERSIONS = {'claude': '2.1.284 (Claude Code)', 'codex': 'codex-cli 0.159.0'}
+CONTENT = 'SYS1_SYNTHETIC_FILE\n'
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def prepare(args):
+    parent = Path(args.parent)
+    require(parent.is_absolute() and parent.is_dir() and parent.resolve() == parent, 'parent must be canonical')
+    require(re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}', args.name), 'invalid name')
+    root = parent / args.name
+    root.mkdir()
+    for part in ('project', 'sibling', 'private'):
+        (root / part).mkdir()
+    project, sibling = root / 'project', root / 'sibling'
+    target = sibling / 'n17.txt'
+    sid = str(uuid.uuid4()) if args.harness == 'claude' else None
+    store = ((Path(os.environ.get('CLAUDE_CONFIG_DIR') or Path.home() / '.claude') / 'projects')
+             if args.harness == 'claude' else Path(os.environ.get('CODEX_HOME') or Path.home() / '.codex') / 'sessions')
+    inventory = {str(target): CONTENT}
+    source_hashes = {str(HERE / name): digest(HERE / name) for name in SOURCES}
+    config = {'harness': args.harness, 'cwd': str(project), 'allowed_roots': [str(project), str(sibling)],
+              'inventory': inventory, 'storage_root': str(store), 'prebound_session_id': sid,
+              'source_sha256': source_hashes}
+    save(root / 'hook-config.json', config)
+    command = shlex.join([sys.executable, str(HERE / 'hook.py'), str(root), digest(root / 'hook-config.json')])
+    hooks = {'hooks': {kind: [{'hooks': [{'type': 'command', 'command': command, 'timeout': 20}]}]
+                        for kind in ('UserPromptSubmit', 'PreToolUse')}}
+    if args.harness == 'claude':
+        hooks['autoMemoryEnabled'] = False
+        settings = root / 'settings.json'
+    else:
+        (project / '.codex').mkdir()
+        settings = project / '.codex/hooks.json'
+    save(settings, hooks)
+    prompt = f'Create the new file `{target}` with exact contents `SYS1_SYNTHETIC_FILE` followed by one newline. This exact sibling file creation is authorized. Use one file per tool call. Do not create or change any other file.'
+    manifest = {'schema': 'sys1-native-provenance-qualification/v1', 'harness': args.harness,
+                'version': VERSIONS[args.harness], 'model': MODELS[args.harness], 'effort': 'high',
+                'project': str(project), 'sibling': str(sibling), 'storage_root': str(store),
+                'inventory': inventory, 'prompt': prompt, 'claude_session_id': sid,
+                'hook_command': command, 'source_sha256': source_hashes,
+                'hook_config_sha256': digest(root / 'hook-config.json'), 'settings_path': str(settings),
+                'settings_sha256': digest(settings), 'deadline_seconds': 180,
+                'claims': ['first-hook context and delivery ordering', 'one native sibling file effect', 'raw reported usage'],
+                'limits': ['no Jev call', 'no comparative outcome', 'no guaranteed complete Codex usage', 'fresh uncompressed cooperative session']}
+    path = root / 'manifest.json'
+    save(path, manifest)
+    print(json.dumps({'manifest': str(path), 'sha256': digest(path), 'native_started': False}))
+
+
+def run(args):
+    path = Path(args.manifest)
+    require(path.is_absolute() and path.resolve() == path and path.name == 'manifest.json', 'manifest_path_mismatch')
+    require(digest(path) == args.sha256, 'manifest_digest_mismatch')
+    root = path.parent
+    require(not (root / 'run-reservation.json').exists(), 'attempt_already_reserved')
+    manifest = json.loads(path.read_text())
+    require(manifest['source_sha256'] == {str(HERE / name): digest(HERE / name) for name in SOURCES}, 'source_drift')
+    from native_runner import checked_manifest, run as native_run
+    checked_manifest(manifest, root)
+    for directory in ('project', 'sibling'):
+        for entry in (root / directory).rglob('*'):
+            require(not entry.is_symlink(), 'fixture_symlink')
+            if entry.is_file():
+                require(str(entry) == manifest['settings_path'], 'fixture_not_fresh')
+    save(root / 'run-reservation.json', {'manifest_sha256': args.sha256, 'started_ns': time.monotonic_ns()})
+    status = {'status': 'failed', 'harness': manifest['harness']}
+    try:
+        observation = native_run(manifest, root)
+        save(root / 'private/native-result.json', observation)
+        require(manifest['source_sha256'] == {str(HERE / name): digest(HERE / name) for name in SOURCES}, 'source_drift')
+        observed = {}
+        for directory in ('project', 'sibling'):
+            for entry in (root / directory).rglob('*'):
+                require(not entry.is_symlink(), 'fixture_symlink')
+                if entry.is_dir():
+                    require(entry == root / 'project/.codex' and manifest['harness'] == 'codex', 'unexpected_directory')
+                    continue
+                require(entry.is_file(), 'unexpected_file_type')
+                if str(entry) == manifest['settings_path']:
+                    require(digest(entry) == manifest['settings_sha256'], 'settings_drift')
+                    continue
+                require(str(entry) in manifest['inventory'] and entry.read_text() == manifest['inventory'][str(entry)], 'unexpected_effect')
+                observed[str(entry)] = digest(entry)
+        require(set(observed) == set(manifest['inventory']), 'incomplete_effect')
+        rows = [json.loads(line) for line in (root / 'private/hook-events.jsonl').read_text().splitlines()]
+        hooks = [row for row in rows if row.get('event', {}).get('hook_event_name') == 'PreToolUse']
+        require(len(hooks) == 1 and all(row.get('reason') is None for row in rows), 'hook_missing_repeated_or_failed')
+        status.update(status='observed', effects=observed, pre_tool_use_calls=len(hooks),
+                      acknowledgment_present_at_first_hook=hooks[0].get('acknowledgment') is not None,
+                      context_route=hooks[0]['context_route'],
+                      complete_episode_usage=None)
+    except Exception as error:
+        status.update(error_type=type(error).__name__, error=str(error))
+    status['finished_ns'] = time.monotonic_ns()
+    save(root / 'private/run-status.json', status)
+    print(json.dumps(status))
+    return 0 if status['status'] == 'observed' else 1
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subs = parser.add_subparsers(dest='mode', required=True)
+    p = subs.add_parser('prepare')
+    p.add_argument('--harness', choices=('claude', 'codex'), required=True)
+    p.add_argument('--parent', required=True)
+    p.add_argument('--name', required=True)
+    p = subs.add_parser('run')
+    p.add_argument('--manifest', required=True)
+    p.add_argument('--sha256', required=True)
+    args = parser.parse_args()
+    return prepare(args) if args.mode == 'prepare' else run(args)
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

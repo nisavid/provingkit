@@ -38,7 +38,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         self.assertIn("Delegation is settled", probes[1]["query"])
         self.assertIn("model and effort", probes[1]["query"])
 
-    def test_rolecasting_has_exactly_thirty_six_detailed_scenarios(self) -> None:
+    def test_rolecasting_has_complete_detailed_scenario_inventory(self) -> None:
         observed = {
             item["name"]
             for document in self.documents.values()
@@ -54,6 +54,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "unavailable-non-codex-capability",
                 "high-risk-independent-review",
                 "cursor-grok-consequential-review",
+                "cursor-grok-bounded-review",
                 "unrelated-task-model-is-not-a-route",
                 "daybreak-routing-matrix",
                 "daybreak-route-evidence",
@@ -65,6 +66,11 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "thread-consent-state",
                 "general-tiers-and-preferences",
                 "provider-preference-target-reconsideration",
+                "named-model-successors",
+                "effort-floor-all-routes",
+                "max-effort-conjunction",
+                "ultra-panel-applicability",
+                "sonnet-middle-tier",
                 "no-user-owned-task-without-explicit-request",
                 "foreign-peer-bounded-authority",
                 "leader-integrates-worker-results",
@@ -215,6 +221,40 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         ):
             with self.subTest(source="eval", phrase=phrase):
                 self.assertIn(phrase, expected_output)
+
+    def test_daybreak_routing_exposes_separate_effect_bounded_clis(self) -> None:
+        choosing_root = PLUGIN_ROOT / "skills" / "choosing-agent-models"
+        routing = " ".join(
+            (choosing_root / "references" / "daybreak-routing.md")
+            .read_text()
+            .split()
+        )
+
+        for phrase in (
+            "daybreak_catalog.py inspect --catalog",
+            "daybreak_catalog.py select --catalog",
+            "daybreak_account.py status-refresh --selection-stdin",
+            "daybreak_account.py harmless-probe --selection-stdin",
+            (
+                "account_classification`, `authentication_observation`, "
+                "`configuration_topology`, `database_topology`, `usage_capacity`, "
+                "`daybreak_selector`, `harmless_probe`, and `task_data_authority"
+            ),
+            (
+                "Any missing, duplicate, or unknown binding field invalidates the "
+                "complete catalog."
+            ),
+            "This status-only helper surface provides no probe actuator.",
+            "do not provide a closed-world task-tool deny",
+            "does not infer authority or disposability from the workspace path",
+            "uses a separate provider-identity admission phase",
+            "A missing or mismatched identity stops the operation without `model/list`",
+            "processes at most 128 messages for one request",
+            "Notifications have no status consumer and are discarded",
+            "fixed diagnostic vocabulary",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, routing)
 
     def test_delegation_skill_batches_small_same_shape_work(self) -> None:
         skill = (
@@ -478,9 +518,12 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "reviewer-astra-xhigh",
                 "clerical-luna-separation",
                 "no-review-effort-underfit-or-max",
-                "cursor-grok-high-fit",
+                "cursor-grok-role-fit",
                 "cursor-surface-proof",
                 "foreign-review-authority-preserved",
+                "cursor-grok-bounded-fit",
+                "cursor-bounded-surface-proof",
+                "cursor-bounded-authority",
                 "task-purpose-route-gate",
                 "no-unrelated-task-reuse",
                 "routing-no-task-authority",

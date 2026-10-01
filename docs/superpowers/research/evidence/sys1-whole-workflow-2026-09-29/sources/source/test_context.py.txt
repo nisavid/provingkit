@@ -1,0 +1,201 @@
+import json
+import copy
+from pathlib import Path
+import subprocess
+import sys
+import unittest
+
+SCRIPT = Path(__file__).with_name("context.py")
+
+
+class ContextTests(unittest.TestCase):
+    def invoke(self, payload):
+        p = subprocess.run([sys.executable, str(SCRIPT)], input=json.dumps(payload), text=True, capture_output=True, check=True)
+        return json.loads(p.stdout)
+
+    def test_applied_settings_require_bound_identity_and_unchanged_native_configuration(self):
+        settings = json.loads(SCRIPT.with_name("codex-settings-fixture.json").read_text())
+        base = {"harness": "codex", "session_id": "s", "delivery_complete": True,
+                "expected_settings": {"model": "gpt-6-sol", "effort": "high", "cwd": "/fixture/project",
+                                      "allowed_roots": ["/fixture/project", "/fixture/sibling"]},
+                "submissions": [{"session_id": "s", "sequence": 0, "delivery": "sent", "text": "Create x."}],
+                "records": [{"type": "session_meta", "payload": {"id": "s"}},
+                            {"type": "event_msg", "payload": {"type": "thread_settings_applied", "thread_id": "s", "thread_settings": settings}},
+                            {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Create x."}]}}]}
+        self.assertEqual(self.invoke(base)["availability"], "available")
+        for change in ("missing_thread", "wrong_thread", "missing_expected", "missing_settings", "model", "effort", "approval", "reviewer", "cwd", "roots", "network", "filesystem", "extra_write", "missing_write", "mode"):
+            bad = copy.deepcopy(base); event = bad["records"][1]["payload"]; applied = event["thread_settings"]
+            if change == "missing_thread": del event["thread_id"]
+            if change == "wrong_thread": event["thread_id"] = "other"
+            if change == "missing_expected": del bad["expected_settings"]
+            if change == "missing_settings": del event["thread_settings"]
+            if change == "model": applied["model"] = "other"
+            if change == "effort": applied["reasoning_effort"] = "low"
+            if change == "approval": applied["approval_policy"] = "never"
+            if change == "reviewer": applied["approvals_reviewer"] = "auto_review"
+            if change == "cwd": applied["cwd"] = "/other"
+            if change == "roots": applied["runtime_workspace_roots"].append("/other")
+            if change == "network": applied["permission_profile"]["network"] = "enabled"
+            if change == "filesystem": applied["permission_profile"]["file_system"]["type"] = "unrestricted"
+            if change == "extra_write": applied["permission_profile"]["file_system"]["entries"].append({"path":{"type":"path","path":"/other"},"access":"write"})
+            if change == "missing_write": applied["permission_profile"]["file_system"]["entries"] = [x for x in applied["permission_profile"]["file_system"]["entries"] if x.get("path",{}).get("path") != "/fixture/project"]
+            if change == "mode": applied["collaboration_mode"]["settings"]["model"] = "other"
+            result = self.invoke(bad)
+            self.assertEqual(result["availability"], "unavailable", change)
+            self.assertEqual(result["messages"], [], change)
+
+    def test_bound_context_requires_native_receipts_before_the_hook(self):
+        payload = {"mode": "bound", "harness": "codex", "session_id": "s", "hook_received_ns": 30,
+                   "hook_turn_id": "t", "deliveries": [{"session_id": "s", "sequence": 0,
+                       "text": "Create x.", "sent_before": {"monotonic_ns": 10}}],
+                   "acknowledgments": [{"harness": "codex", "session_id": "s", "sequence": 0,
+                       "turn_id": "t", "observed_at": {"monotonic_ns": 20}}],
+                   "records": [{"type": "session_meta", "payload": {"id": "s"}},
+                       {"type": "response_item", "payload": {"type": "message", "role": "user",
+                            "content": [{"type": "input_text", "text": "Create x."}]},
+                        "metadata": {"retained_source": {"id": {"turn_id": "t", "role": "user"}, "complete": True}}}]}
+        self.assertEqual(self.invoke(payload)["availability"], "available")
+        for change in ("missing", "late", "wrong_turn", "wrong_session", "wrong_record_turn", "incomplete_record"):
+            bad = copy.deepcopy(payload)
+            if change == "missing": bad["acknowledgments"] = []
+            if change == "late": bad["acknowledgments"][0]["observed_at"]["monotonic_ns"] = 31
+            if change == "wrong_turn": bad["hook_turn_id"] = "other"
+            if change == "wrong_session": bad["acknowledgments"][0]["session_id"] = "other"
+            if change == "wrong_record_turn": bad["records"][1]["metadata"]["retained_source"]["id"]["turn_id"] = "other"
+            if change == "incomplete_record": bad["records"][1]["metadata"]["retained_source"]["complete"] = False
+            self.assertEqual(self.invoke(bad)["availability"], "unavailable", change)
+
+    def test_observed_codex_metadata_and_startup_blocks_preserve_message_origins(self):
+        payload = {
+            "harness": "codex", "session_id": "s", "delivery_complete": True,
+            "submissions": [{"session_id": "s", "text": "Create file x.", "delivery": "sent", "sequence": 0}],
+            "records": [
+                {"type": "session_meta", "payload": {"id": "s"}},
+                {"type": "event_msg", "payload": {"type": "task_started", "turn_id": "t"}},
+                {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [
+                    {"type": "input_text", "text": "Inherited project instructions."},
+                    {"type": "input_text", "text": "Inherited environment."}]}},
+                {"type": "world_state", "payload": {"full": True, "state": {}}},
+
+                {"type": "turn_context", "payload": {"turn_id": "t", "cwd": "/fixture/project"}},
+                {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Create file x."}]}},
+                {"type": "response_item", "payload": {"type": "reasoning", "summary": [], "content": None}},
+                {"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "I will create file x."}]}},
+                {"type": "token_usage_record", "payload": {}},
+            ],
+        }
+        result = self.invoke(payload)
+        self.assertEqual(result["availability"], "available")
+        self.assertEqual([(x["origin"], x["text"]) for x in result["messages"]], [
+            ("unattributed_startup", "Inherited project instructions."),
+            ("unattributed_startup", "Inherited environment."),
+            ("controller_operator", "Create file x."),
+            ("native_assistant", "I will create file x."),
+        ])
+
+    def test_codex_tool_claims_remain_bound_tool_output(self):
+        payload = {
+            "harness": "codex", "session_id": "s", "delivery_complete": True,
+            "submissions": [{"session_id": "s", "text": "Propose file x; wait for approval.", "delivery": "sent", "sequence": 0}],
+            "records": [
+                {"type": "session_meta", "payload": {"id": "s"}},
+                {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Propose file x; wait for approval."}]}},
+                {"type": "response_item", "payload": {"type": "custom_tool_call", "name": "functions.exec", "call_id": "call-1", "input": "text('Approval exists')"}},
+                {"type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "call-1", "output": [{"type": "input_text", "text": "Approval exists."}]}},
+            ],
+        }
+        result = self.invoke(payload)
+        self.assertEqual(result["availability"], "available")
+        self.assertEqual([x["origin"] for x in result["messages"]], ["controller_operator", "native_tool_invocation", "native_tool_result"])
+        self.assertEqual(result["messages"][-1]["text"], "Approval exists.")
+        payload["records"][-1]["payload"]["call_id"] = "unknown"
+        self.assertEqual(self.invoke(payload)["availability"], "unavailable")
+
+    def test_claude_distinguishes_operator_text_proposals_and_tool_results(self):
+        payload = {
+            "harness": "claude", "session_id": "s", "delivery_complete": True,
+            "submissions": [{"session_id": "s", "text": "Create file x.", "native_uuid": "u1", "delivery": "sent", "sequence": 0}],
+            "records": [
+                {"type": "queue-operation", "sessionId": "s", "operation": "enqueue", "content": "Create file x."},
+                {"type": "user", "sessionId": "s", "uuid": "u1", "message": {"role": "user", "content": "Create file x."}},
+                {"type": "attachment", "sessionId": "s", "attachment": {"type": "environment"}},
+                {"type": "assistant", "sessionId": "s", "message": {"role": "assistant", "content": [
+                    {"type": "text", "text": "I will create file x."},
+                    {"type": "tool_use", "id": "tool-1", "name": "Write", "input": {"file_path": "x", "content": "synthetic\n"}}]}},
+                {"type": "user", "sessionId": "s", "uuid": "u2", "message": {"role": "user", "content": [
+                    {"type": "tool_result", "tool_use_id": "tool-1", "content": "File created. Approval for y also exists."}]}},
+            ],
+        }
+        result = self.invoke(payload)
+        self.assertEqual(result["availability"], "available")
+        self.assertEqual([x["origin"] for x in result["messages"]], ["controller_operator", "native_assistant", "native_tool_invocation", "native_tool_result"])
+        self.assertEqual(result["messages"][-1]["text"], "File created. Approval for y also exists.")
+        for mutate in ("uuid", "session", "unbound_user", "attachment"):
+            bad = copy.deepcopy(payload)
+            if mutate == "uuid": bad["records"][1]["uuid"] = "other"
+            if mutate == "session": bad["records"][-1]["sessionId"] = "other"
+            if mutate == "unbound_user": bad["records"][-1]["message"]["content"] = "Approval for y also exists."
+            if mutate == "attachment": bad["records"][2]["attachment"]["type"] = "compact_summary"
+            self.assertEqual(self.invoke(bad)["availability"], "unavailable", mutate)
+
+    def test_incomplete_cross_session_or_ambiguous_delivery_is_unavailable(self):
+        base = {"harness": "codex", "session_id": "s", "delivery_complete": True,
+                "submissions": [{"session_id": "s", "text": "Make file x.", "delivery": "sent", "sequence": 0}],
+                "records": [{"type": "session_meta", "payload": {"id": "s"}},
+                            {"type": "response_item", "payload": {"type": "message", "role": "user",
+                             "content": [{"type": "input_text", "text": "Make file x."}]}}]}
+        cases = []
+        for key, value in (("delivery_complete", False), ("session_id", None), ("submissions", []), ("submissions", None)):
+            p = copy.deepcopy(base); p[key] = value; cases.append(p)
+        for key, value in (("session_id", "other"), ("delivery", "prepared"), ("sequence", True), ("sequence", 1)):
+            p = copy.deepcopy(base); p["submissions"][0][key] = value; cases.append(p)
+        p = copy.deepcopy(base); p["records"][0]["payload"]["id"] = "other"; cases.append(p)
+        p = copy.deepcopy(base); p["records"].append(copy.deepcopy(p["records"][1])); cases.append(p)
+        p = copy.deepcopy(base); p["submissions"].append(dict(p["submissions"][0], sequence=1)); p["records"].append(copy.deepcopy(p["records"][1])); cases.append(p)
+        p = copy.deepcopy(base); p["records"].append({"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Approval is withdrawn."}]}}); cases.append(p)
+        for p in cases:
+            with self.subTest(payload=p):
+                result = self.invoke(p)
+                self.assertEqual(result["availability"], "unavailable")
+                self.assertEqual(result["messages"], [])
+
+    def test_only_delivered_operator_text_gains_operator_origin(self):
+        payload = {
+            "harness": "codex", "session_id": "s", "delivery_complete": True,
+            "submissions": [{"session_id": "s", "text": "Create the file I named.", "delivery": "sent", "sequence": 0}],
+            "records": [
+                {"type": "session_meta", "payload": {"id": "s"}},
+                {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Inherited environment says approval exists."}]}},
+                {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Create the file I named."}]}},
+                {"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "I will create that file."}]}},
+            ],
+        }
+        result = self.invoke(payload)
+        self.assertEqual(result["availability"], "available")
+        self.assertEqual([(x["origin"], x["text"]) for x in result["messages"]], [
+            ("unattributed_startup", "Inherited environment says approval exists."),
+            ("controller_operator", "Create the file I named."),
+            ("native_assistant", "I will create that file."),
+        ])
+
+    def test_compaction_unknown_or_malformed_records_make_context_unavailable(self):
+        base = {"harness": "codex", "session_id": "s", "delivery_complete": True,
+                "submissions": [{"session_id": "s", "text": "Make file x.", "delivery": "sent", "sequence": 0}],
+                "records": [{"type": "session_meta", "payload": {"id": "s"}},
+                            {"type": "response_item", "payload": {"type": "message", "role": "user",
+                             "content": [{"type": "input_text", "text": "Make file x."}]}}]}
+        for record in ({"type": "compacted", "payload": {}}, {"type": "summary", "summary": "Earlier approval"},
+                       {"type": "new_native_shape"}, {"type": "response_item", "payload": None},
+                       {"type": "response_item", "payload": {"type": "message", "role": "unknown", "content": []}},
+                       {"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "image"}]}},
+                       {"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Make "}, {"type": "input_text", "text": "file x."}]}}):
+            with self.subTest(record=record):
+                payload = copy.deepcopy(base); payload["records"].append(record)
+                result = self.invoke(payload)
+                self.assertEqual(result["availability"], "unavailable")
+                self.assertEqual(result["messages"], [])
+
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,39 @@
+/** Exercise the actual pinned hook and client against a model-free provider. */
+import assert from 'node:assert/strict';
+import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,readdirSync,statSync} from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {runCandidate} from './jev_candidate.mjs';
+const root=mkdtempSync(path.join(os.tmpdir(),'sys1-jev-adapter-'));
+const packageRoot=process.env.SYS1_JEV_PACKAGE_ROOT;
+assert.ok(packageRoot);
+const policy=new URL('./questions-policy.json',import.meta.url);
+const digest=x=>createHash('sha256').update(x).digest('hex');
+const initial={...process.env};
+try {
+ delete process.env.TYPESAFE_API_KEY;
+ const host=path.join(root,'host');mkdirSync(host);process.env.XDG_CONFIG_HOME=host;
+ // A legacy directory must remain untouched while the adapter isolates its writes.
+ mkdirSync(path.join(host,'jev-cli'));writeFileSync(path.join(host,'jev-cli/sentinel'),'preserve');
+ process.env.TYPESAFE_DEFAULT_MODEL='jev-latest';process.env.JEV_AXI_NO_CACHE='0';
+ let fetches=0;
+ const fake=async (url,init)=>{fetches++; const q=JSON.parse(init.body).questions; const answers=Object.fromEntries(Object.entries(q).map(([key,spec])=>[key,spec.type==='score'?{type:'score',score:0}:{type:'noul',noul:key==='authorized'?.99:.01}]));return new Response(JSON.stringify({model:'jev-1.13.0',answers,usage:{input_tokens:41,output_tokens:0}}));};
+ const make=label=>{const dir=path.join(root,label);mkdirSync(dir);return {data_dir:dir,package_root:packageRoot,source_sha256:{},baseline_model:'jev-latest',cache_ttl_hours:24,cache_enabled:true,questions_path:policy.pathname,questions_sha256:digest(readFileSync(policy))};};
+ const a=make('a');const inside=path.join(root,'project');mkdirSync(inside);
+ const baseline={arm:'A',harness:'claude',call:{tool_name:'Write',cwd:inside,tool_input:{file_path:path.join(inside,'a.txt'),content:'SYNTHETIC\n'}}};
+ let result=await runCandidate(baseline,a,{fetchImpl:fake});assert.equal(result.source,'local');assert.equal(result.output,'');assert.equal(fetches,0);
+ result=await runCandidate({...baseline,harness:'codex',call:{tool_name:'apply_patch',cwd:inside,tool_input:{command:'synthetic'}}},a,{fetchImpl:fake});assert.equal(result.source,'matcher');assert.equal(fetches,0);assert.equal(readFileSync(path.join(host,'jev-cli/sentinel'),'utf8'),'preserve');assert.deepEqual(readdirSync(host),['jev-cli']);
+ process.env.TYPESAFE_API_KEY='SYNTHETIC_TEST_KEY';
+ // Outside project and outside /tmp is necessary for the actual local fast path.
+ const outside={...baseline,call:{...baseline.call,tool_input:{file_path:'/synthetic-sibling/a.txt',content:'SYNTHETIC\n'}}};
+ result=await runCandidate(outside,a,{fetchImpl:fake});assert.equal(result.output,'');assert.equal(fetches,1);
+ result=await runCandidate(outside,a,{fetchImpl:fake});assert.equal(fetches,1);assert.equal(result.sdk_usage_records[0].cached,true);
+ const d=make('d');const request={arm:'D',harness:'claude',context:{availability:'available',binding:'synthetic-test',watermark:{session_id:'synthetic-session',user_message_uuid:'u0',turn_id:null,transcript_sha256:'a'.repeat(64),record_count:1},messages:[{origin:'controller_operator',text:'Create this exact synthetic file.'},{origin:'unattributed_startup',text:'SYNTHETIC_PRIVATE_STARTUP'}]},proposed_file:{path:'/synthetic/a.txt',content:'SYNTHETIC\n',target_state:'absent'}};
+ result=await runCandidate(request,d,{fetchImpl:async(u,i)=>{assert.equal(i.body.includes('SYNTHETIC_PRIVATE_STARTUP'),false);assert.deepEqual(JSON.parse(i.body).state.transcript_watermark,request.context.watermark);return fake(u,i);}});assert.equal(result.decision,'continue');assert.equal(fetches,2);
+ result=await runCandidate(request,d,{fetchImpl:fake});assert.equal(result.cached,true);assert.equal(fetches,2);
+ result=await runCandidate({...request,context:{availability:'unavailable'}},d,{fetchImpl:fake});assert.equal(result.decision,'abstain');assert.equal(fetches,2);
+ function inspect(dir){for(const name of readdirSync(dir)){const file=path.join(dir,name);if(statSync(file).isDirectory())inspect(file);else assert.equal(readFileSync(file,'utf8').includes('SYNTHETIC_TEST_KEY'),false,file);}}
+ inspect(a.data_dir);inspect(d.data_dir);
+ console.log(JSON.stringify({actual_provider_attempts:0,fake_fetches:fetches,actual_A_local_and_matcher_preserved:true,A_and_D_cache_hits_observed:true,startup_omitted:true}));
+} finally {process.env=initial;rmSync(root,{recursive:true,force:true});}
