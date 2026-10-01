@@ -299,7 +299,7 @@ def load_selection_input() -> tuple[dict[str, str], Path]:
                 or {".", ".."}.intersection(relative.parts)
             ):
                 raise AccountError("DA002")
-            account_home = Path.home() / relative
+            account_home = Path(os.path.abspath(Path.home() / relative))
         elif not account_home.is_absolute():
             raise AccountError("DA002")
     except AccountError:

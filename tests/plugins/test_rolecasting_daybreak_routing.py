@@ -38,7 +38,12 @@ with open(log_path, "w", encoding="utf-8") as log:
         log.flush()
         raise SystemExit(0)
     signal.signal(signal.SIGTERM, terminated)
-    json.dump({{"codex_home": os.environ.get("CODEX_HOME")}}, log)
+    observation = {{"codex_home": os.environ.get("CODEX_HOME")}}
+    if os.environ.get("FAKE_OBSERVE_RESOLVED_CODEX_HOME"):
+        observation["resolved_codex_home"] = os.path.abspath(
+            os.environ["CODEX_HOME"]
+        )
+    json.dump(observation, log)
     log.write("\n")
     log.flush()
     transport_case = os.environ.get("FAKE_TRANSPORT_CASE")
@@ -728,6 +733,65 @@ class DaybreakAccountTests(unittest.TestCase):
             "synthetic-selected",
         ):
             self.assertNotIn(forbidden, result.stdout)
+
+    def test_status_refresh_absolutizes_home_relative_selection_once(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            inherited_home = root / "relative-home"
+            selected = inherited_home / "selected"
+            selected.mkdir(parents=True)
+            (selected / "auth.json").write_text(
+                json.dumps({"tokens": {"account_id": "synthetic-selected"}}),
+                encoding="utf-8",
+            )
+            executable = root / "fake-codex"
+            log = root / "fake.log"
+            write_fake_codex(executable)
+            selection = {
+                "schema": "rolecasting-daybreak-account-selection-v1",
+                "account_home": "~/selected",
+                "authenticated_account_id": "synthetic-selected",
+            }
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ACCOUNT),
+                    "status-refresh",
+                    "--selection-stdin",
+                    "--codex",
+                    str(executable),
+                    "--model",
+                    "gpt-daybreak-blue-latest/high",
+                    "--freshness-seconds",
+                    "1800",
+                ],
+                input=json.dumps(selection),
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=5,
+                cwd=root,
+                env={
+                    **BASE_ENV,
+                    "HOME": "relative-home",
+                    "FAKE_LOG": str(log),
+                    "FAKE_OBSERVE_RESOLVED_CODEX_HOME": "1",
+                },
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            transcript = [
+                json.loads(line) for line in log.read_text().splitlines()
+            ]
+
+        self.assertEqual(
+            transcript[0],
+            {
+                "codex_home": str(selected),
+                "resolved_codex_home": str(selected),
+            },
+        )
 
     def test_unavailable_harmless_probe_fails_before_authentication_or_launch(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
