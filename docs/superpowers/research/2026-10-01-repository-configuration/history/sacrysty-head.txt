@@ -1,0 +1,8 @@
+commit:
+  committer:
+    date: "2026-10-01T04:20:40Z"
+    email: noreply@github.com
+    name: GitHub
+  message: "docs(genesis): record accepted publisher publication (#36)\n\nSigned-off-by: Ivan D Vasin <ivan@nisavid.io>"
+html_url: "https://github.com/nisavid/sacrysty/commit/6157b9171539ddfa7d181b9bc13d539346f9e23d"
+sha: 6157b9171539ddfa7d181b9bc13d539346f9e23d

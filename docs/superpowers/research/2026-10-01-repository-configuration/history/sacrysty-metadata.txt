@@ -1,0 +1,21 @@
+allow_auto_merge: false
+allow_merge_commit: false
+allow_rebase_merge: true
+allow_squash_merge: true
+created_at: "2026-09-07T05:11:27Z"
+default_branch: main
+delete_branch_on_merge: true
+full_name: nisavid/sacrysty
+security_and_analysis:
+  dependabot_security_updates:
+    status: enabled
+  secret_scanning:
+    status: enabled
+  secret_scanning_non_provider_patterns:
+    status: disabled
+  secret_scanning_push_protection:
+    status: enabled
+  secret_scanning_validity_checks:
+    status: disabled
+visibility: public
+web_commit_signoff_required: true

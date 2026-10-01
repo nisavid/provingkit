@@ -1,0 +1,72 @@
+[
+  {
+    "utc": "2026-10-01T09:34:57.958421+00:00",
+    "argv": [
+      "git",
+      "log",
+      "--format=%H %ad %s",
+      "--date=iso-strict",
+      "-S",
+      "Proseweaving source contract",
+      "--",
+      ".github/workflows/provingkit-source.yml"
+    ],
+    "returncode": 0,
+    "selection": "complete output",
+    "file": "round-2-proseweaving-job-history.txt",
+    "sha256": "c9e6dc36212f638e6a95a069eca6c3b88ae661ef714b7810e7f9d5f785b5bbe5"
+  },
+  {
+    "utc": "2026-10-01T09:34:57.960444+00:00",
+    "argv": [
+      "git",
+      "log",
+      "--format=%H %ad %s",
+      "--date=iso-strict",
+      "-S",
+      "Installable artifact projections",
+      "--",
+      ".github/workflows/provingkit-source.yml"
+    ],
+    "returncode": 0,
+    "selection": "complete output",
+    "file": "round-2-projection-job-history.txt",
+    "sha256": "ecefefc2e5336a408167f2ffe5a702f3384677dd5451a8d2e02376d4dcb9ed40"
+  },
+  {
+    "utc": "2026-10-01T09:34:57.961655+00:00",
+    "argv": [
+      "git",
+      "show",
+      "02812cdee184023ecc06214e263c308d9131a1b0:.github/workflows/provingkit-source.yml"
+    ],
+    "returncode": 0,
+    "selection": "complete output",
+    "file": "round-2-workflow-source.txt",
+    "sha256": "d8cc07d7389d54eb9e5f12f3e42e0bedbb90d193ebfa2d033eb12fd504fd5a25"
+  },
+  {
+    "utc": "2026-10-01T09:34:57.963542+00:00",
+    "argv": [
+      "git",
+      "show",
+      "02812cdee184023ecc06214e263c308d9131a1b0:tests/test_validate_provingkit.py"
+    ],
+    "returncode": 0,
+    "selection": "source lines 511-531",
+    "file": "round-2-proseweaving-job-existence-test.txt",
+    "sha256": "2567cfcdbabea3805abd2c32ada11252ecc9d06e370047a1f3fa5ee2c8a6fa2d"
+  },
+  {
+    "utc": "2026-10-01T09:34:57.964692+00:00",
+    "argv": [
+      "git",
+      "show",
+      "02812cdee184023ecc06214e263c308d9131a1b0:plugins/versionkeeping/skills/checkpointing-and-publishing-git-work/references/commit-policy.md"
+    ],
+    "returncode": 0,
+    "selection": "complete output",
+    "file": "round-2-local-commit-policy.txt",
+    "sha256": "e83f7d48f7db06cffda58428d2f36f7dabf287061b672fca0161383c5d8b5017"
+  }
+]

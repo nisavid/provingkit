@@ -1,0 +1,248 @@
+[
+  {
+    "name": "repository-settings-README.md",
+    "sha256": "4d9b6cd3fc34382c5119417fdd3e0979ad41061c396bc92cbab0d06ef6d21964",
+    "bytes": 2755,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "repository-settings-docs__configuration.md",
+    "sha256": "78aabef2bf02e84eb465c81fe3f312e657a247246aa7c360e94fc6faecbae126",
+    "bytes": 1679,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "safe-settings-README.md",
+    "sha256": "a89b2403f4426a7bdbed6632f69909c0b7fcb565cd8de075f14f459e894a70c8",
+    "bytes": 28664,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "safe-settings-docs__status-checks.md",
+    "sha256": "a40391f952f27cddd7d98af0368abcd81f23bffbc478c29a25abb8b180261ba8",
+    "bytes": 3952,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "scorecard-README.md",
+    "sha256": "8fed8241afd335db89ba8077e9883a80693c7d7ecda6ef357402207a48ad940a",
+    "bytes": 45402,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "scorecard-docs__checks.md",
+    "sha256": "d1a667647fa408a706e6796a855edc918d1d6dad2d6f6f5aa37802837a66c7d8",
+    "bytes": 44967,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "search-log.json",
+    "sha256": "392ebb785020ae7b14a5cd7a26a2677a3fe38058cb8d90f42a1529e66a41b579",
+    "bytes": 55399,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-1.md",
+    "sha256": "1f6be2d442c35d033b9f7b3d0e92e20a0f8c6a28445b5c4c941e7d6a957c9060",
+    "bytes": 9992,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-10.md",
+    "sha256": "e4612d7b75523fd1d1d17195d2745fe7c02ba02b5c9debc6534d6629e223a3a4",
+    "bytes": 28744,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-11.md",
+    "sha256": "d1651a9473c51379de4064c51d415481322554b752c9affc68d634ff428bf985",
+    "bytes": 9395,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-12.md",
+    "sha256": "c5d61be0c0e9bfaa4558683cb46585dae2ec7ee77674f1a8be8cf84d2ae05b0b",
+    "bytes": 14969,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-13.md",
+    "sha256": "dc95142f4808fc4b7097c09e94459f0d6d7106a69a4746c1f253b283aadd648c",
+    "bytes": 8073,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-14.md",
+    "sha256": "89ca36cadcacefc09a026887a823302bf60efa60d6854cbaa736f581f8a8a773",
+    "bytes": 8435,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-15.md",
+    "sha256": "9318a0aa20f8561494042094bf228134c43b706b69ec639ab812e28445d80625",
+    "bytes": 72643,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-16.md",
+    "sha256": "362e03e48a7569d25b86464f0ea23f1c45bb789d9f9ea1fbeecbdc2a75266633",
+    "bytes": 19933,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-17.md",
+    "sha256": "3b5874c7b412a4d79df28b60abf37195186ca3698299f1c15f4cb47c38c90658",
+    "bytes": 25959,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-18.md",
+    "sha256": "ea501dc69a60664ceb6eed94e262399e6acf474aacb635b23747aab91b1ac159",
+    "bytes": 48871,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-19.md",
+    "sha256": "1783ff304cae14aae411e8c9d5d204b9d9b8abb8b852cab2873cfef613169eeb",
+    "bytes": 71575,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-2.md",
+    "sha256": "0e7706d2ce57795c27687d11a8c9eb65be026822b963488fbece1b7d691b4ec2",
+    "bytes": 29376,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-20.md",
+    "sha256": "0f8717939f1211bd6abb5f3a8bd7c5017d7534953c411da66eed5965123ec338",
+    "bytes": 139285,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-21.md",
+    "sha256": "8f5d5909b50ff56fdd9e2aab8ef0071d01f6bb63e3bbb60a1a52b1bd2b17013d",
+    "bytes": 10429,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-22.md",
+    "sha256": "233393a50e49f51ddead915f968fa1f8235208a594965986b9f7dfec23aa6e07",
+    "bytes": 555,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-23.md",
+    "sha256": "6f2c91c30ef8e137406528e8f565e81f77119d07a5862e19b64fa60013056597",
+    "bytes": 51035,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-24.md",
+    "sha256": "b506b90809798f745fb2c6783c15bf899c370609e12318fd25ad4370f44b842d",
+    "bytes": 11921,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-25.md",
+    "sha256": "b41c507a604df3b4d267bdd731d43c2badb80cc9c70c77e59d03b8ad65b4bc17",
+    "bytes": 6416,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-26.md",
+    "sha256": "1e0a13e6923e54c703d3c5208cef045c07d050d326716d09f3b97e4bc1cadc44",
+    "bytes": 11012,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-27.md",
+    "sha256": "412c767a8cec664860de46ae3687351cb48594d6deac7f2bbe2676e61e76f01e",
+    "bytes": 11772,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-28.md",
+    "sha256": "d20ef6346c4f9df07a26d1923800fc4233532e5de830af23d95701e534ba97aa",
+    "bytes": 5164,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-3.md",
+    "sha256": "29514ce1b315390399c988060719edf269a18eedce6faf1ee7ec2ee52eca8c30",
+    "bytes": 26738,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-4.md",
+    "sha256": "38ac5ced10656bdae27d1b6b836108a7a668236597bd2149e80741b631030ad7",
+    "bytes": 15236,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-5.md",
+    "sha256": "e3d7f91d96a1192a9ddd83177484d7b4d1673ba9f65e4b1a468e8e4eca9ca660",
+    "bytes": 10852,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-6.md",
+    "sha256": "be38b0b5c40620d32bfc4fcda4871bdcae768428e3e5681f1bb55f15347e4c6b",
+    "bytes": 7272,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-7.md",
+    "sha256": "33b75a7ad673eb2d64119746e21b5144732b3099b643bcae2b661cf41eab15d3",
+    "bytes": 3771,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-8.md",
+    "sha256": "783ecec87adee6de694dc0e00a74435a0605da4d1fdf0683ff36cd61d326ac0a",
+    "bytes": 42706,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-9.md",
+    "sha256": "f0f5b47958c426682cde61dea41be8896ba03ca63316488bb6dfa1ca86a38663",
+    "bytes": 93989,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "source-revisions.json",
+    "sha256": "bb924afa40acf7cf213819dd60791d2a46c0c829691e0c93ae9767699e2363b4",
+    "bytes": 2516,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "terraform-github-docs__data-sources__repository.md",
+    "sha256": "46ec688852ade2c286f981aabeae886a722bbe7df04b7677aa1042e3da7c4d8a",
+    "bytes": 5335,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "terraform-github-docs__index.md",
+    "sha256": "fd72d6ac3d0bf898c4e1e8c97b658bb050225d4a238c1020ae31183ee30ad3f4",
+    "bytes": 11719,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "terraform-github-docs__resources__repository.md",
+    "sha256": "ff2c88fc85386cfffde305ada8d60dd8523e861819b25738940e025859e0953d",
+    "bytes": 15737,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "terraform-github-docs__resources__repository_ruleset.md",
+    "sha256": "6b615b6905cadcdbc98d9a6b12fe42daa0ba20779190edf993857011d014ab53",
+    "bytes": 19808,
+    "retention": "local source snapshot; not redistributed"
+  },
+  {
+    "name": "terraform-github-github__resource_github_repository_ruleset.go",
+    "sha256": "133d0364cabfdd4e41443497566cf7b0aa6c88b553dbf56a2115b11d03ba6d58",
+    "bytes": 36666,
+    "retention": "local source snapshot; not redistributed"
+  }
+]

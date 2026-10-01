@@ -1,0 +1,50 @@
+id: 22036701
+name: Protect main through review
+target: branch
+source_type: Repository
+source: nisavid/provingkit
+enforcement: active
+conditions:
+  ref_name:
+    exclude: []
+    include[1]: refs/heads/main
+rules[4]:
+  - type: deletion
+  - type: non_fast_forward
+  - type: pull_request
+    parameters:
+      required_approving_review_count: 0
+      dismiss_stale_reviews_on_push: false
+      required_reviewers: []
+      require_code_owner_review: false
+      require_last_push_approval: false
+      required_review_thread_resolution: false
+      require_extra_approval_for_unattributed_changes: true
+      allowed_merge_methods[2]: rebase,squash
+  - type: required_status_checks
+    parameters:
+      strict_required_status_checks_policy: true
+      do_not_enforce_on_create: false
+      required_status_checks[12]{context,integration_id}:
+        Artifact Customs source contract,15368
+        Conventional commit compliance,15368
+        Derived locks remain reproducible,15368
+        Mergecraft source contract,15368
+        Provingkit source boundary,15368
+        Rolecasting source contract,15368
+        Tricritical source contract,15368
+        Validate disposition and refresh contracts,15368
+        Versionkeeping source contract,15368
+        macos-latest credential provider,15368
+        ubuntu-latest credential provider,15368
+        windows-latest credential provider,15368
+node_id: RRS_lACqUmVwb3NpdG9yec5QsoWLzgFQQN0
+created_at: "2026-09-01T14:31:32.497-04:00"
+updated_at: "2026-09-15T17:57:46.980-04:00"
+bypass_actors: []
+current_user_can_bypass: never
+_links:
+  self:
+    href: "https://api.github.com/repos/nisavid/provingkit/rulesets/22036701"
+  html:
+    href: "https://github.com/nisavid/provingkit/rules/22036701"

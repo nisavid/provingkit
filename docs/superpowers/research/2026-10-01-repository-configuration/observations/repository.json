@@ -1,0 +1,32 @@
+{
+  "observed_at": "2026-10-01T09:22:23.105962+00:00",
+  "endpoint": "repos/nisavid/provingkit",
+  "data": {
+    "id": 1353876875,
+    "full_name": "nisavid/provingkit",
+    "default_branch": "main",
+    "visibility": "public",
+    "allow_merge_commit": false,
+    "allow_squash_merge": true,
+    "allow_rebase_merge": true,
+    "allow_auto_merge": false,
+    "delete_branch_on_merge": true,
+    "security_and_analysis": {
+      "secret_scanning": {
+        "status": "enabled"
+      },
+      "secret_scanning_push_protection": {
+        "status": "enabled"
+      },
+      "dependabot_security_updates": {
+        "status": "enabled"
+      },
+      "secret_scanning_non_provider_patterns": {
+        "status": "disabled"
+      },
+      "secret_scanning_validity_checks": {
+        "status": "disabled"
+      }
+    }
+  }
+}

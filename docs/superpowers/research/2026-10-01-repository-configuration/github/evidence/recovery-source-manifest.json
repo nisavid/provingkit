@@ -1,0 +1,30 @@
+{
+  "retention": "Local-only source snapshots; source URLs and retrieval methods are in the follow-up.",
+  "files": [
+    {
+      "path": "recovery/context7-approval.txt",
+      "sha256": "52ae72aa98fe1cea19dce87132bd07a0a22642080e0f715d4682466346719667",
+      "bytes": 7776
+    },
+    {
+      "path": "recovery/firecrawl-copilot-review.json",
+      "sha256": "bcd9de2140e0aa9e7566fbc92f6345fb2a237c1a747f3b5ca026aaf55f3cee8c",
+      "bytes": 34891
+    },
+    {
+      "path": "recovery/firecrawl-required-approvals.json",
+      "sha256": "1893020bb17228a2d648fe5a3b38f763a2ce955ad4725b81527e65bd40981e49",
+      "bytes": 8277
+    },
+    {
+      "path": "recovery/identity-verification.json",
+      "sha256": "05931ea272f95a4b34e707606aba69fc895d2ef8455bf3431f766a37cfba47b8",
+      "bytes": 2755
+    },
+    {
+      "path": "recovery/queries.md",
+      "sha256": "9c43066feb570f4566c30205b5cfebbfcd89b79bb24377997e2fec38aea8acc8",
+      "bytes": 1638
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-10-01T09:22:24.078849+00:00",
+  "endpoint": "repos/nisavid/provingkit/actions/permissions",
+  "data": {
+    "enabled": true,
+    "allowed_actions": "all",
+    "sha_pinning_required": false
+  }
+}

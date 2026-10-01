@@ -1,0 +1,8 @@
+commit:
+  committer:
+    date: "2026-10-01T03:23:39Z"
+    email: noreply@github.com
+    name: GitHub
+  message: "feat(rolecasting/daybreak): separate catalog inspection from status refresh (#350)\n\n* feat(rolecasting/daybreak): separate catalog and account operations\n\n* fix(rolecasting/daybreak): validate status and bound account effects\n\n* fix(rolecasting/daybreak): admit identity before bounded discovery\n\n* fix(rolecasting/daybreak): contain integer parsing failures\n\n* fix(rolecasting/daybreak): bound authentication reads and reject NUL paths\n\n* fix(rolecasting/daybreak): preflight status and bound request writes\n\n* fix(rolecasting/daybreak): bind home expansion to one absolute path"
+html_url: "https://github.com/nisavid/provingkit/commit/02812cdee184023ecc06214e263c308d9131a1b0"
+sha: 02812cdee184023ecc06214e263c308d9131a1b0

@@ -1,0 +1,21 @@
+    def test_proseweaving_source_job_and_derived_lock_are_covered(self) -> None:
+        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
+        source_commands = {
+            line.strip()
+            for step in workflow["jobs"]["proseweaving"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+        lock_commands = {
+            line.strip()
+            for step in workflow["jobs"]["derived-locks"]["steps"]
+            for line in step.get("run", "").splitlines()
+            if line.strip()
+        }
+
+        self.assertIn("python -m unittest tests.test_validate_proseweaving", source_commands)
+        self.assertIn("python scripts/validate_proseweaving.py .", source_commands)
+        self.assertIn(
+            "python scripts/validate_proseweaving.py --write-content-lock .",
+            lock_commands,
+        )

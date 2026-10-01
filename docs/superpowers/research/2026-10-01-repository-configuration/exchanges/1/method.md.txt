@@ -1,0 +1,37 @@
+# Repository-configuration research and design method
+
+This packet gives the design panel a traceable research comparison and gives the implementation map the evidence it must preserve. Load the synthesis, relevant lane follow-ups, and this method before selecting or changing the equipment design. Record the published revision consumed; source observations do not establish hosted enforcement or local deployment.
+
+## Authorized increment
+
+The user requested an initially isolated, cross-examined research panel and a Wayfinder map. The accepted amendment keeps equipment shape open for a separate `codebase-design` panel, requires map refresh throughout both panels, and requires a further implementation map with a locally deployed alpha release as its destination before design ends. Research/design and map maintenance are authorized. Live repository changes, equipment implementation, installation, and release execution are outside this increment.
+
+The [design map](https://github.com/nisavid/provingkit/issues/366) is the live decision index. Its initial research children are [historical rationale](https://github.com/nisavid/provingkit/issues/367), [GitHub mechanisms](https://github.com/nisavid/provingkit/issues/368), and [conceptual approaches](https://github.com/nisavid/provingkit/issues/369). They block [the architecture panel](https://github.com/nisavid/provingkit/issues/370) through native dependencies. The directly requested initial research began before ticket creation; each research ticket was assigned at creation before tracker-managed continuation. That sequencing is recorded rather than presented as a prior claim.
+
+## Research controls
+
+The coordinator applied `research`, `wayfinder`, `capturing-agent-procedures`, `grilling`, and `domain-modeling`, and inspected the panel precedent in [independent continuation designs](https://github.com/nisavid/provingkit/issues/345), [external orchestration survey](https://github.com/nisavid/provingkit/issues/346), and [the retained observation-route method](https://github.com/nisavid/provingkit/blob/6fbddb3883e08476af9fffe1410863f0e89f0cd6/docs/superpowers/research/2026-10-01-observer-scope-review/method.md). These are prior evidence and method inputs; they do not select this equipment's architecture.
+
+Three fresh native child contexts received lane-specific briefs and no inherited leader conversation. The historical lane could inspect named repository sources, current settings, and targeted history. The platform lane could inspect current public primary documentation/source and independently selected existing approaches. The conceptual lane could read the problem and governing policy but no platform documentation, existing configuration, project history, or peer report. Each wrote in a distinct artifact directory. The coordinator received progress messages but relayed no peer findings during initial work.
+
+Fresh contexts still receive harness instructions and ambient metadata, including the injected memory summary. The exposure inventories record that limitation. Read and write limits are cooperative instructions, not a claimed product-enforced sandbox or model attestation. Workers use the inherited model/effort through the available native delegation surface; no effective-model claim is inferred from their prose.
+
+Before exchange, the coordinator recomputes each first report's SHA-256 and preserves those bytes. A versioned exchange packet names the three frozen reports and coordinator observations. Each lane then critiques the other evidence, revises its own conclusions in a separate follow-up, and records changed assumptions, remaining disagreements, and source gaps. Extra passes address material unresolved findings; a round count is not a completion criterion.
+
+## Architecture controls
+
+Use a separate `codebase-design` panel after research, with its shared research packet and initially isolated alternative designs. Compare modules by their interface, depth, locality, seams, dependency strategy, failure modes, and test surface. The human chooses consequential architecture and policy; a worker ranking is a recommendation. Preserve the researched alternatives without assuming a catalog, graph, Skill, Plugin, or execution engine is already selected.
+
+Before the panel ends, refresh this map and chart the implementation map through `wayfinder`. Its destination must include local alpha deployment and verified invocation. The producer owns maintained source, supported behavior, review/evaluation, publication, and local deployment evidence; consumers must locate and invoke the reviewed revision. Keep uncertain packaging and safety policy as explicit decisions, not installed conventions.
+
+## Review and verification scope
+
+The retained reports make research, comparison, and proposal claims. Completion requires traceable primary citations, preserved initial reports, cross-examined follow-ups, a synthesis with evidence limits, current independent review of the frozen synthesis and map proposals, `git diff --check`, local link/identity checks, and verified tracker relations. No production security qualification, actual hosted negative test, or alpha deployment is claimed.
+
+The optional installed `tricritical:loop` route was inspected. Its alpha.3 invocation requires a skill-local `topology.json` that is absent from the installed payload; the plugin-root file is absent too. [Keep installed Tricritical skills off the source-stage topology](https://github.com/nisavid/provingkit/issues/187) records this known projection gap. This panel does not substitute source-stage topology or claim a completed Tricritical loop. Independent native critique and final read-only review can proceed under the user's panel request, with their actual provenance recorded.
+
+## Retention and source ownership
+
+This is task-specific research/method evidence, not a new installed procedure. The reusable panel-method owner remains [Define, implement, and evaluate reusable agent-panel workflows](https://github.com/nisavid/provingkit/issues/306); this panel's use does not clear that producer's behavioral qualification. The implementation map must determine ownership and capture the selected repo-configuration procedure before downstream adoption. No installed skill or shared memory is edited.
+
+The task started at `02812cdee184023ecc06214e263c308d9131a1b0`, detached and clean; the remote default branch pointed to that same revision. Its research branch is `nisavid/research/repository-configuration`. Other existing local branches and unpublished work were not adopted. Repository instructions and `CONTRIBUTING.md` require Conventional Commits and focused validation; they prescribe no DCO sign-off for this contribution. The host supplies Ivan's configured Git identity. Research publication retains immutable branch commits without implying a source merge, installed change, or release.

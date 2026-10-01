@@ -1,0 +1,97 @@
+{
+  "observed_at": "2026-10-01T09:22:23.784996+00:00",
+  "endpoint": "repos/nisavid/provingkit/rules/branches/main",
+  "data": [
+    {
+      "type": "deletion",
+      "ruleset_source_type": "Repository",
+      "ruleset_source": "nisavid/provingkit",
+      "ruleset_id": 22036701
+    },
+    {
+      "type": "non_fast_forward",
+      "ruleset_source_type": "Repository",
+      "ruleset_source": "nisavid/provingkit",
+      "ruleset_id": 22036701
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "required_reviewers": [],
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false,
+        "require_extra_approval_for_unattributed_changes": true,
+        "allowed_merge_methods": [
+          "rebase",
+          "squash"
+        ]
+      },
+      "ruleset_source_type": "Repository",
+      "ruleset_source": "nisavid/provingkit",
+      "ruleset_id": 22036701
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "Artifact Customs source contract",
+            "integration_id": 15368
+          },
+          {
+            "context": "Conventional commit compliance",
+            "integration_id": 15368
+          },
+          {
+            "context": "Derived locks remain reproducible",
+            "integration_id": 15368
+          },
+          {
+            "context": "Mergecraft source contract",
+            "integration_id": 15368
+          },
+          {
+            "context": "Provingkit source boundary",
+            "integration_id": 15368
+          },
+          {
+            "context": "Rolecasting source contract",
+            "integration_id": 15368
+          },
+          {
+            "context": "Tricritical source contract",
+            "integration_id": 15368
+          },
+          {
+            "context": "Validate disposition and refresh contracts",
+            "integration_id": 15368
+          },
+          {
+            "context": "Versionkeeping source contract",
+            "integration_id": 15368
+          },
+          {
+            "context": "macos-latest credential provider",
+            "integration_id": 15368
+          },
+          {
+            "context": "ubuntu-latest credential provider",
+            "integration_id": 15368
+          },
+          {
+            "context": "windows-latest credential provider",
+            "integration_id": 15368
+          }
+        ]
+      },
+      "ruleset_source_type": "Repository",
+      "ruleset_source": "nisavid/provingkit",
+      "ruleset_id": 22036701
+    }
+  ]
+}

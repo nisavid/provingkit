@@ -1,0 +1,27 @@
+{
+  "exchange_version": 1,
+  "original_local_packet_sha256": "e7691924a7ab9f01cd7b6db08f9b30b4c6c175c74ea6f23108c65d695ac51149",
+  "inputs": [
+    {
+      "path": "history/round-1.md",
+      "sha256": "edecfa4fd6900e452297dc03e8c3678fbd16e4035bab527682a9117a29b1acdd"
+    },
+    {
+      "path": "github/round-1.md",
+      "sha256": "945d26dfe36c5daa600b6f773635b5430be4cc673263468bb9938570d55db019"
+    },
+    {
+      "path": "conceptual-first.md",
+      "sha256": "ed111c10a1038d6f1d00d7d495b8470d5f858fc995f4240e924341b670faecd5"
+    },
+    {
+      "path": "exchanges/1/coordinator-observations.md.txt",
+      "sha256": "6bbf3e604f5f70d2c7a5d7d2a0aba31413396f07b5b0dd881b9ae59e26e18112"
+    },
+    {
+      "path": "exchanges/1/method.md.txt",
+      "sha256": "41d6031b49d9a9290d38b03e27b7baf3d442ddd90077c126c9dd9775e6714474"
+    }
+  ],
+  "operator_amendment": "Keep equipment shape open for a separate architecture/design panel; refresh Wayfinder through both panels; before design ends, chart an implementation map targeting a locally deployed alpha release."
+}

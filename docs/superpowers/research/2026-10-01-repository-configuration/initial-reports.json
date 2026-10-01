@@ -1,0 +1,21 @@
+{
+  "exchange_version": 1,
+  "exchange_sha256": "e7691924a7ab9f01cd7b6db08f9b30b4c6c175c74ea6f23108c65d695ac51149",
+  "reports": [
+    {
+      "path": "history/round-1.md",
+      "sha256": "edecfa4fd6900e452297dc03e8c3678fbd16e4035bab527682a9117a29b1acdd",
+      "treatment": "byte-identical initial worker report"
+    },
+    {
+      "path": "github/round-1.md",
+      "sha256": "945d26dfe36c5daa600b6f773635b5430be4cc673263468bb9938570d55db019",
+      "treatment": "byte-identical initial worker report"
+    },
+    {
+      "path": "conceptual-first.md",
+      "sha256": "ed111c10a1038d6f1d00d7d495b8470d5f858fc995f4240e924341b670faecd5",
+      "treatment": "byte-identical initial worker report"
+    }
+  ]
+}

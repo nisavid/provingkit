@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-10-01T09:23:13.827300+00:00",
+  "endpoint": "repos/nisavid/provingkit/code-scanning/default-setup",
+  "data": {
+    "state": "not-configured",
+    "languages": [
+      "actions",
+      "python"
+    ],
+    "query_suite": "default",
+    "threat_model": "remote",
+    "updated_at": null,
+    "schedule": null,
+    "runner_type": "standard",
+    "runner_label": null
+  }
+}

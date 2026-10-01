@@ -1,0 +1,8 @@
+{
+  "observed_at": "2026-10-01T09:22:24.350592+00:00",
+  "endpoint": "repos/nisavid/provingkit/actions/permissions/workflow",
+  "data": {
+    "default_workflow_permissions": "read",
+    "can_approve_pull_request_reviews": false
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "authorized_outcome": "An evidence-backed, cross-examined research packet and live research/design map; architecture remains open for a separate design panel, followed by an implementation map targeting a locally deployed alpha.",
+  "claims": [
+    "Retained configuration history and rationale are distinguished from current observations and inferred motives.",
+    "Platform mechanism claims cite primary sources and state applicability and evidence limits.",
+    "Initial lane outputs and exposure records are preserved before exchange.",
+    "Recommendations and conceptual designs remain proposals.",
+    "No live setting change, production security qualification, or alpha deployment is claimed."
+  ],
+  "supported_inputs": [
+    "Named public repository history and selected private historical actuation evidence with publication limits",
+    "Dated official GitHub documentation and source reads",
+    "Direct user brief and accepted amendment",
+    "Dated current read-only repository APIs"
+  ],
+  "acceptance": [
+    "Three isolated initial reports with independently recomputed digests",
+    "Each lane has a cross-informed follow-up addressing material contradictions and omissions",
+    "Synthesis maps findings to explicit decisions without selecting stakeholder policy",
+    "Evidence/source/citation and scope/coverage reviews are current on the final same candidate",
+    "Local links and retained file digests verified; git diff --check clean",
+    "Map uses native parent and blocker relations and is re-read before closeout"
+  ],
+  "excluded": [
+    "Live repository configuration",
+    "Implementation or installed equipment edits",
+    "Hosted positive or negative behavior probes",
+    "Security acceptance or release/deployment qualification"
+  ],
+  "verification": [
+    "SHA-256 recomputation of frozen report bytes",
+    "Repository-relative Markdown link target validation",
+    "git diff --check",
+    "Primary source spot-checks of load-bearing findings",
+    "Native GraphQL graph readback with pagination completeness"
+  ]
+}

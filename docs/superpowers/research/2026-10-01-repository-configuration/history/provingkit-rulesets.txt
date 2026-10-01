@@ -1,0 +1,43 @@
+[3]:
+  - id: 22034686
+    name: Block release tags until release authority
+    target: tag
+    source_type: Repository
+    source: nisavid/provingkit
+    enforcement: active
+    node_id: RRS_lACqUmVwb3NpdG9yec5QsoWLzgFQOP4
+    _links:
+      self:
+        href: "https://api.github.com/repos/nisavid/provingkit/rulesets/22034686"
+      html:
+        href: "https://github.com/nisavid/provingkit/rules/22034686"
+    created_at: "2026-09-01T14:03:05.124-04:00"
+    updated_at: "2026-09-16T02:19:15.274-04:00"
+  - id: 22036702
+    name: Freeze retained cutover evidence
+    target: branch
+    source_type: Repository
+    source: nisavid/provingkit
+    enforcement: active
+    node_id: RRS_lACqUmVwb3NpdG9yec5QsoWLzgFQQN4
+    _links:
+      self:
+        href: "https://api.github.com/repos/nisavid/provingkit/rulesets/22036702"
+      html:
+        href: "https://github.com/nisavid/provingkit/rules/22036702"
+    created_at: "2026-09-01T14:31:33.780-04:00"
+    updated_at: "2026-09-03T19:05:11.916-04:00"
+  - id: 22036701
+    name: Protect main through review
+    target: branch
+    source_type: Repository
+    source: nisavid/provingkit
+    enforcement: active
+    node_id: RRS_lACqUmVwb3NpdG9yec5QsoWLzgFQQN0
+    _links:
+      self:
+        href: "https://api.github.com/repos/nisavid/provingkit/rulesets/22036701"
+      html:
+        href: "https://github.com/nisavid/provingkit/rules/22036701"
+    created_at: "2026-09-01T14:31:32.497-04:00"
+    updated_at: "2026-09-15T17:57:46.980-04:00"

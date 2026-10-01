@@ -1,0 +1,27 @@
+# Provingkit configuration observed on October 1, 2026
+
+I read the repository, ruleset, effective branch rules, Actions permissions, and CodeQL default-setup APIs without changing their settings. The accompanying JSON files retain the response fields used below, their endpoints, and observation times. These observations supplement the independent lanes only after their first reports are frozen.
+
+## Merge and review controls
+
+The [main ruleset](observations/main-ruleset.json) is active and applies to `refs/heads/main`. It blocks deletion and non-fast-forward updates, requires pull requests, and has no bypass actors. It requires zero approving reviews; stale-review dismissal, code-owner approval, last-push approval, and thread resolution are disabled. The unattributed-change extra-approval option is enabled. Allowed merge methods are rebase and squash. The [effective branch rules](observations/effective-main-rules.json) return the same four rule types.
+
+The ruleset requires twelve check names, each bound to integration `15368`, and strict status-check policy is enabled. These are substantial active merge requirements, but they do not establish that its selection matches every current project requirement. The classic branch-protection endpoint returned HTTP 404 with “Branch not protected”; the separate ruleset responses establish protection despite that endpoint result.
+
+The [repository settings](observations/repository.json) allow rebase and squash, disable merge commits and auto-merge, and enable deletion of merged branches. The user-provided screenshot matches the observed pull-request-rule parameters; it is evidence of a UI state, not an instruction to choose those values.
+
+## Workflow and security controls
+
+[Actions permissions](observations/actions-permissions.json) allow all actions and do not require SHA pinning at repository policy level. [Workflow permissions](observations/workflow-permissions.json) default the token to read access and prohibit Actions from approving PR reviews. This does not determine each workflow's requested permissions.
+
+The checked-in [source workflow](https://github.com/nisavid/provingkit/blob/02812cdee184023ecc06214e263c308d9131a1b0/.github/workflows/provingkit-source.yml) pins the actions it uses to commit SHAs, requests `contents: read`, and disables checkout credential persistence. Repository policy allowing unpinned actions does not mean these current workflows are unpinned.
+
+That workflow defines `Proseweaving source contract` and `Installable artifact projections`; neither name appears in the observed required-check list. Their omission is a candidate policy question. I did not run a failing fixture to determine whether other required checks independently cover their failure cases.
+
+The [CodeQL default-setup response](observations/codeql-default-setup.json) is `not-configured`, with `actions` and `python` in its languages field. This is not evidence of complete coverage or of any completed scan. No CodeQL workflow appears in the checked-out `.github/workflows` at the source revision above. I did not audit every possible externally supplied scan producer.
+
+The repository response reports Dependabot security updates, secret scanning, and secret-scanning push protection enabled. Non-provider patterns and validity checks are disabled. Those settings alone do not establish alert handling, dependency coverage, or merge enforcement.
+
+## Evidence limits
+
+These are dated observations and source inspection, not a comprehensive security assessment, enforcement canary, or reconstruction of original intent. Current settings and creation/update timestamps cannot prove why a configuration was selected. No live setting, check, review, app installation, credential, runner, or release state was changed.

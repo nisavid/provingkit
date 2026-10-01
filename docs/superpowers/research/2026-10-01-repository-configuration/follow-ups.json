@@ -1,0 +1,29 @@
+{
+  "reports": [
+    {
+      "path": "conceptual-follow-up.md",
+      "sha256": "53954d9720f751192d8e94c34eb96bf5d5460624bda10047738380456240c2e9",
+      "treatment": "completed original cross-informed follow-up"
+    },
+    {
+      "path": "history/round-2-recovered.md.txt",
+      "sha256": "9f3d9e8a1f2fb2ade0b6588273caed3374cd8a52bc28a3d394df4f2058804cb3",
+      "treatment": "recovered original bytes without native terminal handback"
+    },
+    {
+      "path": "history/round-2.md",
+      "sha256": "7c62d18baf8ed1b377088718716a52ff62f911f762d572de4af948f66a25b41a",
+      "treatment": "publication successor with one citation correction"
+    },
+    {
+      "path": "github/round-2.md",
+      "sha256": "62e194218a2c408723a0b350000c8bc7e0eedc9879097c7de46dda1327655784",
+      "treatment": "fresh cross-informed recovery execution"
+    },
+    {
+      "path": "reviews/history-recovery.md",
+      "sha256": "2b07a1a354ce9014c3c6338727abb7920965cb06832d96b49ccaf3201610b32e",
+      "treatment": "independent recovery evidence review"
+    }
+  ]
+}
