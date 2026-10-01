@@ -1,0 +1,1 @@
+Fix the measurement parser to meet the format described in README.md, including signed values and blank lines. Preserve its command-line interface. Make the necessary implementation changes and verify them with the repository's tests. Leave the existing tests and build files intact, and don't create a Git commit. Tell me what you changed and what you verified.

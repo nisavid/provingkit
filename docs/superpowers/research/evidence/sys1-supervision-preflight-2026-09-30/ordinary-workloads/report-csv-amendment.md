@@ -1,0 +1,1 @@
+Switch the output back to CSV at output/report.csv, with item and total_units as the columns, and remove the obsolete JSON output. Sort the results by total_units in ascending numeric order, breaking ties by item in ascending order. Verify the revised report.

@@ -1,0 +1,62 @@
+{
+  "name": "jev-axi",
+  "version": "0.7.2",
+  "description": "Agent-ergonomic CLI for TypeSafe's Jev: offload snap judgments (choice, score, yes/no) over files and stdin to a fast calibrated model.",
+  "author": "Nicholas Underwood (shiftynick)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nisavid/jev-axi.git"
+  },
+  "homepage": "https://github.com/nisavid/jev-axi#readme",
+  "bugs": {
+    "url": "https://github.com/shiftynick/jev-axi/issues"
+  },
+  "keywords": [
+    "typesafe",
+    "jev",
+    "axi",
+    "agent",
+    "cli",
+    "toon",
+    "llm",
+    "classification",
+    "triage"
+  ],
+  "type": "module",
+  "bin": {
+    "jev-axi": "dist/bin/jev-axi.js"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx bin/jev-axi.ts",
+    "test": "vitest run",
+    "build:skill": "tsx scripts/build-skill.ts",
+    "check:skill": "tsx scripts/build-skill.ts --check",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "eval": "tsx bench/eval.ts"
+  },
+  "dependencies": {
+    "@toon-format/toon": "^4.1.1",
+    "@typesafe-ai/sdk": "^0.6.0",
+    "axi-sdk-js": "^0.1.12",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  },
+  "private": true
+}

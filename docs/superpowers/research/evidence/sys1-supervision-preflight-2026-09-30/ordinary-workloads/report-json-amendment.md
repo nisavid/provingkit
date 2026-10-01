@@ -1,0 +1,1 @@
+Change the report to JSON at output/report.json. Use an array of objects with item and numeric total_units fields. Keep the same values and row order, and remove the obsolete CSV output. Verify the changed report.

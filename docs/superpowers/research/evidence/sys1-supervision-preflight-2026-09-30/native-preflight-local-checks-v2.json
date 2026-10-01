@@ -1,0 +1,65 @@
+{
+  "scope": "local controller validation; no native session or Jev assessment",
+  "test_command": [
+    "/usr/bin/python",
+    "-m",
+    "unittest",
+    "-v",
+    "test_preflight"
+  ],
+  "cwd": "PREPARATION/native-supervision",
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "test_changed_source_is_rejected_before_controller_import (test_preflight.PreflightTests.test_changed_source_is_rejected_before_controller_import) ... ok\ntest_codex_policy_requires_both_temporary_write_exclusions (test_preflight.PreflightTests.test_codex_policy_requires_both_temporary_write_exclusions) ... ok\ntest_existing_attempt_reservation_is_preserved (test_preflight.PreflightTests.test_existing_attempt_reservation_is_preserved) ... ok\ntest_failed_codex_hook_is_rejected (test_preflight.PreflightTests.test_failed_codex_hook_is_rejected) ... ok\ntest_invalid_hook_configuration_signals_failure_without_agent_output (test_preflight.PreflightTests.test_invalid_hook_configuration_signals_failure_without_agent_output) ... ok\ntest_native_hook_success_requires_matching_capture_count (test_preflight.PreflightTests.test_native_hook_success_requires_matching_capture_count) ... ok\ntest_passive_hooks_keep_cadence_and_stop_bookkeeping_without_output (test_preflight.PreflightTests.test_passive_hooks_keep_cadence_and_stop_bookkeeping_without_output) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.985s\n\nOK\n",
+  "prepared_inventory": "PREPARED_BATCH/inventory.json",
+  "initial_guards": [
+    {
+      "manifest_sha256": "2da3272f5541e025fb1b851ae89bba41b0765b4679a556679b652e33d4c2880f",
+      "harness": "claude",
+      "case": "parser-discovery",
+      "source_files": 353,
+      "dependency_roots": 5,
+      "initial_guards": "passed"
+    },
+    {
+      "manifest_sha256": "70ae331cc62204108f615220d55a8e7e1575681d7e3056c7b045b0ccc09967eb",
+      "harness": "claude",
+      "case": "report-sort",
+      "source_files": 353,
+      "dependency_roots": 5,
+      "initial_guards": "passed"
+    },
+    {
+      "manifest_sha256": "48546ebfd2754fc24af587c031893a8a479020a107caa19c383a4b032332abc1",
+      "harness": "codex",
+      "case": "parser-discovery",
+      "source_files": 353,
+      "dependency_roots": 5,
+      "initial_guards": "passed"
+    },
+    {
+      "manifest_sha256": "3b25ed9d45e9825ac683ddf1db66c73ba81c1323fdbdb85bb84a103982ceaf1d",
+      "harness": "codex",
+      "case": "report-sort",
+      "source_files": 353,
+      "dependency_roots": 5,
+      "initial_guards": "passed"
+    }
+  ],
+  "source_sha256": {
+    "PREPARATION/native-supervision/prepare.py": "b431680960948300a5e3992c5beee9f3c925b7fbe3137b21b0542206ec016677",
+    "PREPARATION/native-supervision/native_controller.py": "80907f138d51b6bae42616c918b7a02cf5d44343ca28d6a24d9b1a4362101289",
+    "PREPARATION/native-supervision/test_preflight.py": "2f1206ede784d5fdafec534f79b40c0b3afd802b969e1cb0a4ccbbbf94c3a736",
+    "PREPARATION/native-supervision/bookkeeping.mjs": "ff7644d2f06178c04b4135d37007d57da76e2e035f45ccafb62584bf2fafeaff",
+    "PREPARATION/native-supervision/hook_receipts.py": "871ca12dad882d4808c2d1a4eefd62c9d26eb3942c46a132aa1e0e50d7b81952",
+    "PREPARATION/native-supervision/native_support.py": "689c03ea3570401cc1781d2749c800c4473fec50d03fa4b65df1a71a9685172d",
+    "PREPARATION/native-supervision/transport.py": "0b6dada830dd6dbdff4cb2c4ccd444c6680044ddb00a08041c39c40514a49d8f",
+    "PREPARATION/native-supervision/passive_hook.py": "8addf3b71acfdb76deabdafe41fbaf02ac76ebfb2def1e19a3d27a1cce683e75",
+    "PREPARATION/native-supervision/observer.py": "0713ffcbc1917e707242e88ac4d23698d3160711f157faaa8aa85ba05bbe707a",
+    "PREPARATION/native-supervision/run.py": "ea441f23c3aa799da2a11843286056d739e9ed6388eb08514f7c141598716994"
+  },
+  "public_projection": {
+    "original_sha256": "edeb8f224d156f9ef31f396b2dee000cfaced83388723f000564d695e737fdf1",
+    "normalization": "Host-specific preparation, source-checkout, and batch prefixes replaced with logical names; original records remain local."
+  }
+}

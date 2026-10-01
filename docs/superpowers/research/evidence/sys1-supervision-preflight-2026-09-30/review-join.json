@@ -1,0 +1,20 @@
+{
+  "reviews": [
+    {
+      "focus": "accounting",
+      "status": "DONE, no findings",
+      "original_result_sha256": "5d9c8e2ab4a0cc17d2190dc7e54763f9d1eb989f08cdc880b8da61c26dc52e42",
+      "binding_sha256": "3aebb81c33e96a16d13d695e602ea773665582051f1c9d46d951d86ff9c6b777",
+      "scope": "source review only; no native execution"
+    },
+    {
+      "focus": "fidelity",
+      "status": "DONE, no findings",
+      "original_result_sha256": "79862237bb7cff4057e182717d105c3e2e7f4844d7c7809ffd425c310d07bed9",
+      "binding_sha256": "df0d3a9995d752e76c911f387f1281cdb65f071d829e9184641e9e27454cccf5",
+      "scope": "source review only; no native execution"
+    }
+  ],
+  "effective_model_attested": false,
+  "native_sessions_started_at_join": 0
+}
