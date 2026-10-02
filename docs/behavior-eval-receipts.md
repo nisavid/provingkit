@@ -309,7 +309,7 @@ separate. `scripts/behavior_eval_receipts.py` exposes
 the complete path, byte, and mode closure, and
 `check_correspondence(repository, candidate_revision=..., descriptor=...,
 receipt_bytes=..., binding=...)` for one strict historical and landed-commit
-check. The profile is `p957` or `p24`; the method is `prepared` or
+check. The profile is `p957`, `p24`, or `pbaad`; the method is `prepared` or
 `reconciled-after-run`. The per-Receipt result has
 `coverage_basis: "per-receipt"` and leaves member qualification to its owner.
 Do not call private closure helpers or reproduce their path rules in a caller.
@@ -340,15 +340,31 @@ comparisons; B need not be an ancestor. The selected sets must equal the reviewe
 bindings. Squash requires C's sole parent to be T; rebase requires T ancestry.
 The caller establishes the actual operation and its completion separately.
 
-The registry binds `p957` to
-`957550119aca20a31a26f4e5f9a3f09a2d6bd148` and `p24` to
-`24c2d712a0be6a95958713ec80c7e06a89abdc6c`. Keep those commits and their processing
-files available in the repository. Three files bind direct descriptors; normalized
+The registry binds these profiles to immutable processing implementations:
+
+| Profile | Implementation revision |
+| --- | --- |
+| `p957` | `957550119aca20a31a26f4e5f9a3f09a2d6bd148` |
+| `p24` | `24c2d712a0be6a95958713ec80c7e06a89abdc6c` |
+| `pbaad` | `baad23e7c1f35336cbab6f358c5fa027ad716f08` |
+
+Keep those commits and their processing files available in the repository.
+Select the profile explicitly from the Receipt's complete processing manifest;
+a later inventory revision requires its own matching registered profile. A
+matching current checkout does not replace the selected historical implementation.
+Three files bind direct descriptors; normalized
 descriptors bind five. Prepared processing inputs come from the S snapshot;
 reconciled inputs come from the recorded P. Every byte digest and Git mode must
 match the selected profile. A prepared Receipt may omit `method`; dispatch does
-not edit its original bytes. P957 also supports normalized descriptors; only P24
-supports per-case delivery declarations.
+not edit its original bytes. All three profiles support normalized descriptors;
+P24 and Pbaad support per-case delivery declarations. Registration supplies local
+processor compatibility; current input correspondence and every separately
+required member, caller, retention, and hosted gate still apply.
+
+A retention caller admits a new profile only through its reviewed verifier
+revision and matching profile and wire catalogs. Preserve every existing run's
+fixed context, profile, and procedure identities; registering `pbaad` in this
+local core does not amend a retained caller contract or activate its use.
 
 Historical checking materializes the registered unchanged files, verifies bytes
 and executable modes, and invokes their public `check` at S/S with the selected
@@ -380,7 +396,7 @@ squash/rebase qualification, and result delivery. The [migration work](https://g
 owns activation for existing consumers. This local interface does not complete
 those prerequisites, source-stage integration, or disclosure/readiness adoption.
 
-Run `python -m unittest tests.test_behavior_eval_correspondence` with both retained
+Run `python -m unittest tests.test_behavior_eval_correspondence` with all registered
 commits locally to exercise real historical code against constructed observations
 and rewritten Git histories. The suite performs no network retrieval or model
 runs. Source-only checkouts explicitly skip unavailable profiles; a skipped run
