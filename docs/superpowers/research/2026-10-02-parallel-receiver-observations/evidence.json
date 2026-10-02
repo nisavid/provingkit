@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-02",
+  "common_base": "6fbddb3883e08476af9fffe1410863f0e89f0cd6",
+  "reports": [
+    {
+      "lane": "existing",
+      "stage": "r1",
+      "file": "existing-first.md",
+      "captured_sha256": "d57a04ede387985cbd494c005857fb67dfbb0573000363d9e978c06d959d7209",
+      "published_sha256": "c6043dc3b1ad469be964aa99ff538a59b4012a4cf6fe19eb1b671f12e1ca1e08"
+    },
+    {
+      "lane": "existing",
+      "stage": "r2",
+      "file": "existing-final.md",
+      "captured_sha256": "9bc540a8fd573ca4f60d16d75cc3d1ce09a97ca7f14882a3b750f0905ec2b865",
+      "published_sha256": "c174621cc01ce95cd9cecabc200daa27bcbd9ccc80873c64d1736c36324d6848"
+    },
+    {
+      "lane": "hooks",
+      "stage": "r1",
+      "file": "hooks-first.md",
+      "captured_sha256": "f84eae493f42ea8069a2170721b0bea86b009b15d914a0c4b8c49412388a853d",
+      "published_sha256": "e6cbfdb10ada587a18147580d144c75269b2fbfaffc98f747ee6696f21ad39c4"
+    },
+    {
+      "lane": "hooks",
+      "stage": "r2",
+      "file": "hooks-final.md",
+      "captured_sha256": "4897b59b319a284ea809a231429961991bbe3a74ee8d39be727324019682a821",
+      "published_sha256": "3127c5178c4c6b4489907749eb92698a16961fdbcd86e29d23eaddeda0ce1623"
+    },
+    {
+      "lane": "app",
+      "stage": "r1",
+      "file": "app-first.md",
+      "captured_sha256": "d06e6c4202d7e388e617bd0261b907fe27b602ab8b5e164fa001eccfe84fc8e4",
+      "published_sha256": "8e47079da9e47d35482ea75810cde27d6b82217bfc1c17840e85c26b0d2c198e"
+    },
+    {
+      "lane": "app",
+      "stage": "r2",
+      "file": "app-final.md",
+      "captured_sha256": "3d9acbf4de73455c4fb4058711ed0b8fcf5f664a27cb7b0556720338194d1253",
+      "published_sha256": "e9c8cd602b347c6445c39cb325d3bfc151126931fcb78dcef866904cfcb924ff"
+    }
+  ],
+  "capture": "Exact native child final text retained by the coordinator. Publication replaces local locations with semantic input names and adds a trailing newline; factual content and first-round errors are retained. Final reports and the source correction control the current interpretation.",
+  "exchange_sha256": "dfced5d423069a23accad4d5b9fef4ab267bcdd8851e9ee45173a48d9cdd8b99",
+  "workers": {
+    "relationship": "leader-owned native children",
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "xhigh",
+    "first_context": "fresh; shared published seed; no new sibling findings",
+    "followup_context": "same lane after all first reports frozen",
+    "assurance": "same-leader controller observations; requested selection is not authenticated execution attestation"
+  },
+  "coordinator_checks": {
+    "task_creation_return": "Confirmed comma-expression return in retained source",
+    "sdk_acquisition": "Fetched public 0.3.284 archive as data; confirmed getSessionMessages delegates to Vo, whose explicit-dir route calls project and worktree lookup and long-path candidate inspection",
+    "completed_host_push": "Confirmed caches update after awaited applyFlagSettings while selected query identity still matches",
+    "worktree_report": "Confirmed applyHarnessWorktreeMove resolves registered worktree path; not a general current-cwd getter"
+  },
+  "public_sdk": {
+    "version": "0.3.284",
+    "archive_sha256": "4550e830246026133fc1802a2208dd0f3a785cae1eec83f261d114c33d797771",
+    "sdk_mjs_sha256": "32d062c37b03e10870fbf839f54694545ee01bc0ec719e47078fbed76e30ef71"
+  },
+  "offline_members": {
+    "index.chunk-B9SZqsi8.js": "bd2144a3653bb843f4b75fe652124a4e478f273b5f6c2e10a2139fa3a9a3152f",
+    "index.chunk-COPWZCsC.js": "b22a9dc34684cef348f9c0e72abe88c433bbfc2d350d9a3e61faf7ae22858950"
+  }
+}
