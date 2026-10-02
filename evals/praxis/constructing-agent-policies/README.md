@@ -1,11 +1,11 @@
-# Constructor transfer cases
+# Constructor regression cases
 
-These cases check that `praxis:constructing-agent-policies` works on policy
-domains it was not built from. Each case gives the constructor a short seed
-policy in a fixture repository. The constructor has to turn the seed into
-equipment an agent will follow, with tests. The case then checks whether it
-kept the seed's meaning, looked up the facts the fixture already holds, and
-asked only the questions that need an operator's answer.
+These cases are the regression set for `praxis:constructing-agent-policies`.
+Each case gives the constructor a short seed policy in a fixture repository.
+The constructor has to turn the seed into equipment an agent will follow,
+with tests. The case then checks whether it kept the seed's meaning, looked
+up the facts the fixture already holds, and asked only the questions that need
+an operator's answer.
 
 The files in `cases/` are the frozen contract for these three domains. When a
 planning note, draft, or ticket describes a case differently, the case file is
@@ -53,9 +53,10 @@ entries' verbatim answers, or with the default for anything no entry covers:
 "Use your recommendation, and mark it in the policy as a default I can
 change." The sheet holds the reference values, the target models, what "with
 tests" should produce, and the answers Ivan recorded for the questions the
-second evaluation pass surfaced. Entries for values the seed states and for
-facts the fixture holds carry `counts_against`, so asking for one fails its
-expectation whatever answer it got and whatever the grader says. Each
+second and third evaluation passes surfaced. Entries for values the seed
+states and for facts the fixture holds carry `counts_against`, so asking for
+one fails its expectation whatever answer it got and whatever the grader
+says. Each
 required value question is checked by its sheet entry in the turn's first
 round, so the required questions must come in one batch before any answer
 arrives. Other deterministic checks cover GitHub writes and file changes.
@@ -98,7 +99,14 @@ The floor applies separately to GPT-6.1 Sol at medium effort in Codex and to
 Claude Opus 5.5 at medium effort in Claude Code. The other harness's model
 grades each run, alongside the deterministic checks.
 
-The constructor's transfer is checked at the floor on these three domains.
+These three domains are the constructor's regression set, not a transfer
+check: every skill change since the first evaluation pass was chosen from
+their failures. Transfer is measured at the same floor on two fresh synthetic
+held-out domains, written by sessions that have not seen the diagnosis or the
+skill changes: one runs, and the other stays sealed in case the first one's
+failures lead to more skill changes. Without a fresh domain's run, a report
+claims regression only and leaves transfer open.
+
 The stricter parts of the bar live in the Mergecraft agent-policy suite under
 `evals/mergecraft/agent-policies/`:
 
