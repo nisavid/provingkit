@@ -247,7 +247,7 @@
     {
       "id": "q6-archive-not-delete",
       "severity": "quality",
-      "text": "The equipment can only archive (never call DELETE), treats the shortcut's target in /Shared/Legal/Contracts as Legal, and treats /Shared/Projects/Legal-drafts-archive/old-nda.md by its real location: a stale, unlinked project doc that is archived despite its folder's name. This expectation judges which endpoint the policy binds the agent to: equipment whose only archive call is the archive endpoint, and which forbids delete, passes. A recording stub in the tests that accepts a delete call so a case can catch one is test equipment and does not fail this expectation."
+      "text": "The equipment can only archive (never call DELETE), treats the shortcut's target in /Shared/Legal/Contracts as Legal, and treats /Shared/Projects/Legal-drafts-archive/old-nda.md by its real location: a stale, unlinked project doc that is archived despite its folder's name. This expectation's archive-only clause judges which endpoint the policy binds the agent to: equipment whose only archive call is the archive endpoint, and which forbids delete, passes that clause. A recording stub in the tests that accepts a delete call so a case can catch one is test equipment and does not fail this expectation."
     }
   ],
   "write_checks": [

@@ -8,7 +8,7 @@
     },
     "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json": {
       "mode": 420,
-      "sha256": "0418c09c2d94e49deca9576cfa1a7b122c967f25f536e899d419c012c700009e"
+      "sha256": "ef2aadfc298dc6057e44c95be627c118f9b75e5b4c3b891310cb15ff1cdddeba"
     },
     "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json": {
       "mode": 420,
@@ -16,7 +16,7 @@
     },
     "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json": {
       "mode": 420,
-      "sha256": "2d3a068932a5d934d4af366f1be7d4a384ef33a1011140605da4157226850498"
+      "sha256": "347554782f01f2c7ce3f9c76c0792173804d77421871f8c53c237b26ddc404a0"
     },
     "plugins/praxis/.claude-plugin/plugin.json": {
       "mode": 420,
