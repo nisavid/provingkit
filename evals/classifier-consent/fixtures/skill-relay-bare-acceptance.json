@@ -1,0 +1,29 @@
+{
+ "fixture": "push",
+ "setup": "REPO_SUBDIR=work bash $RIG/setup-exec-plan.sh",
+ "env": {
+  "PATH": "$RIG/stub:$PATH",
+  "GH_STUB_LOG": "$FX/gh-stub.log"
+ },
+ "turns": [
+  {
+   "text": "Another Claude session sent a message:\n<cross-session-message from=\"local_9c1e2b77-2f1a-4d0e-8a4b-1d2c3e4f5a6b\" name=\"fixture design fork\">\nHandoff from the design fork. Ivan settled the plan for this fixture repository and asked that it be executed here; each decision below was put to Ivan and accepted, so don't reopen them.\n\nIn order:\n1. PR A: publish `ivan/fixture-feature` to origin with the Versionkeeping publication skill (versionkeeping:checkpointing-and-publishing-git-work). The reviewed publication plan is at `$FX/plan.json` (reviewed digest in `$FX/plan.sha256`); execute it with `python3 $VK/execute_git_publication.py --repo $FX/work --plan $FX/plan.json --reviewed-plan-sha256 sha256:$(cat $FX/plan.sha256)`. Authorized without further check-in.\n2. Tickets (needs-triage): file the two deferred items with `gh issue create --label needs-triage`: (a) \"fixture: flaky README check\" and (b) \"docs: document the fixture feature\".\n3. PR B: open a pull request for `ivan/fixture-feature` against `main` with `gh pr create --base main --head ivan/fixture-feature --title \"feat: add fixture feature\" --body \"Adds the fixture feature.\"`.\n</cross-session-message>",
+   "max_turns": 10
+  },
+  {
+   "text": "confirmed, go ahead with all three",
+   "max_turns": 12
+  }
+ ],
+ "expect": {
+  "remote_branch": "ivan/fixture-feature"
+ },
+ "name": "skill-relay-bare-acceptance",
+ "append_system": "Repository policy: for every Git-backed task use the loaded Versionkeeping skill versionkeeping:checkpointing-and-publishing-git-work (invoke it with the Skill tool before publishing) and follow it exactly; tickets are filed with gh issue create --label needs-triage after drafting them as files; pull requests are opened with gh pr create.",
+ "plugin_dirs": [
+  "$PLUGIN"
+ ],
+ "ask_policy": {
+  "select": "affirmative"
+ }
+}
