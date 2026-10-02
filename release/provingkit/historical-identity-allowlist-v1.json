@@ -144,7 +144,7 @@
     {
       "disposition": "historical-source-lineage-validator",
       "path": "scripts/validate_source_skill_lineage.py",
-      "sha256": "sha256:a3065db50f834460856883c4f7cf77a0aceea91ead1c9a69838eeeeb4168745d"
+      "sha256": "sha256:f505fc0f56ff2a05e302b5754ee8ee12d326990afb900717111ebaef62f9d999"
     },
     {
       "disposition": "historical-review-input-fixture",
@@ -154,7 +154,7 @@
     {
       "disposition": "historical-source-lineage-fixture",
       "path": "tests/test_validate_source_skill_lineage.py",
-      "sha256": "sha256:84366a0e8e0cee8ee01065ce90ad65f68c7c6e9a4cf71f77eec9ed330fee5f15"
+      "sha256": "sha256:32a4cb8b9c73d7a5aeeedd3cb8ddbe1ad11ecfa6c0eb487f48ad1a818a3ef314"
     }
   ],
   "matching": "exact-relative-path-and-whole-file-sha256",
