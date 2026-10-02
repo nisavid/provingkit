@@ -584,7 +584,7 @@
       "expectations": [
         {
           "id": "ambiguity-visible",
-          "text": "The reply explains that two chats share the requested title and seeks the distinguishing project or detail. If it offers links to the two alternatives, each clickable label includes the verified title Release checkpoint plus its corresponding project qualifier; project-only labels do not satisfy the title-label contract.",
+          "text": "The reply explains that two chats share the requested title and seeks the distinguishing project or detail. If it offers links to the two alternatives, each link identifies its corresponding project and verified destination. Project-only labels are acceptable when the shared title Release checkpoint is clear nearby; otherwise each label includes the title and project.",
           "severity": "quality"
         },
         {

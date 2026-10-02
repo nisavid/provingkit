@@ -83,7 +83,10 @@ resource the reader needs to find, check that the label and destination identify
 the same resource and that the link works for this audience and venue. Repair
 an omitted link when its destination is verified; resolve a stale or mismatched
 title, ambiguous identity, or inaccessible reference against the available
-inputs. Preserve protected spans and report a defect within them separately.
+inputs. When an unresolved identity blocks the answer and the reader can
+distinguish the candidates, include the narrow clarification question in the
+finished reply. Preserve protected spans and report a defect within them
+separately.
 
 Fluent rewriting is where facts drift: "should fail" becomes "fails", a
 range becomes a point, a question becomes a commitment. Check each fact

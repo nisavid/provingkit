@@ -84,15 +84,17 @@ usable destination for this audience and venue. Link the verified title or a
 clear description of the resource rather than leaving a known destination
 behind a bare name or opaque identifier. In a client conversation that supports
 chat links, use the chat's current verified title as the clickable label. When
-identical titles need disambiguation, keep the title in each link label and add
-verified context, such as `Release checkpoint (Atlas)` and
-`Release checkpoint (Beacon)`.
+chats share a title, distinguish them with verified context. If the shared title
+is clear nearby, the labels may use just the distinguishing projects, such as
+`Atlas` and `Beacon`; otherwise include the title in each label.
 
 Resolve available identities through the client's supported lookup and link
 contract. Match each title and destination to the same resource; a matching
 title alone cannot distinguish two chats. Recover available context to resolve
-ambiguity, and ask only for a material distinction that remains unknown. When a
-destination cannot be recovered, give the useful known information and state
+ambiguity. If an unresolved distinction blocks the answer, ask the reader for
+the specific missing detail they can supply. For example, ask which project a
+same-title chat belongs to when the available records cannot identify it. When
+a destination cannot be recovered, give the useful known information and state
 the narrow gap without inventing a link or claiming it was verified.
 
 Use a public issue, PR, document, or other accessible reference when the audience
