@@ -264,6 +264,27 @@ class ValidateVersionkeepingTests(unittest.TestCase):
         )
         self.assert_rejected("terminal cleanup contract")
 
+    def test_rejects_attachment_as_cleanup_ownership(self) -> None:
+        path = self.repo / CHECKPOINT_ROOT / "references/terminal-cleanup.md"
+        path.write_text(
+            path.read_text().replace(
+                "An attachment list is\n"
+                "discovery evidence, not a complete ownership record.",
+                "An attachment list establishes cleanup ownership.",
+            )
+        )
+        self.assert_rejected("terminal cleanup contract")
+
+    def test_rejects_archive_coupled_to_resource_removal(self) -> None:
+        path = self.repo / CHECKPOINT_ROOT / "references/terminal-cleanup.md"
+        path.write_text(
+            path.read_text().replace(
+                "Archiving a task and removing its resources are separate operations.",
+                "Archiving a task requires removing every attached resource.",
+            )
+        )
+        self.assert_rejected("terminal cleanup contract")
+
     def test_rejects_discard_reenumeration_regression(self) -> None:
         path = self.repo / CHECKPOINT_ROOT / "references/terminal-cleanup.md"
         path.write_text(

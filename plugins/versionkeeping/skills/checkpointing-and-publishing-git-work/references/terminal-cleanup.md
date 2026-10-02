@@ -4,6 +4,28 @@ Terminal branch and worktree cleanup belongs only to the checkpointing skill.
 Do not begin cleanup while ordinary iteration, pull-request work, or feedback is
 active.
 
+## Cleanup ownership
+
+A task owns cleanup of a resource it created for its exclusive use, or whose
+cleanup responsibility it explicitly accepted from another owner. Record the
+resource's exact path, creation or transfer evidence, and disposition: disposable,
+retained, or transferred. A retained resource has a durable purpose or contains
+work or evidence that must survive the task; a disposable resource has no such
+remaining purpose. Apply the same definition to worktrees and task scratch.
+Versionkeeping performs Git cleanup; other resources use their owning actuator.
+
+Use creation results and accepted handoffs to establish ownership. Merely using
+a directory, checking out its branch, or inheriting it through a fork establishes
+neither exclusive ownership nor permission to remove it. An attachment list is
+discovery evidence, not a complete ownership record. A missing attachment does
+not relinquish ownership; an attachment alone does not establish it.
+
+Before removal, verify exclusive ownership, no active writers or consumers, and
+the recorded disposition against current contents, including ignored files.
+Preserve durable work and evidence before removing a disposable working copy.
+Retain shared, transferred, or uncertain resources. Record a transfer only after
+the receiving owner accepts it; releasing a resource does not make it disposable.
+
 ## Provenance matrix
 
 Classify the workspace from creation records, harness metadata, or an explicit
@@ -13,13 +35,24 @@ operator statement; path-name heuristics are not evidence.
 | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Normal checkout                                                  | Check out the verified safe base before deleting only the selected branch.                                                                                                                          |
 | Directly agent-created worktree                                  | Raw Git cleanup is allowed only when there is an explicit record that this agent ran `git worktree add`. A clean worktree may be removed only after independently authorized terminal cleanup. A dirty worktree is quarantined and retained; it is never force-removed or branch-deleted. |
-| Harness-created worktree                                         | Use only the harness's native cleanup actuator; never run raw Git worktree removal.                                                                                                                 |
+| Harness-created worktree                                         | Prefer the harness's native cleanup actuator. If its registration is missing or stale, keep cleanup pending and identify the missing control; this does not change ownership or prevent task archival. Raw Git removal requires a supported manager fallback that preserves its bookkeeping. |
 | User-created, externally managed, or unknown-provenance worktree | Preserve it and hand off without cleanup.                                                                                                                                                           |
 
 For local merge, integrate into the verified intended base and run required
 verification on the merged result before terminal cleanup. Cleanup is
 target-local. Never run global `git worktree prune`, alter a different branch or
 worktree, or infer authority from a generic completion request.
+
+## Task archival
+
+Archiving a task and removing its resources are separate operations. An
+authorized archive request can proceed through the task's archive actuator even
+when worktree cleanup is pending. Inspect owned resources first, remove only
+disposable resources through the applicable cleanup route, and record retained,
+transferred, or pending resources in the final handback. Resource ownership does
+not by itself authorize discard of unpublished work or deletion of remote refs.
+If a resource's cleanup actuator is unavailable, report that limitation for the
+resource; do not describe the task itself as unable to archive.
 
 ## Remote branch cleanup
 
