@@ -1195,8 +1195,8 @@ class GitRepository:
                 env=self.env,
                 input=query,
                 text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 timeout=self.timeout_seconds,
                 check=False,
             )
@@ -1205,7 +1205,7 @@ class GitRepository:
                 "HTTPS_CREDENTIALS_UNAVAILABLE",
                 profile=self.config_profile,
             ) from error
-        if result.returncode != 0 or not result.stdout.strip():
+        if result.returncode != 0:
             raise PolicyGate(
                 "HTTPS_CREDENTIALS_UNAVAILABLE",
                 profile=self.config_profile,
