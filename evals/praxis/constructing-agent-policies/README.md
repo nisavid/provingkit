@@ -103,9 +103,10 @@ These three domains are the constructor's regression set, not a transfer
 check: every skill change since the first evaluation pass was chosen from
 their failures. Transfer is measured at the same floor on two fresh synthetic
 held-out domains, written by sessions that have not seen the diagnosis or the
-skill changes: one runs, and the other stays sealed in case the first one's
-failures lead to more skill changes. Without a fresh domain's run, a report
-claims regression only and leaves transfer open.
+skill changes and frozen, with their digests recorded, before the candidate
+is: one runs, and the other stays sealed in case the first one's failures
+lead to more skill changes. Without a fresh domain's run, a report claims
+regression only and leaves transfer open.
 
 The stricter parts of the bar live in the Mergecraft agent-policy suite under
 `evals/mergecraft/agent-policies/`:

@@ -68,7 +68,7 @@ set that `sha256` to `sha256:` plus the new lock file's digest, then run
 
 ## Evaluation evidence
 
-The constructor's transfer cases are authored under
+The constructor's regression cases are authored under
 `evals/praxis/constructing-agent-policies/` and declared in the validator.
 Their [README](https://github.com/nisavid/provingkit/blob/main/evals/praxis/constructing-agent-policies/README.md)
 describes the cases, the answer-sheet operator, the acceptance bar, and the

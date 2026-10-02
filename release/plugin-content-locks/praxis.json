@@ -4,19 +4,19 @@
   "files": {
     "evals/praxis/constructing-agent-policies/README.md": {
       "mode": 420,
-      "sha256": "74649e1c4c9e7472d99dd20ade7877381455d70944af9781eed86135b58f3a45"
+      "sha256": "5d021e122f3d64e6324d80cda9b405131e1826b09051d575e6afa556acfe0eb3"
     },
     "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json": {
       "mode": 420,
-      "sha256": "e4fd2daeb7851cc5c7021c6d7590619dbcb921f8c78f7b0ccf88c3cdcbe015cf"
+      "sha256": "0418c09c2d94e49deca9576cfa1a7b122c967f25f536e899d419c012c700009e"
     },
     "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json": {
       "mode": 420,
-      "sha256": "bf2d60e95b25c88c967c9efae215b061df48dcfd2ec61260c1f5829a17da7af8"
+      "sha256": "fee78e5fceb7ed24f60352c290526c2a9a9daf42967e8428106b6a842baee89c"
     },
     "evals/praxis/constructing-agent-policies/cases/203-shared-drive-retention.json": {
       "mode": 420,
-      "sha256": "7dea1d30ce8fb044cdfaeee77e9c192fea8bf99dbcb62c90b32462c73caab172"
+      "sha256": "2d3a068932a5d934d4af366f1be7d4a384ef33a1011140605da4157226850498"
     },
     "plugins/praxis/.claude-plugin/plugin.json": {
       "mode": 420,
@@ -28,7 +28,7 @@
     },
     "plugins/praxis/DEVELOPING.md": {
       "mode": 420,
-      "sha256": "b13820ab0aaaee0406e582b9b3dcb23e21930e5ae849e329c9bae2789099b58b"
+      "sha256": "6c16aa46431f71e22541965eac096ae51d0d32e48822dde55334bd1d6b847733"
     },
     "plugins/praxis/LICENSE": {
       "mode": 420,
