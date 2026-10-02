@@ -1,0 +1,85 @@
+{
+  "source_revision": "9a85baa9785b7d12c98bd652d037819ea4d9d38f",
+  "integration_source_revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+  "research": [
+    {
+      "lane": "workflow",
+      "binding_sha256": "07354c29bc09032c1244d8dc3d6046f4b63b407e998caddcc91258ea6521fa7c",
+      "selected_model": "gpt-6.1-sol",
+      "selected_effort": "medium",
+      "catalog_observed_at": "2026-10-02T21:25:28.512924+00:00",
+      "model_execution_attested": false,
+      "native_result_status": "DONE_WITH_CONCERNS",
+      "body_sha256": "1a44aa32883ee0cf3ee1bd299952d6a12cbaaa2b2f1233a5ffddb3d223fe5602",
+      "input_identities": {
+        "docs/superpowers/research/2026-10-02-jev-axi-remaining-family-acceptance.md": "3f3eb0a860f8569f9e91917ba530291d64fa3725d6b1504f7577b8604d5a1145",
+        "evidence/own-commit-observation.md": "b74f421d0d705162c8265858f63b570872d92a20c96d0949704eec074a999cd7",
+        "installed-versionkeeping/SKILL.md": "cc01d6f851b1720ed94a8aa160e41ee8a2a4837f03c39d7642a9491e5596986c",
+        "installed-versionkeeping/references/commit-policy.md": "e83f7d48f7db06cffda58428d2f36f7dabf287061b672fca0161383c5d8b5017",
+        "AGENTS.md": "a6a42e796d9f1a63d5f701e755725fae92ae37592188389687252f5f81d34d8e",
+        "CONTRIBUTING.md": "b80af711f75665b62251ff0d92626cbd958de38e6dd086b9c2bc8f94994f43b6",
+        "cog.toml": "2fe89e3619b83eca2d758254c2bc233518fe58af50cdcd272ff0fa80a1d57989"
+      },
+      "verification": {
+        "body_sha256": "1a44aa32883ee0cf3ee1bd299952d6a12cbaaa2b2f1233a5ffddb3d223fe5602",
+        "input_digests_match": true,
+        "request_and_plan_match": true,
+        "claims_review": "coordinator primary-source review passed; bounded witness and excluded-source gaps retained",
+        "source_claims_checked": [
+          "destination procedure boundary",
+          "repo contribution requirements",
+          "Cocogitto configuration versus witness",
+          "no inferred separate semantic review"
+        ]
+      },
+      "usable": true,
+      "portable_evidence": false,
+      "product_attested": false
+    },
+    {
+      "lane": "context",
+      "binding_sha256": "5f9ee9b3532d5ac1580859b9963a386b0c171bd09f91a78b5dc80da1487e4812",
+      "selected_model": "gpt-6.1-sol",
+      "selected_effort": "medium",
+      "catalog_observed_at": "2026-10-02T21:25:28.512924+00:00",
+      "model_execution_attested": false,
+      "native_result_status": "DONE_WITH_CONCERNS",
+      "body_sha256": "334e280a6f9538310222296bf319466995d36ccd16029550f8077ddac7b1f48e",
+      "input_identities": {
+        "docs/superpowers/research/2026-10-02-jev-axi-remaining-family-acceptance.md": "3f3eb0a860f8569f9e91917ba530291d64fa3725d6b1504f7577b8604d5a1145",
+        "jev-axi@a1fe6190/src/commands/githooks.ts": "00331e0df18a7a875c608b7a2287f109d0c78b39ec5de94cdd8aec88a73eabd0",
+        "jev-axi@a1fe6190/src/commands/common.ts": "11c83b37feaea5c7d2a87f0684c054004e9f1e5539cabbfad581f5a701eafec8",
+        "jev-axi@a1fe6190/src/recipes/questions.ts": "0019ca5ef45c6fc12edeb2a45cda34979bf74374f711949946dd3481ad7fc017",
+        "jev-axi@a1fe6190/src/git.ts": "e622c2ab6f96b47cfc82262b921f5bc9b93ea0130b84a63568ffa3a19a4c6f8c",
+        "jev-axi@a1fe6190/src/client.ts": "7fe1684556ccbcb1661b7abd9e95ebfad27fe1310e8e86e0abd3f422a5bccdbe",
+        "jev-axi@a1fe6190/src/config.ts": "5a7ab3b6666dc14000ac791d37c80c7d9e76b53d8dd5d02600a236c8b7016551",
+        "jev-axi@a1fe6190/package.json": "c0b86374337e531956406ddededa6a90fabf65f1e749e327e17718fcbbd184fc",
+        "jev-axi@a1fe6190/pnpm-lock.yaml": "b0fa8eed3f224ebd729c4528c0cf133310e3135927fb699249fbaa15a2a6984b"
+      },
+      "verification": {
+        "body_sha256": "334e280a6f9538310222296bf319466995d36ccd16029550f8077ddac7b1f48e",
+        "input_digests_match": true,
+        "request_and_plan_match": true,
+        "claims_review": "coordinator primary-source review passed; bounded witness and excluded-source gaps retained",
+        "source_claims_checked": [
+          "message parsing and staged input",
+          "skips and prefix truncation",
+          "consumed versus unused answers",
+          "warning and strict output",
+          "cache usage and failed-call accounting limits"
+        ]
+      },
+      "usable": true,
+      "portable_evidence": false,
+      "product_attested": false
+    }
+  ],
+  "method_lane": {
+    "native_dispatch": "failed before launch: agent thread limit reached",
+    "coordinator_source_reconciliation": "completed",
+    "independent_method_review": false
+  },
+  "new_native_workloads": 0,
+  "jev_requests": 0,
+  "research_costs": "not measured; not zero"
+}

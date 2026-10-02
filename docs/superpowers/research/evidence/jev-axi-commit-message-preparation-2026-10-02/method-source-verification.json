@@ -1,0 +1,23 @@
+{
+  "revision": "9a85baa9785b7d12c98bd652d037819ea4d9d38f",
+  "sources": [
+    {
+      "source": ".agents/skills/handling-sys1-incidents/SKILL.md",
+      "sha256": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac",
+      "projection_equal": true,
+      "committed_bytes_equal": true
+    },
+    {
+      "source": ".agents/skills/handling-sys1-incidents/references/evidence-record.md",
+      "sha256": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+      "projection_equal": true,
+      "committed_bytes_equal": true
+    },
+    {
+      "source": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+      "sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+      "projection_equal": true,
+      "committed_bytes_equal": true
+    }
+  ]
+}
