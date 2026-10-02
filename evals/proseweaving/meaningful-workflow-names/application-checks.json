@@ -1,0 +1,29 @@
+{
+  "source_revision": "fb0be395436d59f5f9f02b81e22c7277d448e18b",
+  "responses": [
+    {
+      "case_id": 13,
+      "response": "# Harbor Queue restoration and replay verification\n\n## Service restoration\n\nRestore queue processing after an interruption.\n\n## Replay verification\n\nCheck that replayed jobs have completed.\n\n## Technical reference\n\nVersion 2.4.1 documents both operations. See `verify_replay` for replay verification. Commit `9a1c3ef` contains this guide's source; issue #42 tracks the guide."
+    },
+    {
+      "case_id": 14,
+      "response": "For the queue, service restoration is implemented, and replay verification is still proposed. Which should we inspect next?"
+    },
+    {
+      "case_id": 15,
+      "response": "You can proceed with investigating the queue's service restoration implementation. Replay verification is still proposed and can't yet be exercised."
+    },
+    {
+      "case_id": 16,
+      "response": "Please inspect the queue's service restoration implementation before we decide on deployment. Deployment hasn't been checked."
+    },
+    {
+      "case_id": 17,
+      "response": "Q7 means queue service restoration after interruption; R2 means replay completion verification after restoration.\n\n| Attempt | Workflow | Result |\n| --- | --- | --- |\n| 1 | Q7 | completed |\n| 1 | R2 | pending |\n| 2 | Q7 | completed |\n| 2 | R2 | completed |\n| 3 | Q7 | completed |\n| 3 | R2 | pending |\n\nThese are diagnostic observations only."
+    },
+    {
+      "case_id": 18,
+      "response": "To restore interrupted Harbor Queue processing, should we explore a proposed command-line tool that hasn't yet been designed or built, or continue planning around the existing administrative dashboard?"
+    }
+  ]
+}
