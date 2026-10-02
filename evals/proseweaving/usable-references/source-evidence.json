@@ -1,0 +1,390 @@
+{
+  "source_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+  "base_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+  "imported_revision": "a5ebc426579f6d28fa6acadcb84dd8bc4b85c626",
+  "runtime_sha256": {
+    "editing-finished-drafts/SKILL.md": "a4f69861ad4e7a76d7dbfcf37be24e888ee617653443ceaafd6d644b0f68609d",
+    "writing-for-people/SKILL.md": "7844be6d18c5bc1029babf4b31ec5ff41a3480477e4d7edf345cda5bd6d3c935",
+    "writing-for-people/references/edit-pass.md": "64f3de32db80bb8bc20cdd7229cb6827c9c1274f12794259d3e2d0471c85dd2c",
+    "writing-for-people/references/evidence-in-prose.md": "becd2fbf5367058175d2387b4734029d7a6b2c86096154da1279afa1c0850a75",
+    "writing-for-people/references/threaded-conversation.md": "404e57e3ff05893e09c0cca52de415ba5fde756f5707f299a2534af6ae3e7125"
+  },
+  "case_correspondence": [
+    {
+      "skill": "writing-for-people",
+      "case_name": "stopping-point-report-partial-migration",
+      "current_id": 1,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 1
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "review-reply-reviewer-partly-right",
+      "current_id": 2,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 2
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "three-review-comments-one-pr",
+      "current_id": 3,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 3
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "status-message-with-unverified-outcomes",
+      "current_id": 4,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 4
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "under-grounded-release-note",
+      "current_id": 5,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 5
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "edit-pass-on-finished-draft",
+      "current_id": 6,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 6
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "export-delay-for-non-expert",
+      "current_id": 7,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 7
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "publication-and-chat-register",
+      "current_id": 8,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 8
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "issue-report-and-proposal",
+      "current_id": 9,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 9
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "guide-with-legacy-chat-framing",
+      "current_id": 10,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 10
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "personal-account-opening",
+      "current_id": 11,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 11
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "source-finding-and-test-setup",
+      "current_id": 12,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 12
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "operator-brief-heads-up",
+      "current_id": 13,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 13
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "edit-brief-derived-message",
+      "current_id": 14,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 14
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "published-guide-with-workflow-shorthand",
+      "current_id": 15,
+      "origin_revision": "a5ebc426579f6d28fa6acadcb84dd8bc4b85c626",
+      "origin_id": 13
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "operator-update-with-costly-legend",
+      "current_id": 16,
+      "origin_revision": "a5ebc426579f6d28fa6acadcb84dd8bc4b85c626",
+      "origin_id": 14
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "cross-project-coordination",
+      "current_id": 17,
+      "origin_revision": "a5ebc426579f6d28fa6acadcb84dd8bc4b85c626",
+      "origin_id": 15
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "colocated-agent-with-assumed-catalog",
+      "current_id": 18,
+      "origin_revision": "a5ebc426579f6d28fa6acadcb84dd8bc4b85c626",
+      "origin_id": 16
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "operator-comparison-with-useful-local-legend",
+      "current_id": 19,
+      "origin_revision": "a5ebc426579f6d28fa6acadcb84dd8bc4b85c626",
+      "origin_id": 17
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "recovery-question-with-proposed-interface",
+      "current_id": 20,
+      "origin_revision": "a5ebc426579f6d28fa6acadcb84dd8bc4b85c626",
+      "origin_id": 18
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "chat-reference-single-known-chat",
+      "current_id": 21,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 21
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "chat-reference-multiple-distinct-chats",
+      "current_id": 22,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 22
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "chat-reference-same-title-ambiguity",
+      "current_id": 23,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 23
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "chat-reference-unavailable-chat-destination",
+      "current_id": 24,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 24
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "chat-reference-public-artifact-useful-references",
+      "current_id": 25,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 25
+    },
+    {
+      "skill": "writing-for-people",
+      "case_name": "chat-reference-public-without-equivalent",
+      "current_id": 26,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 26
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "publication-evidence-boundary",
+      "current_id": 1,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 1
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "conversation-useful-first-person",
+      "current_id": 2,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 2
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "batch-content-led-variation",
+      "current_id": 3,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 3
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "intentional-form-and-quote",
+      "current_id": 4,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 4
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "no-change",
+      "current_id": 5,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 5
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "missing-material-evidence",
+      "current_id": 6,
+      "origin_revision": "42a5ca07d47e5b24847bca3e64b8fa531aeba04d",
+      "origin_id": 6
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "edit-chat-reference-single-known-chat",
+      "current_id": 7,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 7
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "edit-chat-reference-multiple-distinct-chats",
+      "current_id": 8,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 8
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "edit-chat-reference-same-title-ambiguity",
+      "current_id": 9,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 9
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "edit-chat-reference-unavailable-chat-destination",
+      "current_id": 10,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 10
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "edit-chat-reference-public-artifact-useful-references",
+      "current_id": 11,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 11
+    },
+    {
+      "skill": "editing-finished-drafts",
+      "case_name": "edit-chat-reference-public-without-equivalent",
+      "current_id": 12,
+      "origin_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+      "origin_id": 12
+    }
+  ],
+  "checks": [
+    {
+      "name": "plugin",
+      "command": [
+        "python",
+        "scripts/validate_proseweaving.py",
+        "."
+      ],
+      "exit_code": 0,
+      "log_sha256": "1650c96d0269922915a85535f812ff3bc094c3d5e5d07a77ca85319805818359"
+    },
+    {
+      "name": "focused-tests",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "tests.test_validate_proseweaving"
+      ],
+      "exit_code": 0,
+      "log_sha256": "169df1e607da016f27b6208ee51d1793b6a9b4b48c26dd0905d78c4f1fda3f77"
+    },
+    {
+      "name": "disposition",
+      "command": [
+        "python",
+        "scripts/validate_source_skill_disposition.py",
+        "."
+      ],
+      "exit_code": 0,
+      "log_sha256": "0481aea1cc4ee55b0f9e22c51ba0190465dd2edc1829d411385a3fa7a54482d0"
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "reviews": {
+    "source_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+    "cycle": 3,
+    "source_criteria_review": {
+      "reviewer": "chat_reference_handoff_review",
+      "result": "clean",
+      "reviewed_sha256": {
+        "plugins/proseweaving/skills/writing-for-people/SKILL.md": "7844be6d18c5bc1029babf4b31ec5ff41a3480477e4d7edf345cda5bd6d3c935",
+        "plugins/proseweaving/skills/writing-for-people/references/edit-pass.md": "64f3de32db80bb8bc20cdd7229cb6827c9c1274f12794259d3e2d0471c85dd2c",
+        "plugins/proseweaving/skills/writing-for-people/evals/evals.json": "d330006c40a32189f2a665afe50bb263f25037723406b0b2375f7b31838aae99",
+        "plugins/proseweaving/skills/editing-finished-drafts/evals/evals.json": "3508665e9558ad9bd6df299069a1f7ba3df64c307422d92127046c80481fe963",
+        "plugins/proseweaving/content-lock.json": "55ea038b7e10254109e5d6f6488a912eddfb99617c923a43885fdac1c264a2f3"
+      },
+      "scope": "Chosen nearby-title and project-label boundary, clarification action in writer and final edit pass, two same-title expectations, member lock"
+    },
+    "prior_composition_review": {
+      "revision": "d65e259ba6c524ef0efa7c0b3fdb87c5c0e8f979",
+      "result": "clean",
+      "current_correspondence_check": "composition_check"
+    }
+  },
+  "technical_adjudication": {
+    "completed_unique_requests": 18,
+    "application_runs": 16,
+    "description_routing_probes": 2,
+    "response_digests_verified": true,
+    "pre_execution_capacity_rejections": 0,
+    "child_tool_traces_available": false,
+    "provider_model_attested": false
+  },
+  "whole_kit_check": {
+    "command": [
+      "python",
+      "scripts/validate_provingkit.py",
+      "."
+    ],
+    "passed": false,
+    "diagnostic": "member content identity drift"
+  },
+  "static_analysis": {
+    "writing-for-people": {
+      "failures": 0,
+      "warnings": 0
+    },
+    "editing-finished-drafts": {
+      "failures": 0,
+      "warnings": 0
+    },
+    "scope": "runtime-only skill packages; full-source scan counts eval support in deferred budget"
+  },
+  "composition_check": {
+    "source_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+    "records": [
+      {
+        "skill": "writing-for-people",
+        "retained_cases_unchanged": 14,
+        "current_cases": 26,
+        "imported_cases_unchanged_except_numeric_id": 6
+      },
+      {
+        "skill": "editing-finished-drafts",
+        "retained_cases_unchanged": 6,
+        "current_cases": 12
+      }
+    ],
+    "fixtures_byte_equal": true
+  }
+}

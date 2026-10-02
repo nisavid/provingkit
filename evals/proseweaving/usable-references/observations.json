@@ -1,0 +1,162 @@
+{
+  "source_revision": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+  "method": {
+    "kind": "native qualitative development observations",
+    "repetitions": 1,
+    "executor_model": "gpt-6-sol",
+    "executor_effort": "medium",
+    "delivery": "one fresh native child per application request; two separate description-routing probes",
+    "limitations": [
+      "No enforced tools-denied sandbox or provider model attestation",
+      "Executor reads its supplied packet through a file tool; ambient harness instructions remain",
+      "Routing probes classify descriptions; they do not establish native skill discovery",
+      "Not the retained three-repetition threshold qualification or final integrated candidate evidence"
+    ]
+  },
+  "observations": [
+    {
+      "case_name": "operator-brief-heads-up",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "b32b8e14344dff312a77843404131570dcb8f61665e7eca73a0cdd540fa25ad6",
+      "response_sha256": "d8dfdfa09ecb8968e95785edfe5b07f3193c0ec2b40c217077c6a26eea798e6a",
+      "response": "Hi Jules, I’m revising the export guide’s wording and screenshots. Both our guides explain where to find the export button, so there’s some overlap. Nothing needed from you now; please carry on with onboarding. Once I have a draft, I’ll share the idea of putting that explanation in a shared section so we can consider it together."
+    },
+    {
+      "case_name": "edit-brief-derived-message",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "6d0caca473f3681954ddfcc8b3bda46c92ad3c087a98b01336acf8bcf4f78c12",
+      "response_sha256": "c925d2b78d82e136aaa6d0364253a52d47f4762145af37b32846c4a47425200e",
+      "response": "Thanks for flagging the shared example. I’d lean toward Cedar, but Meadow works too. Which name would you prefer in both guides? I’ll wait for your choice before drafting the import example."
+    },
+    {
+      "case_name": "recovery-question-with-proposed-interface",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "f90be520e327f67b906ef0f236e9a5a75c72f2501bc35fba281841439cf9b7e1",
+      "response_sha256": "711d072b7f65a3d12699626f973988e034e6b7cd6a8735341d019a6cd4914802",
+      "response": "For Harbor Queue’s interrupted queue processing, should I explore a command-line recovery tool, or continue planning recovery through the existing administrative dashboard?"
+    },
+    {
+      "case_name": "chat-reference-single-known-chat",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "a0330f894ec7e5b05ca938d26b1fa1ec8f0dcdf35f639b6039745d5405eac73b",
+      "response_sha256": "bf187b9cd099cb80af7784c1983c3fa5e45eb6f50819148724b420fba10ff68c",
+      "response": "Mara, the team settled import retry ownership in [Import retry ownership](codex://threads/2c07e50a-567b-4d24-91b4-74db6bc02c73). The ingest team owns it."
+    },
+    {
+      "case_name": "chat-reference-multiple-distinct-chats",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "b4b4d7ced0f5cbdac56f39e2e013cbd3f5657166a54e9c0b96b572fd5102ae2a",
+      "response_sha256": "ce93ba72b698a9456dd981aee2f84b3f750bf96a62c44a431fdfca2dc47e9a19",
+      "response": "The two-worker limit is settled in [Capacity planning](codex://threads/7a52d602-985e-40aa-a333-70e12ffc17d6). [Release sequencing](codex://threads/4f33490e-cdd0-4585-9d29-b024fb42ea6d) remains open pending a rollout window."
+    },
+    {
+      "case_name": "chat-reference-same-title-ambiguity",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "990b8029615d1e2e8560db307e754d4ec6e282d19af82d3aaa8105329a888e52",
+      "response_sha256": "c973ded5c0bfcf54a09af444afca377567490d600b7a7994ffba2260cb5b11ae",
+      "response": "I found two chats titled `Release checkpoint`: [Atlas](codex://threads/0a630833-59a9-434a-8d2a-e788b8508c0f) and [Beacon](codex://threads/ee55bc12-5329-48b1-9ae5-a974fc17dfd4). I can’t tell which contains the rollback-owner decision. Was it in Atlas or Beacon?"
+    },
+    {
+      "case_name": "chat-reference-unavailable-chat-destination",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "a632da738e225ff5533265a95d95aef88b00d1dfe2ac62cbcf15806c68cb0626",
+      "response_sha256": "d4f02f2a781a80276d30fc1ca19ab97e772d5c0eaed129e667ff4f27806cf2ee",
+      "response": "I found a mention of `Parser recovery notes`, but the current lookup doesn’t identify the chat or provide a verified link. If you have its direct link or know which project it belongs to, send that over so I can identify the right chat.\n\nThe parser fallback is still under discussion. I don’t have a settled decision to report."
+    },
+    {
+      "case_name": "chat-reference-public-artifact-useful-references",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "170e2813f2ab096b0cf39ea294aba51962c78edb334859c9cec8ca1b6bb39a94",
+      "response_sha256": "c8fe18ae4306c496198564da64e83fc895fcac0ca247bc731383ed9c7198f816",
+      "response": "The relay service owns retry routing, as recorded in [Route retry ownership to relay](https://github.com/meridian-labs/relay/issues/42). The reviewed patch is in [Apply relay retry routing](https://github.com/meridian-labs/relay/pull/57)."
+    },
+    {
+      "case_name": "chat-reference-public-without-equivalent",
+      "skill": "writing-for-people",
+      "kind": "application",
+      "request_sha256": "79590454954f0398f0a52ef92d38cf5546ceed5a356bff095645dc3272bcdbdc",
+      "response_sha256": "39346a8b58a4ca84a709ef12b35d0f105a280bda3821cb4995b16f1902963a36",
+      "response": "The documentation team now owns the retry guide. The decision is recorded in a private Codex chat that public GitHub readers cannot access. I don’t have a verified public source to link."
+    },
+    {
+      "case_name": "intentional-form-and-quote",
+      "skill": "editing-finished-drafts",
+      "kind": "application",
+      "request_sha256": "c7d5a7c48b8564988ad02c5a8b9d69c3da7fda5c019659061e489c1a1a891b32",
+      "response_sha256": "3bbbddfd7d273525f06bdbde06e97778b6a158903b747ce4c8eec8c830ffa772",
+      "response": "## Reset exercise\n\nThis exercise uses a fixture.\n\nSetup: a stub closes the connection after the first request.\nObservation: the fixture exits 1.\n\nThe example of boilerplate reads, \"That said, this is where reliability matters.\"\n\n```sh\nexport-tool --retry-limit 3\n```\n\n1. In console A, run the command.\n2. In console B, run the command."
+    },
+    {
+      "case_name": "edit-chat-reference-single-known-chat",
+      "skill": "editing-finished-drafts",
+      "kind": "application",
+      "request_sha256": "f0ce58a38ee9ef1d02224209cda30b24e0d76bbbfa2ab1dfbee49dba2703a5de",
+      "response_sha256": "e2133749410688a894e8aac103bfdf7504b27a3ae3e9879f4937bd91042c3081",
+      "response": "The ingest team owns import retries. The decision is in [Import retry ownership](codex://threads/2c07e50a-567b-4d24-91b4-74db6bc02c73)."
+    },
+    {
+      "case_name": "edit-chat-reference-multiple-distinct-chats",
+      "skill": "editing-finished-drafts",
+      "kind": "application",
+      "request_sha256": "2140b6a75bc35362b48883d57f39846318b9929c3e8c5e2725e66743284f3151",
+      "response_sha256": "9f385a288a96c7ec673a7ac932fa074fd5c32ff25d26e469290eb7f011a72b19",
+      "response": "[Capacity planning](codex://threads/7a52d602-985e-40aa-a333-70e12ffc17d6) settled the two-worker limit. [Release sequencing](codex://threads/4f33490e-cdd0-4585-9d29-b024fb42ea6d) still needs a rollout window."
+    },
+    {
+      "case_name": "edit-chat-reference-same-title-ambiguity",
+      "skill": "editing-finished-drafts",
+      "kind": "application",
+      "request_sha256": "89f72463d5dba1118a62ffe41e133edc319f78254eaae0b40988095d52568b48",
+      "response_sha256": "e3fde737d704c84407aec6b078533cc1ca6f6578fe4b8dbaf5936a4ac4a917e7",
+      "response": "Which `Release checkpoint` chat held the rollback-owner decision: [Atlas](codex://threads/0a630833-59a9-434a-8d2a-e788b8508c0f) or [Beacon](codex://threads/ee55bc12-5329-48b1-9ae5-a974fc17dfd4)?"
+    },
+    {
+      "case_name": "edit-chat-reference-unavailable-chat-destination",
+      "skill": "editing-finished-drafts",
+      "kind": "application",
+      "request_sha256": "7b0e15169cd97020a48ddad6e697414c7f2213059afec4dbc505a60fabe5efe6",
+      "response_sha256": "08d3416a7500dd67588a8d4654c7bc14c4cadb6dfa0f200b1c87907ffcd6b483",
+      "response": "I found a mention of `Parser recovery notes`, but the current lookup has no verified link to the chat. Can you send me its link? The parser fallback is still under discussion."
+    },
+    {
+      "case_name": "edit-chat-reference-public-artifact-useful-references",
+      "skill": "editing-finished-drafts",
+      "kind": "application",
+      "request_sha256": "67b601429b87754be45b84879d1fd236a7b72c3ceb5cc39f37e031e6c9763f23",
+      "response_sha256": "718f09f8638e88d03866ca33510cf463ec10a56647112b7d4665bdf3f2ca018e",
+      "response": "The relay service owns the change, as recorded in [Route retry ownership to relay](https://github.com/meridian-labs/relay/issues/42). The reviewed patch is in [Apply relay retry routing](https://github.com/meridian-labs/relay/pull/57).\n\n> \"Retry routing remains a relay concern.\""
+    },
+    {
+      "case_name": "edit-chat-reference-public-without-equivalent",
+      "skill": "editing-finished-drafts",
+      "kind": "application",
+      "request_sha256": "6a9a507abd8b455b6fdfb395cea8145e6cf5ed2bed21f2651a04138bc13bf398",
+      "response_sha256": "3b98d416a776798b20cf51281295f267c674a2b35ceabb084d38df11c6e8bcd0",
+      "response": "The documentation team now owns the retry guide. The decision is recorded in a private Codex chat that public readers cannot access. No public source for the decision has been verified."
+    },
+    {
+      "case_name": "writing-for-people-routing",
+      "skill": "writing-for-people",
+      "kind": "description-routing-probe",
+      "request_sha256": "33f4fa3d313b9859726c633d5de3325b301e68a97174eef810f731610c02efa2",
+      "response_sha256": "4fb5a90c55de2e52f716326392f78b1b0e587ed214efea5dc88bf3815ec9e7eb",
+      "response": "[\n  {\n    \"query\": \"Write an internal handoff that points Mara to the verified Codex chat about import retry ownership.\",\n    \"selected_skills\": [\"writing-for-people/SKILL.md\"]\n  },\n  {\n    \"query\": \"Draft a public issue update using the verified issue and PR links instead of the private chat reference.\",\n    \"selected_skills\": [\"writing-for-people/SKILL.md\"]\n  },\n  {\n    \"query\": \"Post this approved message with its chat URL as exact bytes. Do not revise it.\",\n    \"selected_skills\": []\n  },\n  {\n    \"query\": \"Inspect this Python diff for a retry bug; a comment contains a Codex chat link.\",\n    \"selected_skills\": []\n  }\n]"
+    },
+    {
+      "case_name": "editing-finished-drafts-routing",
+      "skill": "editing-finished-drafts",
+      "kind": "description-routing-probe",
+      "request_sha256": "424d5b2b57f0c1e5dcfdc00848c0a91aac716389c463261ff7886a4a865486b0",
+      "response_sha256": "c599f907b14c7207fc33a1476b460c4dc6a2689c425f14f47b74ec042e42e034",
+      "response": "[\n  {\"query\":\"Give this finished incident update a final pass against the attached log. Keep the facts and the two headings; catch any boilerplate or claims the log cannot support.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"These three replies are ready to send, but they sound like copies of each other. Tighten them without changing what I did or promised.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"Check the last draft of this guide before publication. Keep the numbered procedure and the quoted examples as written, and compare the prose with the supplied notes.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"Can you proofread this complete customer update for unsupported certainty and awkward stock phrases? The approved facts are below.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"This final reply may already be fine. Check it against the short brief and leave it unchanged if there is nothing to fix.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"Write a new incident update from these log notes. We have no draft yet; make it suitable for support.\",\"selected_skills\":[\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"Outline a guide for retries, including sections on limits, timing, and errors. We will write the prose later.\",\"selected_skills\":[]},\n  {\"query\":\"Review this Python patch for an off-by-one error in the retry counter. The docstring uses the phrase final draft, but I need a code review.\",\"selected_skills\":[]},\n  {\"query\":\"The finished reply is approved. Post these exact bytes in the issue without editing them.\",\"selected_skills\":[]},\n  {\"query\":\"Translate this short approved update into French. Keep its meaning; I am not asking for an editing or fact-check pass.\",\"selected_skills\":[]},\n  {\"query\":\"Only replace retry_count with retry_limit in this document. Do not revise or assess the prose.\",\"selected_skills\":[]},\n  {\"query\":\"Explain why a canned closing sentence can weaken a reply. Give two examples; there is no draft to edit.\",\"selected_skills\":[]},\n  {\"query\":\"Give this finished internal handoff a final edit and link the named Codex chat using the verified lookup in the brief.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"These two chat titles in the finished update point to the same thread. Check each against the supplied lookup and fix the links.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"The finished reply links a same-title chat, but the lookup lists two matches. Check the draft against that ambiguity.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"Edit this final note for accuracy: its Codex chat link has no verified destination in the supplied lookup.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"This finished public issue update cites a private Codex chat. Edit it using the verified public issue and PR references while keeping the quoted note.\",\"selected_skills\":[\"editing-finished-drafts/SKILL.md\",\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"Write a new handoff from notes and link the known chat. No draft exists yet.\",\"selected_skills\":[\"writing-for-people/SKILL.md\"]},\n  {\"query\":\"Open the Codex chat from this URL and tell me what it says.\",\"selected_skills\":[]},\n  {\"query\":\"Post this approved draft with its existing chat links as exact bytes. Do not edit it.\",\"selected_skills\":[]},\n  {\"query\":\"Check whether the chat ID resolves in the Codex app; I need a lookup, not a prose edit.\",\"selected_skills\":[]},\n  {\"query\":\"Review the code change in PR 57 for bugs. The description happens to mention a chat.\",\"selected_skills\":[]}\n]"
+    }
+  ]
+}

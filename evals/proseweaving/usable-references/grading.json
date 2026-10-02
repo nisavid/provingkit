@@ -1,0 +1,505 @@
+{
+  "outputs": [
+    {
+      "output_id": "output-01",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "correct-crossed-link",
+          "passed": true,
+          "evidence": "Capacity planning links to 7a52d602…; Release sequencing links to its distinct 4f33490e… destination."
+        },
+        {
+          "id": "source-claims-preserved",
+          "passed": true,
+          "evidence": "Capacity planning settled the two-worker limit; Release sequencing still needs a rollout window."
+        },
+        {
+          "id": "usable-prose",
+          "passed": true,
+          "evidence": "Both references use readable linked titles in two natural sentences."
+        }
+      ],
+      "case_name": "edit-chat-reference-multiple-distinct-chats"
+    },
+    {
+      "output_id": "output-02",
+      "kind": "routing",
+      "assertions": [
+        {
+          "id": "query-1",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-2",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-3",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-4",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-5",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-6",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-7",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-8",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-9",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-10",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-11",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-12",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-13",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-14",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-15",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-16",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-17",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was selected; expected selection."
+        },
+        {
+          "id": "query-18",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-19",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-20",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-21",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        },
+        {
+          "id": "query-22",
+          "passed": true,
+          "evidence": "Target editing-finished-drafts was not selected; expected no selection."
+        }
+      ],
+      "case_name": "editing-finished-drafts-routing"
+    },
+    {
+      "output_id": "output-03",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "false-link-removed",
+          "passed": true,
+          "evidence": "The unverified draft URL is gone; the response says the lookup has no verified link."
+        },
+        {
+          "id": "status-and-gap",
+          "passed": true,
+          "evidence": "It says the parser fallback is still under discussion and asks for the chat link."
+        },
+        {
+          "id": "recipient-ready",
+          "passed": true,
+          "evidence": "The reply gives Nia a clear status and a direct request, without fabricating a citation."
+        }
+      ],
+      "case_name": "edit-chat-reference-unavailable-chat-destination"
+    },
+    {
+      "output_id": "output-04",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "recovery-system-and-purpose",
+          "passed": true,
+          "evidence": "It names Harbor Queue and frames recovery of its interrupted queue processing."
+        },
+        {
+          "id": "actual-and-proposed-interface",
+          "passed": true,
+          "evidence": "It contrasts exploring a command-line recovery tool with planning through the existing administrative dashboard."
+        },
+        {
+          "id": "no-nonexistent-command",
+          "passed": true,
+          "evidence": "It offers no runnable command and asks about exploring the tool, not performing recovery."
+        }
+      ],
+      "case_name": "recovery-question-with-proposed-interface"
+    },
+    {
+      "output_id": "output-05",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "ambiguity-repaired",
+          "passed": true,
+          "evidence": "The question names the shared Release checkpoint title and labels the two verified links Atlas and Beacon."
+        },
+        {
+          "id": "no-arbitrary-link",
+          "passed": true,
+          "evidence": "It asks which chat held the decision; neither destination is claimed as the source."
+        },
+        {
+          "id": "bounded-question",
+          "passed": true,
+          "evidence": "The only requested detail is whether the chat was in Atlas or Beacon."
+        }
+      ],
+      "case_name": "edit-chat-reference-same-title-ambiguity"
+    },
+    {
+      "output_id": "output-06",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "link-added",
+          "passed": true,
+          "evidence": "Import retry ownership is linked to the verified 2c07e50a… chat destination."
+        },
+        {
+          "id": "claim-preserved",
+          "passed": true,
+          "evidence": "The response keeps the ingest team as owner and adds no outcome."
+        },
+        {
+          "id": "recipient-ready",
+          "passed": true,
+          "evidence": "The two-sentence reply supplies the decision and its linked source directly."
+        }
+      ],
+      "case_name": "edit-chat-reference-single-known-chat"
+    },
+    {
+      "output_id": "output-07",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "supported-ownership",
+          "passed": true,
+          "evidence": "The documentation team now owns the retry guide; no further outcome is claimed."
+        },
+        {
+          "id": "narrow-access-limit",
+          "passed": true,
+          "evidence": "It says the decision is in a private Codex chat that public GitHub readers cannot access."
+        },
+        {
+          "id": "no-false-public-reference",
+          "passed": true,
+          "evidence": "It says no public source is verified and supplies no invented public link."
+        }
+      ],
+      "case_name": "chat-reference-public-without-equivalent"
+    },
+    {
+      "output_id": "output-08",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "ambiguity-visible",
+          "passed": true,
+          "evidence": "It states two Release checkpoint chats exist and gives correctly labeled Atlas and Beacon links."
+        },
+        {
+          "id": "no-guessed-link",
+          "passed": true,
+          "evidence": "It explicitly says it cannot tell which chat contains the rollback-owner decision."
+        },
+        {
+          "id": "bounded-question",
+          "passed": true,
+          "evidence": "It asks only whether the decision was in Atlas or Beacon."
+        }
+      ],
+      "case_name": "chat-reference-same-title-ambiguity"
+    },
+    {
+      "output_id": "output-09",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "ownership-preserved",
+          "passed": true,
+          "evidence": "The documentation team remains the stated owner of the retry guide."
+        },
+        {
+          "id": "access-corrected",
+          "passed": true,
+          "evidence": "It says public readers cannot access the private Codex chat, correcting the draft implication."
+        },
+        {
+          "id": "no-invented-destination",
+          "passed": true,
+          "evidence": "It gives no substitute URL and says no public source is verified."
+        }
+      ],
+      "case_name": "edit-chat-reference-public-without-equivalent"
+    },
+    {
+      "output_id": "output-10",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "public-destinations",
+          "passed": true,
+          "evidence": "The issue 42 and PR 57 titles link to their corresponding verified GitHub destinations."
+        },
+        {
+          "id": "private-chat-access",
+          "passed": true,
+          "evidence": "The response uses public issue and PR links and offers no private chat link."
+        },
+        {
+          "id": "grounded-ownership",
+          "passed": true,
+          "evidence": "It assigns retry routing to the relay service and makes no merge or deployment claim."
+        }
+      ],
+      "case_name": "chat-reference-public-artifact-useful-references"
+    },
+    {
+      "output_id": "output-11",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "unavailable-link-handled",
+          "passed": true,
+          "evidence": "It says the lookup does not identify Parser recovery notes or provide a verified link."
+        },
+        {
+          "id": "no-guessed-id",
+          "passed": true,
+          "evidence": "It supplies no chat ID or URL and says the parser fallback is still under discussion."
+        },
+        {
+          "id": "recipient-ready",
+          "passed": true,
+          "evidence": "It gives Nia the status and asks for a direct link or project to identify the chat."
+        }
+      ],
+      "case_name": "chat-reference-unavailable-chat-destination"
+    },
+    {
+      "output_id": "output-12",
+      "kind": "routing",
+      "assertions": [
+        {
+          "id": "query-1",
+          "passed": true,
+          "evidence": "Target writing-for-people was selected; expected selection."
+        },
+        {
+          "id": "query-2",
+          "passed": true,
+          "evidence": "Target writing-for-people was selected; expected selection."
+        },
+        {
+          "id": "query-3",
+          "passed": true,
+          "evidence": "Target writing-for-people was not selected; expected no selection."
+        },
+        {
+          "id": "query-4",
+          "passed": true,
+          "evidence": "Target writing-for-people was not selected; expected no selection."
+        }
+      ],
+      "case_name": "writing-for-people-routing"
+    },
+    {
+      "output_id": "output-13",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "readable-verified-reference",
+          "passed": true,
+          "evidence": "Import retry ownership is readable link text for the verified 2c07e50a… destination."
+        },
+        {
+          "id": "no-invented-destination",
+          "passed": true,
+          "evidence": "Only the supplied chat and ingest-team ownership appear."
+        },
+        {
+          "id": "recipient-ready",
+          "passed": true,
+          "evidence": "The short note addresses Mara and states the decision and owner."
+        }
+      ],
+      "case_name": "chat-reference-single-known-chat"
+    },
+    {
+      "output_id": "output-14",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "public-useful-links",
+          "passed": true,
+          "evidence": "The issue 42 and PR 57 links have descriptive titles and distinct verified destinations."
+        },
+        {
+          "id": "private-link-removed",
+          "passed": true,
+          "evidence": "The private Codex link is removed from the public paragraph."
+        },
+        {
+          "id": "protected-quote",
+          "passed": true,
+          "evidence": "The block quote remains exactly: > \"Retry routing remains a relay concern.\""
+        }
+      ],
+      "case_name": "edit-chat-reference-public-artifact-useful-references"
+    },
+    {
+      "output_id": "output-15",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "actual-question-left-open",
+          "passed": true,
+          "evidence": "It asks which name Ari prefers in both guides and waits for the choice before drafting."
+        },
+        {
+          "id": "peer-frame-and-shared-language",
+          "passed": true,
+          "evidence": "It responds to the shared example as a peer and omits authority claims and unexplained R7."
+        },
+        {
+          "id": "facts-and-decision-preserved",
+          "passed": true,
+          "evidence": "Cedar is only a preference, Meadow remains acceptable, and no agreement or completed edit is asserted."
+        }
+      ],
+      "case_name": "edit-brief-derived-message"
+    },
+    {
+      "output_id": "output-16",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "reader-frame-and-current-action",
+          "passed": true,
+          "evidence": "It opens with the export-guide revision and says \"Nothing needed from you now\" early."
+        },
+        {
+          "id": "cordial-mutual-alignment",
+          "passed": true,
+          "evidence": "It explains the overlap, invites later joint consideration, and omits EG-42 and territory claims."
+        },
+        {
+          "id": "preserves-unsettled-scope",
+          "passed": true,
+          "evidence": "It keeps the shared section as an idea to discuss after a draft, with no decision or deadline."
+        }
+      ],
+      "case_name": "operator-brief-heads-up"
+    },
+    {
+      "output_id": "output-17",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "protected-spans",
+          "passed": true,
+          "evidence": "Setup:, Observation:, the quotation, code block, and both numbered instructions are unchanged."
+        },
+        {
+          "id": "minimal-repair",
+          "passed": true,
+          "evidence": "The \"worth noting\" opener and \"power of testing\" closer are removed; the quoted example remains."
+        },
+        {
+          "id": "test-scope",
+          "passed": true,
+          "evidence": "The observation still says \"the fixture exits 1\"; no production result is claimed."
+        }
+      ],
+      "case_name": "intentional-form-and-quote"
+    },
+    {
+      "output_id": "output-18",
+      "kind": "application",
+      "assertions": [
+        {
+          "id": "title-destination-pairs",
+          "passed": true,
+          "evidence": "Capacity planning links to 7a52d602… and Release sequencing to 4f33490e…, matching the snapshot."
+        },
+        {
+          "id": "claims-match-sources",
+          "passed": true,
+          "evidence": "The two-worker limit belongs to Capacity planning; the rollout window remains pending in Release sequencing."
+        },
+        {
+          "id": "usable-prose",
+          "passed": true,
+          "evidence": "Both links use readable chat titles in a concise progress reply."
+        }
+      ],
+      "case_name": "chat-reference-multiple-distinct-chats"
+    }
+  ],
+  "summary": {
+    "assertions": 74,
+    "passed": 74,
+    "failed": 0
+  }
+}

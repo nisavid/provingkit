@@ -1,0 +1,36 @@
+{
+  "first_source": "d65e259ba6c524ef0efa7c0b3fdb87c5c0e8f979",
+  "first_review": {
+    "reviewed_source": "d65e259ba6c524ef0efa7c0b3fdb87c5c0e8f979",
+    "status": "valid",
+    "affected_cases": [
+      "chat-reference-same-title-ambiguity",
+      "edit-chat-reference-same-title-ambiguity"
+    ],
+    "finding": "Both outputs used project-only link labels despite the runtime requirement for the verified chat title. Initial rubrics did not check this condition; the 74 passing rubric assertions did not establish the full contract.",
+    "disposition": "Retain original outputs and grades unchanged as historical development evidence; clarify title-plus-context labeling, strengthen both rubrics, and execute fresh packets on corrected source.",
+    "prior_outputs": {
+      "chat-reference-same-title-ambiguity": "I found two chats titled `Release checkpoint`: [Atlas](codex://threads/0a630833-59a9-434a-8d2a-e788b8508c0f) and [Beacon](codex://threads/ee55bc12-5329-48b1-9ae5-a974fc17dfd4). The lookup doesn’t show which contains the rollback-owner decision. Was it for Atlas or Beacon?",
+      "edit-chat-reference-same-title-ambiguity": "I found two chats titled `Release checkpoint`: [Atlas](codex://threads/0a630833-59a9-434a-8d2a-e788b8508c0f) and [Beacon](codex://threads/ee55bc12-5329-48b1-9ae5-a974fc17dfd4). The available record doesn’t show which contains the rollback-owner decision. Which project was it for?"
+    }
+  },
+  "second_source": "a6627b7df4a2be52be71157f50845a9954cae124",
+  "second_grading": {
+    "assertions": 74,
+    "passed": 71,
+    "failed": 3
+  },
+  "second_findings": [
+    "Writer used project-only labels despite the then-current requirement to repeat the title in every label.",
+    "Editor exposed both candidates but did not ask for the distinguishing detail; ambiguity-repaired and bounded-question assertions failed."
+  ],
+  "second_affected_outputs": {
+    "chat-reference-same-title-ambiguity": "I found two chats titled `Release checkpoint`: [Atlas](codex://threads/0a630833-59a9-434a-8d2a-e788b8508c0f) and [Beacon](codex://threads/ee55bc12-5329-48b1-9ae5-a974fc17dfd4). The lookup doesn’t show which contains the rollback-owner decision. Was it for Atlas or Beacon?",
+    "edit-chat-reference-same-title-ambiguity": "I found two chats titled Release checkpoint: [Release checkpoint (Atlas)](codex://threads/0a630833-59a9-434a-8d2a-e788b8508c0f) and [Release checkpoint (Beacon)](codex://threads/ee55bc12-5329-48b1-9ae5-a974fc17dfd4). The available snapshot doesn’t show which one contains the rollback-owner decision."
+  },
+  "settled_labeling_decision": "Allow clear project labels when the shared title is nearby",
+  "new_boundary": "The nearby shared title and verified distinguishing project labels jointly identify the references; full-title repetition in every link is unnecessary in that context.",
+  "clarification_correction": "The main rule and final edit pass explicitly ask for a missing distinction that the reader can supply when identity uncertainty blocks the answer.",
+  "current_source": "fe388fd5cf1b55edd1a51eb0581bdb895638a633",
+  "prior_evidence_disposition": "Original outputs and grades remain unchanged in the private evidence bundle. Earlier grades are not retroactively reclassified under the settled labeling rule."
+}
