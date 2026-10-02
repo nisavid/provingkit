@@ -1,0 +1,15 @@
+{
+  "jev_axi_revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+  "sources": {
+    "src/cli.ts": "4e1104314642f87a0d6e86bbc23db1e997dd13db8501e6e1ea6585d045c36a73",
+    "src/commands/home.ts": "81c1ffe5cb4f5f016bcc90fb412f70aa68485a1a818f91817da2ab8c9150a5a9",
+    "src/commands/diff.ts": "3a5ff661c22a4e94f00d5a157f70e2d055037ddd8be634fa4b2d2da044f20c4e",
+    "src/update.ts": "4aab257ce65df1fae2cc652b372817121fc99d948d6863fa184ea8511736062c",
+    "src/items.ts": "08109da93f0ac49cd0ee843d4178495e0aaf3f57c1e806319ab5efe4033ca40d",
+    "src/concurrency.ts": "2b8ffe6732a77e8b16d425f81b9e671b24b2bcafabcf302c31dc59352d1a34ff",
+    "axi-sdk-js@0.1.12/dist/hooks.js": "b200af66e7fdfb02bd04c4d5b4914c84bd0d54e5cef754267c7d08c5c351f4ec",
+    "axi-sdk-js@0.1.12/dist/cli.js": "7bda640cc33a6f5226e60b7df2ef7ea8c765431c0e89a267273993370bdd8121",
+    "axi-sdk-js@0.1.12/package.json": "7e931285e8bcf75f366f9bb02ea822934013e64e734d225ca4f9b072b1596860"
+  },
+  "method": "read-only source inspection; no execution"
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "scope": "git_hooks",
+    "file": "git-hooks-source-brief.md",
+    "sha256": "ea550ac6cc126f797670ce31a4b72f7221d4884046b54e7620f8a4d0be078dd9",
+    "binding_sha256": "21a00b8c7ed9db87566b6348cb4132067ff415c0b9cfdd50b57f269ee3bc14c7",
+    "source_revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "medium",
+    "execution_model_attested": false,
+    "portable_evidence": false,
+    "input_count": 15,
+    "use": "descriptive source evidence; purpose and acceptance decisions remain with operator"
+  },
+  {
+    "scope": "session_completion",
+    "file": "session-completion-source-brief.md",
+    "sha256": "46a15d42c3972387421afb61ad660f850a10ce383046025788c564d617eb35dd",
+    "binding_sha256": "09d5fb9a5ec82a53097cc44b66a5741bea1af661fb3f9ffde739cc60d4722586",
+    "source_revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+    "selected_model": "gpt-6.1-sol",
+    "selected_effort": "medium",
+    "execution_model_attested": false,
+    "portable_evidence": false,
+    "input_count": 15,
+    "use": "descriptive source evidence; purpose and acceptance decisions remain with operator"
+  }
+]
