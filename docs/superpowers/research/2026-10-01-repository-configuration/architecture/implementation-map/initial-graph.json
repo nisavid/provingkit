@@ -1,0 +1,164 @@
+{
+  "data": {
+    "repository": {
+      "issue": {
+        "number": 374,
+        "title": "Deliver a locally deployed repository-configuration alpha",
+        "body": "## Destination\n\nDeliver an independently reviewed, published, locally deployed repository-configuration alpha that completes useful end-to-end GitHub workflows: creation, assessment, recommended defaults, focused changes, and project-specific CI hardening, including authorized application. Verify fresh discovery and useful invocation in the selected local clients against the accepted qualification contract.\n\n## Notes\n\nThis map carries implementation and delivery work through local alpha deployment; its task tickets intentionally execute the route rather than only resolve planning questions. The preceding [architecture comparison](https://github.com/nisavid/provingkit/issues/370) and [alpha behavior/context decision](https://github.com/nisavid/provingkit/issues/372) supply prerequisites. Architecture, packaging, live qualification contexts, and local client targets are still awaiting actual choices in those prerequisite decisions; recommendations are not accepted choices. A future user-directed session selects and claims work. Charting this map does not start implementation, installation, or live configuration changes.\n\nUse the accepted design and reviewed research from [Design adaptable repository-configuration equipment](https://github.com/nisavid/provingkit/issues/366). The first alpha covers all five useful workflows with explicit evidence limits; it does not need an exhaustive catalog first. Preserve supported uncataloged settings through researched native-tool use and existing authority. Apply [contextual judgment](https://github.com/nisavid/provingkit/issues/373): honor informed choices, explain consequential tradeoffs, cite applicable policy, and intervene for concrete active harm. An intended freeze is valid.\n\nUse `capturing-agent-procedures`, `codebase-design`, `research`, `grilling`, `domain-modeling`, the appropriate skill-authoring/evaluation workflow, and the owning implementation/security/review skills. Use `checkpointing-and-publishing-git-work` for Git checkpoints and publication, and the owning PR skills when a PR is involved. Preserve existing Git, forge, model, review, security, third-party-component, and release ownership.\n\nKeep maintained source, behavioral evidence, published artifacts, installed state, fresh discovery, useful invocation, and hosted enforcement as separate claims. Candidate or material dependency changes invalidate affected evidence. Complete the current required review and evaluation on the actual final revision; a round count is not an acceptance criterion. A one-Skill or independent-Plugin alpha is not a whole-Kit Release, and the existing six-member projection/installation route must not be assumed to accept new equipment unchanged.\n\nRecord the maintained source and exact revision consumers must load, the invocation conditions, supported inputs and limits, target installation identity, recovery method, and how useful corrections return to the producer. Every dependent task verifies its producer inputs before use. Keep native prerequisites acyclic and refresh the map as decisions make later work concrete.\n\n## Decisions so far\n\n## Not yet specified\n\n- Exact initial guide depth, relationships, helper boundaries, and held-out cases after the source and qualification contracts are settled.\n- Further corrections or investigations revealed by real behavior evaluation, hosted fixtures, or fresh client invocation.\n\n## Out of scope\n\n- A later initiative to change Provingkit's own controls, including its omitted-check coverage question, unless selected as an authorized alpha qualification use case. The research records that follow-up without making remediation an alpha blocker.\n\n- Additional providers and broader live qualification beyond the selected alpha contexts. These may be considered in a later increment.\n\n- Requiring every GitHub setting to be modeled before the first alpha.\n- Treating recommended defaults, sibling-repository history, or an assessment score as universal policy.\n- Quietly adding equipment to the current Provingkit Slate or claiming a whole-Kit, stable, signed, or production-qualified release from this alpha.\n- Starting background reconciliation or taking over another configuration writer without a separately chosen contract.\n- Changing production repositories merely to test the equipment, or broadening public support claims beyond the evidence obtained.\n",
+        "state": "OPEN",
+        "url": "https://github.com/nisavid/provingkit/issues/374",
+        "subIssues": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "NQ"
+          },
+          "nodes": [
+            {
+              "number": 375,
+              "title": "Bind the alpha to maintained source and an installation contract",
+              "body": "## Question\n\nHow will the accepted design be maintained, identified, distributed, installed, and recovered in its selected local clients?\n\nConsume the completed architecture and alpha-context decisions. Use `grilling`, `domain-modeling`, `codebase-design`, and `capturing-agent-procedures` to bind the selected packaging to its canonical source path and owner, descriptive identity, alpha revision/artifact identity, invocation pointer, target client surfaces, and installation/recovery route. Do not reopen accepted capability, contextual-judgment, or architecture choices without new material evidence.\n\nInspect the current source and deployment owners. The current projector and installer are bounded to the existing Kit; a new route must preserve that boundary or make its narrow source/validation amendment explicit. A repo-carried Skill needs a concrete source-to-global deployment contract, while an independent Plugin needs its own packaging and distribution identity. Neither automatically becomes a whole-Kit Release.\n\nResolve how consumers locate and invoke the reviewed revision, how shadowed/duplicate providers are detected, what prior state is retained for recovery, and where future corrections are maintained. Record the decision and reviewable source/deployment contract as the producer input to implementation. This ticket settles the route; it does not install the equipment.\n",
+              "state": "OPEN",
+              "url": "https://github.com/nisavid/provingkit/issues/375",
+              "assignees": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "Mg"
+                },
+                "nodes": [
+                  {
+                    "number": 372,
+                    "title": "Choose the first alpha's repository-configuration behavior",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/372"
+                  },
+                  {
+                    "number": 370,
+                    "title": "Compare architectures for repository-configuration equipment",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/370"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 376,
+              "title": "Define the alpha's behavioral qualification contract",
+              "body": "## Question\n\nWhat concrete cases and evidence will establish that the selected alpha is useful and reliable across its accepted workflows, contexts, and local clients?\n\nUse `grilling`, `domain-modeling`, `research`, `codebase-design`, `capturing-agent-procedures`, and the appropriate skill-evaluation and security procedures. Consume the actual architecture, end-to-end capability, contextual-judgment, live-qualification context, and client choices. Resolve a claim-specific qualification contract without inventing a universal security score or fixed model for every setting.\n\nRequire useful complete examples of creation, assessment, defaults adoption, focused changes, and project-specific CI hardening, including authorized application. Cover preserved deliberate choices, a freeze and an accidental deadlock, an uncataloged native-tool change, existing authority, policy and permission uncertainty, an existing configuration writer, conflicting sources, changed check producers, skipped/missing results, coverage uncertainty, no-op, and partial/unknown effects. Use contrasting project content and held-out combinations where they distinguish adaptable judgment from copied presets.\n\nSpecify what source/fixture checks, actual agent traces, replayed provider behavior, and selected hosted fixtures each establish. An independent evaluator reads behavior traces as well as final answers. Select live fixtures and controls appropriate to the accepted qualification context; isolate any claimed enforcement cause from other blockers. Preserve explicit limits for contexts represented only by fixtures. Discovery, non-invocation, installed identity, useful fresh invocation, and hosted enforcement need their own evidence.\n\nAssign every obligation to its owning phase: source and pre-deployment behavior qualification, publication and installation, or fresh client invocation. State each phase's completion evidence and its consumer so implementation can finish without depending on an installation that it must first unblock. The complete contract is satisfied only at the map destination.\n\nRecord how material failures force candidate correction and invalidate affected evidence. Bind the resulting contract and evaluation ownership to implementation; do not run live configuration experiments in this decision ticket.\n",
+              "state": "OPEN",
+              "url": "https://github.com/nisavid/provingkit/issues/376",
+              "assignees": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "Mg"
+                },
+                "nodes": [
+                  {
+                    "number": 372,
+                    "title": "Choose the first alpha's repository-configuration behavior",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/372"
+                  },
+                  {
+                    "number": 370,
+                    "title": "Compare architectures for repository-configuration equipment",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/370"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 377,
+              "title": "Implement and qualify repository-configuration workflows",
+              "body": "## Question\n\nImplement the accepted repository-configuration design and demonstrate that the candidate satisfies its source contract and the pre-deployment obligations of its qualification contract.\n\nThis is a delivery task under the map's explicit execution scope. Load the reviewed design/research and both resolved contracts before dependent work; record their consumed revisions. Use the owning source-authoring, `tdd` where executable implementation is involved, security, evaluation, review, and Git publication procedures. Keep knowledge, code, and discovery pointers in their maintained source and regenerate projections through their owner.\n\nImplement the focused procedure, useful initial decision guidance, supported adaptive native-tool route, and helpers justified by the selected cases. Preserve native configuration owners and existing authorization. Do not turn finite tested coverage into a catalog-based permission gate, force an extra proposal ceremony, or select new stakeholder policy through code.\n\nExercise the qualification contract's pre-deployment obligations on actual candidate behavior. The contract assigns publication, installation, fresh discovery, and fresh client invocation to the downstream delivery tasks; those results are not prerequisites for this task's closure. Resolve every material in-scope finding and obtain independent current review on the final source and evidence. Add machinery where observed recurring failures warrant it; update the map for genuinely new unresolved decisions rather than silently broadening the design. Retain exact candidate identity, test/evaluation traces, source/citation dependencies, supported claims, limits, and the producer's capture and consumer-invocation contract.\n\nComplete with a source candidate ready for its authorized publication and deployment route. Source acceptance alone does not establish published artifacts, installed equipment, fresh client use, or hosted behavior beyond the tests actually observed.\n",
+              "state": "OPEN",
+              "url": "https://github.com/nisavid/provingkit/issues/377",
+              "assignees": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "Mg"
+                },
+                "nodes": [
+                  {
+                    "number": 376,
+                    "title": "Define the alpha's behavioral qualification contract",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/376"
+                  },
+                  {
+                    "number": 375,
+                    "title": "Bind the alpha to maintained source and an installation contract",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/375"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 378,
+              "title": "Publish and install the qualified repository-configuration alpha",
+              "body": "## Question\n\nPublish the qualified alpha and install its verified artifacts through the accepted local deployment and recovery contract.\n\nThis is a delivery task under the map's execution scope. Load and verify the accepted source/deployment contract and the implementation's exact reviewed candidate and current evidence. Use `capturing-agent-procedures`, `checkpointing-and-publishing-git-work`, applicable PR publication/review procedures, and the selected deployment owner. Reconcile source drift or stale evidence before publication.\n\nPublish the task-owned source and selected alpha artifact identity, verify the published bytes, retain the prior local provider/source/scope/enabled-state information needed for recovery, and install only the selected targets through their supported controls. Verify installed payloads and discovery in fresh contexts, including relevant provider-shadowing cases. Follow the source contract for any cross-repository deployment work; do not edit installed caches as canonical source or quietly extend the six-member Kit.\n\nReturn exact source, artifact, publication, installation, and recovery records for the fresh-invocation consumer. If candidate changes are needed, renew affected build/evaluation/review/publication/installation evidence before proceeding. This task does not infer useful operation or hosted enforcement from a successful install command.\n",
+              "state": "OPEN",
+              "url": "https://github.com/nisavid/provingkit/issues/378",
+              "assignees": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "MQ"
+                },
+                "nodes": [
+                  {
+                    "number": 377,
+                    "title": "Implement and qualify repository-configuration workflows",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/377"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 379,
+              "title": "Verify the alpha through fresh client invocations",
+              "body": "## Question\n\nVerify that fresh sessions in every selected local client can discover and use the deployed alpha for the accepted useful repository-configuration work.\n\nThis is the map's final delivery task. Load the maintained procedure from its verified installed source, record its actual loaded revision and client surface/version, and consume the accepted qualification and deployment evidence. Use `capturing-agent-procedures` and the selected evaluation/review owners. An installed listing or copied instruction file is insufficient.\n\nRun the accepted fresh-invocation cases through the actual local clients and retain behavior evidence, including ordinary-language discovery and nearby tasks that should not trigger a configuration assessment. Verify the selected useful application cases only within their actual authority and fixture scope. Keep local operation distinct from hosted enforcement claims and keep unsupported contexts explicit.\n\nFeed material failures back to the maintained producer, renew every affected downstream receipt, and repeat the relevant checks on the corrected deployed candidate. Finish only when current independent evidence supports the accepted local-alpha claims and each consumer can locate its reviewed revision. Record the verified alpha identity, remaining bounded limits, and the exact post-close frontier; do not substitute source conformance for live invocation.\n",
+              "state": "OPEN",
+              "url": "https://github.com/nisavid/provingkit/issues/379",
+              "assignees": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "MQ"
+                },
+                "nodes": [
+                  {
+                    "number": 378,
+                    "title": "Publish and install the qualified repository-configuration alpha",
+                    "state": "OPEN",
+                    "url": "https://github.com/nisavid/provingkit/issues/378"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

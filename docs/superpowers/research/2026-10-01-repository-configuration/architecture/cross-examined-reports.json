@@ -1,0 +1,20 @@
+{
+  "exchange_sha256": "20796a6031b10f664d744f83fe3e08e1e188c53e28d90bad45eaa84ecff9d3b3",
+  "reports": [
+    {
+      "path": "minimal-cross-examination.md",
+      "sha256": "23cb6893d914e7d6357a7e972f683c4d15544510736ec84799a79165fb7a659d",
+      "bytes": 14064
+    },
+    {
+      "path": "flexible-cross-examination.md",
+      "sha256": "a32f09f66cec028cfc8f0cc2655ccdcf412de9f396a8ad56de012a55d93b7fc4",
+      "bytes": 14678
+    },
+    {
+      "path": "caller-cross-examination.md",
+      "sha256": "e95d1ed7f8052a458d17a5b1b925a4e3cf3605bcd98881292514079dec933bdb",
+      "bytes": 15248
+    }
+  ]
+}

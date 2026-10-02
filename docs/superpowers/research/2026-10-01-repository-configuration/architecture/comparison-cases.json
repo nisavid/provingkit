@@ -1,0 +1,53 @@
+{
+  "status": "Constructed comparison prompts, not executed tests or chosen interface",
+  "cases": [
+    {
+      "id": "sole-maintainer",
+      "scenario": "A public GitHub repository has one eligible human maintainer. The user wants PRs and useful review without an impossible approval rule. Explain what is recommended and why, without making zero approvals universal."
+    },
+    {
+      "id": "custom-freeze",
+      "scenario": "The user deliberately wants a retained-history repository frozen. Distinguish this from accidentally blocking every authorized contribution."
+    },
+    {
+      "id": "check-identity",
+      "scenario": "A familiar check name now comes from a different producer; another check is skipped on a path or event. Preserve identity and execution coverage rather than inferring safety from the name."
+    },
+    {
+      "id": "ci-hardening",
+      "scenario": "A Python/plugin repository wants stronger CI. Separate supported code analysis, Actions security, content validators, actual analysis coverage, and merge gates; avoid copying a Rust repository baseline."
+    },
+    {
+      "id": "source-conflict",
+      "scenario": "Two current first-party pages disagree about an approval preview. Explain the conflict and the target observation needed; do not promote availability to tested behavior."
+    },
+    {
+      "id": "existing-writer",
+      "scenario": "Terraform or a GitHub App owns some settings. A user asks to change one of them. Keep one effective owner or make an explicit transition; do not create silent drift between writers."
+    },
+    {
+      "id": "unknown-policy",
+      "scenario": "Inherited organization policy or a setting cannot be read. Preserve unknown, continue independent advice, and identify the specific consequence for an intended change."
+    },
+    {
+      "id": "procedure-change",
+      "scenario": "A maintained upstream procedure is corrected after its consumer prepared a proposal. Determine what evidence and choices need refresh without blanket invalidation."
+    },
+    {
+      "id": "partial-application",
+      "scenario": "An authorized multi-setting change has a timeout after one write and incomplete readback. Report observed state and recover from it; do not promise atomicity or retry unknown writes blindly."
+    },
+    {
+      "id": "consumer-invocation",
+      "scenario": "A local client lists the equipment, but no fresh task has loaded or invoked it. Preserve the distinction between artifact, installed state, discovery, and useful operation."
+    },
+    {
+      "id": "uncataloged-setting",
+      "scenario": "The user requests a supported but uncataloged setting through an available native tool (for example a low-impact repository feature toggle), with sufficient existing authority. Must the equipment refuse until a bespoke actuator is implemented? Explain a researched native-tool route, its evidence and limits, or justify a narrower supported claim without confusing catalog membership with permission."
+    },
+    {
+      "id": "already-authorized",
+      "scenario": "The initial user request already names and authorizes a concrete change. Explain how the design prepares and verifies it without inventing an extra propose/accept/apply ceremony."
+    }
+  ]
+}

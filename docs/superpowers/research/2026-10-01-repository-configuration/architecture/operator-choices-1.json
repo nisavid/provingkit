@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-10-01T17:01:07.975252+00:00",
+  "source": "Direct operator answers in active chat after all initial architecture reports were frozen",
+  "choices": [
+    {
+      "question": "For the first locally deployed alpha, I recommend useful end-to-end GitHub workflows: create a repo, assess existing settings, adopt recommended defaults, make a focused change, and add project-specific CI hardening—including applying an authorized change through the existing tools. Coverage limits would be explicit; this would not require cataloging every GitHub setting before release. Is that the right capability scope?",
+      "answer": "End-to-end workflows (recommended)"
+    },
+    {
+      "question": "For unusual configurations, I recommend contextual judgment: explain consequential tradeoffs and honor informed choices; cite the actual policy when it constrains a choice; intervene when there is concrete active harm, such as exposing privileged CI credentials to untrusted code. An intentional freeze is valid, while an accidental deadlock calls for clarification. Should the equipment use that approach, or should we define a fixed set of prohibited configurations first?",
+      "answer": "Contextual judgment (recommended)"
+    }
+  ],
+  "scope": "Architecture, source home, packaging, supported qualification contexts, and deployment targets remain separate decisions. These are design decisions, not authorization to implement, deploy, or change live repository settings in this research/design increment."
+}

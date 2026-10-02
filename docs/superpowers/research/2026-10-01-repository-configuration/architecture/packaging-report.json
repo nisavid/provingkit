@@ -1,0 +1,5 @@
+{
+  "report": "packaging-feasibility.md",
+  "sha256": "563c1feb380565ea0ad32fc6d1d8b9d46a7f347bd90e30575ddaa4bc8b9eb52b",
+  "evidence_scope": "Independent current-source assessment; no installation or client behavior tested."
+}

@@ -1,0 +1,161 @@
+{
+  "scope": "Provisional architecture comparison and initial implementation map; four human selections and final design acceptance remain pending.",
+  "published_research_revision": "70879ae2ea94fac8708ab77051d08ded9429fce4",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1556,
+      "sha256": "d60628302237f1b4b0ba0a5a5930d7087ed5318ca744382b42b821c922fd4a86"
+    },
+    {
+      "path": "automation-variant.md",
+      "bytes": 14497,
+      "sha256": "12f6c37595e95f979b9cfb9c705e4e15313c071ccd9c1fd0decaf8314d9c09c3"
+    },
+    {
+      "path": "caller-cross-examination.md",
+      "bytes": 15248,
+      "sha256": "e95d1ed7f8052a458d17a5b1b925a4e3cf3605bcd98881292514079dec933bdb"
+    },
+    {
+      "path": "caller-round-1.md",
+      "bytes": 19300,
+      "sha256": "4d62ef5fcb8dad81925c8cee11543f17d224b82199080e2186e0f9113c5890c6"
+    },
+    {
+      "path": "common-brief.md",
+      "bytes": 5844,
+      "sha256": "430c73eba6e5352bcca8b3668c3b1771d0cf8e0d257fa95d8be118df4cd430fb"
+    },
+    {
+      "path": "comparison-cases.json",
+      "bytes": 3258,
+      "sha256": "61a4caa4c8a253ae6c5745e68ad348266d2524352581342543e21a76ac7d938d"
+    },
+    {
+      "path": "comparison.md",
+      "bytes": 15644,
+      "sha256": "420973ad70b7c07a429c588785560fa8f1940fb12822977901f5f0e837b7df0a"
+    },
+    {
+      "path": "coordinator-source-notes.json",
+      "bytes": 1227,
+      "sha256": "a00bfc790f4f5437ada4b5987bc96bd4eabcdef0777f77ea722879734b5d405e"
+    },
+    {
+      "path": "cross-examination.md",
+      "bytes": 2976,
+      "sha256": "5e1e3d507c77e0dcae85698282fdaf07dc0d7ae6b7bb052ac2094924b22b3764"
+    },
+    {
+      "path": "cross-examined-reports.json",
+      "bytes": 603,
+      "sha256": "ceeaabb194493dc966e99ab9ce3a8cb6e37a73fd3c3596c206e7799ded561a03"
+    },
+    {
+      "path": "exchange-1.json",
+      "bytes": 1617,
+      "sha256": "20796a6031b10f664d744f83fe3e08e1e188c53e28d90bad45eaa84ecff9d3b3"
+    },
+    {
+      "path": "flexible-cross-examination.md",
+      "bytes": 14678,
+      "sha256": "a32f09f66cec028cfc8f0cc2655ccdcf412de9f396a8ad56de012a55d93b7fc4"
+    },
+    {
+      "path": "flexible-round-1.md",
+      "bytes": 20758,
+      "sha256": "8c09acfa0b893010cfd1ba8284506381074b15546c95feae452f6b244904a487"
+    },
+    {
+      "path": "implementation-map/consumer-invocation.md",
+      "bytes": 1410,
+      "sha256": "f347a38cca3919258717fb9ee10c7f3e538b3d661b3a8a16c5b5e1bbd2f2e66d"
+    },
+    {
+      "path": "implementation-map/implementation.md",
+      "bytes": 1999,
+      "sha256": "964c4afba8cf813cda2c2247db766021b5de3fd182d75fbef78e8b191164ceeb"
+    },
+    {
+      "path": "implementation-map/index.json",
+      "bytes": 1163,
+      "sha256": "7640677a237fef2783fe4531ff767ef59b61c9f14eaca1161cddca938e75e1e7"
+    },
+    {
+      "path": "implementation-map/initial-graph.json",
+      "bytes": 18682,
+      "sha256": "3382c20428b0921299bb935afe4eaaaa6e1d2d08a37b735602dcfb052a817879"
+    },
+    {
+      "path": "implementation-map/map.md",
+      "bytes": 4390,
+      "sha256": "70b4a34863cce6d1bae03d7b217fccc57144c848db232f026d9ab7e4c9ed4c8e"
+    },
+    {
+      "path": "implementation-map/publication-deployment.md",
+      "bytes": 1399,
+      "sha256": "8de587045602595d566a00ff24ec2cf7d7cd4bf32a48cb9d27b7b895921da581"
+    },
+    {
+      "path": "implementation-map/qualification-contract.md",
+      "bytes": 2324,
+      "sha256": "a64cd79887198337083f8b3f675705a76055ac5b9d862deb90dfe4cf327971c3"
+    },
+    {
+      "path": "implementation-map/source-contract.md",
+      "bytes": 1396,
+      "sha256": "7d27e614a4e3fc8ab744ce4396eb4c8876f7cc79067e1ce4e5601d46397f5d67"
+    },
+    {
+      "path": "initial-reports.json",
+      "bytes": 743,
+      "sha256": "66e09e01ad001888690dc4d00eb679797d7c144e7587b45e5523b1727fcda744"
+    },
+    {
+      "path": "knowledge-variant.md",
+      "bytes": 14294,
+      "sha256": "0294cf93d8aa4be303832e4557e0f17bd49b3f67772e82c046b6d1cdb2184bc7"
+    },
+    {
+      "path": "method.md",
+      "bytes": 4686,
+      "sha256": "128188862e6eec5702df10b8b07faca31f029d72f83c98d7d2096727ec7213fc"
+    },
+    {
+      "path": "minimal-cross-examination.md",
+      "bytes": 14064,
+      "sha256": "23cb6893d914e7d6357a7e972f683c4d15544510736ec84799a79165fb7a659d"
+    },
+    {
+      "path": "minimal-round-1.md",
+      "bytes": 20267,
+      "sha256": "9ea289b5fc91acfabf4e49466061c37ad0553c3a9fad59cba0cabe05947335b7"
+    },
+    {
+      "path": "operator-capability-choice.json",
+      "bytes": 1068,
+      "sha256": "30f35c4e593f73e879182a4dab9b5af7e07d0d8c9ab9dcc6df722bdf77ce26a4"
+    },
+    {
+      "path": "operator-choices-1.json",
+      "bytes": 1530,
+      "sha256": "7faee4d71242a99552752e04c5b6e80bc481dad27f97c6143007d7e901fc41c9"
+    },
+    {
+      "path": "packaging-feasibility.md",
+      "bytes": 15365,
+      "sha256": "563c1feb380565ea0ad32fc6d1d8b9d46a7f347bd90e30575ddaa4bc8b9eb52b"
+    },
+    {
+      "path": "packaging-report.json",
+      "bytes": 228,
+      "sha256": "61b1e9892e2ec795411e3bbadf6da973c88bfa86fd2684ad0c9adb7c5db0a101"
+    },
+    {
+      "path": "reviews/implementation-route-preparatory.md",
+      "bytes": 11700,
+      "sha256": "4b50625a50a1f905bdd156fcc2d6f87a9b6f6ec130acbee804bc99c80a09e9aa"
+    }
+  ]
+}

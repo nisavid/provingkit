@@ -1,0 +1,21 @@
+{
+  "common_brief_sha256": "430c73eba6e5352bcca8b3668c3b1771d0cf8e0d257fa95d8be118df4cd430fb",
+  "reports": [
+    {
+      "path": "minimal-round-1.md",
+      "sha256": "9ea289b5fc91acfabf4e49466061c37ad0553c3a9fad59cba0cabe05947335b7",
+      "bytes": 20267
+    },
+    {
+      "path": "flexible-round-1.md",
+      "sha256": "8c09acfa0b893010cfd1ba8284506381074b15546c95feae452f6b244904a487",
+      "bytes": 20758
+    },
+    {
+      "path": "caller-round-1.md",
+      "sha256": "4d62ef5fcb8dad81925c8cee11543f17d224b82199080e2186e0f9113c5890c6",
+      "bytes": 19300
+    }
+  ],
+  "next": "Two additional isolated alternatives will test materially different maintained structure before peer exchange; the initial proposals materially overlap."
+}

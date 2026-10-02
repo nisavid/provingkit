@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "inputs": [
+    {
+      "path": "common-brief.md",
+      "sha256": "430c73eba6e5352bcca8b3668c3b1771d0cf8e0d257fa95d8be118df4cd430fb",
+      "bytes": 5844
+    },
+    {
+      "path": "minimal-round-1.md",
+      "sha256": "9ea289b5fc91acfabf4e49466061c37ad0553c3a9fad59cba0cabe05947335b7",
+      "bytes": 20267
+    },
+    {
+      "path": "flexible-round-1.md",
+      "sha256": "8c09acfa0b893010cfd1ba8284506381074b15546c95feae452f6b244904a487",
+      "bytes": 20758
+    },
+    {
+      "path": "caller-round-1.md",
+      "sha256": "4d62ef5fcb8dad81925c8cee11543f17d224b82199080e2186e0f9113c5890c6",
+      "bytes": 19300
+    },
+    {
+      "path": "automation-variant.md",
+      "sha256": "12f6c37595e95f979b9cfb9c705e4e15313c071ccd9c1fd0decaf8314d9c09c3",
+      "bytes": 14497
+    },
+    {
+      "path": "knowledge-variant.md",
+      "sha256": "0294cf93d8aa4be303832e4557e0f17bd49b3f67772e82c046b6d1cdb2184bc7",
+      "bytes": 14294
+    },
+    {
+      "path": "operator-choices-1.json",
+      "sha256": "7faee4d71242a99552752e04c5b6e80bc481dad27f97c6143007d7e901fc41c9",
+      "bytes": 1530
+    },
+    {
+      "path": "comparison-cases.json",
+      "sha256": "61a4caa4c8a253ae6c5745e68ad348266d2524352581342543e21a76ac7d938d",
+      "bytes": 3258
+    },
+    {
+      "path": "cross-examination.md",
+      "sha256": "5e1e3d507c77e0dcae85698282fdaf07dc0d7ae6b7bb052ac2094924b22b3764",
+      "bytes": 2976
+    }
+  ],
+  "research_commit": "70879ae2ea94fac8708ab77051d08ded9429fce4",
+  "stage": "Five frozen isolated proposals, including two added alternatives; operator answers are later common input."
+}

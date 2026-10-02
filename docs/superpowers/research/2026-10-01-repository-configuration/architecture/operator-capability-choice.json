@@ -1,0 +1,8 @@
+{
+  "recorded_at": "2026-10-01T17:00:40.076477+00:00",
+  "source": "Direct operator answer in the active chat",
+  "question": "For the first locally deployed alpha, I recommend useful end-to-end GitHub workflows: create a repo, assess existing settings, adopt recommended defaults, make a focused change, and add project-specific CI hardening—including applying an authorized change through the existing tools. Coverage limits would be explicit; this would not require cataloging every GitHub setting before release. Is that the right capability scope?",
+  "answer": "End-to-end workflows (recommended)",
+  "meaning": "The first alpha must support those useful end-to-end workflows including authorized application through existing tools; honest coverage limits remain. Equipment shape and deployment/qualification contexts remain separate choices. This is a design scope choice, not authorization to start implementation or change live settings now.",
+  "still_pending": "The separate contextual-judgment versus fixed-prohibition question has not been answered."
+}

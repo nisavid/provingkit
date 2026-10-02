@@ -1,0 +1,40 @@
+{
+  "repository": "nisavid/provingkit",
+  "status": "Charted while architecture, packaging, live contexts, and clients remain pending; no implementation work claimed.",
+  "issues": {
+    "map": 374,
+    "source-contract": 375,
+    "qualification-contract": 376,
+    "implementation": 377,
+    "publication-deployment": 378,
+    "consumer-invocation": 379
+  },
+  "dependencies": {
+    "375": [
+      370,
+      372
+    ],
+    "376": [
+      370,
+      372
+    ],
+    "377": [
+      375,
+      376
+    ],
+    "378": [
+      377
+    ],
+    "379": [
+      378
+    ]
+  },
+  "initial_bodies": {
+    "consumer-invocation.md": "f347a38cca3919258717fb9ee10c7f3e538b3d661b3a8a16c5b5e1bbd2f2e66d",
+    "implementation.md": "964c4afba8cf813cda2c2247db766021b5de3fd182d75fbef78e8b191164ceeb",
+    "map.md": "70b4a34863cce6d1bae03d7b217fccc57144c848db232f026d9ab7e4c9ed4c8e",
+    "publication-deployment.md": "8de587045602595d566a00ff24ec2cf7d7cd4bf32a48cb9d27b7b895921da581",
+    "qualification-contract.md": "a64cd79887198337083f8b3f675705a76055ac5b9d862deb90dfe4cf327971c3",
+    "source-contract.md": "7d27e614a4e3fc8ab744ce4396eb4c8876f7cc79067e1ce4e5601d46397f5d67"
+  }
+}

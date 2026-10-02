@@ -1,0 +1,23 @@
+# Architecture comparison method
+
+Compare distinct equipment interfaces using the same reviewed research and constructed cases, then retain the chosen design and a map to a locally deployed alpha. The research packet at `70879ae2ea94fac8708ab77051d08ded9429fce4` is the common input; it leaves equipment shape and stakeholder choices open.
+
+The coordinator uses `codebase-design`, `grilling`, `domain-modeling`, `wayfinder`, and `capturing-agent-procedures`. Three fresh native contexts receive [the same brief](common-brief.md), SHA-256 `430c73eba6e5352bcca8b3668c3b1771d0cf8e0d257fa95d8be118df4cd430fb`, and distinct optimization constraints:
+
+- Minimize the complete caller-facing interface and expose one to three useful entry points.
+- Maximize support for varied repository setups, changing knowledge, and existing owners.
+- Make the common maintainer-to-agent workflow easy through ordinary language.
+
+Each lane may inspect relevant current repository source and maintained procedure interfaces. No lane receives peer output or the coordinator's preference before its first report is frozen. Actual exposures are recorded by each lane. The available native contexts inherit harness instructions and ambient metadata; these are cooperative separation controls, not attested isolation.
+
+First reports are retained unchanged with independently recomputed digests. The initial three proposals materially converged around an agent-written proposal and maintained guidance. Before peer exchange, two lanes produced additional isolated alternatives: structured decision knowledge and operation-specific automation. They received the later operator choices while drafting and recorded that exposure. The coordinator then supplied a common exchange packet containing all five frozen proposals, common comparison cases, and the actual operator answers received by that point. Each lane challenges the alternatives, addresses challenges to its own design, revises its recommendation, and reports unresolved choices. Later operator answers enter a separately identified input update; they are never backdated into an initial lane's knowledge.
+
+The comparison evaluates interface depth, locality of knowledge and policy changes, actual variation at dependency seams, operational complexity, supported customization, explanation quality, and meaningful qualification. Paper examples establish the proposal's reasoning, not runtime behavior. Source, platform readback, hosted enforcement, installed discovery, and useful invocation remain separate claims.
+
+The final comparison must distinguish proposed architecture from the user's accepted choices. Independent final review covers intent, design consistency, source/evidence claims, and whether the implementation map reaches the selected alpha behavior and local consumer. Current review is bound to the final candidate and its evidence dependencies; a selected material finding must be settled before completion.
+
+The [design map](https://github.com/nisavid/provingkit/issues/366) remains the decision index. Before this panel ends, a separate implementation map must name the selected maintained source, behavior qualification, review, publication, local deployment, recovery, and consumer invocation. Charting that map does not start implementation or change repository settings. The existing [panel-method producer](https://github.com/nisavid/provingkit/issues/306) remains the reusable owner; this task-specific use does not qualify its implementation.
+
+Cross-examination corrected two material restrictions in the initial designs: catalog absence does not require a bespoke actuator before an otherwise supported native-tool change, and preparation is not a compulsory propose/accept/apply ceremony when authority already covers the concrete effect. All three follow-ups recommend an adaptive procedure with focused executable support where justified. This is cross-informed design convergence, not measured superiority or runtime qualification.
+
+A separate source scout compared standalone Skill and independent Plugin deployment constraints without reading the peer designs. Its [report](packaging-feasibility.md) binds source observations and explicitly leaves package choice and runtime qualification open. A [preparatory route review](reviews/implementation-route-preparatory.md) found an acceptance obligation crossing the installation dependency and later-increment work in the alpha map's fog. The coordinator separated qualification obligations by delivery stage and moved later initiatives beyond the selected alpha out of fog. That review records the original drafts; final acceptance must evaluate the corrected candidate.

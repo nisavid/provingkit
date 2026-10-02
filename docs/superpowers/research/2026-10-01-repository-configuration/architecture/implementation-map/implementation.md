@@ -1,0 +1,11 @@
+## Question
+
+Implement the accepted repository-configuration design and demonstrate that the candidate satisfies its source contract and the pre-deployment obligations of its qualification contract.
+
+This is a delivery task under the map's explicit execution scope. Load the reviewed design/research and both resolved contracts before dependent work; record their consumed revisions. Use the owning source-authoring, `tdd` where executable implementation is involved, security, evaluation, review, and Git publication procedures. Keep knowledge, code, and discovery pointers in their maintained source and regenerate projections through their owner.
+
+Implement the focused procedure, useful initial decision guidance, supported adaptive native-tool route, and helpers justified by the selected cases. Preserve native configuration owners and existing authorization. Do not turn finite tested coverage into a catalog-based permission gate, force an extra proposal ceremony, or select new stakeholder policy through code.
+
+Exercise the qualification contract's pre-deployment obligations on actual candidate behavior. The contract assigns publication, installation, fresh discovery, and fresh client invocation to the downstream delivery tasks; those results are not prerequisites for this task's closure. Resolve every material in-scope finding and obtain independent current review on the final source and evidence. Add machinery where observed recurring failures warrant it; update the map for genuinely new unresolved decisions rather than silently broadening the design. Retain exact candidate identity, test/evaluation traces, source/citation dependencies, supported claims, limits, and the producer's capture and consumer-invocation contract.
+
+Complete with a source candidate ready for its authorized publication and deployment route. Source acceptance alone does not establish published artifacts, installed equipment, fresh client use, or hosted behavior beyond the tests actually observed.
