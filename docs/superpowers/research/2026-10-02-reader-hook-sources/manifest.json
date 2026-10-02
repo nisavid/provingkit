@@ -1,0 +1,16 @@
+{
+  "identity-cross.md": "e100de7c7f8156a04c7aed6335a696830597c0d515284f718a34fb0b3ca1ab1a",
+  "identity-engine.md": "72ee46e490586d7dfb41fc8d485cb90cb110e37f015aa7aaab025301a80d79a3",
+  "identity-first.md": "123f7160c82e5d0682885b36ca2a6046cf7c368cca5c02b62363882dbe2e6955",
+  "prototype-first/contract.md": "93b52d7c483608a9f2d08e88dcd17161dd432862efb8d6a45dd7934901edb2b8",
+  "prototype-first/files.mjs": "00df1bbf3a332ac0a1bb73be85f6d0ed3206562257843d5b0f17a0a308cf987c",
+  "prototype-first/findings.md": "1fd6b88ac0e2d2c3671df29872206a9a6a745c407d7f310847a210fd328491f1",
+  "prototype-first/hook.mjs": "aae51438c670aaeb367b125ca5faebcc5b047ebaace822dc2999df8e02d84ae6",
+  "prototype-first/hook.test.mjs": "2a0dd1bbc40c2675d0cb3107dd54db0168d01dccf1e9477805f1bcd6f2b6939a",
+  "prototype-first/manifest.json": "4e36daa05c2ef85e062155f5c812dcf93556abdecfe51e539c232912353f8e8f",
+  "prototype-first/reader.mjs": "4fd4bb1fe5a2468dc68a0c177520c67e1b94b20775dccfc02d28af270c233217",
+  "prototype-first/reader.test.mjs": "f898143809ad7caa80daa151dd6658cdc6b91ae8052dc5cd961d0371032550b5",
+  "state-cross.md": "4d92a92b3eb032d9585f7a8c946ec7547760aea3717a73fe2624b77fb55a8fba",
+  "state-engine.md": "1362a5ba803a801d937439548bcee022d614789c5f6a693c497a8743fa2ac551",
+  "state-first.md": "7825a7e4be1d660923284690bb97dce4c595d9752a2880004fd8b6ee2cecd8af"
+}

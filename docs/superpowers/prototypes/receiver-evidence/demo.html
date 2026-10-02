@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What can receiver evidence tell us?</title>
+<style>
+:root{color-scheme:light dark;--bg:#101718;--panel:#182224;--ink:#edf3f1;--muted:#afc0ba;--accent:#a4e2bb;--line:#39514a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,sans-serif}main{max-width:1120px;margin:auto;padding:44px 28px 64px}h1{font-size:clamp(28px,4vw,44px);line-height:1.12;margin:12px 0 20px}h2{font-size:21px;margin:0 0 14px}p{max-width:850px}header p{color:var(--muted)}.eyebrow{color:var(--accent);font-size:13px;letter-spacing:.13em;text-transform:uppercase}.notice{border-left:3px solid var(--accent);padding:12px 18px;background:var(--panel);margin:24px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.panel{border:1px solid var(--line);border-radius:12px;padding:24px;margin:20px 0;background:var(--panel)}.grid .panel{margin:0}dl{margin:0}dt{font-size:13px;color:var(--muted);margin-top:12px}dd{margin:3px 0 0;font-weight:600}.actions{display:flex;gap:10px;flex-wrap:wrap}button,select{font:inherit;background:transparent;border:1px solid var(--line);border-radius:7px;padding:9px 13px;color:var(--ink)}button{cursor:pointer}button:hover,button:focus-visible{border-color:var(--accent)}button.primary{background:var(--accent);color:#102218}button:disabled{opacity:.5;cursor:default}select{margin:0 12px 12px 0;background:var(--panel)}label{display:block;margin:12px 0 8px}small,.muted{color:var(--muted)}ul{padding-left:20px}li{margin:7px 0}.output{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:400px;overflow:auto}textarea{width:100%;min-height:260px;margin:12px 0;background:var(--bg);color:var(--ink);padding:12px;border:1px solid var(--line);border-radius:6px;font:13px/1.4 monospace}summary{cursor:pointer}#changed{min-height:25px;color:var(--accent)}@media(max-width:720px){.grid{grid-template-columns:1fr}main{padding:25px 18px}.panel{padding:18px}}
+</style>
+<main>
+<header><span class="eyebrow">Receiver observation • source experiment</span>
+<h1>What can receiver evidence tell us?</h1>
+<p>Explore how a reader and a Stop-hook projection distinguish matching text from missing evidence. The question is whether these components give us useful observations for a later live check.</p></header>
+<div class="notice"><strong>Every result is unqualified.</strong> All examples are invented. This page does not connect to Desktop, open receiver files, activate hooks, or send messages.</div>
+<p id="changed" role="status" aria-live="polite"></p>
+<div class="grid">
+<section class="panel"><h2>Selected-file reader</h2><dl><dt>Interpretation</dt><dd id="reader-status"></dd><dt>Notice / acknowledgment candidates</dt><dd id="counts"></dd><dt>Compatibility</dt><dd id="compatibility"></dd></dl><h3>Evidence gaps</h3><ul id="reader-gaps"></ul><small>Identity and timestamps are supplied claims. A matching pair is not authenticated delivery.</small></section>
+<section class="panel"><h2>Stop-hook projection</h2><dl><dt>Interpretation</dt><dd id="hook-status"></dd><dt>Retained event fields</dt><dd id="fields"></dd></dl><h3>Evidence gaps</h3><ul id="hook-gaps"></ul><small>Receipt time is not producer time. Stop text is joined and trimmed by the producer; cwd and permission mode are partial observations.</small></section>
+</div>
+<section class="panel"><h2>Try a change</h2><div class="actions">
+<button data-action="reset">Reset matching examples</button><button data-action="wrong">Select another task</button><button data-action="partial">Interrupt the file read</button><button data-action="stale">Let observations expire</button><button data-action="missing">Omit hook final text</button><button data-action="gap">Interrupt the collector</button><button data-action="new">Use an unassessed build</button><button data-action="incompatible">Record incompatibility</button>
+</div></section>
+<section class="panel"><h2>Guided walkthroughs</h2><label for="walk">Choose a situation</label><select id="walk"><option value="matching">Matching evidence and its limits</option><option value="freshness">A fresh read of old text</option><option value="compatibility">A new build versus an incompatible one</option><option value="identity">A different selected task</option></select><p id="walk-description"></p><div class="actions"><button id="start">Start walkthrough</button><button id="next" class="primary">Next step</button></div><p id="step" class="muted"></p></section>
+<section class="panel"><h2>Inspect or edit the invented inputs</h2><p>Edits stay in this page. No file path here will be opened. The browser exercises the pure interpretation functions; the selected-file adapter is covered separately by synthetic tests.</p><details><summary>Input JSON</summary><label for="reader-input">Reader input</label><textarea id="reader-input" spellcheck="false"></textarea><label for="hook-input">Hook input</label><textarea id="hook-input" spellcheck="false"></textarea><button id="apply">Apply edited inputs</button></details><details><summary>Full output</summary><pre id="output" class="output"></pre></details></section>
+</main>
+<script>
+// Synthetic/source experiment. The caller supplies all binding and timing evidence.
+function inspectRecords(input) {
+  input ??= {};
+  const bounded = (x, max) => typeof x === 'string' && x.length > 0 && x.length <= max;
+  const assessment = input.compatibility;
+  const compatibility = { status: ['unassessed', 'assessed', 'incompatible'].includes(assessment?.status) ? assessment.status : 'unassessed' };
+  for (const key of ['build', 'evidence']) if (bounded(assessment?.[key], 1024)) compatibility[key] = assessment[key];
+  const result = {
+    status: 'unknown', qualification: 'unqualified',
+    compatibility,
+    notices: [], acknowledgments: [], gaps: [],
+  };
+  if (result.compatibility.status === 'incompatible') {
+    return { ...result, status: 'unsupported', gaps: ['incompatible_interpretation'] };
+  }
+  if (![input.expected?.desktopId, input.expected?.codeId,
+    input.request?.correlationId].every(x => bounded(x, 256))
+      || !bounded(input.request?.senderAddress, 4096)
+      || ![input.request?.noticeText, input.request?.ackText].every(x => bounded(x, 4096))) {
+    return { ...result, gaps: ['invalid_binding_or_rule'] };
+  }
+  if (typeof input.transcript === 'string' && new TextEncoder().encode(input.transcript).length > 1048576) {
+    return { ...result, gaps: ['interpretation_limit'] };
+  }
+  if (!input.capture || ![input.capture.startedAt, input.capture.finishedAt,
+    input.now, input.maxAgeMs, input.request?.since].every(Number.isFinite)
+      || input.capture.startedAt > input.capture.finishedAt
+      || input.capture.finishedAt > input.now || input.maxAgeMs < 0) {
+    return { ...result, gaps: ['invalid_capture'] };
+  }
+  if (input.now - input.capture.finishedAt > input.maxAgeMs) {
+    return { ...result, gaps: ['stale_capture'] };
+  }
+  result.capture = { startedAt: input.capture.startedAt, finishedAt: input.capture.finishedAt };
+  if (input.metadata?.sessionId !== input.expected?.desktopId
+      || input.metadata?.cliSessionId !== input.expected?.codeId) {
+    return { ...result, gaps: ['identity_mismatch'] };
+  }
+  result.binding = { desktopId: input.expected.desktopId, codeId: input.expected.codeId,
+    correlationId: input.request.correlationId, senderAddress: input.request.senderAddress };
+  if (typeof input.transcript !== 'string'
+      || (input.transcript && !input.transcript.endsWith('\n'))) {
+    return { ...result, gaps: ['incomplete_transcript'] };
+  }
+  let rows;
+  try {
+    rows = input.transcript ? input.transcript.slice(0, -1).split('\n').map(JSON.parse) : [];
+  } catch {
+    return { ...result, gaps: ['malformed_transcript'] };
+  }
+  const seen = new Set();
+  for (const row of rows) {
+    if (!row || Array.isArray(row) || row.sessionId !== input.expected.codeId
+        || !bounded(row.uuid, 256) || seen.has(row.uuid)
+        || !['user', 'assistant'].includes(row.type) || row.message?.role !== row.type) {
+      return { ...result, gaps: ['inconsistent_records'] };
+    }
+    seen.add(row.uuid);
+  }
+  for (const [index, row] of rows.entries()) {
+    if ((row.isMeta && !(row.type === 'user' && row.origin?.kind === 'peer'))
+        || row.isCompactSummary || row.isSidechain || row.parent_tool_use_id) {
+      if (!result.gaps.includes('non_main_record_excluded')) result.gaps.push('non_main_record_excluded');
+      continue;
+    }
+    const timestamp = Date.parse(row.timestamp);
+    if (!bounded(row.timestamp, 64) || !Number.isFinite(timestamp) || timestamp < input.request.since
+        || timestamp > input.capture.finishedAt) {
+      if (!result.gaps.includes('record_time_missing_or_outside_window')) result.gaps.push('record_time_missing_or_outside_window');
+      continue;
+    }
+    const content = row.message.content;
+    const text = typeof content === 'string' ? content
+      : Array.isArray(content) && content.every(b => b?.type === 'text' && typeof b.text === 'string')
+        ? content.map(b => b.text).join('\n') : undefined;
+    const candidate = { id: row.uuid, index, timestamp: row.timestamp, text };
+    if (row.type === 'user' && row.origin?.kind === 'peer' && row.origin.from === input.request.senderAddress
+        && !bounded(row.origin.body, 4096) && !result.gaps.includes('peer_body_unavailable')) {
+      result.gaps.push('peer_body_unavailable');
+    }
+    if (row.type === 'user' && row.origin?.kind === 'peer'
+        && row.origin.from === input.request.senderAddress
+        && row.origin.body === input.request.noticeText) {
+      const origin = { kind: row.origin.kind, from: row.origin.from, body: row.origin.body };
+      for (const key of ['fromSession', 'msg_id']) if (bounded(row.origin[key], 256)) origin[key] = row.origin[key];
+      if (Number.isSafeInteger(row.origin.verifiedPeerPid) && row.origin.verifiedPeerPid > 0) origin.verifiedPeerPid = row.origin.verifiedPeerPid;
+      result.notices.push({ ...candidate, text: row.origin.body, origin });
+      if (!result.gaps.includes('sender_authentication_unqualified')) result.gaps.push('sender_authentication_unqualified');
+    }
+    if (row.type === 'assistant' && text === input.request.ackText) {
+      result.acknowledgments.push(candidate);
+    }
+  }
+  if (result.notices.length && result.acknowledgments.length) {
+    result.status = result.acknowledgments.some(a => result.notices.some(n => n.index < a.index
+      && Date.parse(n.timestamp) <= Date.parse(a.timestamp))) ? 'candidate_pair' : 'unpaired_candidates';
+  } else if (result.notices.length || result.acknowledgments.length) result.status = 'partial_candidates';
+  else result.gaps.push('no_matching_records');
+  return result;
+}
+
+// Pure projection of supplied hook input; no hooks, environment, or transcript access.
+function projectStop(input) {
+  input ??= {};
+  const result = {
+    status: 'unknown', qualification: 'unqualified',
+    acknowledgment: null,
+    eventFields: {},
+    gaps: ['incoming_delivery_unobserved', 'native_peer_binding_unqualified', 'full_runtime_state_unobserved', 'producer_event_time_unobserved'],
+  };
+  const text = (x, max) => typeof x === 'string' && x.length > 0 && x.length <= max;
+  if (!text(input.expectedCodeId, 256) || !text(input.ackText, 4096) || !text(input.correlationId, 256)) {
+    result.gaps.push('invalid_binding_or_rule'); return result;
+  }
+  if (input.event?.hook_event_name !== 'Stop' || input.event?.session_id !== input.expectedCodeId) {
+    result.gaps.push('identity_or_event_mismatch'); return result;
+  }
+  const c = input.capture;
+  if (!c || ![c.receivedAt, c.now, c.maxAgeMs, input.since].every(Number.isFinite)
+      || c.maxAgeMs < 0 || c.receivedAt < input.since || c.receivedAt > c.now) {
+    result.gaps.push('invalid_capture'); return result;
+  }
+  result.capture = { receivedAt: c.receivedAt, now: c.now, maxAgeMs: c.maxAgeMs };
+  if (c.now - c.receivedAt > c.maxAgeMs) { result.gaps.push('stale_capture'); return result; }
+  if (input.collector?.interrupted !== false) { result.gaps.push('collector_discontinuity'); return result; }
+  result.codeId = input.event.session_id;
+  let oversized = false;
+  for (const [key, output, max] of [['cwd', 'cwd', 4096], ['permission_mode', 'permissionMode', 128]]) {
+    const value = input.event[key];
+    if (text(value, max)) result.eventFields[output] = value;
+    else if (typeof value === 'string' && value.length > max) oversized = true;
+    else result.gaps.push(`${key}_missing`);
+  }
+  if (oversized) result.gaps.push('optional_fields_oversized');
+  if (input.event?.last_assistant_message === input.ackText) {
+    result.status = 'candidate';
+    result.acknowledgment = { text: input.ackText, correlationId: input.correlationId };
+  } else result.gaps.push(typeof input.event?.last_assistant_message === 'string' ? 'final_text_not_matching' : 'final_text_missing');
+  return result;
+}
+
+// Invented records only. Shared by tests and the standalone demonstration.
+const at = n => new Date(n).toISOString();
+function sample() {
+  return {
+    metadata: { sessionId: 'desktop-fixture', cliSessionId: 'code-fixture' },
+    expected: { desktopId: 'desktop-fixture', codeId: 'code-fixture' },
+    request: { correlationId: 'notice-1', senderAddress: 'uds:/synthetic/sender.sock',
+      noticeText: 'Notification notice-1: context changed.', ackText: 'ACK notice-1', since: 1000 },
+    capture: { startedAt: 2000, finishedAt: 2010 }, now: 2020, maxAgeMs: 100,
+    transcript: [
+      { uuid: 'incoming-1', sessionId: 'code-fixture', type: 'user', timestamp: at(1100),
+        isMeta: true,
+        origin: { kind: 'peer', from: 'uds:/synthetic/sender.sock', fromSession: 'local_sender',
+          msg_id: 'transport-1', body: 'Notification notice-1: context changed.' },
+        message: { role: 'user', content: 'Notification notice-1: context changed.' } },
+      { uuid: 'reply-1', sessionId: 'code-fixture', type: 'assistant', timestamp: at(1200),
+        message: { role: 'assistant', content: 'ACK notice-1' } },
+    ].map(row => JSON.stringify(row) + '\n').join(''),
+  };
+}
+
+function eventSample() {
+  return {
+    expectedCodeId: 'code-fixture', correlationId: 'notice-1', ackText: 'ACK notice-1', since: 1000,
+    capture: { receivedAt: 2000, now: 2020, maxAgeMs: 100 },
+    collector: { interrupted: false },
+    event: { hook_event_name: 'Stop', session_id: 'code-fixture',
+      last_assistant_message: 'ACK notice-1', cwd: '/synthetic/project',
+      permission_mode: 'default', transcript_path: '/synthetic/must-not-open.jsonl' },
+  };
+}
+
+const el = id => document.getElementById(id);
+let reader = sample(), hook = eventSample(), stepIndex = 0;
+const words = { candidate_pair:'Matching pair of candidates', partial_candidates:'Only part of the pair', unpaired_candidates:'Candidates in the wrong order', candidate:'Matching ACK candidate', unknown:'Insufficient evidence', unsupported:'Affected interpretation disabled' };
+const gaps = { incoming_delivery_unobserved:'Incoming delivery has not been observed.', native_peer_binding_unqualified:'The native peer binding is unqualified.', full_runtime_state_unobserved:'Full runtime state has not been observed.', producer_event_time_unobserved:'The event’s producer time is unknown.', stale_capture:'The captured observation is too old.', incomplete_transcript:'The selected transcript is incomplete.', identity_mismatch:'The selected task identity does not match.', identity_or_event_mismatch:'The event belongs to another task or event kind.', final_text_missing:'The event has no final assistant text.', collector_discontinuity:'Collector coverage is missing or interrupted.', incompatible_interpretation:'A supplied assessment identifies an incompatible format.', record_time_missing_or_outside_window:'A record is missing its time or falls outside the request window.', no_matching_records:'No matching records were found.' };
+function list(id, values){el(id).replaceChildren();for(const value of values.length?values:['No additional parser gap. Producer authenticity and live qualification remain unproven.']){const li=document.createElement('li');li.textContent=gaps[value]??value.replaceAll('_',' ');el(id).append(li);}}
+function render(message=''){
+ const r=inspectRecords(reader),h=projectStop(hook);
+ el('reader-status').textContent=words[r.status];el('counts').textContent=`${r.notices.length} notice · ${r.acknowledgments.length} acknowledgment`;
+ el('compatibility').textContent=r.compatibility.status;el('hook-status').textContent=words[h.status];
+ el('fields').textContent=Object.entries(h.eventFields).map(([k,v])=>`${k}: ${v}`).join(' · ')||'No retained fields';
+ list('reader-gaps',r.gaps);list('hook-gaps',h.gaps);el('changed').textContent=message;
+ el('reader-input').value=JSON.stringify(reader,null,2);el('hook-input').value=JSON.stringify(hook,null,2);el('output').textContent=JSON.stringify({reader:r,hook:h},null,2);
+}
+const actions={reset(){reader=sample();hook=eventSample();},wrong(){reader.expected.codeId='another-task';hook.expectedCodeId='another-task';},partial(){reader.transcript+='{';},stale(){reader.now=5000;hook.capture.now=5000;},missing(){delete hook.event.last_assistant_message;},gap(){hook.collector.interrupted=true;},new(){reader.compatibility={status:'unassessed',build:'new-build'};},incompatible(){reader.compatibility={status:'incompatible',evidence:'Invented incompatible format finding'};},old(){reader.request.since=1500;}};
+for(const button of document.querySelectorAll('[data-action]'))button.onclick=()=>{actions[button.dataset.action]();render(button.textContent);};
+const walks={matching:{description:'Both text examples match. Then remove the final text: the hook can no longer offer an ACK candidate, and neither component proves live delivery.',steps:[['reset','Load matching invented observations.'],['missing','Remove the hook’s optional final text.']]},freshness:{description:'Reading a file now cannot make an older message belong to a newer request.',steps:[['reset','Load matching invented observations.'],['old','Move the request start after both records.'],['stale','Let the captures expire as well.']]},compatibility:{description:'A new version begins unassessed. A demonstrated incompatible interpretation is a different outcome.',steps:[['reset','Load matching invented observations.'],['new','Keep candidates from an unassessed build.'],['incompatible','Disable the affected interpretation after an incompatibility finding.']]},identity:{description:'Matching words in the wrong task cannot supply the selected receiver’s evidence.',steps:[['reset','Load the selected task’s example.'],['wrong','Change the independently supplied task identity.']]}};
+function start(){actions.reset();stepIndex=0;el('walk-description').textContent=walks[el('walk').value].description;el('next').disabled=false;el('step').textContent='Ready for step 1.';render('Walkthrough reset.');}
+el('walk').onchange=start;el('start').onclick=start;el('next').onclick=()=>{const steps=walks[el('walk').value].steps;const [action,message]=steps[stepIndex++];actions[action]();render(message);el('step').textContent=`Step ${stepIndex} of ${steps.length}: ${message}`;el('next').disabled=stepIndex===steps.length;};
+el('apply').onclick=()=>{try{const r=JSON.parse(el('reader-input').value),h=JSON.parse(el('hook-input').value);inspectRecords(r);projectStop(h);reader=r;hook=h;render('Edited invented inputs applied.');}catch(error){el('changed').textContent='The edited input could not be interpreted. Check the JSON and input shape.';}};
+start();
+</script>
+</html>

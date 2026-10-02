@@ -1,0 +1,9 @@
+{
+  "contract.md": "93b52d7c483608a9f2d08e88dcd17161dd432862efb8d6a45dd7934901edb2b8",
+  "files.mjs": "00df1bbf3a332ac0a1bb73be85f6d0ed3206562257843d5b0f17a0a308cf987c",
+  "findings.md": "1fd6b88ac0e2d2c3671df29872206a9a6a745c407d7f310847a210fd328491f1",
+  "hook.mjs": "aae51438c670aaeb367b125ca5faebcc5b047ebaace822dc2999df8e02d84ae6",
+  "hook.test.mjs": "2a0dd1bbc40c2675d0cb3107dd54db0168d01dccf1e9477805f1bcd6f2b6939a",
+  "reader.mjs": "4fd4bb1fe5a2468dc68a0c177520c67e1b94b20775dccfc02d28af270c233217",
+  "reader.test.mjs": "f898143809ad7caa80daa151dd6658cdc6b91ae8052dc5cd961d0371032550b5"
+}
