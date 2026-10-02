@@ -116,7 +116,7 @@
       {
         "id": "seed-two-links",
         "covers": "Whether the agent may create two live links for one request, or confirm that it may not (the seed says never); not what happens after a link expires, and not what counts as one request.",
-        "answer": "Never two links for one request, as I said.",
+        "answer": "Never two live links for one request, as I said.",
         "counts_against": "q2-frontier"
       },
       {
