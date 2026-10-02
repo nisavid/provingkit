@@ -1,0 +1,350 @@
+{
+  "observed_at": "2026-10-02T16:02:23.779678+00:00",
+  "maps": [
+    {
+      "number": 366,
+      "title": "Design adaptable repository-configuration equipment",
+      "state": "OPEN",
+      "pages": [
+        {
+          "hasNextPage": false,
+          "endCursor": "Ng"
+        }
+      ],
+      "children": [
+        {
+          "number": 367,
+          "title": "Recover the rationale behind earlier repository configurations",
+          "state": "CLOSED",
+          "assignees": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "login": "nisavid"
+              }
+            ]
+          },
+          "blockedBy": {
+            "nodes": [],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": null
+              }
+            ]
+          }
+        },
+        {
+          "number": 368,
+          "title": "Survey GitHub configuration mechanisms and their interactions",
+          "state": "CLOSED",
+          "assignees": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "login": "nisavid"
+              }
+            ]
+          },
+          "blockedBy": {
+            "nodes": [],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": null
+              }
+            ]
+          }
+        },
+        {
+          "number": 369,
+          "title": "Compare approaches to adaptable repository-configuration judgment",
+          "state": "CLOSED",
+          "assignees": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "login": "nisavid"
+              }
+            ]
+          },
+          "blockedBy": {
+            "nodes": [],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": null
+              }
+            ]
+          }
+        },
+        {
+          "number": 370,
+          "title": "Compare architectures for repository-configuration equipment",
+          "state": "OPEN",
+          "assignees": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "login": "nisavid"
+              }
+            ]
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 369,
+                "title": "Compare approaches to adaptable repository-configuration judgment",
+                "state": "CLOSED"
+              },
+              {
+                "number": 368,
+                "title": "Survey GitHub configuration mechanisms and their interactions",
+                "state": "CLOSED"
+              },
+              {
+                "number": 367,
+                "title": "Recover the rationale behind earlier repository configurations",
+                "state": "CLOSED"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "Mw"
+              }
+            ]
+          }
+        },
+        {
+          "number": 372,
+          "title": "Choose the first alpha's repository-configuration behavior",
+          "state": "OPEN",
+          "assignees": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "login": "nisavid"
+              }
+            ]
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 369,
+                "title": "Compare approaches to adaptable repository-configuration judgment",
+                "state": "CLOSED"
+              },
+              {
+                "number": 368,
+                "title": "Survey GitHub configuration mechanisms and their interactions",
+                "state": "CLOSED"
+              },
+              {
+                "number": 367,
+                "title": "Recover the rationale behind earlier repository configurations",
+                "state": "CLOSED"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "Mw"
+              }
+            ]
+          }
+        },
+        {
+          "number": 373,
+          "title": "Distinguish recommendations from policy and harmful configurations",
+          "state": "CLOSED",
+          "assignees": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "login": "nisavid"
+              }
+            ]
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 369,
+                "title": "Compare approaches to adaptable repository-configuration judgment",
+                "state": "CLOSED"
+              },
+              {
+                "number": 368,
+                "title": "Survey GitHub configuration mechanisms and their interactions",
+                "state": "CLOSED"
+              },
+              {
+                "number": 367,
+                "title": "Recover the rationale behind earlier repository configurations",
+                "state": "CLOSED"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "Mw"
+              }
+            ]
+          }
+        }
+      ],
+      "frontier": []
+    },
+    {
+      "number": 374,
+      "title": "Deliver a locally deployed repository-configuration alpha",
+      "state": "OPEN",
+      "pages": [
+        {
+          "hasNextPage": false,
+          "endCursor": "NQ"
+        }
+      ],
+      "children": [
+        {
+          "number": 375,
+          "title": "Bind the alpha to maintained source and an installation contract",
+          "state": "OPEN",
+          "assignees": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 372,
+                "title": "Choose the first alpha's repository-configuration behavior",
+                "state": "OPEN"
+              },
+              {
+                "number": 370,
+                "title": "Compare architectures for repository-configuration equipment",
+                "state": "OPEN"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "Mg"
+              }
+            ]
+          }
+        },
+        {
+          "number": 376,
+          "title": "Define the alpha's behavioral qualification contract",
+          "state": "OPEN",
+          "assignees": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 372,
+                "title": "Choose the first alpha's repository-configuration behavior",
+                "state": "OPEN"
+              },
+              {
+                "number": 370,
+                "title": "Compare architectures for repository-configuration equipment",
+                "state": "OPEN"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "Mg"
+              }
+            ]
+          }
+        },
+        {
+          "number": 377,
+          "title": "Implement and qualify repository-configuration workflows",
+          "state": "OPEN",
+          "assignees": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 376,
+                "title": "Define the alpha's behavioral qualification contract",
+                "state": "OPEN"
+              },
+              {
+                "number": 375,
+                "title": "Bind the alpha to maintained source and an installation contract",
+                "state": "OPEN"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "Mg"
+              }
+            ]
+          }
+        },
+        {
+          "number": 378,
+          "title": "Publish and install the qualified repository-configuration alpha",
+          "state": "OPEN",
+          "assignees": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 377,
+                "title": "Implement and qualify repository-configuration workflows",
+                "state": "OPEN"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "MQ"
+              }
+            ]
+          }
+        },
+        {
+          "number": 379,
+          "title": "Verify the alpha through fresh client invocations",
+          "state": "OPEN",
+          "assignees": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "blockedBy": {
+            "nodes": [
+              {
+                "number": 378,
+                "title": "Publish and install the qualified repository-configuration alpha",
+                "state": "OPEN"
+              }
+            ],
+            "pages": [
+              {
+                "hasNextPage": false,
+                "endCursor": "MQ"
+              }
+            ]
+          }
+        }
+      ],
+      "frontier": []
+    }
+  ],
+  "acyclic": true,
+  "pagination_complete": true
+}

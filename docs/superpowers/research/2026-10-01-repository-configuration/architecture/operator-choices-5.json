@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-10-02T15:57:55.382034+00:00",
+  "source": "Direct operator reply to packaging question in the active chat, followed by coordinator source assessment.",
+  "question": "How should the first alpha be packaged? I recommend a standalone Skill maintained in Provingkit, with a clear installation/update contract. An independent Plugin adds its own distribution identity and requires additional source-validation, projection, and installation work.",
+  "answer": "Wouldn't this fit into Mergecraft?",
+  "coordinator_resolution": "Carry the operator-suggested Mergecraft placement forward: one focused public Skill in the existing Plugin, with an explicit responsibility expansion and renewed member qualification. The coordinator confirmed this direction in the chat after inspecting source and the independent fit assessment.",
+  "evidence": {
+    "report": "mergecraft-fit.md",
+    "sha256": "50e2cf2646936cf0653c4c84af375c57e809c131a9c779e25e8762b445737632"
+  },
+  "authority_limit": "This records a user suggestion and coordinator design judgment, not an invented checkbox answer or permission to implement, install, or change live settings."
+}

@@ -1,0 +1,11 @@
+{
+  "recorded_at": "2026-10-02T15:47:18.639861+00:00",
+  "source": "Direct operator answer in active chat after architecture choice; packaging reconsideration ongoing.",
+  "choices": [
+    {
+      "question": "Which live GitHub contexts must be qualified before the alpha? I recommend personal public repositories first, with controlled tests for organization/private-repo constraints and missing access. Other supported setups remain usable through current research and native tools, with evidence limits stated.",
+      "answer": "Also require live organization/private qualification"
+    }
+  ],
+  "scope": "Organization and private-repository contexts require live qualification before alpha, alongside personal/public contexts. Exact representative fixtures, plans, permissions, and evidence belong to the qualification contract; no full Cartesian matrix or live experiments are silently authorized by this design answer."
+}

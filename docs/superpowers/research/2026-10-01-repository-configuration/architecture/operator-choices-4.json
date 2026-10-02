@@ -1,0 +1,11 @@
+{
+  "recorded_at": "2026-10-02T15:47:44.898162+00:00",
+  "source": "Direct operator answer in active chat; packaging reconsideration ongoing.",
+  "choices": [
+    {
+      "question": "Which local clients must demonstrate fresh discovery and useful invocation before the alpha? Codex, Claude Code, and Cursor launchers were observed here; that does not yet prove the new equipment works in them.",
+      "answer": "All three local clients (recommended)"
+    }
+  ],
+  "scope": "Codex, Claude Code, and Cursor each require fresh discovery and useful invocation of the deployed alpha. Exact client surfaces and installation/qualification routes belong to the source and qualification contracts; launcher presence is not qualification."
+}

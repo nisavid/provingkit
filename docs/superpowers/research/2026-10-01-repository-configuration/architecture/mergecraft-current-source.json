@@ -1,0 +1,19 @@
+{
+  "observed_at": "2026-10-02T15:57:55.382034+00:00",
+  "assessment_commit": "358df580f6467c75808510368fd7cad9ac77f2ad",
+  "observed_remote_main_commit": "cdfdef5d940b165051cc99845ce6cb80c5660006",
+  "comparison": "git diff between the two commits returned no changes for the listed source surfaces.",
+  "paths": [
+    "plugins/mergecraft",
+    "plugins/versionkeeping/README.md",
+    "scripts/validate_mergecraft.py",
+    "scripts/build_release_artifacts.py",
+    "release/artifact-projection-policy-v1.json",
+    "README.md",
+    "CONTEXT.md",
+    "docs/plugin-system/design-principles.md",
+    "docs/release-boundary.md",
+    "docs/release-artifact-projection.md"
+  ],
+  "limit": "Read-only source comparison; no runtime, installation, or hosted configuration claim."
+}

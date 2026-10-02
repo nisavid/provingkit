@@ -1,0 +1,42 @@
+{
+  "repository": "nisavid/provingkit",
+  "status": "Design choices incorporated; implementation remains unclaimed and depends on final design resolution. Query the tracker for later state.",
+  "issues": {
+    "map": 374,
+    "source-contract": 375,
+    "qualification-contract": 376,
+    "implementation": 377,
+    "publication-deployment": 378,
+    "consumer-invocation": 379
+  },
+  "dependencies": {
+    "375": [
+      370,
+      372
+    ],
+    "376": [
+      370,
+      372
+    ],
+    "377": [
+      375,
+      376
+    ],
+    "378": [
+      377
+    ],
+    "379": [
+      378
+    ]
+  },
+  "bodies": {
+    "map.md": "7264585b9779d6d4e9c38874bdc2d681e30e7aeab5fc57f743431daf8832f0df",
+    "source-contract.md": "c988d9a1f26eb089daaefc9e9860030e0a675569d501391a93b40a2b69dd7092",
+    "qualification-contract.md": "690e603efb3dfd9a1b4390ec09acd18e5cdde0bf5f1d004177e8b7d5f7e5673b",
+    "implementation.md": "c419ae81642067809b2dc09a0d7c635d66b2426119b4b5e8ab097251a8b2e0a4",
+    "publication-deployment.md": "5d038dd746fd3ada36ea235bc33ae8888fb1a1fe43226ba6793d4971eb61d163",
+    "consumer-invocation.md": "3e7deeedf9ff4baffa1b7e1b9e5b2f32bd3647f2da548d12fc7ac2f99da5c002"
+  },
+  "readback": "body-readbacks.json",
+  "graph": "graph.json"
+}

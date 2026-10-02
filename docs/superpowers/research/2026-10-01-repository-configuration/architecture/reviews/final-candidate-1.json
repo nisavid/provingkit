@@ -1,0 +1,233 @@
+{
+  "purpose": "Final design candidate after operator choices and Mergecraft placement; review outputs and verification summary excluded.",
+  "created_at": "2026-10-02T16:03:34.007487+00:00",
+  "research_input_commit": "70879ae2ea94fac8708ab77051d08ded9429fce4",
+  "provisional_checkpoint_commit": "358df580f6467c75808510368fd7cad9ac77f2ad",
+  "files": [
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/README.md",
+      "sha256": "9dfef378f00fc3be38a8ab194a67abe2ddb70d016a1db21affebff061203b563",
+      "bytes": 2259
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/automation-variant.md",
+      "sha256": "12f6c37595e95f979b9cfb9c705e4e15313c071ccd9c1fd0decaf8314d9c09c3",
+      "bytes": 14497
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/caller-cross-examination.md",
+      "sha256": "e95d1ed7f8052a458d17a5b1b925a4e3cf3605bcd98881292514079dec933bdb",
+      "bytes": 15248
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/caller-round-1.md",
+      "sha256": "4d62ef5fcb8dad81925c8cee11543f17d224b82199080e2186e0f9113c5890c6",
+      "bytes": 19300
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/common-brief.md",
+      "sha256": "430c73eba6e5352bcca8b3668c3b1771d0cf8e0d257fa95d8be118df4cd430fb",
+      "bytes": 5844
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/comparison-cases.json",
+      "sha256": "61a4caa4c8a253ae6c5745e68ad348266d2524352581342543e21a76ac7d938d",
+      "bytes": 3258
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/comparison.md",
+      "sha256": "d9c924b297a70f5ba0b84bb9bbd90e72ee9dfe9af6b0439e620a889ad3dbe112",
+      "bytes": 16727
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/coordinator-source-notes.json",
+      "sha256": "a00bfc790f4f5437ada4b5987bc96bd4eabcdef0777f77ea722879734b5d405e",
+      "bytes": 1227
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/cross-examination.md",
+      "sha256": "5e1e3d507c77e0dcae85698282fdaf07dc0d7ae6b7bb052ac2094924b22b3764",
+      "bytes": 2976
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/cross-examined-reports.json",
+      "sha256": "ceeaabb194493dc966e99ab9ce3a8cb6e37a73fd3c3596c206e7799ded561a03",
+      "bytes": 603
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/exchange-1.json",
+      "sha256": "20796a6031b10f664d744f83fe3e08e1e188c53e28d90bad45eaa84ecff9d3b3",
+      "bytes": 1617
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/flexible-cross-examination.md",
+      "sha256": "a32f09f66cec028cfc8f0cc2655ccdcf412de9f396a8ad56de012a55d93b7fc4",
+      "bytes": 14678
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/flexible-round-1.md",
+      "sha256": "8c09acfa0b893010cfd1ba8284506381074b15546c95feae452f6b244904a487",
+      "bytes": 20758
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/consumer-invocation.md",
+      "sha256": "f347a38cca3919258717fb9ee10c7f3e538b3d661b3a8a16c5b5e1bbd2f2e66d",
+      "bytes": 1410
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/body-readbacks.json",
+      "sha256": "c0f9d8fc161a4ed9b35ac246e1238a79a7cb0cbfb905dfc7db95157a2c921a13",
+      "bytes": 17885
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/consumer-invocation.md",
+      "sha256": "3e7deeedf9ff4baffa1b7e1b9e5b2f32bd3647f2da548d12fc7ac2f99da5c002",
+      "bytes": 1674
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/graph.json",
+      "sha256": "0a9d3420b75beef04478f3a195a992ecadba26cd83c39489e404f8f2e5166fc4",
+      "bytes": 9402
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/implementation.md",
+      "sha256": "c419ae81642067809b2dc09a0d7c635d66b2426119b4b5e8ab097251a8b2e0a4",
+      "bytes": 2432
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/index.json",
+      "sha256": "b6780145abf77451f7f68a81901e82cfd7c599d889d35934d03b152f26f2bcad",
+      "bytes": 1240
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/map.md",
+      "sha256": "7264585b9779d6d4e9c38874bdc2d681e30e7aeab5fc57f743431daf8832f0df",
+      "bytes": 5349
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/publication-deployment.md",
+      "sha256": "5d038dd746fd3ada36ea235bc33ae8888fb1a1fe43226ba6793d4971eb61d163",
+      "bytes": 1464
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/qualification-contract.md",
+      "sha256": "690e603efb3dfd9a1b4390ec09acd18e5cdde0bf5f1d004177e8b7d5f7e5673b",
+      "bytes": 2930
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/current/source-contract.md",
+      "sha256": "c988d9a1f26eb089daaefc9e9860030e0a675569d501391a93b40a2b69dd7092",
+      "bytes": 1809
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/implementation.md",
+      "sha256": "964c4afba8cf813cda2c2247db766021b5de3fd182d75fbef78e8b191164ceeb",
+      "bytes": 1999
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/index.json",
+      "sha256": "7640677a237fef2783fe4531ff767ef59b61c9f14eaca1161cddca938e75e1e7",
+      "bytes": 1163
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/initial-graph.json",
+      "sha256": "3382c20428b0921299bb935afe4eaaaa6e1d2d08a37b735602dcfb052a817879",
+      "bytes": 18682
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/map.md",
+      "sha256": "70b4a34863cce6d1bae03d7b217fccc57144c848db232f026d9ab7e4c9ed4c8e",
+      "bytes": 4390
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/publication-deployment.md",
+      "sha256": "8de587045602595d566a00ff24ec2cf7d7cd4bf32a48cb9d27b7b895921da581",
+      "bytes": 1399
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/qualification-contract.md",
+      "sha256": "a64cd79887198337083f8b3f675705a76055ac5b9d862deb90dfe4cf327971c3",
+      "bytes": 2324
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/implementation-map/source-contract.md",
+      "sha256": "7d27e614a4e3fc8ab744ce4396eb4c8876f7cc79067e1ce4e5601d46397f5d67",
+      "bytes": 1396
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/initial-reports.json",
+      "sha256": "66e09e01ad001888690dc4d00eb679797d7c144e7587b45e5523b1727fcda744",
+      "bytes": 743
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/knowledge-variant.md",
+      "sha256": "0294cf93d8aa4be303832e4557e0f17bd49b3f67772e82c046b6d1cdb2184bc7",
+      "bytes": 14294
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/mergecraft-current-source.json",
+      "sha256": "273afdb1d64c11ea5846fac355360ea559dd584c8298263bbb2b399164667d14",
+      "bytes": 774
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/mergecraft-fit.md",
+      "sha256": "50e2cf2646936cf0653c4c84af375c57e809c131a9c779e25e8762b445737632",
+      "bytes": 20120
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/method.md",
+      "sha256": "ed9501f8f3b993e118fa8ab03e0b0cc413946f6ec68ff370a65017fb567d6692",
+      "bytes": 6927
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/minimal-cross-examination.md",
+      "sha256": "23cb6893d914e7d6357a7e972f683c4d15544510736ec84799a79165fb7a659d",
+      "bytes": 14064
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/minimal-round-1.md",
+      "sha256": "9ea289b5fc91acfabf4e49466061c37ad0553c3a9fad59cba0cabe05947335b7",
+      "bytes": 20267
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/operator-capability-choice.json",
+      "sha256": "30f35c4e593f73e879182a4dab9b5af7e07d0d8c9ab9dcc6df722bdf77ce26a4",
+      "bytes": 1068
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/operator-choices-1.json",
+      "sha256": "7faee4d71242a99552752e04c5b6e80bc481dad27f97c6143007d7e901fc41c9",
+      "bytes": 1530
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/operator-choices-2.json",
+      "sha256": "72e8188856dbfe1abba0e462e41333f8ba846da0e17df000b1b745a9bd4082d8",
+      "bytes": 794
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/operator-choices-3.json",
+      "sha256": "ee60f6dae118cc9d7d089b876762a65500cfcd8f48742a92853cd0db0d71903f",
+      "bytes": 929
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/operator-choices-4.json",
+      "sha256": "9e565ec56d045d4e08fbace53c23aa24edfcd062e3879101471078a852249c1b",
+      "bytes": 734
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/operator-choices-5.json",
+      "sha256": "2552c314e542c1368eb28e52b831a5a0dea3edda39fd5c1e65e57c4f2d0f733b",
+      "bytes": 1167
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/packaging-feasibility.md",
+      "sha256": "563c1feb380565ea0ad32fc6d1d8b9d46a7f347bd90e30575ddaa4bc8b9eb52b",
+      "bytes": 15365
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-01-repository-configuration/architecture/packaging-report.json",
+      "sha256": "61b1e9892e2ec795411e3bbadf6da973c88bfa86fd2684ad0c9adb7c5db0a101",
+      "bytes": 228
+    }
+  ]
+}

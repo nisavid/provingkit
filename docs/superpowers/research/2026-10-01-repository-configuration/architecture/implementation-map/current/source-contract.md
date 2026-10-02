@@ -1,0 +1,9 @@
+## Question
+
+How will the new repository-configuration Skill in Mergecraft be maintained, identified, distributed, installed, and recovered in Codex, Claude Code, and Cursor?
+
+Consume the completed architecture and alpha-context decisions. Use `grilling`, `domain-modeling`, `codebase-design`, and `capturing-agent-procedures` to bind the selected Mergecraft placement to its canonical Skill path and owner, descriptive identity, alpha revision/artifact identity, invocation pointer, target client surfaces, and installation/recovery route. Do not reopen accepted capability, contextual-judgment, or architecture choices without new material evidence.
+
+Inspect the current Mergecraft source and deployment owners. Define the Skill’s descriptive name under `plugins/mergecraft/skills/`, its invocation conditions, the explicit expansion of Mergecraft’s responsibility, and the required roster, topology, manifest, discovery, validation, evaluation, and content-lock updates. Use the existing member identity and client projections; verify the actual source-to-local route rather than inferring it from a supported artifact shape. Select and bind the member alpha identity and required compatible dependencies. Do not add a new Slate member or describe this member alpha as a whole-Kit Release.
+
+Include meaningful regression evidence for affected existing Mergecraft consumers, including observations invalidated by configuration changes. Resolve how consumers locate and invoke the reviewed revision, how shadowed/duplicate providers are detected, what prior state is retained for recovery, and where future corrections are maintained. Record the decision and reviewable source/deployment contract as the producer input to implementation. This ticket settles the route; it does not install the equipment.
