@@ -1,6 +1,6 @@
 {
  "fixture": "push",
- "setup": "REPO_SUBDIR=work bash $RIG/setup-exec-plan.sh",
+ "setup": "REPO_SUBDIR=work bash \"$RIG/setup-exec-plan.sh\"",
  "env": {
   "PATH": "$RIG/stub:$PATH",
   "GH_STUB_LOG": "$FX/gh-stub.log"

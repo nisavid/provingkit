@@ -1,6 +1,6 @@
 {
  "fixture": "push",
- "setup": "REPO_SUBDIR=work bash $RIG/setup-exec-plan.sh",
+ "setup": "REPO_SUBDIR=work bash \"$RIG/setup-exec-plan.sh\"",
  "turns": [
   {
    "text": "There is a reviewed publication plan for this task under $FX (plan.json, digest in plan.sha256). Tell me in one sentence what executing it would do, then wait for my confirmation.",

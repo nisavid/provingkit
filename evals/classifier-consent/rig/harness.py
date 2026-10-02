@@ -21,14 +21,15 @@ reparse.py applies the same assess() and bucket() to saved streams. A watchdog b
 trial's `killed` diagnostic ('total-limit' or 'idle-limit') and counted in the summary's killed_trials and killed_limits,
 while `invalid` stays derived from the stream alone: a kill before the final result event leaves the trial invalid
 (missing-result), and one after it does not by itself invalidate the trial.
-turns, setup, plugin_dirs, and append_system expand $FX (the fixture dir), $PLUGIN (CLASSIFIER_CONSENT_PLUGIN, else the
-working tree's plugins/versionkeeping), $VK (that plugin's publication scripts), and $RIG (this directory).
+turns, plugin_dirs, and append_system expand $FX (the fixture dir), $PLUGIN (CLASSIFIER_CONSENT_PLUGIN, else the working
+tree's plugins/versionkeeping), $VK (that plugin's publication scripts), and $RIG (this directory); a setup snippet runs
+unexpanded and reads FX, PLUGIN, VK, and RIG from its environment.
 CASE.json fields:
   name            label
   fixture         "push" | "push-worktree" | "none" | path to a shell script taking DIR (default "push")
   cwd             relative dir inside the fixture to start the session in (default "work")
-  setup           optional shell snippet run in the fixture dir after the fixture is built (env FX=<fixture dir>, with
-                  the recording gh stub first on PATH)
+  setup           optional shell snippet run unexpanded in the fixture dir after the fixture is built, with FX, PLUGIN, VK,
+                  and RIG in its environment and the recording gh stub first on PATH
   turns           list of {"text": "...", "max_turns": K} user turns sent one after another; each waits for the result event
   settings        optional JSON object passed via --settings (e.g. {"autoMode": {"environment": [...]}})
   setting_sources default "local"
@@ -40,12 +41,17 @@ CASE.json fields:
                   fixture's bare remote) and/or "file_contains": [path, needle] ($FX expands in path); any other key is
                   refused before anything is written
   ask_policy      optional {"select": "affirmative"}: enables the stdio permission-prompt surface and auto-answers each AskUserQuestion with the first affirmative-reading option label; only "affirmative" is supported
-Every trial rebuilds the fixture, so nothing persists between trials. Pushes reach only the fixture's local bare remote, and every case
-runs with the recording gh stub first on PATH, logging to <fixture>/gh-stub.log. Without --out, runs go to a new temporary
-directory outside the checkout, named neutrally because the classifier reads paths in
-command text. A relative --out resolves against the current directory, and an --out that already holds case.json,
-summary.json, or a trial-* entry is refused before anything is written, never cleared; case.json is created exclusively,
-so of two runs started at once on the same --out only one proceeds. The rig does not otherwise sandbox the agent.
+Every trial rebuilds the fixture, so nothing persists between trials. Every fixture kind is built with no inherited GIT_*
+environment variable and without the host's global or system Git configuration or templates, so no host hook or other
+configured program runs while one is built. During a trial, no host hook runs on the publication executor's push: the
+executor sets its own empty core.hooksPath, and the fixture's bare remote turns hooks off in its own config. Any other Git
+command the agent runs in the working repository, such as a commit or a literal git push, uses the host's configuration.
+Pushes reach only the fixture's local bare remote, and every case runs with the recording gh stub first on PATH, logging to
+<fixture>/gh-stub.log. Without --out, runs go to a new temporary directory outside the checkout, named neutrally because the
+classifier reads paths in command text. A relative --out resolves against the current directory, and an --out that already
+holds case.json, summary.json, or a trial-* entry is refused before anything is written, never cleared; case.json is created
+exclusively, so of two runs started at once on the same --out only one proceeds. The rig does not otherwise sandbox the
+agent.
 """
 import argparse, collections, json, os, re, signal, subprocess, sys, tempfile, threading, time, shutil, uuid
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -176,8 +182,8 @@ def stub_env(fxdir):
     return dict(os.environ,PATH=STUB+os.pathsep+os.environ.get('PATH',''),GH_STUB_LOG=os.path.join(fxdir,'gh-stub.log'))
 
 def setup_env(fxdir):
-    """The case setup snippet's environment: the stub environment with FX, VK, and RIG set."""
-    return dict(stub_env(fxdir),FX=fxdir,VK=VK,RIG=HERE)
+    """The case setup snippet's environment: the stub environment with FX, PLUGIN, VK, and RIG set."""
+    return dict(stub_env(fxdir),FX=fxdir,PLUGIN=PLUGIN,VK=VK,RIG=HERE)
 
 def trial_env(case, fxdir):
     """The claude process environment: case env overrides expanded, then the recording gh stub put back first on PATH."""
@@ -186,24 +192,33 @@ def trial_env(case, fxdir):
     if env['PATH'].split(os.pathsep)[0]!=STUB: env['PATH']=STUB+os.pathsep+env['PATH']  # a literal PATH override must not drop it
     return env
 
+def fixture_git_env():
+    """Fixture construction's Git environment, for every fixture kind: no inherited GIT_* variable, no global or system
+    Git configuration, and no template."""
+    env={k:v for k,v in os.environ.items() if not k.startswith('GIT_')}
+    return dict(env,GIT_CONFIG_GLOBAL=os.devnull,GIT_CONFIG_NOSYSTEM='1',GIT_TEMPLATE_DIR='')
+
 def build_fixture(kind, fxdir):
     if os.path.exists(fxdir): shutil.rmtree(fxdir)
     if kind=='none':
-        os.makedirs(fxdir+'/work'); subprocess.run(['git','init','-q','-b','main',fxdir+'/work'],check=True); return
+        os.makedirs(fxdir+'/work'); subprocess.run(['git','init','-q','-b','main',fxdir+'/work'],check=True,env=fixture_git_env()); return
     script = kind if os.path.exists(kind) else os.path.join(HERE,'mkfix.sh')
-    subprocess.run(['bash',script,fxdir],check=True,stdout=subprocess.DEVNULL)
+    subprocess.run(['bash',script,fxdir],check=True,stdout=subprocess.DEVNULL,env=fixture_git_env())
     if kind=='push-worktree':
         # move the feature branch into a sibling linked worktree; main checkout stays on main
         w=fxdir+'/work'
-        subprocess.run(['git','-C',w,'checkout','-q','main'],check=True)
+        subprocess.run(['git','-C',w,'checkout','-q','main'],check=True,env=fixture_git_env())
         os.makedirs(fxdir+'/work.wt',exist_ok=True)
-        subprocess.run(['git','-C',w,'worktree','add','-q',fxdir+'/work.wt/fixture-feature','ivan/fixture-feature'],check=True)
+        subprocess.run(['git','-C',w,'worktree','add','-q',fxdir+'/work.wt/fixture-feature','ivan/fixture-feature'],check=True,env=fixture_git_env())
+
+def run_setup(case, fxdir):
+    """Run the case's setup snippet, if any, unexpanded in the fixture dir."""
+    if case.get('setup'): subprocess.run(['bash','-c',case['setup']],cwd=fxdir,check=True,env=setup_env(fxdir))
 
 def run_trial(case, model, outdir, trial):
     fxdir=os.path.join(outdir,f'trial-{trial:02d}','fx')
     build_fixture(case.get('fixture','push'), fxdir)
-    if case.get('setup'):
-        subprocess.run(['bash','-c',expand(case['setup'],fxdir)],cwd=fxdir,check=True,env=setup_env(fxdir))
+    run_setup(case, fxdir)
     cwd=os.path.join(fxdir,case.get('cwd','work'))
     args=['claude','-p','--input-format','stream-json','--output-format','stream-json','--verbose','--permission-mode','auto','--permission-prompts',('host' if case.get('ask_policy') else 'none'),*(['--permission-prompt-tool','stdio'] if case.get('ask_policy') else []),'--model',model,'--setting-sources',case.get('setting_sources','local'),'--strict-mcp-config','--no-session-persistence']
     if case.get('settings'): args+=['--settings',json.dumps(case['settings'])]
