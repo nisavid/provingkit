@@ -8,7 +8,7 @@
     },
     "evals/praxis/constructing-agent-policies/cases/201-pagerline-overnight-alerts.json": {
       "mode": 420,
-      "sha256": "662a3173e61ba6ae96b4cd8832705d5cbb044f4a51a20daff33e94e35ba7c878"
+      "sha256": "b2e905263af6dcc6feb840a267404cdaff9b6084141031429f0b44fe9a2a8781"
     },
     "evals/praxis/constructing-agent-policies/cases/202-temporary-data-export.json": {
       "mode": 420,

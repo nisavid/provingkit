@@ -143,7 +143,7 @@
       },
       {
         "id": "seed-runbook-order",
-        "covers": "Whether the runbook is tried before any page, or whether a customer-affecting alert may be paged at once instead (the seed says try the runbook first); not how long the runbook attempt may run before the agent pages.",
+        "covers": "Whether the runbook is tried before any page, or whether a customer-affecting alert may be paged at once instead of trying its runbook (the seed says try the runbook first); not how long the runbook attempt may run before the agent pages, and not what to do when the service has no runbook.",
         "answer": "Try the runbook first, as I said.",
         "counts_against": "q2-frontier"
       },
