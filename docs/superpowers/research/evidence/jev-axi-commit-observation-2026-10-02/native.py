@@ -114,7 +114,8 @@ def run(manifest):
 
     def begin(send):
         send({"id": 1, "method": "initialize", "params": {
-            "clientInfo": {"name": "passive-commit-observation", "version": "1"}}})
+            "clientInfo": {"name": "passive-commit-observation", "version": "1"},
+            "capabilities": {"experimentalApi": True}}})
 
     def read_next(send):
         if not state["pending"]:
@@ -129,6 +130,10 @@ def run(manifest):
         if method is not None and ident is not None:
             put(root / "native-unanswered-request.json", encoded(message))
             raise ValueError("native permission or user input requires adjudication")
+        if ident is not None and "error" in message:
+            put(root / "native-rpc-error.json", encoded(message))
+            raise ValueError("native RPC response " + str(ident) + ": "
+                             + json.dumps(message["error"], sort_keys=True))
         if method == "thread/tokenUsage/updated":
             state["usage"].append(message["params"])
         if method == "thread/settings/updated":

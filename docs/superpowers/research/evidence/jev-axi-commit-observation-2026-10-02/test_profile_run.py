@@ -19,12 +19,14 @@ if '--version' in sys.argv:
 home = Path(os.environ['CODEX_HOME'])
 project = Path.cwd()
 task = None
+experimental_api = False
 for line in sys.stdin:
     message = json.loads(line)
     ident, method = message.get('id'), message.get('method')
     if ident is None:
         continue
     if method == 'initialize':
+        experimental_api = message.get('params', {}).get('capabilities', {}).get('experimentalApi', False)
         result = {}
     elif method == 'skills/list':
         result = {'data': [{'cwd': str(project), 'errors': [], 'skills': [
@@ -35,6 +37,10 @@ for line in sys.stdin:
             'supportedReasoningEfforts': [{'reasoningEffort': 'medium'},
                                          {'reasoningEffort': 'high'}]}]}
     elif method == 'thread/start':
+        if not experimental_api or (home / 'reject-thread').exists():
+            print(json.dumps({'id': ident, 'error': {'code': -32600,
+                'message': 'thread/start.historyMode requires experimentalApi capability'}}), flush=True)
+            continue
         instructions = [str(home / 'AGENTS.md')]
         if (home / 'extra.md').exists():
             instructions.append(str(home / 'extra.md'))
@@ -185,6 +191,15 @@ class ProfileRun(unittest.TestCase):
         self.assertEqual(receipt["observation"]["git_boundary"], "matched")
         outcome = json.loads((self.manifest.parent / "outcome.json").read_text())
         self.assertEqual(len(outcome["histories"]["fixture-parent"]), 1)
+
+    def test_server_error_is_retained_without_inventing_instruction_drift(self):
+        (self.home / "reject-thread").touch()
+        result, receipt = self.invoke()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("-32600", receipt["error"])
+        self.assertIn("thread/start.historyMode requires experimentalApi capability", receipt["error"])
+        self.assertNotIn("instruction sources differ", receipt["error"])
+        self.assertFalse((self.home / "task-delivered").exists())
 
 
 if __name__ == "__main__":

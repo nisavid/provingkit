@@ -84,6 +84,9 @@ fixture, including semantic Git state, before importing native execution. It res
 rejects existing episode records. Each valid run invocation with usable receipt storage has a distinct launch receipt.
 The native controller checks version, model capability, authoring inventory,
 disabled connectors, effective thread/turn permissions, and exact task delivery.
+It declares the experimental-API capability required by paginated history during
+initialization. Server error responses are retained before interpreting result
+fields, so an RPC rejection remains distinguishable from configuration drift.
 Recheck Git state immediately before prompt delivery. Retain root and child
 histories and available usage endpoints when the protocol supplies them. After
 native shutdown, attempt final Git and observer capture on success and failure,

@@ -1,0 +1,70 @@
+{
+  "original_attempt": "retained, native-incomplete before task delivery",
+  "local_checks": {
+    "count": 18,
+    "passed": true,
+    "git_diff_check": "passed",
+    "scope": "synthetic protocol and local Git/CLI boundaries; no native qualification"
+  },
+  "source_reviews": {
+    "intent": {
+      "sha256": "964ad5a466ecae9c5ba6d872bf2cfcb683d712753758afc7fd378abd9a217a64",
+      "status": "clean",
+      "inputs": {
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/contract.md": "ba8ea593572fb3804fada373572f21e5b43f9b9ce09e4063f598459c550a0f19",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/git_state.py": "aa0637549121620a1bb24f9c7e5613d6b3cb99041bf2f07be0212b4587dad82a",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/native.py": "35d46a64e41dd28e4c89a71b9eca001bf1ba864234c8c4ac54e5cc4c1e4c05f3",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/observe_commit.py": "e57add52a828f154d2e6af2462803081cdcdb7c661e7724a29d1a6e716c8cf53",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/prepare.py": "870b9657743dc11538f79f177bc97f774bd7294aa487d6b8e2d29771a065fc17",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/profile-evidence.json": "867a5002bf9bacd0fb215f9b61552668a5a08cab32d1bb7b6b28fa88c198c0df",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/profile.py": "657f75b1422076db06b2f7919498bf6e85be8d9af32356f18521cbe119907a76",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/prompt.md": "4398704f5a7f2d992143fde44035a3ecb6c2aeca93ae0f5c0d30bd4b06d2cf40",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/run.py": "0f0409197586298ea11469f6d19afa926050c828cf7cfbe7fdcdda712e89d383",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_observer.py": "9c6db086c266235892397785eca6cc1f72cf6efe173210cff79b497bd5043ba7",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_preparation.py": "0083262a7f894a3550734dc62e126f9ed6f7f18d60f57a69bd30755f25b9c535",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_profile_run.py": "f547eec8df2676ee3c33870d9d50a4bb8f59baff3048aec60e1b2cc1a0cbb276",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_run.py": "7d99de56182f5da570b0ce4a3ad27ad5bbcdef7268ff1bed45855c8e686d7394",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/transport.py": "0b6dada830dd6dbdff4cb2c4ccd444c6680044ddb00a08041c39c40514a49d8f",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/README.md": "c60b48624edde151a1643bf40c6e4397450cd10f5df6a6499b83ec1e9a26cf50",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/accounting-audit.md": "822b59fa5e43c4fdf6c26a20448d14249b295703a6f2c7520e2c41a9342ce78e",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/first-attempt.json": "80c39c75f294970ce0f50cd84861220c37da0c010e531a5b5b65091284753f61",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/outcome-audit.md": "30228c9abd5d317d3d2c5f4df5b43fc9d77ba6f4710e9b5051fcce1a51b65c18"
+      }
+    },
+    "runtime": {
+      "sha256": "ceb6ac50d90f7e9cd3e7bd9a5a6cb82a8cce542c3d09e16b66f00ad042b486ae",
+      "status": "clean",
+      "inputs": {
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/contract.md": "ba8ea593572fb3804fada373572f21e5b43f9b9ce09e4063f598459c550a0f19",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/git_state.py": "aa0637549121620a1bb24f9c7e5613d6b3cb99041bf2f07be0212b4587dad82a",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/native.py": "35d46a64e41dd28e4c89a71b9eca001bf1ba864234c8c4ac54e5cc4c1e4c05f3",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/observe_commit.py": "e57add52a828f154d2e6af2462803081cdcdb7c661e7724a29d1a6e716c8cf53",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/prepare.py": "870b9657743dc11538f79f177bc97f774bd7294aa487d6b8e2d29771a065fc17",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/profile-evidence.json": "867a5002bf9bacd0fb215f9b61552668a5a08cab32d1bb7b6b28fa88c198c0df",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/profile.py": "657f75b1422076db06b2f7919498bf6e85be8d9af32356f18521cbe119907a76",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/prompt.md": "4398704f5a7f2d992143fde44035a3ecb6c2aeca93ae0f5c0d30bd4b06d2cf40",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/run.py": "0f0409197586298ea11469f6d19afa926050c828cf7cfbe7fdcdda712e89d383",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_observer.py": "9c6db086c266235892397785eca6cc1f72cf6efe173210cff79b497bd5043ba7",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_preparation.py": "0083262a7f894a3550734dc62e126f9ed6f7f18d60f57a69bd30755f25b9c535",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_profile_run.py": "f547eec8df2676ee3c33870d9d50a4bb8f59baff3048aec60e1b2cc1a0cbb276",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_run.py": "7d99de56182f5da570b0ce4a3ad27ad5bbcdef7268ff1bed45855c8e686d7394",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/transport.py": "0b6dada830dd6dbdff4cb2c4ccd444c6680044ddb00a08041c39c40514a49d8f",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/README.md": "c60b48624edde151a1643bf40c6e4397450cd10f5df6a6499b83ec1e9a26cf50",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/accounting-audit.md": "822b59fa5e43c4fdf6c26a20448d14249b295703a6f2c7520e2c41a9342ce78e",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/first-attempt.json": "80c39c75f294970ce0f50cd84861220c37da0c010e531a5b5b65091284753f61",
+        "docs/superpowers/research/evidence/jev-axi-commit-observation-attempt-2026-10-03/outcome-audit.md": "30228c9abd5d317d3d2c5f4df5b43fc9d77ba6f4710e9b5051fcce1a51b65c18"
+      }
+    }
+  },
+  "fresh_manifest_sha256": "0db25cdfcc4c1c7232b3996425b34382fbeef27a23fa159e5943c230df7cd110",
+  "new_native_execution_accepted": false,
+  "controller_assurance": "ordinary same-leader native observations; not product-attested or portable evidence",
+  "unchanged_method": {
+    "skill": "handling-sys1-incidents",
+    "consumer_record_retained": true
+  },
+  "limits": [
+    "No second native episode has been launched.",
+    "No cost comparison or replaceable review step has been established."
+  ]
+}

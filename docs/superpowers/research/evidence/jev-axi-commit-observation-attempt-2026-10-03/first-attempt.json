@@ -1,0 +1,82 @@
+{
+  "accepted_source_commit": "73f0f2f2cfd71c69414bc0f7560d5c98575558d3",
+  "accepted_manifest_sha256": "d52e4a75fa3f444d345c45c5db4b586c5655c1f4b0a854b66700a27e7939e754",
+  "status": "native-incomplete",
+  "controller_reported_error": "ValueError: loaded instruction sources differ from prepared inventory",
+  "observed_rpc_error": {
+    "error": {
+      "code": -32600,
+      "message": "thread/start.historyMode requires experimentalApi capability"
+    },
+    "id": 3
+  },
+  "sent_methods": [
+    "initialize",
+    "initialized",
+    "model/list",
+    "thread/start"
+  ],
+  "turn_start_requests": 0,
+  "recorded_usage_events": 0,
+  "receipt_elapsed_seconds": 0.844029,
+  "native_process": {
+    "callback_consumed_stdout_bytes": 9628,
+    "exit_code": 0,
+    "received_bytes": 9628,
+    "retained_prefix_limit": 2097152,
+    "stdout_scope": "raw bytes including undelivered tail; use callback offset for delivered evidence",
+    "terminal_callback_stdout_offset": null
+  },
+  "git": {
+    "new_commits": 0,
+    "observer_records": 0,
+    "status_porcelain": "",
+    "git_boundary": "unobserved"
+  },
+  "artifact_identities": {
+    "manifest.json": {
+      "bytes": 9903,
+      "sha256": "d52e4a75fa3f444d345c45c5db4b586c5655c1f4b0a854b66700a27e7939e754"
+    },
+    "reservation.json": {
+      "bytes": 303,
+      "sha256": "b880fc54656a27491c38bd750463bc2c75e2e32368481ce77f7c7f872b495fff"
+    },
+    "native-sent.jsonl": {
+      "bytes": 672,
+      "sha256": "911b1d70ecdfaf7e663fff73033b3e9424facb57f3bdf415680d1ddb0c82b003"
+    },
+    "native-stdout.log": {
+      "bytes": 9628,
+      "sha256": "7a5afa04e3236bdde6b080b94ce07f05f25feda601de78a91fa5e8bc10e57167"
+    },
+    "native-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native-process.json": {
+      "bytes": 270,
+      "sha256": "36735e72d3fd51d331fbde24f0d2d906713c5aa7b738689527c81448619c31df"
+    },
+    "native-undelivered-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "outcome.json": {
+      "bytes": 265,
+      "sha256": "e31ee411f54962cae95bc675e1b423dbb512467a8ef70fdf4aa21af481262860"
+    },
+    "git-evidence.json": {
+      "bytes": 1316,
+      "sha256": "ea751d4e33bb649258e7664a3a0e2484118ae5f08e815f6e0a306567f9b27ada"
+    }
+  },
+  "public_projection": "Exact RPC error, observed method names, counts, timing, and artifact identities. Private paths, catalog entries, full profile, and native logs are retained outside this projection.",
+  "limits": [
+    "No task prompt was submitted.",
+    "No native message-writing or separate-review behavior was observed.",
+    "Absent usage events do not establish zero cost.",
+    "Setup, local checks, review, waiting, and correction costs are separate and not aggregated.",
+    "No automatic retry occurred."
+  ]
+}
