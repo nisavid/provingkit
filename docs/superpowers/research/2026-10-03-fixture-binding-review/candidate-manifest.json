@@ -1,0 +1,20 @@
+{
+  "base": "e971ae6fde6f4f4fa0b603e3a08bd0369b9481c6",
+  "files": [
+    {
+      "bytes": 7503,
+      "path": "docs/superpowers/research/2026-10-03-fixture-binding-design.md",
+      "sha256": "b38245cffa5bf572cb049997eb221ee966aa2bda0d8b12e06339c0e399711c12"
+    },
+    {
+      "bytes": 128,
+      "path": "docs/superpowers/research/2026-10-03-fixture-binding-sources/manifest.json",
+      "sha256": "569573a6fa13d01fc45c9ee89e96683950340d8bd95191791d71c42a6b42f76e"
+    },
+    {
+      "bytes": 33123,
+      "path": "docs/superpowers/research/2026-10-03-fixture-binding-sources/research.md",
+      "sha256": "27fa99cd796cbc2bb640b25de02b26ae1961d7d3a4f1eff37cfa906a8b0edeb1"
+    }
+  ]
+}
