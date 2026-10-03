@@ -1,0 +1,27 @@
+{
+  "base": "88d1962aefdf40676148462fc495089fb18d1026",
+  "frozen_at": "2026-10-03T19:04:06.120849+00:00",
+  "files": [
+    {
+      "path": "docs/superpowers/prototypes/receiver-evidence/collector.mjs",
+      "bytes": 6594,
+      "sha256": "7500bb30d898771a2658b2f7ae1c03a16c7cd1c07bf76328317291d8397dca1c"
+    },
+    {
+      "path": "docs/superpowers/prototypes/receiver-evidence/collector.test.mjs",
+      "bytes": 11391,
+      "sha256": "34b9a127adc8b17805fd8a142c84f6f89f03f8ddc004ad06742bedd1099249fb"
+    },
+    {
+      "path": "docs/superpowers/prototypes/receiver-evidence/collector-contract.md",
+      "bytes": 8285,
+      "sha256": "cf2d59c2010acb9d6960992846b47ebe59c57e6083834298786e38eb2f09294e"
+    },
+    {
+      "path": "docs/superpowers/prototypes/receiver-evidence/fixture-check-procedure.md",
+      "bytes": 11934,
+      "sha256": "0fbca6938111306d102713099f98a1cdfaee9c4daa9d50c72e47ac0f628c80db"
+    }
+  ],
+  "findings_sha256": "9394b13d6f7865285ec13dcb6bdf740db5e87132d31502ef56d2d4b6298ced63"
+}

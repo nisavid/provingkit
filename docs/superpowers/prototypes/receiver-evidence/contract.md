@@ -76,9 +76,10 @@ truncating evidence. These are prototype bounds, not adopted live-read limits.
 
 The hook receives an already supplied event object. It does not bound upstream
 stdin acquisition, authenticate the producer, or establish event generation
-time. The caller's recent `receivedAt` only dates receipt. A production command
-wrapper, event-size ceiling, sink, provenance, and continuity mechanism remain
-design work. A collector interruption prevents a current ACK candidate here.
+time. The caller's recent `receivedAt` only dates receipt. The separate [collector command](collector-contract.md) adds bounded pipe
+acquisition and a one-shot output slot for a fixture setup event. Its source
+and synthetic evidence do not establish producer authenticity or uninterrupted
+collection history. A collector interruption prevents a current ACK candidate here.
 Stop text in the inspected producer is joined and trimmed; the reader preserves
 its specimen text without trimming. The eventual ACK grammar must account for
 that distinction.

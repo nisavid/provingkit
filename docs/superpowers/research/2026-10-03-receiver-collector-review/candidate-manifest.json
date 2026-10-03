@@ -1,0 +1,140 @@
+{
+  "base": "88d1962aefdf40676148462fc495089fb18d1026",
+  "files": [
+    {
+      "bytes": 3713,
+      "path": "docs/superpowers/prototypes/receiver-evidence/README.md",
+      "sha256": "4547a6b7aa01275cfae17f18f74299b26fcf1f16d5f5815d954d7d3bf0cdf024"
+    },
+    {
+      "bytes": 517,
+      "path": "docs/superpowers/prototypes/receiver-evidence/build-demo.mjs",
+      "sha256": "3dc6c14f309ac8438789dd10c9aa932a23f8cba476e980e74c92bcc9e2dd0f94"
+    },
+    {
+      "bytes": 9314,
+      "path": "docs/superpowers/prototypes/receiver-evidence/collector-contract.md",
+      "sha256": "a8736eeb12a8025b8b6820db3b9aee61ccd2e79331879505e2d7459f8bb79702"
+    },
+    {
+      "bytes": 7141,
+      "path": "docs/superpowers/prototypes/receiver-evidence/collector.mjs",
+      "sha256": "0ae557d51bbb72d719524a5316926f2ce354fa8241f461eeef9c5bb7405a6965"
+    },
+    {
+      "bytes": 12544,
+      "path": "docs/superpowers/prototypes/receiver-evidence/collector.test.mjs",
+      "sha256": "b39750b0e7466ab7c3da2b05838c9695dc653c3851d91f370c7cadd5db601352"
+    },
+    {
+      "bytes": 6022,
+      "path": "docs/superpowers/prototypes/receiver-evidence/contract.md",
+      "sha256": "e778cd13f3dfbb806e1dd44bd3584f34048e1b10a47c90aa9ed5b5ae5ed54d2a"
+    },
+    {
+      "bytes": 10288,
+      "path": "docs/superpowers/prototypes/receiver-evidence/demo-source.html",
+      "sha256": "79308a065120e625f0c2242a93f72a96b344d60d74ddd42652492e0847d95676"
+    },
+    {
+      "bytes": 19688,
+      "path": "docs/superpowers/prototypes/receiver-evidence/demo.html",
+      "sha256": "2ae425b8035ba91c828bf327e4f929e637f7521db9449a7ba5619e78cdc6ad39"
+    },
+    {
+      "bytes": 2086,
+      "path": "docs/superpowers/prototypes/receiver-evidence/files.mjs",
+      "sha256": "00df1bbf3a332ac0a1bb73be85f6d0ed3206562257843d5b0f17a0a308cf987c"
+    },
+    {
+      "bytes": 12857,
+      "path": "docs/superpowers/prototypes/receiver-evidence/fixture-check-procedure.md",
+      "sha256": "a6e47ae8e4899466bf2b704e1e6beced80f9506df7858136319dfcfd7e2be79d"
+    },
+    {
+      "bytes": 1672,
+      "path": "docs/superpowers/prototypes/receiver-evidence/fixtures.mjs",
+      "sha256": "f821dd3724bdfce5e0432359fc3404ed43ea61b37adfbb310d7a62ee856de7b7"
+    },
+    {
+      "bytes": 2184,
+      "path": "docs/superpowers/prototypes/receiver-evidence/hook.mjs",
+      "sha256": "aae51438c670aaeb367b125ca5faebcc5b047ebaace822dc2999df8e02d84ae6"
+    },
+    {
+      "bytes": 3194,
+      "path": "docs/superpowers/prototypes/receiver-evidence/hook.test.mjs",
+      "sha256": "1d76daca6ed57d0b520fa965407d5fe1223d2a27bc79b9a2ca82dc43aa70b4ae"
+    },
+    {
+      "bytes": 5590,
+      "path": "docs/superpowers/prototypes/receiver-evidence/reader.mjs",
+      "sha256": "aa3238f2f6cecedce5c1c5f8a4a0de92b4ebb9ce898e02703f07f4c872f01b00"
+    },
+    {
+      "bytes": 10175,
+      "path": "docs/superpowers/prototypes/receiver-evidence/reader.test.mjs",
+      "sha256": "cd203f7e0ce0e8b3f7a0c7663caf143ede3586db18797854097fba4bbabafd6b"
+    },
+    {
+      "bytes": 9068,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-findings.md",
+      "sha256": "fb223538b5febbe87209b1aca9a0eb29d7cb86f4317ef0bc3358e0d2135a6dad"
+    },
+    {
+      "bytes": 3734,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/README.md",
+      "sha256": "85e22fc2b7cc33db134ada9970e228b22fa4fd0034a8521c0e457ac39735320e"
+    },
+    {
+      "bytes": 2411,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/collector-cross.md",
+      "sha256": "0fb53484739d00ef0b64de39da3372d2346d8dd56652b9b08fdea33c4adc776a"
+    },
+    {
+      "bytes": 8285,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/collector-first/collector-contract.md",
+      "sha256": "cf2d59c2010acb9d6960992846b47ebe59c57e6083834298786e38eb2f09294e"
+    },
+    {
+      "bytes": 6594,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/collector-first/collector.mjs",
+      "sha256": "7500bb30d898771a2658b2f7ae1c03a16c7cd1c07bf76328317291d8397dca1c"
+    },
+    {
+      "bytes": 11391,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/collector-first/collector.test.mjs",
+      "sha256": "34b9a127adc8b17805fd8a142c84f6f89f03f8ddc004ad06742bedd1099249fb"
+    },
+    {
+      "bytes": 11934,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/collector-first/fixture-check-procedure.md",
+      "sha256": "0fbca6938111306d102713099f98a1cdfaee9c4daa9d50c72e47ac0f628c80db"
+    },
+    {
+      "bytes": 1018,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/collector-first-manifest.json",
+      "sha256": "c1905d33d2c0ad4b269d64aeff546a34f9442bea235e3d094fe4a2b7e26a222e"
+    },
+    {
+      "bytes": 2936,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/collector-first.md",
+      "sha256": "9394b13d6f7865285ec13dcb6bdf740db5e87132d31502ef56d2d4b6298ced63"
+    },
+    {
+      "bytes": 1637,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/manifest.json",
+      "sha256": "0661ac0e09342a9c0289f522849937105389a3866b3031f631c32d2f8f866c4b"
+    },
+    {
+      "bytes": 14981,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/runtime-cross.md",
+      "sha256": "d207432d3acdead00ae281e241b1307e896e47236bab8786823731b503df37b1"
+    },
+    {
+      "bytes": 30074,
+      "path": "docs/superpowers/research/2026-10-03-receiver-collector-sources/runtime-first.md",
+      "sha256": "7752f4b264a19caa390e785fd2c7e656d0ebcb20e876f28e9fabd3da957b6835"
+    }
+  ]
+}

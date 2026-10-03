@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3734,
+      "sha256": "85e22fc2b7cc33db134ada9970e228b22fa4fd0034a8521c0e457ac39735320e"
+    },
+    {
+      "path": "collector-cross.md",
+      "bytes": 2411,
+      "sha256": "0fb53484739d00ef0b64de39da3372d2346d8dd56652b9b08fdea33c4adc776a"
+    },
+    {
+      "path": "collector-first/collector-contract.md",
+      "bytes": 8285,
+      "sha256": "cf2d59c2010acb9d6960992846b47ebe59c57e6083834298786e38eb2f09294e"
+    },
+    {
+      "path": "collector-first/collector.mjs",
+      "bytes": 6594,
+      "sha256": "7500bb30d898771a2658b2f7ae1c03a16c7cd1c07bf76328317291d8397dca1c"
+    },
+    {
+      "path": "collector-first/collector.test.mjs",
+      "bytes": 11391,
+      "sha256": "34b9a127adc8b17805fd8a142c84f6f89f03f8ddc004ad06742bedd1099249fb"
+    },
+    {
+      "path": "collector-first/fixture-check-procedure.md",
+      "bytes": 11934,
+      "sha256": "0fbca6938111306d102713099f98a1cdfaee9c4daa9d50c72e47ac0f628c80db"
+    },
+    {
+      "path": "collector-first-manifest.json",
+      "bytes": 1018,
+      "sha256": "c1905d33d2c0ad4b269d64aeff546a34f9442bea235e3d094fe4a2b7e26a222e"
+    },
+    {
+      "path": "collector-first.md",
+      "bytes": 2936,
+      "sha256": "9394b13d6f7865285ec13dcb6bdf740db5e87132d31502ef56d2d4b6298ced63"
+    },
+    {
+      "path": "runtime-cross.md",
+      "bytes": 14981,
+      "sha256": "d207432d3acdead00ae281e241b1307e896e47236bab8786823731b503df37b1"
+    },
+    {
+      "path": "runtime-first.md",
+      "bytes": 30074,
+      "sha256": "7752f4b264a19caa390e785fd2c7e656d0ebcb20e876f28e9fabd3da957b6835"
+    }
+  ]
+}
