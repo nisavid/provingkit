@@ -1,0 +1,22 @@
+{
+  "access-cross.md": {
+    "bytes": 15778,
+    "role": "cross-examination after both first reports frozen",
+    "sha256": "c2ad623f3137fdfce0d834f86a989537befbedba84ca83b6e15bfd24ff16932d"
+  },
+  "access.md": {
+    "bytes": 31763,
+    "role": "independent first findings",
+    "sha256": "67442a454c6078374304fb011afd5dc6a9147362521cb164a3706dc8a352380e"
+  },
+  "state-cross.md": {
+    "bytes": 18260,
+    "role": "cross-examination after both first reports frozen",
+    "sha256": "6376796806246ada3c5b1063b6521ef4a419d07d832eda4c8cc6a70f7ee6f1b3"
+  },
+  "state.md": {
+    "bytes": 42106,
+    "role": "independent first findings",
+    "sha256": "b9d5212f7ca31a01e10ebd33e77806ccd897284fea89110776c08863e4056456"
+  }
+}
