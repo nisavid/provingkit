@@ -1,0 +1,154 @@
+{
+  "accepted_source_commit": "9c813973f721f14923ee9ca73be387a5c819356d",
+  "accepted_manifest_sha256": "0db25cdfcc4c1c7232b3996425b34382fbeef27a23fa159e5943c230df7cd110",
+  "status": "native-incomplete",
+  "error": "ValueError: active connector outside the profile",
+  "sent_methods": [
+    "initialize",
+    "initialized",
+    "model/list",
+    "thread/start",
+    "skills/list",
+    "mcpServerStatus/list"
+  ],
+  "thread_created": true,
+  "turn_start_requests": 0,
+  "recorded_usage_events": 0,
+  "receipt_elapsed_seconds": 1.264549,
+  "native_process": {
+    "callback_consumed_stdout_bytes": 138468,
+    "exit_code": 0,
+    "received_bytes": 141089,
+    "retained_prefix_limit": 2097152,
+    "stdout_scope": "raw bytes including undelivered tail; use callback offset for delivered evidence",
+    "terminal_callback_stdout_offset": null
+  },
+  "connector_inventory": [
+    {
+      "name": "code-review",
+      "plugin_id": "code-review@openai-bundled",
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "codex_app",
+      "plugin_id": "codex-app-tools@openai-bundled",
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "codex_quota_connection",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "context7",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "cua_repl",
+      "plugin_id": "unified-computer-use@openai-bundled",
+      "runtime_status": "connected",
+      "tool_count": 3
+    },
+    {
+      "name": "firecrawl",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "fork-ops",
+      "plugin_id": "fork-ops@fork-ops",
+      "runtime_status": "connected",
+      "tool_count": 14
+    },
+    {
+      "name": "github",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "greptile",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "lawstronaut",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "node_repl",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    },
+    {
+      "name": "openaiDeveloperDocs",
+      "plugin_id": null,
+      "runtime_status": "disabled",
+      "tool_count": 0
+    }
+  ],
+  "git": {
+    "new_commits": 0,
+    "observer_records": 0,
+    "git_boundary": "unobserved",
+    "application_files_unchanged": 13
+  },
+  "artifact_identities": {
+    "manifest.json": {
+      "bytes": 9903,
+      "sha256": "0db25cdfcc4c1c7232b3996425b34382fbeef27a23fa159e5943c230df7cd110"
+    },
+    "reservation.json": {
+      "bytes": 303,
+      "sha256": "0fafae7befc21b20eacee5a1ac432eec7fb53f5585bf479284d5a18642b92bf9"
+    },
+    "native-sent.jsonl": {
+      "bytes": 983,
+      "sha256": "6f566852cad87085367e21c4ab3ce9abf2e81d599ada9f031ee709d9d92a2058"
+    },
+    "native-stdout.log": {
+      "bytes": 138468,
+      "sha256": "11acd35da1dd550cb44ee0be538224d30568415ea6dc13b055533868a7219300"
+    },
+    "native-stderr.log": {
+      "bytes": 2621,
+      "sha256": "6a587e50e055f4fb2b012cf05bb35915a69dadb63a3e858f05d5132d8e1e5d62"
+    },
+    "native-process.json": {
+      "bytes": 274,
+      "sha256": "5a011d28b438648b7f55fdfc1ce2301098488be7c63ea3c069bf0492ff43fc93"
+    },
+    "native-undelivered-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native-instruction-sources.json": {
+      "bytes": 39,
+      "sha256": "23f1362f4b5d19eaedf34a2d792cf9327bc0f5a85ca9c133d74b6a7d625a87ba"
+    },
+    "outcome.json": {
+      "bytes": 278,
+      "sha256": "d972202b28dee55315d8039c0988f394179fcc0466923226137797b712a83bdb"
+    },
+    "git-evidence.json": {
+      "bytes": 1316,
+      "sha256": "ea751d4e33bb649258e7664a3a0e2484118ae5f08e815f6e0a306567f9b27ada"
+    }
+  },
+  "limits": [
+    "Startup reporting does not establish turn-time permissions or skill use.",
+    "No task delivery, authoring, or removable review step was observed.",
+    "No usage events does not establish zero cost or zero network activity.",
+    "Plugin servers started; resource and monetary costs are unmeasured."
+  ]
+}

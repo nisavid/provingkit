@@ -29,7 +29,10 @@ review, critic, and delegation skills, excluding bytecode caches. Other transiti
 unbound; using them limits claims about the profile. The [metadata-only inventory](profile-evidence.json)
 observed Codex CLI 0.160.0 and 179 skill entries. Native discovery must match the
 prepared inventory before the task prompt is sent. Preparation binds the installed
-global instruction file and config, but creates no native thread. Its expected
+global instruction file and config, but creates no native thread. Preparation
+queries both skills and MCP metadata and requires an empty tool inventory before
+producing a runnable manifest. Runtime status can be unavailable without a
+thread; empty tools do not qualify thread-runtime disablement. Its expected
 loaded instruction-source list is a hypothesis: the controller retains and
 checks the thread-start source list and refuses a different or unavailable list
 before task delivery.
@@ -46,7 +49,11 @@ parent until their accounting semantics are reconciled.
 
 Per-invocation overrides disable native hooks, plugin hooks, memory, apps,
 browser/computer tools, and image generation; disable all inherited MCP servers;
-and disable shell snapshots and web search. This removes more ambient features
+and disable shell snapshots and web search. The observed `cua_repl` and
+`fork-ops` plugin servers also receive per-plugin server-disable overrides;
+their plugins remain enabled for skill discovery. These bindings cover this
+installed profile, not arbitrary future plugins. The native all-disabled check
+still refuses any active server before task delivery. This removes more ambient features
 than the disputed assessment. Conclusions apply to this disclosed authoring
 profile, not the full desktop installation. The task forbids external services,
 installation, Jev and jev-axi calls, and live configuration changes. Source

@@ -16,6 +16,11 @@ MODEL = "gpt-6.1-sol"
 EFFORT = "medium"
 DISABLED = ("hooks", "plugin_hooks", "memories", "apps",
             "shell_snapshot", "browser_use", "computer_use", "image_generation")
+# Installed-profile bindings observed at the second native attempt. These
+# policies omit servers without disabling their plugins or skills. The native
+# inventory gate still rejects any other active server before task delivery.
+PLUGIN_SERVERS = (("unified-computer-use@openai-bundled", "cua_repl"),
+                  ("fork-ops@fork-ops", "fork-ops"))
 
 
 def home():
@@ -47,6 +52,8 @@ def command(project):
         if not re.fullmatch(r"[A-Za-z0-9_-]+", name):
             raise ValueError("unsupported connector name")
         settings.append("mcp_servers." + name + ".enabled=false")
+    for plugin, name in PLUGIN_SERVERS:
+        settings.append("plugins." + plugin + ".mcp_servers." + name + ".enabled=false")
     for setting in settings:
         args += ["-c", setting]
     return args
@@ -96,6 +103,22 @@ def discover(project, root):
             if "result" not in message:
                 raise ValueError("native skill inventory failed")
             result["skills"] = skills_identity(message["result"], project)
+            send({"id": 3, "method": "mcpServerStatus/list", "params": {"limit": 100}})
+        elif message.get("id") == 3:
+            inventory = message.get("result", {})
+            servers = inventory.get("data")
+            if inventory.get("nextCursor") is not None or not isinstance(servers, list):
+                raise ValueError("connector inventory incomplete during preparation")
+            # A query without threadId has no thread-runtime status to report.
+            # Empty tools are preparation evidence only; native.run requires
+            # explicit disabled states from its newly created thread.
+            if any(s.get("runtimeStatus") not in (None, "disabled") or s.get("tools") != {}
+                   for s in servers):
+                raise ValueError("active connector outside the profile during preparation")
+            result["connectors"] = [{key: server.get(key) for key in
+                                     ("name", "pluginId", "runtimeStatus")}
+                                    for server in servers]
+            result["connector_evidence"] = "no exposed tools; thread-runtime disablement remains unqualified"
             return True
         return False
     collect(command(project), project, root, "profile-discovery", time.monotonic() + 30,

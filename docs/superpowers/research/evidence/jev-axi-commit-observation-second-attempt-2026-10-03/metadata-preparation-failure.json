@@ -1,0 +1,44 @@
+{
+  "status": "failed",
+  "kind": "metadata-only preparation",
+  "thread_start_requests": 0,
+  "turn_start_requests": 0,
+  "reported_error": "ValueError: active connector outside the profile during preparation",
+  "observed": "Twelve servers returned runtimeStatus null and empty tools. The check incorrectly required a thread-runtime state without creating a thread.",
+  "elapsed_seconds": 0.245167,
+  "artifacts": {
+    "preparation-f3b5f67745e4468aa727bc89cb270a93.json": {
+      "sha256": "195c84e888ec997881d5e7f64a7bf7a7b69724d43339f54915adf7e9f7a74ab4",
+      "bytes": 311
+    },
+    "profile-discovery-process.json": {
+      "sha256": "64816bae842d018d2e76520d193a131be727c796121f037220772aa0b2bd7bf5",
+      "bytes": 274
+    },
+    "profile-discovery-sent.jsonl": {
+      "sha256": "86fdf09dffe917a28b9a109de4a3047d0019baef03f654c13b6066f09fe35980",
+      "bytes": 354
+    },
+    "profile-discovery-stderr.log": {
+      "sha256": "d708fa119722ab10019fbc4bae6e978712a19a46ee2377490261566353d41693",
+      "bytes": 2217
+    },
+    "profile-discovery-stdout.log": {
+      "sha256": "9df80b8f271ea105972c3a22884596ffebedf95b727988b0f72c2d66d74d8906",
+      "bytes": 113038
+    },
+    "profile-discovery-undelivered-stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "source": {
+    "profile.py": "cf2cacbf9e68047a51b08fb34744dcf211d872f7230d4ef63f26fe14ea893b12",
+    "test_profile_run.py": "292e09996430946df0dc350b194119a4c6461ace976d617969dee5478fcaf7a4"
+  },
+  "limits": [
+    "No runnable manifest was produced.",
+    "No additional native authoring episode was launched.",
+    "No zero-cost claim follows from no task turn."
+  ]
+}

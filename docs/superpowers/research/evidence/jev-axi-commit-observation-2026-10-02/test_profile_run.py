@@ -20,6 +20,9 @@ home = Path(os.environ['CODEX_HOME'])
 project = Path.cwd()
 task = None
 experimental_api = False
+thread_started = False
+overrides = dict(arg.split('=', 1) for index, arg in enumerate(sys.argv)
+                 if index and sys.argv[index - 1] == '-c')
 for line in sys.stdin:
     message = json.loads(line)
     ident, method = message.get('id'), message.get('method')
@@ -41,6 +44,7 @@ for line in sys.stdin:
             print(json.dumps({'id': ident, 'error': {'code': -32600,
                 'message': 'thread/start.historyMode requires experimentalApi capability'}}), flush=True)
             continue
+        thread_started = True
         instructions = [str(home / 'AGENTS.md')]
         if (home / 'extra.md').exists():
             instructions.append(str(home / 'extra.md'))
@@ -55,7 +59,17 @@ for line in sys.stdin:
     elif method == 'mcpServerStatus/list':
         if (home / 'git-drift-during-discovery').exists():
             subprocess.run(['git', 'config', 'core.hooksPath', '/dev/null'], check=True)
-        result = {'nextCursor': None, 'data': []}
+        servers = []
+        for plugin, name in [('unified-computer-use@openai-bundled', 'cua_repl'),
+                             ('fork-ops@fork-ops', 'fork-ops')]:
+            disabled = overrides.get('plugins.' + plugin + '.mcp_servers.' + name + '.enabled') == 'false'
+            servers.append({'name': name, 'pluginId': plugin,
+                'runtimeStatus': ('disabled' if disabled else 'connected') if thread_started else None,
+                'tools': {} if disabled else {'synthetic-tool': {}}})
+        if (home / 'unexpected-connector').exists():
+            servers.append({'name': 'unexpected', 'pluginId': 'new@fixture',
+                            'runtimeStatus': 'connected', 'tools': {'synthetic-tool': {}}})
+        result = {'nextCursor': None, 'data': servers}
     elif method == 'turn/start':
         task = message['params']['input'][0]['text']
         (home / 'task-delivered').touch()
@@ -138,6 +152,19 @@ class ProfileRun(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertFalse((self.home / "unexpected-task").exists())
         self.assertIn("resource tree drift", receipt["error"])
+
+    def test_preparation_rejects_an_active_plugin_server_without_delivering_task(self):
+        (self.home / "unexpected-connector").touch()
+        result = subprocess.run([sys.executable, str(SOURCE / "prepare.py"),
+            "--parent", str(self.root), "--discover-profile"], env=self.env,
+            capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("active connector outside the profile", result.stderr)
+        receipts = [json.loads(p.read_text()) for p in self.root.glob("preparation-*.json")]
+        failed = [r for r in receipts if r["status"] == "failed"]
+        self.assertEqual(len(failed), 1)
+        self.assertFalse((Path(failed[0]["root"]) / "manifest.json").exists())
+        self.assertFalse((self.home / "task-delivered").exists())
 
     def test_unprepared_instruction_source_stops_before_task_delivery(self):
         (self.home / "extra.md").write_text("additional instruction source\n")
