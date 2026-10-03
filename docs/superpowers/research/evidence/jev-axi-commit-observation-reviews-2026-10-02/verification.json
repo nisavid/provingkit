@@ -1,0 +1,76 @@
+{
+  "purpose": "Reviewed preparation for one passive Codex commit-message observation",
+  "native_experiment_turns": 0,
+  "jev_requests": 0,
+  "local_tests": {
+    "count": 17,
+    "result": "passed",
+    "command": "python -m unittest discover -s docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02 -p test_*.py",
+    "scope": "real disposable Git and synthetic external protocol peer; not native qualification"
+  },
+  "reviews": {
+    "runtime-initial.md": {
+      "sha256": "d5d4cb652dcac67c83d94a6abfabd97101ffb6f9a69b5b7b6da460cec91695ef",
+      "current": false
+    },
+    "runtime-recheck.md": {
+      "sha256": "cd3464b22b42ce9847c76ffe89bbd418032816bb9be1457f1d4d38977f8e8e33",
+      "current": false
+    },
+    "runtime-final.md": {
+      "sha256": "c1ba0bbf031d57af85f574404825b578ca8854a1c08b4682560f562af7ca9968",
+      "current": true
+    },
+    "intent-initial.md": {
+      "sha256": "a509dc8ba0b4742e30a4e4dec92ce9cdfec41e6ce255ca257262125359535b9e",
+      "current": false
+    },
+    "intent-recheck.md": {
+      "sha256": "939468ef2872957b71cc257c0f4bf5db44a512243cc99a6b941e0a7dd86c7d16",
+      "current": false
+    },
+    "intent-final.md": {
+      "sha256": "e6a49142d904cb957d2ba199e746c41e9919fbec68db1989d896ff3ed7d72671",
+      "current": true
+    }
+  },
+  "source_sha256": {
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/prepare.py": "870b9657743dc11538f79f177bc97f774bd7294aa487d6b8e2d29771a065fc17",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/profile.py": "657f75b1422076db06b2f7919498bf6e85be8d9af32356f18521cbe119907a76",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/contract.md": "c753093ebb9cb039aa1f94975081975897d1a22a39169f43e2c5102bd88ee4d8",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/git_state.py": "aa0637549121620a1bb24f9c7e5613d6b3cb99041bf2f07be0212b4587dad82a",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/native.py": "c5c5a96c2a8a7ed1842ebfb746184c1be60bf652cf5d772cd1224442224e240b",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_preparation.py": "0083262a7f894a3550734dc62e126f9ed6f7f18d60f57a69bd30755f25b9c535",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/profile-evidence.json": "867a5002bf9bacd0fb215f9b61552668a5a08cab32d1bb7b6b28fa88c198c0df",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_profile_run.py": "bd53ddfe9074221f5ef5de7dd8478bb15eeb3b08695c4203f8f1d236bbe010a0",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_observer.py": "9c6db086c266235892397785eca6cc1f72cf6efe173210cff79b497bd5043ba7",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/transport.py": "0b6dada830dd6dbdff4cb2c4ccd444c6680044ddb00a08041c39c40514a49d8f",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/test_run.py": "7d99de56182f5da570b0ce4a3ad27ad5bbcdef7268ff1bed45855c8e686d7394",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/observe_commit.py": "e57add52a828f154d2e6af2462803081cdcdb7c661e7724a29d1a6e716c8cf53",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/prompt.md": "4398704f5a7f2d992143fde44035a3ecb6c2aeca93ae0f5c0d30bd4b06d2cf40",
+    "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/run.py": "0f0409197586298ea11469f6d19afa926050c828cf7cfbe7fdcdda712e89d383"
+  },
+  "method_consumption": {
+    "method": {
+      ".agents/skills/handling-sys1-incidents/SKILL.md": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac",
+      ".agents/skills/handling-sys1-incidents/references/evidence-record.md": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a",
+      ".agents/skills/handling-sys1-incidents/references/comparison-contract.md": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981"
+    },
+    "consumer": "passive commit-message observation preparation",
+    "source_changed": false,
+    "invocation": "explicit",
+    "acceptance_reference": "https://github.com/nisavid/provingkit/issues/339#issuecomment-5961665316",
+    "new_method_claim": false,
+    "native_efficacy_claim": false
+  },
+  "execution_acceptance": {
+    "required": true,
+    "manifest_sha256": "d52e4a75fa3f444d345c45c5db4b586c5655c1f4b0a854b66700a27e7939e754",
+    "received": false
+  },
+  "accounting_limits": [
+    "Preparation and review are research costs.",
+    "Model review calls are not included in the zero native experiment-turn count.",
+    "No aggregation, quota, billing, operator-time, or economic-superiority claim."
+  ]
+}

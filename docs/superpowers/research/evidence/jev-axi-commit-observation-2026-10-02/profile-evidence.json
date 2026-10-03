@@ -1,0 +1,43 @@
+{
+  "scope": "Metadata-only authoring inventory; superseded preparation, not a runnable acceptance manifest",
+  "version": "codex-cli 0.160.0",
+  "skill_entries": 179,
+  "skill_scopes": {
+    "system": 5,
+    "user": 174
+  },
+  "native_tasks_started": 0,
+  "requests": [
+    "initialize",
+    "initialized",
+    "skills/list"
+  ],
+  "artifacts": {
+    "profile.json": {
+      "bytes": 101389,
+      "sha256": "782658244553947d935bded2ceadf6dfc8d79bbd1505483976821390404836c2"
+    },
+    "manifest.json": {
+      "bytes": 8446,
+      "sha256": "21199596f5364fa7039dc787288b29a7328b448e4ea5b95e600ebeac640492bf"
+    },
+    "profile-discovery-sent.jsonl": {
+      "bytes": 284,
+      "sha256": "f2b1c7b9b4346711072b107c4905d93b56e9d8f134f2fb0afff7044cb63ba17b"
+    },
+    "profile-discovery-stdout.log": {
+      "bytes": 110229,
+      "sha256": "ba9d1e85d9642563d163e5b7d25230a43d4472bed3cf5b056fe10d582f9ae0a6"
+    },
+    "profile-discovery-process.json": {
+      "bytes": 276,
+      "sha256": "48bcbd487dfae28bf349f283b11ab0fc808824e69b5f783253a94b7c38256a15"
+    }
+  },
+  "source_note": "Private source records retain absolute host paths; this public summary contains their identities and counts only.",
+  "limitations": [
+    "No thread was created; loaded instructionSources remain a hypothesis checked before the future task prompt.",
+    "No skill invocation or separate semantic review was observed.",
+    "This inventory predates review corrections; execution needs a newly prepared manifest."
+  ]
+}
