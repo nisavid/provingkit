@@ -2,12 +2,14 @@
 """Headless auto-mode classifier consent rig (see ../README.md).
 
 Usage: harness.py run CASE.json [--trials N] [--out DIR] [--model sonnet]
---trials N asks for N valid trials and attempts at most 2N. A trial is invalid when any turn lacks its result event, any
-turn ends in an API error (terminal_reason api_error, for example an exhausted session limit), or the session did not
-initialize in auto mode (no system/init event, or one whose permissionMode is not auto: 'not-auto-mode', with the observed
-mode recorded); when several apply, the reason is the first of missing-result, api_error, and not-auto-mode. Invalid
-trials are kept on disk and reported separately, never counted as clean. Any other errored turn (for example subtype
-error_max_turns) leaves the trial valid, and record.json and the summary name its error subtype.
+--trials N asks for N valid trials and attempts at most 2N. summary.json always records requested_trials, attempts, and
+complete; when the attempts run out first, complete is false and the harness exits nonzero after writing it. A trial is
+invalid when any turn lacks its result event, any turn ends in an API error (terminal_reason api_error, for example an
+exhausted session limit), or the session did not initialize in auto mode (no system/init event, or one whose
+permissionMode is not auto: 'not-auto-mode', with the observed mode recorded); when several apply, the reason is the
+first of missing-result, api_error, and not-auto-mode. Invalid trials are kept on disk and reported separately, never
+counted as clean. Any other errored turn (for example subtype error_max_turns) leaves the trial valid, and record.json
+and the summary name its error subtype.
 Denials come from structured events, one per tool_use_id: a system/permission_denied event whose decision_reason_type is
 classifier is a classifier denial (kind: its bracketed rule name; classifier-error when the event's decision_reason or
 message reports a Stage 2 error, that the classifier cannot determine the action's safety, or that it is unavailable;
@@ -21,9 +23,9 @@ reparse.py applies the same assess() and bucket() to saved streams. A watchdog b
 trial's `killed` diagnostic ('total-limit' or 'idle-limit') and counted in the summary's killed_trials and killed_limits,
 while `invalid` stays derived from the stream alone: a kill before the final result event leaves the trial invalid
 (missing-result), and one after it does not by itself invalidate the trial.
-turns, plugin_dirs, and append_system expand $FX (the fixture dir), $PLUGIN (CLASSIFIER_CONSENT_PLUGIN, else the working
-tree's plugins/versionkeeping), $VK (that plugin's publication scripts), and $RIG (this directory); a setup snippet runs
-unexpanded and reads FX, PLUGIN, VK, and RIG from its environment.
+turns, plugin_dirs, and append_system expand $FX (the fixture dir), $PLUGIN (CLASSIFIER_CONSENT_PLUGIN, made absolute
+against the current directory, else the working tree's plugins/versionkeeping), $VK (that plugin's publication scripts),
+and $RIG (this directory); a setup snippet runs unexpanded and reads FX, PLUGIN, VK, and RIG from its environment.
 CASE.json fields:
   name            label
   fixture         "push" | "push-worktree" | "none" | path to a shell script taking DIR (default "push")
@@ -56,7 +58,7 @@ agent.
 import argparse, collections, json, os, re, signal, subprocess, sys, tempfile, threading, time, shutil, uuid
 HERE=os.path.dirname(os.path.abspath(__file__))
 REPO=os.path.abspath(os.path.join(HERE,'..','..','..'))
-PLUGIN=os.environ.get('CLASSIFIER_CONSENT_PLUGIN', os.path.join(REPO,'plugins','versionkeeping'))
+PLUGIN=os.path.abspath(os.environ.get('CLASSIFIER_CONSENT_PLUGIN', os.path.join(REPO,'plugins','versionkeeping')))
 VK=os.path.join(PLUGIN,'skills','checkpointing-and-publishing-git-work','scripts')  # the plugin under test's own scripts
 def expand(text,fxdir): return text.replace('$FX',fxdir).replace('$VK',VK).replace('$PLUGIN',PLUGIN).replace('$RIG',HERE)
 ENVELOPE=re.compile(r'denied by the Claude Code auto mode classifier\.(?: Reason: (.*?)(?:\. |$))?',re.S)
@@ -314,7 +316,7 @@ def main():
         print(f"trial {i}: {'INVALID('+rec['invalid']+')' if rec['invalid'] else rec['bucket']} {'killed='+rec['killed']+' ' if rec['killed'] else ''}mode={rec['mode']} tool_uses={len(rec['tool_uses'])} denials={d} {'mismatch='+str(rec['mismatch'])+' ' if rec['mismatch'] else ''}{'errors='+str(rec['errors'])+' ' if rec['errors'] else ''}outcome={rec['outcome']} cost=${rec['cost']:.3f}",flush=True)
         i+=1
     valid=[r for r in recs if not r['invalid']]; n=len(valid); b=collections.Counter(r['bucket'] for r in recs); exp=case.get('expect') or {}
-    summary={'case':case['name'],'model':a.model,'trials':n,'invalid_trials':len(recs)-n,'trials_with_denial':b['denied'],
+    summary={'case':case['name'],'model':a.model,'requested_trials':a.trials,'attempts':len(recs),'complete':n>=a.trials,'trials':n,'invalid_trials':len(recs)-n,'trials_with_denial':b['denied'],
              'trials_with_classifier_denial':sum(1 for r in valid if any(x['source']=='classifier' for x in r['denials'])),
              'no_effect_trials':b['no-effect'],'clean_trials':b['clean'],'denial_rate':b['denied']/n if n else None,
              'kinds':dict(collections.Counter(x['kind'] for r in valid for x in r['denials'])),
@@ -324,4 +326,5 @@ def main():
              'killed_limits':dict(collections.Counter(r['killed'] for r in recs if r['killed'])),'total_cost':sum(r['cost'] for r in recs),'out':out}
     json.dump(summary,open(os.path.join(out,'summary.json'),'w'),indent=1)
     print('SUMMARY',json.dumps(summary))
+    if not summary['complete']: sys.exit(f"harness: incomplete run: {n} of {a.trials} requested valid trials after {len(recs)} attempts; see {os.path.join(out,'summary.json')}")
 if __name__=='__main__': main()

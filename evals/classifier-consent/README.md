@@ -45,7 +45,11 @@ error such as an exhausted session limit, or the session did not initialize in
 auto mode (no `system/init` event arrives, or one reports a `permissionMode`
 other than `auto`), and the first of these that applies names it: the harness
 keeps it on disk, reports it separately with the observed mode, and runs
-another, up to twice the requested count. Any other errored turn, such as one
+another, up to twice the requested count. The summary records the requested
+count, the attempts, and whether the run is `complete`; if the limit is reached
+with fewer valid trials than requested, `complete` is false and the harness
+exits nonzero after writing it, so `run_red_green.sh` stops rather than compare
+an underfilled arm. Any other errored turn, such as one
 that exhausts `--max-turns`, leaves the trial valid; its denials count, and
 `record.json` and the summary name the error subtype. When the watchdog kills a
 trial (at 900 seconds, or after 300 without a stream line), `record.json` names
@@ -80,7 +84,8 @@ inventory from reading them as one. Case fields
 are documented at the top of `rig/harness.py`; in turns, plugin directories, and
 the appended system prompt, `$FX`, `$PLUGIN`, `$VK`, and `$RIG` expand to the
 fixture directory, the plugin under test
-(`CLASSIFIER_CONSENT_PLUGIN`, else the working tree's `plugins/versionkeeping`),
+(`CLASSIFIER_CONSENT_PLUGIN`, else the working tree's `plugins/versionkeeping`;
+a relative override resolves against the current directory),
 that plugin's publication scripts
 (`$PLUGIN/skills/checkpointing-and-publishing-git-work/scripts`), and this rig.
 A `setup` snippet runs unexpanded and reads `FX`, `PLUGIN`, `VK`, and `RIG`
