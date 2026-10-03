@@ -1,0 +1,53 @@
+{
+  "schema": "commit-observation-third-attempt-facts/v1",
+  "source_revision": "cd83ef70e4585e4a82724634118fac31f88b1689",
+  "receipt_sha256": "15b37f07fd181656c7ec78002dd31a0afc09fbc6bdb5ec2971bade0e9ca5e520",
+  "manifest_sha256": "f490a6a8f1762c0f33a072dfcf3fa4807f1b6dd7bf639f3dafb5846238a7cff0",
+  "receipt_status": "native-incomplete",
+  "controller_started": true,
+  "started_at": "2026-10-03T23:35:10.314515+00:00",
+  "ended_at": "2026-10-03T23:35:10.385905+00:00",
+  "controller_interval_seconds": 0.07139,
+  "attempt_root_records": {
+    "profile-discovery-stdout.log": "d51c304579a97d007813e09adfa367e0411dbde766f67a42914786cce953fa17",
+    "profile-discovery-stderr.log": "3e04c1bf1eeec899dc85a454da6f8ed8f535660cf63bf22c76f54ec110adc3fc",
+    "profile-discovery-sent.jsonl": "f89c13fb0f33ed011f481c68e4d129a9c4e7f208865ddbc0f3e4651e1dca8552",
+    "profile-discovery-undelivered-stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profile-discovery-process.json": "3fd9efa4d84cd9120d7fb3182980542e34d23a5c3007ae155d652231407c4046",
+    "profile.json": "a9c4ea468e71ec2c108523e76460b407037c22f26a29affad33a86adc93fc0fe",
+    "manifest.json": "f490a6a8f1762c0f33a072dfcf3fa4807f1b6dd7bf639f3dafb5846238a7cff0",
+    "reservation.json": "aee1b93de0125cefb362a1ba3857e89639b90fb3a3c6f032691c478745d5fcda"
+  },
+  "git_state_unchanged": true,
+  "fixture_files_unchanged": true,
+  "observer_record_count": 0,
+  "error": "ValueError: authoring profile source drift: [installed Codex configuration]",
+  "native_process_launched": false,
+  "failure_boundary": "verify_profile, before command construction, version subprocess, or native transport",
+  "config_identities": {
+    "old": {
+      "bytes": 51583,
+      "sha256": "278a54cfc74bd08f52b37099fc5b8f2b502915f24db49c487c8f880fb7aeff12"
+    },
+    "new": {
+      "bytes": 51650,
+      "sha256": "e202d3b198cbf987ef4db225cd73f6305834172a4eac26d957bff8025c7e4bfd"
+    }
+  },
+  "semantic_config_delta": "unknown; historical bytes were not retained",
+  "fresh_preparation": {
+    "manifest_sha256": "0594b2e364548bb18369468f59324df5b7b6e4d54b1abd5a0f84a593bc3ee676",
+    "skill_count": 179,
+    "connector_count": 12,
+    "connector_evidence": "no exposed tools; thread-runtime disablement remains unqualified",
+    "native_sessions_started": 0,
+    "all_other_profile_fields_equal_after_project_path_normalization": true
+  },
+  "interpretation": {
+    "commit_authoring": "unobserved",
+    "separately_replaceable_review": "unobserved",
+    "thread_runtime_connector_disablement": "unqualified",
+    "task_model_usage": "no native process started in this invocation; no provider usage field",
+    "whole_research_cost": "not measured; preparation, coordination, reviews, and operator effort remain separate"
+  }
+}
