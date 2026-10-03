@@ -1667,6 +1667,77 @@ class PublicationExecutionTests(unittest.TestCase):
         self.assertFalse(result["push_attempted"])
         self.assertEqual(result["reasons"][0]["code"], "REVIEWED_CONFIG_CHANGED")
 
+    def test_reviewed_profile_change_blocks_before_external_boundaries(self) -> None:
+        events = []
+        endpoint = "https://example.invalid/repository.git"
+        destination = self.plan["destination"]
+        host_home = self.root / "host-home"
+        host_config_home = self.root / "host-config"
+        host_home.mkdir()
+        host_config_home.mkdir()
+
+        def record_credential_activation(_repository, _endpoint):
+            events.append("credential_activation")
+
+        def record_default_branch_probe(*_args, **_kwargs):
+            events.append("endpoint_probe")
+            return destination["default_branch_ref"]
+
+        def record_target_probe(*_args, **_kwargs):
+            events.append("endpoint_probe")
+            return self.start
+
+        def record_push(*_args, **_kwargs):
+            events.append("push")
+            return subprocess.CompletedProcess(["git", "push"], 0, "", "")
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                adapter.GIT_CONFIG_PROFILE_ENV: "host-compatible",
+                "HOME": str(host_home),
+                "XDG_CONFIG_HOME": str(host_config_home),
+                "PATH": "/usr/bin:/bin",
+            },
+            clear=False,
+        ):
+            with mock.patch.object(
+                execution,
+                "_endpoint",
+                return_value=(endpoint, destination["endpoint_fingerprint"]),
+            ):
+                with mock.patch.object(
+                    execution.GitRepository,
+                    "enable_https_credentials",
+                    autospec=True,
+                    side_effect=record_credential_activation,
+                ):
+                    with mock.patch.object(
+                        execution,
+                        "_probe_default_branch",
+                        side_effect=record_default_branch_probe,
+                    ):
+                        with mock.patch.object(
+                            execution,
+                            "_probe_ref",
+                            side_effect=record_target_probe,
+                        ):
+                            with mock.patch.object(
+                                execution,
+                                "_run_endpoint",
+                                side_effect=record_push,
+                            ):
+                                result = execute(self.repo, self.plan)
+
+        self.assertEqual(result["status"], "blocked")
+        self.assertFalse(result["push_attempted"])
+        self.assertEqual(result["reasons"][0]["code"], "REVIEWED_CONFIG_CHANGED")
+        self.assertEqual(events, [])
+        self.assertEqual(
+            git(self.remote, "rev-parse", "refs/heads/topic"),
+            self.start,
+        )
+
     def test_target_lease_change_after_review_blocks_before_push(self) -> None:
         remote_only = commit(self.repo, "remote-only")
         git(self.repo, "push", "publish", f"{remote_only}:refs/heads/topic")

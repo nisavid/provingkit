@@ -80,13 +80,17 @@ preservation. Mixed path ownership blocks.
 
 Before planning/executing, read [publication execution](references/publication-execution.md)
 for script routes, effects, trusted handoff, transport, push, and verification.
-The adapter uses the host-compatible Git configuration profile by default and
-supports an explicit `VERSIONKEEPING_GIT_CONFIG_PROFILE=hardened` profile for
-closed-environment publication. Both profiles reject command-valued local/worktree
-settings (including signing programs) and unsafe includes without exposing their
-values. The hardened profile additionally disables implicit commit/tag/push signing
-and closes configuration across all scopes; it permits only HTTPS, SSH, or
-ancestry-guarded local endpoints.
+For the guarded authenticated HTTPS contract—no ambient executable Git
+configuration, one trusted provider, and a fail-closed provider boundary—set
+`VERSIONKEEPING_GIT_CONFIG_PROFILE=hardened` before planning and keep it selected
+through execution. The profile is reviewed plan identity; selecting another profile
+requires a fresh plan and review. The adapter otherwise uses `host-compatible` by
+default. That compatibility profile may inherit effective host configuration and
+providers, so it is outside the guarded contract. Both profiles reject command-valued
+local/worktree settings (including signing programs) and unsafe includes without
+exposing their values. The hardened profile additionally disables implicit
+commit/tag/push signing and closes configuration across all scopes; it permits only
+HTTPS, SSH, or ancestry-guarded local endpoints.
 
 Follow its typed gates exactly. Ordinary publication never deletes a remote ref;
 the separate terminal route requires verified merge and explicit
