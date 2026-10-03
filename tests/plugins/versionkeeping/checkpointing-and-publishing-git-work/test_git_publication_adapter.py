@@ -294,20 +294,28 @@ class RequestTests(unittest.TestCase):
                     return "publish\x00refs/heads/topic"
                 raise AssertionError(args)
 
-            def config_all(self, key):
+            def config_value(self, key):
                 values = {
-                    "branch.topic.pushRemote": ["publish"],
-                    "remote.pushDefault": [],
-                    "push.default": ["simple"],
+                    "branch.topic.pushRemote": "publish",
+                    "remote.pushDefault": None,
+                    "push.default": "simple",
                 }
-                if key == "remote.publish.push":
-                    self.remote_push_reads += 1
-                    return [
-                        "refs/heads/topic"
-                        if self.remote_push_reads == 1
-                        else "refs/heads/topic:refs/heads/changed"
-                    ]
-                return values[key]
+                value = values[key]
+                if value is None:
+                    return None
+                return adapter.ConfigValue(
+                    value=value, scope="local", file="$GIT_DIR/config"
+                )
+
+            def config_all(self, key):
+                if key != "remote.publish.push":
+                    raise AssertionError(key)
+                self.remote_push_reads += 1
+                return [
+                    "refs/heads/topic"
+                    if self.remote_push_reads == 1
+                    else "refs/heads/topic:refs/heads/changed"
+                ]
 
         repo = ChangingConfigRepository()
         request = parse_request(
@@ -1245,6 +1253,145 @@ class RepositoryPlanningTests(unittest.TestCase):
                 error = json.loads(run.stdout)
                 self.assertEqual(error["schema_version"], 1)
                 self.assertEqual(error["error"]["code"], "MALFORMED_INVOCATION")
+
+    def host_config(self, *, xdg=None, home=None):
+        home_dir = self.root / "provenance-home"
+        xdg_dir = self.root / "provenance-config"
+        home_dir.mkdir(exist_ok=True)
+        (xdg_dir / "git").mkdir(parents=True, exist_ok=True)
+        if xdg is not None:
+            (xdg_dir / "git" / "config").write_text(xdg, encoding="utf-8")
+        if home is not None:
+            (home_dir / ".gitconfig").write_text(home, encoding="utf-8")
+        return mock.patch.dict(
+            os.environ,
+            {
+                "HOME": str(home_dir),
+                "XDG_CONFIG_HOME": str(xdg_dir),
+                adapter.GIT_CONFIG_PROFILE_ENV: "host-compatible",
+            },
+        )
+
+    def implicit_plan(self):
+        git(self.repo, "config", "branch.topic.remote", "publish")
+        git(self.repo, "config", "branch.topic.merge", "refs/heads/topic")
+        source = commit(self.repo, "change")
+        return self.plan(raw_request(self.start, source, explicit_destination=None))
+
+    def test_single_valued_key_repeated_in_one_file_is_a_duplicate(self):
+        git(self.repo, "config", "push.default", "simple")
+        git(self.repo, "config", "--add", "push.default", "current")
+        with self.host_config():
+            result = self.implicit_plan()
+
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(
+            result["reasons"],
+            [
+                {
+                    "code": "GIT_CONFIG_DUPLICATE_DEFINITION",
+                    "evidence": {
+                        "key": "push.default",
+                        "scope": "local",
+                        "files": ["$GIT_DIR/config"],
+                    },
+                }
+            ],
+        )
+
+    def test_single_valued_key_in_both_global_files_is_a_duplicate(self):
+        value = "[push]\n\tdefault = simple\n"
+        with self.host_config(xdg=value, home=value):
+            result = self.implicit_plan()
+
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(
+            result["reasons"],
+            [
+                {
+                    "code": "GIT_CONFIG_DUPLICATE_DEFINITION",
+                    "evidence": {
+                        "key": "push.default",
+                        "scope": "global",
+                        "files": ["$XDG_CONFIG_HOME/git/config", "~/.gitconfig"],
+                    },
+                }
+            ],
+        )
+
+    def assert_local_value_overrides_global(self, global_value):
+        git(self.repo, "config", "push.default", "simple")
+        with self.host_config(home=f"[push]\n\tdefault = {global_value}\n"):
+            result = self.implicit_plan()
+
+        self.assertEqual(result["status"], "ready")
+        self.assertEqual(result["destination"]["ref"], "refs/heads/topic")
+
+    def test_local_value_overrides_a_different_global_value(self):
+        self.assert_local_value_overrides_global("nothing")
+
+    def test_local_value_overrides_an_identical_global_value(self):
+        self.assert_local_value_overrides_global("simple")
+
+    def test_include_if_value_overrides_its_including_file(self):
+        config_dir = self.root / "provenance-config" / "git"
+        config_dir.mkdir(parents=True)
+        (config_dir / "override.inc").write_text(
+            "[push]\n\tdefault = simple\n", encoding="utf-8"
+        )
+        xdg = (
+            "[push]\n\tdefault = nothing\n"
+            f'[includeIf "gitdir:{self.repo.resolve()}/"]\n\tpath = override.inc\n'
+        )
+        with self.host_config(xdg=xdg):
+            result = self.implicit_plan()
+
+        self.assertEqual(result["status"], "ready", result["reasons"])
+        self.assertEqual(result["destination"]["ref"], "refs/heads/topic")
+
+    def test_repeat_within_an_included_file_names_it_symbolically(self):
+        config_dir = self.root / "provenance-config" / "git"
+        config_dir.mkdir(parents=True)
+        (config_dir / "override.inc").write_text(
+            "[push]\n\tdefault = simple\n\tdefault = simple\n", encoding="utf-8"
+        )
+        with self.host_config(xdg="[include]\n\tpath = override.inc\n"):
+            result = self.implicit_plan()
+
+        self.assertEqual(
+            result["reasons"],
+            [
+                {
+                    "code": "GIT_CONFIG_DUPLICATE_DEFINITION",
+                    "evidence": {
+                        "key": "push.default",
+                        "scope": "global",
+                        "files": ["$XDG_CONFIG_HOME/git/override.inc"],
+                    },
+                }
+            ],
+        )
+
+    def test_winning_value_moving_to_another_file_blocks_execution(self):
+        git(self.repo, "config", "push.default", "simple")
+        with self.host_config():
+            result = self.implicit_plan()
+            self.assertEqual(result["status"], "ready")
+            git(self.repo, "config", "--unset", "push.default")
+            Path(os.environ["HOME"], ".gitconfig").write_text(
+                "[push]\n\tdefault = simple\n", encoding="utf-8"
+            )
+            plan_bytes = (
+                json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n"
+            ).encode("utf-8")
+            execution = execute_repository(
+                self.repo,
+                plan_bytes,
+                "sha256:" + hashlib.sha256(plan_bytes).hexdigest(),
+            )
+
+        self.assertEqual(execution["status"], "blocked")
+        self.assertEqual(execution["reasons"][0]["code"], "REVIEWED_CONFIG_CHANGED")
 
     def test_simple_without_upstream_is_blocked_at_public_seam(self):
         source = commit(self.repo, "change")

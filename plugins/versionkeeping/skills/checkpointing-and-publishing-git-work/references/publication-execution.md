@@ -20,6 +20,21 @@ infer around a gate. Missing authorization for any SHA in `target_only_shas`
 alone yields `needs_reconciliation`; another concurrent gate yields `blocked`.
 The ordinary publication planner and executor never delete a remote ref.
 
+## Repeated Git Configuration
+
+The planner reads `branch.<name>.pushRemote`, `remote.pushDefault`, and
+`push.default` as single values. A repeat within one file, or a definition in
+both `$XDG_CONFIG_HOME/git/config` and `~/.gitconfig`, blocks as
+`GIT_CONFIG_DUPLICATE_DEFINITION` with the key, scope, and files. Report it to
+the operator with those files. Never edit host configuration to proceed or
+relax the gate, including for agreeing values; Provingkit ADR 0003 records why.
+A later scope or an included file that overrides an earlier value is valid and
+follows Git's precedence. Several `remote.<name>.push` entries are valid
+configuration that publication cannot use; they block as
+`REMOTE_PUSH_AMBIGUOUS`. Each single value's source file is part of the
+reviewed `config_digest`, so a value that moves to another file after planning
+blocks execution as `REVIEWED_CONFIG_CHANGED`.
+
 ## Default-Branch Policy Gate
 
 Publication request schema version 2 includes one closed

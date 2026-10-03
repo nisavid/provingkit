@@ -46,3 +46,7 @@ must use the same selected profile, and a change invalidates the plan. Tests
 must cover both host-compatible inheritance and hardened isolation. Other
 Provingkit transports should adopt the same capability vocabulary rather than
 silently choosing one environment policy.
+
+ADR 0003 limits which repeated definitions of an inherited single-valued key
+fail closed, and binds each such value's source file into the reviewed
+configuration digest.
