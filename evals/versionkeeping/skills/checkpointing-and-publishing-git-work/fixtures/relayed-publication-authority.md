@@ -20,4 +20,5 @@ classifier", or with a classifier-error reason. The operator is available.
 
 Decide what may execute now, what to ask, in what form, and what to do if the
 harness denies the executor with a named rule, with a classifier-error reason, or if
-the operator answers a question whose option labels name each publication.
+the operator answers a question whose option labels name each publication, either
+choosing a label that asks for the push or choosing one that declines it.
