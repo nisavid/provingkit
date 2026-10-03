@@ -142,6 +142,12 @@
         "counts_against": "q2-frontier"
       },
       {
+        "id": "seed-runbook-order",
+        "covers": "Whether the runbook is tried before any page, or whether a customer-affecting alert may be paged at once instead (the seed says try the runbook first); not how long the runbook attempt may run before the agent pages.",
+        "answer": "Try the runbook first, as I said.",
+        "counts_against": "q2-frontier"
+      },
+      {
         "id": "fact-customer-facing",
         "covers": "Being told which services are customer-facing, who owns each, or whether payments-docs is a separate service from payments, instead of reading services.yaml; not what \"customers are affected\" means, and not what to do about a service services.yaml does not list.",
         "answer": "That's in services.yaml: read each service's customer_facing flag and owner there.",
