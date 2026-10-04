@@ -1,0 +1,21 @@
+DONE_WITH_CONCERNS
+
+The retained accounting reconciles, but this episode does not qualify the complete native runtime: the task finished while the controller rejected the observation for missing turn-settings evidence. All 44 frozen input hashes matched before and after review.
+
+The acceptance and reservation bind one invocation to manifest SHA-256 `0594b2e364548bb18369468f59324df5b7b6e4d54b1abd5a0f84a593bc3ee676`, with no automatic retry. The launch receipt spans 125.470495 seconds. The single retained task turn reports 124,348 milliseconds, completed status, and no turn error. The 1.122495-second difference includes controller work outside the turn; it is not an isolated review or model-latency measurement.
+
+The native transport received 513,244 bytes: 492,702 stdout and 20,542 stderr. All received stdout was callback-consumed; the terminal offset equals its length and the undelivered file is empty. Metadata discovery is separate: 115,255 bytes, comprising 113,038 stdout and 2,217 stderr, also without an undelivered tail. Both records are below the 2 MiB retention limit and report process exit code zero. There is no retained-prefix truncation or received-but-undelivered stdout in these records. This does not prove that the server emitted every event the controller expected.
+
+The returned full history matches the raw history response and contains one task turn with 25 distinct tool items: seventeen command executions and eight file changes. Their identities match the controller's observed set. No child dispatch or child history is recorded. The task committed `8c3726d2b373a82fef266e98beb874b7e4da13ab`; final capture reports clean Git status and one matched passive observer record. Frozen message and patch bytes match that record's lengths and hashes, and frozen application-file identities match final capture.
+
+All eleven token-usage updates belong to this thread and turn and match `outcome.json`. For every reported token field, each cumulative-total increment equals that update's `last` field. The final cumulative endpoint reports 350,760 input tokens, 3,092 output tokens, and 353,852 total tokens, with 311,296 cached input tokens, zero cache-write input tokens, and 72 reasoning output tokens. Cached and reasoning counts are reported components, not additions to the total. The final request reports 37,889 input, 84 output, and 37,973 total tokens, including 37,376 cached input and zero reasoning output tokens. Summing cumulative snapshots would double-count. These are protocol-reported usage fields, not billing verification.
+
+Eleven account-rate-limit updates are also retained. Their account-wide percentage snapshots and credit balance do not isolate this episode's quota consumption or monetary cost.
+
+The controller retained the completed history, verified the profile after transport, then failed `require(state["histories"] and state["settings"])` in `native.py`. The settings list is empty, and the raw transcript contains no `thread/settings/updated` event. Startup settings and disabled connector metadata were observed, but the required turn-settings observation remains absent. Do not describe the launch as wholly failed task execution or wholly qualified runtime execution.
+
+Stderr additionally retains MCP startup/authentication warnings, including an HTTP transport authentication error during shutdown. Disabled thread tools do not establish absence of ambient connector startup or network activity; those costs remain unmeasured. This audit makes no containment claim.
+
+The visible commit message is supplied in the commit command. No separate message-review operation or its isolated usage and duration is measurable. Diff inspection and tests are visible, but hidden reasoning and any message-checking share of requests remain unknown.
+
+Preparation, local tests, source corrections, independent reviews, operator interruptions, and earlier attempts remain separate research costs. This packet provides no whole-effort total or general Jev savings claim. Coordinator preservation observations are not portable attestation. No files were changed, workload checks rerun, or native or external calls made. No fifth execution is authorized.

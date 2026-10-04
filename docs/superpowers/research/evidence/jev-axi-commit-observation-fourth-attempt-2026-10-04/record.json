@@ -1,0 +1,18 @@
+{
+  "schema": "passive-commit-observation/v1",
+  "status": "captured",
+  "observed_at": "2026-10-04T01:46:17.125903+00:00",
+  "assessment_performed": false,
+  "artifacts": {
+    "message.bin": {
+      "bytes": 36,
+      "sha256": "a934525de59c84058d7aed7a8abae4ae8d85b212eecc355247bd6c8002f26dfb"
+    },
+    "staged.patch": {
+      "bytes": 6749,
+      "sha256": "46e79aed9b52508a5ea6ba1e1e28b960e9517b966517fb4f36c7a480efd7c81b"
+    }
+  },
+  "index_tree": "4bbf97b1ad8130dc02f280d7182d827ca19c0c1e",
+  "parent": "1d67c027558344b7b905a30d2f1b0aa71033d6d3"
+}

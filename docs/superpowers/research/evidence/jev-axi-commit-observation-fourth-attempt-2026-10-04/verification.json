@@ -1,0 +1,16 @@
+{
+  "runner_source_revision": "cd83ef70e4585e4a82724634118fac31f88b1689",
+  "source_changed": false,
+  "prior_source_checks": 19,
+  "new_source_test_runs": 0,
+  "method_source_unchanged": true,
+  "raw_evidence_hashes_verified": true,
+  "public_projection_checks": "51 frozen dependencies verified by each final reviewer; compressed patch equals retained bytes",
+  "review_sha256": {
+    "outcome": "bc44080554de941125cae975751dda94f5950a5387f42195ca2f980725b00fee",
+    "accounting": "bf28fb003b8599e54c44a39ec1ed6d08b04b2ac93aef1e24da9815a17b999180"
+  },
+  "retained_native_result": "completed task and matched Git capture; incomplete turn-settings qualification",
+  "live_change": false,
+  "automatic_retry": false
+}

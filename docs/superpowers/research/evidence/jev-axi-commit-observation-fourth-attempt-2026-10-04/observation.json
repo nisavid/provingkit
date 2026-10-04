@@ -1,0 +1,171 @@
+{
+  "schema": "passive-commit-fourth-observation/v1",
+  "runner_source_revision": "cd83ef70e4585e4a82724634118fac31f88b1689",
+  "manifest_sha256": "0594b2e364548bb18369468f59324df5b7b6e4d54b1abd5a0f84a593bc3ee676",
+  "receipt_sha256": "307459f215e659a3fd801ab871ae3b532c072d37942979f235188dc3ab489a6e",
+  "started_at": "2026-10-04T01:44:20.156964+00:00",
+  "ended_at": "2026-10-04T01:46:25.627459+00:00",
+  "controller_interval_seconds": 125.470495,
+  "receipt_status": "native-incomplete",
+  "controller_error": "ValueError: native observation incomplete",
+  "task_turn": {
+    "status": "completed",
+    "error": null,
+    "itemsView": "full",
+    "durationMs": 124348
+  },
+  "instruction_and_skill_inventory": "matched prepared profile before task delivery",
+  "startup_connector_count": 12,
+  "startup_connector_states": "all disabled; zero exposed tools",
+  "turn_settings_notifications": 0,
+  "requested_turn_settings": "same model, effort, approval and workspace restrictions as reviewed contract; no effective-settings notification recorded",
+  "native_task_delivery": "one prompt, matching accepted task exactly",
+  "completed_items_by_type": {
+    "userMessage": 1,
+    "agentMessage": 4,
+    "commandExecution": 17,
+    "reasoning": 3,
+    "fileChange": 8
+  },
+  "distinct_tool_items": 25,
+  "child_dispatches": 0,
+  "child_threads": 0,
+  "permission_or_user_input_requests": 0,
+  "git": {
+    "commits": [
+      {
+        "commit": "8c3726d2b373a82fef266e98beb874b7e4da13ab",
+        "matching_observations": [
+          "commit-tsj7flqj"
+        ],
+        "message": "feat: add item report sorting modes\n\n",
+        "parents": [
+          "1d67c027558344b7b905a30d2f1b0aa71033d6d3"
+        ],
+        "tree": "4bbf97b1ad8130dc02f280d7182d827ca19c0c1e"
+      }
+    ],
+    "final_files": {
+      ".gitignore": "5d86ede29257c843ae8e218006ad3b4df6796f5dc427accdbc34a8478163e735",
+      "CONTRIBUTING.md": "8d8718f22f63e0637017af0bbca8cca3faa5a6e131884a4a4f9037a4036f8db7",
+      "Makefile": "ce4efda2d0fe6eef4744cbbebf161d2f22eeaf226b98726af168da7208d71f58",
+      "README.md": "b0373dccfea4f6968e0680654e63c90fc65983d62e2bd9751122c639fa6f9d8d",
+      "data/returns.csv": "ecce250e93f1381e479a44f2b4d6c94422326de465d7fd59af7e500d35a56d42",
+      "data/source.csv": "617cf3e317280150961691934a839c70a7dd6bd801cb95d006aa53b529af16c4",
+      "report.py": "6ddc29733a5280dd2b8d6b9fd3423bb316c12652882265f413fb432673730b05",
+      "reportlib/__init__.py": "0040c39f62bf083eafd9656d62a3e67a70f641f5b9efc7b4d216f2ffb9b49e2f",
+      "reportlib/aggregation.py": "689eaa2ca82bd4e8c7fc1004ecc1cb0e0a3e573306939267ec50bc8d12ec6d96",
+      "reportlib/cli.py": "117b8e825db1712d18718b626064b4b6382034f08018eab506259d7873c63497",
+      "reportlib/parsing.py": "0152631542019366b7b3b12b6633ad1936c059681d84a23ab2657373feee28da",
+      "reportlib/rendering.py": "546b1e2aaf872d7969bdde5cf655cac0c721f1f0931231820fbf149323b2724c",
+      "tests/test_report.py": "4257f0ca089ad8d171aaecebe8baae6a1130b46fa22b9e6c6e8ae27204a3526d"
+    },
+    "git_boundary": "matched",
+    "observations": [
+      {
+        "directory": "commit-tsj7flqj",
+        "metadata": {
+          "artifacts": {
+            "message.bin": {
+              "bytes": 36,
+              "sha256": "a934525de59c84058d7aed7a8abae4ae8d85b212eecc355247bd6c8002f26dfb"
+            },
+            "staged.patch": {
+              "bytes": 6749,
+              "sha256": "46e79aed9b52508a5ea6ba1e1e28b960e9517b966517fb4f36c7a480efd7c81b"
+            }
+          },
+          "assessment_performed": false,
+          "index_tree": "4bbf97b1ad8130dc02f280d7182d827ca19c0c1e",
+          "observed_at": "2026-10-04T01:46:17.125903+00:00",
+          "parent": "1d67c027558344b7b905a30d2f1b0aa71033d6d3",
+          "schema": "passive-commit-observation/v1",
+          "status": "captured"
+        },
+        "retained_files": {
+          "message.bin": {
+            "bytes": 36,
+            "sha256": "a934525de59c84058d7aed7a8abae4ae8d85b212eecc355247bd6c8002f26dfb"
+          },
+          "record.json": {
+            "bytes": 558,
+            "sha256": "d1c55c0258711a961909e6f7ef85365e66d4ad89562001f24381f2f8a7a650f1"
+          },
+          "staged.patch": {
+            "bytes": 6749,
+            "sha256": "46e79aed9b52508a5ea6ba1e1e28b960e9517b966517fb4f36c7a480efd7c81b"
+          }
+        },
+        "valid": true
+      }
+    ],
+    "status_porcelain": ""
+  },
+  "message_equivalence": "same after stripping trailing LF; exact raw message retained",
+  "staged_patch_equivalence": "equals committed diff with observed c/ and i/ prefixes",
+  "observation_equipment": "unchanged",
+  "native_process": {
+    "callback_consumed_stdout_bytes": 492702,
+    "exit_code": 0,
+    "received_bytes": 513244,
+    "retained_prefix_limit": 2097152,
+    "stdout_scope": "raw bytes including undelivered tail; use callback offset for delivered evidence",
+    "terminal_callback_stdout_offset": 492702
+  },
+  "output_bytes": {
+    "native-stdout.log": 492702,
+    "native-stderr.log": 20542,
+    "native-undelivered-stdout.log": 0
+  },
+  "usage_event_count": 11,
+  "final_reported_token_usage": {
+    "last": {
+      "cacheWriteInputTokens": 0,
+      "cachedInputTokens": 37376,
+      "inputTokens": 37889,
+      "outputTokens": 84,
+      "reasoningOutputTokens": 0,
+      "totalTokens": 37973
+    },
+    "modelContextWindow": 258400,
+    "total": {
+      "cacheWriteInputTokens": 0,
+      "cachedInputTokens": 311296,
+      "inputTokens": 350760,
+      "outputTokens": 3092,
+      "reasoningOutputTokens": 72,
+      "totalTokens": 353852
+    }
+  },
+  "usage_limits": "reported fields only; no sum of cumulative snapshots, isolated review cost, dollars, quota conversion or general savings claim",
+  "private_artifact_sha256": {
+    "profile.json": "ae64128fe7b3516de3282caacc357db7c657c8fe349909063c836a82bf4c9303",
+    "manifest.json": "0594b2e364548bb18369468f59324df5b7b6e4d54b1abd5a0f84a593bc3ee676",
+    "reservation.json": "34ef752d1ee16517b8620713ba06296dae671ca822c6c30ea3e08389fe4b0541",
+    "native-stdout.log": "ebd1bf8dda4094a278de0762720723cd26a310d4f5a6a29931fdec0eab585815",
+    "native-stderr.log": "9dbfdbf6ff60ec3dfb2552717facc1ca30563f0c9d446ab4ba04d5c541c450ec",
+    "native-sent.jsonl": "9696a5dc7e90227b71bb44868d3cb3c3f44d0740023105a218cd237443c35834",
+    "native-undelivered-stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-model-selection.json": "01d50135698e0202f5511e4427ec1368d9bfc583fe08222cbcb0a0eef2b668b9",
+    "native-instruction-sources.json": "23f1362f4b5d19eaedf34a2d792cf9327bc0f5a85ca9c133d74b6a7d625a87ba",
+    "native-process.json": "a44e932abbbc1c41f2403699a38b26c78fd9a87ff7db00854984daecbf7bf5eb",
+    "git-evidence.json": "ea68e0920f7fe0175e17b3db84a5d2ddc0c97902ce4c5972586272bd864bd04a",
+    "outcome.json": "434c2c60efb36249feab810ac9e6bf63acb3641844b0fe218e494d98525357e0"
+  },
+  "claim_limits": [
+    "Missing turn-settings event leaves complete runtime qualification unmet.",
+    "One ordinary task and one message; no population error-rate claim.",
+    "No Jev judgment or comparison arm executed.",
+    "Setup, failed attempts, reviews and operator effort remain separate research costs."
+  ],
+  "observed_task_quality_limit": "README total-sort example precedes unlabeled default-order sample output",
+  "message_grade": "materially accurate concise summary",
+  "verified_separately_replaceable_message_review": false,
+  "runtime_warning_limit": "MCP startup and authentication warnings are retained; disabled thread tools do not prove absent ambient startup, connections, or costs.",
+  "public_patch": {
+    "file": "staged.patch.gz",
+    "uncompressed_bytes": 6749,
+    "uncompressed_sha256": "46e79aed9b52508a5ea6ba1e1e28b960e9517b966517fb4f36c7a480efd7c81b",
+    "compressed_sha256": "b4f2eb60557fd72743dd3ee25a8341e13e6af5509e178936d4b9272d0d62e01b"
+  }
+}
