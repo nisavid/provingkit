@@ -1,0 +1,22 @@
+{
+  "source_revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+  "preparation_base": "b7811223315cd0dc9f644b4679585652267df21e",
+  "dependency": "axi-sdk-js 0.1.12; exact source file identities in session-start.md",
+  "final_review_sha256": "b5517fa93862b310e25e02370029d5718e00afdff919b2dacbd8c51860d39448",
+  "frozen_inputs_verified": 45,
+  "checks": [
+    "source and evidence factual review clean on final report revision",
+    "exact worker-result hashes verified",
+    "git diff --check required before commit"
+  ],
+  "new_experimental_native_episodes": 0,
+  "new_jev_requests": 0,
+  "new_runtime_tests": 0,
+  "historical_native_evidence": "Reused scoped reviewed reports; no new native replay or qualification",
+  "public_file_sha256": {
+    "README.md": "35c628d5819d1cd8dc17554eb0f32d1f0a6b05f2af8f0ce49d91abd8a7a40ca8",
+    "review.md": "b5517fa93862b310e25e02370029d5718e00afdff919b2dacbd8c51860d39448",
+    "session-start.md": "3a771b72e1cb7e9653696af7a8e7a0b30319ad8fcd3660c4622b7b738833b3f2",
+    "stop.md": "2357f82fd499ab77fdb0a438a3ac1d79452bf8d9cd338d05b2443ded9104d532"
+  }
+}
