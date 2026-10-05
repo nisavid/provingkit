@@ -1,0 +1,44 @@
+{
+  "kind": "source-preparation",
+  "base": "dec363b5fa8cf5a4fe28d9b5eb119448144f8971",
+  "owning_issues": [
+    436,
+    437
+  ],
+  "accepted_workload": "This research chat next ordinary documentation/research publication; direct operator choice. Execution acceptance is separate.",
+  "retained_first_passes": [
+    {
+      "scope": "staged claims",
+      "sha256": "333b34ffe9cd299356ef9c20bac4180e4bace9e21c27a62c160fb0fbd84b6aea"
+    },
+    {
+      "scope": "publication obligations",
+      "sha256": "e0e2786fbb3ce5495a594de779dea8a53552935982ceff4df46f9fdd780f7026"
+    }
+  ],
+  "integration": "The evidence specification joins both retained first passes; Jev hook/inventory references are attributed to jev-axi. The final contract incorporates the subsequent workload choice. Private dispatch and source-preparation records are retained separately.",
+  "prior_source_preparation_review": {
+    "sha256": "d0652c05217ad8c7182e421955efa58478fecffa5f1575e6a9bdb13487306353",
+    "result": "No actionable findings on the earlier proposal; does not review or accept this concrete contract."
+  },
+  "importer": {
+    "path": "docs/superpowers/research/evidence/jev-axi-passive-observation-2026-10-05/import_records.py",
+    "sha256": "fbfae9b888b95ef4b309eb5f8dcb51e6711126ec26cd4e508d38fe2a78794600",
+    "observed_tests": 11,
+    "result": "passed",
+    "scope": "Synthetic CLI/evidence-package checks only; no new code."
+  },
+  "comparison_procedure": {
+    "path": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+    "sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+    "changed": false
+  },
+  "preparation_costs": {
+    "research_and_review_model_usage": "unknown",
+    "coordinator_active_effort": "unknown",
+    "operator_choice_effort": "unknown",
+    "money": "unknown",
+    "quota": "unknown"
+  },
+  "model_assurance": "Requested gpt-6.1-sol/high; no effective-model or authority-enforcement attestation."
+}

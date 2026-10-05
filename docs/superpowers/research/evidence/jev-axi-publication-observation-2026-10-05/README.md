@@ -1,0 +1,11 @@
+# Observe claim checking and publication obligations
+
+This packet prepares one passive observation of the ordinary publication of these research findings. It joins the collection work in [Freeze a passive observation contract with supported intent and usage inputs](https://github.com/nisavid/provingkit/issues/436) with [Freeze the joint staged-change and publication observation contract](https://github.com/nisavid/provingkit/issues/437). The operator selected this chat's next ordinary research publication as the workload; execution acceptance is recorded separately.
+
+Two independent source investigations found a workable preservation route using the existing importer and ordinary review/publication artifacts. The [evidence specification](evidence-specification.md) distinguishes staged claims from outgoing publication obligations. The [collection method](collection-method.md) retains current intent, check-time identities, usage, and explicit gaps. The [observation contract](observation-contract.md) fixes the proposed invocation and its limits.
+
+The work consumes the maintained [comparison procedure](../../../../../.agents/skills/handling-sys1-incidents/references/comparison-contract.md) unchanged. It builds on the [collection-route research](../jev-axi-collection-routes-2026-10-05/README.md), [workflow-opportunity research](../jev-axi-workflow-opportunities-2026-10-05/README.md), and [existing importer](../jev-axi-passive-observation-2026-10-05/README.md). No new collector or installed convention is introduced.
+
+The unchanged importer passed all eleven existing synthetic CLI/evidence-package checks during preparation. These establish byte preservation and refusal/partial-result behavior, not source completeness, manual relevance selection, consumer benefit, or full accounting. A clean independent review of the preceding source proposal is retained in the preparation record; it does not qualify this later concrete invocation.
+
+The coordinator is also the observed worker. Collection work and possible effects on behavior remain part of the result. This can describe an actual workflow and identify a later comparison opportunity; it cannot establish an unaffected baseline or savings. Existing reliability and cost priorities remain settled. No Jev request, live change, or upstream submission follows from preparation.
