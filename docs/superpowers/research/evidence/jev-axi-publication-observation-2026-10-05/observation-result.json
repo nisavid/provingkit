@@ -1,0 +1,79 @@
+{
+  "kind": "bounded-passive-observation-result",
+  "contract_sha256": "0b42238335814f662c2b22d2c96a723f9c7f1ab24e4e2936e498a8641eabdefd",
+  "private_binding_sha256": "2ed39d91890aa4acb7660657551e17f666b48a01bacfc2945585f72d1b576976",
+  "accepted": true,
+  "observation_status": "ended at local pre-actuation verification gate",
+  "session_source": {
+    "producer_version_reported": "0.155.0-alpha.16.3",
+    "producer_source_correspondence": "unknown",
+    "latest_complete_record": "2026-09-29T23:31:20.467Z",
+    "current_workload_antecedent_spans": 0,
+    "prospective_append_bytes": 0,
+    "selected_session_spans": 0,
+    "admission_identity_matched": true,
+    "terminal_source_identity": "No separate terminal identity record retained; continuity is unavailable from the reviewed artifacts.",
+    "prospective_append_bytes_provenance": "Coordinator-reported single terminal acquisition; no current raw session record captured."
+  },
+  "gate": {
+    "command": "git write-tree",
+    "git_exit": 128,
+    "outer_command_exit": 1,
+    "reason": "shared index lock unavailable in read-only sandbox",
+    "preceding_checks": "Staged path list, reviewed-content SHA-256 comparisons, and staged diff whitespace check completed before the failing call; coordinator-observed, without raw current-session capture.",
+    "measurement_effect": "Coordinator chose to request index-tree identity. Do not attribute this failure to unaided ordinary agent behavior, Jev, or jev-axi."
+  },
+  "terminal_elapsed_seconds": 174.23035461400286,
+  "terminal_elapsed_meaning": "Admission start to coordinator terminal record; not a measured active-effort total.",
+  "import": {
+    "status": "complete",
+    "exit": 0,
+    "selected_spans": 22,
+    "selected_bytes": 120551,
+    "selection_sha256": "4091e49e5840d894531f727acf6dcd72ef7b0f9a923c1d395980f0052fb18712",
+    "receipt_sha256": "07234fdb1fb6f7cd5076ab269baa4e2e939ad8580fd12ab2c59440d714380307",
+    "scope": "Named ordinary artifacts only; complete import does not mean complete observation."
+  },
+  "source_acquisition_through_import": {
+    "bytes": 9769481,
+    "ceiling_bytes": 31522816,
+    "traffic_by_pool": {
+      "prefix": 65536,
+      "boundary_search": 1048576,
+      "antecedents": 8388608,
+      "appended_source": 0,
+      "ordinary_artifacts": 137323,
+      "importer_rereads": 120551,
+      "manifest_read": 8887
+    },
+    "scope": "Source acquisition and planned importer rereads; not total task I/O, model usage, or operator effort. Initial accounting omitted one importer checksum read; corrected with original retained."
+  },
+  "missing_at_terminal": [
+    "original current user messages and amendments",
+    "current native call/result and usage records",
+    "ordinary publication request, ready plan, and execution result",
+    "natural completion, discovery, genuine resumption, and operator checking"
+  ],
+  "assessment_calls_added": 0,
+  "automatic_retries": 0,
+  "substitute_sources": 0,
+  "behavior_assignment": "none",
+  "costs": {
+    "model_tokens": "unknown",
+    "operator_effort": "unknown",
+    "money": "unknown",
+    "quota": "unknown",
+    "comparative_savings": "unestablished"
+  },
+  "later_ordinary_publication": {
+    "outside_observation": true,
+    "source_sha": "a9a6ff9942d01523d0804476d93827f4a25c601c",
+    "status": "verified",
+    "push_attempted": true,
+    "remote": "origin",
+    "ref": "refs/heads/ivan/jev-axi-catalog-reassessment",
+    "plan_sha256": "6d3d53edcaafc3d0a90613b2f0ac4b105f1763faa82c889cd7c525873449aba4",
+    "result_sha256": "74634f1aa7c5b989dbf8d8cd3274632d0beec6cecd1a36e7bb577cb65c74846f"
+  },
+  "preparation_final_review_sha256": "5396a7903bab24f1e52cd7ead8b3a609df7b88dae03f97f62e29c9b216154416"
+}
