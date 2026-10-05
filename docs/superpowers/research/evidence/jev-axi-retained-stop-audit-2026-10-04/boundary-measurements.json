@@ -1,0 +1,181 @@
+{
+  "boundaries": [
+    {
+      "lane": "ordinary",
+      "episode": "claude-parser-discovery",
+      "record": "private/hooks/6bd878587d8d44259af01f3d60c330ce.json",
+      "sha256": "c55a4b7cda92a60e42b65e376e364541efd3f3a4ac7c10eb63ff12ccd96d593c",
+      "observed_at": "2026-10-01T00:35:52.148163+00:00",
+      "post_tool_count": 5,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 362,
+        "diff": 421,
+        "output": 4470
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.052577162,
+      "transcript_read_elapsed_seconds": 0.001058357,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    },
+    {
+      "lane": "ordinary",
+      "episode": "claude-report-sort",
+      "record": "private/hooks/af46de8d5fe64303a356c146764e9fdb.json",
+      "sha256": "0beca0bba968c754c8a892f9e2deadb744b0aaade329c1585149bfcf0d5988a2",
+      "observed_at": "2026-10-01T00:36:48.743736+00:00",
+      "post_tool_count": 3,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 421,
+        "diff": 1516,
+        "output": 3539
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.045181619,
+      "transcript_read_elapsed_seconds": 0.000434946,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    },
+    {
+      "lane": "ordinary",
+      "episode": "claude-report-sort",
+      "record": "private/hooks/7f89b0c86d1342789287693a2fd2d381.json",
+      "sha256": "8ca33ffb93a426f5717a3e7f089722bc670750e4e42eb66cc6a1d51b4557d2e4",
+      "observed_at": "2026-10-01T00:37:03.766895+00:00",
+      "post_tool_count": 5,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 652,
+        "diff": 2387,
+        "output": 5515
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.041293903,
+      "transcript_read_elapsed_seconds": 0.00062983,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    },
+    {
+      "lane": "ordinary",
+      "episode": "claude-report-sort",
+      "record": "private/hooks/c1d1963640c549d49bc41ba66aa50f20.json",
+      "sha256": "6d1fb8f01247584c1c47577dea445f0ae6574177546318cadbaf14f71cda15a0",
+      "observed_at": "2026-10-01T00:37:13.921552+00:00",
+      "post_tool_count": 6,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 567,
+        "diff": 2519,
+        "output": 3925
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.040477059,
+      "transcript_read_elapsed_seconds": 0.000685588,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    },
+    {
+      "lane": "ordinary",
+      "episode": "codex-parser-discovery",
+      "record": "private/hooks/3f7ce3f925e74886a5c88254ff655b03.json",
+      "sha256": "bbbc9733ce95ef35d76666d39450c2f2be5cf89014b9b09379b7a3941676a716",
+      "observed_at": "2026-10-01T00:39:00.347233+00:00",
+      "post_tool_count": 9,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 362,
+        "diff": 421,
+        "output": 12033
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.043347361,
+      "transcript_read_elapsed_seconds": 0.001069756,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    },
+    {
+      "lane": "ordinary",
+      "episode": "codex-report-sort",
+      "record": "private/hooks/3d2baa14beee4ecc9d5185dace7f826a.json",
+      "sha256": "641ccd565b0fdbd9a05bf1ab450cdc37c114a0af2ba9bc2bc89e761fe7d52e81",
+      "observed_at": "2026-10-01T00:40:50.961966+00:00",
+      "post_tool_count": 7,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 421,
+        "diff": 3209,
+        "output": 12032
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.066137807,
+      "transcript_read_elapsed_seconds": 0.001281329,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    },
+    {
+      "lane": "representative",
+      "episode": "codex-representative-report",
+      "record": "private/hooks/f5a878d0c0ab4cff984a91da74fb4083.json",
+      "sha256": "1a7c0eb101521c81089b19dfd202a3b9473abfdfc7be46a12061d061463d015a",
+      "observed_at": "2026-10-01T02:27:56.941796+00:00",
+      "post_tool_count": 19,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 1022,
+        "diff": 15327,
+        "output": 12033
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.069699979,
+      "transcript_read_elapsed_seconds": 0.001613071,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    },
+    {
+      "lane": "representative",
+      "episode": "codex-representative-report",
+      "record": "private/hooks/ba12b00f86954651b77813cf7ecb1041.json",
+      "sha256": "7cb907ca012fcf75640937b01b069188b671381b7df1840694bf13e83e78dc37",
+      "observed_at": "2026-10-01T02:31:07.200353+00:00",
+      "post_tool_count": 35,
+      "native_last_assistant_message_present": true,
+      "stop_hook_active": false,
+      "context_availability": "available",
+      "current_observation_characters": {
+        "job": 1725,
+        "diff": 20035,
+        "output": 12033
+      },
+      "bookkeeping_state_unchanged": true,
+      "bookkeeping_exit_code": 0,
+      "assessment": "omitted_for_passive_qualification",
+      "passive_capture_elapsed_seconds": 0.047496498,
+      "transcript_read_elapsed_seconds": 0.002277001,
+      "cost_scope": "Elapsed intervals of experimental passive capture; no Jev request. Includes capture overhead, not production Stop cost or removable model review cost."
+    }
+  ],
+  "limits": "Intervals overlap; do not sum transcript-read time again. All data are historical. No source, tests, hook, or model executed for this extraction."
+}

@@ -1,0 +1,138 @@
+{
+  "reconciled_at": "2026-10-05T00:40:40.395558+00:00",
+  "missing_selected_original_files": {
+    "ordinary": 88,
+    "representative": 79
+  },
+  "surviving_selected_original_files": {
+    "ordinary": 13,
+    "representative": 21
+  },
+  "changed_surviving_inputs": {
+    "ordinary": 0,
+    "representative": 0
+  },
+  "exact_recovered_files": [
+    {
+      "cohort": "ordinary",
+      "logical_path": "claude-parser-discovery/manifest.json",
+      "sha256": "2da3272f5541e025fb1b851ae89bba41b0765b4679a556679b652e33d4c2880f"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "claude-parser-discovery/private/hook-agreement-000.json",
+      "sha256": "26534229c4bcfb9fd9e5f4ef5e56ba3c535ada41554ea5052585f2cfc4e4c260"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "claude-report-sort/manifest.json",
+      "sha256": "70ae331cc62204108f615220d55a8e7e1575681d7e3056c7b045b0ccc09967eb"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "claude-report-sort/private/hook-agreement-000.json",
+      "sha256": "33180dc404c7b43d55a01dbf897c2bfdb0d8697f28560413b0707c9fad53f2bd"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "claude-report-sort/private/hook-agreement-001.json",
+      "sha256": "c56db56a669be0edb8a47076a15529441138551ce782a45d89a79f8f0f4b2000"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "claude-report-sort/private/hook-agreement-002.json",
+      "sha256": "f2cebabf1d4275b9aa336b4f86e833acd9ed3297d8c8a9a85fe16bd3bb37b63a"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "codex-parser-discovery/manifest.json",
+      "sha256": "48546ebfd2754fc24af587c031893a8a479020a107caa19c383a4b032332abc1"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "codex-parser-discovery/private/hook-agreement-000.json",
+      "sha256": "4d0dd423fde628435344bfdae3d51c828c3be85ce89d140a8842ca593029fda8"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "codex-report-sort/manifest.json",
+      "sha256": "3b25ed9d45e9825ac683ddf1db66c73ba81c1323fdbdb85bb84a103982ceaf1d"
+    },
+    {
+      "cohort": "ordinary",
+      "logical_path": "codex-report-sort/private/hook-agreement-000.json",
+      "sha256": "98ad840328616aa989759e42aade46ad579b94e88536c9a18238f2b1c19d4804"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "claude-representative-report/manifest.json",
+      "sha256": "53667d294061ab493839870db79f2d9bb71d761b5fd3160a400fe5e2bea05b51"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "claude-representative-report/native-process.json",
+      "sha256": "c62de64fe205d6c2cfde9b3a809876e88b9d75a20559e772cabf748ab9bcf591"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "claude-representative-report/private/deliveries/000.json",
+      "sha256": "6730ce098f0df72445f7ae974c0f9321cf19b575eb94cba380b0a51e2b2dd1f3"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "claude-representative-report/private/outcome.json",
+      "sha256": "ee3ed1e206c57a39f66923d28ff89ced9358121699c2ab18a33be0112570e9b3"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/manifest.json",
+      "sha256": "1ce430113ebf12ca76fbb5cef5d0ab9f358e17146f3f1710c2c99990fdce5f3d"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/native-process.json",
+      "sha256": "561d766814cb1b0483911a9d79bba2f580c1f35ba8a901140980cb0a1f948d8a"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/private/deliveries/000.json",
+      "sha256": "78e5cd00ac7023d4512bb74641cd08072413a9aac88ca113a5f8a00eaec1655b"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/private/deliveries/001.json",
+      "sha256": "05a438549ce72c5825e6818126dc8f384ef466a4a683f00af2d18c92811ac14e"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/private/deliveries/002.json",
+      "sha256": "ffbd9b09e6f5aedc6f08f630011cc01608eaa7035525c3f595fe84ea6533aef2"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/private/hook-agreement-000.json",
+      "sha256": "20c60db62f239f504b62a5141e3f5d4a97bbe7e7f12b8406fda3a8168c196d8b"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/private/hook-agreement-001.json",
+      "sha256": "7ebce7ad263fc08ccc806530bc0981d82abca2259d6a9778cd6eceb532da1d37"
+    },
+    {
+      "cohort": "representative",
+      "logical_path": "codex-representative-report/private/outcome.json",
+      "sha256": "28b9d1321c3b57e0982e4fe7b5faac9023b92bd3a81de2da1518868a97581462"
+    }
+  ],
+  "selected_stop_projections": 8,
+  "complete_original_hook_records_recovered": 0,
+  "recovery_method": "Selected pre-pause native CommandExecution outputs retained exact JSON text or parsed fields. Recovered JSON files match their previously frozen SHA-256. Field projections retain their separate tool-output provenance and do not inherit original hook-file identities.",
+  "limits": [
+    "The two experiment roots are absent; the cause is not established.",
+    "No original hook, native stdout, or final project file is reconstructed or claimed recovered.",
+    "Original record identities alone do not retain original content.",
+    "Published historical reports remain historical evidence; this audit cannot freshly verify all their original inputs.",
+    "Two representative final project files already differed from their retained identities before the pause. Their current content was excluded."
+  ],
+  "projection_sha256": "5427b23a1ddb294d4df0395956f8efe3f0eedf5fb21eb17dd2a915bba9f4473d"
+}

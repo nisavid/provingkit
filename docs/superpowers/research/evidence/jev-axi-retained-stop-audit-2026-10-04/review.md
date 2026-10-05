@@ -1,0 +1,22 @@
+# Retained Stop audit: final review
+
+Clean latest factual, accounting, and prose pass for the frozen public audit packet and tracker drafts. I found no actionable error within their stated scope. This pass supports publication of an incomplete audit of surviving evidence; it does not qualify a Stop assessment or establish complete original-record coverage.
+
+## Integrity and reproduced facts
+
+I used research and the frozen handling-sys1-incidents comparison contract. All 85 input SHA-256 values matched before and after inspection. Canonical plan and UTF-8 request hashes matched, and the normalized field-object binding reproduced `052221e37fed83841dbdf7f69b8d9ced535dce1011bdbf2ec9cc2fc6a3122d00`. I performed only read, parse, and hash operations, with no writes, source execution, tests, hooks, new native episodes, provider requests, network, subdelegation, or external action.
+
+The nine selected historical source-record stdout fields reproduce their retained text projections byte for byte. Parsing those outputs reproduces all eight entries in `stop-projections.json`, including ordinary raw selected fields and bookkeeping, and representative completion text and bookkeeping projections. This does not reconstruct complete hook records.
+
+All 22 recovered JSON files appear in the retained source text and match their historical original SHA-256 values: six manifests, eight completed-turn aggregate agreement records, two process records, four delivery records, and two outcomes. `evidence-availability.json` and the frozen resume inventory agree on 88 missing ordinary inputs, 79 missing representative inputs, and 34 surviving matched inputs with no changed survivors. The earlier drift record separately excludes two representative project files. The packet correctly keeps original-hash recovery, field projections, and historical reviews distinct.
+
+## Claim and accounting checks
+
+- `ordinary.md` and the root README attribute requirements to the relevant boundary. The Claude sorting job retains the initial CSV request and latest sorting request while omitting the intervening JSON amendment; the projected diff and output retain JSON. This establishes a context omission, not an observed wrong judgment or useful correction. Parser requests preserve existing tests, and later passing checks supersede retained earlier failures. No new-test obligation is invented for the ordinary report task.
+- `representative.md` distinguishes the completed CSV and JSON turns from the later censored sorting turn. Exact delivery records, aggregate agreements, outcome records, historical artifact checks, and context inspection support that separation. Counts 19 and 35 are bookkeeping counts; aggregate agreements expressly exclude individual native/capture joins. Child exit 0 does not establish whole-task success.
+- The representative job lengths reproduce 1,022 and 1,725 characters; diffs reproduce 15,327 and 20,035, with the latter marking 22,046 total characters. Both output fields have 12,033 characters. The report preserves these limits rather than claiming complete change or verification coverage.
+- `boundary-measurements.json` yields ordinary passive intervals of 40.477–66.138 milliseconds and representative intervals of 47.496 and 69.700 milliseconds. The reports identify nested transcript reads and overlapping launch intervals without adding them again. Historical delivered usage of 847,000 tokens remains separate from the retained post-termination cumulative total of 901,603, which also reproduces from the frozen transcript. Cached and reasoning subsets are not added. Billing, capacity, marginal latency, operator effort, and complete recurring workflow costs remain unknown.
+
+The reports identify no separately removable completion-review step and infer no general utility, replacement benefit, economic ranking, or authority from passive preparation. Missing originals limit independent completeness checks without becoming evidence of failure. The maintained preservation requirement and its unmet retention obligation remain explicit.
+
+The public packet and tracker drafts contain no private absolute paths or unnecessary transcript excerpts. Their next decision remains whether to advance to SessionStart or choose a concrete Stop hypothesis and its evidence needs. They grant no new execution, assignment, rollout, or live-change authority. `PUBLISHED_REVISION` in the tracker draft remains a coordinator substitution for the final reviewed commit.

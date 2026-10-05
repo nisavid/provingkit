@@ -1,0 +1,27 @@
+{
+  "source_revision": "0b6a3d01f7c0b7ffd1193caa32d306536e7348c0",
+  "review": {
+    "sha256": "c555cca53f41dcaaacb4821bb064e3a7eb416c1ab7d4d7f1c8a0977fec82ae49",
+    "frozen_input_count": 85,
+    "result": "clean for incomplete audit of surviving evidence",
+    "full_original_record_audit": false
+  },
+  "public_files": {
+    "docs/superpowers/research/evidence/jev-axi-retained-stop-audit-2026-10-04/README.md": "b783ce8a562f771fa5a966785c4b1f9f3b4e5e87633283d1c65dd0b581482230",
+    "docs/superpowers/research/evidence/jev-axi-retained-stop-audit-2026-10-04/boundary-measurements.json": "062c46d28e31c759259063199e7ffa519ef6f9101178e6508f9df506171b169b",
+    "docs/superpowers/research/evidence/jev-axi-retained-stop-audit-2026-10-04/evidence-availability.json": "0b3e8f583e0d51ac3bf4d20befa3a12935d38c11666c05aa15021eb66e3a7f62",
+    "docs/superpowers/research/evidence/jev-axi-retained-stop-audit-2026-10-04/ordinary.md": "2e791e64f3659eae3a75c8befc693a07d73e9431b579b685c76eea17994f3b4d",
+    "docs/superpowers/research/evidence/jev-axi-retained-stop-audit-2026-10-04/representative.md": "3c7cd64406a82a181c20bd4e4a71eaf3a9b8166b2d79df68a62fd35a6ba22919",
+    "docs/superpowers/research/evidence/jev-axi-retained-stop-audit-2026-10-04/review.md": "c555cca53f41dcaaacb4821bb064e3a7eb416c1ab7d4d7f1c8a0977fec82ae49"
+  },
+  "method": {
+    "path": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+    "sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+    "changed": false
+  },
+  "execution": "No new native experimental episode, Jev request, hook, or test; research models and recovery are separate research costs.",
+  "checks": {
+    "json_syntax": "passed",
+    "machine_local_paths": "absent"
+  }
+}
