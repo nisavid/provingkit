@@ -1,0 +1,67 @@
+{
+  "kind": "bounded passive observation",
+  "contract_revision": "6200373f3b5483709bf16b862c2d5752b7d4feff",
+  "execution_accepted": true,
+  "admission_at": "2026-10-05T13:39:35+00:00",
+  "source_boundary_at": "2026-10-05T13:42:49.571095+00:00",
+  "terminal_collection_at": "2026-10-05T13:45:29.750426+00:00",
+  "stop_reason": "Selected checkpoint reported saved; transition to next controls",
+  "snapshots": 3,
+  "source_read_bytes": {
+    "boundary_scan": 1048576,
+    "antecedents": 8388608,
+    "appended_records": 245526
+  },
+  "selected_record_bytes": 10973,
+  "selected_records": {
+    "antecedent_commentary": 11,
+    "prospective_commentary": 1
+  },
+  "source_turn_ids_match_bound_turn": 12,
+  "import": {
+    "status": "complete",
+    "exit_code": 0,
+    "elapsed_seconds": 0.010993350995704532,
+    "selection_sha256": "a7273fb76ba76d8bda3a4de4eb421f3a73864bfcbfeab3e254f1e35bbc86d933",
+    "scope": "selected spans only"
+  },
+  "consumer_results": {
+    "completion": "One checkpoint statement matches the terminal snapshot; complete requirements, check-time evidence and operator decision are not established.",
+    "discovery": "No retained in-scope choice supports grading; subsequent new-control discovery excluded.",
+    "resumption": "No genuine pause/continuation established.",
+    "operator_effort": "unknown; no ordinary check or resumption observed and no exercise requested."
+  },
+  "costs": {
+    "source_admission_gap_seconds": 194.571095,
+    "active_coordinator_effort": null,
+    "observed_agent_usage": null,
+    "child_usage": null,
+    "billing": null,
+    "quota": null,
+    "operator_effort": null
+  },
+  "limitations": [
+    "Initial source boundary follows admission; intervening work is antecedent, not prospective.",
+    "The bounded antecedent window contained no eligible user-request message.",
+    "Selected verification reports were not independently checked against candidate artifacts.",
+    "Observed usage records were top-level token_usage_record, not the event_msg form in the frozen procedure; counters were not interpreted or aggregated.",
+    "Source message and turn IDs join selected reports to snapshots, not to a complete model prompt or full event history.",
+    "No baseline comparison, benefit, savings, reliability, security or assignment conclusion.",
+    "Checkpoint commentary is retained intact, including discussion of next controls; subsequent activity is not graded."
+  ],
+  "observation_induced": {
+    "worker_messages": 0,
+    "additional_worker_runs": 0,
+    "jev_requests": 0,
+    "live_changes": 0,
+    "automatic_retries": 0
+  },
+  "coordinator_validation": {
+    "initial_attempt": "Failed metadata allowlist assertion after successful import",
+    "source": "coordinator-reported command outcome; private verification note retained",
+    "recovery": "Inspected turn_id and content_item_kinds metadata; verified bound turn and message correspondence",
+    "effort": null,
+    "importer_rerun": false,
+    "observed_worker_failure": false
+  }
+}

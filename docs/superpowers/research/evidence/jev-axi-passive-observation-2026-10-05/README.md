@@ -1,6 +1,6 @@
 # Prepare passive observations of ordinary work
 
-This packet provides a bounded local evidence importer and a proposal for observing real work already in progress. The operator selected passive observation, a brief voluntary effort record, and tests through the import command and its resulting files. The [observation contract](observation-contract.md) is a proposal awaiting execution acceptance.
+This packet provides a bounded local evidence importer and a proposal for observing real work already in progress. The operator selected passive observation, a brief voluntary effort record, and tests through the import command and its resulting files. One invocation of the [observation contract](observation-contract.md) was accepted and completed; its [results and limits](results.md) retain the missing consumer and cost evidence. Further invocations require their own acceptance.
 
 The three consumers remain separate: [completion evidence](https://github.com/nisavid/provingkit/issues/430), [genuine resumption](https://github.com/nisavid/provingkit/issues/432), and [task-relevant discovery](https://github.com/nisavid/provingkit/issues/434). They consume the [published input and measurement preparation](../jev-axi-consumer-observation-preparation-2026-10-05/README.md). The maintained method is [handling-sys1-incidents](../../../../../.agents/skills/handling-sys1-incidents/SKILL.md) and its [comparison contract](../../../../../.agents/skills/handling-sys1-incidents/references/comparison-contract.md). This research packet installs no skill or live hook.
 
@@ -28,4 +28,4 @@ Raw evidence stays local. Public results require a reviewed projection; this sou
 python -m unittest discover -s docs/superpowers/research/evidence/jev-axi-passive-observation-2026-10-05 -p 'test_*.py' -v
 ```
 
-Eleven synthetic CLI checks cover exact span/order preservation, changed input, missing files, existing-result preservation, partial/malformed JSONL, duplicate occurrences, input/index bounds, deeply nested manifests, line-feed record boundaries, and unknown/estimated costs. Tests use real temporary files and subprocess invocation. They establish importer behavior only; no native observation or Jev request has run under this proposal.
+Eleven synthetic CLI checks cover exact span/order preservation, changed input, missing files, existing-result preservation, partial/malformed JSONL, duplicate occurrences, input/index bounds, deeply nested manifests, line-feed record boundaries, and unknown/estimated costs. Tests use real temporary files and subprocess invocation. They establish importer behavior only. One bounded passive observation has since completed; its consumer and measurement limits are recorded in the results. No Jev request ran under this proposal.
