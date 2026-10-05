@@ -1,0 +1,220 @@
+{
+  "source_revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+  "integration_source_revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+  "scope_decision": "https://github.com/nisavid/provingkit/issues/421#issuecomment-5993329236",
+  "research_workers": [
+    {
+      "lane": "completion",
+      "research_ticket": "https://github.com/nisavid/provingkit/issues/429",
+      "consumer_ticket": "https://github.com/nisavid/provingkit/issues/430",
+      "requested_model": "gpt-6.1-sol",
+      "requested_effort": "high",
+      "effective_model_attested": false,
+      "transport_status": "completed",
+      "handback_status": "DONE_WITH_CONCERNS",
+      "original_sha256": "5a41e033d4e47066b7e0a098d7c87c6c5a90dde57b6127a5b4c0532119bfa9fa",
+      "published_sha256": "8218ec89e4b9b1ab599226a48410928c9c892fe08ea551c5144d338eba0856fa",
+      "editorial_changes": [
+        "Normalize integration name to `jev-axi`",
+        "Link selected generated-schema excerpts"
+      ],
+      "dispatch_binding_sha256": "603c15f887c63015aaeb92f7b55972c4ab0767a42ea23690d141d02df22abedb",
+      "verification": {
+        "inputs_matched": 16,
+        "tracked_git_objects_matched": 11,
+        "artifact_sha256": "5a41e033d4e47066b7e0a098d7c87c6c5a90dde57b6127a5b4c0532119bfa9fa",
+        "usable": true
+      }
+    },
+    {
+      "lane": "resumption",
+      "research_ticket": "https://github.com/nisavid/provingkit/issues/431",
+      "consumer_ticket": "https://github.com/nisavid/provingkit/issues/432",
+      "requested_model": "gpt-6.1-sol",
+      "requested_effort": "high",
+      "effective_model_attested": false,
+      "transport_status": "completed",
+      "handback_status": "DONE_WITH_CONCERNS",
+      "original_sha256": "346567217e4af9617cf444cfcdd9d824238d8345e5432f7001d1ede70e0a74cf",
+      "published_sha256": "94408d3b2f14722319c6b4e9c17f46c996f207d7b2cee0e5c7cae419f52e8cfc",
+      "editorial_changes": [
+        "Expand ticket-link label to its full title: 431",
+        "Expand ticket-link label to its full title: 432",
+        "Link selected generated-schema excerpts"
+      ],
+      "dispatch_binding_sha256": "b17fd2862f2cac10169ac80f808011c354ac551772a33a6f7ad7fd07b993d677",
+      "verification": {
+        "inputs_matched": 16,
+        "tracked_git_objects_matched": 10,
+        "artifact_sha256": "346567217e4af9617cf444cfcdd9d824238d8345e5432f7001d1ede70e0a74cf",
+        "usable": true
+      }
+    },
+    {
+      "lane": "discovery",
+      "research_ticket": "https://github.com/nisavid/provingkit/issues/433",
+      "consumer_ticket": "https://github.com/nisavid/provingkit/issues/434",
+      "requested_model": "gpt-6.1-sol",
+      "requested_effort": "high",
+      "effective_model_attested": false,
+      "transport_status": "completed",
+      "handback_status": "DONE_WITH_CONCERNS",
+      "original_sha256": "7b4b9cdce24746c046cdefe7a40cc737d793b28078e2a72402b01d6a49fd9bff",
+      "published_sha256": "22abb91d55f0a2c0cb04b9db3f56944de9f871088f5f73bf8f95351a0d62841d",
+      "editorial_changes": [
+        "Expand ticket-link label to its full title: 433",
+        "Expand ticket-link label to its full title: 434",
+        "Link selected generated-schema excerpts"
+      ],
+      "dispatch_binding_sha256": "c69a974a620994ec45abfca861274c45a18f5a5df3bd1387cca3bcd78a172d6d",
+      "verification": {
+        "inputs_matched": 17,
+        "tracked_git_objects_matched": 11,
+        "artifact_sha256": "7b4b9cdce24746c046cdefe7a40cc737d793b28078e2a72402b01d6a49fd9bff",
+        "usable": true
+      }
+    }
+  ],
+  "extra_sources": [
+    {
+      "repository": "provingkit",
+      "path": "CONTEXT.md",
+      "revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+      "sha256": "7e9dac9fe2bdf9eec0e2cea0f7d3a23c042cbc53de3818b3aa6fced9ee085901"
+    },
+    {
+      "repository": "provingkit",
+      "path": ".agents/skills/handling-sys1-incidents/references/evidence-record.md",
+      "revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+      "sha256": "08923f4920817c839a159e3b6003da6b07fde7df68ad1872927dff59de8bdb9a"
+    },
+    {
+      "repository": "provingkit",
+      "path": "plugins/rolecasting/skills/delegating-cross-agent-work/scripts/native_codex.py",
+      "revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+      "sha256": "ee1b54ae187f3c5ef8f086668802079d72519e0ffeac31b82619e82e8d062e65"
+    },
+    {
+      "repository": "provingkit",
+      "path": "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/profile.py",
+      "revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+      "sha256": "df35b3389d641d17059272777ce17a5d85070dfd39761e774b7e5c363dc39e9c"
+    },
+    {
+      "repository": "provingkit",
+      "path": "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/transport.py",
+      "revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+      "sha256": "0b6dada830dd6dbdff4cb2c4ccd444c6680044ddb00a08041c39c40514a49d8f"
+    },
+    {
+      "repository": "provingkit",
+      "path": "docs/superpowers/research/evidence/jev-axi-commit-observation-2026-10-02/git_state.py",
+      "revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+      "sha256": "aa0637549121620a1bb24f9c7e5613d6b3cb99041bf2f07be0212b4587dad82a"
+    },
+    {
+      "repository": "provingkit",
+      "path": "docs/superpowers/research/evidence/jev-axi-staged-push-preparation-2026-10-04/README.md",
+      "revision": "212939e9ae7dc451f8305bae1d120a483e61e429",
+      "sha256": "af2dd7703d91574bdfda36bbaa099e6c92934664bc8809b3804b88e20a2926ba"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/supervise.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "c33252b34a86d3a31f347b94760cfa51bc7f3953f3bdd20abec2af11899f00f4"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/recipes/questions.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "0019ca5ef45c6fc12edeb2a45cda34979bf74374f711949946dd3481ad7fc017"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/hook.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "d57158d1eb9b2861512c8f2402ae75cbcfc3d405ad324eb8c054be826926f8bc"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/client.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "7fe1684556ccbcb1661b7abd9e95ebfad27fe1310e8e86e0abd3f422a5bccdbe"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/cli.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "4e1104314642f87a0d6e86bbc23db1e997dd13db8501e6e1ea6585d045c36a73"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/batch.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "3386283dbc3c1554399fc33eb7feda39b390b8ccf4962713483e0e9adbbfa40f"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/common.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "11c83b37feaea5c7d2a87f0684c054004e9f1e5539cabbfad581f5a701eafec8"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/files.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "3f4d117599d9f290b2eada5d1a1b10b731e3cbc2a9379775b295fd6efaa05f12"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/find.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "dc6e56ba66ffcc913a11e1e5efc2b75279d9520bfcd6094000e88386af53d1b6"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/home.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "81c1ffe5cb4f5f016bcc90fb412f70aa68485a1a818f91817da2ab8c9150a5a9"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/primitives.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "d2e970ebb0f0305f7b546608f7aaa538684da13a139019e87b13f77c90fe0313"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/commands/table.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "c7cec54a9edc176accd2cc92aea0e0bcc1b0f38ba8d224dd74beb50de503dac1"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/items.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "08109da93f0ac49cd0ee843d4178495e0aaf3f57c1e806319ab5efe4033ca40d"
+    },
+    {
+      "repository": "jev-axi",
+      "path": "src/usage.ts",
+      "revision": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+      "sha256": "2f498e615e6276d9a1c244b873dce4011fdc599f71a6fc315fe6a0aee5c7e2c8"
+    }
+  ],
+  "consumed_comparison_contract_sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+  "observations": {
+    "new_native_behavioral_episodes": 0,
+    "new_jev_requests": 0,
+    "live_changes": 0,
+    "upstream_submissions": 0,
+    "research_worker_attempts": 3,
+    "research_worker_completions": 3,
+    "failed_research_worker_attempts": 0,
+    "operator_effort": "unmeasured",
+    "research_money": "unknown",
+    "production_savings": "not established"
+  },
+  "limits": "Source and preparation findings; no runtime collector qualification, measured benefit, assignment, or execution authority. Native records are same-controller observations, not portable attestation."
+}

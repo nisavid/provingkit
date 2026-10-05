@@ -1,0 +1,24 @@
+{
+  "review_result": "clean",
+  "review_sha256": "452deeef21436ebe52e30cb895b9a7f8b99a77987bdd5633c502d7d53fa3a9a5",
+  "review_binding_sha256": "25b6ee7eb1d32d35d166426e0fc75312c6a5d25a9334c2e6ec824309cbf33fdf",
+  "frozen_inputs_matched": 64,
+  "tracked_frozen_inputs_matched": 36,
+  "reviewed_public_files": {
+    "docs/superpowers/research/evidence/jev-axi-consumer-observation-preparation-2026-10-05/protocol-source-excerpts.json": "6b6ea91499cf1bb614768b0543a0aa0933c74d49e01ed14a8c526cda5aa9d9f6",
+    "docs/superpowers/research/evidence/jev-axi-consumer-observation-preparation-2026-10-05/README.md": "f7ec59ac16af37f78d675cbbf46d4da78ebf228f1b7a605cddedf249733874e1",
+    "docs/superpowers/research/evidence/jev-axi-consumer-observation-preparation-2026-10-05/completion.md": "8218ec89e4b9b1ab599226a48410928c9c892fe08ea551c5144d338eba0856fa",
+    "docs/superpowers/research/evidence/jev-axi-consumer-observation-preparation-2026-10-05/discovery.md": "22abb91d55f0a2c0cb04b9db3f56944de9f871088f5f73bf8f95351a0d62841d",
+    "docs/superpowers/research/evidence/jev-axi-consumer-observation-preparation-2026-10-05/resumption.md": "94408d3b2f14722319c6b4e9c17f46c996f207d7b2cee0e5c7cae419f52e8cfc",
+    "docs/superpowers/research/evidence/jev-axi-consumer-observation-preparation-2026-10-05/research-record.json": "d1c967b4113c3b7160f423d12f228cd63654568def329b9ed8bd6a42667fb2cc"
+  },
+  "schema_values_verified": 43,
+  "schema_source_files": 8,
+  "relative_links_resolved": 11,
+  "pinned_url_targets_verified_by_reviewer": 20,
+  "extra_inspection_limit": "Reviewer reported an oversized local search of retained worker/tool excerpts, unused as evidence; subsequent reads used named sources. No session/config stores or external operation were inspected.",
+  "new_runtime_verification": false,
+  "new_behavioral_episode": false,
+  "new_jev_request": false,
+  "limitations": "Source/artifact review and byte preservation do not qualify a collector, establish benefit, or authorize execution."
+}
