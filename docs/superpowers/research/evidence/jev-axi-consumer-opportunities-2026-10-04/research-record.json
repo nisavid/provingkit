@@ -1,0 +1,86 @@
+{
+  "preparation_base": "450e3556c803182569c8b85f19907aaf499bcd5a",
+  "join_base": "010133a2f1f9548ef49932528a67e36d45c8f0d2",
+  "jev_axi_source": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+  "claim": "Parallel research opportunities and shared preparation; no runtime, utility, or assignment qualification",
+  "research_attempts": [
+    {
+      "role": "completion_evidence",
+      "artifact": "completion-evidence.md",
+      "sha256": "e3bfc856cb7937b16808edc9d6da5c876ec4abd1f09dad586f9ac108272c7ef9",
+      "status": "completed",
+      "frozen_inputs_verified": 10,
+      "dispatch_binding": "2cec11c5fe8f08bb0588ad82df20ad992a0c897f80c5d265274ad80d9409e070",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "portable_evidence": false
+    },
+    {
+      "role": "resumption_continuity",
+      "artifact": "resumption-continuity.md",
+      "sha256": "31dda347a7a929fced73c36c3e5843c29b7897492f86bd63c8ffccbce758114d",
+      "status": "completed",
+      "frozen_inputs_verified": 10,
+      "dispatch_binding": "6817cfc61fded30478e2dddf4eb7d89d0365eb27d9b7f203361b33e9ad49dbe4",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "portable_evidence": false
+    },
+    {
+      "role": "capability_discovery",
+      "artifact": "capability-discovery.md",
+      "sha256": "ecb2c99227e8c4c16df5c970b4601c998cc582aeca58decd3d9ea89edc5107ea",
+      "status": "completed",
+      "frozen_inputs_verified": 8,
+      "dispatch_binding": "aadb468c0b90ca1caca98c385c8d56c9a939ec9fbd08465f8282eeb29b9eca67",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "portable_evidence": false
+    },
+    {
+      "role": "initial design join",
+      "status": "interrupted",
+      "completed_artifact": false,
+      "usable": false,
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "dispatch_binding": "f2fe239952fe5b45331e6f259b564a81316e307034655691e4d8a21841c948ba",
+      "recovery": "Retained attempt; restarted only missing join after confirming no active child or pending external action."
+    },
+    {
+      "role": "join-resume",
+      "artifact": "design-join.md",
+      "sha256": "b1ec9ecfe8ffaf61b1cdd77f7ec1c2788148d7c8699b8eb29173bd0e15b4689d",
+      "status": "completed",
+      "frozen_inputs_verified": 6,
+      "dispatch_binding": "18fb65c6522043b05ad334dd5fb3b1ba4386da0fa40e2e9baeea53ab5060b683",
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "portable_evidence": false
+    }
+  ],
+  "procedure": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+  "procedure_sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+  "new_native_behavioral_episodes": 0,
+  "new_jev_requests": 0,
+  "live_changes": 0,
+  "upstream_submissions": 0,
+  "research_costs": {
+    "model_usage": "not aggregated",
+    "money": "unknown",
+    "operator_effort": "unmeasured",
+    "production_savings": "not established"
+  },
+  "limits": [
+    "Source and retained projections do not establish complete native inputs or readiness.",
+    "No measured operator benefit, useful native intervention, or verified work removed.",
+    "First-pass suggestions are hypotheses; synthesis does not adopt a repeat eight-boundary audit or observed failure as a research prerequisite.",
+    "Alternative placement and operator benefit are accepted research scope; no next purpose or experiment selected.",
+    "Unsettled coordination proposals remain research, not installed procedure."
+  ]
+}

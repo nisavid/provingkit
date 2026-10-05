@@ -1,0 +1,30 @@
+{
+  "base": "010133a2f1f9548ef49932528a67e36d45c8f0d2",
+  "reviewed_public_inputs": {
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/README.md": "e0cf866e2a446e2d5b46554e49a9b3152eef2ceab1df0534767c033b09b46a9f",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/shared-preparation.md": "d7ff28039ed72a7ddcd7edd20c343d766e762721c246a45ec9c122dabcc16fa7",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/completion-evidence.md": "e3bfc856cb7937b16808edc9d6da5c876ec4abd1f09dad586f9ac108272c7ef9",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/resumption-continuity.md": "31dda347a7a929fced73c36c3e5843c29b7897492f86bd63c8ffccbce758114d",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/capability-discovery.md": "ecb2c99227e8c4c16df5c970b4601c998cc582aeca58decd3d9ea89edc5107ea",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/design-join.md": "b1ec9ecfe8ffaf61b1cdd77f7ec1c2788148d7c8699b8eb29173bd0e15b4689d",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/research-record.json": "850c3f8b0ba1cca0772eb68bd519f645a50ad5ba57f6d2601855eb7368edd7c7"
+  },
+  "review_scopes": [
+    "factual support",
+    "scope and acceptance",
+    "accounting and interference",
+    "evidence boundaries",
+    "links and prose"
+  ],
+  "review": "clean",
+  "review_sha256": "4cfd2b2b638bcbe93029a77fa65e134f26ff8a69dc6575edc9c8966f6838a913",
+  "frozen_input_hashes_verified": 25,
+  "review_model_requested": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "effective_model_attested": false
+  },
+  "relative_markdown_links_checked_by_reviewer": 11,
+  "runtime_qualification": false,
+  "benefit_qualified": false
+}
