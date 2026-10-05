@@ -1,0 +1,48 @@
+{
+  "source_revision": "5eb3a02a0d714901ea6f2a480601e6772d1e1d10",
+  "jev_axi_source": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+  "claim": "Workflow opportunity preparation and retained publication facts; no benefit or behavior assignment qualification",
+  "research_attempts": [
+    {
+      "role": "staged_workflow",
+      "artifact": "staged-workflow.md",
+      "artifact_sha256": "012da6067bd3e1f37eafe9f3073831e3088bf981e925bed0c008d4a461ad56e8",
+      "original_handback_sha256": "012da6067bd3e1f37eafe9f3073831e3088bf981e925bed0c008d4a461ad56e8",
+      "status": "completed",
+      "frozen_inputs_verified": 14,
+      "dispatch_binding": "3037c5f1ea67d52417a465f58c693bcbd6034dc13c26e0163b4cc762ee5f8885",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "portable_evidence": false,
+      "editorial_change": null
+    },
+    {
+      "role": "push_workflow",
+      "artifact": "push-workflow.md",
+      "artifact_sha256": "bbc8911984e8f8a679a560d7f829de1871a9d0d462c1f6c747761b6a9c05147c",
+      "original_handback_sha256": "196d0c268946bd4620a19dfa97cd25f941bfe170dbe7dae7e6523adb290606bf",
+      "status": "completed",
+      "frozen_inputs_verified": 14,
+      "dispatch_binding": "bc2cfdaf08896f3b1158c245dee4d7c64116918f65e618bb3cfacec5f6284125",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "portable_evidence": false,
+      "editorial_change": "Ticket link label expanded to its title."
+    }
+  ],
+  "procedure": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+  "procedure_sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+  "new_native_behavioral_episodes": 0,
+  "new_jev_requests": 0,
+  "live_changes": 0,
+  "upstream_submissions": 0,
+  "research_costs": {
+    "model_usage": "not aggregated",
+    "money": "unknown",
+    "operator_effort": "unmeasured",
+    "production_savings": "not established"
+  },
+  "scope": "Staged correctness and push operational obligations; no credential-protection or other security efficacy conclusion"
+}
