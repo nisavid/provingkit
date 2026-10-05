@@ -1,0 +1,27 @@
+{
+  "base": "0d342774f78d730e084eec2144ec5fc7cef598c6",
+  "selected_review_scopes": [
+    "research-method",
+    "factual consistency",
+    "authority",
+    "ownership",
+    "prose"
+  ],
+  "latest_review": "clean",
+  "review_sha256": "5f655aa66c8b260ed8f957e9d0882c9bf8abafb486e5857b64b7a2fb3e596f25",
+  "reviewed_repo_inputs": {
+    "docs/superpowers/research/evidence/jev-axi-exploratory-opportunities-2026-10-04/claude-critique.md": "dfbe4e1cd98250df4b540c72c5ca4e8eabcb24f90c09b4c7ba2e50a93bf320ab",
+    "docs/superpowers/research/evidence/jev-axi-exploratory-opportunities-2026-10-04/purpose-design-exploration.md": "252507c65185c330e552fc97e31906930b8daf08194a617d450f15f9921fc724",
+    "docs/superpowers/research/evidence/jev-axi-exploratory-opportunities-2026-10-04/research-record.json": "15d06036b519da84fb0d206dfdbf1579c4331e0a6acee83083fa0478121319a4",
+    "docs/superpowers/research/evidence/jev-axi-exploratory-opportunities-2026-10-04/primary-opportunities.md": "425aa99a15b9ac6408320c1a7aa889bbe3afb1c206e640c1470e7fa29b13f37e",
+    "docs/superpowers/research/2026-10-04-jev-axi-exploratory-opportunities.md": "66be15ec47ed66898e2f29bc5950556df8143ac9864508bc83508f6bfa76183c"
+  },
+  "frozen_inputs_verified": 19,
+  "source_pages_coordinator_checked": 7,
+  "runtime_qualification": false,
+  "new_behavioral_episodes": 0,
+  "jev_requests": 0,
+  "live_configuration_changes": 0,
+  "upstream_submissions": 0,
+  "limits": "Research hypotheses and source-derived opportunities only; surviving Stop evidence is incomplete. Research-model use and failed research launch are retained separately from behavior experiments."
+}
