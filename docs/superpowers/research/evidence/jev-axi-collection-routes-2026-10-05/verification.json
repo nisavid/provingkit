@@ -1,0 +1,16 @@
+{
+  "reviewed_candidate": {
+    "docs/superpowers/research/evidence/jev-axi-collection-routes-2026-10-05/protocol-source-excerpts.json": "8e8318bf0c32e4cd2d594f55d71e8a0fadb45f4e2f23d83c6da3402c2fae2cd8",
+    "docs/superpowers/research/evidence/jev-axi-collection-routes-2026-10-05/README.md": "b2ea5cbdee1043ed4ac4a3fb2025728653097d1efe106070d7529386e4e75585",
+    "docs/superpowers/research/evidence/jev-axi-collection-routes-2026-10-05/tool-contracts.json": "e87dd589e5ebfeebd873c620802920fa488bfa1adb71cc567a4b42709d90bb34",
+    "docs/superpowers/research/evidence/jev-axi-collection-routes-2026-10-05/intent-and-evidence.md": "74d44cd8030057de822ba60823ce3897966d55a29582568629582b63be84330b",
+    "docs/superpowers/research/evidence/jev-axi-collection-routes-2026-10-05/research-record.json": "35175fab0f7cfe150e4f7c6a4ec0acb413797729e390d2aa50e4892b2d5c70fa",
+    "docs/superpowers/research/evidence/jev-axi-collection-routes-2026-10-05/usage-and-accounting.md": "5a81b490a2ce50c48cb132b39fac5db732076d9fff3b6be385715f5dfa1faa19"
+  },
+  "review_sha256": "0dfd3a75e9b7fb3d6bc5241cfcd3fbc3d92d1605ed25b552cbc8b8eee2f087a0",
+  "review_scope": "source facts, evidence boundaries, consumer/accounting scope, links, prose, projected tracker texts",
+  "result": "clean",
+  "all_frozen_inputs_match": true,
+  "new_tests": "none; documentation/source-projection only",
+  "runtime_qualification": false
+}

@@ -1,0 +1,18 @@
+{
+  "observed_date": "2026-10-05",
+  "source": "Tool definitions supplied to the coordinating Codex invocation; no product version or implementation digest exposed.",
+  "tools": [
+    {
+      "name": "mcp__codex_app__get_usage_limits",
+      "description": "Tools provided by the Codex app.\n\nRead current Codex usage limits for the ChatGPT account signed in on this task's host. Use for questions about usage percentages, remaining limits, or reset times. These limits are shared across the account, not specific to this task. Each window's usedPercent is the percentage consumed; remaining percent is 100 minus usedPercent, clamped to 0-100. windowDurationMins is the window length in minutes and resetsAt is a Unix timestamp in seconds. Prefer rateLimitsByLimitId when available; rateLimits is the legacy single-bucket view. Null or missing values mean unavailable, not zero usage. This read-only tool does not consume a reset or purchase credits. This tool is part of plugin `codex-app-tools`.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__codex_app__get_usage_limits(args: {}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__codex_app__read_thread",
+      "description": "Tools provided by the Codex app.\n\nRead recent status and turn summaries for one thread or chat without opening it. Use page cursors from earlier responses to read older turns. This tool is part of plugin `codex-app-tools`.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__codex_app__read_thread(args: {\n  // Optional cursor for older turns.\n  cursor?: string;\n  // Optional host id returned by create_thread or list_threads.\n  hostId?: string;\n  // Whether to include truncated tool or command outputs.\n  includeOutputs?: boolean;\n  // Maximum characters to keep for each included Codex output or chat message.\n  maxOutputCharsPerItem?: number;\n  // Thread id to inspect.\n  threadId: string;\n  // Maximum number of turns to return.\n  turnLimit?: number;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__codex_app__wait_threads",
+      "description": "Tools provided by the Codex app.\n\nWait for the first of up to eight Codex threads to complete or need attention. New user input ends the wait early. Use timeoutMs: 0 for an immediate snapshot. Commentary never wakes the wait. An up-to-date cursor omits previously delivered final text; a timeout includes compact progress for all targets. Per-target failures are returned in errors. This tool is part of plugin `codex-app-tools`.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__codex_app__wait_threads(args: {\n  // Threads to wait for. The first target that completes or needs attention wins.\n  targets: Array<{\n  // Optional cursor returned by an earlier wait.\n  afterCursor?: string;\n  // Optional host id returned by create_thread or list_threads.\n  hostId?: string;\n  // Thread id to wait for.\n  threadId: string;\n}>;\n  // Maximum event-wait time in milliseconds. A bounded snapshot fetch for fresh progress may add latency. Defaults to 120000.\n  timeoutMs?: number;\n}): Promise<CallToolResult>; };\n```"
+    }
+  ]
+}

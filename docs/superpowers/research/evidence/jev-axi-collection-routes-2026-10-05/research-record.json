@@ -1,0 +1,54 @@
+{
+  "base_revision": "19d6fe44277113d2d65c5f06e70e2c5bcecb9f1e",
+  "purpose": "Source research for bounded collection routes, not a new observation or benefit comparison",
+  "first_passes": {
+    "intent": {
+      "sha256": "74d44cd8030057de822ba60823ce3897966d55a29582568629582b63be84330b",
+      "published_changes": []
+    },
+    "accounting": {
+      "sha256": "ba489babf3e77f68fe13ce4e8afc41894a2bd61b3645ccb75845a5731c8f74bc",
+      "published_changes": [
+        "Resolve repository-root links against immutable base revision.",
+        "Attribute integration source, ledger, and application cache to jev-axi rather than Jev."
+      ]
+    }
+  },
+  "dispatches": {
+    "intent": {
+      "binding": "ecfc2a5cb96498c24132d0a21e6f14033f39afb24dedb9d180ccfaac5665dc3b"
+    },
+    "accounting": {
+      "binding": "0aaf65a43068027494f3073eddc5e2dba1e57c0a4f260d9a581c101e49970d4d"
+    }
+  },
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "effective_model_attestation": false,
+  "portable_execution_attestation": false,
+  "research_workers": 2,
+  "new_observations": 0,
+  "experimental_native_episodes": 0,
+  "jev_requests": 0,
+  "private_chat_reads": 0,
+  "live_changes": 0,
+  "maintained_procedure": {
+    "path": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+    "sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+    "disposition": "Consumed unchanged; proposals remain research, not an installed or qualified collector."
+  },
+  "costs": {
+    "research_and_coordinator_usage": null,
+    "research_active_effort": null,
+    "operator_effort": null,
+    "money": null,
+    "quota": null
+  },
+  "files": {
+    "protocol-source-excerpts.json": "8e8318bf0c32e4cd2d594f55d71e8a0fadb45f4e2f23d83c6da3402c2fae2cd8",
+    "README.md": "b2ea5cbdee1043ed4ac4a3fb2025728653097d1efe106070d7529386e4e75585",
+    "tool-contracts.json": "e87dd589e5ebfeebd873c620802920fa488bfa1adb71cc567a4b42709d90bb34",
+    "intent-and-evidence.md": "74d44cd8030057de822ba60823ce3897966d55a29582568629582b63be84330b",
+    "usage-and-accounting.md": "5a81b490a2ce50c48cb132b39fac5db732076d9fff3b6be385715f5dfa1faa19"
+  }
+}
