@@ -1,0 +1,22 @@
+{
+  "base": "450e3556c803182569c8b85f19907aaf499bcd5a",
+  "reviewed_repo_inputs": {
+    "docs/superpowers/research/2026-09-29-jev-axi-catalog-reassessment.md": "134a1f46863a219ee48bf0b33a7a83126e8d2eaeb3f5a26b59c5003eee3eb7c9",
+    "docs/superpowers/research/2026-10-02-jev-axi-remaining-family-acceptance.md": "3f3eb0a860f8569f9e91917ba530291d64fa3725d6b1504f7577b8604d5a1145",
+    "docs/superpowers/research/2026-10-04-jev-axi-exploratory-opportunities.md": "66be15ec47ed66898e2f29bc5950556df8143ac9864508bc83508f6bfa76183c",
+    ".agents/skills/handling-sys1-incidents/references/comparison-contract.md": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+    "docs/superpowers/research/evidence/jev-axi-staged-push-preparation-2026-10-04/README.md": "af2dd7703d91574bdfda36bbaa099e6c92934664bc8809b3804b88e20a2926ba",
+    "docs/superpowers/research/evidence/jev-axi-staged-push-preparation-2026-10-04/research-record.json": "8bb0512bba22a7a11d8fcf5fe5d72c454c2b94c3430df61efd50222fac859366"
+  },
+  "review_scopes": [
+    "source factual consistency",
+    "evidence boundary",
+    "citations",
+    "prose"
+  ],
+  "review": "clean",
+  "review_sha256": "f25d88cd73fabd4be009f200ba19b349e173831f9f3ad3aee69cd33b53b0f64b",
+  "frozen_input_hashes_verified": 24,
+  "runtime_qualification": false,
+  "security_efficacy_evaluated": false
+}

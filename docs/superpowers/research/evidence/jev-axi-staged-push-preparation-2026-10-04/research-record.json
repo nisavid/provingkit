@@ -1,0 +1,42 @@
+{
+  "source_commit": "a1fe6190c65b528ad5b85cbe276fd4b68bdeb236",
+  "preparation_base": "450e3556c803182569c8b85f19907aaf499bcd5a",
+  "claim": "Static input/output/cache/accounting inventory; no runtime or utility qualification",
+  "source_files": {
+    "src/commands/githooks.ts": "00331e0df18a7a875c608b7a2287f109d0c78b39ec5de94cdd8aec88a73eabd0",
+    "src/commands/diff.ts": "3a5ff661c22a4e94f00d5a157f70e2d055037ddd8be634fa4b2d2da044f20c4e",
+    "src/git.ts": "e622c2ab6f96b47cfc82262b921f5bc9b93ea0130b84a63568ffa3a19a4c6f8c",
+    "src/recipes/questions.ts": "0019ca5ef45c6fc12edeb2a45cda34979bf74374f711949946dd3481ad7fc017",
+    "src/client.ts": "7fe1684556ccbcb1661b7abd9e95ebfad27fe1310e8e86e0abd3f422a5bccdbe",
+    "src/config.ts": "5a7ab3b6666dc14000ac791d37c80c7d9e76b53d8dd5d02600a236c8b7016551",
+    "test/githooks.test.ts": "21af35169ae00ea25e07753185a4835d2ce445299a1172515d04268a73e318b4",
+    "test/git.test.ts": "a0020541b7a4acdaaf54b5fb8fda1071ef2d463584e2f59af9d6f056add3d659",
+    "src/commands/common.ts": "11c83b37feaea5c7d2a87f0684c054004e9f1e5539cabbfad581f5a701eafec8",
+    "src/concurrency.ts": "2b8ffe6732a77e8b16d425f81b9e671b24b2bcafabcf302c31dc59352d1a34ff",
+    "src/items.ts": "08109da93f0ac49cd0ee843d4178495e0aaf3f57c1e806319ab5efe4033ca40d",
+    "src/usage.ts": "2f498e615e6276d9a1c244b873dce4011fdc599f71a6fc315fe6a0aee5c7e2c8",
+    "src/format.ts": "4ac0bc6e9ebd22da072f3c646471f8a845f5a9b1c600ac7b5b2331710af095d2",
+    "src/safety.ts": "ee22ebc58df513796e4c52e295d683e8696831741d83a378593623877532d439",
+    "src/args.ts": "c57da1e9b3a02180e374e83e5f3a89de248ecc595c870389902bd076335740fa",
+    "src/cli.ts": "4e1104314642f87a0d6e86bbc23db1e997dd13db8501e6e1ea6585d045c36a73",
+    "src/stdin.ts": "5e2497c3605a9a0a172d58b7cd1ca2e7eb64161d7a1f3d0ee1b56aaaef360e9b"
+  },
+  "report_sha256": "af2dd7703d91574bdfda36bbaa099e6c92934664bc8809b3804b88e20a2926ba",
+  "research_model_requested": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "effective_model_attested": false
+  },
+  "procedure": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+  "procedure_sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+  "new_native_episodes": 0,
+  "jev_requests": 0,
+  "tests_run": 0,
+  "live_changes": 0,
+  "upstream_submissions": 0,
+  "limits": [
+    "Source findings do not prove installed hooks or native delivery.",
+    "No observed useful correction, removed review work, or measured operator benefit.",
+    "Security effectiveness and authority decisions remain outside this source inventory."
+  ]
+}
