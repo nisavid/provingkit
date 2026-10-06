@@ -1,0 +1,37 @@
+{
+  "observed_at": "2026-10-06T00:31:10.193398+00:00",
+  "coordinator_observed_at": "2026-10-06T00:35:07.599370+00:00",
+  "discovery_counts": {
+    "paths": 15,
+    "device_inode_pairs": 3
+  },
+  "interpretation": "Three filesystem identities appeared through fifteen paths. Alias paths do not establish an active account.",
+  "candidates": [
+    {
+      "description": "original session filename",
+      "worker_size": 134142423,
+      "worker_mtime_utc": "2026-09-29T23:31:20.466710+00:00",
+      "coordinator_size": 134142423,
+      "coordinator_mtime_utc": "2026-09-29T23:31:20.466710+00:00",
+      "same_device_inode_at_coordinator_check": true
+    },
+    {
+      "description": "older suffixed filename",
+      "worker_size": 3321738,
+      "worker_mtime_utc": "2026-09-30T00:35:59.989468+00:00",
+      "coordinator_size": 3321738,
+      "coordinator_mtime_utc": "2026-09-30T00:35:59.989468+00:00",
+      "same_device_inode_at_coordinator_check": true
+    },
+    {
+      "description": "recently modified suffixed filename",
+      "worker_size": 128535267,
+      "worker_mtime_utc": "2026-10-06T00:31:02.730723+00:00",
+      "coordinator_size": 128677178,
+      "coordinator_mtime_utc": "2026-10-06T00:35:07.404562+00:00",
+      "same_device_inode_at_coordinator_check": true
+    }
+  ],
+  "raw_content_read": false,
+  "identity_and_content_qualified": false
+}

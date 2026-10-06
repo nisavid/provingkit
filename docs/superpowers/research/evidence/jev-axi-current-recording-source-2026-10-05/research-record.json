@@ -1,0 +1,45 @@
+{
+  "base_revision": "c61a08227c60906a4ae9901172d4337e4eaa07e9",
+  "first_passes": {
+    "source": {
+      "sha256": "5f46d775862170b7724fde97ae9abe287bcbbb1db274ec88ada4de4d5b27d302",
+      "published_changes": []
+    },
+    "accounting": {
+      "sha256": "452909c5b1b87980bb538fc33fb1bd1a089c07bb5060bb3d1149543401ae029e",
+      "published_changes": [
+        "Resolve root-relative Markdown links against immutable baseline.",
+        "Identify Ivan as repository/scope owner while retaining procedure acceptance as pending."
+      ]
+    }
+  },
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "effective_model_attested": false,
+  "portable_execution_attestation": false,
+  "research_workers": 2,
+  "new_observations": 0,
+  "new_raw_session_content_reads": 0,
+  "chat_tool_invocations": 0,
+  "jev_requests": 0,
+  "live_changes": 0,
+  "source_worker_scope_deviation": {
+    "kind": "Unnecessary memory-registry keyword search outside frozen inputs",
+    "matches": 0,
+    "used_as_evidence": false
+  },
+  "costs": {
+    "research_usage": null,
+    "research_active_effort": null,
+    "operator_effort": null,
+    "money": null,
+    "quota": null
+  },
+  "files": {
+    "README.md": "73503e6ee7e24247b60176a0fc0c1b998a242feba84b44640dc8889a6c1422b9",
+    "acquisition-audit.md": "1e5fb5b073a06c5f70087548e8675a6b61239d5853bf680b31f3f710b1900ff7",
+    "metadata-summary.json": "be21c163f220e9364de24dcedd1a9ab05bd25dbf5e3109dbc566acb5e243984f",
+    "source-mapping.md": "5f46d775862170b7724fde97ae9abe287bcbbb1db274ec88ada4de4d5b27d302",
+    "tool-contracts.json": "c29c7650ebdd519d1b6a2062a34f6f1919cd3d40e646fc62daef2588b08fca43"
+  }
+}

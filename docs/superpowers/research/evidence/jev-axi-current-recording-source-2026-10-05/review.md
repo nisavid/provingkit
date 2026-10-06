@@ -1,0 +1,13 @@
+# Current recording source packet review
+
+No actionable factual, method-proposal, privacy, or prose findings remain in the six-document packet. This verdict covers research and proposed correction only; it does not qualify a recording route or authorize the proposed probe.
+
+I verified all 32 frozen input hashes before and after inspection, and matched the canonical plan, request, and model-selection digests. The published source report matches its retained first pass; the accounting report's changes match `research-record.json::first_passes`: immutable links and pending owner acceptance. Relative links resolve locally, and every immutable repository file link resolves at the cited commit. I did not check network reachability.
+
+`README.md::What I missed` owns the stale-source selection mistake. The retained September 29 source modification time and absent October 5 workload records support rejecting that source before dependent execution. `source-mapping.md` and `metadata-summary.json` distinguish three filesystem identities from fifteen aliases and keep recent modification separate from chat relationship, content coverage, producer/build correspondence, and usage semantics. The frozen protocol projections support paging candidates; `tool-contracts.json` supports exposed summaries without establishing complete events or accounting.
+
+`acquisition-audit.md` preserves the admission gap and unavailable terminal continuity. I recomputed 22 receipt entries totaling 120,551 bytes and both acquisition sums: 9,763,323 and 9,769,481 bytes, differing by the 6,158-byte checksum reread. These retained values fit the 31,522,816-byte ceiling. Later analysis I/O, active effort, model usage, money, quota, and savings remain unmeasured. The observer-selected `git write-tree` gate remains a measurement effect; later publication remains outside the observation.
+
+The proposed correction fits `.agents/skills/handling-sys1-incidents/references/comparison-contract.md`, while Versionkeeping retains checkpoint mechanics. The packet names consumers and makes procedure acceptance and downstream loading explicit without installing unsettled guidance. Its proposed single-candidate windows total at most 1 MiB, retain offsets and before/after identity, discard boundary fragments, and stop on mismatch without retry or source substitution. That probe still requires the separately reserved access grant and can establish only evidence found within its windows. The Daybreak lane remains held.
+
+I inspected no raw sessions or imported source spans and made no metadata discovery, chat calls, network requests, writes, experiments, or subdelegation.
