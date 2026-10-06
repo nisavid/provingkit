@@ -1,0 +1,120 @@
+{
+  "scope": "One accepted current-recording identity probe; not a passive workload observation",
+  "accepted": true,
+  "script_sha256": "f536e73190deca35cfed262893f8a6301aaa4e8c33240ffcf7ee1d10fa5fb393",
+  "private_derived_report_sha256": "6d5151c84c742c44ffd401cb1f7120421340546c93a9339dcab993f0324ec624",
+  "execution_exit_code": 0,
+  "started_at": "2026-10-06T01:29:49.167325+00:00",
+  "finished_at": "2026-10-06T01:29:49.177741+00:00",
+  "outcome": "bounded_fields_retained_for_review",
+  "content_bytes_read": 1048576,
+  "content_limit_bytes": 1048576,
+  "windows": [
+    {
+      "kind": "header",
+      "offset": 0,
+      "bytes": 65536,
+      "sha256": "acba15e423b0de0a4f7901d4ff7c686560af9672f3c95cfe59920f36baafe182"
+    },
+    {
+      "kind": "tail",
+      "offset": 128522301,
+      "bytes": 983040,
+      "sha256": "f2e98394073aa4d0f44787f71d9189d14b46a6b25de021aed1049f58d4fbfcd5"
+    }
+  ],
+  "record_count": 587,
+  "record_shapes": {
+    "event_msg:item_completed": 170,
+    "event_msg:task_started": 1,
+    "event_msg:thread_settings_applied": 3,
+    "event_msg:token_count": 82,
+    "inter_agent_communication_metadata:None": 6,
+    "response_item:agent_message": 6,
+    "response_item:custom_tool_call": 37,
+    "response_item:custom_tool_call_output": 35,
+    "response_item:function_call": 44,
+    "response_item:function_call_output": 44,
+    "response_item:message": 16,
+    "response_item:reasoning": 56,
+    "session_meta:None": 1,
+    "token_usage_record:None": 81,
+    "turn_context:None": 1,
+    "world_state:None": 4
+  },
+  "parsing": [
+    {
+      "offset": 0,
+      "bytes": 65536,
+      "discarded_leading_bytes": 0,
+      "discarded_trailing_bytes": 1737,
+      "leading_boundary_known": true
+    },
+    {
+      "offset": 128522301,
+      "bytes": 983040,
+      "discarded_leading_bytes": 12124,
+      "discarded_trailing_bytes": 0,
+      "leading_boundary_known": false
+    }
+  ],
+  "parse_or_shape_errors": [],
+  "acquisition_errors": [],
+  "identity": {
+    "header_id_matches_selected_chat": true,
+    "header_session_id_matches_selected_chat": true,
+    "expected_filesystem_identity_matched": true,
+    "descriptor_identity_unchanged": true,
+    "path_still_names_descriptor": true,
+    "size_before": 129505341,
+    "size_after": 129505341,
+    "source_mtime_before_utc": "2026-10-06T01:29:48.974845+00:00",
+    "header_producer_metadata": {
+      "timestamp": "2026-09-30T00:38:08.379Z",
+      "cli_version": "0.159.0",
+      "source": "vscode",
+      "originator": "Codex Desktop",
+      "model_provider": "openai"
+    },
+    "current_known_approval_question_call_occurrences": [
+      {
+        "offset": 129324211,
+        "timestamp": "2026-10-06T00:53:02.434Z",
+        "record_type": "function_call"
+      },
+      {
+        "offset": 129328835,
+        "timestamp": "2026-10-06T00:53:02.521Z",
+        "record_type": "function_call_output"
+      }
+    ],
+    "known_original_annotation_text_matches": 0,
+    "known_go_for_it_text_matches": 0,
+    "current_tail_user_record_count": 1,
+    "selected_user_message_contents_retained": false,
+    "producer_build_qualified": false,
+    "usage_semantics_qualified": false,
+    "complete_request_coverage": false,
+    "continuation_or_fork_mechanism_qualified": false
+  },
+  "boundaries": {
+    "new_native_experiments": 0,
+    "jev_requests": 0,
+    "live_changes": 0,
+    "raw_windows_persisted": false,
+    "retained_reasoning_message_command_bodies": false,
+    "probe_invocations_in_coordinator_record": 1,
+    "automatic_retry": false
+  },
+  "costs": {
+    "source_content_acquisition_bytes": 1048576,
+    "subsequent_derived_report_io_bytes": null,
+    "research_and_review_model_usage": null,
+    "preparation_active_effort": null,
+    "collection_active_effort": null,
+    "operator_active_effort": null,
+    "latency_whole_increment": null,
+    "money": null,
+    "quota": null
+  }
+}

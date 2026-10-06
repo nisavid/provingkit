@@ -1,0 +1,34 @@
+{
+  "base_revision": "84ab88aad1802d8b953ea03ac9697bdebe8434df",
+  "first_passes": {
+    "probe_identity_audit": {
+      "sha256": "df26a531641de0c0eb60e4f8555de82842f0bd2718c537f21ab38073931e4914",
+      "published_changes": []
+    },
+    "probe_accounting_audit": {
+      "sha256": "92721830389c31e7846b3e39c19224d2a7f9c6a7f18bc31f5d442fb325c40b45",
+      "published_changes": []
+    }
+  },
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "effective_model_attested": false,
+  "portable_execution_attestation": false,
+  "new_observations": 0,
+  "accepted_source_probe_invocations": 1,
+  "probe_source_sha256": "f536e73190deca35cfed262893f8a6301aaa4e8c33240ffcf7ee1d10fa5fb393",
+  "probe_review_sha256": "28169cf6b6a5e4e3aa8845afcd6cd76b5b79db7506705e1253c2af632b5aea1f",
+  "private_derived_result_sha256": "6d5151c84c742c44ffd401cb1f7120421340546c93a9339dcab993f0324ec624",
+  "public_projection_omits": [
+    "host and account paths",
+    "device/inode values",
+    "chat/item/call identifiers",
+    "raw message, reasoning, command, and output bodies"
+  ],
+  "files": {
+    "README.md": "94eee3bf192197769b0aeb1951c6703c1deb045824791d64d9e6ac804b3b8477",
+    "accounting-audit.md": "92721830389c31e7846b3e39c19224d2a7f9c6a7f18bc31f5d442fb325c40b45",
+    "identity-audit.md": "df26a531641de0c0eb60e4f8555de82842f0bd2718c537f21ab38073931e4914",
+    "probe-result.json": "73e5db27ee20861e87b114c8d1ede47adede661fa86fe9a9812bea247e2a483f"
+  }
+}
