@@ -1,0 +1,20 @@
+{
+  "content_sha256": {
+    "INDEX.md": "73a2a26ca19e205b57a43255192b6fe22d82e3abae28db9515a496384b0b6875",
+    "README.md": "3360cf2f73699aae89ecc2761b59aed9d419d00a4343783571c51bb536c42e02",
+    "final-review-first-findings.md": "8bb6f67257700afe2d80bb4c454f55a3276a8b7d63ebdac4072e98fc115325ac",
+    "final-review.md": "f19104598ca99a864391dba24482b22de4fb4daefad4f16cbd52febfd0ecc9d5",
+    "intent-context-first-pass.md": "9b2cf1dc6dabeef3f34d322da694a9f3a5a37102ff610b9a3f79bf8a2fdbba99",
+    "native-baseline-first-pass.md": "1f0e992f35f00fc7bb6d67237a57888df3e2b882433ff0c8f5a379b7b6119f84",
+    "research-record.json": "c9a52e1c90c7d9c95072ea956c00130f1116d3edba40b6c9f04ab277f1df3e18",
+    "source-review.md": "02908bf48834b6b7c1adee18edb751b76bc03457aa5dca5427a2ef6785a94d13"
+  },
+  "checks": [
+    "Final report copied byte-for-byte; five model handbacks published with documented whitespace-only normalization and both hashes",
+    "Final report matches the final reviewed candidate",
+    "All eight retained attempts completed with no tool items",
+    "Response digests recomputed from retained bytes",
+    "Public record excludes private route identifiers and standing-instruction contents"
+  ],
+  "limits": "The manifest excludes itself. Final source/design review covers README.md; historical reports retain adjudicated mistakes. Packaging verification does not qualify a runtime behavior."
+}

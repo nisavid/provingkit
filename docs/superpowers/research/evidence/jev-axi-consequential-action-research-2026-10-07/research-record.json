@@ -1,0 +1,409 @@
+{
+  "scope": "Two concurrent public-source research analyses, source critique, and two final-review passes. Three harmless READY probes are recorded as apparatus cost. This is research preparation, not a workflow experiment.",
+  "assurance": "Controller-observed reported model and settings; no provider execution attestation. The access program was requested but not returned in observed settings.",
+  "attempts": [
+    {
+      "lane": "ready",
+      "status": "completed",
+      "started_at": "2026-10-07T08:05:09.079331+00:00",
+      "finished_at": "2026-10-07T08:05:13.004120+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "c2e3ac47f4a325469c1a2d5f117e463ec943c721986d5d9f09ac4540b7d80526",
+      "response_bytes": 5,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "ready-proof-01",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 14953,
+              "inputTokens": 14948,
+              "cachedInputTokens": 2944,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 5,
+              "reasoningOutputTokens": 0
+            },
+            "last": {
+              "totalTokens": 14953,
+              "inputTokens": 14948,
+              "cachedInputTokens": 2944,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 5,
+              "reasoningOutputTokens": 0
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "dd4466a56df719d992ebecd95972d1766cc669a31f97acae855aefbd6d063dc8"
+    },
+    {
+      "lane": "intent_context",
+      "status": "completed",
+      "started_at": "2026-10-07T08:06:39.120281+00:00",
+      "finished_at": "2026-10-07T08:11:49.637065+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "2288673c90692d8f06f64447f974d09a9548ed86e7a471cf5514cc866db07c1e",
+      "response_bytes": 17549,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "intent_context-01",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 53756,
+              "inputTokens": 41801,
+              "cachedInputTokens": 0,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 11955,
+              "reasoningOutputTokens": 8286
+            },
+            "last": {
+              "totalTokens": 53756,
+              "inputTokens": 41801,
+              "cachedInputTokens": 0,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 11955,
+              "reasoningOutputTokens": 8286
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "b554e6e74b185917965b0f251c291ca03c1deec8377a0cd5c1055d4a395ffb19"
+    },
+    {
+      "lane": "native_baseline",
+      "status": "completed",
+      "started_at": "2026-10-07T08:06:45.685912+00:00",
+      "finished_at": "2026-10-07T08:10:05.320572+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "141fade012b9d37afdfb2db0c7ca9141a269906e1e0ddd7af7e22ec4326f7612",
+      "response_bytes": 15313,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "native_baseline-01",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 41543,
+              "inputTokens": 33566,
+              "cachedInputTokens": 14720,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 7977,
+              "reasoningOutputTokens": 4963
+            },
+            "last": {
+              "totalTokens": 41543,
+              "inputTokens": 33566,
+              "cachedInputTokens": 14720,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 7977,
+              "reasoningOutputTokens": 4963
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "44e8c9d3b518fe4180cd30d2dcccd74b04bba96968117dee3032ffa5aacf5feb"
+    },
+    {
+      "lane": "ready",
+      "status": "completed",
+      "started_at": "2026-10-07T08:16:50.607455+00:00",
+      "finished_at": "2026-10-07T08:16:56.121671+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "c2e3ac47f4a325469c1a2d5f117e463ec943c721986d5d9f09ac4540b7d80526",
+      "response_bytes": 5,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "ready-proof-02",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 14953,
+              "inputTokens": 14948,
+              "cachedInputTokens": 0,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 5,
+              "reasoningOutputTokens": 0
+            },
+            "last": {
+              "totalTokens": 14953,
+              "inputTokens": 14948,
+              "cachedInputTokens": 0,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 5,
+              "reasoningOutputTokens": 0
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "0384cb7e03f681f9c974ed2d3eb3833726313f2ed12ec8cc3356dc489b9c92d6"
+    },
+    {
+      "lane": "source_review",
+      "status": "completed",
+      "started_at": "2026-10-07T08:18:05.141799+00:00",
+      "finished_at": "2026-10-07T08:22:12.160421+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "ab6651258978b0827c5e7e783608023c5296e24cbcd3d2be90df7aa9109b0db5",
+      "response_bytes": 20932,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "source_review-01",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 69743,
+              "inputTokens": 58474,
+              "cachedInputTokens": 14720,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 11269,
+              "reasoningOutputTokens": 6913
+            },
+            "last": {
+              "totalTokens": 69743,
+              "inputTokens": 58474,
+              "cachedInputTokens": 14720,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 11269,
+              "reasoningOutputTokens": 6913
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "d9a30a269c0c38ebb04d9692ca11c887d00210fbaff02b1e0caf757e83e23de8"
+    },
+    {
+      "lane": "final_review",
+      "status": "completed",
+      "started_at": "2026-10-07T08:28:23.886013+00:00",
+      "finished_at": "2026-10-07T08:29:53.980380+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "1dcb094e615aa1c0f6f805df913fc7b5b4996aa31dcddb5b212f0e70a57d9a91",
+      "response_bytes": 868,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "final_review-01",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 62378,
+              "inputTokens": 58077,
+              "cachedInputTokens": 0,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 4301,
+              "reasoningOutputTokens": 4142
+            },
+            "last": {
+              "totalTokens": 62378,
+              "inputTokens": 58077,
+              "cachedInputTokens": 0,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 4301,
+              "reasoningOutputTokens": 4142
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "f49dcb37d1ca7356eba82ac3351ae70f9ecc8b8dc8c611731084900467fb001e"
+    },
+    {
+      "lane": "ready",
+      "status": "completed",
+      "started_at": "2026-10-07T08:34:50.980831+00:00",
+      "finished_at": "2026-10-07T08:34:54.012445+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "c2e3ac47f4a325469c1a2d5f117e463ec943c721986d5d9f09ac4540b7d80526",
+      "response_bytes": 5,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "ready-proof-03",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 14953,
+              "inputTokens": 14948,
+              "cachedInputTokens": 2944,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 5,
+              "reasoningOutputTokens": 0
+            },
+            "last": {
+              "totalTokens": 14953,
+              "inputTokens": 14948,
+              "cachedInputTokens": 2944,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 5,
+              "reasoningOutputTokens": 0
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "670ab65775215d7fbc58e0ff0347e7cdb9edd6c80c09107740249ac4a16f3997"
+    },
+    {
+      "lane": "final_review",
+      "status": "completed",
+      "started_at": "2026-10-07T08:35:25.646908+00:00",
+      "finished_at": "2026-10-07T08:36:07.661028+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "program_requested": "daybreakBlue",
+      "model_observed": "gpt-daybreak-blue-latest",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "response_sha256": "46bd983ee7f6810ddfb06e8e6b0657fc6e527b43802d255a828ed36dab9f020d",
+      "response_bytes": 393,
+      "effective_settings_evidence": "reported_fields_only; absent fields remain unobserved; no provider execution attestation",
+      "usage_limit": "Reported counters only; complete cost, billed money, and quota effects are not established.",
+      "attempt": "final_review-02",
+      "reported_usage": [
+        {
+          "tokenUsage": {
+            "total": {
+              "totalTokens": 60114,
+              "inputTokens": 58158,
+              "cachedInputTokens": 14720,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 1956,
+              "reasoningOutputTokens": 1888
+            },
+            "last": {
+              "totalTokens": 60114,
+              "inputTokens": 58158,
+              "cachedInputTokens": 14720,
+              "cacheWriteInputTokens": 0,
+              "outputTokens": 1956,
+              "reasoningOutputTokens": 1888
+            },
+            "modelContextWindow": 258400
+          }
+        }
+      ],
+      "result_sha256": "2f47609b94458d2397b2bf84bc5b2da46cb1154371a7d2a1e60113d4e4f489b6"
+    }
+  ],
+  "packet_identities": {
+    "intent_context-packet.md": {
+      "sha256": "c96ec9ae0d51e5bb6aee672b824ec4000b69c3c80540d2b563ad187ec6a1dbf0",
+      "bytes": 112599
+    },
+    "native_baseline-packet.md": {
+      "sha256": "1e59f3ca42f0447258aaf4752886bad51d93738765a2c529a896a5bf25736800",
+      "bytes": 82432
+    },
+    "source-review-packet.md": {
+      "sha256": "4d510c994d41df265219ba897b81b4501a38a14e7da510ee9e4d362e6f98d8f3",
+      "bytes": 186477
+    },
+    "final-review-packet.md": {
+      "sha256": "4c0903b59bcae048c2fcc343966c830377980d8a0a499b8ba77daa99753ff13b",
+      "bytes": 184139
+    },
+    "final-review-packet-r2.md": {
+      "sha256": "8f03b9164d9297f13e29f2fb8b7a1f60ee77532e9308273ccbacc18099d87a14",
+      "bytes": 184695
+    }
+  },
+  "limits": "Reported counters only. Total project cost, billed money, quota attribution, and operator effort are not measured. Each cumulative usage observation remains separate; do not sum repeated cumulative events. Unchanged standing instructions were explicitly approved for this research and review; their contents and private route metadata are omitted.",
+  "reviewed_candidate_sha256": "3360cf2f73699aae89ecc2761b59aed9d419d00a4343783571c51bb536c42e02",
+  "published_report_projections": {
+    "intent-context-first-pass.md": {
+      "retained_original_sha256": "2288673c90692d8f06f64447f974d09a9548ed86e7a471cf5514cc866db07c1e",
+      "published_sha256": "9b2cf1dc6dabeef3f34d322da694a9f3a5a37102ff610b9a3f79bf8a2fdbba99",
+      "transformation": "Remove trailing line whitespace and ensure a terminal newline; original bytes retained separately."
+    },
+    "native-baseline-first-pass.md": {
+      "retained_original_sha256": "141fade012b9d37afdfb2db0c7ca9141a269906e1e0ddd7af7e22ec4326f7612",
+      "published_sha256": "1f0e992f35f00fc7bb6d67237a57888df3e2b882433ff0c8f5a379b7b6119f84",
+      "transformation": "Remove trailing line whitespace and ensure a terminal newline; original bytes retained separately."
+    },
+    "source-review.md": {
+      "retained_original_sha256": "ab6651258978b0827c5e7e783608023c5296e24cbcd3d2be90df7aa9109b0db5",
+      "published_sha256": "02908bf48834b6b7c1adee18edb751b76bc03457aa5dca5427a2ef6785a94d13",
+      "transformation": "Remove trailing line whitespace and ensure a terminal newline; original bytes retained separately."
+    },
+    "final-review-first-findings.md": {
+      "retained_original_sha256": "1dcb094e615aa1c0f6f805df913fc7b5b4996aa31dcddb5b212f0e70a57d9a91",
+      "published_sha256": "8bb6f67257700afe2d80bb4c454f55a3276a8b7d63ebdac4072e98fc115325ac",
+      "transformation": "Remove trailing line whitespace and ensure a terminal newline; original bytes retained separately."
+    },
+    "final-review.md": {
+      "retained_original_sha256": "46bd983ee7f6810ddfb06e8e6b0657fc6e527b43802d255a828ed36dab9f020d",
+      "published_sha256": "f19104598ca99a864391dba24482b22de4fb4daefad4f16cbd52febfd0ecc9d5",
+      "transformation": "Remove trailing line whitespace and ensure a terminal newline; original bytes retained separately."
+    }
+  }
+}
