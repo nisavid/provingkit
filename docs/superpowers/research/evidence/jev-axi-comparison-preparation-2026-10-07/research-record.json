@@ -1,0 +1,39 @@
+{
+  "base": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+  "kind": "worked research preparation; no experiment",
+  "original_reports": {
+    "semantic-first-pass.md": "6c2c6ef7d93617405cbe2449d83a2129beb15fe9ff61b8f4438e158d5c9b4f88",
+    "publication-first-pass.md": "cab3eb07b76d27f8c5454dc9ec0385181d8cb2ec58dbd65439e7edc8bea7ad2c"
+  },
+  "source_inputs": {
+    "base": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+    "inputs": {
+      "CONTEXT.md": "7e9dac9fe2bdf9eec0e2cea0f7d3a23c042cbc53de3818b3aa6fced9ee085901",
+      ".agents/skills/handling-sys1-incidents/SKILL.md": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac",
+      ".agents/skills/handling-sys1-incidents/references/comparison-contract.md": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+      "docs/superpowers/research/evidence/jev-axi-opportunity-join-2026-10-07/README.md": "dee2aade5c60ec64fd42b78b79d97fc00dafaba90904b91f60344676ac10e361",
+      "docs/superpowers/research/evidence/jev-axi-opportunity-join-2026-10-07/staged-publication-critique.md": "3a9d32b3ae81478fb21ea2931a23b0eb2e51438224cb3ed52d3235a5145abb38",
+      "docs/superpowers/research/evidence/jev-axi-publication-observation-2026-10-05/results.md": "9c4cb6a70ae648203df6574ff055adbce9b5cee4e761d23975c72ed86205179e",
+      "docs/superpowers/research/evidence/jev-axi-resumption-study-2026-10-06/results.md": "b9704844d09f0a8d32d76c9d257bbfcb5bb730efe9ecd87b0bdf2360a1deeada",
+      "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/push-workflow.md": "bbc8911984e8f8a679a560d7f829de1871a9d0d462c1f6c747761b6a9c05147c",
+      "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/verification.json": "ddc15fb627aeca4a00be7d8993ae99403365fe36408287f7d294a46857d3faad",
+      "docs/superpowers/research/2026-10-02-jev-axi-remaining-family-acceptance.md": "3f3eb0a860f8569f9e91917ba530291d64fa3725d6b1504f7577b8604d5a1145"
+    }
+  },
+  "mechanical_checks": {
+    "public_inputs_verified": 10,
+    "candidate_additions": 9,
+    "matching_content_records": 7,
+    "separate_review_digest_matches": true,
+    "authored_overlay_digests_match": true
+  },
+  "research_accounting": {
+    "native_research_workers": 2,
+    "cross_informed_review_workers": 1,
+    "complete_usage": "unavailable",
+    "operator_effort": "unmeasured",
+    "comparative_benefit": "unmeasured",
+    "money_and_quota": "unknown"
+  },
+  "authority": "parallel preparation selected; execution and live changes not accepted"
+}

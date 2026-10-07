@@ -1,0 +1,16 @@
+{
+  "base": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+  "reviewed_content": {
+    "README.md": "9c8742be8a7490f466bdd051e42325eb7338643035933a653f78e3ca59a1549f",
+    "publication-first-pass.md": "cab3eb07b76d27f8c5454dc9ec0385181d8cb2ec58dbd65439e7edc8bea7ad2c",
+    "semantic-first-pass.md": "6c2c6ef7d93617405cbe2449d83a2129beb15fe9ff61b8f4438e158d5c9b4f88",
+    "publication-coverage.md": "0b454799717533745c20fdec0ea526ef20b6d3442d7d182f06ad78bea37fcd01",
+    "semantic-support.md": "89fe9f3fd491ea8020a52880c36c8c12a03bed260dc2266fa9473a6bdb9b458c",
+    "research-record.json": "ccd818d891c4e75890e4bf148c076392a5bfb809220eb1759840bbf8e491a789"
+  },
+  "review_sha256": "05e206b4479c62447ae9e3a9755a91ff25389b2f0de8aaccde00ced452449718",
+  "review_result": "clean latest source/design/factual/prose review",
+  "runtime_qualified": false,
+  "benefit_qualified": false,
+  "coordinator_note": "First passes are retained historical reports; current proposals and README carry the adjudicated corrections."
+}
