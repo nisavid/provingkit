@@ -92,7 +92,7 @@
     },
     "plugins/praxis/README.md": {
       "mode": 420,
-      "sha256": "e2bdebff6bd2113a01150f89eb5f953cb0e53978f71cf70879339de12e91467f"
+      "sha256": "acdff5ea14ed64bc755aad0c98ac47d03fcad99f22af58d65cfb406968228e0e"
     },
     "plugins/praxis/plugin.json": {
       "mode": 420,
@@ -100,7 +100,7 @@
     },
     "plugins/praxis/skills/aeon-bell/SKILL.md": {
       "mode": 420,
-      "sha256": "44a1d5885d4f01999b32ba65f0e2441885b175423ea4e6d3164dfafd6f47205d"
+      "sha256": "e7cd96e8913d194782f384d5932073138fcb2de409adffac82154dd330733223"
     },
     "plugins/praxis/skills/aeon-bell/agents/openai.yaml": {
       "mode": 420,
@@ -110,13 +110,17 @@
       "mode": 420,
       "sha256": "0fca362b07239ff6bde3a969590a449fcdf0dea118178e7be5e06060059f9fff"
     },
+    "plugins/praxis/skills/aeon-bell/references/cursor-cloud-agent-adapter.md": {
+      "mode": 420,
+      "sha256": "57bdc54b8674192aefb0b9a414316c37209a005b681e3a2b2b255d4c7f9395b6"
+    },
     "plugins/praxis/skills/aeon-bell/references/engine-cli.md": {
       "mode": 420,
       "sha256": "8c2e4745d06eda884b1bc48b4a2bcd6cc852eb15540e6eb09f8720a4533a0ce5"
     },
     "plugins/praxis/skills/aeon-bell/references/native-harnesses.md": {
       "mode": 420,
-      "sha256": "dd17ff0fe8adb8a89c477314cd35130a8198ae7ca6b198d3a58ea19bbfd67b7f"
+      "sha256": "a74217678cd2726c9fb5b5266accd7c53fd173162fea57d9d43267498a3362b2"
     },
     "plugins/praxis/skills/aeon-bell/references/native-monitor.md": {
       "mode": 420,
@@ -133,6 +137,10 @@
     "plugins/praxis/skills/aeon-bell/scripts/codex_status.py": {
       "mode": 420,
       "sha256": "7a21408c1e3fefa83d5b1907e12593eb2e27e1d18399695e449a6596201d5c5c"
+    },
+    "plugins/praxis/skills/aeon-bell/scripts/cursor_cloud_agent_adapter.js": {
+      "mode": 420,
+      "sha256": "0ba5293cdf809cc7a87e19df23fc47bde03e3623ae6356737781d39177feaa9f"
     },
     "plugins/praxis/skills/aeon-bell/scripts/monitor_binding.js": {
       "mode": 420,
@@ -165,6 +173,10 @@
     "tests/test_aeon_bell_codex_status.py": {
       "mode": 420,
       "sha256": "1c53e1e7d3cd880d91bd98acf9ef79ee7ddf035972b8c55d1c8cccb923e7feee"
+    },
+    "tests/test_aeon_bell_cursor_adapter.py": {
+      "mode": 420,
+      "sha256": "43808bf72467e127731ad13f77efbbb33bac238855208f64a5f798930a69106a"
     },
     "tests/test_aeon_bell_fixtures.py": {
       "mode": 420,

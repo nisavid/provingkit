@@ -108,6 +108,9 @@ harmless probe that Rolecasting requires before Daybreak work.
 - [structured-harness.md](references/structured-harness.md): the structured
   binding load, advance, classification, retry, stop, and qualification
   procedure for clients with serializable state channels.
+- [cursor-cloud-agent-adapter.md](references/cursor-cloud-agent-adapter.md):
+  partial Cursor Cloud Agent target controls, request contract, and unresolved
+  native wait relation; load when composing those controls.
 - [native-harnesses.md](references/native-harnesses.md): native setup and
   qualification for Codex heartbeats, Claude Routines, and Cursor Automations;
   persistence across fresh runs, required controls, and separate evidence joins.

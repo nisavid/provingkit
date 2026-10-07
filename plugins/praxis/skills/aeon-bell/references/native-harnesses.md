@@ -88,7 +88,13 @@ qualified for all three required harnesses:
 | --- | --- | --- |
 | [Codex native heartbeat](https://github.com/nisavid/provingkit/issues/456) | Status adapter and common synthetic controls; complete native binding absent | Scheduling, target continuation, persistence, and ordering unqualified |
 | [Claude Routines](https://github.com/nisavid/provingkit/issues/457) | Complete native binding absent; common tests supply no Claude-specific evidence | Chosen execution surface, scheduling, target continuation, persistence, and ordering unqualified |
-| [Cursor Automations](https://github.com/nisavid/provingkit/issues/458) | Complete native binding absent; common tests supply no Cursor-specific evidence | Chosen execution surface, scheduling, target continuation, persistence, and ordering unqualified |
+| [Cursor Automations](https://github.com/nisavid/provingkit/issues/458) | Cloud Agent continuation controls and controlled complete-cycle tests; native task read cannot prove the registered wait; complete hosting binding absent | Chosen execution surface, scheduling, target continuation, persistence, and ordering unqualified |
+
+The [Cursor Cloud Agent adapter](cursor-cloud-agent-adapter.md) supplies a
+bounded native target mapping through an owner-provided authenticated HTTP
+control. It does not supply Automations scheduling or an installed transport.
+Its native task read leaves the wait-episode relation unresolved; constructed
+task observations in the continuation tests do not qualify that relation.
 
 Update the affected row when its source or evidence changes. For each binding,
 report source implementation, controlled tests, actor application, installed

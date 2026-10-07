@@ -45,6 +45,12 @@ for the required controls, current per-harness gaps, and delivery/activation
 joins. Hosting scheduler, continuation target, and gate provider are separate
 choices. A Claude or Codex package projection supplies no native binding.
 
+The partial [Cursor Cloud Agent target adapter](skills/aeon-bell/references/cursor-cloud-agent-adapter.md)
+maps reads and continuation requests through an owner-provided authenticated
+HTTP control. Its complete-cycle tests use constructed native responses.
+The native read cannot prove the registered wait episode, and the adapter
+supplies neither Automations scheduling nor an installed transport.
+
 The engine directs the monitor through a registry-bound entry. Setup binds
 the existing canonical registry, complete binding-path list, and one native
 heartbeat and returns an entry reference. Each native run calls `monitor
@@ -99,9 +105,11 @@ plugins/praxis/
     ├── references/native-monitor.md              # The complete monitor tick procedure and quiet rules
     ├── references/native-harnesses.md            # Required native bindings, setup, persistence, evidence joins
     ├── references/structured-harness.md          # Structured binding and qualification procedure
+    ├── references/cursor-cloud-agent-adapter.md  # Partial Cursor target controls and unresolved wait relation
     ├── scripts/aeon_bell.py                      # Registry, monitor cycle, and attempt engine
     ├── scripts/codex_status.py                   # Status-only Codex observation adapter
-    └── scripts/monitor_binding.js                # Node-free structured harness binding
+    ├── scripts/monitor_binding.js                # Node-free structured harness binding
+    └── scripts/cursor_cloud_agent_adapter.js      # Node-free Cursor Cloud Agent target mapping
 ```
 
 Both Python scripts are standard-library CLIs with no dependency outside the
@@ -186,13 +194,13 @@ From the repository root:
 
 ```sh
 python -m unittest tests.test_validate_praxis
-python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding tests.test_aeon_bell_fixtures tests.test_aeon_bell_actor_runner
+python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding tests.test_aeon_bell_cursor_adapter tests.test_aeon_bell_fixtures tests.test_aeon_bell_actor_runner
 python scripts/validate_praxis.py .
 ```
 
 - `scripts/validate_praxis.py` is the plugin validator. It checks the manifest
   identity and Claude projection, the topology, skill discovery and resource
-  links, the Python runtime scripts and Node-free ECMAScript resource,
+  links, the Python runtime scripts and Node-free ECMAScript resources,
   fixture inventory and portability, and the content lock. `tests/test_validate_praxis.py` owns it: most cases exercise it
   against temporary synthetic fixtures, and one case requires the checked-in
   source candidate to pass against its content lock.
@@ -205,6 +213,10 @@ python scripts/validate_praxis.py .
   fake `codex` executable on a controlled `PATH` and synthetic auth metadata.
   The binding tests use a pinned Node runner with recording adapters; installed
   operation remains V8-only. None makes live calls.
+- `tests/test_aeon_bell_cursor_adapter.py` drives the real engine and
+  structured binding through complete cycles with controlled Cursor HTTP
+  responses. It observes exact continuation requests, durable attempt
+  outcomes, and an unresolved native wait relation. It makes no live request.
 - `evals/praxis/experiment.json` preserves the controlled discovery and
   application trial history for `aeon-bell` as retained evidence. Discovery ran against a controlled
   catalog, not installed automatic discovery. Each retained record binds

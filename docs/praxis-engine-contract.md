@@ -16,6 +16,7 @@ links to it.
 | Native monitor task: setup, task-state mapping, send and reconcile, quiet rules | [`references/native-monitor.md`](../plugins/praxis/skills/aeon-bell/references/native-monitor.md) |
 | Native harness setup: Codex, Claude, and Cursor controls, persistence, evidence joins | [`references/native-harnesses.md`](../plugins/praxis/skills/aeon-bell/references/native-harnesses.md) |
 | Structured harness binding: exact-value transport, classification, retry, qualification | [`references/structured-harness.md`](../plugins/praxis/skills/aeon-bell/references/structured-harness.md) |
+| Partial Cursor Cloud Agent target controls: native request mapping and unresolved wait relation | [`references/cursor-cloud-agent-adapter.md`](../plugins/praxis/skills/aeon-bell/references/cursor-cloud-agent-adapter.md) |
 
 ## Architecture
 
@@ -82,6 +83,9 @@ assertions) are enumerated in the engine reference.
 - `tests/test_aeon_bell.py`, `tests/test_aeon_bell_codex_status.py`, and
   `tests/test_aeon_bell_binding.py` cover the engine, adapter, and binding
   through their public interfaces against constructed fixtures.
+- `tests/test_aeon_bell_cursor_adapter.py` drives the real complete monitor
+  cycle with controlled Cursor responses. It verifies continuation outcomes
+  and an unresolved native wait relation, not installed behavior.
 - `evals/praxis/experiment.json` preserves the trial history as retained
   evidence, including adverse observations.
 - `evals/praxis/skills/aeon-bell/trigger-evals.json` declares current Boolean
