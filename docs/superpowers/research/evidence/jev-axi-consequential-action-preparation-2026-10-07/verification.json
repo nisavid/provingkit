@@ -1,0 +1,609 @@
+{
+  "scope": "Source-design preparation, not executable/runtime/benefit/adoption qualification.",
+  "candidate_sha256": "5502075bc8f48018d55d917037a45ee5a8d13da36dc2f60eba5173c6055d3739",
+  "source_review_sha256": "b040ed35516a66a6416dfa7492a08c41634c447119d5fe396409e682f3517ce4",
+  "review_packet_sha256": "c4f95f10264c33e70b9f8e44c1667b57e4342f3d6ee798c05e5993d00a7f830b",
+  "json_fences_parsed": 8,
+  "concrete_proposal_texts_parsed": 2,
+  "syntax_claim": "JSON syntax only; no parser implementation or native task ran.",
+  "research_attempts": [
+    {
+      "record": "context-01",
+      "result_sha256": "4d184b12c9953e732deeffe03287ee7a0842a869e6b64a77b80701ee82d52b2b",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T09:16:11.021330+00:00",
+      "finished_at": "2026-10-07T09:20:21.752311+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 40756,
+          "inputTokens": 28574,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 12182,
+          "reasoningOutputTokens": 7239
+        },
+        "last": {
+          "totalTokens": 40756,
+          "inputTokens": 28574,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 12182,
+          "reasoningOutputTokens": 7239
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "destination-01",
+      "result_sha256": "33a2cdf463ce782539bb57474997ba7f0c6b6f803d08da336b5bc6ecc99fe9de",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T09:16:16.372006+00:00",
+      "finished_at": "2026-10-07T09:19:03.135483+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 34205,
+          "inputTokens": 25878,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 8327,
+          "reasoningOutputTokens": 4142
+        },
+        "last": {
+          "totalTokens": 34205,
+          "inputTokens": 25878,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 8327,
+          "reasoningOutputTokens": 4142
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-author-01",
+      "result_sha256": "10a3350b6a3f1f0af5adae865c69539ca47cbe8a761f30996d7ba6616ed34950",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T09:59:50.748705+00:00",
+      "finished_at": "2026-10-07T10:01:47.514377+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 55240,
+          "inputTokens": 48978,
+          "cachedInputTokens": 2944,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 6262,
+          "reasoningOutputTokens": 2411
+        },
+        "last": {
+          "totalTokens": 55240,
+          "inputTokens": 48978,
+          "cachedInputTokens": 2944,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 6262,
+          "reasoningOutputTokens": 2411
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-author-02",
+      "result_sha256": "738e18b85996b63c97d95b91e57ce7abdabec33663ceac2bf7717dcc3f9354b2",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:09:38.109290+00:00",
+      "finished_at": "2026-10-07T10:14:39.717809+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 58562,
+          "inputTokens": 40725,
+          "cachedInputTokens": 9088,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 17837,
+          "reasoningOutputTokens": 6064
+        },
+        "last": {
+          "totalTokens": 58562,
+          "inputTokens": 40725,
+          "cachedInputTokens": 9088,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 17837,
+          "reasoningOutputTokens": 6064
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-author-03",
+      "result_sha256": "a6c0dd04df9c94757854f285f20dee01b6630276ad36618e5f29d6d47207d6be",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:22:53.110019+00:00",
+      "finished_at": "2026-10-07T10:25:42.216376+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 56003,
+          "inputTokens": 47038,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 8965,
+          "reasoningOutputTokens": 5225
+        },
+        "last": {
+          "totalTokens": 56003,
+          "inputTokens": 47038,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 8965,
+          "reasoningOutputTokens": 5225
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-author-04",
+      "result_sha256": "3167a3f48d1dec5cf9e7f08fd323bfb018af581bc530b8707bde5598eb202f97",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:37:37.421239+00:00",
+      "finished_at": "2026-10-07T10:41:24.551458+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 49490,
+          "inputTokens": 37100,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 12390,
+          "reasoningOutputTokens": 5285
+        },
+        "last": {
+          "totalTokens": 49490,
+          "inputTokens": 37100,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 12390,
+          "reasoningOutputTokens": 5285
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-source-review-01",
+      "result_sha256": "0475f15d98b591e96d6ba77f84cb232eb5ae1f19a79fa97a395f4029aeb13b5b",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:03:41.730581+00:00",
+      "finished_at": "2026-10-07T10:07:13.430529+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 48986,
+          "inputTokens": 39257,
+          "cachedInputTokens": 14720,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 9729,
+          "reasoningOutputTokens": 8460
+        },
+        "last": {
+          "totalTokens": 48986,
+          "inputTokens": 39257,
+          "cachedInputTokens": 14720,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 9729,
+          "reasoningOutputTokens": 8460
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-source-review-02",
+      "result_sha256": "c652dc3d569b3ee4acf17bd72ae93bc4a6d53ca7cf2dfebf4b61a38b61a6a701",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:17:31.152883+00:00",
+      "finished_at": "2026-10-07T10:21:03.406781+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 55258,
+          "inputTokens": 45117,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 10141,
+          "reasoningOutputTokens": 8514
+        },
+        "last": {
+          "totalTokens": 55258,
+          "inputTokens": 45117,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 10141,
+          "reasoningOutputTokens": 8514
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-source-review-03",
+      "result_sha256": "6a0b6840b51551b41df52aba059c113ce63307180a717721d37bdc290bee2ea3",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:28:20.029837+00:00",
+      "finished_at": "2026-10-07T10:31:49.720511+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 47366,
+          "inputTokens": 37477,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 9889,
+          "reasoningOutputTokens": 8804
+        },
+        "last": {
+          "totalTokens": 47366,
+          "inputTokens": 37477,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 9889,
+          "reasoningOutputTokens": 8804
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-source-review-04",
+      "result_sha256": "7eed914cb0ccbfefa1a9afb032b5d5b46aba14ee904c08237aca0602b7b54d93",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:43:23.219913+00:00",
+      "finished_at": "2026-10-07T10:44:19.607311+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 42853,
+          "inputTokens": 40309,
+          "cachedInputTokens": 14720,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 2544,
+          "reasoningOutputTokens": 2070
+        },
+        "last": {
+          "totalTokens": 42853,
+          "inputTokens": 40309,
+          "cachedInputTokens": 14720,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 2544,
+          "reasoningOutputTokens": 2070
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-source-review-05",
+      "result_sha256": "323110f3437f7a1865347c2104ac6a7acfbda59bf18f9b7fbb07653c0332e269",
+      "status": "failed",
+      "task_packet_sent": false,
+      "started_at": "2026-10-07T10:47:28.321560+00:00",
+      "finished_at": "2026-10-07T10:47:28.321646+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": null,
+      "tool_items": 0,
+      "usage_observations": 0,
+      "last_token_usage": null,
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-source-review-06",
+      "result_sha256": "0a36b0616ef56dc917b9cab0857a848d57a1c5592ee3bb0de0420d27712d4943",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:47:52.981833+00:00",
+      "finished_at": "2026-10-07T10:49:20.604249+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 44478,
+          "inputTokens": 39984,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 4494,
+          "reasoningOutputTokens": 4058
+        },
+        "last": {
+          "totalTokens": 44478,
+          "inputTokens": 39984,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 4494,
+          "reasoningOutputTokens": 4058
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "final-source-review-07",
+      "result_sha256": "a0e1670e040f6970d1122897301a32a2fa22b8ca1d390059040ad74c7b9878ab",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T10:53:14.932531+00:00",
+      "finished_at": "2026-10-07T10:53:24.253763+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 24637,
+          "inputTokens": 24342,
+          "cachedInputTokens": 9088,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 295,
+          "reasoningOutputTokens": 184
+        },
+        "last": {
+          "totalTokens": 24637,
+          "inputTokens": 24342,
+          "cachedInputTokens": 9088,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 295,
+          "reasoningOutputTokens": 184
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "migration-01",
+      "result_sha256": "83fc3e9ad6310a5d97b69c7073b30397591603b35b35b3e1474739248e7cb634",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T09:16:11.592379+00:00",
+      "finished_at": "2026-10-07T09:19:46.788903+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 35925,
+          "inputTokens": 24121,
+          "cachedInputTokens": 14720,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 11804,
+          "reasoningOutputTokens": 7754
+        },
+        "last": {
+          "totalTokens": 35925,
+          "inputTokens": 24121,
+          "cachedInputTokens": 14720,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 11804,
+          "reasoningOutputTokens": 7754
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "ready-proof-01",
+      "result_sha256": "c1adfc341b07200a4879240c0761493a1287486957ea4dce2eafabecad4cf237",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T09:15:07.300198+00:00",
+      "finished_at": "2026-10-07T09:15:10.368155+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 14953,
+          "inputTokens": 14948,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 5,
+          "reasoningOutputTokens": 0
+        },
+        "last": {
+          "totalTokens": 14953,
+          "inputTokens": 14948,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 5,
+          "reasoningOutputTokens": 0
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "review-ready-01",
+      "result_sha256": "4fa839906eb45d86f3cdfaae02ab82b8dc62fec679b5ecc7d5c4e159b3bf36cf",
+      "status": "failed",
+      "task_packet_sent": false,
+      "started_at": "2026-10-07T09:34:44.670544+00:00",
+      "finished_at": "2026-10-07T09:34:44.670581+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": null,
+      "tool_items": 0,
+      "usage_observations": 0,
+      "last_token_usage": null,
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    },
+    {
+      "record": "source-review-01",
+      "result_sha256": "5f8e4d67e516ca6d4883935b0a748ef10aeb0e93c467e53fa3380316fca87217",
+      "status": "completed",
+      "task_packet_sent": true,
+      "started_at": "2026-10-07T09:35:22.253620+00:00",
+      "finished_at": "2026-10-07T09:38:33.332785+00:00",
+      "model_requested": "gpt-daybreak-blue-latest",
+      "effort_requested": "high",
+      "settings_observed": {
+        "model": "gpt-daybreak-blue-latest",
+        "effort": "high"
+      },
+      "tool_items": 0,
+      "usage_observations": 1,
+      "last_token_usage": {
+        "total": {
+          "totalTokens": 50628,
+          "inputTokens": 42151,
+          "cachedInputTokens": 9088,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 8477,
+          "reasoningOutputTokens": 5178
+        },
+        "last": {
+          "totalTokens": 50628,
+          "inputTokens": 42151,
+          "cachedInputTokens": 9088,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 8477,
+          "reasoningOutputTokens": 5178
+        },
+        "modelContextWindow": 258400
+      },
+      "api_rate_equivalent_usd": null,
+      "attributable_charge_usd": null
+    }
+  ],
+  "accounting_limits": [
+    "Research overhead only; recurring comparison costs remain unmeasured.",
+    "No verified published API-rate mapping for the Daybreak selector; no substitute model rate or quota-to-dollar conversion.",
+    "The final usage object is preserved per attempt; no unverified cumulative aggregate.",
+    "Coordinator, ordinary-worker, local preparation failures, setup, and operator costs are not fully measured."
+  ],
+  "remaining_scope": [
+    "Fresh route acquisition, parser implementation, ordinary omission, exact fixtures and whole-task rubrics require separate runnable contracts.",
+    "The migration pair has clear intent; genuinely ambiguous intent needs a separate clarification control before any broader claim.",
+    "Each lane can advance independently on its own prerequisites."
+  ]
+}
