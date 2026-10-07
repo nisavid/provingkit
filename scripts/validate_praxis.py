@@ -59,6 +59,7 @@ JAVASCRIPT_RUNTIME_RESOURCES = {
     "aeon-bell": (
         "skills/aeon-bell/scripts/monitor_binding.js",
         "skills/aeon-bell/scripts/cursor_cloud_agent_adapter.js",
+        "skills/aeon-bell/scripts/claude_routine_adapter.js",
     ),
 }
 PUBLIC_TESTS = (
@@ -66,6 +67,7 @@ PUBLIC_TESTS = (
     "tests/test_aeon_bell_codex_status.py",
     "tests/test_aeon_bell_binding.py",
     "tests/test_aeon_bell_cursor_adapter.py",
+    "tests/test_aeon_bell_claude_adapter.py",
     "tests/test_aeon_bell_fixtures.py",
     "tests/test_aeon_bell_actor_runner.py",
 )

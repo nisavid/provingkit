@@ -111,6 +111,9 @@ harmless probe that Rolecasting requires before Daybreak work.
 - [cursor-cloud-agent-adapter.md](references/cursor-cloud-agent-adapter.md):
   partial Cursor Cloud Agent target controls, request contract, and unresolved
   native wait relation; load when composing those controls.
+- [claude-routine-adapter.md](references/claude-routine-adapter.md):
+  local Claude one-off routine rearm/readback controls and truthful scheduling
+  outcomes; load when composing those explicitly configured controls.
 - [native-harnesses.md](references/native-harnesses.md): native setup and
   qualification for Codex heartbeats, Claude Routines, and Cursor Automations;
   persistence across fresh runs, required controls, and separate evidence joins.

@@ -6064,6 +6064,83 @@ class DirectedTick(CycleHelpers):
 class MonitorEntry(DirectedTick):
     """The public bound monitor entry owns store selection and sequencing."""
 
+    def test_heartbeat_request_precision_preserves_alignment_and_carries_upward(self) -> None:
+        cases = [
+            ("integral", "2026-10-07T16:00:00+00:00", "2026-10-07T22:00:00+00:00"),
+            ("millisecond-aligned", "2026-10-07T16:00:00.123+00:00", "2026-10-07T22:00:00.123+00:00"),
+            ("second-carry", "2026-10-07T16:59:59.999001+00:00", "2026-10-07T23:00:00+00:00"),
+            ("day-carry", "2026-10-07T23:59:59.999001+00:00", "2026-10-08T06:00:00+00:00"),
+        ]
+        for name, now, expected in cases:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory_name:
+                store = str(Path(directory_name) / "store")
+                code, bound, err = run(
+                    "monitor", "bind", "--store", store, "--initialize-registry",
+                    "--heartbeat", self.HEARTBEAT,
+                )
+                self.assertEqual(code, 0, err)
+                code, response, err = run(
+                    "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", now,
+                )
+                self.assertEqual(code, 0, err)
+                self.assertEqual(response["action"]["kind"], "heartbeat_set")
+                self.assertEqual(response["action"]["arguments"]["target_at"], expected)
+
+    def test_low_level_result_for_another_heartbeat_preserves_bound_effective_deadline(self) -> None:
+        code, bound, err = run(
+            "monitor", "bind", "--store", self.store, "--initialize-registry",
+            "--heartbeat", self.HEARTBEAT,
+        )
+        self.assertEqual(code, 0, err)
+        first_effective = "2026-09-17T18:00:00.123456+00:00"
+        view = self.start(T0)
+        first = self.pending(view, "heartbeat_set")
+        view = self.submit_ok(view, self.applied(first, first_effective), T0)
+        self.assertEqual(view["tick"]["status"], "complete")
+
+        later = "2026-09-17T12:01:00+00:00"
+        code, view, err = self.tick_start(later, "--heartbeat", "heartbeat-b")
+        self.assertEqual(code, 0, err)
+        second = self.pending(view, "heartbeat_set")
+        view = self.submit_ok(
+            view,
+            self.applied(second, "2026-09-17T18:01:00.654321+00:00"),
+            later,
+        )
+        self.assertEqual(view["tick"]["status"], "complete")
+
+        code, status, err = run(
+            "monitor", "status", "--entry-ref", bound["entry_ref"], "--now", later,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(status["heartbeat_effective"], {
+            "next_run_at": first_effective,
+            "recorded_at": T0,
+            "source": "action-result",
+        })
+
+    def test_low_level_result_for_bound_heartbeat_updates_effective_deadline(self) -> None:
+        code, bound, err = run(
+            "monitor", "bind", "--store", self.store, "--initialize-registry",
+            "--heartbeat", self.HEARTBEAT,
+        )
+        self.assertEqual(code, 0, err)
+        effective = "2026-09-17T18:00:00.987654+00:00"
+        view = self.start(T0)
+        heartbeat = self.pending(view, "heartbeat_set")
+        view = self.submit_ok(view, self.applied(heartbeat, effective), T0)
+        self.assertEqual(view["tick"]["status"], "complete")
+
+        code, status, err = run(
+            "monitor", "status", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(status["heartbeat_effective"], {
+            "next_run_at": effective,
+            "recorded_at": T0,
+            "source": "action-result",
+        })
+
     def test_bound_entry_refuses_missing_registry_without_creating_it(self) -> None:
         binding = str(Path(self._tmp.name) / "binding.json")
         code, payload, err = run(
@@ -6817,7 +6894,7 @@ class MonitorEntry(DirectedTick):
         self.assertEqual((takeover["action"]["kind"], takeover["action"]["purpose"]), ("emit", "diagnostics"))
         self.assertEqual(takeover["action"]["arguments"]["text"], expected)
 
-    def test_notice_replays_and_heartbeat_recomputes_across_takeover(self) -> None:
+    def test_notice_replays_and_heartbeat_holds_across_takeover_until_late_result(self) -> None:
         self.register()
         cycle(self.store, T0, observations=[self.quota_observation(remaining=50)])
         bound = self.bind_monitor()
@@ -6850,8 +6927,32 @@ class MonitorEntry(DirectedTick):
         _, second, _ = run(
             "monitor", "enter", "--entry-ref", heartbeat_bound["entry_ref"], "--now", at,
         )
-        self.assertEqual((first["action"]["kind"], second["action"]["kind"]), ("heartbeat_set", "heartbeat_set"))
+        self.assertEqual(first["action"]["kind"], "heartbeat_set")
+        self.assertEqual((second["action"]["kind"], second["action"]["purpose"]), ("emit", "diagnostics"))
         self.assertNotEqual(first["continuation"], second["continuation"])
+        held = self.monitor_continue(second, {"emitted": True}, at)
+        self.assertEqual(held["status"], "complete")
+        code, status, err = run(
+            "monitor", "status", "--entry-ref", heartbeat_bound["entry_ref"], "--now", at,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(status["interrupted_effects"]["heartbeat_holds"], 1)
+        self.assertIsNone(status["heartbeat_effective"])
+        code, unresolved, err = run(
+            "monitor", "continue", "--continuation", old_continuation,
+            "--result-json", json.dumps({
+                "disposition": "failed",
+                "reason": "late transport answer is still ambiguous",
+            }),
+            "--now", at,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(unresolved["late_result"], "unresolved")
+        code, status, err = run(
+            "monitor", "status", "--entry-ref", heartbeat_bound["entry_ref"], "--now", at,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(status["interrupted_effects"]["heartbeat_holds"], 1)
         code, stopped, err = run(
             "monitor", "continue", "--continuation", old_continuation,
             "--result-json", json.dumps(
@@ -6861,6 +6962,123 @@ class MonitorEntry(DirectedTick):
         )
         self.assertEqual(code, 0, err)
         self.assertEqual(stopped["late_result"], "recorded")
+        code, status, err = run(
+            "monitor", "status", "--entry-ref", heartbeat_bound["entry_ref"], "--now", at,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(status["interrupted_effects"]["heartbeat_holds"], 0)
+        self.assertEqual(status["heartbeat_effective"], {
+            "next_run_at": first["action"]["arguments"]["target_at"],
+            "recorded_at": at,
+            "source": "late-result",
+        })
+        code, resumed, err = run(
+            "monitor", "enter", "--entry-ref", heartbeat_bound["entry_ref"], "--now", at,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(resumed["action"]["kind"], "heartbeat_set")
+
+    def test_unsettled_heartbeat_refuses_revision_changing_reconfiguration(self) -> None:
+        first_binding = str(Path(self._tmp.name) / "first-binding.json")
+        code, bound, err = run(
+            "monitor", "bind", "--store", self.store, "--initialize-registry",
+            "--binding", first_binding, "--heartbeat", self.HEARTBEAT,
+        )
+        self.assertEqual(code, 0, err)
+        _, first, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(first["action"]["kind"], "heartbeat_set")
+        _, takeover, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(takeover["action"]["kind"], "emit")
+        completed = self.monitor_continue(takeover, {"emitted": True}, T0)
+        self.assertEqual(completed["status"], "complete")
+
+        attempts = [
+            ("--binding", str(Path(self._tmp.name) / "second-binding.json"),
+             "--heartbeat", self.HEARTBEAT),
+            ("--binding", first_binding, "--heartbeat", "heartbeat-b"),
+        ]
+        for arguments in attempts:
+            with self.subTest(arguments=arguments):
+                code, payload, err = run(
+                    "monitor", "bind", "--store", self.store,
+                    "--registry-id", bound["registry_id"], *arguments,
+                )
+                self.assertEqual(code, 2)
+                self.assertIsNone(payload)
+                self.assertIn("heartbeat-unsettled", err)
+                code, status, status_err = run(
+                    "monitor", "status", "--entry-ref", bound["entry_ref"], "--now", T0,
+                )
+                self.assertEqual(code, 0, status_err)
+                self.assertEqual(status["config_revision"], bound["config_revision"])
+                self.assertEqual(status["interrupted_effects"]["heartbeat_holds"], 1)
+
+        code, settled, err = run(
+            "monitor", "continue", "--continuation", first["continuation"],
+            "--result-json", json.dumps({
+                "applied": True,
+                "next_run_at": first["action"]["arguments"]["target_at"],
+            }),
+            "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(settled["late_result"], "recorded")
+        code, revised, err = run(
+            "monitor", "bind", "--store", self.store,
+            "--registry-id", bound["registry_id"],
+            "--binding", first_binding, "--heartbeat", "heartbeat-b",
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(revised["config_revision"], bound["config_revision"] + 1)
+
+    def test_heartbeat_reconfiguration_clears_only_other_heartbeat_effective_deadline(self) -> None:
+        first_binding = str(Path(self._tmp.name) / "first-binding.json")
+        second_binding = str(Path(self._tmp.name) / "second-binding.json")
+        code, bound, err = run(
+            "monitor", "bind", "--store", self.store, "--initialize-registry",
+            "--binding", first_binding, "--heartbeat", self.HEARTBEAT,
+        )
+        self.assertEqual(code, 0, err)
+        _, response, _ = run(
+            "monitor", "enter", "--entry-ref", bound["entry_ref"], "--now", T0,
+        )
+        effective = response["action"]["arguments"]["target_at"]
+        completed = self.monitor_continue(
+            response, {"applied": True, "next_run_at": effective}, T0,
+        )
+        self.assertEqual(completed["status"], "complete")
+
+        code, binding_only, err = run(
+            "monitor", "bind", "--store", self.store,
+            "--registry-id", bound["registry_id"],
+            "--binding", second_binding, "--heartbeat", self.HEARTBEAT,
+        )
+        self.assertEqual(code, 0, err)
+        code, status, err = run(
+            "monitor", "status", "--entry-ref", binding_only["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(status["heartbeat_effective"], {
+            "next_run_at": effective,
+            "recorded_at": T0,
+            "source": "action-result",
+        })
+
+        code, heartbeat_changed, err = run(
+            "monitor", "bind", "--store", self.store,
+            "--registry-id", bound["registry_id"],
+            "--binding", second_binding, "--heartbeat", "heartbeat-b",
+        )
+        self.assertEqual(code, 0, err)
+        code, status, err = run(
+            "monitor", "status", "--entry-ref", heartbeat_changed["entry_ref"], "--now", T0,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertIsNone(status["heartbeat_effective"])
 
     def test_overlapping_entries_fence_the_older_return_without_a_second_send(self) -> None:
         self.register()

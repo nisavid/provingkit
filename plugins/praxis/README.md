@@ -51,6 +51,12 @@ HTTP control. Its complete-cycle tests use constructed native responses.
 The native read cannot prove the registered wait episode, and the adapter
 supplies neither Automations scheduling nor an installed transport.
 
+The partial [Claude routine control](skills/aeon-bell/references/claude-routine-adapter.md)
+rearms one configured one-off routine through an injected local RemoteTrigger
+callable and reports its observed effective deadline. Its complete-cycle tests
+use constructed native responses. Scheduled cloud controls, registry deployment,
+and newer-write ordering remain separate inputs.
+
 The engine directs the monitor through a registry-bound entry. Setup binds
 the existing canonical registry, complete binding-path list, and one native
 heartbeat and returns an entry reference. Each native run calls `monitor
@@ -106,10 +112,12 @@ plugins/praxis/
     ├── references/native-harnesses.md            # Required native bindings, setup, persistence, evidence joins
     ├── references/structured-harness.md          # Structured binding and qualification procedure
     ├── references/cursor-cloud-agent-adapter.md  # Partial Cursor target controls and unresolved wait relation
+    ├── references/claude-routine-adapter.md       # Local one-off routine controls and unresolved cloud runtime
     ├── scripts/aeon_bell.py                      # Registry, monitor cycle, and attempt engine
     ├── scripts/codex_status.py                   # Status-only Codex observation adapter
     ├── scripts/monitor_binding.js                # Node-free structured harness binding
-    └── scripts/cursor_cloud_agent_adapter.js      # Node-free Cursor Cloud Agent target mapping
+    ├── scripts/cursor_cloud_agent_adapter.js      # Node-free Cursor Cloud Agent target mapping
+    └── scripts/claude_routine_adapter.js          # Node-free local Claude routine schedule mapping
 ```
 
 Both Python scripts are standard-library CLIs with no dependency outside the
@@ -194,7 +202,7 @@ From the repository root:
 
 ```sh
 python -m unittest tests.test_validate_praxis
-python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding tests.test_aeon_bell_cursor_adapter tests.test_aeon_bell_fixtures tests.test_aeon_bell_actor_runner
+python -m unittest tests.test_aeon_bell tests.test_aeon_bell_codex_status tests.test_aeon_bell_binding tests.test_aeon_bell_cursor_adapter tests.test_aeon_bell_claude_adapter tests.test_aeon_bell_fixtures tests.test_aeon_bell_actor_runner
 python scripts/validate_praxis.py .
 ```
 
@@ -217,6 +225,10 @@ python scripts/validate_praxis.py .
   structured binding through complete cycles with controlled Cursor HTTP
   responses. It observes exact continuation requests, durable attempt
   outcomes, and an unresolved native wait relation. It makes no live request.
+- `tests/test_aeon_bell_claude_adapter.py` drives the real engine and
+  structured binding through complete cycles with controlled local routine
+  responses. It observes minimal native rearm requests, effective next-run
+  readback, and failed or unresolved scheduling outcomes. It makes no live call.
 - `evals/praxis/experiment.json` preserves the controlled discovery and
   application trial history for `aeon-bell` as retained evidence. Discovery ran against a controlled
   catalog, not installed automatic discovery. Each retained record binds

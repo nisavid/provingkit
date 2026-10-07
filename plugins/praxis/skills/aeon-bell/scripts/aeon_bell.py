@@ -199,7 +199,22 @@ def parse_time(value: Any, name: str) -> datetime:
 
 
 def format_time(value: datetime) -> str:
-    return value.astimezone(timezone.utc).isoformat(timespec="seconds")
+    utc = value.astimezone(timezone.utc)
+    if utc.microsecond == 0:
+        timespec = "seconds"
+    elif utc.microsecond % 1000 == 0:
+        timespec = "milliseconds"
+    else:
+        timespec = "microseconds"
+    return utc.isoformat(timespec=timespec)
+
+
+def format_heartbeat_target(value: datetime) -> str:
+    utc = value.astimezone(timezone.utc)
+    remainder = utc.microsecond % 1000
+    if remainder:
+        utc += timedelta(microseconds=1000 - remainder)
+    return utc.isoformat(timespec="milliseconds" if utc.microsecond else "seconds")
 
 
 def _identity(value: Any, name: str) -> str:
@@ -1036,6 +1051,7 @@ class AeonBell:
             "active_invocation",
             "interrupted_effects",
         }
+        allowed = required | {"heartbeat_effective"}
         def time_ok(value: Any) -> bool:
             try:
                 parse_time(value, "monitor time")
@@ -1104,9 +1120,17 @@ class AeonBell:
                 ):
                     effects_ok = False
                     break
+        effective = monitor.get("heartbeat_effective") if isinstance(monitor, dict) else None
+        effective_ok = effective is None or (
+            isinstance(effective, dict)
+            and set(effective) == {"next_run_at", "recorded_at", "source"}
+            and time_ok(effective["next_run_at"])
+            and time_ok(effective["recorded_at"])
+            and effective["source"] in {"action-result", "late-result"}
+        )
         if not (
             isinstance(monitor, dict)
-            and set(monitor) == required
+            and required <= set(monitor) <= allowed
             and AeonBell._is_hex_id(monitor["registry_id"], REGISTRY_ID_LENGTH)
             and isinstance(monitor["canonical_store"], str)
             and os.path.isabs(monitor["canonical_store"])
@@ -1119,6 +1143,7 @@ class AeonBell:
             and monitor["next_generation"] >= 1
             and active_ok
             and effects_ok
+            and effective_ok
         ):
             raise AeonBellError(
                 "corrupt-store", "monitor state has an unsupported shape"
@@ -1153,6 +1178,7 @@ class AeonBell:
                     "next_generation": 1,
                     "active_invocation": None,
                     "interrupted_effects": [],
+                    "heartbeat_effective": None,
                 }
                 state["monitor"] = monitor
             else:
@@ -1174,8 +1200,20 @@ class AeonBell:
                         "registry-mismatch", "the registry is bound to another canonical path"
                     )
                 if bindings != monitor["binding_paths"] or heartbeat != monitor["heartbeat"]:
+                    if any(
+                        effect["settled_at"] is None
+                        and effect["kind"] == "heartbeat_set"
+                        for effect in monitor["interrupted_effects"]
+                    ):
+                        raise AeonBellError(
+                            "heartbeat-unsettled",
+                            "heartbeat effects must settle before reconfiguration",
+                        )
+                    heartbeat_changed = heartbeat != monitor["heartbeat"]
                     monitor["binding_paths"] = bindings
                     monitor["heartbeat"] = heartbeat
+                    if heartbeat_changed:
+                        monitor["heartbeat_effective"] = None
                     monitor["config_revision"] += 1
             entry_ref = _reference(
                 ENTRY_REF_PREFIX,
@@ -1472,6 +1510,19 @@ class AeonBell:
                         if error.code != "unknown-notice":
                             raise
                         applicable = False
+            elif action["kind"] == "heartbeat_set":
+                if parsed["failure"] and parsed["disposition"] == "failed":
+                    return {
+                        "status": "stopped",
+                        "reason": "superseded-invocation",
+                        "late_result": "unresolved",
+                    }
+                if not parsed["failure"]:
+                    monitor["heartbeat_effective"] = {
+                        "next_run_at": format_time(parsed["next_run_at"]),
+                        "recorded_at": format_time(now),
+                        "source": "late-result",
+                    }
             effect["settled_at"] = format_time(now)
             late = "recorded" if applicable else "already-settled"
         return {
@@ -1559,9 +1610,15 @@ class AeonBell:
                     "reserved_send_attempts": sum(
                         effect["kind"] == "send" for effect in unsettled
                     ),
+                    "heartbeat_holds": sum(
+                        effect["kind"] == "heartbeat_set" for effect in unsettled
+                    ),
                 },
                 "last": last_view,
                 "schedule": schedule,
+                "heartbeat_effective": copy.deepcopy(
+                    monitor.get("heartbeat_effective")
+                ),
             }
 
     def register(
@@ -4918,7 +4975,7 @@ class AeonBell:
             target = now
         delay = math.ceil((target - now).total_seconds() / 60)
         return {
-            "target_at": format_time(target),
+            "target_at": format_heartbeat_target(target),
             "delay_minutes": delay,
             "rule": rule,
             "fingerprint": schedule["registry"]["fingerprint"],
@@ -4935,6 +4992,19 @@ class AeonBell:
                 tick,
                 "aeon bell: heartbeat-unconfigured: no $HEARTBEAT is configured; next "
                 f"check {schedule['next_check_at']} not applied",
+            )
+            return False
+        monitor = self._monitor_state(state)
+        if monitor is not None and any(
+            effect["settled_at"] is None
+            and effect["kind"] == "heartbeat_set"
+            and effect["action"]["arguments"].get("heartbeat") == tick["heartbeat"]
+            for effect in monitor["interrupted_effects"]
+        ):
+            self._tick_diagnostic(
+                tick,
+                "aeon bell: heartbeat-unsettled: scheduling is held until the "
+                "earlier heartbeat result is authoritatively settled",
             )
             return False
         if writes:
@@ -4985,9 +5055,11 @@ class AeonBell:
 
     def _tick_heartbeat_result(
         self,
+        state: dict[str, Any],
         tick: dict[str, Any],
         action: dict[str, Any],
         parsed: dict[str, Any],
+        now: datetime,
     ) -> None:
         write = tick["heartbeat_writes"][-1]
         if parsed["failure"]:
@@ -5018,6 +5090,13 @@ class AeonBell:
             "next_run_at": write["next_run_at"],
             "write_number": write["write_number"],
         }
+        monitor = self._monitor_state(state)
+        if monitor is not None and monitor["heartbeat"] == tick["heartbeat"]:
+            monitor["heartbeat_effective"] = {
+                "next_run_at": write["next_run_at"],
+                "recorded_at": format_time(now),
+                "source": "action-result",
+            }
 
     def _tick_apply(
         self,
@@ -5071,7 +5150,7 @@ class AeonBell:
             action["recorded"] = {"channel": "diagnostics", "notice_id": None}
             tick["phase"] = "done"
         else:
-            self._tick_heartbeat_result(tick, action, parsed)
+            self._tick_heartbeat_result(state, tick, action, parsed, now)
         self._tick_advance(state, tick, now)
 
     # -- tick views ---------------------------------------------------------

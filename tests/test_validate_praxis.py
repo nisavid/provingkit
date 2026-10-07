@@ -18,10 +18,12 @@ RUNTIME_RELATIVE = SKILL_RELATIVE / "scripts" / "aeon_bell.py"
 ADAPTER_RELATIVE = SKILL_RELATIVE / "scripts" / "codex_status.py"
 BINDING_RELATIVE = SKILL_RELATIVE / "scripts" / "monitor_binding.js"
 CURSOR_ADAPTER_RELATIVE = SKILL_RELATIVE / "scripts" / "cursor_cloud_agent_adapter.js"
+CLAUDE_ADAPTER_RELATIVE = SKILL_RELATIVE / "scripts" / "claude_routine_adapter.js"
 PUBLIC_TEST_RELATIVE = Path("tests/test_aeon_bell.py")
 ADAPTER_TEST_RELATIVE = Path("tests/test_aeon_bell_codex_status.py")
 BINDING_TEST_RELATIVE = Path("tests/test_aeon_bell_binding.py")
 CURSOR_TEST_RELATIVE = Path("tests/test_aeon_bell_cursor_adapter.py")
+CLAUDE_TEST_RELATIVE = Path("tests/test_aeon_bell_claude_adapter.py")
 ACTOR_RUNNER_RELATIVE = Path("tests/praxis_actor_runner.js")
 ACTOR_TEST_RELATIVE = Path("tests/test_aeon_bell_actor_runner.py")
 EVAL_CORPUS_RELATIVE = Path("evals/praxis/experiment.json")
@@ -175,6 +177,7 @@ class ValidatePraxisTests(unittest.TestCase):
         adapter.write_text(SYNTHETIC_ADAPTER, encoding="utf-8")
         (self.repo / BINDING_RELATIVE).write_text(SYNTHETIC_BINDING, encoding="utf-8")
         (self.repo / CURSOR_ADAPTER_RELATIVE).write_text(SYNTHETIC_BINDING, encoding="utf-8")
+        (self.repo / CLAUDE_ADAPTER_RELATIVE).write_text(SYNTHETIC_BINDING, encoding="utf-8")
         public_test = self.repo / PUBLIC_TEST_RELATIVE
         public_test.parent.mkdir(parents=True)
         public_test.write_text(SYNTHETIC_PUBLIC_TEST, encoding="utf-8")
@@ -185,6 +188,9 @@ class ValidatePraxisTests(unittest.TestCase):
             SYNTHETIC_BINDING_TEST, encoding="utf-8"
         )
         (self.repo / CURSOR_TEST_RELATIVE).write_text(
+            SYNTHETIC_BINDING_TEST, encoding="utf-8"
+        )
+        (self.repo / CLAUDE_TEST_RELATIVE).write_text(
             SYNTHETIC_BINDING_TEST, encoding="utf-8"
         )
         corpus = self.repo / EVAL_CORPUS_RELATIVE
@@ -405,10 +411,12 @@ class ValidatePraxisTests(unittest.TestCase):
         self.assertIn(ADAPTER_RELATIVE.as_posix(), files)
         self.assertIn(BINDING_RELATIVE.as_posix(), files)
         self.assertIn(CURSOR_ADAPTER_RELATIVE.as_posix(), files)
+        self.assertIn(CLAUDE_ADAPTER_RELATIVE.as_posix(), files)
         self.assertIn(PUBLIC_TEST_RELATIVE.as_posix(), files)
         self.assertIn(ADAPTER_TEST_RELATIVE.as_posix(), files)
         self.assertIn(BINDING_TEST_RELATIVE.as_posix(), files)
         self.assertIn(CURSOR_TEST_RELATIVE.as_posix(), files)
+        self.assertIn(CLAUDE_TEST_RELATIVE.as_posix(), files)
         self.assertIn(ACTOR_RUNNER_RELATIVE.as_posix(), files)
         self.assertIn(ACTOR_TEST_RELATIVE.as_posix(), files)
         self.assertIn(EVAL_CORPUS_RELATIVE.as_posix(), files)

@@ -31,15 +31,30 @@ interface: setup binds one existing canonical registry, its binding paths,
 and the shared heartbeat; `monitor enter` claims a newer generation and
 issues one fully bound action at a time (a task read, the adapter query with
 engine-owned paths, a send with the exact reserved message, a print, or a
-heartbeat write); and `monitor continue` accepts the action's typed result or
+heartbeat write). A heartbeat request target is emitted at millisecond
+precision, with finer selected deadlines rounded upward; general timestamps
+and authoritative effective-deadline observations retain their represented
+instant. `monitor continue` accepts the action's typed result or
 failure form through an engine-issued continuation. Takeover safely reissues
 reads and observations under a new generation while retaining their tick,
 proposal, reservation, and engine-owned observation plan. Each observation
 execution has its own result paths, including a reissue after takeover, so the
 active continuation consumes only its execution's output; older continuations
 remain fenced, and the existing result path performs every normal recheck.
-Takeover retains an uncertain send reservation without replay, replays durable
-output, and recomputes scheduling. `monitor status` is redacted and cannot resume work.
+Takeover retains an uncertain send reservation without replay and replays
+durable output. An interrupted heartbeat write durably holds another write to
+the same heartbeat until an authoritative late result settles it. This can
+reduce scheduling availability, and it supplies no native cancellation,
+idempotency, readback inference, or newer-write ordering guarantee. `monitor
+status` is redacted and cannot resume work; it exposes only the hold count and
+last authoritative effective deadline for scheduling coordination. A
+compatibility low-level tick can update that observation only when it acts on
+the monitor's bound heartbeat.
+When a native heartbeat update succeeds but readback cannot authoritatively
+establish the effective deadline, the structured control leaves the operation
+unresolved. Fresh entry records the pending effect as that durable hold; only
+the exact old continuation can supply authoritative settlement. Definitive
+preflight and no-write update rejections still complete without a hold.
 The status adapter turns the engine's observation requests into typed
 observations from one fixed, status-only Codex query per bound route. The
 harness supplies the native heartbeat and its scheduling controls, task

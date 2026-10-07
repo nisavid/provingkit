@@ -12,7 +12,7 @@ const SKILL = "plugins/praxis/skills/aeon-bell";
 const KEYS = Object.freeze({source: "binding-source", entry: "monitor-entry", run: "monitor-run"});
 const PINNED = {
   "plugins/praxis/skills/aeon-bell/scripts/monitor_binding.js": "a85478740c9544544baf47ac87fec6a27ac6aeb194039ceac19a3a7f618f3b5d",
-  "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py": "1320c472965ab968da0aaaa8c71f56cbad9da2d79670c9bab5ca7749c7cc8b95",
+  "plugins/praxis/skills/aeon-bell/scripts/aeon_bell.py": "563681f811a64a704da697477c7181cd539776a18dc122146fcfa0d8931550b2",
   "evals/praxis/fixtures/adapter-failure.json": "4b6dc23d804d7fd187ad44f42f620f9708e504d28ed8ab7ab19e4fcf3b28899c",
   "evals/praxis/fixtures/cached-closed.json": "bc25beb8f0456b6736726cf1fc16c1fec80d836226cbee961746386c92b843da",
   "evals/praxis/fixtures/cached-open.json": "a9dba6fe6b1686626c86cc3b907540a7722bcdbcb553a3ef181a41cb5fef5f0f",

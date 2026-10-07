@@ -84,9 +84,11 @@ value, or heartbeat reference.
   ```
 
   Use `--initialize-registry` only for deliberate first setup. Reconfiguration
-  supplies the current registry id and is refused while an invocation is
-  active. Entry references prevent accidental misbinding; they are not
-  credentials or proof of the native task.
+  supplies the current registry id and is refused while an invocation or tick
+  is active or an interrupted heartbeat effect is unsettled. Binding-path-only
+  changes retain the authoritative effective-deadline observation; changing
+  heartbeat identity clears it. Entry references prevent accidental
+  misbinding; they are not credentials or proof of the native task.
 - One logical monitor per store with exactly one persistent native scheduler
   definition (called its heartbeat by the engine) that performs the tick below.
   Restore the configured entry and controls for each native firing and use
@@ -175,9 +177,11 @@ compatibility; the monitor never invokes them.
    retain their tick and are safely reissued through a continuation bound to
    the new generation, so a pending pre-send read keeps its reservation and
    rechecks it normally; an interrupted send retains its reservation and is
-   not replayed; a notice or diagnostics emit is replayed; and a heartbeat
-   write is recomputed. Older continuations remain fenced. The actor makes no
-   restart decision.
+   not replayed; and a notice or diagnostics emit is replayed. An interrupted
+   heartbeat write creates a durable hold for that same heartbeat. Fresh
+   invocations do not issue another write until the old continuation supplies
+   an authoritative late result. Older continuations remain fenced. The actor
+   makes no restart decision.
 2. For each `action_required`, perform exactly the returned action with the
    named tool or argv and no other arguments, then submit its result:
 
@@ -211,7 +215,10 @@ compatibility; the monitor never invokes them.
    - `emit`: print `text` verbatim, with no paraphrase, reordering, or added
      state. Result `{"emitted": true}`.
    - `heartbeat_set`: set the next run of the heartbeat named by
-     `heartbeat` to `target_at` with the harness's own control. Result
+     `heartbeat` to `target_at` with the harness's own control. The engine
+     emits this request target at millisecond precision, rounding upward only
+     when the selected deadline is finer; this source contract does not claim
+     that an unqualified native control supports it. Result
      `{"applied": true, "next_run_at": <the run the control left>}`; the
      engine records a run that differs from the target by more than a
      minute as `applied-off-target` and reports it.
@@ -224,13 +231,21 @@ compatibility; the monitor never invokes them.
    target or heartbeat). A failed step is an explicit recorded result; a
    step whose result is never submitted leaves the invocation running and can
    never count as done.
+   When a native heartbeat update succeeded but follow-up readback cannot
+   authoritatively establish its effective deadline, leave the native operation
+   `unknown`; do not submit a completed `failed` result. Fresh entry then turns
+   the pending effect into the durable hold described above. This does not
+   change positively pre-execution or definitive no-write results.
 3. `invalid-result`, `stale-result`, or `tick-clock` leaves the same active
    continuation available for a corrected result. `stale-invocation` means a
    newer entry fenced this actor: stop and start nothing. The only exception
    is an effect the actor actually performed from its exact old continuation;
    submit that result once. The engine records it when still applicable and
    returns `stopped` without another continuation. Never infer or submit a
-   result for an effect the actor did not perform.
+   result for an effect the actor did not perform. A late `heartbeat_set`
+   result settles its hold when it authoritatively reports the effective run
+   or proves that the control was not performed. A `failed` late result remains
+   ambiguous and leaves the hold in place.
 4. Use status only for diagnosis:
 
    ```sh
@@ -238,12 +253,22 @@ compatibility; the monitor never invokes them.
    ```
 
    Status is redacted and cannot resume work. It never returns a continuation,
-   action id, action arguments, target, message, notice text, binding, or
-   heartbeat. Start a native run with `enter`; do not reconstruct work from
-   status.
+   action id, action arguments, planned target, message, notice text, binding,
+   or heartbeat identity. It does report the number of heartbeat holds and the
+   last authoritatively observed effective deadline, if any, preserving the
+   represented UTC instant of supported fractional timestamps. That observation
+   survives binding-path-only changes but is cleared when heartbeat identity
+   changes. A compatibility low-level tick updates it only for that same bound
+   heartbeat; another heartbeat's applied result remains outside this status.
+   Start a native run with `enter`; do not reconstruct work from status.
 5. The pass is done when the result is `complete`. Print nothing beyond what
    `emit` actions carried. A routine pass that relayed no notice and met no
    failure prints nothing, and there is no periodic status line.
+
+An unsettled heartbeat hold can reduce availability indefinitely when no
+authoritative result arrives. The engine does not infer settlement from a new
+read, retry the write, cancel it, or claim provider idempotency or ordering.
+The old continuation's authoritative result is the supported settlement path.
 
 The engine runs the plan cycle, the result cycle, reservation, the pre-send
 recheck, the report, notice selection, acknowledgement, the scheduling

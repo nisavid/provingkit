@@ -116,7 +116,8 @@ every engine transition. The result is one of:
 - `needs_classification`: inspect the stored native episode through the
   harness, then return exactly `{decision_id, choice}` using one listed choice;
 - `unresolved`: an effect or engine transition may have occurred without an
-  authoritative completed response; never retry, reenter, or replace it;
+  authoritative completed response; never retry, reenter, or replace it from
+  that invocation;
 - `unsupported`: a required structured channel or valid stored run is absent.
 
 For `task_read`, choose only the documented Aeon Bell task status while
@@ -170,9 +171,18 @@ lost running session.
 The state slots are per native invocation. `store` and `load` do not promise
 that another scheduled run can recover them. Restore the configured source,
 entry, and controls, and allocate fresh run state for each native invocation.
-A new invocation uses the
-engine's takeover policy; an in-progress invocation that loses this binding
-channel stops unresolved.
+A new invocation uses the engine's takeover policy; an in-progress invocation
+that loses this binding channel stops unresolved. When the lost action is
+`heartbeat_set`, takeover records the interrupted effect durably and holds
+another write to the same heartbeat. A fresh invocation may complete without
+scheduling; availability resumes only after the old continuation submits an
+authoritative late result. The binding supplies no automatic reconciliation,
+readback inference, cancellation, idempotency, or provider ordering guarantee.
+If a native heartbeat update completes but its readback cannot establish the
+effective deadline, its control returns `unknown`, not a completed failure.
+The binding therefore keeps the operation unresolved so takeover can create
+that hold. Positively pre-execution and definitive no-write outcomes remain
+completed results and create no hold.
 
 ## Qualification and activation
 

@@ -30,6 +30,12 @@ and the "Directed tick" section here is its contract.
 
 - Every command accepts `--now <ISO 8601 with offset>`; it defaults to the
   current UTC time.
+- The engine preserves supported timestamp instants generally. Only a selected
+  `heartbeat_set` request target is normalized to millisecond precision at the
+  scheduling boundary: an already integral or millisecond-aligned target is
+  unchanged, and finer precision is rounded upward to the next millisecond.
+  Authoritative `next_run_at` observations are not request targets and retain
+  their represented instant.
 - Observation freshness and task-state freshness are 15 minutes. Registrations
   expire after 24 hours by default and at most 7 days.
 - Freshness and polling are distinct. Freshness is the maximum age at which
@@ -75,10 +81,10 @@ Failure prints `aeon bell: <code>: <message>` to stderr and exits 2.
 | `notice` | `[--adapter-report <observe report>]` | Selects what this tick must relay (see Notification state). Writes a pending notice only when `report` is true; a pending notice is returned unchanged until acknowledged. A valid adapter report is always learned into the private per-gate query knowledge, pending notice or not. Prints the `schedule` beside the notice. The directed tick runs this step itself. |
 | `acknowledge` | `--notice-id` | Records that the pending notice with exactly this id was relayed, promoting its snapshot to the baseline, and prints the `schedule`. The directed tick runs this step itself after its notice `emit` is submitted. |
 | `monitor bind` | `--store [--initialize-registry] [--registry-id] [--binding <path>]... --heartbeat <reference>` | Binds the canonical existing registry and configured native inputs; explicit initialization is the only monitor operation that may create a missing registry. |
-| `monitor enter` | `--entry-ref [--now]` | Claims a newer invocation generation and returns one bound action or completion. |
-| `monitor continue` | `--continuation --result-json [--now]` | Applies one typed result for the exact active action, or records a still-applicable exact late effect result from a fenced invocation. |
-| `monitor status` | `--entry-ref [--now]` | Read-only redacted coordination and schedule state; never returns resumable work. |
-| `tick start` | `[--binding <path>]... [--heartbeat <reference>] [--abandon <tick_id>]` | Starts one directed tick and prints its first pending action (see Directed tick). Refuses `tick-in-progress` while another tick runs unless `--abandon` names it. |
+| `monitor enter` | `--entry-ref [--now]` | Claims a newer invocation generation and returns one bound action or completion. A takeover records an interrupted effect-bearing action; an unsettled heartbeat effect holds another write to that heartbeat. |
+| `monitor continue` | `--continuation --result-json [--now]` | Applies one typed result for the exact active action, or accepts the exact interrupted effect's late result under the fixed settlement rules. |
+| `monitor status` | `--entry-ref [--now]` | Read-only redacted coordination and schedule state, including heartbeat-hold count and the last authoritative effective deadline; never returns resumable work. |
+| `tick start` | `[--binding <path>]... [--heartbeat <reference>] [--abandon <tick_id>]` | Starts one low-level directed tick and prints its first pending action (see Directed tick). Refuses `tick-in-progress` while another tick runs unless `--abandon` names it; this compatibility abandonment does not create the bound monitor's interrupted-effect record. |
 | `tick submit` | `--tick-id --action-id (--result-json \| --result-file)` | Applies the typed result of exactly the pending action, runs the internal phases that need no native effect, and prints the next pending action or the completed tick. Every refusal leaves the store unchanged with the same action pending. |
 | `tick status` | | Read-only: the running tick (or null), its pending action with restart advice, the last tick summary, and the schedule. |
 
@@ -656,10 +662,13 @@ Without `--initialize-registry`, an absent `state.json` is
 initialization creates an empty registry when necessary. The result is
 `status: bound`, a 32-hex `registry_id`, `config_revision`, `entry_ref`, and
 `store_created`. Reconfiguration supplies the current `--registry-id`, is
-refused while an invocation or tick is active, and increments
-`config_revision` only when the binding paths or heartbeat change. Binding
-paths may be an empty configured list; due gates then retain the existing
-quiet `no-binding` knowledge behavior.
+refused while an invocation or tick is active or an interrupted heartbeat
+effect is unsettled, and increments `config_revision` only when the binding
+paths or heartbeat change. A binding-path-only change retains the last
+authoritative effective deadline. A heartbeat identity change clears it, so
+status reports no effective deadline for the new heartbeat until one is
+authoritatively observed. Binding paths may be an empty configured list; due
+gates then retain the existing quiet `no-binding` knowledge behavior.
 
 Each native run starts and advances only through:
 
@@ -707,16 +716,33 @@ artifact directory but receives a fresh `input-<execution_id>.json` and
 pair, so a superseded adapter process may finish without contributing either
 artifact to the active result. A takeover retains an interrupted send
 reservation without issuing another send, replays durable notice or
-diagnostics, and recomputes the heartbeat write from current state. An older actor may submit only the
-continuation for the exact interrupted effect it was issued. A
-still-applicable result is recorded once and returns `status: stopped`,
-`reason: superseded-invocation`, and `late_result: recorded`; later reports
-return `already-settled`. No stale result can advance the newer invocation.
+diagnostics, and records an interrupted `heartbeat_set` as a durable effect
+before abandoning its tick. A new tick suppresses another write to the same
+heartbeat while that effect is unsettled; it may complete without scheduling,
+and later ticks keep the same hold. The older actor may submit only the
+continuation for the exact interrupted effect it was issued. An authoritative
+applied heartbeat result settles the hold and records its returned
+`next_run_at` as the effective deadline; `not_performed` or `unavailable`
+settles it without replacing the retained effective deadline. A `failed`
+heartbeat result is still ambiguous, returns `late_result: unresolved`, and
+leaves the hold in place. Any other still-applicable result is recorded once
+and returns `status: stopped`, `reason: superseded-invocation`, and
+`late_result: recorded`; later reports return `already-settled`. No stale
+result can advance the newer invocation. The hold neither cancels the old
+native write nor infers its result from a readback, and it supplies no
+idempotency or ordering guarantee.
 
 `status` never resumes work. It exposes registry and invocation ids,
 generation, transition times, phase, pending kind/purpose/time and
-interruption class, interrupted-effect counts, a redacted last summary, and
-the schedule's timing, cadence, counts, and fingerprint. Its schedule
+interruption class, the aggregate interrupted-effect count, reserved-send
+count, and heartbeat-hold count, a redacted last summary, and the schedule's
+timing, cadence, counts, and fingerprint. `heartbeat_effective`, when present,
+is the last authoritatively submitted effective `next_run_at`, its recording
+time, and whether it came from an active action or a late result. It is retained
+when a definitive no-write result releases a hold and across binding-path-only
+reconfiguration, but is cleared when heartbeat identity changes. Supported
+fractional timestamps retain their represented UTC instant. The observation is
+not proof that the native schedule still has that deadline. The schedule
 projection omits gate identity, registration ids, and task ids. It does not
 expose an entry reference, continuation, action id,
 binding path, heartbeat, target, episode, action arguments, wake message or
@@ -885,6 +911,14 @@ Consequence codes: `task-state-recorded`, `no-task-state`,
 `diagnostics-unemitted`, `heartbeat-applied`,
 `heartbeat-applied-off-target`, `heartbeat-control-failed`.
 
+When bound `monitor enter` has superseded a pending `heartbeat_set`, only
+`monitor continue` with that action's exact old continuation can settle its
+durable effect. The same heartbeat result shape applies. An applied result
+records the returned `next_run_at` as `heartbeat_effective`; a definitive
+`not_performed` or `unavailable` failure form releases the hold without
+inventing a deadline; and `failed` leaves the effect unsettled. Neither
+`monitor status` nor a new tick supplies a settlement path.
+
 ### Phases
 
 `task_states`: one `task_read` per snapshotted registration. `observe`: the
@@ -905,8 +939,10 @@ episode, unexpired; a mismatch on a still-reserved attempt is reported
 `notice`: the notice selection with the learned adapter report (or none);
 `report` false moves on, else the `emit` is issued. `schedule`: with no
 heartbeat reference, one diagnostics line `heartbeat-unconfigured` naming
-the unapplied next check; else the scheduling decision and `heartbeat_set`
-write 1; after an applied write the schedule fingerprint is recomputed
+the unapplied next check; with an unsettled bound-monitor heartbeat effect for
+the same heartbeat, one diagnostics line `heartbeat-unsettled` and no
+heartbeat action; else the scheduling decision and `heartbeat_set` write 1.
+After an applied write the schedule fingerprint is recomputed
 once: unchanged ends scheduling, changed after write 1 chooses again and
 issues write 2, changed after write 2 adds `schedule-raced` and sets
 `registry_changed_after_last_write`. `diagnostics`: a nonempty list is one
@@ -1032,17 +1068,35 @@ work and owner-configured cadence.
 
 The target is chosen under the store lock and applied by the harness
 outside it; the one post-write fingerprint recheck narrows the window to at
-most one more write and does not close it. `unavailable`, `failed`, and
-`not_performed` leave the heartbeat as it was, are reported, and never
-trigger a fallback cadence or a second write.
+most one more write and does not close it. `not_performed` and `unavailable`
+definitively report that no write occurred. `failed` establishes no
+authoritative applied deadline: the native effect may be uncertain. None of
+these results triggers a fallback cadence, an automatic second write, or an
+inferred schedule state.
+
+A structured native control must keep the operation unresolved when it knows
+the update completed but cannot authoritatively read back the effective
+deadline. Returning transport `unknown` preserves the active continuation;
+submitting a completed `failed` result would consume it before takeover could
+create the durable hold. This rule does not alter definitive preflight or
+no-write update rejections.
+
+When a low-level tick shares a store with a bound monitor, an authoritative
+applied result updates `monitor status`'s `heartbeat_effective` only when the
+tick's heartbeat is the monitor's bound heartbeat. A result for another
+heartbeat remains the truthful result of that low-level tick but cannot
+replace the bound heartbeat's effective-deadline observation.
 
 ### Low-level restart and overlap
 
 The bound `monitor enter` interface owns native restart and overlap as
 described above: safe reads and observations keep the current tick across a
-generation takeover, while effect-bearing actions follow their fixed restart
-policy. The low-level tick interface retains its explicit abandon operation
-for compatibility and tests. Exactly one tick runs per store:
+generation takeover, while an interrupted heartbeat write creates the durable
+same-heartbeat hold and keeps the exact old continuation as its only settlement
+path. The low-level tick interface retains its explicit abandon operation for
+compatibility and tests, but it does not create a monitor interrupted-effect
+record or retain a continuation for the abandoned low-level action. Exactly
+one tick runs per store:
 `tick start` refuses `tick-in-progress`
 while a record with status `running` is stored, and concurrent starts and
 submits serialize on the store lock. `tick start --abandon <id>` is the only
@@ -1055,13 +1109,18 @@ with the existing reconcile guidance, relayed by the new tick's notice as
 stuck work, never re-proposed (`registration-reserved`), and settled only by
 `reconcile` with target-transcript evidence; a notice `emit` leaves the
 notice pending and the new tick's `emit` carries it with `replayed: true`;
-`heartbeat_set` is recomputed and written by the new tick; a diagnostics
+an abandoned low-level `heartbeat_set` is recomputed and may be written by the
+new low-level tick, with no legacy late-result settlement or fence for the old
+write. An independently existing bound-monitor hold for the same heartbeat is
+still consulted by scheduling and suppresses that new write. A diagnostics
 `emit` keeps its lines in `last.diagnostics_unemitted`. `restart` on the
 pending action is advice (`resumable` for reads without external effect,
 `abandon-only` for send, emit, and heartbeat writes); the engine cannot tell
-a resumed actor from the original, and a submitted result is the actor's
-assertion. A second submit for a dispositioned, unknown, or future action id
-is `action-not-pending` with no change. A copied store carries its
+a resumed low-level actor from the original, and a submitted result is the
+actor's assertion. After abandonment, submitting the old low-level action is
+`tick-not-running`; it cannot settle the abandoned write. A second submit for
+a dispositioned, unknown, or future action id is `action-not-pending` with no
+change. A copied store carries its
 `tick.current` and refuses until `--abandon` names it; there is no age-based
 auto-abandon. `unknown-tick` and `tick-not-running` at low-level submit are
 terminal for that caller: stop and start nothing. Process death after a save
@@ -1095,15 +1154,20 @@ reserved, the read and gate evidence are fresh, and the message digest
 matches; no report or acknowledgement without a submitted result; abandoned
 pending sends stay reserved; at most two heartbeat writes, no fallback
 cadence, and no heartbeat action without a reference; explicit abandon
-before any second tick on the same store.
+before any second low-level tick on the same store. Through bound monitor
+entry, it also enforces a durable same-heartbeat hold after takeover of a
+pending heartbeat write and accepts settlement only from that action's exact
+interrupted continuation.
 
 Cooperative only, and never verified: that the actor really invoked the
 named tool or argv with exactly those arguments; the truthfulness of every
 submitted result (the task-state mapping and still-this-episode judgement,
 the send outcome and evidence, that emit text was printed, that a heartbeat
-write happened and its `next_run_at`); that a context-lost actor abandons
-rather than submitting for `send`, `emit`, or `heartbeat_set`; that no
-legacy engine or adapter command runs during a tick; that owners keep their
+write happened and its `next_run_at`); that a context-lost low-level actor
+abandons rather than submitting for `send`, `emit`, or `heartbeat_set`; that a
+superseded bound actor submits only its exact continuation and reports its
+late result truthfully; that no legacy engine or adapter command runs during a
+tick; that owners keep their
 bring-forward. Typed results are caller assertions inside the existing
 trusted single-user POSIX store: no native-tool attestation, no new
 authentication boundary, no hostile-same-user or distributed defence.
@@ -1145,6 +1209,15 @@ authentication boundary, no hostile-same-user or distributed defence.
   the trusted single-user store; the engine binds and orders those
   assertions and never verifies them. A missing result is never a
   performed step.
+- A bound takeover of a pending heartbeat write holds later writes to the same
+  heartbeat until the exact interrupted continuation reports an authoritative
+  applied, `not_performed`, or `unavailable` result. A `failed` late result
+  leaves the hold unsettled, so scheduling availability can remain reduced
+  indefinitely. The hold does not cancel the old write or prove provider
+  ordering. The legacy low-level `tick start --abandon` path has no such
+  interrupted-effect settlement or fence and cannot establish the bound
+  no-replay guarantee. Native activation still requires the separate
+  newer-write ordering qualification in `native-monitor.md`.
 - Artifact files are not atomic with the state document. The engine's
   `plan.json` and each adapter execution's input and report files are
   sequential private writes with no transaction among themselves or with
@@ -1165,7 +1238,8 @@ authentication boundary, no hostile-same-user or distributed defence.
 `attempt-not-reserved`, `attempt-not-unresolved`, `missing-evidence`,
 `invalid-adapter-report`, `unknown-notice`, and for bound monitor entry
 `invalid-reference`, `registry-not-found`, `registry-mismatch`,
-`monitor-active`, `stale-invocation`; for the directed tick,
+`monitor-active`, `heartbeat-unsettled`, `stale-invocation`,
+`interrupted-effect-capacity`; for the directed tick,
 `tick-in-progress`, `unknown-tick`, `tick-not-running`,
 `action-not-pending`, `invalid-result`, `stale-result`, `tick-clock`.
 
