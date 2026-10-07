@@ -1,0 +1,99 @@
+{
+  "source_revision": "ca2c510c304cb7fd3216a1f2b0ac02645dceea12",
+  "shared_public_inputs": {
+    "docs/superpowers/research/2026-10-04-jev-axi-exploratory-opportunities.md": "66be15ec47ed66898e2f29bc5950556df8143ac9864508bc83508f6bfa76183c",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/README.md": "e0cf866e2a446e2d5b46554e49a9b3152eef2ceab1df0534767c033b09b46a9f",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/capability-discovery.md": "ecb2c99227e8c4c16df5c970b4601c998cc582aeca58decd3d9ea89edc5107ea",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/completion-evidence.md": "e3bfc856cb7937b16808edc9d6da5c876ec4abd1f09dad586f9ac108272c7ef9",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/design-join.md": "b1ec9ecfe8ffaf61b1cdd77f7ec1c2788148d7c8699b8eb29173bd0e15b4689d",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/resumption-continuity.md": "31dda347a7a929fced73c36c3e5843c29b7897492f86bd63c8ffccbce758114d",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/review.md": "4cfd2b2b638bcbe93029a77fa65e134f26ff8a69dc6575edc9c8966f6838a913",
+    "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/shared-preparation.md": "d7ff28039ed72a7ddcd7edd20c343d766e762721c246a45ec9c122dabcc16fa7",
+    "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/README.md": "aa517aeb22171245531263aaed9f03b2a5a6f9644c5cec9139970c2edd337c5e",
+    "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/push-workflow.md": "bbc8911984e8f8a679a560d7f829de1871a9d0d462c1f6c747761b6a9c05147c",
+    "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/review.md": "0bf3c613dab07e664f3641530a213fb5c06d6cd6aac1e4733c2bfb96018b01b4",
+    "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/staged-workflow.md": "012da6067bd3e1f37eafe9f3073831e3088bf981e925bed0c008d4a461ad56e8",
+    "docs/superpowers/research/evidence/jev-axi-passive-observation-2026-10-05/results.md": "fe8ba1db19faec90fff908a4d55357f2d4706a638d9a7604f3e018db6a301358",
+    "docs/superpowers/research/evidence/jev-axi-publication-observation-2026-10-05/results.md": "9c4cb6a70ae648203df6574ff055adbce9b5cee4e761d23975c72ed86205179e",
+    "docs/superpowers/research/evidence/jev-axi-resumption-study-2026-10-06/results.md": "b9704844d09f0a8d32d76c9d257bbfcb5bb730efe9ecd87b0bdf2360a1deeada"
+  },
+  "first_passes_preserved_before_cross_critique": true,
+  "reports": [
+    {
+      "report": "completion-discovery-first-pass.md",
+      "sha256": "45f0b0f937ac201b95d4077d171c29aa9aa6116c86707c1f51f265ba6093c3fc",
+      "bytes": 15059,
+      "stage": "first-pass",
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "native_record_sha256": "6cb06301022e3275e6b0f0f4d38020a597b4caee802511f008f92b08b35f7b7a"
+    },
+    {
+      "report": "completion-discovery-critique.md",
+      "sha256": "5dd146788c5bdc5710cb3bc25087c3982af67075d6440226bd6ecec31df20fdd",
+      "bytes": 6573,
+      "stage": "critique",
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "native_record_sha256": "b4077fb636bfb0123f4ee0819d5843ee55db9d7301b93b4701aaed45ce4a7c5f"
+    },
+    {
+      "report": "staged-publication-first-pass.md",
+      "sha256": "abd4de2f3f55cb4e86af22453da81db0fadfa619ce2d701997bd791e67db3149",
+      "bytes": 16071,
+      "stage": "first-pass",
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "native_record_sha256": "c04fc99ccac5e7b407e519da6663bdd886d002b3c86e38e713d69a9d389fff7b"
+    },
+    {
+      "report": "staged-publication-critique.md",
+      "sha256": "3a9d32b3ae81478fb21ea2931a23b0eb2e51438224cb3ed52d3235a5145abb38",
+      "bytes": 6799,
+      "stage": "critique",
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "native_record_sha256": "d610f9d58323a02dd05d8153c04513fe8121bb8fa0c1d0649ca24046f9fad427"
+    },
+    {
+      "report": "supervision-allocation-first-pass.md",
+      "sha256": "d2fad6c07c5ff0fdc5f110d105b58902c2856fb3dd413e27b530de9b95f6240d",
+      "bytes": 14744,
+      "stage": "first-pass",
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "native_record_sha256": "d617291e71c3402c48a2067a9849cfa47fc20298b393ba4e18e097a9db3b0619"
+    },
+    {
+      "report": "supervision-allocation-critique.md",
+      "sha256": "e2edd4a61be4930fa415deb795a00466b2fc620c07d7e8b72949d9526a7c3306",
+      "bytes": 6662,
+      "stage": "critique",
+      "model_requested": "gpt-6-astra",
+      "effort_requested": "high",
+      "effective_model_attested": false,
+      "native_record_sha256": "04373cbc883f74cb89532b41793cc3dcc54b805ad823d180d073640b3edca7d7"
+    }
+  ],
+  "coordinator_join": "README.md",
+  "independent_review": "See review.md; final source/factual/relevance review covers the corrected governing join and unchanged historical reports.",
+  "foreign_review_attempt": {
+    "model_requested": "claude-opus-5-5",
+    "effort_requested": "high",
+    "status": "unsuccessful",
+    "retained_evidence": "Session/model and empty tools passed controller checks; success assertion failed. Failure payload was not retained. Cause and costs are unknown. No retry.",
+    "contributes_acceptance": false
+  },
+  "native_experimental_episodes": 0,
+  "jev_requests": 0,
+  "live_changes": 0,
+  "upstream_submissions": 0,
+  "local_relative_links_checked": 15,
+  "limits": "Research hypotheses, not native behavior or economics evidence; ordinary delegation is not product-attested execution.",
+  "source_boundary_correction": "Nine paths describe the parent-to-child commit candidate, not the observed outgoing range. Historical first passes and critiques are superseded on this claim by README.md."
+}
