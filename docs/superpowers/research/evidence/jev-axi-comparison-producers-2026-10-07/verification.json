@@ -1,0 +1,49 @@
+{
+  "observed_at": "2026-10-07T10:01:43.710462+00:00",
+  "local_checks": {
+    "command": "python -m unittest discover -s docs/superpowers/research/evidence/jev-axi-comparison-producers-2026-10-07 -p 'test_*_producer.py'",
+    "passed": 21,
+    "red_before_green": "Each of the three review findings failed at the agreed CLI boundary before its source correction."
+  },
+  "retained_invocations": [
+    {
+      "case": "claim-retained",
+      "exit": 0,
+      "producer_sha256": "2c09389181992990c17f231998e3ac86562be2afe19592c55976eee101e9dd3b",
+      "packet_sha256": "56a9df610b331c2792edea8146c84fe523f2f8ad4261cd67a31876feca6fbe12",
+      "status": "ready",
+      "external_duration_monotonic_ms": 104.662203,
+      "relationships": []
+    },
+    {
+      "case": "coverage-retained",
+      "exit": 0,
+      "producer_sha256": "1d779eccee327c0b1eec09b18ff1e338285ea08c6703d6e34b15b87413421c94",
+      "packet_sha256": "d2e32242b64ffbfceb9783c91409ae92ad2e695aaf8667978717a641218cc770",
+      "status": true,
+      "external_duration_monotonic_ms": 124.253237,
+      "relationships": [
+        "equal",
+        "equal",
+        "equal",
+        "equal",
+        "equal",
+        "equal",
+        "absent",
+        "equal",
+        "absent"
+      ]
+    }
+  ],
+  "inputs": {
+    "README.md": "96c32917aabeac32602afc6ec15121a19c7302e77770b9edff675291488cc1b4",
+    "claim_producer.py": "2c09389181992990c17f231998e3ac86562be2afe19592c55976eee101e9dd3b",
+    "comparison-design.md": "ab26ee1e88c541a9faada139ce5107a1029474324e29d0cea9a34d9a9ba17908",
+    "coverage_producer.py": "1d779eccee327c0b1eec09b18ff1e338285ea08c6703d6e34b15b87413421c94",
+    "examples/claim-retained.json": "6818f9a0a235dd67653d615128382218b19cba857e331f855a959d6888e89bf0",
+    "examples/coverage-retained.json": "7d3361823056ce14e1eb3d402095d90d29d749a7abef185afcda019c96d6f3aa",
+    "test_claim_producer.py": "82f837e208e87311070cddc2718f4567611e09139ef035655a81925cd7e79c2b",
+    "test_coverage_producer.py": "96ea82f17b7c07dd5a458833c86bcc4b7498a2d65dfcdde38ebf8d9284d81cd3"
+  },
+  "limits": "Local mechanics and retained source relationships only; no model request, account qualification, live change, or demonstrated workflow benefit."
+}

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "parent": "010133a2f1f9548ef49932528a67e36d45c8f0d2",
+  "child": "5eb3a02a0d714901ea6f2a480601e6772d1e1d10",
+  "sources": [
+    {
+      "commit": "5eb3a02a0d714901ea6f2a480601e6772d1e1d10",
+      "path": "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/verification.json",
+      "sha256": "ddc15fb627aeca4a00be7d8993ae99403365fe36408287f7d294a46857d3faad"
+    },
+    {
+      "commit": "5eb3a02a0d714901ea6f2a480601e6772d1e1d10",
+      "path": "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/review.md",
+      "sha256": "4cfd2b2b638bcbe93029a77fa65e134f26ff8a69dc6575edc9c8966f6838a913"
+    }
+  ],
+  "verification": 0,
+  "review": 1
+}

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "case_id": "case_01",
+  "assertion": "The retained publication involved nine outgoing files.",
+  "draft": {
+    "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+    "path": "docs/superpowers/research/evidence/jev-axi-opportunity-join-2026-10-07/staged-publication-first-pass.md",
+    "sha256": "abd4de2f3f55cb4e86af22453da81db0fadfa619ce2d701997bd791e67db3149",
+    "start_line": 15,
+    "end_line": 21,
+    "assertion_line": 17
+  },
+  "sources": [
+    {
+      "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+      "path": "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/push-workflow.md",
+      "sha256": "bbc8911984e8f8a679a560d7f829de1871a9d0d462c1f6c747761b6a9c05147c"
+    },
+    {
+      "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+      "path": "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/verification.json",
+      "sha256": "ddc15fb627aeca4a00be7d8993ae99403365fe36408287f7d294a46857d3faad"
+    }
+  ]
+}
