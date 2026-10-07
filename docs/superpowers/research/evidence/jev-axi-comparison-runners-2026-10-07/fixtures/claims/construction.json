@@ -1,0 +1,242 @@
+{
+  "status": "Authored draft bytes staged for review; producer specs require the published fixture commit identity.",
+  "source_matrix": {
+    "path": "docs/superpowers/research/evidence/jev-axi-comparison-preparation-2026-10-07/semantic-support.md",
+    "sha256": "89fe9f3fd491ea8020a52880c36c8c12a03bed260dc2266fa9473a6bdb9b458c"
+  },
+  "consumer_labels": "neutral case IDs only; construction and evaluator notes stay in this coordinator inventory",
+  "cases": [
+    {
+      "case_id": "c02",
+      "draft_file": "drafts/c02.md",
+      "sha256": "7669b39a005c0db06dc36f7da2702e620f2acb05c7252617eaded1d201fcb01c",
+      "bytes": 477,
+      "assertion": "The commit candidate adds nine files; its verification record names seven reviewed content files.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/push-workflow.md",
+          "sha256": "bbc8911984e8f8a679a560d7f829de1871a9d0d462c1f6c747761b6a9c05147c",
+          "bytes": 9473
+        },
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/verification.json",
+          "sha256": "ddc15fb627aeca4a00be7d8993ae99403365fe36408287f7d294a46857d3faad",
+          "bytes": 1842
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c03",
+      "draft_file": "drafts/c03.md",
+      "sha256": "4097e57c5194b2c86b9e8585a366835867041209856ac0ec3efab99ef3a99e4c",
+      "bytes": 282,
+      "assertion": "The publication observation established successful publication during the observed interval.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-publication-observation-2026-10-05/results.md",
+          "sha256": "9c4cb6a70ae648203df6574ff055adbce9b5cee4e761d23975c72ed86205179e",
+          "bytes": 3153
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c04",
+      "draft_file": "drafts/c04.md",
+      "sha256": "96d3f2e350c8c314682148316a98fc1179f312b9aebfd06e33998baf4611583b",
+      "bytes": 261,
+      "assertion": "The five reviewed documents were published after the observed interval.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-publication-observation-2026-10-05/results.md",
+          "sha256": "9c4cb6a70ae648203df6574ff055adbce9b5cee4e761d23975c72ed86205179e",
+          "bytes": 3153
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c05",
+      "draft_file": "drafts/c05.md",
+      "sha256": "25cb6085edd2fdb4cb41349d6af13902093938b6d4dc7cc5dbd63a77c856bf13",
+      "bytes": 246,
+      "assertion": "Retrieving the saved review choice avoided reconstruction work.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-resumption-study-2026-10-06/results.md",
+          "sha256": "b9704844d09f0a8d32d76c9d257bbfcb5bb730efe9ecd87b0bdf2360a1deeada",
+          "bytes": 5829
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c06",
+      "draft_file": "drafts/c06.md",
+      "sha256": "9e863430203aa4f261a3b940fafb8aec2fe0fe2adbfef20a1706bb65f1f295d1",
+      "bytes": 270,
+      "assertion": "The returning agent retrieved the saved review choice and used it in later preparation.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-resumption-study-2026-10-06/results.md",
+          "sha256": "b9704844d09f0a8d32d76c9d257bbfcb5bb730efe9ecd87b0bdf2360a1deeada",
+          "bytes": 5829
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c07",
+      "draft_file": "drafts/c07.md",
+      "sha256": "c28dc63621bacdd182ff6af2cfb2374688b2113ee3b1f414f8e6138633c64173",
+      "bytes": 314,
+      "assertion": "The publication study reports that “Model usage, operator effort, money, quota, and comparative savings remain unknown.”",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-publication-observation-2026-10-05/results.md",
+          "sha256": "9c4cb6a70ae648203df6574ff055adbce9b5cee4e761d23975c72ed86205179e",
+          "bytes": 3153
+        }
+      ],
+      "availability": "ready",
+      "quotation": "Model usage, operator effort, money, quota, and comparative savings remain unknown."
+    },
+    {
+      "case_id": "c08",
+      "draft_file": "drafts/c08.md",
+      "sha256": "08ccb8a45b22a5b59e4af434f332f6d0083de64b9e312c16530efab97c6f2426",
+      "bytes": 265,
+      "assertion": "The publication study measured a reduction in operator verification effort.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-publication-observation-2026-10-05/results.md",
+          "sha256": "9c4cb6a70ae648203df6574ff055adbce9b5cee4e761d23975c72ed86205179e",
+          "bytes": 3153
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c09",
+      "draft_file": "drafts/c09.md",
+      "sha256": "832cc3d683f2868dd5082372e477aafbf35f01b9e6dcb94695c291dbab821844",
+      "bytes": 463,
+      "assertion": "The reports establish that the actual publication had nine outgoing files.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-opportunity-join-2026-10-07/staged-publication-first-pass.md",
+          "sha256": "abd4de2f3f55cb4e86af22453da81db0fadfa619ce2d701997bd791e67db3149",
+          "bytes": 16071
+        },
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-workflow-opportunities-2026-10-05/push-workflow.md",
+          "sha256": "bbc8911984e8f8a679a560d7f829de1871a9d0d462c1f6c747761b6a9c05147c",
+          "bytes": 9473
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c10",
+      "draft_file": "drafts/c10.md",
+      "sha256": "0c1f46a7d46e2ccdeb4b71f0d6e12db7baa92e8eb3ba9dc1b7d20cd93206251a",
+      "bytes": 259,
+      "assertion": "The complete actual pushed range contained exactly seven files.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-consumer-opportunities-2026-10-04/verification.json",
+          "sha256": "ddc15fb627aeca4a00be7d8993ae99403365fe36408287f7d294a46857d3faad",
+          "bytes": 1842
+        }
+      ],
+      "availability": "ready",
+      "quotation": null
+    },
+    {
+      "case_id": "c11",
+      "draft_file": "drafts/c11.md",
+      "sha256": "96d3f2e350c8c314682148316a98fc1179f312b9aebfd06e33998baf4611583b",
+      "bytes": 261,
+      "assertion": "The five reviewed documents were published after the observed interval.",
+      "draft_coordinates": {
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 1
+      },
+      "sources": [
+        {
+          "commit": "7f16d22c5794787ce7db346087d5d38b57bd6ccd",
+          "path": "docs/superpowers/research/evidence/jev-axi-publication-observation-2026-10-05/results.md",
+          "sha256": "9c4cb6a70ae648203df6574ff055adbce9b5cee4e761d23975c72ed86205179e",
+          "bytes": 3153
+        }
+      ],
+      "availability": "controlled_unavailable",
+      "quotation": null
+    }
+  ]
+}
