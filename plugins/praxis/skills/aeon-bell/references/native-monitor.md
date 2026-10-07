@@ -1,7 +1,8 @@
 # Native monitor operation
 
-The complete procedure for the one persistent native task that runs the Aeon
-Bell monitor pass. The engine directs the pass: it issues one fully bound action at a
+The complete procedure for one logical monitor with one persistent native
+scheduler definition per registry. A scheduled run may start a fresh
+conversation. The engine directs the pass: it issues one fully bound action at a
 time (a task read, the adapter query, a send, a print, a heartbeat write)
 and the monitor performs exactly that action with the harness's own native
 tool and submits the typed result. The harness supplies scheduling, task
@@ -11,6 +12,12 @@ directory. `engine-cli.md` is the engine's full contract for interpreting
 any output (its "Directed tick" section defines every action and result);
 its owner commands and worked example are the owner's reading, not part of
 this procedure.
+
+For native setup or qualification, first read
+[native-harnesses.md](native-harnesses.md). It distinguishes the hosting
+scheduler, continuation target, and gate provider and records the required
+Codex, Claude, and Cursor bindings. This protocol and its constructed tests
+do not supply those native bindings.
 
 ## Structured execution
 
@@ -80,17 +87,20 @@ value, or heartbeat reference.
   supplies the current registry id and is refused while an invocation is
   active. Entry references prevent accidental misbinding; they are not
   credentials or proof of the native task.
-- One persistent monitor task per store with exactly one native heartbeat
-  that performs the tick below. The heartbeat has no fixed cadence: each
+- One logical monitor per store with exactly one persistent native scheduler
+  definition (called its heartbeat by the engine) that performs the tick below.
+  Restore the configured entry and controls for each native firing and use
+  fresh structured invocation state. The heartbeat has no fixed cadence: each
   tick ends with the engine choosing its next run from the registry's
   freshest schedule (see "Scheduling decision" in `engine-cli.md`), sparse
   for long waits and tighter near likelier opening times, with an owner's
   explicit interval winning outright. Never create per-run or
   per-registration cron tasks, and never create automation per tick or per
   registration; the one heartbeat is updated in place.
-- The operating monitor model is Luna High, qualified before it operates:
-  activation waits for that qualification, and Luna Low is not activated
-  meanwhile.
+- The selected Codex monitor model is Luna High, qualified before it operates:
+  Codex activation waits for that qualification, and Luna Low is not activated
+  meanwhile. Claude and Cursor model/effort selection uses Rolecasting on the
+  actual surface; Luna's selection supplies no cross-harness model claim.
 - Before activation or cutover, the harness must demonstrate, on this one
   heartbeat, the native controls the `heartbeat_set` action needs:
   observing its next run, setting the next run to an absolute time, and
@@ -109,10 +119,11 @@ value, or heartbeat reference.
   evidence. Engine generation fencing, binding state, manual recovery, and an
   unconditional setter that receives generation data do not satisfy this
   ordering gate.
-- The native heartbeat inherits the monitor task's model and may substitute an
-  unavailable model. Whether a heartbeat uses reserve capacity after quota
-  exhaustion is unqualified; do not rely on it either way. A resumed worker
-  keeps its own model and effort; nothing here overrides them.
+- The selected Codex heartbeat inherits the monitor task's model and may
+  substitute an unavailable model. Observe inheritance, substitution, and
+  capacity behavior separately on each native surface. Reserve capacity after
+  quota exhaustion is unqualified; do not rely on it either way. A resumed
+  worker keeps its own model and effort; nothing here overrides them.
 - Keep any prior monitors running until this monitor has demonstrated
   replacement coverage for their registrations. Coverage is shown by
   registrations, observations, and reported attempts in `inspect`, not by

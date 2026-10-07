@@ -68,8 +68,13 @@ const result = await binding.advance({
 });
 ```
 
-`CONFIGURED_NATIVE_CONTROLS` is built once from the harness's actual native
-interfaces. `taskRead` receives stored `host`, `task_id`, and `episode`;
+`CONFIGURED_NATIVE_CONTROLS` is configuration to implement through the selected
+harness's actual native interfaces, not a supplied product binding. During
+setup follow [native-harnesses.md](native-harnesses.md), and distinguish the
+hosting scheduler, continuation target, and gate provider. The `functions.exec`
+example above describes the Codex transport; another harness needs its own
+supported source, entry, state, process, and native-control channels.
+`taskRead` receives stored `host`, `task_id`, and `episode`;
 `runArgv` receives the stored argv array and cwd; `send` receives stored host, task id, and
 message with no model or effort override; `emit` receives the stored text;
 `heartbeatSet` receives the complete frozen action and engine envelope. An
@@ -163,7 +168,9 @@ documented terminal response shape without accepting output from a changed or
 lost running session.
 
 The state slots are per native invocation. `store` and `load` do not promise
-that another heartbeat run can recover them. A new invocation uses the
+that another scheduled run can recover them. Restore the configured source,
+entry, and controls, and allocate fresh run state for each native invocation.
+A new invocation uses the
 engine's takeover policy; an in-progress invocation that loses this binding
 channel stops unresolved.
 

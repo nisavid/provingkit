@@ -28,14 +28,22 @@ provenance and ownership decision.
 
 Shared waiting conditions come into one monitoring pass. Owners register a
 task continuation against a typed gate, optionally with an expected-opening
-forecast and an effective poll interval; one persistent monitor task with one
-native heartbeat observes each shared condition once per tick and wakes
+forecast and an effective poll interval; one logical monitor with one
+persistent native scheduler definition observes each shared condition once per tick and wakes
 registered targets whose gate is open and whose task is idle. The engine
 schedules the next tick from the expected wait (sparse for long waits,
 tighter near likelier opening times, an explicit interval winning outright),
 and the monitor sets its heartbeat's next run from that schedule. The harness
 supplies scheduling controls and task control; Aeon Bell supplies the
 registry, the observation adapter, the schedule, and the dispatch contract.
+
+The required native integrations are Codex heartbeats, Claude Routines, and
+Cursor Automations. Each registry uses one selected hosting binding; native
+firings may start fresh conversations. See
+[`references/native-harnesses.md`](skills/aeon-bell/references/native-harnesses.md)
+for the required controls, current per-harness gaps, and delivery/activation
+joins. Hosting scheduler, continuation target, and gate provider are separate
+choices. A Claude or Codex package projection supplies no native binding.
 
 The engine directs the monitor through a registry-bound entry. Setup binds
 the existing canonical registry, complete binding-path list, and one native
@@ -89,6 +97,7 @@ plugins/praxis/
     ├── references/engine-cli.md                  # Engine contract, owner commands, worked example
     ├── references/codex-status-adapter.md        # Binding config, fixed protocol, outcomes
     ├── references/native-monitor.md              # The complete monitor tick procedure and quiet rules
+    ├── references/native-harnesses.md            # Required native bindings, setup, persistence, evidence joins
     ├── references/structured-harness.md          # Structured binding and qualification procedure
     ├── scripts/aeon_bell.py                      # Registry, monitor cycle, and attempt engine
     ├── scripts/codex_status.py                   # Status-only Codex observation adapter
@@ -117,6 +126,13 @@ documentation; `docs/praxis-engine-contract.md` is a short repository
 entrypoint that links to them.
 
 ### Status of the equipment
+
+No complete native binding is implemented or qualified for Codex, Claude
+Routines, or Cursor Automations. All three require implemented bindings,
+controlled tests, and bounded disposable native integration evidence before
+the candidate lands; production activation and consumer cutover remain later
+joins. The linked native-harness reference is the per-harness source-status
+record.
 
 This source snapshot establishes the installable procedure, the engine with
 its adaptive schedule and directed tick, and the status adapter with

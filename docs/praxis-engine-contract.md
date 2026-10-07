@@ -14,11 +14,13 @@ links to it.
 | Engine `scripts/aeon_bell.py`: registry, monitor cycle, directed tick, attempt lifecycle, error codes | [`references/engine-cli.md`](../plugins/praxis/skills/aeon-bell/references/engine-cli.md) |
 | Status adapter `scripts/codex_status.py`: binding config, fixed protocol, outcomes, redaction | [`references/codex-status-adapter.md`](../plugins/praxis/skills/aeon-bell/references/codex-status-adapter.md) |
 | Native monitor task: setup, task-state mapping, send and reconcile, quiet rules | [`references/native-monitor.md`](../plugins/praxis/skills/aeon-bell/references/native-monitor.md) |
+| Native harness setup: Codex, Claude, and Cursor controls, persistence, evidence joins | [`references/native-harnesses.md`](../plugins/praxis/skills/aeon-bell/references/native-harnesses.md) |
 | Structured harness binding: exact-value transport, classification, retry, qualification | [`references/structured-harness.md`](../plugins/praxis/skills/aeon-bell/references/structured-harness.md) |
 
 ## Architecture
 
-One persistent monitor task observes each shared condition once per tick, at
+One logical monitor with one persistent native scheduler definition per
+registry observes each shared condition once per tick, at
 a cadence the engine schedules from the expected wait. The engine owns the
 registry, the schedule, and the dispatch contract: it consumes typed JSON
 observations and task states, plans the next check from the latest
@@ -46,7 +48,12 @@ Clients with serializable structured state use the Node-free
 `scripts/monitor_binding.js` consumer. It retains engine and native values
 behind one `advance` interface and exposes only a redacted classification
 view. It does not change engine replies, prove native effects, or supply
-heartbeat ordering authority.
+heartbeat ordering authority. Codex heartbeats, Claude Routines, and Cursor
+Automations each require their own native binding. The linked native-harness
+reference distinguishes the hosting scheduler, continuation target, and gate
+provider and records the current gaps. A scheduled run may start a fresh
+conversation; it restores the same configured registry entry and uses fresh
+invocation state for engine-owned takeover.
 
 ## Trust boundary
 

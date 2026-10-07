@@ -24,6 +24,11 @@ commands.
   runs as written against an empty `$STORE` with no binding and no Codex.
 - **Monitor**: this invocation is the shared monitor task, or is asked to run
   one monitor pass. Read [native-monitor.md](references/native-monitor.md).
+  During native setup or qualification, also read
+  [native-harnesses.md](references/native-harnesses.md) to select the hosting
+  scheduler, continuation target, and gate provider and verify their actual
+  interfaces. Each registry has one selected native scheduler definition;
+  individual firings may start fresh conversations.
   When the harness supports structured serializable state, also read and use
   [structured-harness.md](references/structured-harness.md); it is the required
   execution path and keeps opaque values out of actor text. Stop unsupported
@@ -103,6 +108,9 @@ harmless probe that Rolecasting requires before Daybreak work.
 - [structured-harness.md](references/structured-harness.md): the structured
   binding load, advance, classification, retry, stop, and qualification
   procedure for clients with serializable state channels.
+- [native-harnesses.md](references/native-harnesses.md): native setup and
+  qualification for Codex heartbeats, Claude Routines, and Cursor Automations;
+  persistence across fresh runs, required controls, and separate evidence joins.
 - [codex-status-adapter.md](references/codex-status-adapter.md): the private
   binding config, the fixed status-only Codex protocol, outcome reasons, and
   what the adapter refuses to do.
