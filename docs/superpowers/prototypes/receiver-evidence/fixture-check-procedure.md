@@ -21,23 +21,28 @@ proposal. The authorization ticket must record an actual positive grant.
 | Dedicated project | Exact project directory and normal UI selection; no existing user task is the fixture |
 | Configuration | Exact project `.claude/settings.local.json`, its current bytes or verified absence, and the single added Stop-hook entry |
 | Collector slot | New private run directory and exact config, output, claim, and partial paths; expected pre-state and retention disposition |
-| Launcher | Exact command and inherited environment, including the single proposed `CLAUDE_CODE_MESSAGING_SOCKET` observation; no implicit environment sanitization claim |
+| Launcher | Exact command and inherited environment, including proposed socket, hook Code PID, and hook session-ID observations; no implicit environment sanitization claim |
 | Independent witness | Scoped normal-UI creation/selection observation and the unique setup-response text as displayed in that selected task |
 | Metadata directory | One explicitly supplied and independently bound account/organization directory under the selected profile; do not search private settings to discover it |
 | Candidate selection | Up to three explicitly selected metadata paths from the bounded listing, with the later grant covering each complete file |
 | Receiver effects | Task creation, one model turn, hook command, whole-event acquisition, configuration restoration, output retention, and fixture closeout |
 
-The collector does not identify its engine parent. An intended binary pin,
-installed package, Node executable, or collector PID does not establish the
-Code executable actually running the selected task. Preparation must consume
-the parallel access design and propose the smallest concrete executor witness.
-Any needed process/executable observations require enumerated paths/fields in
-the later grant; this draft performs none.
+The optional [executable prototype](executor-contract.md) can sample the ancestry
+between its own PID and the hook's claimed Code PID and hash that ancestor's
+opened image. An intended binary pin, installed package, or collector PID alone
+does not establish the selected Code executor. Preparation must bind native role
+and source compatibility independently and reconcile incomplete states with
+task association. Enumerate process `stat` records, the claimed `exe` path,
+byte ceilings, hook environment, reader lifecycle, and retained output in the
+later grant. This source draft performs no receiver process reads.
 
-The independently bound metadata directory and executor witness are still
+The independently bound metadata directory and executor observation are still
 preparation inputs, not discovered facts. If neither can be supplied within a
 reviewable scope, retain the specific blocker rather than expand discovery.
-The old app-side receipt remains an alternative for a named unresolved gap.
+[Choose the selected-directory binding method](https://github.com/nisavid/provingkit/issues/476)
+consumes its separate comparison before selecting directory acquisition. An
+app-side projection or the old receipt remains a conditional alternative;
+neither is adopted by the executable prototype.
 
 ## Configuration proposal
 
@@ -54,6 +59,15 @@ initial command limit is 1 MiB and 5 seconds; neither is a receiver execution
 deadline. The hook must be configured before the setup response whose Stop is
 being observed. Do not create a query only to obtain an ID and silently spend
 another unapproved setup turn.
+
+If the executable extension is selected after prototype acceptance, bind its
+six-process limit, 8 KiB per before/after process record, 256 MiB image ceiling
+plus overflow detection, and 30-second observation wait in the packet. Use
+independently assessed native bytes for comparison. A changed digest is
+unassessed, not incompatible. Timeout preserves Stop but can leave reader exit
+unconfirmed; the packet must specify owned-reader quiescence before artifact
+removal. This cost is additional to input acquisition and publication. Total
+duration remains unmeasured.
 
 Before making the eventual change, retain the authorized pre-change bytes and
 check the relevant hook settings/trust semantics for the selected executor.

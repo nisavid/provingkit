@@ -26,7 +26,7 @@ file is not its stdin interface. Paths and parent directories are trusted
 inputs; this is not hostile-path containment, producer authentication, or a
 qualified private-data protection mechanism.
 
-Configuration has exactly these fields:
+Configuration has these required fields and one optional observation object:
 
 | Field | Meaning and limit |
 | --- | --- |
@@ -37,6 +37,7 @@ Configuration has exactly these fields:
 | `since` | Nonnegative epoch milliseconds for the beginning of the accepted capture window |
 | `maxInputBytes` | Integer from 1 to 1,048,576; interpretation ceiling for serialized stdin |
 | `inputTimeoutMs` | Integer from 10 to 60,000; elapsed stdin acquisition limit |
+| `executorObservation` | Optional object in the [executable contract](executor-contract.md); absence performs no process/image acquisition |
 
 The command reads at most 32 KiB plus one overflow byte from the configuration.
 Stdin acquisition reads at most `maxInputBytes + 1` bytes. It neither opens the
@@ -45,9 +46,10 @@ can nevertheless contain transcript paths, cwd, permission mode, assistant text,
 background commands, and cron prompts. Smaller retained output does not narrow
 that acquisition.
 
-The only environment value the application code selects is
-`CLAUDE_CODE_MESSAGING_SOCKET`, retained up to 4,096 code units. A missing or
-larger value becomes a gap. This is an asserted endpoint observation; the
+The application selects `CLAUDE_CODE_MESSAGING_SOCKET`, retained up to 4,096 code
+units. Optional executable observation also selects `CLAUDE_PID` and
+`CLAUDE_CODE_SESSION_ID` under its admission checks. A missing or
+larger endpoint becomes a gap. This is an asserted endpoint observation; the
 command does not connect to it, encode a sender destination, authenticate the
 peer, or grant consent. A real Node launch also inherits environment before
 JavaScript starts: a reviewed live launcher must enumerate that environment
@@ -94,6 +96,12 @@ Malformed UTF-8/JSON, wrong event shape, missing text, mismatches, byte overflow
 timeout, and read failure cannot qualify the route. Absence of an observation
 does not establish refusal or nondelivery. No outcome causes a resend.
 
+The optional [hook-selected executable observation](executor-contract.md) adds
+a separate facet after admitted Stop acquisition. Its incomplete result preserves
+the Stop evidence. Observed image bytes do not establish the selected Desktop
+task, native Code role, compatibility, or qualification. The independent binding
+and selected-executor gaps remain until the preparation join resolves them.
+
 ## Files and termination
 
 For a configured output `result.json`, the public lifecycle is:
@@ -121,7 +129,8 @@ observation. A signal after linking can leave a complete result even when the
 caller loses the exit result; inspect existing files under the grant before
 any new action. File synchronization and linking do not claim survival of a
 host crash or directory-metadata durability. Filesystem operations themselves
-have no total execution deadline; the timeout covers stdin acquisition.
+have no total execution deadline. Stdin acquisition and the optional executable
+observation have distinct wait limits; neither bounds publication.
 
 The supervising procedure owns removal of the exact recorded run artifacts
 after collection is quiescent and required evidence is retained. It preserves
@@ -131,7 +140,7 @@ unrelated process termination is part of the command.
 ## Synthetic evidence and dependencies
 
 ```sh
-node --test docs/superpowers/prototypes/receiver-evidence/reader.test.mjs docs/superpowers/prototypes/receiver-evidence/hook.test.mjs docs/superpowers/prototypes/receiver-evidence/collector.test.mjs
+node --test docs/superpowers/prototypes/receiver-evidence/reader.test.mjs docs/superpowers/prototypes/receiver-evidence/hook.test.mjs docs/superpowers/prototypes/receiver-evidence/collector.test.mjs docs/superpowers/prototypes/receiver-evidence/executor-command.test.mjs
 ```
 
 The command tests use invented events, a selected synthetic environment, and
@@ -142,7 +151,14 @@ oversized/malformed/stalled input, invalid configuration, consumed run slots,
 interrupted publication, occupied destinations, and termination cleanup states.
 Node.js 24.21.0 ran the initial 34 combined checks successfully. Cross-examination
 added optional-field and served-session command checks; the revised suite has
-36 checks.
+36 checks. The executable extension adds 14 command checks; all 50 pass on
+Node.js 24.21.0. They cover admission, ancestry limits/cycles, bounded malformed
+records, overflow, replaced/vanished processes, timeout and owned-helper exit,
+interpreter/non-ELF gaps, changed-build classification, endpoint samples, unbound
+collection, and configuration ceilings. One controlled test-owned Linux child
+exercises actual `/proc` and opened-image mechanics. It is a Node image, not a
+Claude executor or evidence of a native Code role. No Claude process or private
+receiver file is involved.
 
 The bounded pipe reader uses the documented
 [`net.Socket` `onread` buffer interface](https://nodejs.org/api/net.html#new-netsocketoptions)

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Executable observation · source prototype</title>
+<style>
+body{font:17px/1.5 system-ui,sans-serif;color:#18302d;background:#f4f7f6;margin:0;padding:30px}
+main{max-width:900px;margin:auto}h1{line-height:1.2}small{color:#526762}section{margin:24px 0;padding:24px;background:white;border:1px solid #d5dfdc;border-radius:10px}
+dl{display:grid;grid-template-columns:180px 1fr;gap:12px}dt{color:#526762}dd{margin:0;font-weight:600}
+button{font:inherit;border:1px solid #507f72;background:white;color:#215e4b;border-radius:6px;padding:8px 12px;margin:4px;cursor:pointer}
+button[aria-selected=true]{background:#215e4b;color:white}button:focus-visible{outline:3px solid #bc7c2d;outline-offset:2px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+@media(max-width:600px){body{padding:16px}section{padding:16px}dl{grid-template-columns:1fr;gap:4px}dd{margin-bottom:12px}}
+</style>
+<main>
+<small>SOURCE PROTOTYPE · INVENTED EXAMPLES</small>
+<h1>What does the executable observation tell us?</h1>
+<p>Explore whether the collector preserves a completed setup response while distinguishing an observed image, an unassessed build, and incomplete evidence. These examples illustrate the command's output model. This page performs no file reads, hashing, process actions, or Claude activity.</p>
+<section aria-live="polite">
+<h2>Current example</h2><dl id="state"></dl><p id="meaning"></p>
+<details><summary>Illustrative evidence fields</summary><pre id="record"></pre></details>
+</section>
+<section><h2>Explore the outcomes</h2><div id="actions"></div></section>
+<section><h2>Guided examples</h2><div role="tablist" aria-label="Examples" id="tabs"></div><p id="guide"></p><div id="steps"></div></section>
+<p>The source checks use six processes, up to 256 MiB of image bytes plus overflow detection, and a separate 30-second observation wait. Image success still needs independent task/role binding and compatibility evidence. Every result remains unqualified.</p>
+<p><a href="executor-contract.md">Executable observation contract</a> · <a href="collector-contract.md">Collector contract</a></p>
+</main>
+<script>
+const examples = {
+  ready: {label:'Completed setup response',status:'not_admitted',reason:'matching_stop_and_hook_identity_required',meaning:'The setup response is retained. Executable acquisition has not been admitted.'},
+  match: {label:'Matching image',status:'observed',comparison:'matches_configured_identity',cleanup:'exit_observed',meaning:'The opened image matches the supplied digest. Independent evidence must still identify its native Code role and selected Desktop task.'},
+  changed: {label:'Changed build',status:'observed',comparison:'unassessed',cleanup:'exit_observed',meaning:'The digest differs. Compatibility needs assessment; the difference does not establish incompatibility.'},
+  reused: {label:'PID replaced',status:'incomplete',reason:'process_identity_changed',cleanup:'exit_observed',meaning:'The before/after process identities differ. The setup response remains useful; executable evidence is incomplete.'},
+  overflow: {label:'Image too large',status:'incomplete',reason:'executable_over_limit',cleanup:'exit_observed',meaning:'Acquisition stops after the ceiling and one overflow byte. No digest is published and the scope does not grow.'},
+  deadline: {label:'Reader deadline',status:'incomplete',reason:'observation_timeout',cleanup:'exit_observed',meaning:'The owned reader was stopped and its exit observed. The setup response is retained without an executable claim.'},
+  pending: {label:'Reader exit unconfirmed',status:'incomplete',reason:'observation_timeout',cleanup:'exit_unconfirmed',meaning:'The collector stopped waiting. Reader quiescence remains a cleanup obligation before run artifacts are removed.'},
+  interpreter: {label:'Interpreter executor',status:'incomplete',reason:'interpreter_executor_unsupported',cleanup:'exit_observed',meaning:'This prototype does not identify a script/module through its interpreter image. That input remains a named gap.'}
+};
+function exampleRecord(key) {
+  const e=examples[key];
+  return {qualification:'unqualified',binding:'unbound',purpose:'fixture_stop_check',
+    unbound:{observedHookSessionId:'invented-code-id',matchingFinalText:'FIXTURE invented-run'},
+    executorObservation:{status:e.status,...(e.reason?{reason:e.reason}:{}),...(e.comparison?{comparison:e.comparison}:{}),
+      ...(e.cleanup?{worker:{cleanup:e.cleanup}}:{})},
+    gaps:['independent_task_binding_required','selected_executor_unobserved']};
+}
+const walkthroughs=[
+  {title:'Observation and binding',description:'A retained Stop event can support an image observation while the Desktop task remains unbound.',steps:['ready','match']},
+  {title:'Partial evidence',description:'A process change or timeout must preserve Stop evidence. Unconfirmed exit adds a cleanup obligation.',steps:['match','reused','deadline','pending']},
+  {title:'Compatibility',description:'A different digest is unassessed. An interpreter is an unsupported input, which is a different result.',steps:['match','changed','interpreter']}
+];
+function render(key){
+  const e=examples[key],r=exampleRecord(key),fields=[['Setup response','Retained'],['Executable result',e.status],['Compatibility',e.comparison??'No comparison'],['Reader cleanup',e.cleanup??'No reader started'],['Task binding','Unbound'],['Qualification','Unqualified']];
+  document.querySelector('#state').replaceChildren(...fields.flatMap(([name,value])=>{const a=document.createElement('dt'),b=document.createElement('dd');a.textContent=name;b.textContent=value;return[a,b]}));
+  document.querySelector('#meaning').textContent=e.meaning;document.querySelector('#record').textContent=JSON.stringify(r,null,2);
+}
+function button(key){const b=document.createElement('button');b.textContent=examples[key].label;b.onclick=()=>render(key);return b}
+document.querySelector('#actions').append(...Object.keys(examples).map(button));
+function guide(index){document.querySelectorAll('[role=tab]').forEach((b,i)=>b.setAttribute('aria-selected',String(i===index)));const w=walkthroughs[index];document.querySelector('#guide').textContent=w.description;document.querySelector('#steps').replaceChildren(...w.steps.map((key,i)=>{const b=button(key);b.textContent=`${i+1}. ${examples[key].label}`;return b}));render('ready')}
+walkthroughs.forEach((w,i)=>{const b=document.createElement('button');b.textContent=w.title;b.setAttribute('role','tab');b.onclick=()=>guide(i);document.querySelector('#tabs').append(b)});guide(0);
+</script>
+</html>

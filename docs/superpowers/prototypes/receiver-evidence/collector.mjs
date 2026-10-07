@@ -2,6 +2,7 @@ import { open, writeFile, link, unlink } from 'node:fs/promises';
 import { writeSync } from 'node:fs';
 import { Socket } from 'node:net';
 import { projectStop } from './hook.mjs';
+import { observeExecutor } from './executor.mjs';
 
 const text = (value, max) => typeof value === 'string' && value.length > 0 && value.length <= max;
 
@@ -24,7 +25,17 @@ async function readConfig(path) {
         || !Number.isInteger(c.maxInputBytes) || c.maxInputBytes < 1 || c.maxInputBytes > 1048576
         || !Number.isInteger(c.inputTimeoutMs) || c.inputTimeoutMs < 10 || c.inputTimeoutMs > 60000
         || Object.keys(c).some(key => !['schema', 'runId', 'expectedCodeId', 'expectedFinalText',
-          'since', 'maxInputBytes', 'inputTimeoutMs'].includes(key))) throw new Error('invalid_config');
+          'since', 'maxInputBytes', 'inputTimeoutMs', 'executorObservation'].includes(key))) throw new Error('invalid_config');
+    if (c.executorObservation !== undefined) {
+      const x = c.executorObservation;
+      if (!x || Array.isArray(x) || typeof x.processRoot !== 'string' || !x.processRoot.startsWith('/')
+          || !Number.isInteger(x.maxExecutableBytes) || x.maxExecutableBytes < 1 || x.maxExecutableBytes > 268435456
+          || !Number.isInteger(x.timeoutMs) || x.timeoutMs < 10 || x.timeoutMs > 30000
+          || !/^[a-f0-9]{64}$/.test(x.expectedSha256) || !['native', 'interpreter'].includes(x.executorKind)
+          || Object.keys(x).some(key => !['processRoot', 'maxExecutableBytes', 'timeoutMs', 'expectedSha256', 'executorKind'].includes(key))) {
+        throw new Error('invalid_executor_config');
+      }
+    }
     return c;
   } finally { await file.close(); }
 }
@@ -133,6 +144,18 @@ async function main() {
     }
   }
   if (!validWindow || (config.expectedCodeId === null && !record.unbound)) record.endpoint = null;
+  if (config.executorObservation) {
+    const claimedPid = process.env.CLAUDE_PID;
+    const admitted = validWindow && acquisition.status === 'complete' && !served
+      && event.hook_event_name === 'Stop' && (!!record.responseCandidate || !!record.unbound)
+      && record.binding !== 'mismatch' && text(event.session_id, 256)
+      && process.env.CLAUDE_CODE_SESSION_ID === event.session_id
+      && typeof claimedPid === 'string' && /^[1-9][0-9]{0,9}$/.test(claimedPid)
+      && Number.isSafeInteger(Number(claimedPid)) && Number(claimedPid) !== process.pid;
+    record.executorObservation = admitted
+      ? await observeExecutor(config.executorObservation, process.pid, Number(claimedPid))
+      : { status: 'not_admitted', reason: 'matching_stop_and_hook_identity_required' };
+  }
   await publish(outputPath, record);
 }
 
