@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -81,9 +82,9 @@ class ComparisonCLI(unittest.TestCase):
         self.spec_path = self.root / 'spec.json'
         self.bundle = self.root / 'prepared'
 
-    def cli(self, *args):
+    def cli(self, *args, env=None):
         return subprocess.run([sys.executable, str(RUNNER), *map(str, args)],
-                              capture_output=True, text=True, timeout=10)
+                              capture_output=True, text=True, timeout=10, env=env)
 
     def prepare(self, *, coverage_mode='diagnostic'):
         if self.spec['kind'] == 'coverage':
@@ -91,10 +92,43 @@ class ComparisonCLI(unittest.TestCase):
         self.spec_path.write_text(json.dumps(self.spec))
         return self.cli('prepare', '--spec', self.spec_path, '--output', self.bundle)
 
-    def run_bundle(self, output):
+    def run_bundle(self, output, env=None):
         return self.cli('run', '--prepared', self.bundle, '--manifest-sha256',
                         hashlib.sha256((self.bundle / 'manifest.json').read_bytes()).hexdigest(),
-                        '--output', output, '--local-http')
+                        '--output', output, '--local-http', env=env)
+
+    def delayed_filesystem(self, seconds):
+        fixture = self.root / 'fixture'; fixture.mkdir()
+        (fixture / 'sitecustomize.py').write_text(
+            'from pathlib import Path\nimport time\n'
+            '_open = Path.open\n'
+            'def delayed_open(self, *args, **kwargs):\n'
+            "    if self.name == 'request-0000.body':\n"
+            f'        time.sleep({seconds!r})\n'
+            '    return _open(self, *args, **kwargs)\n'
+            'Path.open = delayed_open\n')
+        return dict(os.environ, PYTHONPATH=str(fixture))
+
+    def delayed_child_startup(self, seconds):
+        fixture = self.root / 'fixture'; fixture.mkdir()
+        (fixture / 'sitecustomize.py').write_text(
+            'import sys\nimport time\n'
+            "if '--multiprocessing-fork' in sys.argv:\n"
+            f'    time.sleep({seconds!r})\n')
+        return dict(os.environ, PYTHONPATH=str(fixture))
+
+    def coverage_fixture(self, endpoint):
+        self.input.write_text(json.dumps({
+            'task': 'Explain the source.', 'ordinary': 'Read s01.',
+            'deterministic': 'Review s01.',
+            'sources': [{'id': 's01', 'path': 'source.txt', 'content': 'Evidence.\n',
+                         'sha256': hashlib.sha256(b'Evidence.\n').hexdigest()}]}))
+        self.spec['kind'] = 'coverage'
+        self.spec['cases'][0]['input']['sha256'] = hashlib.sha256(self.input.read_bytes()).hexdigest()
+        self.spec['limits'].update(cell_seconds=8, tool_operations=16,
+                                  tool_result_bytes=131072, tool_total_bytes=2097152)
+        self.spec['conditions'][0].update(adapter='responses', effort='low', arm='ordinary',
+                                          endpoint=endpoint)
 
     def test_prepare_preserves_complete_input_and_freezes_source_identity(self):
         result = self.prepare()
@@ -223,6 +257,68 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(attempt['api_rate_equivalent_usd'], '0.0001095')
         self.assertEqual(attempt['raw_response'], response)
         self.assertEqual(attempt['raw_events'], [early, done])
+
+    def test_malformed_claim_answer_keeps_terminal_usage(self):
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [{'type': 'output_text'}]}],
+            'usage': {'input_tokens': 100, 'output_tokens': 10,
+                      'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}}
+        event = {'type': 'response.completed', 'response': response}
+        with service(('data: ' + json.dumps(event) + '\n\n').encode()) as (endpoint, received):
+            self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low')
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'; result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        attempt = json.loads((output / 'attempt-0000.json').read_text())
+        totals = json.loads((output / 'summary.json').read_text())['request_accounting']
+        self.assertEqual(attempt['status'], 'invalid_response')
+        self.assertEqual(attempt['raw_response'], response)
+        self.assertEqual(attempt['raw_events'], [event])
+        self.assertEqual(attempt['usage'], response['usage'])
+        self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(totals['known_api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(totals['unvalued_attempts'], 0)
+
+    def test_malformed_coverage_answer_keeps_terminal_usage(self):
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [{'type': 'output_text'}]}],
+            'usage': {'input_tokens': 100, 'output_tokens': 10,
+                      'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}}
+        event = {'type': 'response.completed', 'response': response}
+        with service(('data: ' + json.dumps(event) + '\n\n').encode()) as (endpoint, received):
+            self.coverage_fixture(endpoint)
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'; result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        attempt = json.loads((output / 'cell-0000' / 'attempt-0000.json').read_text())
+        totals = json.loads((output / 'summary.json').read_text())['request_accounting']
+        self.assertEqual(attempt['status'], 'invalid_response')
+        self.assertEqual(attempt['raw_response'], response)
+        self.assertEqual(attempt['raw_events'], [event])
+        self.assertEqual(attempt['usage'], response['usage'])
+        self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(totals['known_api_rate_equivalent_usd'], '0.00001')
+
+    def test_malformed_stream_event_keeps_unambiguous_terminal_usage(self):
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [],
+                    'usage': {'input_tokens': 100, 'output_tokens': 10,
+                              'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}}
+        terminal = ('data: ' + json.dumps({'type': 'response.completed', 'response': response}) + '\n\n').encode()
+        for index, malformed in enumerate((b'data: {broken\n\n', b'data: []\n\n')):
+            with self.subTest(malformed=malformed):
+                self.bundle = self.root / f'prepared-malformed-{index}'
+                with service(malformed + terminal) as (endpoint, received):
+                    self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low')
+                    self.assertEqual(self.prepare().returncode, 0)
+                    output = self.root / f'run-malformed-{index}'
+                    result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                attempt = json.loads((output / 'attempt-0000.json').read_text())
+                self.assertEqual(attempt['status'], 'invalid_response')
+                self.assertEqual(attempt['raw_response'], response)
+                self.assertEqual(attempt['usage'], response['usage'])
+                self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+                self.assertEqual((output / 'response-0000.body').read_bytes(), malformed + terminal)
 
 
     def test_unterminated_responses_terminal_fragment_cannot_complete(self):
@@ -521,6 +617,53 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual((output / attempt['response_body']).read_bytes(), b'fixture redirect')
         self.assertEqual(len(received), 1)
 
+    def test_claim_http_error_retains_reported_usage_without_accepting_answer(self):
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [
+                {'type': 'output_text', 'text': '{"relation":"supported"}'}]}],
+            'usage': {'input_tokens': 100, 'output_tokens': 10,
+                      'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}}
+        event = {'type': 'response.completed', 'response': response}
+        body = ('data: ' + json.dumps(event) + '\n\n').encode()
+        with service((503, {}, body)) as (endpoint, received):
+            self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low')
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'; result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        attempt = json.loads((output / 'attempt-0000.json').read_text())
+        totals = json.loads((output / 'summary.json').read_text())['request_accounting']
+        self.assertEqual(attempt['status'], 'http_error')
+        self.assertIsNone(attempt['relation'])
+        self.assertEqual(attempt['raw_response'], response)
+        self.assertEqual(attempt['raw_events'], [event])
+        self.assertEqual(attempt['usage'], response['usage'])
+        self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(totals['known_api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(totals['unvalued_attempts'], 0)
+
+    def test_coverage_http_error_retains_reported_usage_without_accepting_answer(self):
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [
+                {'type': 'output_text', 'text': 'Synthetic answer.'}]}],
+            'usage': {'input_tokens': 100, 'output_tokens': 10,
+                      'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}}
+        event = {'type': 'response.completed', 'response': response}
+        body = ('data: ' + json.dumps(event) + '\n\n').encode()
+        with service((503, {}, body)) as (endpoint, received):
+            self.coverage_fixture(endpoint)
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'; result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        attempt = json.loads((output / 'cell-0000' / 'attempt-0000.json').read_text())
+        totals = json.loads((output / 'summary.json').read_text())['request_accounting']
+        self.assertEqual(attempt['status'], 'http_error')
+        self.assertEqual(attempt['raw_response'], response)
+        self.assertEqual(attempt['raw_events'], [event])
+        self.assertEqual(attempt['usage'], response['usage'])
+        self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(totals['known_api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(totals['unvalued_attempts'], 0)
+
     def test_invalid_token_counts_and_probabilities_are_not_usable_results(self):
         examples = [
             ({'input_tokens': -1}, {'supported': 1.0, 'contradicted': 0,
@@ -643,6 +786,22 @@ class ComparisonCLI(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse(output.exists())
 
+    def test_coverage_comparison_requires_matching_route_and_rates(self):
+        self.coverage_fixture('http://127.0.0.1:1/v1/responses')
+        ordinary = self.spec['conditions'][0]
+        for field, change in [('endpoint', 'http://127.0.0.1:2/v1/responses'),
+                              ('rates', {'input': '0.20', 'cached': '0',
+                                         'write': '0', 'output': '0'})]:
+            with self.subTest(field=field):
+                self.bundle = self.root / f'prepared-{field}'
+                deterministic = copy.deepcopy(ordinary)
+                deterministic.update(id='deterministic', arm='deterministic')
+                deterministic[field] = change
+                self.spec['conditions'] = [ordinary, deterministic]
+                result = self.prepare(coverage_mode='comparison')
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(self.bundle.exists())
+
     def test_existing_attempt_directory_is_not_reused_or_changed(self):
         with service({}) as (endpoint, received):
             self.spec['conditions'][0]['endpoint'] = endpoint
@@ -686,6 +845,52 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(summary['slots'][1]['status'], 'unattempted')
         self.assertEqual(summary['slots'][1]['reason'], 'run_deadline')
         self.assertLessEqual(len(received), 1)
+
+    def test_claim_preparation_expiring_run_deadline_does_not_submit(self):
+        with service({}) as (endpoint, received):
+            self.spec['conditions'][0]['endpoint'] = endpoint
+            self.spec['limits']['run_seconds'] = 0.4
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'
+            result = self.run_bundle(output, env=self.delayed_filesystem(0.6))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertEqual(summary['slots'][0]['status'], 'unattempted')
+        self.assertEqual(summary['slots'][0]['reason'], 'run_deadline')
+        self.assertEqual(summary['request_accounting']['attempts'], 0)
+        self.assertEqual(received, [])
+        self.assertFalse((output / 'attempt-0000.json').exists())
+        self.assertEqual(json.loads((output / 'request-0000.json').read_text())['status'], 'reserved')
+
+    def test_coverage_preparation_expiring_cell_deadline_does_not_submit(self):
+        with service({}) as (endpoint, received):
+            self.coverage_fixture(endpoint)
+            self.spec['limits']['cell_seconds'] = 0.4
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'
+            result = self.run_bundle(output, env=self.delayed_filesystem(0.6))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        cell = json.loads((output / 'cell-0000' / 'summary.json').read_text())
+        totals = json.loads((output / 'summary.json').read_text())['request_accounting']
+        reservation = json.loads((output / 'cell-0000' / 'request-0000.json').read_text())
+        self.assertEqual(cell['requests'], 0)
+        self.assertEqual(cell['unsubmitted_reason'], 'cell_deadline')
+        self.assertEqual(reservation['status'], 'reserved')
+        self.assertEqual(totals['attempts'], 0)
+        self.assertEqual(received, [])
+
+    def test_child_startup_after_deadline_does_not_submit(self):
+        with service({}) as (endpoint, received):
+            self.spec['conditions'][0]['endpoint'] = endpoint
+            self.spec['limits']['run_seconds'] = 0.4
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'
+            result = self.run_bundle(output, env=self.delayed_child_startup(0.6))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertEqual(summary['slots'][0]['status'], 'unattempted')
+        self.assertEqual(summary['request_accounting']['attempts'], 0)
+        self.assertEqual(received, [])
 
     def test_returned_model_mismatch_keeps_usage_but_stops_the_affected_condition(self):
         response = {'model': 'gpt-6.1-sol', 'status': 'completed', 'output': [

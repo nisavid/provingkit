@@ -36,12 +36,21 @@ def write_json(path, value):
         stream.write('\n')
 
 
-def http_child(endpoint, body, headers, response_path, byte_limit, seconds, channel):
+def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, channel):
     """Stream directly to the reserved attempt; the parent owns the wall-clock limit."""
     url = urlsplit(endpoint)
     connection_type = http.client.HTTPSConnection if url.scheme == 'https' else http.client.HTTPConnection
-    connection = connection_type(url.hostname, url.port, timeout=seconds)
+    remaining = (deadline_ns - time.monotonic_ns()) / 1_000_000_000
+    if remaining <= 0:
+        channel.send({'transport_status': 'not_submitted'})
+        channel.close()
+        return
+    connection = connection_type(url.hostname, url.port, timeout=remaining)
     try:
+        if time.monotonic_ns() >= deadline_ns:
+            channel.send({'transport_status': 'not_submitted'})
+            return
+        channel.send({'submission_started': True})
         connection.request('POST', url.path or '/', body=body, headers=headers)
         response = connection.getresponse()
         channel.send({'http_status': response.status,
@@ -71,14 +80,16 @@ def http_child(endpoint, body, headers, response_path, byte_limit, seconds, chan
         channel.close()
 
 
-def request_bounded(endpoint, body, headers, response_path, byte_limit, seconds):
+def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline_ns):
+    if time.monotonic_ns() >= deadline_ns:
+        return {'transport_status': 'not_submitted', 'submission_started': False}
     context = multiprocessing.get_context('spawn')
     reader, writer = context.Pipe(duplex=False)
     child = context.Process(target=http_child, args=(
-        endpoint, body, headers, str(response_path), byte_limit, seconds, writer))
+        endpoint, body, headers, str(response_path), byte_limit, deadline_ns, writer))
     child.start()
     writer.close()
-    child.join(seconds)
+    child.join(max(0, (deadline_ns - time.monotonic_ns()) / 1_000_000_000))
     timed_out = child.is_alive()
     if timed_out:
         child.terminate()
@@ -87,16 +98,19 @@ def request_bounded(endpoint, body, headers, response_path, byte_limit, seconds)
             child.kill()
             child.join()
     metadata = {'transport_status': 'transport_error', 'http_status': None,
-                'provider_request_id': None, 'first_byte_monotonic_ns': None}
+                'provider_request_id': None, 'first_byte_monotonic_ns': None,
+                'submission_started': False}
     while reader.poll():
         try:
             metadata.update(reader.recv())
         except EOFError:
             break
     reader.close()
-    if timed_out:
+    if timed_out and metadata['submission_started']:
         metadata['transport_status'] = 'timeout'
-    if not response_path.exists():
+    if not metadata['submission_started']:
+        metadata['transport_status'] = 'not_submitted'
+    if metadata['submission_started'] and not response_path.exists():
         response_path.open('xb').close()
     return metadata
 
@@ -161,28 +175,47 @@ def payload_for(condition, state, kind='claim'):
     raise ValueError('unsupported adapter')
 
 
-def parse_result(adapter, body, kind='claim'):
+def response_evidence(adapter, body):
+    """Acquire the response envelope before interpreting its answer."""
     events = []
     if adapter == 'responses':
-        for part in body.decode().replace('\r\n', '\n').split('\n\n')[:-1]:
-            data = '\n'.join(line[5:].lstrip(' ') for line in part.splitlines()
-                             if line.startswith('data:'))
-            if data and data != '[DONE]':
-                events.append(json.loads(data))
-        terminal = [event for event in events if event.get('type') in {
+        malformed = False
+        for part in body.replace(b'\r\n', b'\n').split(b'\n\n')[:-1]:
+            data = b'\n'.join(line[5:].lstrip(b' ') for line in part.splitlines()
+                              if line.startswith(b'data:'))
+            if data and data != b'[DONE]':
+                try:
+                    event = json.loads(data)
+                except ValueError:
+                    malformed = True
+                    continue
+                events.append(event)
+                if not isinstance(event, dict) or not isinstance(event.get('type'), str):
+                    malformed = True
+        terminal = [event for event in events
+                    if isinstance(event, dict) and isinstance(event.get('type'), str)
+                    and event['type'] in {
             'response.completed', 'response.failed', 'response.incomplete', 'error'}]
         if not terminal:
-            return None, events, None, 'stream_incomplete'
+            return None, events, 'invalid_response' if malformed else 'stream_incomplete'
         if len(terminal) != 1:
-            return None, events, None, 'invalid_response'
+            return None, events, 'invalid_response'
         event = terminal[0]
         result = event.get('response')
         if event['type'] == 'error':
-            return result, events, None, 'provider_error'
+            return result, events, 'provider_error'
         if event['type'] != 'response.completed':
             status = {'response.failed': 'provider_failed',
                       'response.incomplete': 'provider_incomplete'}[event['type']]
-            return result, events, None, status
+            return result, events, status
+        return result, events, 'invalid_response' if malformed else 'completed'
+    return json.loads(body), events, 'completed'
+
+
+def parse_result(adapter, result, events, envelope_status, kind='claim'):
+    if envelope_status != 'completed':
+        return result, events, None, envelope_status
+    if adapter == 'responses':
         if not isinstance(result, dict) or result.get('status') != 'completed':
             return result, events, None, 'invalid_response'
         if any(item.get('type') == 'function_call' for item in result.get('output', [])):
@@ -190,10 +223,12 @@ def parse_result(adapter, body, kind='claim'):
         if any(content.get('type') == 'refusal' for item in result.get('output', [])
                if item.get('type') == 'message' for content in item.get('content', [])):
             return result, events, None, 'refused'
-        texts = [content['text'] for item in result.get('output', [])
+        texts = [content.get('text') for item in result.get('output', [])
                  if item.get('type') == 'message' and item.get('role') == 'assistant'
                  and (kind == 'claim' or item.get('phase') in {None, 'final_answer'})
                  for content in item.get('content', []) if content.get('type') == 'output_text']
+        if any(not isinstance(value, str) for value in texts):
+            return result, events, None, 'invalid_response'
         if kind == 'coverage':
             answer = ''.join(texts)
             return result, events, answer or None, 'completed' if answer.strip() else 'invalid_response'
@@ -203,7 +238,6 @@ def parse_result(adapter, body, kind='claim'):
         except (ValueError, TypeError, KeyError):
             relation = None
     else:
-        result = json.loads(body)
         answers = result.get('answers')
         if adapter == 'jev' and isinstance(answers, dict) and set(answers) == {'claim_relation'}:
             answers = [dict(answers['claim_relation'], name='claim_relation')]
@@ -218,27 +252,34 @@ def parse_result(adapter, body, kind='claim'):
 
 
 def bounded_terminal_evidence(body):
-    """Read only complete SSE events from a retained response prefix."""
-    events = []
-    for part in body.replace(b'\r\n', b'\n').split(b'\n\n')[:-1]:
-        lines = part.splitlines()
-        data = b'\n'.join(line[5:].lstrip(b' ') for line in lines if line.startswith(b'data:'))
-        if not data or data == b'[DONE]':
-            continue
-        try:
-            event = json.loads(data)
-        except (UnicodeDecodeError, ValueError):
-            continue
-        if isinstance(event, dict):
-            events.append(event)
-    terminal = [event for event in events if event.get('type') in {
-        'response.completed', 'response.failed', 'response.incomplete', 'error'}]
-    if len(terminal) != 1 or terminal[0].get('type') != 'response.completed':
-        return None, events
-    result = terminal[0].get('response')
-    if not isinstance(result, dict) or result.get('status') != 'completed':
+    """Retain one complete terminal envelope without interpreting its answer."""
+    result, events, status = response_evidence('responses', body)
+    if (status not in {'completed', 'invalid_response'} or
+            not isinstance(result, dict) or result.get('status') != 'completed'):
         return None, events
     return result, events
+
+
+def interpret_response(adapter, body, transport_status, kind='claim'):
+    if transport_status == 'received':
+        try:
+            result, events, envelope_status = response_evidence(adapter, body)
+        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
+            return None, [], None, 'invalid_response'
+        try:
+            return parse_result(adapter, result, events, envelope_status, kind)
+        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
+            return result, events, None, 'invalid_response'
+    if transport_status == 'response_limit' and adapter == 'responses':
+        result, events = bounded_terminal_evidence(body)
+        return result, events, None, transport_status
+    if transport_status == 'http_error':
+        try:
+            result, events, _ = response_evidence(adapter, body)
+        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
+            result, events = None, []
+        return result, events, None, transport_status
+    return None, [], None, transport_status
 
 
 def valid_probabilities(adapter, answer):
@@ -307,7 +348,7 @@ def finalize_response(condition, result, status):
     if returned_model is not None and returned_model != condition['model']:
         value = None
         condition_error = 'model_mismatch'
-    if condition_error and status != 'response_limit':
+    if condition_error and status not in {'response_limit', 'http_error', 'timeout', 'transport_error'}:
         status = condition_error
     return status, condition_error, usage, returned_model, value
 
@@ -404,9 +445,13 @@ def validate_spec(spec):
     if spec['kind'] == 'coverage' and spec.get('mode', 'comparison') == 'comparison':
         profiles = {}
         for condition in spec['conditions']:
-            profiles.setdefault((condition['model'], condition['effort']), []).append(condition['arm'])
-        if any(sorted(arms) != ['deterministic', 'ordinary'] for arms in profiles.values()):
+            profiles.setdefault((condition['model'], condition['effort']), []).append(condition)
+        if any(sorted(item['arm'] for item in pair) != ['deterministic', 'ordinary']
+               for pair in profiles.values()):
             raise ValueError('coverage comparisons require exactly one condition per arm in each profile')
+        if any(pair[0]['endpoint'] != pair[1]['endpoint'] or pair[0]['rates'] != pair[1]['rates']
+               for pair in profiles.values()):
+            raise ValueError('coverage comparison arms require matching endpoint and rates')
 
 
 def make_schedule(spec):
@@ -469,10 +514,10 @@ def prepare(spec_path, output):
                       'sha256': digest((output / 'manifest.json').read_bytes())}))
 
 
-def run_coverage_cell(condition, state, output, limits, remaining):
+def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
     output.mkdir(exist_ok=False)
     tick = time.monotonic_ns()
-    budget = min(limits['cell_seconds'], remaining)
+    cell_deadline_ns = min(run_deadline_ns, tick + int(limits['cell_seconds'] * 1_000_000_000))
     payload = payload_for(condition, state, 'coverage')
     sources = {source['id']: source for source in coverage_packet(state)['sources']}
     operations, prepared_bytes, submitted_bytes, requests = 0, 0, 0, 0
@@ -483,7 +528,7 @@ def run_coverage_cell(condition, state, output, limits, remaining):
     seen_calls = set()
     attempts = []
     for number in range(limits['requests_per_cell']):
-        available = budget - (time.monotonic_ns() - tick) / 1_000_000_000
+        available = (cell_deadline_ns - time.monotonic_ns()) / 1_000_000_000
         body = json.dumps(payload).encode()
         tool_bytes = sum(len(item['output'].encode()) for item in payload['input']
                          if item.get('type') == 'function_call_output')
@@ -502,28 +547,32 @@ def run_coverage_cell(condition, state, output, limits, remaining):
         request_file = f'request-{number:04d}.body'
         with (output / request_file).open('xb') as stream:
             stream.write(body)
-        write_json(output / f'request-{number:04d}.json', {
-            'status': 'started', 'started_at': started, 'request': payload,
-            'payload_sha256': digest(body), 'request_body': request_file})
+        reservation_path = output / f'request-{number:04d}.json'
+        reservation = {
+            'status': 'reserved', 'started_at': started, 'request': payload,
+            'payload_sha256': digest(body), 'request_body': request_file}
+        write_json(reservation_path, reservation)
         response_file = f'response-{number:04d}.body'
+        if time.monotonic_ns() >= cell_deadline_ns:
+            unsubmitted_reason = 'cell_deadline'
+            break
+        request_deadline_ns = min(cell_deadline_ns, time.monotonic_ns() +
+                                  int(limits['request_seconds'] * 1_000_000_000))
+        metadata = request_bounded(condition['endpoint'], body, {'Content-Type': 'application/json'},
+                                   output / response_file, limits['response_bytes'],
+                                   request_deadline_ns)
+        if not metadata['submission_started']:
+            unsubmitted_reason = 'cell_deadline' if time.monotonic_ns() >= cell_deadline_ns else 'request_deadline'
+            break
+        reservation['status'] = 'started'
+        reservation_path.write_text(json.dumps(reservation, ensure_ascii=False, indent=2) + '\n')
         submitted_bytes += tool_bytes
         pending_results = []
         unsubmitted_reason = None
-        metadata = request_bounded(condition['endpoint'], body, {'Content-Type': 'application/json'},
-                                   output / response_file, limits['response_bytes'],
-                                   min(limits['request_seconds'], available))
         requests += 1
         raw = (output / response_file).read_bytes()
-        try:
-            if metadata['transport_status'] == 'received':
-                result, events, answer, status = parse_result('responses', raw, 'coverage')
-            elif metadata['transport_status'] == 'response_limit':
-                result, events = bounded_terminal_evidence(raw)
-                answer, status = None, 'response_limit'
-            else:
-                result, events, answer, status = None, [], None, metadata['transport_status']
-        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
-            result, events, answer, status = None, [], None, 'invalid_response'
+        result, events, answer, status = interpret_response(
+            'responses', raw, metadata['transport_status'], 'coverage')
         status, condition_error, usage, returned_model, value = finalize_response(
             condition, result, status)
         attempt = {
@@ -583,7 +632,7 @@ def run_coverage_cell(condition, state, output, limits, remaining):
         'tool_submission_attempted_bytes': submitted_bytes,
         'provider_consumed_tool_bytes': None,
         'unsubmitted_tool_results': pending_results,
-        'unsubmitted_reason': unsubmitted_reason if pending_results else None,
+        'unsubmitted_reason': unsubmitted_reason,
         'duration_ms': (time.monotonic_ns() - tick) / 1_000_000})
     return status, attempts
 
@@ -625,8 +674,9 @@ def run(prepared, expected_digest, output, local_http):
     slots = []
     attempts = []
     stopped = set()
+    run_deadline_ns = run_tick + int(manifest['limits']['run_seconds'] * 1_000_000_000)
     for index, slot in enumerate(manifest['schedule']):
-        remaining = manifest['limits']['run_seconds'] - (time.monotonic_ns() - run_tick) / 1_000_000_000
+        remaining = (run_deadline_ns - time.monotonic_ns()) / 1_000_000_000
         if remaining <= 0:
             slots.append(dict(slot, status='unattempted', reason='run_deadline'))
             continue
@@ -637,7 +687,7 @@ def run(prepared, expected_digest, output, local_http):
         state = states[case['id']]
         if manifest['kind'] == 'coverage':
             status, cell_attempts = run_coverage_cell(condition, state, output / f'cell-{index:04d}',
-                                                      manifest['limits'], remaining)
+                                                      manifest['limits'], run_deadline_ns)
             attempts.extend(cell_attempts)
             slots.append(dict(slot, status=status))
             if any(attempt['condition_error'] for attempt in cell_attempts) or status not in {'completed', 'refused', 'provider_incomplete',
@@ -652,24 +702,29 @@ def run(prepared, expected_digest, output, local_http):
         request_file = f'request-{index:04d}.body'
         with (output / request_file).open('xb') as stream:
             stream.write(body)
-        write_json(output / f'request-{index:04d}.json', dict(slot, status='started',
-                   started_at=started, request=payload, payload_sha256=digest(body), request_body=request_file))
+        reservation_path = output / f'request-{index:04d}.json'
+        reservation = dict(slot, status='reserved', started_at=started, request=payload,
+                           payload_sha256=digest(body), request_body=request_file)
+        write_json(reservation_path, reservation)
+        if time.monotonic_ns() >= run_deadline_ns:
+            slots.append(dict(slot, status='unattempted', reason='run_deadline'))
+            continue
         response_file = f'response-{index:04d}.body'
+        request_deadline_ns = min(run_deadline_ns, time.monotonic_ns() +
+                                  int(manifest['limits']['request_seconds'] * 1_000_000_000))
         metadata = request_bounded(condition['endpoint'], body,
                                    {'Content-Type': 'application/json'}, output / response_file,
                                    manifest['limits']['response_bytes'],
-                                   min(manifest['limits']['request_seconds'], remaining))
+                                   request_deadline_ns)
+        if not metadata['submission_started']:
+            slots.append(dict(slot, status='unattempted', reason='run_deadline' if
+                              time.monotonic_ns() >= run_deadline_ns else 'request_deadline'))
+            continue
+        reservation['status'] = 'started'
+        reservation_path.write_text(json.dumps(reservation, ensure_ascii=False, indent=2) + '\n')
         response_body = (output / response_file).read_bytes()
-        try:
-            if metadata['transport_status'] == 'received':
-                result, events, relation, status = parse_result(condition['adapter'], response_body)
-            elif metadata['transport_status'] == 'response_limit' and condition['adapter'] == 'responses':
-                result, events = bounded_terminal_evidence(response_body)
-                relation, status = None, 'response_limit'
-            else:
-                result, events, relation, status = None, [], None, metadata['transport_status']
-        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
-            result, events, relation, status = None, [], None, 'invalid_response'
+        result, events, relation, status = interpret_response(
+            condition['adapter'], response_body, metadata['transport_status'])
         duration = (time.monotonic_ns() - tick) / 1_000_000
         status, condition_error, usage, returned_model, value = finalize_response(
             condition, result, status)
