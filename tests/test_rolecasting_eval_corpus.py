@@ -422,7 +422,6 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         self.assertIn("Claude Code", sources["foreign_peers"])
         self.assertIn("Claude Desktop", sources["foreign_peers"])
         self.assertIn("Cursor Agent", sources["foreign_peers"])
-        self.assertNotIn("Codex" + " Desktop", combined)
 
         native_codex = sources["native_codex"]
         self.assertIn("ChatGPT Codex", native_codex)

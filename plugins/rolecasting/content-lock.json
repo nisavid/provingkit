@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "78b7e3b2d2bfbed403ca0db1c6edea8139ac3fcaff1dadc784da7d8975cfea3d",
-    "README.md": "6e681db4e591b40a87fb129fb595dd7ac2ad8984f33614b12161c1cbf1996d19",
+    "README.md": "d9b34597791b6271f95f0a23025669b1ad240afebaac72b8da1cc5e2de49f47e",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
     "plugin.json": "d1833e0a8d23bac7c7c32bcf67880faf28af99e459d7fe57b9eaf33b7a95de29",
     "skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",
@@ -68,11 +68,11 @@
     "skills/delegating-cross-agent-work/references/dispatch-evidence.md": "3bc31152e28914da6817d680b6c4a4c7f22758c00a84491dc321545c4b142c37",
     "skills/delegating-cross-agent-work/references/foreign-harness-peers.md": "103f99b8c301a5cf8f78de09b5492049adf4dc8598a4285dac99a356ef25b8fb",
     "skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "0f98df746432eaec062f639558e5cdee9e0909c249ae15fbacabfb2baea5d51f",
-    "skills/delegating-cross-agent-work/references/native-codex-subagents.md": "d3df411cb31446fbe28ea714d3295e010c8c111f05d00edd6653ffa0f4a96433",
+    "skills/delegating-cross-agent-work/references/native-codex-subagents.md": "2c23bab33334b2752febeec97ad4b136efc9cf56bb43c2779e816ded8691307e",
     "skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
     "skills/delegating-cross-agent-work/scripts/dispatch_adapter.py": "dbf7199ce070cd0c8bd3df84c934a5b4eb58c0d3bbe0346389794808f21ae736",
     "skills/delegating-cross-agent-work/scripts/dispatch_evidence.py": "fa10b5feb5847755b8d44dcdd8c1514a0c862f8bb5aa0d7766ceaaab4e52e27d",
-    "skills/delegating-cross-agent-work/scripts/native_codex.py": "ee1b54ae187f3c5ef8f086668802079d72519e0ffeac31b82619e82e8d062e65",
+    "skills/delegating-cross-agent-work/scripts/native_codex.py": "b0a6f6a02202bf0d00e9eb410eb13301ad5949a3bdbce7706cb724bb71bb7aa4",
     "task-witness-provider.json": "cfc5bf01814ffacc82bccaa83f02dcd03ee8c2c9dc3a498eab805182f4b8670b",
     "topology.json": "5c0d4776619282eb274f4411e78350b5166c305de60227ad916d54f3f2a2b225"
   }

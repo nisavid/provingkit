@@ -80,8 +80,11 @@ is independent of the dispatch-evidence bundle contract. Private tests may
 construct test-owned bootstrap trust to exercise historical validation, but no
 Rolecasting historical trust has been installed and those results cannot
 become authenticated evidence for witnessed publication. The skill-mediated
-native Codex module sequences pre-spawn freeze and post-result same-leader
-recording, but it is not a harness actuator and emits neither portable evidence
+native Codex module supports separate ChatGPT Codex, CLI/TUI, and local Desktop
+profiles. Follow its [native binding procedure](skills/delegating-cross-agent-work/references/native-codex-subagents.md)
+to identify the product and observe the Desktop application version. The module
+sequences pre-spawn freeze and post-result same-leader recording, but it is not
+a harness actuator and emits neither portable evidence
 nor product attestation. Explicitly witnessed publication stays blocked until a
 real native harness integration authenticates execution and its exact owning
 bytes are bound into a newly registered producer/issuer identity.
