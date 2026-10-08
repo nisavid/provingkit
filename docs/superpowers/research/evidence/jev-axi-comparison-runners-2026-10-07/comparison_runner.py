@@ -432,8 +432,9 @@ def validate_spec(spec):
         elif condition['effort'] is not None:
             raise ValueError('effort is not supported by this endpoint')
         url = urlsplit(condition['endpoint'])
+        port = url.port
         if (url.scheme not in {'http', 'https'} or not url.hostname or url.username or url.password or
-                url.query or url.fragment):
+                url.query or url.fragment or port == 0):
             raise ValueError('invalid endpoint')
         exact_fields(condition['rates'], ['input', 'cached', 'write', 'output'], 'rates')
         for value in condition['rates'].values():

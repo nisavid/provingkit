@@ -814,6 +814,30 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(list(output.iterdir()), [sentinel])
         self.assertEqual(received, [])
 
+    def test_invalid_ports_are_rejected_before_preparation_or_submission(self):
+        with service({}) as (endpoint, received):
+            self.spec['conditions'][0]['endpoint'] = endpoint
+            self.spec['conditions'].append(dict(self.spec['conditions'][0], id='other'))
+            self.assertEqual(self.prepare().returncode, 0)
+            manifest_path = self.bundle / 'manifest.json'
+            manifest = json.loads(manifest_path.read_text())
+            for port in ['bad', '65536', '-1']:
+                with self.subTest(port=port):
+                    invalid = f'http://127.0.0.1:{port}/v1/decisions'
+                    self.spec['conditions'][1]['endpoint'] = invalid
+                    self.spec_path.write_text(json.dumps(self.spec))
+                    candidate = self.root / f'prepare-{port}'
+                    result = self.cli('prepare', '--spec', self.spec_path, '--output', candidate)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(candidate.exists())
+                    manifest['conditions'][1]['endpoint'] = invalid
+                    manifest_path.write_text(json.dumps(manifest))
+                    output = self.root / f'run-{port}'
+                    result = self.run_bundle(output)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(output.exists())
+            self.assertEqual(received, [])
+
     def test_local_run_rejects_all_unsupported_endpoints_before_any_request(self):
         with service({}) as (endpoint, received):
             self.spec['conditions'][0]['endpoint'] = endpoint
