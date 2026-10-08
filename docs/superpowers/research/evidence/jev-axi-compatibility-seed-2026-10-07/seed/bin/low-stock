@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Print inventory at or below a quantity threshold")
+    parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument("--threshold", type=int, default=2)
+    args = parser.parse_args()
+    if args.threshold < 0:
+        parser.error("threshold must be nonnegative")
+    report = Path(__file__).with_name("inventory-report")
+    result = subprocess.run([sys.executable, str(report), "--input", str(args.input)], capture_output=True, text=True)
+    if result.returncode:
+        sys.stderr.write(result.stderr)
+        return result.returncode
+    lines = result.stdout.splitlines(keepends=True)
+    sys.stdout.write(lines[0])
+    for line in lines[1:]:
+        if int(line.rstrip("\n").split("\t")[2]) <= args.threshold:
+            sys.stdout.write(line)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

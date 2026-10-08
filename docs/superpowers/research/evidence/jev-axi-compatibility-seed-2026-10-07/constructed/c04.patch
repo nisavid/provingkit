@@ -1,0 +1,64 @@
+--- a/README.md
++++ b/README.md
+@@ -11,7 +11,7 @@
+
+ Input is a JSON object with an `items` array. Each item has a `sku` string, a `warehouse` string, and an `on_hand` integer. The SKU and warehouse pair must be unique. SKU and warehouse must be nonempty and cannot contain tabs or line breaks. This restriction keeps tab-separated output unambiguous. `on_hand` must be nonnegative; booleans are invalid. The fixture has North and South warehouses, including a zero quantity. `fixtures/empty-inventory.json` supplies an empty inventory.
+
+-The report prints `sku`, `warehouse`, and `on_hand` as tab-separated columns with a header. It prints all rows by default; `--warehouse NAME` selects one warehouse. An empty selection prints only the header. Row order is unspecified. Invalid input or arguments return a nonzero status and a diagnostic on stderr. There is no format option in this baseline CLI.
++The report prints `sku`, `warehouse`, and `on_hand` as tab-separated columns with a header. It prints all rows by default; `--warehouse NAME` selects one warehouse. An empty selection prints only the header. Row order is unspecified. Invalid input or arguments return a nonzero status and a diagnostic on stderr. `--format text` selects the tab-separated report; `--format json` selects one JSON object with schema `inventory-report/v1`, the selected warehouse (null when unfiltered), and an `items` array. Each JSON item contains `sku`, `warehouse`, and `on_hand`. Empty results use an empty array. Omitting `--format` selects text.
+
+ `low-stock` prints the same header and rows whose quantity is at or below `--threshold`, including zero. The threshold defaults to 2 and must be nonnegative. `archive-inventory.py` writes the complete tab-separated report to `--output`; its parent directory must exist. Both consumers call the report without a format option and use its public text output.
+
+--- a/bin/inventory-report
++++ b/bin/inventory-report
+@@ -5,13 +5,14 @@
+ from pathlib import Path
+
+ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+-from inventory_format import render_text
++from report_renderers import render_text, render_json
+
+
+ def main():
+-    parser = argparse.ArgumentParser(description="Print inventory as tab-separated text")
++    parser = argparse.ArgumentParser(description="Print inventory as text or JSON")
+     parser.add_argument("--input", type=Path, required=True, help="inventory JSON file")
+     parser.add_argument("--warehouse", help="warehouse name to retain")
++    parser.add_argument("--format", choices=("text", "json"), default="text")
+     args = parser.parse_args()
+     try:
+         data = json.loads(args.input.read_text(encoding="utf-8"))
+@@ -31,7 +32,9 @@
+             if identity in seen:
+                 raise ValueError("duplicate SKU and warehouse")
+             seen.add(identity)
+-        print(render_text(item for item in items if args.warehouse is None or item["warehouse"] == args.warehouse), end="")
++        selected = [item for item in items if args.warehouse is None or item["warehouse"] == args.warehouse]
++        output = render_json(selected, args.warehouse) if args.format == "json" else render_text(selected)
++        print(output, end="")
+     except (OSError, ValueError, KeyError, TypeError) as exc:
+         parser.error(f"invalid inventory: {exc}")
+
+--- a/inventory_format.py
++++ /dev/null
+@@ -1,5 +0,0 @@
+-HEADER = "sku\twarehouse\ton_hand\n"
+-
+-
+-def render_text(items):
+-    return HEADER + "".join(f"{item['sku']}\t{item['warehouse']}\t{item['on_hand']}\n" for item in items)
+--- /dev/null
++++ b/report_renderers.py
+@@ -0,0 +1,12 @@
++import json
++
++HEADER = "sku\twarehouse\ton_hand\n"
++
++
++def render_text(items):
++    return HEADER + "".join(f"{item['sku']}\t{item['warehouse']}\t{item['on_hand']}\n" for item in reversed(list(items)))
++
++
++def render_json(items, warehouse):
++    return json.dumps({"schema": "inventory-report/v1", "warehouse": warehouse,
++                       "items": [{"sku": item["sku"], "warehouse": item["warehouse"], "on_hand": item["on_hand"]} for item in items]}, ensure_ascii=False) + "\n"
