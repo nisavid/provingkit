@@ -18,13 +18,13 @@ class CliTests(unittest.TestCase):
         result = run_cli("bin/inventory-report", "--input", ROOT / "fixtures/inventory.json")
         self.assertEqual((result.returncode, result.stderr), (0, ""))
         self.assertEqual(result.stdout.splitlines()[0], "sku\twarehouse\ton_hand")
-        self.assertEqual(set(result.stdout.splitlines()[1:]), {"A-100\tNorth\t4", "A-100\tSouth\t0", "B-200\tSouth\t2"})
+        self.assertEqual(sorted(result.stdout.splitlines()[1:]), ["A-100\tNorth\t4", "A-100\tSouth\t0", "B-200\tSouth\t2"])
 
     def test_report_filters_warehouse_and_preserves_zero(self):
         result = run_cli("bin/inventory-report", "--input", ROOT / "fixtures/inventory.json", "--warehouse", "South")
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.splitlines()[0], "sku\twarehouse\ton_hand")
-        self.assertEqual(set(result.stdout.splitlines()[1:]), {"A-100\tSouth\t0", "B-200\tSouth\t2"})
+        self.assertEqual(sorted(result.stdout.splitlines()[1:]), ["A-100\tSouth\t0", "B-200\tSouth\t2"])
 
     def test_no_match_and_empty_inventory_have_only_header(self):
         for path, args in [(ROOT / "fixtures/inventory.json", ("--warehouse", "West")), (ROOT / "fixtures/empty-inventory.json", ())]:
@@ -54,7 +54,21 @@ class CliTests(unittest.TestCase):
         result = run_cli("bin/low-stock", "--input", ROOT / "fixtures/inventory.json", "--threshold", "2")
         self.assertEqual((result.returncode, result.stderr), (0, ""))
         self.assertEqual(result.stdout.splitlines()[0], "sku\twarehouse\ton_hand")
-        self.assertEqual(set(result.stdout.splitlines()[1:]), {"A-100\tSouth\t0", "B-200\tSouth\t2"})
+        self.assertEqual(sorted(result.stdout.splitlines()[1:]), ["A-100\tSouth\t0", "B-200\tSouth\t2"])
+
+    def test_record_identity_rejects_line_separators_with_a_diagnostic(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'inventory.json'
+            for separator in ('\n', '\r', '\v', '\f', '\x1c', '\x1d', '\x1e', '\x85', '\u2028', '\u2029'):
+                for field in ('sku', 'warehouse'):
+                    with self.subTest(separator=repr(separator), field=field):
+                        item = {'sku': 'A', 'warehouse': 'North', 'on_hand': 0}
+                        item[field] += separator + 'B'
+                        source.write_text(json.dumps({'items': [item]}))
+                        result = run_cli('bin/inventory-report', '--input', source)
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertEqual(result.stdout, '')
+                        self.assertIn('error:', result.stderr)
 
     def test_archive_writes_every_record_to_selected_output(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -63,7 +77,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual((result.returncode, result.stdout, result.stderr), (0, "", ""))
             rows = output.read_text().splitlines()
             self.assertEqual(rows[0], "sku\twarehouse\ton_hand")
-            self.assertEqual(set(rows[1:]), {"A-100\tNorth\t4", "A-100\tSouth\t0", "B-200\tSouth\t2"})
+            self.assertEqual(sorted(rows[1:]), ["A-100\tNorth\t4", "A-100\tSouth\t0", "B-200\tSouth\t2"])
 
     def test_archive_rejects_a_report_that_is_not_tab_separated_inventory(self):
         with tempfile.TemporaryDirectory() as directory:

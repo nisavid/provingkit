@@ -104,6 +104,8 @@ def main():
         setattr(args, name, getattr(args, name).resolve())
     if args.threshold < 0 or not args.before.is_dir() or not args.after.is_dir() or not args.input.is_file() or args.output.exists():
         parser.error('require source directories, an input file, a nonnegative threshold, and a new output directory')
+    if any(args.output.is_relative_to(root) for root in (args.before, args.after)):
+        parser.error('evidence output must be outside both source directories')
     source = {'before': source_identity(args.before), 'after': source_identity(args.after)}
     input_bytes = args.input.read_bytes()
     args.output.mkdir(parents=True, exist_ok=False)

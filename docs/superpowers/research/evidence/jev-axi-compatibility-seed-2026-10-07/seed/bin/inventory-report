@@ -23,7 +23,7 @@ def main():
             if not isinstance(item, dict):
                 raise ValueError("each item must be an object")
             sku, warehouse, quantity = item["sku"], item["warehouse"], item["on_hand"]
-            if any(not isinstance(value, str) or not value or "\t" in value or "\n" in value or "\r" in value for value in (sku, warehouse)):
+            if any(not isinstance(value, str) or not value or "\t" in value or value.splitlines() != [value] for value in (sku, warehouse)):
                 raise ValueError("SKU and warehouse must be nonempty single-line strings without tabs")
             if type(quantity) is not int or quantity < 0:
                 raise ValueError("on_hand must be a nonnegative integer")

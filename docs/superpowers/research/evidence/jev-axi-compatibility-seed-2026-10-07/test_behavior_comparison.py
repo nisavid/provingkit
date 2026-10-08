@@ -127,6 +127,19 @@ class ComparisonCliTests(unittest.TestCase):
         self.assertEqual(marker.read_text(), 'untouched')
         self.assertEqual(sorted(path.name for path in self.output.iterdir()), ['keep.txt'])
 
+    def test_output_within_either_source_is_rejected_without_changes(self):
+        def snapshot(root):
+            return {str(path.relative_to(root)): path.read_bytes()
+                    for path in root.rglob('*') if path.is_file()}
+        for source in (self.before, self.after):
+            with self.subTest(source=source.name):
+                original = snapshot(source)
+                self.output = source / 'evidence'
+                result = self.run_comparison()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(self.output.exists())
+                self.assertEqual(snapshot(source), original)
+
     def test_timeout_stops_descendant_before_it_changes_a_file(self):
         marker = self.root / 'late-write'
         child = (
