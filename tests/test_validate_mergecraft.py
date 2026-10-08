@@ -180,6 +180,222 @@ class ValidateMergecraftTests(unittest.TestCase):
                 result = self.run_validator("--skill", skill)
                 self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_source_stage_accepts_registered_repository_configuration_skill(
+        self,
+    ) -> None:
+        result = self.run_validator(
+            "--source-stage", "--skill", "configuring-repositories"
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(
+            "Mergecraft quick validation passed: configuring-repositories",
+            result.stdout,
+        )
+
+    def test_rejects_repository_configuration_reference_discovery_drift(
+        self,
+    ) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        configuration = next(
+            item for item in topology["skills"]
+            if item["name"] == "configuring-repositories"
+        )
+        configuration["references"].pop()
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "repository configuration resource discovery drift",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_repository_configuration_helper_declarations(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for field in ("scripts", "modules"):
+            with self.subTest(field=field):
+                topology = copy.deepcopy(original)
+                configuration = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "configuring-repositories"
+                )
+                configuration[field] = [configuration["references"][0]]
+                self.write_json("topology.json", topology)
+
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "repository configuration helper discovery drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_repository_configuration_call_into_merge_actuation(
+        self,
+    ) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        configuration = next(
+            item for item in topology["skills"]
+            if item["name"] == "configuring-repositories"
+        )
+        configuration["calls"].append("operation:merge-actuation")
+        operation = next(
+            item for item in topology["operations"]
+            if item["semantic_id"] == "merge-actuation"
+        )
+        operation["callers"] = sorted([*operation["callers"], configuration["name"]])
+        self.write_json("topology.json", topology)
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "repository configuration operation call drift",
+        ):
+            VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_repository_configuration_workflow_ownership_or_authority_drift(
+        self,
+    ) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for drift in (
+            "missing", "owner", "authority", "access", "surface", "disposition"
+        ):
+            with self.subTest(drift=drift):
+                topology = copy.deepcopy(original)
+                skills = {item["name"]: item for item in topology["skills"]}
+                configuration = skills["configuring-repositories"]
+                operation = next(
+                    item for item in topology["operations"]
+                    if item["semantic_id"] == "repository-configuration"
+                )
+                if drift == "missing":
+                    configuration["operations"].remove("repository-configuration")
+                    topology["operations"].remove(operation)
+                elif drift == "owner":
+                    writer = skills["writing-reviewable-pr-descriptions"]
+                    configuration["operations"].remove("repository-configuration")
+                    writer["operations"].append("repository-configuration")
+                    operation.update(
+                        owner=writer["name"],
+                        implementation=writer["entrypoint"],
+                        callers=[writer["name"]],
+                    )
+                elif drift == "authority":
+                    authority = "repository outcome authorizes every configuration effect"
+                    operation["authority"] = authority
+                    configuration["contract"]["authority"] = authority
+                elif drift == "access":
+                    operation["access"] = "write"
+                elif drift == "surface":
+                    operation["surface"] = "git"
+                else:
+                    operation["disposition"] = "owned-helper"
+                self.write_json("topology.json", topology)
+
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "repository configuration workflow authority drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_rejects_repository_configuration_mode_review_or_result_drift(
+        self,
+    ) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for field, value in (
+            ("modes", ["create", "assess", "defaults", "focused-change"]),
+            ("loop_owner", None),
+            ("terminal_statuses", ["verified"]),
+        ):
+            with self.subTest(field=field):
+                topology = copy.deepcopy(original)
+                configuration = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "configuring-repositories"
+                )
+                configuration["contract"][field] = value
+                self.write_json("topology.json", topology)
+
+                with self.assertRaisesRegex(
+                    VALIDATE_MERGECRAFT.ContractError,
+                    "repository configuration mode, review, or result drift",
+                ):
+                    VALIDATE_MERGECRAFT.validate_topology(self.plugin)
+
+    def test_source_stage_rejects_missing_repository_configuration_reference(
+        self,
+    ) -> None:
+        reference = (
+            self.plugin
+            / "skills/configuring-repositories/references/ci-hardening.md"
+        )
+        reference.unlink()
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn(
+            "required regular file is missing: "
+            "skills/configuring-repositories/references/ci-hardening.md",
+            result.stderr,
+        )
+
+    def test_source_stage_rejects_unregistered_repository_configuration_helper(
+        self,
+    ) -> None:
+        helper = self.plugin / "skills/configuring-repositories/scripts/apply.py"
+        helper.parent.mkdir()
+        helper.write_text("pass\n", encoding="utf-8")
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn(
+            "skill file inventory drift: configuring-repositories", result.stderr
+        )
+
+    def test_configuration_source_acceptance_keeps_content_lock_gate(
+        self,
+    ) -> None:
+        (self.repo / CONTENT_LOCK).write_text("{}\n", encoding="utf-8")
+
+        source = self.run_validator(
+            "--source-stage", "--skill", "configuring-repositories"
+        )
+        self.assertEqual(source.returncode, 0, source.stderr)
+        pinned = self.run_validator("--skill", "configuring-repositories")
+        self.assertNotEqual(pinned.returncode, 0, pinned.stdout)
+        self.assertIn("semantic content lock fields drift", pinned.stderr)
+
+    def test_rejects_repository_configuration_eval_grader_answer_leak(
+        self,
+    ) -> None:
+        fixture = self.repo / EVAL_ROOT / (
+            "skills/configuring-repositories/fixtures/create-solo.md"
+        )
+        fixture.write_text(
+            fixture.read_text(encoding="utf-8")
+            + "\nExpected behavior: apply every setting.\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "raw eval grader answer leaked into fixture: configuring-repositories",
+        ):
+            VALIDATE_MERGECRAFT.validate_raw_skill_eval_isolation(self.repo)
+
+    def test_rejects_unregistered_repository_configuration_eval_fixture(
+        self,
+    ) -> None:
+        fixture = self.repo / EVAL_ROOT / (
+            "skills/configuring-repositories/fixtures/unregistered.md"
+        )
+        fixture.write_text("An unregistered evaluation input.\n", encoding="utf-8")
+
+        with self.assertRaisesRegex(
+            VALIDATE_MERGECRAFT.ContractError,
+            "raw eval fixture inventory drift: configuring-repositories",
+        ):
+            VALIDATE_MERGECRAFT.validate_raw_skill_eval_isolation(self.repo)
+
     def test_publication_rejects_missing_relation_evaluation_evidence(self) -> None:
         evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
         (evidence / "experiment.json").unlink(missing_ok=True)

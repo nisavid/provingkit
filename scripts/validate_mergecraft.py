@@ -75,6 +75,7 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
 )
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
+    "configuring-repositories",
     "writing-github-issue-and-pr-markdown",
     "maintaining-issue-pr-relations",
     "writing-reviewable-pr-descriptions",
@@ -153,6 +154,20 @@ MERGE_EVAL_FIXTURES = (
     "persistent-request-changes-after-addressed.md",
 )
 RAW_SKILL_EVAL_FIXTURES = {
+    "configuring-repositories": (
+        "create-solo.md",
+        "assess-inherited-controls.md",
+        "defaults-informed-freeze.md",
+        "focused-outside-catalog.md",
+        "harden-python-content.md",
+        "harden-typescript-private.md",
+        "policy-and-privileged-input.md",
+        "maintained-writer-and-concurrency.md",
+        "changed-producer-and-skipped-result.md",
+        "partial-effect-and-reconciliation.md",
+        "conflicting-provider-evidence.md",
+        "ordinary-edit-near-miss.md",
+    ),
     "maintaining-issue-pr-relations": (
         "absent-pr-creation.md",
         "direct-implementation.md",
@@ -314,6 +329,13 @@ MARKDOWN_AUTHORING_FEATURES = {
     "material-conflict",
 }
 EXPECTED_SKILL_FILES = {
+    "configuring-repositories": COMMON_SKILL_FILES
+    | {
+        "references/decisions.md",
+        "references/github-controls.md",
+        "references/ci-hardening.md",
+        "references/apply-and-verify.md",
+    },
     "maintaining-issue-pr-relations": COMMON_SKILL_FILES
     | {
         "references/relation-contract.md",
@@ -392,6 +414,10 @@ EXPECTED_SKILL_FILES = {
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "configuring-repositories": (
+        "Use $mergecraft:configuring-repositories to create, assess, or configure "
+        "a GitHub repository and its CI."
+    ),
     "maintaining-issue-pr-relations": (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
         "Issue–PR contributions."
@@ -431,6 +457,10 @@ CODEX_PROMPTS = {
     ),
 }
 MANIFEST_PROMPTS = [
+    (
+        "Use $mergecraft:configuring-repositories to create, assess, or configure "
+        "a GitHub repository and its CI."
+    ),
     (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
         "Issue–PR contributions."
@@ -2312,6 +2342,54 @@ def validate_topology(root: Path) -> None:
                 "nested loop ownership",
             )
     skills_by_name = {component["name"]: component for component in skills}
+    configuration = skills_by_name["configuring-repositories"]
+    configuration_references = {
+        f"skills/configuring-repositories/{relative}"
+        for relative in EXPECTED_SKILL_FILES["configuring-repositories"]
+        if relative.startswith("references/")
+    }
+    require(
+        set(configuration["references"]) == configuration_references
+        and len(configuration["references"]) == len(configuration_references),
+        "repository configuration resource discovery drift",
+    )
+    require(
+        configuration["scripts"] == [] and configuration["modules"] == [],
+        "repository configuration helper discovery drift",
+    )
+    require(
+        set(configuration["calls"])
+        == {
+            "operation:git-ref-push",
+            "operation:publication-evidence",
+            "operation:review-loop",
+        },
+        "repository configuration operation call drift",
+    )
+    configuration_operation = operation_by_id.get("repository-configuration", {})
+    configuration_authority = (
+        "requested repository outcome, applicable policy, and separately authorized "
+        "configuration effects"
+    )
+    require(
+        configuration["operations"] == ["repository-configuration"]
+        and configuration_operation.get("owner") == configuration["name"]
+        and configuration_operation.get("implementation") == configuration["entrypoint"]
+        and configuration_operation.get("surface") == "workflow"
+        and configuration_operation.get("access") == "coordinate"
+        and configuration_operation.get("disposition") == "public-skill"
+        and configuration_operation.get("authority") == configuration_authority
+        and configuration["contract"]["authority"] == configuration_authority,
+        "repository configuration workflow authority drift",
+    )
+    require(
+        configuration["contract"]["modes"]
+        == ["create", "assess", "defaults", "focused-change", "ci-hardening"]
+        and configuration["contract"]["loop_owner"] == "tricritical:loop"
+        and configuration["contract"]["terminal_statuses"]
+        == ["assessed", "planned", "verified", "no-op", "partial", "blocked", "unknown"],
+        "repository configuration mode, review, or result drift",
+    )
     response_skill = "interacting-with-pr-review-feedback"
     response_authoring_projection = (
         f"skills/{response_skill}/{MARKDOWN_AUTHORING_PROJECTIONS[response_skill]}"
@@ -3702,6 +3780,18 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
             isinstance(evals, list) and len(evals) == len(fixture_names),
             f"raw eval coverage drift: {skill}",
         )
+        if skill == "configuring-repositories":
+            fixture_root = repo_root / EVAL_RELATIVE / f"skills/{skill}/fixtures"
+            require(
+                fixture_root.is_dir() and not fixture_root.is_symlink(),
+                f"raw eval fixture inventory drift: {skill}",
+            )
+            fixture_entries = tuple(fixture_root.iterdir())
+            require(
+                all(path.is_file() and not path.is_symlink() for path in fixture_entries)
+                and {path.name for path in fixture_entries} == set(fixture_names),
+                f"raw eval fixture inventory drift: {skill}",
+            )
         for position, (item, fixture_name) in enumerate(zip(evals, fixture_names)):
             require(
                 isinstance(item, dict)

@@ -1,7 +1,10 @@
 # Mergecraft
 
-Mergecraft is an Agent Plugins GitHub authoring and pull-request lifecycle
-package with a native Claude adapter. It owns exact human-facing Issue and
+Mergecraft is an Agent Plugin for GitHub repository configuration, authoring,
+and the pull-request lifecycle, with a native Claude adapter. It owns repository
+creation, configuration assessment, contextual defaults, focused changes, and
+project-specific CI hardening through available native tools. Its authoring and
+lifecycle workflows cover exact human-facing Issue and
 pull-request body authoring, Issue–PR contribution ledgers and Development links,
 reviewer navigation, guarded PR publication,
 Graphite draft transport, feedback coordination and interaction, review
@@ -26,6 +29,7 @@ that need its stronger cross-harness evidence contract.
 
 | Public skill | Responsibility |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| configuring-repositories | GitHub creation, configuration assessment, contextual defaults, authorized focused changes, and project-specific CI hardening. |
 | writing-github-issue-and-pr-markdown | Valid GFM and exact body bytes for seven human-facing GitHub fields, without actuation. |
 | maintaining-issue-pr-relations | Evidenced bilateral contribution ledgers, cached closure settings, and guarded Development-link reconciliation. |
 | writing-reviewable-pr-descriptions | Canonical title/body content and Stack/Diff navigation. |
@@ -41,6 +45,23 @@ that need its stronger cross-harness evidence contract.
 There are no compatibility routers and no public PR-creation orchestrator.
 Semantic sibling links remain relative within this plugin. Cross-plugin calls
 use qualified identities.
+
+## Repository configuration
+
+[Configuring repositories](skills/configuring-repositories/SKILL.md) starts from
+the requested outcome, actual repository and owner context, applicable policy,
+and existing authorization. It researches settings beyond its linked guides and
+preserves informed unconventional choices unless actual policy or concrete
+active harm requires a different route. Maintained configuration writers keep
+their ownership; partial or unknown effects require observation and
+reconciliation before dependent work continues.
+
+Setting changes disclose material invalidation of observations used by relation,
+readiness, and merge work. Git checkpoints, PR publication, and independent
+review stay with their existing owners when the outcome needs them. Package
+registration and source validation establish the declared source shape;
+behavior, hosted enforcement, installation, and fresh client use require their
+own current qualification evidence.
 
 ## Issue–PR relations
 
@@ -105,6 +126,7 @@ skill is not evidence that the capability is available.
 <!-- BEGIN GENERATED OPERATION REGISTRY -->
 | Semantic ID | GitHub aliases | Surface | Access | Authority | Disposition | Owner | Implementation/import | Callers |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| repository-configuration | - | workflow | coordinate | requested repository outcome, applicable policy, and separately authorized configuration effects | public-skill | configuring-repositories | skills/configuring-repositories/SKILL.md | configuring-repositories |
 | github-markdown-content | - | workflow | coordinate | valid GFM and exact candidate body bytes only | public-skill | writing-github-issue-and-pr-markdown | skills/writing-github-issue-and-pr-markdown/SKILL.md | interacting-with-pr-review-feedback, writing-github-issue-and-pr-markdown |
 | issue-pr-relations | - | workflow | coordinate | finite evidenced contributions and separately authorized body or native relation effects | public-skill | maintaining-issue-pr-relations | skills/maintaining-issue-pr-relations/SKILL.md | getting-prs-merged, getting-prs-ready-for-review, graphite, maintaining-issue-pr-relations, publishing-reviewable-prs, stacking-pr-fixups, writing-github-issue-and-pr-markdown, writing-reviewable-pr-descriptions |
 | issue-pr-relation-observe | issue-pr-relation-read | github | read | finite stable entities and missing or invalidated relation observations only | internal-helper | internal:issue-pr-relation-state | skills/maintaining-issue-pr-relations/scripts/relation_state.py | maintaining-issue-pr-relations |
@@ -117,7 +139,7 @@ skill is not evidence that the capability is available.
 | pr-text-write | pr-text-write | github | write | exact repository, PR, title and body preimage, candidate bytes, and authorized text surface | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | getting-prs-ready-for-review, graphite, publishing-reviewable-prs, stacking-pr-fixups |
 | pr-readiness-read | pr-readiness-read | github | read | bound repository and PR identity for exact draft or ready state acquisition | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | publishing-reviewable-prs |
 | pr-readiness-write | pr-readiness-write | github | write | exact repository, PR, head, draft preimage, readiness gates, and mark-ready authority | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | getting-prs-ready-for-review, graphite, publishing-reviewable-prs, stacking-pr-fixups |
-| publication-evidence | - | workflow | coordinate | exact requested forge mutation or read-only audit | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | publishing-reviewable-prs |
+| publication-evidence | - | workflow | coordinate | exact requested forge mutation or read-only audit | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | configuring-repositories, publishing-reviewable-prs |
 | publication-audit | - | workflow | read | bound repository, PR, base, head, text, readiness, and authoritative receipt identity | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | getting-prs-merged, getting-prs-ready-for-review, graphite, publishing-reviewable-prs, resuming-reviewed-prs, stacking-pr-fixups |
 | publication-reconciliation | - | workflow | coordinate | exact requested forge mutation or read-only audit | public-skill | publishing-reviewable-prs | skills/publishing-reviewable-prs/SKILL.md | publishing-reviewable-prs |
 | graphite-topology | - | workflow | coordinate | bound Graphite stack identity, ancestry, topology, and authorized topology operation | public-skill | graphite | skills/graphite/SKILL.md | graphite, stacking-pr-fixups |
@@ -136,10 +158,10 @@ skill is not evidence that the capability is available.
 | merge-outcome | - | workflow | coordinate | merge-outcome coordination with separately bound leaf authorities | public-skill | getting-prs-merged | skills/getting-prs-merged/SKILL.md | getting-prs-merged |
 | stack-fixup | - | workflow | coordinate | task-owned fixup paths and intended stack only | public-skill | stacking-pr-fixups | skills/stacking-pr-fixups/SKILL.md | stacking-pr-fixups |
 | conflict-resolution | - | workflow | write | authority defined by imported owner versionkeeping:resolving-merge-conflicts | imported-operation | versionkeeping:resolving-merge-conflicts | versionkeeping:resolving-merge-conflicts | - |
-| git-ref-push | - | git | write | authority defined by imported owner versionkeeping:checkpointing-and-publishing-git-work | imported-operation | versionkeeping:checkpointing-and-publishing-git-work | versionkeeping:checkpointing-and-publishing-git-work | addressing-pr-review-feedback, getting-prs-ready-for-review, graphite, stacking-pr-fixups |
+| git-ref-push | - | git | write | authority defined by imported owner versionkeeping:checkpointing-and-publishing-git-work | imported-operation | versionkeeping:checkpointing-and-publishing-git-work | versionkeeping:checkpointing-and-publishing-git-work | addressing-pr-review-feedback, configuring-repositories, getting-prs-ready-for-review, graphite, stacking-pr-fixups |
 | finding-adjudication | - | workflow | coordinate | authority defined by imported owner tricritical:adjudicate | imported-operation | tricritical:adjudicate | tricritical:adjudicate | addressing-pr-review-feedback |
 | source-revision | - | workflow | write | authority defined by imported owner tricritical:revise | imported-operation | tricritical:revise | tricritical:revise | addressing-pr-review-feedback |
-| review-loop | - | workflow | coordinate | authority defined by imported owner tricritical:loop | imported-operation | tricritical:loop | tricritical:loop | writing-reviewable-pr-descriptions |
+| review-loop | - | workflow | coordinate | authority defined by imported owner tricritical:loop | imported-operation | tricritical:loop | tricritical:loop | configuring-repositories, writing-reviewable-pr-descriptions |
 | remote-ref-deletion | - | git | write | exact remote endpoint and full ref deletion authority | imported-operation | versionkeeping:checkpointing-and-publishing-git-work | versionkeeping:checkpointing-and-publishing-git-work | - |
 | github:repository-orientation | repository-orientation | github | read | bound repository identity | ordinary-tool | internal:github-read | ordinary operation-specific GitHub read tool | - |
 | github:pr-orientation | pr-orientation | github | read | bound repository and PR identity | ordinary-tool | internal:github-read | ordinary operation-specific GitHub read tool | - |

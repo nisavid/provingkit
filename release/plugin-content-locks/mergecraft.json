@@ -2,13 +2,19 @@
   "schema_version": 1,
   "algorithm": "sha256",
   "files": {
-    ".claude-plugin/plugin.json": "79c2bb6cd2abc643ecd905e76510610d0acd008930ae5752184d57c1c78f0fbb",
-    "README.md": "73e3b50b0be042b4abdf65cdcf604319c9933ef3e2618964a149b20eb78079bf",
-    "plugin.json": "5d54cc740544d4fa3e63794d6a7d86950829f1b565ae4fec842d3f4da7f1bbcc",
+    ".claude-plugin/plugin.json": "e8a0c95daa2fa6a1dab3f1cd3816a865ac2ee99e5702c83e6854d34ebb8eb4d6",
+    "README.md": "956ba9aac22e0db717b30c0d9399a43ccdcccfe5f3c2b9bd4bc0ecfaeb180f3c",
+    "plugin.json": "e482c09e7afeb52c4f0f0e1e5f21bf3ae32b23591cdcdd07e01f643a7fa7e70a",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
     "skills/addressing-pr-review-feedback/agents/openai.yaml": "2496f90c970648152cda7b94f40047baab0426c19b47954b87aa6baac563c39c",
     "skills/addressing-pr-review-feedback/references/feedback-flow.md": "9aa210a8b71f0ea2048ebff6447db5922f242894b19b37f19894ff90ed3e7f24",
     "skills/addressing-pr-review-feedback/scripts/review_feedback_state.py": "21bb17e2935627e0a7488e14e37ee934967fc68acf4e62432753653142dbcc7f",
+    "skills/configuring-repositories/SKILL.md": "1101b3ab985b1be28e2249ace32beefc0152c5f7c39182582c5bd91c2177cd08",
+    "skills/configuring-repositories/agents/openai.yaml": "6165dafb5abf028d35b7226cf038a328b945089ffa5d16010c613bf8769f34c9",
+    "skills/configuring-repositories/references/apply-and-verify.md": "d561f5f22fa228c6a1311e3758233163328255a9ec2ce84bf8c2512f84252e60",
+    "skills/configuring-repositories/references/ci-hardening.md": "9dda1197ee1cb8fbd379d7deb2f70965053e46d870ba0b5f523681d7c39ecdc1",
+    "skills/configuring-repositories/references/decisions.md": "bab26a685a9679d0b98f8310e0d6675014991b519821000a355bf7ff7fe42980",
+    "skills/configuring-repositories/references/github-controls.md": "8a3905aa1d4b7189d3dd482d7acde207ca386114306b5b6355dff904a6588230",
     "skills/getting-prs-merged/SKILL.md": "b10273c0eec59e9f3b2818425754cdf8c85123cf7b720e6aff51aac0b36d8ce8",
     "skills/getting-prs-merged/agents/openai.yaml": "50ee890aeefc987b7a7f7e823d5e7a58bbd019ef89767f9bd839482c1b9766c9",
     "skills/getting-prs-merged/references/caller-continuation.md": "43133f81f7215bbbd43b5bbc202798a0f6b06e76366e169ac5ec1c9f77cf7f9b",
@@ -104,6 +110,6 @@
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py": "ca1fd7b3210320967e47ed5696dc3fb12d1005f3cbbbd4214845247b5a895bf6",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py": "e4e8b796b02e469050a9b29e2bf13e8385edace1c3fd00fa180e8a112b1c1411",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_relation_ledger.py": "fb398f6580a998c95e1fc6d197e4f4eb5712775ae86963722dda950d682b865c",
-    "topology.json": "75116df2420572fbd1d14adfa57de4ee206fe70ecf59fa6fba7dd471779247e1"
+    "topology.json": "59b1697cad27d85b36b9a6c550f9d28ea305b03ab3391e6a030dae299be1d9aa"
   }
 }
