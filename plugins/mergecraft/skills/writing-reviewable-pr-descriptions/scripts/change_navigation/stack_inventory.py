@@ -72,8 +72,7 @@ def inventory(block: list[str]) -> list[StackItem]:
 
 
 def validate_inventory(
-    block: list[str], position_match: Optional[re.Match[str]], errors: list[str],
-    *, history_only: bool = False
+    block: list[str], position_match: Optional[re.Match[str]], errors: list[str]
 ) -> None:
     items = inventory(block)
     if not items:
@@ -88,7 +87,7 @@ def validate_inventory(
     repositories = {item.repository for item in items}
     if len(repositories) != 1:
         errors.append("all Stack inventory PRs must use one repository")
-    _validate_item_metrics(items, errors, history_only=history_only)
+    _validate_item_metrics(items, errors)
     for item in items:
         semantic_title = unescape_markdown_title(item.title)
         if item.title != escape_markdown_title(semantic_title):
@@ -108,20 +107,25 @@ def validate_inventory(
     _validate_expansion_grammar(block, errors)
 
 
-def _validate_item_metrics(items: list[StackItem], errors: list[str], *, history_only: bool = False) -> None:
+def _validate_item_metrics(items: list[StackItem], errors: list[str]) -> None:
     for item in items:
         metric_items = category_metric_items(item.metrics)
-        if not metric_items and not (history_only and item.current):
+        files_badges = [
+            badge for badge in alt_values(item.metrics) if badge.startswith("FILES:")
+        ]
+        file_operations = (
+            STACK_FILE_OPERATIONS_RE.fullmatch(files_badges[0])
+            if len(files_badges) == 1 else None
+        )
+        zero_file_operations = file_operations is not None and not any(
+            int(value or 0) for value in file_operations.groups()
+        )
+        if not metric_items and not zero_file_operations:
             errors.append("each Stack item needs at least one category metric")
         validate_category_order(item.metrics, errors, f"Stack item #{item.number}")
         if len(metric_items) != len(dict(metric_items)):
             errors.append(f"Stack item #{item.number} repeats a category metric")
-        files_badges = [
-            badge for badge in alt_values(item.metrics) if badge.startswith("FILES:")
-        ]
-        if len(files_badges) != 1 or not STACK_FILE_OPERATIONS_RE.fullmatch(
-            files_badges[0]
-        ):
+        if file_operations is None:
             errors.append("each Stack item needs complete file-operation metrics")
         if "<br>" in item.metrics:
             errors.append(f"Stack item #{item.number} must use exactly one line break")

@@ -668,7 +668,7 @@ EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
     "writer": "7b951fdff8ac45197b856bd3d22f82673281f06523c6729bfef754d150f7a97e",
     "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
-    "navigation": "a7e706632ff99e753422594ebcd753642f6f5e0d3f08907d67cc208ab5a9b69d",
+    "navigation": "dc2ea82e016202cf02b47c2b6974a4c8186c536f128d1d83538ea35c5526fd6b",
 }
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 PORTABILITY_MARKERS = (

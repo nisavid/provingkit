@@ -105,6 +105,10 @@ Render this only for a stacked PR, immediately before Diff:
 - Stack `FILES` always shows added, modified, and removed counts, even when zero.
   Append `MOVED N` and `COPIED N` in that order when nonzero; for example,
   `+0 ~1 −0 MOVED 1 COPIED 2`.
+- A history-only member anywhere in the complete Stack inventory has empty
+  category metrics and one canonical `FILES` badge with zero added, modified,
+  removed, moved, and copied counts. Rows with nonzero file operations require
+  at least one category metric.
 - Added, modified, removed, moved, and copied are disjoint file operations. For
   the current Stack item, their sum equals the Diff summary's touched-file
   count. `MOVED` and `COPIED` counts exactly match the Diff file rows carrying
@@ -175,9 +179,9 @@ No file changes in the reviewer-visible comparison. [Review the commits](https:/
 Keep the normal disclosure delimiters and empty-line boundaries. The commits
 link uses the destination PR; the comparison binds the immutable base/head OIDs.
 For creation, put `__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__` in the commits link
-and use the ordinary token-bearing template contract. A current Stack row has
-empty category metrics and zero added, modified, removed, moved, and copied
-counts. Explain the history being synchronized and observed verification in
+and use the ordinary token-bearing template contract. History-only Stack rows
+retain their zero-file representation when a later PR becomes current.
+Explain the history being synchronized and observed verification in
 the authored suffix. This branch establishes new history and no file changes;
 ordinary review, forge identity, preservation, and publication authority gates
 still apply.

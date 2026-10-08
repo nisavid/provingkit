@@ -86,6 +86,120 @@ class EmptyDiffPublicationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), 'Change navigation is valid')
 
+    def prepare_file_changing_stack(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from test_review_input import DIFF, manifest
+        from test_validate_change_navigation import STACK, badge
+        source = self.repo / 'src/widget.ts'
+        source.parent.mkdir()
+        source.write_text('one\ntwo\nthree\n')
+        self.git('add', '.')
+        self.git('commit', '-qm', 'file base')
+        self.base = self.git('rev-parse', 'HEAD')
+        source.write_text(''.join(f'new {index}\n' for index in range(9)))
+        self.git('commit', '-qam', 'ordinary file diff')
+        self.head = self.git('rev-parse', 'HEAD')
+        zero_files = badge('FILES: 0 added, 0 modified, 0 removed',
+                           'FILES-%2B0%20~0%20%E2%88%920-5F6B78')
+        lines = STACK.replace('feat: top', TITLE).splitlines()
+        for index, line in enumerate(lines):
+            if line.startswith('- **[#1 '):
+                lines[index] = line.split('<br>', 1)[0] + '<br>' + zero_files
+            elif '**← this PR**' in line:
+                lines[index] = line.replace('#2', '#' + TOKEN).replace('/pull/2)', '/pull/' + TOKEN + ')')
+        diff = DIFF.replace('/pull/2/', '/pull/' + TOKEN + '/')
+        self.body = '\n'.join(lines).rstrip() + '\n\n' + diff
+        self.raw = manifest(DIFF, title=TITLE, pr_number=TOKEN)
+        self.raw['base']['oid'] = self.base
+        self.raw['head']['oid'] = self.head
+        self.raw['head']['ref'] = 'acme:sync'
+        self.raw['stack'] = [
+            {'number': 1, 'title': 'feat: base', 'url': 'https://github.com/acme/app/pull/1',
+             'current': False, 'metrics': {},
+             'file_operations': {'added': 0, 'modified': 0, 'removed': 0, 'moved': 0, 'copied': 0}},
+            {'number': TOKEN, 'title': TITLE, 'url': f'https://github.com/acme/app/pull/{TOKEN}',
+             'current': True, 'metrics': {'IMPL': [9, 3]},
+             'file_operations': {'added': 0, 'modified': 1, 'removed': 0, 'moved': 0, 'copied': 0}},
+        ]
+        self.raw['candidate']['body_sha256'] = hashlib.sha256(self.body.encode()).hexdigest()
+        self.save()
+
+    def test_writer_accepts_prior_history_only_row_before_a_file_changing_current_pr(self):
+        self.prepare_file_changing_stack()
+        result = self.writer()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), 'Change navigation is valid')
+
+    def test_writer_holds_empty_prior_categories_with_any_nonzero_file_operation(self):
+        self.prepare_file_changing_stack()
+        from test_validate_change_navigation import badge
+        original_body, original_raw = self.body, copy.deepcopy(self.raw)
+        cases = (
+            ('added', 'FILES: 1 added, 0 modified, 0 removed', 'FILES-%2B1%20~0%20%E2%88%920-5F6B78'),
+            ('modified', 'FILES: 0 added, 1 modified, 0 removed', 'FILES-%2B0%20~1%20%E2%88%920-5F6B78'),
+            ('removed', 'FILES: 0 added, 0 modified, 1 removed', 'FILES-%2B0%20~0%20%E2%88%921-5F6B78'),
+            ('moved', 'FILES: 0 added, 0 modified, 0 removed, 1 moved', 'FILES-%2B0%20~0%20%E2%88%920%20MOVED%201-5F6B78'),
+            ('copied', 'FILES: 0 added, 0 modified, 0 removed, 1 copied', 'FILES-%2B0%20~0%20%E2%88%920%20COPIED%201-5F6B78'),
+        )
+        for operation, alt, path in cases:
+            with self.subTest(operation=operation):
+                lines = original_body.splitlines()
+                for index, line in enumerate(lines):
+                    if line.startswith('- **[#1 '):
+                        lines[index] = line.split('<br>', 1)[0] + '<br>' + badge(alt, path)
+                self.body = '\n'.join(lines) + '\n'
+                self.raw = copy.deepcopy(original_raw)
+                self.raw['stack'][0]['file_operations'][operation] = 1
+                self.raw['candidate']['body_sha256'] = hashlib.sha256(self.body.encode()).hexdigest()
+                self.save()
+                result = self.writer()
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn('Change navigation is invalid', result.stderr)
+
+    def test_writer_holds_missing_duplicate_and_malformed_prior_file_metrics(self):
+        self.prepare_file_changing_stack()
+        from test_validate_change_navigation import badge
+        original = self.body
+        zero_files = badge('FILES: 0 added, 0 modified, 0 removed',
+                           'FILES-%2B0%20~0%20%E2%88%920-5F6B78')
+        for metrics in (' ', zero_files + ' ' + zero_files,
+                        zero_files.replace('0 removed', 'removed'),
+                        zero_files.replace('0 removed', '0 removed, 0 moved')):
+            with self.subTest(metrics=metrics):
+                self.body = original.replace('<br>' + zero_files, '<br>' + metrics)
+                self.raw['candidate']['body_sha256'] = hashlib.sha256(self.body.encode()).hexdigest()
+                self.save()
+                result = self.writer()
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn('Change navigation is invalid', result.stderr)
+
+    def test_writer_holds_prior_zero_file_row_that_disagrees_with_sealed_operations(self):
+        self.prepare_file_changing_stack()
+        self.raw['stack'][0]['file_operations']['added'] = 1
+        self.save()
+        self.assertNotEqual(self.writer().returncode, 0)
+
+    def test_writer_holds_current_operations_that_disagree_with_the_file_diff(self):
+        self.prepare_file_changing_stack()
+        self.body = self.body.replace('FILES: 0 added, 1 modified, 0 removed',
+                                      'FILES: 1 added, 0 modified, 0 removed').replace(
+                                          'FILES-%2B0%20~1%20%E2%88%920-5F6B78',
+                                          'FILES-%2B1%20~0%20%E2%88%920-5F6B78')
+        self.raw['stack'][1]['file_operations']['added'] = 1
+        self.raw['stack'][1]['file_operations']['modified'] = 0
+        self.raw['candidate']['body_sha256'] = hashlib.sha256(self.body.encode()).hexdigest()
+        self.save()
+        self.assertNotEqual(self.writer().returncode, 0)
+
+    def test_writer_reobserves_current_git_diff_with_a_prior_history_only_row(self):
+        self.prepare_file_changing_stack()
+        source = self.repo / 'src/widget.ts'
+        source.write_text('changed after the inventory was sealed\n')
+        self.git('commit', '-qam', 'different current file diff')
+        self.raw['head']['oid'] = self.git('rev-parse', 'HEAD')
+        self.save()
+        self.assertNotEqual(self.writer().returncode, 0)
+
     def test_writer_holds_extra_history_summary_content(self):
         original = self.body
         extras = (
@@ -236,6 +350,13 @@ class EmptyDiffPublicationTests(unittest.TestCase):
         self.assertNotEqual(self.writer().returncode, 0)
 
     def test_publisher_creates_readies_and_audits_history_only_pr_using_real_git(self):
+        self.publish_and_audit_current_pr()
+
+    def test_publisher_creates_readies_and_audits_file_change_after_history_only_pr(self):
+        self.prepare_file_changing_stack()
+        self.publish_and_audit_current_pr()
+
+    def publish_and_audit_current_pr(self):
         executable_dir = self.root / 'bin'
         executable_dir.mkdir()
         state_path = self.root / 'forge-state.json'

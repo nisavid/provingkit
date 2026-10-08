@@ -36,7 +36,7 @@ def validate_stack(block: list[str], errors: list[str], *, history_only: bool = 
     if "## Stack" in text:
         errors.append("Stack disclosure must not contain a separate Stack heading")
     _validate_navigation(block, stack_summary, position_match, errors)
-    validate_inventory(block, position_match, errors, history_only=history_only)
+    validate_inventory(block, position_match, errors)
 
 
 def _validate_navigation(  # noqa: C901
