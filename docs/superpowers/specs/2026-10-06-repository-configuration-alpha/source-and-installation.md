@@ -14,6 +14,8 @@ The source branch used for implementation starts from the freshly verified publi
 
 The operator selected a shared-marketplace transition preserving the other five members. Prepare a separately reviewable clean delivery source commit containing the reviewed Mergecraft amendment and the other members' governed source from the verified active baseline. Use the existing projector over that one immutable source commit for complete target catalogs. Direct projection of current main changes shipped baseline bytes; copying independently projected member trees into a new marketplace is outside the maintained route. Validate the delivery source and compare every retained member's final projected bytes and modes with the installation owner's baseline. Keep the maintained development source and the immutable delivery source identities explicit.
 
+The reviewed [development source](https://github.com/nisavid/provingkit/commit/e50777edc12c17f5c5f1c4ede245c2a45064476a) is published separately from final member binding. The [member-delivery validation proposal](member-delivery-validation.md) makes its remaining validation and Actions caller decision concrete. It preserves ordinary Kit validation and proposes a distinct member-delivery result; source/release acceptance precedes implementation and version reservation. The development source's passing checks do not supply that decision, baseline acceptance, or final candidate qualification.
+
 ## Composition and correction ownership
 
 Versionkeeping continues to own Git checkpoint and publication mechanics. Mergecraft's PR publisher continues to own PR publication when a PR is needed. General review and appropriate security scrutiny retain their established owners. A setting change does not acquire a Git or PR workflow unless its actual outcome needs one.
@@ -50,6 +52,7 @@ The selected client claim covers fresh native CLI sessions. Broader adoption che
 
 ## Decisions still required
 
+- Accept the proposed member-delivery validation context and Actions caller, then implement and qualify their maintained entrypoint and evidence transport. Preserve ordinary Kit version equality and distinguish the development, baseline, delivery, and validator identities.
 - Confirm coordination with the existing deployment chat and the supported member transition, including Cursor, authoritative target registration identities, compatible dependencies, and the alpha ordinal that does not collide with its planned rollouts.
 - Use the authorized fixtures and create/test/retain scope in the separate behavioral qualification contract. The operator selected standard GitHub Actions for both fixtures, with free standard public runs and at most 200 aggregate standard Linux runner minutes for the private fixture within verified included allowance; no additional CI charges are authorized. The selected private route uses the existing organization's included allowance and preserves its stop-use budget. Target access, inherited controls, and other writers are rechecked before dependent effects; fixture authority and the selected live contexts are already settled.
 
