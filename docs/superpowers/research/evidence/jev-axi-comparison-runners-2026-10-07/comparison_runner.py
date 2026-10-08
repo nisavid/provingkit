@@ -32,7 +32,7 @@ def digest(data):
 
 def write_json(path, value):
     with path.open('x') as stream:
-        json.dump(value, stream, ensure_ascii=False, indent=2)
+        json.dump(value, stream, ensure_ascii=True, indent=2)
         stream.write('\n')
 
 
@@ -61,6 +61,8 @@ def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, 
             while True:
                 chunk = response.read1(min(65536, byte_limit - total + 1))
                 if not chunk:
+                    if response.length not in {None, 0}:
+                        raise http.client.IncompleteRead(b'', response.length)
                     break
                 if first:
                     channel.send({'first_byte_monotonic_ns': time.monotonic_ns()})
@@ -569,7 +571,7 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
             unsubmitted_reason = 'cell_deadline' if time.monotonic_ns() >= cell_deadline_ns else 'request_deadline'
             break
         reservation['status'] = 'started'
-        reservation_path.write_text(json.dumps(reservation, ensure_ascii=False, indent=2) + '\n')
+        reservation_path.write_text(json.dumps(reservation, ensure_ascii=True, indent=2) + '\n')
         submitted_bytes += tool_bytes
         pending_results = []
         unsubmitted_reason = None
@@ -606,7 +608,7 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
                 if (call.get('namespace') != 'evidence' or call.get('name') != 'read_source' or
                         not isinstance(call_id, str) or not call_id or call_id in seen_calls):
                     raise ValueError('unsupported or duplicate tool call')
-                content = json.dumps(sources[args['source']], ensure_ascii=False)
+                content = json.dumps(sources[args['source']], ensure_ascii=True)
             except (ValueError, KeyError, TypeError):
                 status = 'tool_error'
                 break
@@ -725,7 +727,7 @@ def run(prepared, expected_digest, output, local_http):
                               time.monotonic_ns() >= run_deadline_ns else 'request_deadline'))
             continue
         reservation['status'] = 'started'
-        reservation_path.write_text(json.dumps(reservation, ensure_ascii=False, indent=2) + '\n')
+        reservation_path.write_text(json.dumps(reservation, ensure_ascii=True, indent=2) + '\n')
         response_body = (output / response_file).read_bytes()
         result, events, relation, status = interpret_response(
             condition['adapter'], response_body, metadata['transport_status'])

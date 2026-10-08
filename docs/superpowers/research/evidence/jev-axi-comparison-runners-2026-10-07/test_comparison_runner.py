@@ -1607,7 +1607,7 @@ class ComparisonCLI(unittest.TestCase):
                                   tool_result_bytes=131072, tool_total_bytes=2097152)
         first_output = [
             {'type': 'reasoning', 'id': 'rs_1', 'summary': [],
-             'encrypted_content': 'synthetic-opaque-reasoning', 'status': 'completed'},
+             'encrypted_content': 'synthetic-opaque-reasoning' + chr(0xD800), 'status': 'completed'},
             {'type': 'message', 'role': 'assistant', 'phase': 'commentary',
              'content': [{'type': 'output_text', 'text': 'I will read the record.'}],
              'status': 'completed'},
@@ -1867,6 +1867,100 @@ class ComparisonCLI(unittest.TestCase):
                 self.assertEqual(accounting['attempts'], 2)
                 self.assertEqual(accounting['unvalued_attempts'], 0)
                 self.assertEqual(accounting['api_rate_equivalent_usd'], '0.00002')
+
+
+    def test_escaped_surrogate_refusal_preserves_evidence_and_the_next_case(self):
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
+        first = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                 'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                     {'type': 'refusal', 'refusal': chr(0xD800)}]}]}
+        second = dict(first, output=[{'type': 'message', 'role': 'assistant', 'content': [
+            {'type': 'output_text', 'text': 'Second case has evidence [s01].'}]}])
+        streams = [('data: ' + json.dumps({'type': 'response.completed', 'response': result})
+                    + '\n\n').encode() for result in [first, second]]
+        replies = iter(streams)
+        with service(lambda _: next(replies)) as (endpoint, received):
+            self.coverage_fixture(endpoint)
+            packet = json.loads(self.input.read_text())
+            packet['ordinary'] = 'Second independent case: inspect s01.'
+            source = self.root / 'second.json'; source.write_text(json.dumps(packet))
+            self.spec['cases'].append({'id': 'c02', 'status': 'ready', 'input': {
+                'path': str(source), 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()}})
+            prepared = self.prepare(); self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            output = self.root / 'run'; result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(received), 2)
+        self.assertEqual(len(received[1]['input']), 1)
+        self.assertIn('Second independent case', received[1]['input'][0]['content'][0]['text'])
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertEqual([slot['status'] for slot in summary['slots']], ['refused', 'completed'])
+        cell = output / 'cell-0000'
+        attempt = json.loads((cell / 'attempt-0000.json').read_text(encoding='utf-8'))
+        self.assertEqual(attempt['raw_response'], first)
+        self.assertEqual(attempt['raw_events'], [{'type': 'response.completed', 'response': first}])
+        self.assertEqual((cell / attempt['response_body']).read_bytes(), streams[0])
+        self.assertEqual(attempt['usage'], usage)
+        self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+        self.assertIsNone(json.loads((cell / 'summary.json').read_text())['answer'])
+        self.assertEqual(summary['request_accounting']['api_rate_equivalent_usd'], '0.00002')
+
+    def test_premature_http_eof_retains_terminal_usage_without_accepting_an_answer(self):
+        original = copy.deepcopy(self.spec)
+        original_input = self.input.read_bytes()
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
+        envelope = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                    'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                        {'type': 'output_text', 'text': '{"relation":"supported"}'}]}]}
+        event = {'type': 'response.completed', 'response': envelope}
+        body = ('data: ' + json.dumps(event) + '\n\n').encode()
+        for kind in ['claim', 'coverage']:
+            for extra in [0, 1]:
+                with self.subTest(kind=kind, missing_bytes=extra):
+                    self.spec = copy.deepcopy(original)
+                    self.input.write_bytes(original_input)
+                    self.bundle = self.root / f'prepared-{kind}-{extra}'
+
+                    def closed_response(handler):
+                        handler.send_response(200)
+                        handler.send_header('Content-Length', str(len(body) + extra))
+                        handler.send_header('Connection', 'close')
+                        handler.end_headers()
+                        handler.wfile.write(body)
+                        handler.wfile.flush()
+                        handler.close_connection = True
+
+                    with service(lambda _: closed_response) as (endpoint, received):
+                        if kind == 'coverage':
+                            self.coverage_fixture(endpoint)
+                        else:
+                            self.spec['conditions'][0].update(
+                                adapter='responses', effort='low', endpoint=endpoint)
+                        prepared = self.prepare()
+                        self.assertEqual(prepared.returncode, 0, prepared.stderr)
+                        output = self.root / f'run-{kind}-{extra}'
+                        result = self.run_bundle(output)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual(len(received), 1)
+                    status = 'transport_error' if extra else 'completed'
+                    summary = json.loads((output / 'summary.json').read_text())
+                    self.assertEqual(summary['slots'][0]['status'], status)
+                    folder = output / 'cell-0000' if kind == 'coverage' else output
+                    attempt = json.loads((folder / 'attempt-0000.json').read_text())
+                    self.assertEqual(attempt['transport_status'], 'transport_error' if extra else 'received')
+                    self.assertEqual(attempt['raw_response'], envelope)
+                    self.assertEqual(attempt['raw_events'], [event])
+                    self.assertEqual((folder / attempt['response_body']).read_bytes(), body)
+                    self.assertEqual(attempt['usage'], usage)
+                    self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+                    self.assertEqual(attempt['residual_provider_work_unknown'], bool(extra))
+                    if kind == 'claim':
+                        self.assertEqual(attempt['relation'], None if extra else 'supported')
+                    else:
+                        cell = json.loads((folder / 'summary.json').read_text())
+                        self.assertEqual(cell['answer'], None if extra else '{"relation":"supported"}')
+                        self.assertEqual(cell['tool_operations'], 0)
 
 
 if __name__ == '__main__':
