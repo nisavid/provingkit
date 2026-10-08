@@ -1,0 +1,72 @@
+{
+  "first_results": {
+    "coverage": {
+      "file": "coverage-first.md",
+      "bytes": 20818,
+      "sha256": "6869ba58688d58024f1051f68ee488c824575a232d0c55129c448b1e184bda4f"
+    },
+    "access": {
+      "file": "access-first.md",
+      "bytes": 19495,
+      "sha256": "a61f0e775028cfbc22cfa9dec86a662862e717069fc3812bce1ac7e59686473b"
+    }
+  },
+  "assessed_desktop_members": [
+    {
+      "file": "extra-index.chunk-B9SZqsi8.js",
+      "bytes": 1596495,
+      "sha256": "bd2144a3653bb843f4b75fe652124a4e478f273b5f6c2e10a2139fa3a9a3152f"
+    },
+    {
+      "file": "extra-index.chunk-CKt-cwRV.js",
+      "bytes": 648655,
+      "sha256": "dad88ac66fe13f72d0225c49d48e124d238ff643ff96426c4a2020482621e62d"
+    },
+    {
+      "file": "extra-index.chunk-COPWZCsC.js",
+      "bytes": 74622,
+      "sha256": "b22a9dc34684cef348f9c0e72abe88c433bbfc2d350d9a3e61faf7ae22858950"
+    },
+    {
+      "file": "extra-index.chunk-DuaKZOPP.js",
+      "bytes": 6751779,
+      "sha256": "f160a24940ee11cea6a788a9038e95c14fb150889977dcfa331fd9b07aba0c96"
+    },
+    {
+      "file": "extra-index.chunk-vRLpacfH.js",
+      "bytes": 1125678,
+      "sha256": "ac8acccdebfdd2a165bb5f4d9710b80540b46ce01207f85eae42696a0c7819e1"
+    },
+    {
+      "file": "extra-index.chunk-D6vCltAs.js",
+      "bytes": 304489,
+      "sha256": "efb07febd32ac5e276b882844cedd38671b4fdea10ae0b3e8c21bb1ef21ddd7f"
+    },
+    {
+      "file": "extra/usr/lib/claude-desktop/resources/app.asar",
+      "bytes": 54910454,
+      "sha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a"
+    }
+  ],
+  "method": "Complete first reports frozen independently before exchange; public artifacts inspected as data, no vendor execution or runtime observation.",
+  "source_base": "e3851df2a0bb59e859880fa0f467cd7bd7a75dfd",
+  "source_recovery": "Desktop archive recovery and comparative apt package are documented in access-first.md.",
+  "cross_results": {
+    "coverage": {
+      "file": "cross/coverage-report.md",
+      "bytes": 21158,
+      "sha256": "d87063a0ef3965cc9426ddfd18c39ef13fc8a4913eea194d196a518cacdb0618"
+    },
+    "access": {
+      "file": "cross/access-report.md",
+      "bytes": 14980,
+      "sha256": "789257f80f798a3fa196ed440506d6bad1a2cd8861b95c7672a7227fd473ff4c"
+    }
+  },
+  "additional_cross_source": {
+    "member": ".vite/build/index.chunk-D8aWeSvo.js",
+    "bytes": 9047,
+    "sha256": "cee58d55b7fd748b938fe966af4a9af5e10d6252ec7f64dc9fb224feaed83e3d",
+    "archive_sha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a"
+  }
+}
