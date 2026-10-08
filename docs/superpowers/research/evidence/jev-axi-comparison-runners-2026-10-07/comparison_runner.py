@@ -164,7 +164,7 @@ def payload_for(condition, state, kind='claim'):
 def parse_result(adapter, body, kind='claim'):
     events = []
     if adapter == 'responses':
-        for part in body.decode().replace('\r\n', '\n').split('\n\n'):
+        for part in body.decode().replace('\r\n', '\n').split('\n\n')[:-1]:
             data = '\n'.join(line[5:].lstrip(' ') for line in part.splitlines()
                              if line.startswith('data:'))
             if data and data != '[DONE]':
@@ -273,6 +273,11 @@ def value_usage(condition, usage):
     if not isinstance(usage, dict):
         raise ValueError('usage must be an object')
     validate_counts(usage)
+    output = usage.get('output_tokens')
+    reasoning = (usage.get('output_tokens_details') or {}).get('reasoning_tokens')
+    if (condition['adapter'] == 'responses' and output is not None and
+            reasoning is not None and reasoning > output):
+        raise ValueError('reasoning tokens exceed output tokens')
     if usage.get('input_tokens') is None:
         return None
     rates = {key: Decimal(value) for key, value in condition['rates'].items()}
@@ -288,6 +293,23 @@ def value_usage(condition, usage):
         total = ((Decimal(usage['input_tokens']) - cached - written) * rates['input'] +
                  cached * rates['cached'] + written * rates['write'] + output * rates['output'])
     return format(total / 1_000_000, 'f')
+
+
+def finalize_response(condition, result, status):
+    usage = result.get('usage') if isinstance(result, dict) else None
+    returned_model = result.get('model') if isinstance(result, dict) else None
+    condition_error = None
+    try:
+        value = value_usage(condition, usage)
+    except (ValueError, TypeError):
+        value = None
+        condition_error = 'accounting_error'
+    if returned_model is not None and returned_model != condition['model']:
+        value = None
+        condition_error = 'model_mismatch'
+    if condition_error and status != 'response_limit':
+        status = condition_error
+    return status, condition_error, usage, returned_model, value
 
 
 def exact_fields(value, keys, label):
@@ -502,21 +524,8 @@ def run_coverage_cell(condition, state, output, limits, remaining):
                 result, events, answer, status = None, [], None, metadata['transport_status']
         except (ValueError, TypeError, KeyError, AttributeError, IndexError):
             result, events, answer, status = None, [], None, 'invalid_response'
-        usage = result.get('usage') if isinstance(result, dict) else None
-        returned_model = result.get('model') if isinstance(result, dict) else None
-        condition_error = None
-        try:
-            value = value_usage(condition, usage)
-        except (ValueError, TypeError):
-            value = None
-            condition_error = 'accounting_error'
-            if status != 'response_limit':
-                status = 'accounting_error'
-        if returned_model is not None and returned_model != condition['model']:
-            value = None
-            condition_error = 'model_mismatch'
-            if status != 'response_limit':
-                status = 'model_mismatch'
+        status, condition_error, usage, returned_model, value = finalize_response(
+            condition, result, status)
         attempt = {
             'status': status, 'condition_error': condition_error, 'started_at': started,
             'duration_ms': (time.monotonic_ns() - request_tick) / 1_000_000,
@@ -633,7 +642,7 @@ def run(prepared, expected_digest, output, local_http):
             slots.append(dict(slot, status=status))
             if any(attempt['condition_error'] for attempt in cell_attempts) or status not in {'completed', 'refused', 'provider_incomplete',
                               'stream_incomplete', 'invalid_response', 'timeout',
-                              'resource_incomplete', 'response_limit'}:
+                              'resource_incomplete', 'response_limit', 'tool_error'}:
                 stopped.add(slot['condition'])
             continue
         payload = payload_for(condition, state)
@@ -662,23 +671,14 @@ def run(prepared, expected_digest, output, local_http):
         except (ValueError, TypeError, KeyError, AttributeError, IndexError):
             result, events, relation, status = None, [], None, 'invalid_response'
         duration = (time.monotonic_ns() - tick) / 1_000_000
-        usage = result.get('usage') if isinstance(result, dict) else None
-        returned_model = result.get('model') if isinstance(result, dict) else None
-        try:
-            value = value_usage(condition, usage)
-        except (ValueError, TypeError):
-            value = None
-            if status != 'response_limit':
-                status = 'accounting_error'
-        if returned_model is not None and returned_model != condition['model']:
-            value = None
-            if status != 'response_limit':
-                status = 'model_mismatch'
+        status, condition_error, usage, returned_model, value = finalize_response(
+            condition, result, status)
         attempt = dict(slot, started_at=started, duration_ms=duration, request=payload,
                        payload_sha256=digest(body), request_body=request_file,
                        requested_model=condition['model'], returned_model=returned_model,
                        requested_effort=condition['effort'],
-                       status=status, response_body=response_file, raw_response=result,
+                       status=status, condition_error=condition_error,
+                       response_body=response_file, raw_response=result,
                        raw_events=events, relation=relation, usage=usage,
                        api_rate_equivalent_usd=value, confirmed_charge_usd=None,
                        response_truncated=status in {'response_limit', 'timeout', 'transport_error'},

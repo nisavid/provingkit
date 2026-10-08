@@ -225,6 +225,27 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(attempt['raw_events'], [early, done])
 
 
+    def test_unterminated_responses_terminal_fragment_cannot_complete(self):
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [
+                {'type': 'output_text', 'text': '{"relation":"supported"}'}]}]}
+        event = ('data: ' + json.dumps({'type': 'response.completed', 'response': response})).encode()
+        for suffix, expected in ((b'', 'stream_incomplete'), (b'\n\n', 'completed')):
+            with self.subTest(suffix=suffix):
+                self.bundle = self.root / ('prepared-fragment' if not suffix else 'prepared-terminated')
+                with service(event + suffix) as (endpoint, received):
+                    self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint,
+                                                       effort='low')
+                    prepared = self.prepare()
+                    self.assertEqual(prepared.returncode, 0, prepared.stderr)
+                    output = self.root / ('run-fragment' if not suffix else 'run-terminated')
+                    result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                attempt = json.loads((output / 'attempt-0000.json').read_text())
+                self.assertEqual(attempt['status'], expected)
+                self.assertEqual((output / 'response-0000.body').read_bytes(), event + suffix)
+                self.assertEqual(len(received), 1)
+
     def test_jev_choice_preserves_the_same_question_and_native_distribution(self):
         reply = {'model': 'jev-1.13.0', 'answers': {'claim_relation': {
             'type': 'choice', 'choice': 'unsupported_extension', 'confidence': 0.7,
@@ -287,6 +308,29 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(attempt['usage'], response['usage'])
         self.assertIsNone(attempt['api_rate_equivalent_usd'])
 
+
+    def test_reasoning_tokens_above_output_preserve_counters_without_a_value(self):
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0},
+                 'output_tokens_details': {'reasoning_tokens': 11}}
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                    'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                        {'type': 'output_text', 'text': '{"relation":"supported"}'}]}]}
+        event = ('data: ' + json.dumps({'type': 'response.completed', 'response': response}) + '\n\n').encode()
+        with service(event) as (endpoint, received):
+            self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low',
+                                              rates={'input': '0.10', 'cached': '0.01',
+                                                     'write': '0.125', 'output': '0.50'})
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'
+            result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(received), 1)
+        attempt = json.loads((output / 'attempt-0000.json').read_text())
+        self.assertEqual(attempt['status'], 'accounting_error')
+        self.assertEqual(attempt['usage'], usage)
+        self.assertIsNone(attempt['api_rate_equivalent_usd'])
+        self.assertEqual((output / 'response-0000.body').read_bytes(), event)
 
     def test_input_only_adapters_refuse_inapplicable_rate_components(self):
         for adapter in ['jev', 'decisions']:
@@ -397,6 +441,33 @@ class ComparisonCLI(unittest.TestCase):
         accounting = json.loads((output / 'summary.json').read_text())['request_accounting']
         self.assertEqual(accounting['known_api_rate_equivalent_usd'], '0.000015')
         self.assertEqual(accounting['unvalued_attempts'], 0)
+
+    def test_capped_claim_retains_secondary_model_and_accounting_errors(self):
+        for error, model, usage in [
+            ('model_mismatch', 'different-model', {'input_tokens': 100, 'output_tokens': 10}),
+            ('accounting_error', 'gpt-6-luna', {'input_tokens': -1, 'output_tokens': 10}),
+        ]:
+            with self.subTest(error=error):
+                self.bundle = self.root / ('prepared-' + error)
+                response = {'model': model, 'status': 'completed', 'usage': usage, 'output': []}
+                event = {'type': 'response.completed', 'response': response}
+                prefix = ('data: ' + json.dumps(event) + '\n\n').encode()
+                with service(prefix + b'extra') as (endpoint, received):
+                    self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low')
+                    self.spec['limits']['response_bytes'] = len(prefix)
+                    self.assertEqual(self.prepare().returncode, 0)
+                    output = self.root / ('run-' + error)
+                    result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                attempt = json.loads((output / 'attempt-0000.json').read_text())
+                self.assertEqual(attempt['status'], 'response_limit')
+                self.assertEqual(attempt['condition_error'], error)
+                self.assertEqual(attempt['usage'], usage)
+                self.assertEqual(attempt['returned_model'], model)
+                self.assertEqual(attempt['raw_events'], [event])
+                self.assertIsNone(attempt['api_rate_equivalent_usd'])
+                self.assertEqual((output / 'response-0000.body').read_bytes(), prefix)
+                self.assertEqual(len(received), 1)
 
     def test_claim_response_cap_does_not_value_incomplete_or_conflicting_terminal_evidence(self):
         usage = {'input_tokens': 100, 'output_tokens': 10,
@@ -665,6 +736,43 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(len(received), 1)
         summary = json.loads((output / 'summary.json').read_text())
         self.assertEqual(summary['slots'][1]['status'], 'unattempted')
+
+    def test_invalid_coverage_tool_call_keeps_the_next_case_independent(self):
+        source = {'id': 's01', 'path': 'record.md', 'content': 'First source.',
+                  'sha256': hashlib.sha256(b'First source.').hexdigest()}
+        packets = [dict(task='Read the source.', ordinary=label, deterministic=label,
+                        sources=[source]) for label in ('First case', 'Second case')]
+        self.spec['kind'] = 'coverage'
+        self.spec['cases'] = []
+        for number, packet in enumerate(packets, 1):
+            path = self.root / f'case-{number}.json'
+            path.write_text(json.dumps(packet))
+            self.spec['cases'].append({'id': f'c{number:02d}', 'status': 'ready',
+                                       'input': {'path': str(path),
+                                                 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}})
+        self.spec['limits'].update(cell_seconds=8, tool_operations=16,
+                                  tool_result_bytes=131072, tool_total_bytes=2097152)
+        replies = [
+            {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+                {'type': 'function_call', 'namespace': 'evidence', 'name': 'read_source',
+                 'call_id': 'bad', 'arguments': '{"wrong":"s01"}'}]},
+            {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+                {'type': 'message', 'role': 'assistant', 'content': [
+                    {'type': 'output_text', 'text': 'Second source is present.'}]}]}]
+        with service(lambda _: ('data: ' + json.dumps({'type': 'response.completed',
+                         'response': replies.pop(0)}) + '\n\n').encode()) as (endpoint, received):
+            self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint,
+                                               effort='low', arm='ordinary')
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'
+            result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([slot['status'] for slot in json.loads((output / 'summary.json').read_text())['slots']],
+                         ['tool_error', 'completed'])
+        self.assertIn('Second case', received[1]['input'][0]['content'][0]['text'])
+        self.assertEqual(len(received[1]['input']), 1)
+        self.assertEqual(json.loads((output / 'cell-0000' / 'tools-0000.json').read_text())['status'],
+                         'tool_error')
 
     def test_coverage_refusal_ends_its_cell_without_cancelling_the_next_case(self):
         self.input.write_text(json.dumps({
