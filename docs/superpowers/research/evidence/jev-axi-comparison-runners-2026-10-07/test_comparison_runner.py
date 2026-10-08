@@ -372,6 +372,51 @@ class ComparisonCLI(unittest.TestCase):
         self.assertIsNone(attempt['usage'])
         self.assertEqual(len(received), 1)
 
+    def test_claim_response_cap_retains_complete_terminal_usage_without_accepting_completion(self):
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                    'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                        {'type': 'output_text', 'text': '{"relation":"supported"}'}]}]}
+        event = {'type': 'response.completed', 'response': response}
+        prefix = ('data: ' + json.dumps(event) + '\n\n').encode()
+        with service(prefix + b'x' * 20) as (endpoint, received):
+            self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low',
+                rates={'input': '0.10', 'cached': '0', 'write': '0', 'output': '0.50'})
+            self.spec['limits']['response_bytes'] = len(prefix)
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'; result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        attempt = json.loads((output / 'attempt-0000.json').read_text())
+        self.assertEqual(attempt['status'], 'response_limit')
+        self.assertEqual((output / attempt['response_body']).read_bytes(), prefix)
+        self.assertEqual(attempt['raw_events'], [event])
+        self.assertEqual(attempt['usage'], usage)
+        self.assertIsNone(attempt['relation'])
+        self.assertEqual(attempt['api_rate_equivalent_usd'], '0.000015')
+        accounting = json.loads((output / 'summary.json').read_text())['request_accounting']
+        self.assertEqual(accounting['known_api_rate_equivalent_usd'], '0.000015')
+        self.assertEqual(accounting['unvalued_attempts'], 0)
+
+    def test_claim_response_cap_does_not_value_incomplete_or_conflicting_terminal_evidence(self):
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
+        terminal = ('data: ' + json.dumps({'type': 'response.completed', 'response': {
+            'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage, 'output': []}}) + '\n\n').encode()
+        for label, prefix in [('incomplete', terminal[:-2]), ('conflicting', terminal + terminal)]:
+            with self.subTest(label=label):
+                self.bundle = self.root / ('prepared-' + label)
+                with service(prefix + b'x' * 20) as (endpoint, received):
+                    self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low')
+                    self.spec['limits']['response_bytes'] = len(prefix)
+                    self.assertEqual(self.prepare().returncode, 0)
+                    output = self.root / ('run-' + label); result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                attempt = json.loads((output / 'attempt-0000.json').read_text())
+                self.assertEqual(attempt['status'], 'response_limit')
+                self.assertIsNone(attempt['usage'])
+                self.assertIsNone(attempt['api_rate_equivalent_usd'])
+
     def test_request_deadline_preserves_partial_body_without_retry(self):
         def slow_body(handler):
             handler.send_response(200)
@@ -629,7 +674,17 @@ class ComparisonCLI(unittest.TestCase):
                          'sha256': hashlib.sha256(b'Reviewed candidate.\n').hexdigest()}]}))
         self.spec['kind'] = 'coverage'
         self.spec['cases'][0]['input']['sha256'] = hashlib.sha256(self.input.read_bytes()).hexdigest()
+        second_packet = {'task': 'Explain what the second review covers.',
+                         'ordinary': 'Read the second review source.',
+                         'deterministic': 'Second review source: s01.',
+                         'sources': [{'id': 's01', 'path': 'second-review.md',
+                                      'content': 'Second candidate reviewed.\n',
+                                      'sha256': hashlib.sha256(b'Second candidate reviewed.\n').hexdigest()}]}
+        second_input = self.root / 'second-candidate.json'
+        second_input.write_text(json.dumps(second_packet))
         second = copy.deepcopy(self.spec['cases'][0]); second['id'] = 'c02'
+        second['input'] = {'path': str(second_input),
+                           'sha256': hashlib.sha256(second_input.read_bytes()).hexdigest()}
         self.spec['cases'].append(second)
         self.spec['limits'].update(cell_seconds=8, tool_operations=16,
                                   tool_result_bytes=131072, tool_total_bytes=2097152)
@@ -646,7 +701,8 @@ class ComparisonCLI(unittest.TestCase):
         def reply(_):
             return ('data: ' + json.dumps({'type': 'response.completed',
                                           'response': responses.pop(0)}) + '\n\n').encode()
-        with service(reply) as (endpoint, received):
+        raw_received = []
+        with service(reply, raw_received) as (endpoint, received):
             self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint,
                                                effort='low', arm='ordinary')
             prepared = self.prepare()
@@ -658,6 +714,15 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual([(slot['case'], slot['status']) for slot in summary['slots']],
                          [('c01', 'refused'), ('c02', 'completed')])
         self.assertEqual(len(received), 2)
+        self.assertEqual(received[0]['input'][0]['content'][0]['text'].split('\n\nSources: ')[0],
+                         'Read the review source.')
+        self.assertEqual(received[1]['input'][0]['content'][0]['text'].split('\n\nSources: ')[0],
+                         second_packet['ordinary'])
+        self.assertEqual((output / 'cell-0001' / 'request-0000.body').read_bytes(), raw_received[1])
+        self.assertEqual(json.loads((output / 'cell-0001' / 'attempt-0000.json').read_text())['request_body'],
+                         'request-0000.body')
+        self.assertEqual(summary['slots'][1]['case'], 'c02')
+        self.assertEqual(summary['slots'][1]['condition'], 'decisions')
         attempt = json.loads((output / 'cell-0000' / 'attempt-0000.json').read_text())
         self.assertEqual(attempt['raw_response'], refused_response)
         self.assertEqual(attempt['usage'], usage)
@@ -765,11 +830,14 @@ class ComparisonCLI(unittest.TestCase):
         self.spec['cases'].append(dict(self.spec['cases'][0], id='c02'))
         self.spec['limits'].update(response_bytes=1024, cell_seconds=8, tool_operations=16,
                                   tool_result_bytes=131072, tool_total_bytes=2097152)
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
         terminal = {'type': 'response.completed', 'response': {
-            'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage, 'output': [
                 {'type': 'message', 'role': 'assistant', 'content': [
                     {'type': 'output_text', 'text': 'The source covers the candidate [s01].'}]}]}}
-        responses = [b'x' * 4096, ('data: ' + json.dumps(terminal) + '\n\n').encode()]
+        prefix = ('data: ' + json.dumps(terminal) + '\n\n').encode()
+        responses = [prefix + b'x' * 4096, prefix]
         with service(lambda _: responses.pop(0)) as (endpoint, received):
             self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint,
                                                effort='low', arm='ordinary')
@@ -780,9 +848,48 @@ class ComparisonCLI(unittest.TestCase):
         summary = json.loads((output / 'summary.json').read_text())
         self.assertEqual([x['status'] for x in summary['slots']], ['response_limit', 'completed'])
         self.assertEqual(len(received), 2)
-        self.assertEqual((output / 'cell-0000' / 'response-0000.body').read_bytes(), b'x' * 1024)
-        self.assertEqual(json.loads((output / 'cell-0000' / 'attempt-0000.json').read_text())['status'],
-                         'response_limit')
+        attempt = json.loads((output / 'cell-0000' / 'attempt-0000.json').read_text())
+        self.assertEqual((output / 'cell-0000' / 'response-0000.body').read_bytes(),
+                         (prefix + b'x' * 4096)[:1024])
+        self.assertEqual(attempt['status'], 'response_limit')
+        self.assertEqual(attempt['raw_events'], [terminal])
+        self.assertEqual(attempt['usage'], usage)
+        self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+        self.assertEqual(summary['request_accounting']['known_api_rate_equivalent_usd'], '0.00002')
+
+    def test_response_cap_does_not_hide_condition_model_or_accounting_errors(self):
+        self.input.write_text(json.dumps({
+            'task': 'Explain the review evidence.', 'ordinary': 'Read s01.',
+            'deterministic': 'Review source: s01.',
+            'sources': [{'id': 's01', 'path': 'review.md', 'content': 'Reviewed.\n',
+                         'sha256': hashlib.sha256(b'Reviewed.\n').hexdigest()}]}))
+        self.spec['kind'] = 'coverage'
+        self.spec['cases'][0]['input']['sha256'] = hashlib.sha256(self.input.read_bytes()).hexdigest()
+        self.spec['cases'].append(dict(self.spec['cases'][0], id='c02'))
+        self.spec['limits'].update(response_bytes=1024, cell_seconds=8, tool_operations=16,
+                                  tool_result_bytes=131072, tool_total_bytes=2097152)
+        for expected, model, usage in [
+            ('model_mismatch', 'different-model', {'input_tokens': 100, 'output_tokens': 10}),
+            ('accounting_error', 'gpt-6-luna', {'input_tokens': -1, 'output_tokens': 10}),
+        ]:
+            with self.subTest(expected=expected):
+                terminal = {'type': 'response.completed', 'response': {
+                    'model': model, 'status': 'completed', 'usage': usage, 'output': []}}
+                response = ('data: ' + json.dumps(terminal) + '\n\n').encode() + b'x' * 4096
+                self.bundle = self.root / ('prepared-' + expected)
+                with service(response) as (endpoint, received):
+                    self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint,
+                                                      effort='low', arm='ordinary')
+                    self.assertEqual(self.prepare().returncode, 0)
+                    output = self.root / ('run-' + expected)
+                    result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                summary = json.loads((output / 'summary.json').read_text())
+                self.assertEqual([s['status'] for s in summary['slots']], ['response_limit', 'unattempted'])
+                self.assertEqual(len(received), 1)
+                attempt = json.loads((output / 'cell-0000' / 'attempt-0000.json').read_text())
+                self.assertEqual(attempt['condition_error'], expected)
+                self.assertIsNone(attempt['api_rate_equivalent_usd'])
 
     def test_coverage_request_limit_preserves_prepared_but_unsubmitted_sources(self):
         sources = [

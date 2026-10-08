@@ -217,6 +217,30 @@ def parse_result(adapter, body, kind='claim'):
     return result, events, relation, 'completed' if relation is not None else 'invalid_response'
 
 
+def bounded_terminal_evidence(body):
+    """Read only complete SSE events from a retained response prefix."""
+    events = []
+    for part in body.replace(b'\r\n', b'\n').split(b'\n\n')[:-1]:
+        lines = part.splitlines()
+        data = b'\n'.join(line[5:].lstrip(b' ') for line in lines if line.startswith(b'data:'))
+        if not data or data == b'[DONE]':
+            continue
+        try:
+            event = json.loads(data)
+        except (UnicodeDecodeError, ValueError):
+            continue
+        if isinstance(event, dict):
+            events.append(event)
+    terminal = [event for event in events if event.get('type') in {
+        'response.completed', 'response.failed', 'response.incomplete', 'error'}]
+    if len(terminal) != 1 or terminal[0].get('type') != 'response.completed':
+        return None, events
+    result = terminal[0].get('response')
+    if not isinstance(result, dict) or result.get('status') != 'completed':
+        return None, events
+    return result, events
+
+
 def valid_probabilities(adapter, answer):
     def probability(value):
         return type(value) in {int, float} and math.isfinite(value) and 0 <= value <= 1
@@ -471,20 +495,30 @@ def run_coverage_cell(condition, state, output, limits, remaining):
         try:
             if metadata['transport_status'] == 'received':
                 result, events, answer, status = parse_result('responses', raw, 'coverage')
+            elif metadata['transport_status'] == 'response_limit':
+                result, events = bounded_terminal_evidence(raw)
+                answer, status = None, 'response_limit'
             else:
                 result, events, answer, status = None, [], None, metadata['transport_status']
         except (ValueError, TypeError, KeyError, AttributeError, IndexError):
             result, events, answer, status = None, [], None, 'invalid_response'
         usage = result.get('usage') if isinstance(result, dict) else None
         returned_model = result.get('model') if isinstance(result, dict) else None
+        condition_error = None
         try:
             value = value_usage(condition, usage)
         except (ValueError, TypeError):
-            value, status = None, 'accounting_error'
+            value = None
+            condition_error = 'accounting_error'
+            if status != 'response_limit':
+                status = 'accounting_error'
         if returned_model is not None and returned_model != condition['model']:
-            value, status = None, 'model_mismatch'
+            value = None
+            condition_error = 'model_mismatch'
+            if status != 'response_limit':
+                status = 'model_mismatch'
         attempt = {
-            'status': status, 'started_at': started,
+            'status': status, 'condition_error': condition_error, 'started_at': started,
             'duration_ms': (time.monotonic_ns() - request_tick) / 1_000_000,
             'request': payload, 'payload_sha256': digest(body), 'request_body': request_file,
             'requested_model': condition['model'], 'returned_model': returned_model,
@@ -597,7 +631,7 @@ def run(prepared, expected_digest, output, local_http):
                                                       manifest['limits'], remaining)
             attempts.extend(cell_attempts)
             slots.append(dict(slot, status=status))
-            if status not in {'completed', 'refused', 'provider_incomplete',
+            if any(attempt['condition_error'] for attempt in cell_attempts) or status not in {'completed', 'refused', 'provider_incomplete',
                               'stream_incomplete', 'invalid_response', 'timeout',
                               'resource_incomplete', 'response_limit'}:
                 stopped.add(slot['condition'])
@@ -620,6 +654,9 @@ def run(prepared, expected_digest, output, local_http):
         try:
             if metadata['transport_status'] == 'received':
                 result, events, relation, status = parse_result(condition['adapter'], response_body)
+            elif metadata['transport_status'] == 'response_limit' and condition['adapter'] == 'responses':
+                result, events = bounded_terminal_evidence(response_body)
+                relation, status = None, 'response_limit'
             else:
                 result, events, relation, status = None, [], None, metadata['transport_status']
         except (ValueError, TypeError, KeyError, AttributeError, IndexError):
@@ -629,12 +666,14 @@ def run(prepared, expected_digest, output, local_http):
         returned_model = result.get('model') if isinstance(result, dict) else None
         try:
             value = value_usage(condition, usage)
-        except ValueError:
+        except (ValueError, TypeError):
             value = None
-            status = 'accounting_error'
+            if status != 'response_limit':
+                status = 'accounting_error'
         if returned_model is not None and returned_model != condition['model']:
             value = None
-            status = 'model_mismatch'
+            if status != 'response_limit':
+                status = 'model_mismatch'
         attempt = dict(slot, started_at=started, duration_ms=duration, request=payload,
                        payload_sha256=digest(body), request_body=request_file,
                        requested_model=condition['model'], returned_model=returned_model,
