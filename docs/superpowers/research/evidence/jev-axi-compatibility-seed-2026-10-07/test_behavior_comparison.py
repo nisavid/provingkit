@@ -75,6 +75,17 @@ class ComparisonCliTests(unittest.TestCase):
         self.assertEqual(self.evidence()['outcome'], 'different')
         self.assertTrue(self.evidence()['observations']['filtered_report']['different'])
 
+    def test_removing_literal_quotes_from_record_identity_is_different(self):
+        self.input.write_text(json.dumps({'items': [{'sku': '"A"', 'warehouse': '"North"', 'on_hand': 0}]}))
+        (self.after / 'inventory_format.py').write_text(
+            'def render_text(items):\n'
+            '    return "sku\\twarehouse\\ton_hand\\nA\\tNorth\\t0\\n"\n'
+        )
+        result = self.run_comparison()
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(self.evidence()['outcome'], 'different')
+        self.assertEqual(self.evidence()['observations']['report']['before']['records'], [['"A"', '"North"', 0]])
+
     def test_command_failure_does_not_establish_compatibility(self):
         (self.after / 'bin/low-stock').write_text('raise SystemExit(7)\n')
         result = self.run_comparison()

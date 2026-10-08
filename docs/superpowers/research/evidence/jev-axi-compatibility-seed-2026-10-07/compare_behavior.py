@@ -29,7 +29,7 @@ def source_identity(root):
 
 def parse_tsv(data):
     try:
-        rows = list(csv.reader(io.StringIO(data.decode('utf-8')), delimiter='\t'))
+        rows = list(csv.reader(io.StringIO(data.decode('utf-8')), delimiter='\t', quoting=csv.QUOTE_NONE))
         if not rows or rows[0] != HEADER:
             raise ValueError('invalid TSV header')
         records = []

@@ -81,6 +81,18 @@ class CliTests(unittest.TestCase):
             self.assertIn("error:", result.stderr)
             self.assertFalse(output.exists())
 
+    def test_report_and_archive_preserve_literal_quotes_in_record_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'inventory.json'
+            output = Path(directory) / 'archive.tsv'
+            source.write_text(json.dumps({'items': [{'sku': '"A"', 'warehouse': '"North"', 'on_hand': 0}]}))
+            expected = 'sku\twarehouse\ton_hand\n"A"\t"North"\t0\n'
+            report = run_cli('bin/inventory-report', '--input', source)
+            self.assertEqual((report.returncode, report.stdout), (0, expected))
+            archive = run_cli('jobs/archive-inventory.py', '--input', source, '--output', output)
+            self.assertEqual(archive.returncode, 0, archive.stderr)
+            self.assertEqual(output.read_text(), expected)
+
     def test_invalid_arguments_and_malformed_json_return_diagnostics(self):
         with tempfile.TemporaryDirectory() as directory:
             bad = Path(directory) / "bad.json"

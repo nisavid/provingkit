@@ -18,13 +18,13 @@ def main():
         sys.stderr.write(result.stderr)
         return result.returncode
     try:
-        rows = list(csv.reader(io.StringIO(result.stdout), delimiter="\t"))
+        rows = list(csv.reader(io.StringIO(result.stdout), delimiter="\t", quoting=csv.QUOTE_NONE))
         if not rows or rows[0] != ["sku", "warehouse", "on_hand"]:
             raise ValueError("expected tab-separated inventory header")
         if any(len(row) != 3 for row in rows[1:]):
             raise ValueError("expected three fields per inventory record")
         archive = io.StringIO()
-        csv.writer(archive, delimiter="\t", lineterminator="\n").writerows(rows)
+        csv.writer(archive, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE, quotechar=None).writerows(rows)
         args.output.write_text(archive.getvalue(), encoding="utf-8")
     except (OSError, ValueError, csv.Error) as exc:
         parser.error(str(exc))
