@@ -821,22 +821,109 @@ class ComparisonCLI(unittest.TestCase):
             self.assertEqual(self.prepare().returncode, 0)
             manifest_path = self.bundle / 'manifest.json'
             manifest = json.loads(manifest_path.read_text())
-            for port in ['bad', '65536', '-1']:
-                with self.subTest(port=port):
-                    invalid = f'http://127.0.0.1:{port}/v1/decisions'
+            invalid_endpoints = [f'http://127.0.0.1:{port}/v1/decisions'
+                                 for port in ['bad', '65536', '-1', '0']]
+            invalid_endpoints += [endpoint + suffix for suffix in
+                                  ['/invalid path', '/café', '/bad\npath', '/bad\x00path', '/bad\x7fpath']]
+            for index, invalid in enumerate(invalid_endpoints):
+                with self.subTest(endpoint=invalid):
                     self.spec['conditions'][1]['endpoint'] = invalid
                     self.spec_path.write_text(json.dumps(self.spec))
-                    candidate = self.root / f'prepare-{port}'
+                    candidate = self.root / f'prepare-{index}'
                     result = self.cli('prepare', '--spec', self.spec_path, '--output', candidate)
                     self.assertNotEqual(result.returncode, 0)
                     self.assertFalse(candidate.exists())
                     manifest['conditions'][1]['endpoint'] = invalid
                     manifest_path.write_text(json.dumps(manifest))
-                    output = self.root / f'run-{port}'
+                    output = self.root / f'run-{index}'
                     result = self.run_bundle(output)
                     self.assertNotEqual(result.returncode, 0)
                     self.assertFalse(output.exists())
             self.assertEqual(received, [])
+
+    def test_percent_encoded_endpoint_path_is_sent_without_rewriting(self):
+        paths = []
+        with service(lambda path: paths.append(path) or {}) as (endpoint, received):
+            self.spec['conditions'][0]['endpoint'] = endpoint + '/caf%C3%A9%20report'
+            self.assertEqual(self.prepare().returncode, 0)
+            result = self.run_bundle(self.root / 'run')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(paths, ['/v1/decisions/caf%C3%A9%20report'])
+        self.assertEqual(len(received), 1)
+
+    def test_timeout_preserves_terminal_evidence_without_accepting_an_answer(self):
+        original_spec, original_input = copy.deepcopy(self.spec), self.input.read_bytes()
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
+        for kind in ['claim', 'coverage']:
+            for variant in ['complete', 'mismatch', 'accounting', 'partial', 'conflicting']:
+                with self.subTest(kind=kind, variant=variant):
+                    self.spec = copy.deepcopy(original_spec)
+                    self.input.write_bytes(original_input)
+                    self.bundle = self.root / f'prepared-{kind}-{variant}'
+                    response = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                                'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                                    {'type': 'output_text', 'text': '{"relation":"supported"}'}]}]}
+                    completed = ('data: ' + json.dumps({'type': 'response.completed',
+                                                       'response': response}) + '\n\n').encode()
+                    altered = copy.deepcopy(response)
+                    if variant == 'mismatch':
+                        altered['model'] = 'gpt-6.1-sol'
+                    if variant == 'accounting':
+                        altered['usage']['input_tokens_details']['cached_tokens'] = 101
+                    prefix = ('data: ' + json.dumps({'type': 'response.completed',
+                                                    'response': altered}) + '\n\n').encode()
+                    if variant == 'partial':
+                        prefix = prefix[:-3]
+                    if variant == 'conflicting':
+                        prefix += completed
+                    calls = []
+                    def delayed(handler):
+                        handler.send_response(200)
+                        handler.send_header('Content-Length', str(len(prefix) + 20))
+                        handler.end_headers()
+                        handler.wfile.write(prefix); handler.wfile.flush()
+                        time.sleep(1)
+                    def reply(_):
+                        calls.append(True)
+                        return delayed if len(calls) == 1 else completed
+                    with service(reply) as (endpoint, received):
+                        if kind == 'coverage':
+                            self.coverage_fixture(endpoint)
+                        else:
+                            self.spec['conditions'][0].update(adapter='responses', effort='low',
+                                                              endpoint=endpoint)
+                        second = copy.deepcopy(self.spec['cases'][0]); second['id'] = 'c02'
+                        self.spec['cases'].append(second)
+                        self.spec['limits']['request_seconds'] = 0.5
+                        self.assertEqual(self.prepare().returncode, 0)
+                        output = self.root / f'run-{kind}-{variant}'
+                        result = self.run_bundle(output)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    first = output / 'cell-0000' if kind == 'coverage' else output
+                    attempt = json.loads((first / 'attempt-0000.json').read_text())
+                    self.assertEqual(attempt['status'], 'timeout')
+                    self.assertEqual((first / attempt['response_body']).read_bytes(), prefix)
+                    self.assertTrue(attempt['residual_provider_work_unknown'])
+                    error = {'mismatch': 'model_mismatch', 'accounting': 'accounting_error'}.get(variant)
+                    self.assertEqual(attempt['condition_error'], error)
+                    if variant in {'complete', 'mismatch', 'accounting'}:
+                        self.assertEqual(attempt['raw_response'], altered)
+                        self.assertEqual(attempt['usage'], altered['usage'])
+                        self.assertEqual(len(attempt['raw_events']), 1)
+                    else:
+                        self.assertIsNone(attempt['usage'])
+                    self.assertEqual(attempt['api_rate_equivalent_usd'],
+                                     '0.00001' if variant == 'complete' else None)
+                    if kind == 'coverage':
+                        self.assertIsNone(json.loads((first / 'summary.json').read_text())['answer'])
+                    else:
+                        self.assertIsNone(attempt['relation'])
+                    continues = kind == 'coverage' and error is None
+                    summary = json.loads((output / 'summary.json').read_text())
+                    self.assertEqual([slot['status'] for slot in summary['slots']],
+                                     ['timeout', 'completed' if continues else 'unattempted'])
+                    self.assertEqual(len(received), 2 if continues else 1)
 
     def test_local_run_rejects_all_unsupported_endpoints_before_any_request(self):
         with service({}) as (endpoint, received):
@@ -1567,6 +1654,147 @@ class ComparisonCLI(unittest.TestCase):
             self.assertEqual(attempt['usage'], usage)
             self.assertEqual((output / 'cell-0000' / attempt['request_body']).read_bytes(), raw_received[number])
             self.assertEqual(attempt['payload_sha256'], hashlib.sha256(raw_received[number]).hexdigest())
+
+
+    def test_partial_cache_counts_stop_only_the_inconsistent_coverage_condition(self):
+        examples = (
+            ('cached_without_write', {'cached_tokens': 101}, {'cached_tokens': 100}, True),
+            ('write_without_cached', {'cache_write_tokens': 101}, {'cache_write_tokens': 100}, True),
+            ('cached_without_output', {'cached_tokens': 101, 'cache_write_tokens': 0},
+             {'cached_tokens': 100, 'cache_write_tokens': 0}, False),
+            ('write_without_output', {'cached_tokens': 0, 'cache_write_tokens': 101},
+             {'cached_tokens': 0, 'cache_write_tokens': 100}, False),
+            ('sum_without_output', {'cached_tokens': 60, 'cache_write_tokens': 41},
+             {'cached_tokens': 60, 'cache_write_tokens': 40}, False),
+        )
+        original_spec = copy.deepcopy(self.spec)
+        answer = 'The source contains evidence [s01].'
+        for label, bad_details, good_details, has_output in examples:
+            with self.subTest(usage=label):
+                self.spec = copy.deepcopy(original_spec)
+                self.bundle = self.root / f'prepared-{label}'
+                bad_usage = {'input_tokens': 100, 'input_tokens_details': bad_details}
+                good_usage = {'input_tokens': 100, 'input_tokens_details': good_details}
+                if has_output:
+                    bad_usage['output_tokens'] = good_usage['output_tokens'] = 10
+                bad = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': bad_usage,
+                       'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                           {'type': 'output_text', 'text': answer}]}]}
+                good = dict(bad, usage=good_usage)
+                events = {'bad': {'type': 'response.completed', 'response': bad},
+                          'good': {'type': 'response.completed', 'response': good}}
+                streams = {name: ('data: ' + json.dumps(event) + '\n\n').encode()
+                           for name, event in events.items()}
+                with service(lambda path: streams[path.rsplit('/', 1)[-1]]) as (endpoint, received):
+                    self.coverage_fixture(endpoint + '/bad')
+                    other = copy.deepcopy(self.spec['conditions'][0])
+                    other.update(id='other', endpoint=endpoint + '/good', arm='deterministic')
+                    self.spec['conditions'].append(other)
+                    second = copy.deepcopy(self.spec['cases'][0])
+                    second['id'] = 'c02'
+                    self.spec['cases'].append(second)
+                    prepared = self.prepare()
+                    self.assertEqual(prepared.returncode, 0, prepared.stderr)
+                    output = self.root / f'run-{label}'
+                    result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(len(received), 3)
+                summary = json.loads((output / 'summary.json').read_text())
+                self.assertEqual(
+                    {(slot['case'], slot['condition']): slot['status'] for slot in summary['slots']},
+                    {('c01', 'decisions'): 'accounting_error', ('c01', 'other'): 'completed',
+                     ('c02', 'decisions'): 'unattempted', ('c02', 'other'): 'completed'})
+                stopped = next(slot for slot in summary['slots']
+                               if slot['case'] == 'c02' and slot['condition'] == 'decisions')
+                self.assertEqual(stopped['reason'], 'condition_stopped')
+                for index, slot in enumerate(summary['slots']):
+                    if slot['status'] == 'unattempted':
+                        continue
+                    name = 'bad' if slot['condition'] == 'decisions' else 'good'
+                    cell_dir = output / f'cell-{index:04d}'
+                    attempt = json.loads((cell_dir / 'attempt-0000.json').read_text())
+                    cell = json.loads((cell_dir / 'summary.json').read_text())
+                    self.assertEqual(attempt['status'], slot['status'])
+                    self.assertEqual(attempt['raw_response'], events[name]['response'])
+                    self.assertEqual(attempt['raw_events'], [events[name]])
+                    self.assertEqual(attempt['usage'], bad_usage if name == 'bad' else good_usage)
+                    self.assertIsNone(attempt['api_rate_equivalent_usd'])
+                    self.assertEqual((cell_dir / attempt['response_body']).read_bytes(), streams[name])
+                    self.assertEqual(cell['status'], slot['status'])
+                    self.assertEqual(cell['requests'], 1)
+                    self.assertEqual(cell['answer'], None if name == 'bad' else answer)
+                accounting = summary['request_accounting']
+                self.assertEqual(accounting['attempts'], 3)
+                self.assertEqual(accounting['unvalued_attempts'], 3)
+                self.assertIsNone(accounting['api_rate_equivalent_usd'])
+
+    def test_malformed_output_beside_a_source_call_retains_evidence_and_allows_the_next_case(self):
+        call = {'type': 'function_call', 'namespace': 'evidence', 'name': 'read_source',
+                'call_id': 'read_source_1', 'arguments': '{"source":"s01"}'}
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
+        original_spec = copy.deepcopy(self.spec)
+        for index, malformed in enumerate((None, [])):
+            for call_first in (True, False):
+                with self.subTest(malformed=malformed, call_first=call_first):
+                    self.spec = copy.deepcopy(original_spec)
+                    label = f'{index}-{call_first}'
+                    self.bundle = self.root / f'prepared-malformed-call-{label}'
+                    bad = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                           'output': [call, malformed] if call_first else [malformed, call]}
+                    answer = 'The second case has evidence [s01].'
+                    good = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                            'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                                {'type': 'output_text', 'text': answer}]}]}
+                    events = [{'type': 'response.completed', 'response': response}
+                              for response in (bad, good)]
+                    streams = [('data: ' + json.dumps(event) + '\n\n').encode() for event in events]
+                    replies = iter(streams)
+                    with service(lambda _: next(replies, streams[1])) as (endpoint, received):
+                        self.coverage_fixture(endpoint)
+                        self.spec['limits']['requests_per_cell'] = 2
+                        second_packet = json.loads(self.input.read_text())
+                        second_packet['ordinary'] = 'Second independent case: read s01.'
+                        second_path = self.root / f'second-case-{label}.json'
+                        second_path.write_text(json.dumps(second_packet))
+                        self.spec['cases'].append({
+                            'id': 'c02', 'status': 'ready', 'input': {
+                                'path': str(second_path),
+                                'sha256': hashlib.sha256(second_path.read_bytes()).hexdigest()}})
+                        prepared = self.prepare()
+                        self.assertEqual(prepared.returncode, 0, prepared.stderr)
+                        output = self.root / f'run-malformed-call-{label}'
+                        result = self.run_bundle(output)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual(len(received), 2)
+                    self.assertEqual(len(received[1]['input']), 1)
+                    self.assertIn('Second independent case',
+                                  received[1]['input'][0]['content'][0]['text'])
+                    summary = json.loads((output / 'summary.json').read_text())
+                    self.assertEqual(
+                        [(slot['case'], slot['status']) for slot in summary['slots']],
+                        [('c01', 'invalid_response'), ('c02', 'completed')])
+                    first_dir = output / 'cell-0000'
+                    attempt = json.loads((first_dir / 'attempt-0000.json').read_text())
+                    self.assertEqual(attempt['status'], 'invalid_response')
+                    self.assertIsNone(attempt['condition_error'])
+                    self.assertEqual(attempt['raw_response'], bad)
+                    self.assertEqual(attempt['raw_events'], [events[0]])
+                    self.assertEqual(attempt['usage'], usage)
+                    self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+                    self.assertEqual((first_dir / attempt['response_body']).read_bytes(), streams[0])
+                    first = json.loads((first_dir / 'summary.json').read_text())
+                    second = json.loads((output / 'cell-0001' / 'summary.json').read_text())
+                    self.assertEqual(first['status'], 'invalid_response')
+                    self.assertIsNone(first['answer'])
+                    self.assertEqual(first['requests'], 1)
+                    self.assertEqual(second['status'], 'completed')
+                    self.assertEqual(second['answer'], answer)
+                    self.assertEqual(second['requests'], 1)
+                    accounting = summary['request_accounting']
+                    self.assertEqual(accounting['attempts'], 2)
+                    self.assertEqual(accounting['unvalued_attempts'], 0)
+                    self.assertEqual(accounting['api_rate_equivalent_usd'], '0.00002')
 
 
 if __name__ == '__main__':

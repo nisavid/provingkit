@@ -218,12 +218,27 @@ def parse_result(adapter, result, events, envelope_status, kind='claim'):
     if adapter == 'responses':
         if not isinstance(result, dict) or result.get('status') != 'completed':
             return result, events, None, 'invalid_response'
-        if any(item.get('type') == 'function_call' for item in result.get('output', [])):
+        output = result.get('output')
+        if not isinstance(output, list):
+            return result, events, None, 'invalid_response'
+        for item in output:
+            if not isinstance(item, dict) or not isinstance(item.get('type'), str):
+                return result, events, None, 'invalid_response'
+            if item['type'] == 'message':
+                content = item.get('content')
+                if (not isinstance(content, list) or any(
+                        not isinstance(part, dict) or not isinstance(part.get('type'), str)
+                        for part in content)):
+                    return result, events, None, 'invalid_response'
+                if any(part['type'] == 'output_text' and not isinstance(part.get('text'), str)
+                       for part in content):
+                    return result, events, None, 'invalid_response'
+        if any(item['type'] == 'function_call' for item in output):
             return result, events, None, 'tool_calls' if kind == 'coverage' else 'unexpected_tool_call'
-        if any(content.get('type') == 'refusal' for item in result.get('output', [])
+        if any(content.get('type') == 'refusal' for item in output
                if item.get('type') == 'message' for content in item.get('content', [])):
             return result, events, None, 'refused'
-        texts = [content.get('text') for item in result.get('output', [])
+        texts = [content.get('text') for item in output
                  if item.get('type') == 'message' and item.get('role') == 'assistant'
                  and (kind == 'claim' or item.get('phase') in {None, 'final_answer'})
                  for content in item.get('content', []) if content.get('type') == 'output_text']
@@ -251,35 +266,19 @@ def parse_result(adapter, result, events, envelope_status, kind='claim'):
     return result, events, relation, 'completed' if relation is not None else 'invalid_response'
 
 
-def bounded_terminal_evidence(body):
-    """Retain one complete terminal envelope without interpreting its answer."""
-    result, events, status = response_evidence('responses', body)
-    if (status not in {'completed', 'invalid_response'} or
-            not isinstance(result, dict) or result.get('status') != 'completed'):
-        return None, events
-    return result, events
-
-
 def interpret_response(adapter, body, transport_status, kind='claim'):
-    if transport_status == 'received':
-        try:
-            result, events, envelope_status = response_evidence(adapter, body)
-        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
-            return None, [], None, 'invalid_response'
-        try:
-            return parse_result(adapter, result, events, envelope_status, kind)
-        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
-            return result, events, None, 'invalid_response'
-    if transport_status == 'response_limit' and adapter == 'responses':
-        result, events = bounded_terminal_evidence(body)
+    # Retained complete envelopes remain evidence even when transport fails.
+    # Only a successful transport can supply an answer or tool continuation.
+    try:
+        result, events, envelope_status = response_evidence(adapter, body)
+    except (ValueError, TypeError, KeyError, AttributeError, IndexError):
+        result, events, envelope_status = None, [], 'invalid_response'
+    if transport_status != 'received':
         return result, events, None, transport_status
-    if transport_status == 'http_error':
-        try:
-            result, events, _ = response_evidence(adapter, body)
-        except (ValueError, TypeError, KeyError, AttributeError, IndexError):
-            result, events = None, []
-        return result, events, None, transport_status
-    return None, [], None, transport_status
+    try:
+        return parse_result(adapter, result, events, envelope_status, kind)
+    except (ValueError, TypeError, KeyError, AttributeError, IndexError):
+        return result, events, None, 'invalid_response'
 
 
 def valid_probabilities(adapter, answer):
@@ -326,11 +325,11 @@ def value_usage(condition, usage):
     if condition['adapter'] == 'responses':
         details = usage.get('input_tokens_details') or {}
         counters = [details.get('cached_tokens'), details.get('cache_write_tokens'), usage.get('output_tokens')]
+        if sum(value for value in counters[:2] if value is not None) > usage['input_tokens']:
+            raise ValueError('cache partitions exceed total input')
         if any(value is None for value in counters):
             return None
         cached, written, output = map(Decimal, counters)
-        if cached + written > usage['input_tokens']:
-            raise ValueError('cache partitions exceed total input')
         total = ((Decimal(usage['input_tokens']) - cached - written) * rates['input'] +
                  cached * rates['cached'] + written * rates['write'] + output * rates['output'])
     return format(total / 1_000_000, 'f')
@@ -431,10 +430,14 @@ def validate_spec(spec):
                 raise ValueError('unsupported model or effort')
         elif condition['effort'] is not None:
             raise ValueError('effort is not supported by this endpoint')
-        url = urlsplit(condition['endpoint'])
+        endpoint = condition['endpoint']
+        if (not isinstance(endpoint, str) or
+                any(ord(char) <= 32 or ord(char) == 127 for char in endpoint)):
+            raise ValueError('invalid endpoint')
+        url = urlsplit(endpoint)
         port = url.port
         if (url.scheme not in {'http', 'https'} or not url.hostname or url.username or url.password or
-                url.query or url.fragment or port == 0):
+                url.query or url.fragment or port == 0 or not url.path.isascii()):
             raise ValueError('invalid endpoint')
         exact_fields(condition['rates'], ['input', 'cached', 'write', 'output'], 'rates')
         for value in condition['rates'].values():
