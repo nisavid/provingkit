@@ -10,7 +10,7 @@ from .parsing import summary
 from .stack_inventory import inventory, validate_inventory
 
 
-def validate_stack(block: list[str], errors: list[str]) -> None:
+def validate_stack(block: list[str], errors: list[str], *, history_only: bool = False) -> None:
     text = "\n".join(block)
     stack_summary = summary(block, errors, "Stack")
     if 'alt="STACK"' not in stack_summary:
@@ -36,7 +36,7 @@ def validate_stack(block: list[str], errors: list[str]) -> None:
     if "## Stack" in text:
         errors.append("Stack disclosure must not contain a separate Stack heading")
     _validate_navigation(block, stack_summary, position_match, errors)
-    validate_inventory(block, position_match, errors)
+    validate_inventory(block, position_match, errors, history_only=history_only)
 
 
 def _validate_navigation(  # noqa: C901

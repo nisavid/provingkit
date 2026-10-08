@@ -72,7 +72,8 @@ def inventory(block: list[str]) -> list[StackItem]:
 
 
 def validate_inventory(
-    block: list[str], position_match: Optional[re.Match[str]], errors: list[str]
+    block: list[str], position_match: Optional[re.Match[str]], errors: list[str],
+    *, history_only: bool = False
 ) -> None:
     items = inventory(block)
     if not items:
@@ -87,7 +88,7 @@ def validate_inventory(
     repositories = {item.repository for item in items}
     if len(repositories) != 1:
         errors.append("all Stack inventory PRs must use one repository")
-    _validate_item_metrics(items, errors)
+    _validate_item_metrics(items, errors, history_only=history_only)
     for item in items:
         semantic_title = unescape_markdown_title(item.title)
         if item.title != escape_markdown_title(semantic_title):
@@ -107,10 +108,10 @@ def validate_inventory(
     _validate_expansion_grammar(block, errors)
 
 
-def _validate_item_metrics(items: list[StackItem], errors: list[str]) -> None:
+def _validate_item_metrics(items: list[StackItem], errors: list[str], *, history_only: bool = False) -> None:
     for item in items:
         metric_items = category_metric_items(item.metrics)
-        if not metric_items:
+        if not metric_items and not (history_only and item.current):
             errors.append("each Stack item needs at least one category metric")
         validate_category_order(item.metrics, errors, f"Stack item #{item.number}")
         if len(metric_items) != len(dict(metric_items)):

@@ -42,6 +42,14 @@ There are no compatibility routers and no public PR-creation orchestrator.
 Semantic sibling links remain relative within this plugin. Cross-plugin calls
 use qualified identities.
 
+History-only PR publication supports a pushed head with new commits and the
+same ancestral base file tree. The writer's
+[history-only Diff contract](skills/writing-reviewable-pr-descriptions/references/change-navigation.md#history-only-diff)
+binds v4 Git history evidence, a zero-file summary, commits navigation, and an
+immutable comparison. Existing v3 file inventories retain their validation.
+Local command tests exercise disposable Git and a fixture forge boundary;
+these checks do not establish live forge availability or independent review.
+
 ## Issue–PR relations
 
 Relation maintenance applies to new contributions, material contribution or
