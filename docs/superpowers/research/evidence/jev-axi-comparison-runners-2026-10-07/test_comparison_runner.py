@@ -1797,5 +1797,77 @@ class ComparisonCLI(unittest.TestCase):
                     self.assertEqual(accounting['api_rate_equivalent_usd'], '0.00002')
 
 
+    def test_refusal_beside_a_source_call_stops_the_cell_and_preserves_the_next_case(self):
+        call = {'type': 'function_call', 'namespace': 'evidence', 'name': 'read_source',
+                'call_id': 'read_source_1', 'arguments': '{"source":"s01"}'}
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}
+        original_spec = copy.deepcopy(self.spec)
+        refusal = {'type': 'message', 'role': 'assistant',
+                   'content': [{'type': 'refusal', 'refusal': 'Synthetic refusal.'}]}
+        for call_first in (True, False):
+            with self.subTest(refusal=refusal, call_first=call_first):
+                self.spec = copy.deepcopy(original_spec)
+                label = str(call_first)
+                self.bundle = self.root / f'prepared-refused-call-{label}'
+                bad = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                       'output': [call, refusal] if call_first else [refusal, call]}
+                answer = 'The second case has evidence [s01].'
+                good = {'model': 'gpt-6-luna', 'status': 'completed', 'usage': usage,
+                        'output': [{'type': 'message', 'role': 'assistant', 'content': [
+                            {'type': 'output_text', 'text': answer}]}]}
+                events = [{'type': 'response.completed', 'response': response}
+                          for response in (bad, good)]
+                streams = [('data: ' + json.dumps(event) + '\n\n').encode() for event in events]
+                replies = iter(streams)
+                with service(lambda _: next(replies, streams[1])) as (endpoint, received):
+                    self.coverage_fixture(endpoint)
+                    self.spec['limits']['requests_per_cell'] = 2
+                    second_packet = json.loads(self.input.read_text())
+                    second_packet['ordinary'] = 'Second independent case: read s01.'
+                    second_path = self.root / f'second-case-{label}.json'
+                    second_path.write_text(json.dumps(second_packet))
+                    self.spec['cases'].append({
+                        'id': 'c02', 'status': 'ready', 'input': {
+                            'path': str(second_path),
+                            'sha256': hashlib.sha256(second_path.read_bytes()).hexdigest()}})
+                    prepared = self.prepare()
+                    self.assertEqual(prepared.returncode, 0, prepared.stderr)
+                    output = self.root / f'run-refused-call-{label}'
+                    result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(len(received), 2)
+                self.assertEqual(len(received[1]['input']), 1)
+                self.assertIn('Second independent case',
+                              received[1]['input'][0]['content'][0]['text'])
+                summary = json.loads((output / 'summary.json').read_text())
+                self.assertEqual(
+                    [(slot['case'], slot['status']) for slot in summary['slots']],
+                    [('c01', 'refused'), ('c02', 'completed')])
+                first_dir = output / 'cell-0000'
+                attempt = json.loads((first_dir / 'attempt-0000.json').read_text())
+                self.assertEqual(attempt['status'], 'refused')
+                self.assertIsNone(attempt['condition_error'])
+                self.assertEqual(attempt['raw_response'], bad)
+                self.assertEqual(attempt['raw_events'], [events[0]])
+                self.assertEqual(attempt['usage'], usage)
+                self.assertEqual(attempt['api_rate_equivalent_usd'], '0.00001')
+                self.assertEqual((first_dir / attempt['response_body']).read_bytes(), streams[0])
+                first = json.loads((first_dir / 'summary.json').read_text())
+                second = json.loads((output / 'cell-0001' / 'summary.json').read_text())
+                self.assertEqual(first['status'], 'refused')
+                self.assertIsNone(first['answer'])
+                self.assertEqual(first['requests'], 1)
+                self.assertEqual(first['tool_operations'], 0)
+                self.assertFalse((first_dir / 'tools-0000.json').exists())
+                self.assertEqual(second['status'], 'completed')
+                self.assertEqual(second['answer'], answer)
+                self.assertEqual(second['requests'], 1)
+                accounting = summary['request_accounting']
+                self.assertEqual(accounting['attempts'], 2)
+                self.assertEqual(accounting['unvalued_attempts'], 0)
+                self.assertEqual(accounting['api_rate_equivalent_usd'], '0.00002')
+
+
 if __name__ == '__main__':
     unittest.main()

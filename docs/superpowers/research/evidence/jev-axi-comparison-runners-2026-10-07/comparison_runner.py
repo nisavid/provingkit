@@ -233,11 +233,11 @@ def parse_result(adapter, result, events, envelope_status, kind='claim'):
                 if any(part['type'] == 'output_text' and not isinstance(part.get('text'), str)
                        for part in content):
                     return result, events, None, 'invalid_response'
-        if any(item['type'] == 'function_call' for item in output):
-            return result, events, None, 'tool_calls' if kind == 'coverage' else 'unexpected_tool_call'
         if any(content.get('type') == 'refusal' for item in output
                if item.get('type') == 'message' for content in item.get('content', [])):
             return result, events, None, 'refused'
+        if any(item['type'] == 'function_call' for item in output):
+            return result, events, None, 'tool_calls' if kind == 'coverage' else 'unexpected_tool_call'
         texts = [content.get('text') for item in output
                  if item.get('type') == 'message' and item.get('role') == 'assistant'
                  and (kind == 'claim' or item.get('phase') in {None, 'final_answer'})
