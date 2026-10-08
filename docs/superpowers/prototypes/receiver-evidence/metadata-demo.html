@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conditional fixture association</title>
+<style>
+body{margin:0;background:#f3f5f7;color:#23303d;font:16px/1.55 system-ui,sans-serif}main{max-width:980px;margin:40px auto;padding:0 24px 64px}h1{font-size:32px;line-height:1.2;margin-bottom:12px}h2{font-size:20px}p{max-width:78ch}.card{background:white;border:1px solid #d9e0e5;border-radius:12px;padding:24px;margin:20px 0}.note{color:#536471}.badge{color:#155b78;font-weight:650}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}dt{color:#536471;font-size:14px}dd{margin:0 0 10px;overflow-wrap:anywhere}button{font:inherit;background:#fff;color:#235b73;border:1px solid #abc2ce;border-radius:7px;padding:8px 12px;cursor:pointer;margin:4px 6px 4px 0}button:hover,button[aria-selected=true]{background:#e4f1f6}button:focus-visible{outline:3px solid #155b78;outline-offset:2px}.result{font-size:23px;font-weight:650;margin:0}.controls{display:flex;flex-wrap:wrap}pre{white-space:pre-wrap;font-size:12px;overflow-wrap:anywhere}@media(max-width:650px){.grid{grid-template-columns:1fr}main{margin-top:24px}.card{padding:18px}}
+</style>
+<main>
+<h1>When can one metadata file match our selected fixture?</h1>
+<p>Explore a conditional association using a selected task's whole setup response, a Stop record's current Code ID, and a saved project relation. Can the model distinguish a single match from ambiguity, stale evidence, and incomplete acquisition?</p>
+<p class="note">Everything here is invented and in memory. File acquisition is simulated. Every result is unqualified; Desktop's active account/organization directory remains unproved.</p>
+<section class="card" aria-live="polite">
+<p class="badge">Current result</p><p class="result" id="result"></p><p id="reason"></p>
+<dl class="grid" id="state"></dl>
+<details><summary>Supplied synthetic records and result</summary><pre id="records"></pre></details>
+</section>
+<section class="card"><h2>Try changes in any order</h2><div class="controls" id="actions"></div></section>
+<section class="card"><h2>Guided cases</h2><div role="tablist" aria-label="Guided cases" id="tabs"></div><p id="scenario"></p><div id="steps"></div></section>
+<p class="note">A match here demonstrates the source model's logic. Real UI observations, producer identity, authorized file access, and live Desktop behavior still need independent evidence. A saved project path does not prove current runtime cwd or worktree.</p>
+</main>
+<script id="association-logic">
+/* ASSOCIATION_MODULE_BEGIN */
+// Source/synthetic prototype. Witnesses are supplied assertions, not authenticated evidence.
+const text = (value, limit) => typeof value === 'string' && value.length > 0 && value.length <= limit && !value.includes('\0');
+function metadataComplete(metadata, projectField) {
+  return text(metadata?.sessionId, 250) && text(metadata?.cliSessionId, 256) && text(metadata?.[projectField], 4096);
+}
+function admitFixtureWitness(request, now) {
+  const ui = request.uiWitness;
+  if (!ui || ui.runId !== request.runId || ui.selectedTask !== true
+      || !['cwd', 'originCwd'].includes(ui.projectField)
+      || !text(ui.projectPath, 4096) || !ui.projectPath.startsWith('/')
+      || !text(ui.setupText, 4096) || !text(ui.displayedText, 4096)) return ['ui_witness_incomplete'];
+  const stop = request.stopRecord;
+  if (!stop || stop.schema !== 1 || stop.runId !== request.runId || stop.purpose !== 'fixture_stop_check'
+      || stop.binding !== 'unbound' || stop.acquisition?.status !== 'complete' || stop.acquisition.eof !== true
+      || typeof stop.unbound?.observedHookSessionId !== 'string' || !stop.unbound.observedHookSessionId
+      || stop.unbound.observedHookSessionId.length > 256 || stop.unbound.observedHookSessionId.startsWith('served:')) {
+    return ['stop_record_incomplete'];
+  }
+  const u = ui.capture, s = stop.capture;
+  if (!u || !s || ![request.since, request.maxJoinAgeMs, u.startedAt, u.finishedAt,
+    s.startedAt, s.completedAt, s.notBefore, now].every(Number.isSafeInteger)
+      || request.since < 0 || request.maxJoinAgeMs < 0 || u.startedAt < request.since
+      || u.finishedAt < u.startedAt || u.finishedAt > now || s.startedAt < request.since
+      || s.notBefore < 0 || s.startedAt < s.notBefore || s.completedAt < s.startedAt || s.completedAt > now) {
+    return ['invalid_join_window'];
+  }
+  if (!Number.isSafeInteger(ui.recheckedAt) || ui.recheckedAt < Math.max(u.finishedAt, s.completedAt)
+      || ui.recheckedAt > now) return ['selection_recheck_incomplete'];
+  if (now - Math.min(u.startedAt, s.startedAt) > request.maxJoinAgeMs) return ['stale_evidence'];
+  if (ui.displayedText !== ui.setupText || ui.setupText !== stop.unbound.matchingFinalText) return ['setup_response_mismatch'];
+  return [];
+}
+function associateSnapshots(request, snapshots, now) {
+  const admission = admitFixtureWitness(request, now);
+  if (admission.length) return { status: 'unknown', gaps: admission, association: null };
+  const ui = request.uiWitness;
+  if (snapshots.some(({ metadata }) => !metadataComplete(metadata, ui.projectField))) {
+    return { status: 'unknown', gaps: ['metadata_incomplete'], association: null };
+  }
+  const codeId = request.stopRecord.unbound.observedHookSessionId;
+  const matches = snapshots.filter(({ name, metadata }) => text(metadata.sessionId, 250) && metadata.sessionId + '.json' === name
+    && metadata.cliSessionId === codeId && metadata[ui.projectField] === ui.projectPath);
+  return { status: matches.length === 1 ? 'association_candidate' : 'unknown',
+    gaps: matches.length === 1 ? [] : ['no_unique_match'],
+    association: matches.length === 1 ? { desktopId: matches[0].metadata.sessionId, codeId,
+      filename: matches[0].name, project: { field: ui.projectField, value: ui.projectPath },
+      uniqueness: 'acquired_candidates_only' } : null };
+}
+/* ASSOCIATION_MODULE_END */
+</script>
+<script>
+const initial = () => ({now:100000,acquired:false,overflow:false,changed:false,request:{schema:1,runId:'demo',operation:'associate',since:98000,maxJoinAgeMs:10000,
+  uiWitness:{runId:'demo',selectedTask:true,projectField:'cwd',projectPath:'/invented/project',setupText:'FIXTURE:demo',displayedText:'FIXTURE:demo',capture:{startedAt:99000,finishedAt:99100},recheckedAt:99900},
+  stopRecord:{schema:1,runId:'demo',purpose:'fixture_stop_check',binding:'unbound',qualification:'unqualified',acquisition:{status:'complete',eof:true},capture:{startedAt:99200,completedAt:99300,notBefore:98000},unbound:{observedHookSessionId:'code-a',matchingFinalText:'FIXTURE:demo'}}},
+  snapshots:[{name:'desktop-a.json',metadata:{sessionId:'desktop-a',cliSessionId:'code-a',cwd:'/invented/project'}}]});
+let state=initial(),selected=0;
+const actions={
+  reset:{label:'Reset all evidence',run:()=>state=initial()},
+  acquire:{label:'Simulate selected-file acquisition',run:()=>state.acquired=true},
+  duplicate:{label:'Add another current match',run:()=>{if(state.snapshots.length===1)state.snapshots.push({name:'desktop-b.json',metadata:{sessionId:'desktop-b',cliSessionId:'code-a',cwd:'/invented/project'}})}},
+  incomplete:{label:'Add incomplete metadata',run:()=>{if(state.snapshots.length===1)state.snapshots.push({name:'desktop-b.json',metadata:{sessionId:'desktop-b'}})}},
+  wrong:{label:'Change current Code ID',run:()=>state.snapshots[0].metadata.cliSessionId='code-other'},
+  older:{label:'Age setup by 20 seconds',run:()=>{state.now+=20000;state.request.uiWitness.recheckedAt=state.now}},
+  missing:{label:'Remove selected-task evidence',run:()=>state.request.uiWitness.selectedTask=false},
+  overflow:{label:'Simulate an overflow byte',run:()=>state.overflow=true},
+  changed:{label:'Simulate changed file samples',run:()=>state.changed=true},
+};
+const scenarios=[
+ {label:'Single match',description:'The supplied witnesses agree. Acquire the selected file and inspect the limited result.',steps:['acquire']},
+ {label:'Ambiguity',description:'Two distinct Desktop files claim the current Code ID. Their shared text cannot choose one.',steps:['duplicate','acquire']},
+ {label:'Incomplete identity',description:'A fully acquired JSON object is missing its current Code ID and project field. Another matching file cannot establish uniqueness.',steps:['incomplete','acquire']},
+ {label:'Stale source',description:'A fresh selection recheck cannot freshen the earlier setup or Stop samples.',steps:['older','acquire']},
+ {label:'Incomplete read',description:'An overflow byte prevents association, even when the simulated metadata fields match.',steps:['overflow','acquire']},
+ {label:'Changed file',description:'Changed endpoint samples leave the file evidence unresolved.',steps:['changed','acquire']},
+ {label:'Missing witness',description:'A matching saved file does not replace independent task selection evidence.',steps:['missing','acquire']}
+];
+const explanations={awaiting_acquisition:'The candidate has not been acquired in this simulation.',association_candidate:'Exactly one acquired candidate matches the supplied text, current Code ID, filename and saved project relation.',no_unique_match:'Zero or multiple acquired candidates match. Keep the association unknown.',metadata_incomplete:'A candidate is missing required identity or project fields. Keep the association unknown even if another file matches.',stale_evidence:'Source evidence exceeds the age limit. The new recheck does not reset source time.',ui_witness_incomplete:'Selected-task or project evidence is incomplete.',metadata_overflow:'Acquisition crossed the 1 MiB ceiling by the overflow byte.',metadata_changed:'Endpoint file identity samples disagree.'};
+function model(s){
+ const admission=admitFixtureWitness(s.request,s.now);
+ if(admission.length)return {status:'unknown',gaps:admission,association:null};
+ if(!s.acquired)return {status:'awaiting_acquisition',gaps:[],association:null};
+ if(s.overflow||s.changed)return {status:'unknown',gaps:[s.overflow?'metadata_overflow':'metadata_changed'],association:null};
+ return associateSnapshots(s.request,s.snapshots,s.now);
+}
+function render(){
+ const outcome=model(state),key=outcome.gaps[0]||outcome.status;
+ document.querySelector('#result').textContent=outcome.status==='association_candidate'?'Conditional association candidate':outcome.status==='unknown'?'Unknown':'Awaiting simulated acquisition';
+ document.querySelector('#reason').textContent=explanations[key]||key;
+ const ui=state.request.uiWitness,stop=state.request.stopRecord;
+ const fields=[['Selected task evidence',ui.selectedTask?'Supplied for this run':'Missing'],['Displayed / Stop text',`${ui.displayedText} / ${stop.unbound.matchingFinalText}`],['Current hook Code ID',stop.unbound.observedHookSessionId],['Chosen saved relation',`${ui.projectField}: ${ui.projectPath}`],['Source start / selection recheck',`${ui.capture.startedAt} / ${ui.recheckedAt} ms (virtual clock)`],['Current clock / maximum age',`${state.now} / ${state.request.maxJoinAgeMs} ms`],['Nominated candidates',state.snapshots.map(s=>`${s.name}, Code ${s.metadata.cliSessionId??'missing'}, ${ui.projectField}: ${s.metadata[ui.projectField]??'missing'}`).join('; ')],['Acquisition simulation',state.acquired?'Requested':'Not requested'],['File samples / overflow',`${state.changed?'Changed':'Equal'} / ${state.overflow?'Overflow byte':'No overflow'}`],['Match scope',outcome.association?'Acquired candidates only':'No association'],['Qualification','Unqualified'],['Active Desktop directory','Unproved']];
+ const dl=document.querySelector('#state');dl.replaceChildren();
+ for(const [label,value]of fields){const field=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;field.append(dt,dd);dl.append(field)}
+ document.querySelector('#records').textContent=JSON.stringify({supplied:state,result:outcome},null,2);
+}
+function act(key){actions[key].run();render()}
+for(const[key,action]of Object.entries(actions)){const b=document.createElement('button');b.textContent=action.label;b.onclick=()=>act(key);document.querySelector('#actions').append(b)}
+function choose(index){selected=index;state=initial();render();document.querySelector('#scenario').textContent=scenarios[index].description;document.querySelector('#steps').replaceChildren();scenarios[index].steps.forEach((key,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${actions[key].label}`;b.onclick=()=>act(key);document.querySelector('#steps').append(b)});document.querySelectorAll('[role=tab]').forEach((b,i)=>b.setAttribute('aria-selected',String(i===selected)))}
+scenarios.forEach((scenario,i)=>{const b=document.createElement('button');b.setAttribute('role','tab');b.textContent=scenario.label;b.onclick=()=>choose(i);document.querySelector('#tabs').append(b)});
+choose(0);
+</script>
+</html>

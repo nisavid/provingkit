@@ -2,12 +2,16 @@
 
 This procedure proposes one disposable Claude Desktop-hosted Code task, one
 setup turn, and one bounded Stop collection. Its useful result is an observed
-association between the selected task, current Code identity, and setup response.
+conditional association between the independently selected task, current Code
+identity, setup response, and one selected metadata file in a declared folder.
+It leaves Desktop's active account/organization directory unproved.
 It cannot establish incoming notification delivery, notification acknowledgment,
 or full runtime preservation.
 
-The [accepted experiment decision](https://github.com/nisavid/provingkit/issues/397#issuecomment-5972295427)
-and [collector contract](collector-contract.md) control this source draft.
+The [accepted experiment decision](https://github.com/nisavid/provingkit/issues/397#issuecomment-5972295427),
+[conditional association decision](https://github.com/nisavid/provingkit/issues/476#issuecomment-6065165501),
+[collector contract](collector-contract.md), and
+[metadata helper contract](metadata-contract.md) control this source draft.
 [Prepare and review the disposable observer probe](https://github.com/nisavid/provingkit/issues/278)
 must reconcile the parallel runtime-state access design, review the final
 candidate and effects, and bind the remaining inputs before presenting a live
@@ -23,8 +27,9 @@ proposal. The authorization ticket must record an actual positive grant.
 | Collector slot | New private run directory and exact config, output, claim, and partial paths; expected pre-state and retention disposition |
 | Launcher | Exact command and inherited environment, including proposed socket, hook Code PID, and hook session-ID observations; no implicit environment sanitization claim |
 | Independent witness | Scoped normal-UI creation/selection observation and the unique setup-response text as displayed in that selected task |
-| Metadata directory | One explicitly supplied and independently bound account/organization directory under the selected profile; do not search private settings to discover it |
+| Metadata directory | One explicitly declared account/organization metadata folder; record how it was nominated without claiming it is Desktop's active directory |
 | Candidate selection | Up to three explicitly selected metadata paths from the bounded listing, with the later grant covering each complete file |
+| Association inputs | Exact request file, supplied UI/setup evidence, admitted Stop record, explicitly chosen `cwd` or `originCwd` relation, setup-window beginning, maximum join age, and selection/lifecycle recheck |
 | Receiver effects | Task creation, one model turn, hook command, whole-event acquisition, configuration restoration, output retention, and fixture closeout |
 
 The optional [executable prototype](executor-contract.md) can sample the ancestry
@@ -36,13 +41,12 @@ task association. Enumerate process `stat` records, the claimed `exe` path,
 byte ceilings, hook environment, reader lifecycle, and retained output in the
 later grant. This source draft performs no receiver process reads.
 
-The independently bound metadata directory and executor observation are still
-preparation inputs, not discovered facts. If neither can be supplied within a
-reviewable scope, retain the specific blocker rather than expand discovery.
-[Choose the selected-directory binding method](https://github.com/nisavid/provingkit/issues/476)
-consumes its separate comparison before selecting directory acquisition. An
-app-side projection or the old receipt remains a conditional alternative;
-neither is adopted by the executable prototype.
+The declared folder, independent UI witness, and executor observation remain
+preparation inputs. A folder name or a matching file does not prove which
+directory Desktop currently selects. If no unique conditional association can
+be observed within the reviewed scope, retain that gap and return for a method
+choice. The app-side projection and old receipt remain references for a specific
+unresolved gap; this method adopts neither.
 
 ## Configuration proposal
 
@@ -119,20 +123,28 @@ does not authorize them.
    the matching unbound response. A claim alone, a partial file, absent output,
    or a command success message supplies no task binding. Source Stop joins and
    trims text; actual emitted representation is one of the observations sought.
-6. **Acquire only the selected metadata candidates.** In the one bound
-   account/organization directory, read names nonrecursively up to 128 entries
-   plus one overflow entry. Overflow stops this attempt. Choose no more than
-   three explicit candidate files under the reviewed selection rule. Read each
-   only up to 1 MiB plus one overflow byte; overflow, malformed/incomplete data,
-   changed identity, or additional required files remain gaps. Never follow
-   paths found inside the metadata or open unrelated transcripts.
+6. **List, select, and acquire metadata in separate actions.** In the declared
+   folder, invoke the helper's `list` operation: names and types only, up to 128
+   entries plus one overflow entry. Overflow stops this attempt. Select at most
+   three explicit JSON basenames under the reviewed selection rule; obtain the
+   grant covering each whole file before acquisition. Recheck that the same
+   disposable UI task/project remains selected after the setup and Stop samples.
+   Invoke `associate` with the supplied witnesses, recheck, and selected files.
+   Each read stops at 1 MiB plus one overflow byte. Overflow, malformed data,
+   changed samples, or another required file remain gaps. The helper does not
+   follow metadata paths or read transcripts. Its regular-file and identity
+   checks do not establish containment through hostile ancestors.
 7. **Evaluate the association.** Require the UI witness, whole setup-token
    match, observed Code identity, and exactly one current `cliSessionId` match
-   among the authorized candidates, with the expected project and Desktop
-   metadata identity. Prior Code lineage alone does not match. Record separate
+   among the acquired candidates, with filename equal to serialized Desktop ID
+   plus `.json` and the explicitly chosen saved project relation. A saved `cwd`
+   or `originCwd` match does not prove the engine's current cwd or worktree.
+   Prior Code lineage alone does not match. Record separate
    collection intervals for the UI, Stop receipt, metadata reads, and executor
-   witness. The grant must specify a selection/lifecycle recheck, or the result
-   must retain that check as unavailable. These observations are not atomic and
+   witness. The helper requires a supplied selection recheck after both UI and
+   Stop samples, and a maximum join age checked again after acquisition. The
+   grant must bind what that recheck actually observes and the lifecycle gap it
+   leaves. Missing or stale evidence yields unknown. These observations are not atomic and
    do not establish that the same query or socket is current after the event.
    Report UI/Code association, event-time endpoint association, actual executor,
    activation/collection, and restoration separately. Event-time endpoint
@@ -151,6 +163,11 @@ does not authorize them.
    the reviewed lifecycle observation; do not kill a reused PID. Retain the
    agreed evidence, remove only recorded task-owned run artifacts, and complete
    the granted fixture disposition. Verify those results on failure too.
+
+The helper also reads the entire declared request file, up to 128 KiB plus one
+overflow byte. Enumerate its witnesses, paths, and private contents in the later
+grant. Listing and candidate acquisition are separate inputs; the helper
+neither selects files automatically nor verifies permission to read them.
 
 The metadata reads acquire complete serialized objects, potentially including
 titles, settings, reminders, grants, summaries, errors, remote/MCP details, and
@@ -194,8 +211,11 @@ model, complete applied permissions, and worktree/current-cwd observations remai
 qualification obligations; a small fixture check need not supply all of them.
 Delivery and notification acknowledgment still require later exact-peer consent.
 
-Use `capturing-agent-procedures` when consuming this method: load the reviewed
-revision, bind entry inputs and output meaning, record the procedure actually
-used, verify completion and cleanup, and return corrections to its source.
+Use `capturing-agent-procedures` when consuming this method: load and record the
+published revision of this procedure, metadata helper, collector, and any
+selected executor extension; bind entry inputs and output meaning; record the
+procedure actually used; verify completion and cleanup; return corrections to
+its source. Preparation must retain the result as a conditional association,
+with active-directory proof and full notification qualification separate.
 Broader method codification remains with the
 [agent-panel workflow catalog](https://github.com/nisavid/provingkit/issues/306).
