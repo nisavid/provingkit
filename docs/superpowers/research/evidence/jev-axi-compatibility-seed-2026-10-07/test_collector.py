@@ -22,7 +22,7 @@ def encoded(value):
 
 
 class CollectorCLI(unittest.TestCase):
-    def prepare_failure_fixture(self, tail):
+    def prepare_failure_fixture(self, tail, seed_mode=0o644, mark_launch=False):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         base = Path(temporary.name)
@@ -30,7 +30,9 @@ class CollectorCLI(unittest.TestCase):
         seed.mkdir()
         initial = b"DEFAULT = 'text'\n"
         (seed / "inventory.py").write_bytes(initial)
-        entries = [{"path": "inventory.py", "sha256": sha(initial), "executable": False}]
+        (seed / "inventory.py").chmod(seed_mode)
+        entries = [{"path": "inventory.py", "sha256": sha(initial),
+                    "executable": bool(seed_mode & 0o111)}]
         requests = []
         for index, text in enumerate([b"Add JSON output.", b"Preserve the existing default."]):
             (base / str(index)).write_bytes(text)
@@ -46,7 +48,10 @@ class CollectorCLI(unittest.TestCase):
         prepared = cli(HERE / "prepare_seed.py", "--spec", base / "spec.json", "--output", packet)
         self.assertEqual(prepared.returncode, 0, prepared.stderr.decode())
         fixture = base / "fake.py"
-        fixture.write_text("""import json
+        launch_marker = ("from pathlib import Path\n"
+                         "Path(__file__).with_name('fake-launched').write_text('launched')\n"
+                         if mark_launch else "")
+        fixture.write_text(launch_marker + """import json
 from pathlib import Path
 import sys
 
@@ -79,6 +84,36 @@ emit({"id": task["id"], "result": {"turn": {"id": "turn-1"}}})
         run = (COLLECTOR, "run", "--manifest", output / "manifest.json",
                "--expected-sha256", sha((output / "manifest.json").read_bytes()))
         return cli, run, output
+
+    def test_seed_mode_drift_is_rejected_before_launch_and_preserves_attempt(self):
+        for original, changed in ((0o755, 0o644), (0o755, 0o744), (0o644, 0o755)):
+            with self.subTest(original=oct(original), changed=oct(changed)):
+                cli, run, output = self.prepare_failure_fixture(
+                    "raise AssertionError('must not launch')\n",
+                    seed_mode=original, mark_launch=True)
+                project_file = output / "project" / "inventory.py"
+                initial = project_file.read_bytes()
+                self.assertEqual(project_file.stat().st_mode & 0o7777, original)
+                project_file.chmod(changed)
+                self.assertEqual(project_file.read_bytes(), initial)
+                self.assertNotEqual(cli(*run).returncode, 0)
+                attempt = output / "attempt"
+                outcome_raw = (attempt / "outcome.json").read_bytes()
+                outcome = json.loads(outcome_raw)
+                self.assertEqual(outcome["status"], "incomplete")
+                self.assertIn("seed file mode differs", outcome["error"])
+                self.assertIn("inventory.py", outcome["error"])
+                self.assertIsNone(outcome["thread_id"])
+                self.assertIsNone(outcome["turn_id"])
+                self.assertFalse(outcome["amendment_rpc_accepted"])
+                self.assertFalse((output / "fake-launched").exists())
+                self.assertFalse((attempt / "collector-process.json").exists())
+                self.assertFalse((attempt / "collector-sent.jsonl").exists())
+                self.assertFalse((attempt / "collector-stdout.log").exists())
+                self.assertNotEqual(cli(*run).returncode, 0)
+                self.assertEqual((attempt / "outcome.json").read_bytes(), outcome_raw)
+                self.assertEqual(project_file.read_bytes(), initial)
+                self.assertEqual(project_file.stat().st_mode & 0o7777, changed)
 
     def test_completed_turn_race_preserves_attempt_without_resending_amendment(self):
         cli, run, output = self.prepare_failure_fixture("""
@@ -198,7 +233,9 @@ sys.stdin.buffer.read()
                        "tests.py": b"# ordinary tests\n"}
             for name, raw in initial.items():
                 (seed / name).write_bytes(raw)
-            entries = [{"path": name, "sha256": sha(raw), "executable": False}
+            (seed / "inventory.py").chmod(0o755)
+            entries = [{"path": name, "sha256": sha(raw),
+                        "executable": name == "inventory.py"}
                        for name, raw in sorted(initial.items())]
             requests = []
             for index, name in enumerate(("01-add-json.md", "02-preserve-default.md")):
@@ -291,6 +328,7 @@ sys.stdin.buffer.read()
                        sha(profile_path.read_bytes()), "--implementation", "inventory.py",
                        "--output", output)
             cli(*prepare)
+            self.assertEqual((output / "project" / "inventory.py").stat().st_mode & 0o7777, 0o755)
             manifest_raw = (output / "manifest.json").read_bytes()
             manifest = json.loads(manifest_raw)
             self.assertEqual(manifest["seed_receipt_sha256"],

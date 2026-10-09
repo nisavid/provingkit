@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
+import stat
 import sys
 import time
 import types
@@ -168,11 +169,16 @@ def run(args):
                 and manifest["command"] == [sys.executable, "-I", "-S", "-u",
                                            str(root / "fixture.py")],
                 "prepared command differs")
-        checked(root / "seed-receipt.json", manifest["seed_receipt_sha256"])
+        receipt = json.loads(checked(root / "seed-receipt.json", manifest["seed_receipt_sha256"]))
         checked(root / "seed-spec.json", manifest["seed_spec_sha256"])
         project = root / "project"
         for name, expected in manifest["initial_files"].items():
             checked(relative(project, name), expected)
+        for entry in receipt["seed"]["files"]:
+            path = relative(project, entry["path"])
+            mode = stat.S_IMODE(path.stat().st_mode)
+            require(mode == entry["mode"] and bool(mode & 0o111) == entry["executable"],
+                    f"seed file mode differs: {path} (expected {entry['mode']:04o}, got {mode:04o})")
         requests = [checked(root / f"request-{index}.bin", expected).decode("utf-8")
                     for index, expected in enumerate(manifest["request_sha256"])]
         require(len(requests) == 2, "exactly two requests required")
