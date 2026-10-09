@@ -273,6 +273,109 @@ sys.stdin.buffer.read()
         self.assertEqual(received[0], {"id": sent[0]["id"], "result": {
             "userAgent": "synthetic-native/other"}})
 
+    def test_native_shaped_fake_catalog_ending_controls_effort_check(self):
+        for cursor_present, cursor in ((True, None), (False, None), (True, "next-page")):
+            with self.subTest(cursor_present=cursor_present, cursor=cursor):
+                cli, _, legacy_output = self.prepare_failure_fixture("sys.stdin.buffer.read()\n")
+                base = legacy_output.parent
+                catalog = {"data": [{
+                    "id": "synthetic-sol", "model": "gpt-6.1-sol",
+                    "displayName": "Synthetic Sol", "description": "Synthetic catalog only",
+                    "hidden": False, "isDefault": True, "defaultReasoningEffort": "low",
+                    "supportedReasoningEfforts": [
+                        {"reasoningEffort": "low", "description": "Synthetic low effort"}],
+                }], "nextCursor": None}
+                if cursor_present:
+                    catalog["nextCursor"] = cursor
+                else:
+                    del catalog["nextCursor"]
+                initialize = {"userAgent": "synthetic-native/expected",
+                              "codexHome": "/synthetic/codex",
+                              "platformFamily": "unix", "platformOs": "linux"}
+                fixture = base / "fake.py"
+                fixture.write_text("INITIALIZE = " + repr(initialize) + "\n"
+                                   + "CATALOG = " + repr(catalog) + "\n" + r'''
+import json
+import sys
+
+def receive(method):
+    message = json.loads(sys.stdin.buffer.readline())
+    assert message["method"] == method, message
+    return message
+
+def emit(value):
+    sys.stdout.buffer.write((json.dumps(value) + "\n").encode())
+    sys.stdout.buffer.flush()
+
+first = receive("initialize")
+emit({"id": first["id"], "result": INITIALIZE})
+initialized = receive("initialized")
+assert "id" not in initialized, initialized
+listing = receive("model/list")
+assert listing["params"].get("cursor") is None, listing
+assert listing["params"].get("includeHidden") is True, listing
+emit({"id": listing["id"], "result": CATALOG})
+# Stay alive until the collector closes its owned process.
+sys.stdin.buffer.read()
+''')
+                profile_path = base / "profile.json"
+                profile = json.loads(profile_path.read_bytes())
+                profile["kind"] = "cooperative-native-app-server-fake/v1"
+                profile["fixture_sha256"] = sha(fixture.read_bytes())
+                profile["app_server_profile"] = {
+                    "schema": "compatibility-native-protocol-profile/v1",
+                    "version": "synthetic-native/expected",
+                    "model": "gpt-6.1-sol", "effort": "medium"}
+                profile_path.write_bytes(encoded(profile))
+                packet, output = base / "packet", base / "unsupported-effort-observation"
+                prepared = cli(COLLECTOR, "prepare", "--seed-package", packet,
+                               "--seed-receipt-sha256", sha((packet / "receipt.json").read_bytes()),
+                               "--profile", profile_path, "--profile-sha256", sha(profile_path.read_bytes()),
+                               "--implementation", "inventory.py", "--output", output)
+                self.assertEqual(prepared.returncode, 0, prepared.stderr.decode())
+                result = cli(COLLECTOR, "run", "--manifest", output / "manifest.json",
+                             "--expected-sha256", sha((output / "manifest.json").read_bytes()))
+                self.assertNotEqual(result.returncode, 0, result.stdout.decode())
+                attempt = output / "attempt"
+                outcome = json.loads((attempt / "outcome.json").read_bytes())
+                self.assertEqual(outcome["status"], "incomplete")
+                self.assertIsNone(outcome["thread_id"])
+                self.assertIsNone(outcome["turn_id"])
+                self.assertFalse(outcome["amendment_rpc_accepted"])
+                self.assertEqual(outcome["semantic_success"], "not-assessed")
+                self.assertIsNone(outcome["trigger_observation_sequence"])
+                if cursor is not None:
+                    self.assertIn("paging", outcome["error"])
+                    self.assertNotIn("effort unavailable", outcome["error"])
+                else:
+                    self.assertIn("effort", outcome["error"])
+                    self.assertIn("gpt-6.1-sol", outcome["error"])
+                    self.assertIn("medium", outcome["error"])
+                    self.assertIn("low", outcome["error"])
+                sent = [json.loads(line) for line in
+                        (attempt / "collector-sent.jsonl").read_bytes().splitlines()]
+                self.assertEqual([message["method"] for message in sent],
+                                 ["initialize", "initialized", "model/list"])
+                self.assertIsNone(sent[2]["params"].get("cursor"))
+                self.assertTrue(sent[2]["params"]["includeHidden"])
+                received = [json.loads(line) for line in
+                            (attempt / "collector-stdout.log").read_bytes().splitlines()]
+                self.assertEqual(received, [
+                    {"id": sent[0]["id"], "result": initialize},
+                    {"id": sent[2]["id"], "result": catalog}])
+                rows = [json.loads(line) for line in
+                        (attempt / "receipts.jsonl").read_bytes().splitlines()]
+                retained = [row for row in rows if row["kind"] == "received"]
+                self.assertEqual([row["message"] for row in retained], received)
+                inbound = (attempt / "collector-stdout.log").read_bytes()
+                for row in retained:
+                    reference = row["wire"]
+                    self.assertEqual(reference["file"], "collector-stdout.log")
+                    raw = inbound[reference["offset"]:reference["offset"] + reference["bytes"]]
+                    self.assertEqual(sha(raw), reference["sha256"])
+                    self.assertEqual(json.loads(raw), row["message"])
+
+
     def test_amends_once_after_first_implementation_change(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)

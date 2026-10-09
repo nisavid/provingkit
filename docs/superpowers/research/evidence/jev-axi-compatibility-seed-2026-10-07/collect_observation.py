@@ -68,10 +68,16 @@ def fake_profile(raw):
             "only an explicitly selected cooperative Python fake is supported; native is unqualified")
     if native_shaped:
         expected = profile["app_server_profile"]
-        require(isinstance(expected, dict) and set(expected) == {"schema", "version"}
+        require(isinstance(expected, dict)
+                and set(expected) in ({"schema", "version"},
+                                      {"schema", "version", "model", "effort"})
                 and expected["schema"] == "compatibility-native-protocol-profile/v1"
                 and isinstance(expected["version"], str) and expected["version"],
                 "invalid synthetic native metadata profile")
+        if "model" in expected:
+            require(all(isinstance(expected[key], str) and expected[key]
+                        for key in ("model", "effort")),
+                    "invalid synthetic model or effort")
     command = profile["command"]
     require(isinstance(command, list) and len(command) == 5
             and command[:4] == [sys.executable, "-I", "-S", "-u"],
@@ -246,10 +252,31 @@ def run(args):
                             observed = message["result"].get("userAgent")
                             require(observed == expected,
                                     f"server version differs: expected {expected}, observed {observed}")
-                            raise ValueError("native-shaped fake metadata sequence is incomplete")
+                            if "model" not in profile["app_server_profile"]:
+                                raise ValueError("native-shaped fake metadata sequence is incomplete")
+                            send(raw_send, {"method": "initialized"})
+                            send(raw_send, {"id": 2, "method": "model/list", "params": {
+                                "cursor": None, "includeHidden": True}})
+                            return False
                         send(raw_send, {"method": "initialized"})
                         send(raw_send, {"id": 2, "method": "thread/start",
                                         "params": {"cwd": str(project)}})
+                    elif request == "model/list":
+                        catalog = message["result"]
+                        require(catalog.get("nextCursor") is None
+                                and isinstance(catalog.get("data"), list),
+                                "complete synthetic model catalog required; paging is unqualified")
+                        expected = profile["app_server_profile"]
+                        matches = [model for model in catalog["data"]
+                                   if model.get("model") == expected["model"]]
+                        require(len(matches) == 1,
+                                f"model unavailable or ambiguous: expected {expected['model']}")
+                        efforts = [item["reasoningEffort"]
+                                   for item in matches[0]["supportedReasoningEfforts"]]
+                        require(expected["effort"] in efforts,
+                                f"effort unavailable for {expected['model']}: "
+                                f"expected {expected['effort']}, observed {efforts}")
+                        raise ValueError("native-shaped fake metadata sequence is incomplete")
                     elif request == "thread/start":
                         state["thread_id"] = message["result"]["thread"]["id"]
                         send(raw_send, {"id": 3, "method": "turn/start", "params": {
