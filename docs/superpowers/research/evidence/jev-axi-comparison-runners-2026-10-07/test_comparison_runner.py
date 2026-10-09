@@ -1,5 +1,6 @@
 """Exercise comparison preparation and execution through their public CLI."""
 import copy
+from datetime import datetime, timedelta
 import hashlib
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -58,6 +59,119 @@ def service(reply, raw_received=None):
 
 
 class ComparisonCLI(unittest.TestCase):
+    def test_accounting_joins_failed_continuations_and_separates_unknown_counters(self):
+        usage = {'input_tokens': 100, 'output_tokens': 10,
+                 'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0},
+                 'output_tokens_details': {'reasoning_tokens': 2}}
+        continued = copy.deepcopy(usage)
+        continued.update(input_tokens=120, output_tokens=20)
+        continued['output_tokens_details']['reasoning_tokens'] = 4
+        invalid = copy.deepcopy(usage)
+        invalid.update(input_tokens=-1, output_tokens=0)
+        invalid['output_tokens_details']['reasoning_tokens'] = 0
+        responses = [
+            (200, 'completed', usage, [{'type': 'function_call', 'namespace': 'evidence',
+              'name': 'read_source', 'call_id': 'read_evidence', 'arguments': '{"source":"s01"}'}]),
+            (500, 'failed', continued, []),
+            (200, 'incomplete', None, []),
+            (200, 'completed', invalid, [{'type': 'message', 'role': 'assistant',
+              'content': [{'type': 'output_text', 'text': 'Evidence [s01].'}]}])]
+
+        def reply(_):
+            status, outcome, counts, items = responses.pop(0)
+            response = {'model': 'gpt-6-luna', 'status': outcome, 'output': items}
+            if counts is not None:
+                response['usage'] = counts
+            event = {'type': 'response.' + outcome, 'response': response}
+            return status, {}, ('data: ' + json.dumps(event) + '\n\n').encode()
+
+        with service(reply) as (endpoint, received):
+            self.coverage_fixture(endpoint)
+            self.spec['limits']['requests_per_cell'] = 2
+            condition = self.spec['conditions'][0]
+            condition['rates'] = {'input': '0.10', 'cached': '0.01',
+                                  'write': '0.125', 'output': '0.50'}
+            self.spec['conditions'] = [dict(condition, id=name)
+                                       for name in ['known', 'missing', 'invalid']]
+            prepared = self.prepare()
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            output = self.root / 'run'
+            result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(received), 4)
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertTrue(summary['run_id'])
+        self.assertEqual(summary['manifest_sha256'],
+                         hashlib.sha256((self.bundle / 'manifest.json').read_bytes()).hexdigest())
+        self.assertEqual([slot['status'] for slot in summary['slots']],
+                         ['http_error', 'provider_incomplete', 'accounting_error'])
+        attempts = []
+        for index, count in enumerate([2, 1, 1]):
+            slot = summary['slots'][index]
+            cell_path = output / f'cell-{index:04d}'
+            cell = json.loads((cell_path / 'summary.json').read_text())
+            for number in range(count):
+                attempt = json.loads((cell_path / f'attempt-{number:04d}.json').read_text())
+                reservation = json.loads((cell_path / f'request-{number:04d}.json').read_text())
+                for key in ['run_id', 'slot_id', 'case', 'condition']:
+                    self.assertEqual(cell[key], slot[key])
+                    self.assertEqual(attempt[key], slot[key])
+                    self.assertEqual(reservation[key], slot[key])
+                self.assertEqual(attempt['run_id'], summary['run_id'])
+                self.assertEqual(attempt['attempt_id'], reservation['attempt_id'])
+                self.assertEqual(attempt['attempt_index'], number)
+                self.assertEqual(attempt['usage_scope'],
+                                 'per_request' if attempt['usage'] is not None else 'unknown')
+                start, end = attempt['started_monotonic_ns'], attempt['finished_monotonic_ns']
+                self.assertLessEqual(start, attempt['first_byte_monotonic_ns'])
+                self.assertLessEqual(attempt['first_byte_monotonic_ns'], end)
+                self.assertEqual(attempt['duration_ms'], (end - start) / 1_000_000)
+                self.assertEqual(attempt['first_byte_latency_ms'],
+                                 (attempt['first_byte_monotonic_ns'] - start) / 1_000_000)
+                for key in ['started_at', 'finished_at']:
+                    self.assertEqual(datetime.fromisoformat(attempt[key]).utcoffset(), timedelta(0))
+                self.assertLessEqual(summary['started_monotonic_ns'], start)
+                self.assertLessEqual(end, summary['finished_monotonic_ns'])
+                attempts.append(attempt)
+        self.assertEqual(len({slot['slot_id'] for slot in summary['slots']}), 3)
+        self.assertEqual(len({attempt['attempt_id'] for attempt in attempts}), 4)
+        self.assertEqual(attempts[1]['usage'], continued)
+        self.assertEqual([attempt['valuation_status'] for attempt in attempts],
+                         ['known', 'known', 'unknown', 'invalid'])
+        totals = summary['request_accounting']
+        self.assertEqual(totals['known_api_rate_equivalent_usd'], '0.000037')
+        self.assertIsNone(totals['api_rate_equivalent_usd'])
+        self.assertEqual(totals['unknown_valuation_attempts'], 1)
+        self.assertEqual(totals['invalid_valuation_attempts'], 1)
+        self.assertEqual(totals['input_tokens'], {'reported_sum': 220, 'unreported_attempts': 2,
+                                                'missing_attempts': 1, 'invalid_attempts': 1})
+        self.assertEqual(totals['output_tokens'], {'reported_sum': 30, 'unreported_attempts': 1,
+                                                 'missing_attempts': 1, 'invalid_attempts': 0})
+        self.assertEqual(totals['reasoning_tokens']['reported_sum'], 6)
+        self.assertEqual(totals['cached_tokens']['reported_sum'], 0)
+        workflow = json.loads((output / summary['workflow_evidence']).read_text())
+        self.assertEqual(workflow['run_id'], summary['run_id'])
+        for record in workflow['measurements'].values():
+            self.assertEqual(record, {'status': 'unknown', 'value': None, 'evidence': []})
+
+    def test_claim_rejects_duplicate_decoded_relation_keys_and_retains_response(self):
+        text = r'{"relation":"contradicted","rela\u0074ion":"supported"}'
+        response = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [
+                {'type': 'output_text', 'text': text}]}]}
+        body = ('data: ' + json.dumps({'type': 'response.completed',
+                                      'response': response}) + '\n\n').encode()
+        with service(body) as (endpoint, received):
+            self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low')
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'result'
+            self.assertEqual(self.run_bundle(output).returncode, 0)
+        self.assertEqual(len(received), 1)
+        attempt = json.loads((output / 'attempt-0000.json').read_text())
+        self.assertEqual(attempt['status'], 'invalid_response')
+        self.assertIsNone(attempt['relation'])
+        self.assertEqual((output / attempt['response_body']).read_bytes(), body)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -130,6 +244,119 @@ class ComparisonCLI(unittest.TestCase):
         self.spec['conditions'][0].update(adapter='responses', effort='low', arm='ordinary',
                                           endpoint=endpoint)
 
+    def test_coverage_v2_keeps_complete_evidence_and_access_identical_across_arms(self):
+        base = {'kind': 'git_commit', 'object_id': 'a' * 40}
+        candidate = {'kind': 'candidate_fileset', 'manifest_sha256': 'b' * 64}
+        text = 'x' * 4096 + '\n"café" \\ complete tail\n'
+        source = {'id': 's01', 'snapshot': candidate, 'path': 'review.md',
+                  'content': text, 'sha256': hashlib.sha256(text.encode()).hexdigest()}
+        unavailable = {'id': 's02', 'snapshot': candidate, 'path': 'manifest.json',
+                       'unavailable_reason': 'Not captured.'}
+        def evidence(content):
+            return {'content': content, 'sha256': hashlib.sha256(content.encode()).hexdigest()}
+        comparison = {'id': 'd01', 'base': base, 'head': candidate,
+                      'inventory': evidence('M\treview.md\nA\tpublication-context.md\n'),
+                      'patch': evidence('diff --git a/review.md b/review.md\n'
+                                        '--- a/review.md\n+++ b/review.md\n'
+                                        '@@ -1 +1,2 @@\n-before\n+' +
+                                        text.replace('\n', '\n+')[:-1] +
+                                        'diff --git a/publication-context.md b/publication-context.md\n'
+                                        'new file mode 100644\n--- /dev/null\n'
+                                        '+++ b/publication-context.md\n'
+                                        '@@ -0,0 +1 @@\n+Candidate context.\n')}
+        packet = {'version': 2, 'task': 'Explain the supplied review coverage.',
+                  'common_context': 'Complete ordinary report, review, and instructions.\nInspect d01.',
+                  'relationship_summary': 'Prepared relationships: inspect s01 against d01.',
+                  'sources': [source, unavailable], 'comparisons': [comparison]}
+        calls = [('source_identity', {'source': 's01'}),
+                 ('read_source', {'source': 's01'}),
+                 ('source_identity', {'source': 's02'}),
+                 ('read_source', {'source': 's02'}),
+                 ('inspect_comparison', {'comparison': 'd01', 'view': 'inventory'}),
+                 ('inspect_comparison', {'comparison': 'd01', 'view': 'patch'})]
+        first_output = [
+            {'type': 'reasoning', 'id': 'rs_v2', 'summary': [], 'status': 'completed',
+             'encrypted_content': 'opaque-' + chr(0xD800)},
+            {'type': 'message', 'role': 'assistant', 'phase': 'commentary',
+             'content': [{'type': 'output_text', 'text': 'I will inspect the evidence.'}],
+             'status': 'completed'}] + [
+                {'type': 'function_call', 'namespace': 'evidence', 'name': name,
+                 'call_id': f'call_{number}', 'arguments': json.dumps(arguments),
+                 'status': 'completed'} for number, (name, arguments) in enumerate(calls)]
+        first = {'model': 'gpt-6-luna', 'status': 'completed', 'output': first_output}
+        final = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'phase': 'final_answer', 'content': [
+                {'type': 'output_text', 'text': 'The candidate and comparison are available; s02 is unavailable.'}]}]}
+        responses = [first, final, first, final]
+        def reply(_):
+            return ('data: ' + json.dumps({'type': 'response.completed',
+                                           'response': responses.pop(0)}) + '\n\n').encode()
+        raw_received = []
+        with service(reply, raw_received) as (endpoint, received):
+            self.coverage_fixture(endpoint)
+            self.input.write_text(json.dumps(packet))
+            self.spec['cases'][0]['input']['sha256'] = hashlib.sha256(self.input.read_bytes()).hexdigest()
+            self.spec['limits']['requests_per_cell'] = 2
+            other = copy.deepcopy(self.spec['conditions'][0])
+            other.update(id='added', arm='deterministic')
+            self.spec['conditions'].append(other)
+            prepared = self.prepare(coverage_mode='comparison')
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            output = self.root / 'run'
+            result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(received), 4)
+        ordinary = json.loads(received[0]['input'][0]['content'][0]['text'])
+        deterministic = json.loads(received[2]['input'][0]['content'][0]['text'])
+        self.assertEqual(deterministic.pop('relationship_summary'), packet['relationship_summary'])
+        self.assertEqual(ordinary, deterministic)
+        self.assertEqual(ordinary['common_context'], packet['common_context'])
+        self.assertEqual(ordinary['sources'], [
+            {key: item[key] for key in ['id', 'snapshot', 'path']} for item in packet['sources']])
+        self.assertEqual(ordinary['comparisons'], [
+            {key: comparison[key] for key in ['id', 'base', 'head']}])
+        self.assertEqual(received[0]['tools'], received[2]['tools'])
+        self.assertEqual([tool['name'] for tool in received[0]['tools'][0]['tools']],
+                         ['read_source', 'source_identity', 'inspect_comparison'])
+        identity = {key: value for key, value in source.items() if key != 'content'}
+        identity['bytes'] = len(text.encode())
+        expected = [identity, source, unavailable, unavailable] + [
+            dict(id='d01', base=base, head=candidate, view=view, **comparison[view])
+            for view in ['inventory', 'patch']]
+        for cell_number, request_index in enumerate([0, 2]):
+            cell_path = output / f'cell-{cell_number:04d}'
+            continuation = received[request_index + 1]['input']
+            self.assertEqual(continuation[:-len(calls)], received[request_index]['input'] + [
+                {key: value for key, value in item.items() if key != 'status'} for item in first_output])
+            results = continuation[-len(calls):]
+            self.assertEqual([json.loads(item['output']) for item in results], expected)
+            tools = json.loads((cell_path / 'tools-0000.json').read_text())
+            self.assertEqual(tools['results'], results)
+            sizes = []
+            for item, retained in zip(results, tools['result_envelopes'], strict=True):
+                raw = (cell_path / retained['body']).read_bytes()
+                self.assertEqual(raw, json.dumps(item).encode())
+                self.assertEqual(retained['call_id'], item['call_id'])
+                self.assertEqual(retained['sha256'], hashlib.sha256(raw).hexdigest())
+                self.assertEqual(retained['bytes'], len(raw))
+                sizes.append(len(raw))
+            summary = json.loads((cell_path / 'summary.json').read_text())
+            self.assertEqual(summary['status'], 'completed')
+            self.assertEqual(summary['tool_operations'], len(calls))
+            self.assertEqual(summary['tool_byte_basis'], 'serialized_function_call_output')
+            self.assertEqual(summary['tool_prepared_bytes'], sum(sizes))
+            self.assertEqual(summary['tool_submission_attempted_bytes'], sum(sizes))
+            self.assertEqual(tools['prepared_bytes'], sum(sizes))
+            for number in range(2):
+                attempt = json.loads((cell_path / f'attempt-{number:04d}.json').read_text())
+                raw = raw_received[request_index + number]
+                self.assertEqual((cell_path / attempt['request_body']).read_bytes(), raw)
+                self.assertEqual(attempt['request_body_bytes'], len(raw))
+                self.assertEqual(attempt['payload_sha256'], hashlib.sha256(raw).hexdigest())
+            first_attempt = json.loads((cell_path / 'attempt-0000.json').read_text())
+            self.assertEqual(first_attempt['raw_response'], first)
+            self.assertEqual(first_attempt['raw_events'], [{'type': 'response.completed', 'response': first}])
+
     def test_prepare_preserves_complete_input_and_freezes_source_identity(self):
         result = self.prepare()
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -178,6 +405,10 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(len(received), 1)
         self.assertEqual(received[0]['input'], self.input.read_text())
         self.assertEqual(received[0]['questions'][0]['name'], 'claim_relation')
+        self.assertIn('a derivative assertion adds no independent warrant',
+                      received[0]['questions'][0]['instructions'])
+        self.assertIn('A statement that a fact is unestablished limits warrant',
+                      received[0]['questions'][0]['instructions'])
         attempt = json.loads((output / 'attempt-0000.json').read_text())
         self.assertEqual((output / attempt['request_body']).read_bytes(), raw_received[0])
         self.assertEqual(attempt['payload_sha256'], hashlib.sha256(raw_received[0]).hexdigest())
@@ -1506,8 +1737,10 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(accounting['known_api_rate_equivalent_usd'], '0.000037')
         self.assertEqual(accounting['unvalued_attempts'], 1)
         self.assertIsNone(accounting['api_rate_equivalent_usd'])
-        self.assertEqual(accounting['input_tokens'], {'reported_sum': 220, 'unreported_attempts': 1})
-        self.assertEqual(accounting['output_tokens'], {'reported_sum': 30, 'unreported_attempts': 1})
+        self.assertEqual(accounting['input_tokens'], {'reported_sum': 220, 'unreported_attempts': 1,
+                                                    'missing_attempts': 1, 'invalid_attempts': 0})
+        self.assertEqual(accounting['output_tokens'], {'reported_sum': 30, 'unreported_attempts': 1,
+                                                     'missing_attempts': 1, 'invalid_attempts': 0})
         self.assertIsNone(accounting['confirmed_charge_usd'])
         self.assertFalse(accounting['complete_workflow_costs_measured'])
         self.assertEqual([slot['status'] for slot in summary['slots']], ['completed', 'provider_incomplete'])

@@ -11,11 +11,18 @@ import re
 from pathlib import Path
 import sys
 import time
+from uuid import uuid4
 from urllib.parse import urlsplit
 
 QUESTION = ('Considering only the supplied sources, what relation does the designated assertion '
             'have to their evidence? Respect the assertion\'s scope and any explicit qualifications '
-            'in the supplied evidence. Do not decide global truth or recommend an action.')
+            'in the supplied evidence. Do not decide global truth or recommend an action.\n\n'
+            'Assess evidential warrant, including when the assertion says that reports establish '
+            'a fact: a derivative assertion adds no independent warrant beyond its supplied '
+            'cited basis and qualifications. A statement that a fact is unestablished limits '
+            'warrant; it does not, by itself, establish an incompatible event or state of affairs. '
+            'Conflicting independent factual accounts that the supplied context cannot resolve '
+            'remain `unresolved`.')
 RELATIONS = {
     'supported': 'The supplied evidence warrants the complete assertion at its stated scope.',
     'contradicted': ('A supplied source explicitly states an incompatible fact, and the supplied '
@@ -34,6 +41,30 @@ def write_json(path, value):
     with path.open('x') as stream:
         json.dump(value, stream, ensure_ascii=True, indent=2)
         stream.write('\n')
+
+
+def finish_timing(started_at, started_ns, first_byte_ns=None):
+    finished_ns = time.monotonic_ns()
+    return {'started_at': started_at, 'finished_at': datetime.now(timezone.utc).isoformat(),
+            'started_monotonic_ns': started_ns, 'finished_monotonic_ns': finished_ns,
+            'duration_ms': (finished_ns - started_ns) / 1_000_000,
+            'first_byte_latency_ms': ((first_byte_ns - started_ns) / 1_000_000
+                                      if first_byte_ns is not None else None)}
+
+
+def strict_json(value):
+    def unique_object(pairs):
+        result = {}
+        for key, item in pairs:
+            if key in result:
+                raise ValueError('duplicate JSON key')
+            result[key] = item
+        return result
+
+    def reject_constant(_):
+        raise ValueError('nonstandard JSON constant')
+
+    return json.loads(value, object_pairs_hook=unique_object, parse_constant=reject_constant)
 
 
 def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, channel):
@@ -117,18 +148,52 @@ def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline
     return metadata
 
 
+def coverage_snapshot(snapshot):
+    if not isinstance(snapshot, dict):
+        raise ValueError('invalid coverage snapshot')
+    if snapshot.get('kind') == 'git_commit':
+        exact_fields(snapshot, ['kind', 'object_id'], 'Git snapshot')
+        identity, pattern = snapshot['object_id'], r'(?:[0-9a-f]{40}|[0-9a-f]{64})'
+    elif snapshot.get('kind') == 'candidate_fileset':
+        exact_fields(snapshot, ['kind', 'manifest_sha256'], 'candidate snapshot')
+        identity, pattern = snapshot['manifest_sha256'], r'[0-9a-f]{64}'
+    else:
+        raise ValueError('unsupported coverage snapshot kind')
+    if not isinstance(identity, str) or not re.fullmatch(pattern, identity):
+        raise ValueError('invalid coverage snapshot identity')
+
+
+def coverage_view(view):
+    if isinstance(view, dict) and 'unavailable_reason' in view:
+        exact_fields(view, ['unavailable_reason'], 'unavailable comparison view')
+        if not isinstance(view['unavailable_reason'], str) or not view['unavailable_reason'].strip():
+            raise ValueError('an unavailable view requires its reason')
+    else:
+        exact_fields(view, ['content', 'sha256'], 'comparison view')
+        if not isinstance(view['content'], str) or digest(view['content'].encode()) != view['sha256']:
+            raise ValueError('invalid comparison view identity')
+
+
 def coverage_packet(state):
     packet = json.loads(state)
-    exact_fields(packet, ['task', 'ordinary', 'deterministic', 'sources'], 'coverage packet')
-    if any(not isinstance(packet[key], str) or not packet[key] for key in ['task', 'ordinary', 'deterministic']):
+    version2 = isinstance(packet, dict) and 'version' in packet
+    if version2:
+        if type(packet['version']) is not int or packet['version'] != 2:
+            raise ValueError('unsupported coverage packet version')
+        text_fields = ['task', 'common_context', 'relationship_summary']
+        exact_fields(packet, ['version', *text_fields, 'sources', 'comparisons'], 'coverage packet')
+    else:
+        text_fields = ['task', 'ordinary', 'deterministic']
+        exact_fields(packet, [*text_fields, 'sources'], 'coverage packet')
+    if any(not isinstance(packet[key], str) or not packet[key] for key in text_fields):
         raise ValueError('coverage text is required')
     if not isinstance(packet['sources'], list) or not packet['sources']:
         raise ValueError('coverage sources are required')
-    seen = set()
+    seen, locations = set(), set()
     for source in packet['sources']:
         unavailable = isinstance(source, dict) and 'unavailable_reason' in source
         fields = ['id', 'path', 'unavailable_reason'] if unavailable else ['id', 'path', 'content', 'sha256']
-        exact_fields(source, fields, 'coverage source')
+        exact_fields(source, fields + (['snapshot'] if version2 else []), 'coverage source')
         if (not isinstance(source['id'], str) or not re.fullmatch(r's[0-9]{2}', source['id']) or
                 source['id'] in seen or not isinstance(source['path'], str)):
             raise ValueError('invalid coverage source identity')
@@ -138,15 +203,50 @@ def coverage_packet(state):
         elif not isinstance(source['content'], str) or digest(source['content'].encode()) != source['sha256']:
             raise ValueError('invalid coverage source identity')
         seen.add(source['id'])
+        if version2:
+            coverage_snapshot(source['snapshot'])
+            path = source['path']
+            if (not path or '\\' in path or '\x00' in path or
+                    any(part in {'', '.', '..'} for part in path.split('/'))):
+                raise ValueError('coverage paths must be relative snapshot paths')
+            location = (json.dumps(source['snapshot'], sort_keys=True), path)
+            if location in locations:
+                raise ValueError('duplicate coverage source location')
+            locations.add(location)
+    if version2:
+        if not isinstance(packet['comparisons'], list) or not packet['comparisons']:
+            raise ValueError('coverage comparisons are required')
+        seen = set()
+        for comparison in packet['comparisons']:
+            exact_fields(comparison, ['id', 'base', 'head', 'inventory', 'patch'], 'coverage comparison')
+            identity = comparison['id']
+            if not isinstance(identity, str) or not re.fullmatch(r'd[0-9]{2}', identity) or identity in seen:
+                raise ValueError('invalid coverage comparison identity')
+            seen.add(identity)
+            coverage_snapshot(comparison['base'])
+            coverage_snapshot(comparison['head'])
+            for view in ['inventory', 'patch']:
+                coverage_view(comparison[view])
     return packet
 
 
 def payload_for(condition, state, kind='claim'):
     if kind == 'coverage':
         packet = coverage_packet(state)
-        catalog = [{'id': source['id'], 'path': source['path']} for source in packet['sources']]
-        initial = packet[condition['arm']] + '\n\nSources: ' + json.dumps(catalog)
-        return {'model': condition['model'], 'instructions': packet['task'],
+        version2 = packet.get('version') == 2
+        if version2:
+            context = {'common_context': packet['common_context'],
+                       'sources': [{key: source[key] for key in ['id', 'snapshot', 'path']}
+                                   for source in packet['sources']],
+                       'comparisons': [{key: comparison[key] for key in ['id', 'base', 'head']}
+                                       for comparison in packet['comparisons']]}
+            if condition['arm'] == 'deterministic':
+                context['relationship_summary'] = packet['relationship_summary']
+            initial = json.dumps(context)
+        else:
+            catalog = [{'id': source['id'], 'path': source['path']} for source in packet['sources']]
+            initial = packet[condition['arm']] + '\n\nSources: ' + json.dumps(catalog)
+        payload = {'model': condition['model'], 'instructions': packet['task'],
                 'input': [{'role': 'user', 'content': [{'type': 'input_text', 'text': initial}]}],
                 'reasoning': {'effort': condition['effort']}, 'stream': True, 'store': False,
                 'include': ['reasoning.encrypted_content'],
@@ -158,6 +258,20 @@ def payload_for(condition, state, kind='claim'):
                                       'strict': True, 'parameters': {'type': 'object',
                                           'properties': {'source': {'type': 'string'}},
                                           'required': ['source'], 'additionalProperties': False}}]}]}
+        if version2:
+            payload['tools'][0]['tools'].extend([
+                {'type': 'function', 'name': 'source_identity',
+                 'description': 'Return snapshot, path, content digest, and byte count, or explicit unavailability.',
+                 'strict': True, 'parameters': {'type': 'object',
+                     'properties': {'source': {'type': 'string'}},
+                     'required': ['source'], 'additionalProperties': False}},
+                {'type': 'function', 'name': 'inspect_comparison',
+                 'description': 'Read a complete inventory or patch for a catalog comparison, or explicit unavailability.',
+                 'strict': True, 'parameters': {'type': 'object',
+                     'properties': {'comparison': {'type': 'string'},
+                                    'view': {'type': 'string', 'enum': ['inventory', 'patch']}},
+                     'required': ['comparison', 'view'], 'additionalProperties': False}}])
+        return payload
     if condition['adapter'] == 'jev':
         return {'model': condition['model'], 'state': state, 'questions': {
             'claim_relation': {'type': 'choice', 'instructions': QUESTION, 'criteria': RELATIONS}}}
@@ -250,7 +364,7 @@ def parse_result(adapter, result, events, envelope_status, kind='claim'):
             answer = ''.join(texts)
             return result, events, answer or None, 'completed' if answer.strip() else 'invalid_response'
         try:
-            value = json.loads(''.join(texts))
+            value = strict_json(''.join(texts))
             relation = value['relation'] if set(value) == {'relation'} and value['relation'] in RELATIONS else None
         except (ValueError, TypeError, KeyError):
             relation = None
@@ -343,20 +457,39 @@ def finalize_response(condition, result, status):
     condition_error = None
     try:
         value = value_usage(condition, usage)
+        valuation_status = 'known' if value is not None else 'unknown'
     except (ValueError, TypeError):
         value = None
         condition_error = 'accounting_error'
+        valuation_status = 'invalid'
     if returned_model is not None and returned_model != condition['model']:
         value = None
         condition_error = 'model_mismatch'
+        if valuation_status != 'invalid':
+            valuation_status = 'unknown'
     if condition_error and status not in {'response_limit', 'http_error', 'timeout', 'transport_error'}:
         status = condition_error
-    return status, condition_error, usage, returned_model, value
+    return status, condition_error, usage, returned_model, value, valuation_status
 
 
 def exact_fields(value, keys, label):
     if not isinstance(value, dict) or set(value) != set(keys):
         raise ValueError('unsupported ' + label + ' fields')
+
+
+def counter_evidence(usage, path):
+    value = usage
+    for key in path:
+        if value is None:
+            return 'missing', None
+        if not isinstance(value, dict):
+            return 'invalid', None
+        value = value.get(key)
+    if value is None:
+        return 'missing', None
+    if type(value) is int and value >= 0:
+        return 'reported', value
+    return 'invalid', None
 
 
 def request_accounting(attempts):
@@ -366,14 +499,20 @@ def request_accounting(attempts):
     totals = {'attempts': len(attempts),
               'known_api_rate_equivalent_usd': format(known_value, 'f'),
               'unvalued_attempts': unvalued,
+              'unknown_valuation_attempts': sum(a['valuation_status'] == 'unknown' for a in attempts),
+              'invalid_valuation_attempts': sum(a['valuation_status'] == 'invalid' for a in attempts),
               'api_rate_equivalent_usd': format(known_value, 'f') if not unvalued else None,
               'confirmed_charge_usd': None, 'complete_workflow_costs_measured': False}
-    for counter in ['input_tokens', 'output_tokens']:
-        values = [(attempt.get('usage') or {}).get(counter) for attempt in attempts
-                  if isinstance(attempt.get('usage'), dict)]
-        reported = [value for value in values if type(value) is int and value >= 0]
-        totals[counter] = {'reported_sum': sum(reported),
-                           'unreported_attempts': len(attempts) - len(reported)}
+    for path in [('input_tokens',), ('output_tokens',),
+                 ('input_tokens_details', 'cached_tokens'),
+                 ('input_tokens_details', 'cache_write_tokens'),
+                 ('output_tokens_details', 'reasoning_tokens')]:
+        counters = [counter_evidence(attempt['usage'], path) for attempt in attempts]
+        reported = [value for status, value in counters if status == 'reported']
+        totals[path[-1]] = {'reported_sum': sum(reported),
+                            'unreported_attempts': len(attempts) - len(reported),
+                            'missing_attempts': sum(status == 'missing' for status, _ in counters),
+                            'invalid_attempts': sum(status == 'invalid' for status, _ in counters)}
     return totals
 
 
@@ -520,12 +659,44 @@ def prepare(spec_path, output):
                       'sha256': digest((output / 'manifest.json').read_bytes())}))
 
 
-def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
+def coverage_tool_result(packet, call):
+    def unique_arguments(pairs):
+        value = dict(pairs)
+        if len(value) != len(pairs):
+            raise ValueError('duplicate tool argument')
+        return value
+    version2 = packet.get('version') == 2
+    args = json.loads(call['arguments'], object_pairs_hook=unique_arguments if version2 else dict)
+    if call.get('namespace') != 'evidence':
+        raise ValueError('unsupported tool namespace')
+    name = call.get('name')
+    if name == 'read_source' or (version2 and name == 'source_identity'):
+        exact_fields(args, ['source'], 'source arguments')
+        source = {item['id']: item for item in packet['sources']}[args['source']]
+        if name == 'read_source':
+            return source
+        identity = {key: value for key, value in source.items() if key != 'content'}
+        if 'content' in source:
+            identity['bytes'] = len(source['content'].encode())
+        return identity
+    if version2 and name == 'inspect_comparison':
+        exact_fields(args, ['comparison', 'view'], 'comparison arguments')
+        if args['view'] not in {'inventory', 'patch'}:
+            raise ValueError('unsupported comparison view')
+        comparison = {item['id']: item for item in packet['comparisons']}[args['comparison']]
+        return dict(id=comparison['id'], base=comparison['base'], head=comparison['head'],
+                    view=args['view'], **comparison[args['view']])
+    raise ValueError('unsupported tool function')
+
+
+def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot):
+    cell_started = datetime.now(timezone.utc).isoformat()
     output.mkdir(exist_ok=False)
     tick = time.monotonic_ns()
     cell_deadline_ns = min(run_deadline_ns, tick + int(limits['cell_seconds'] * 1_000_000_000))
     payload = payload_for(condition, state, 'coverage')
-    sources = {source['id']: source for source in coverage_packet(state)['sources']}
+    packet = coverage_packet(state)
+    version2 = packet.get('version') == 2
     operations, prepared_bytes, submitted_bytes, requests = 0, 0, 0, 0
     pending_results = []
     unsubmitted_reason = None
@@ -536,7 +707,8 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
     for number in range(limits['requests_per_cell']):
         available = (cell_deadline_ns - time.monotonic_ns()) / 1_000_000_000
         body = json.dumps(payload).encode()
-        tool_bytes = sum(len(item['output'].encode()) for item in payload['input']
+        tool_bytes = sum(len(json.dumps(item).encode()) if version2 else len(item['output'].encode())
+                         for item in payload['input']
                          if item.get('type') == 'function_call_output')
         if (available <= 0 or len(body) > limits['request_bytes'] or
                 submitted_bytes + tool_bytes > limits['tool_total_bytes']):
@@ -554,9 +726,13 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
         with (output / request_file).open('xb') as stream:
             stream.write(body)
         reservation_path = output / f'request-{number:04d}.json'
+        attempt_id = f"{slot['slot_id']}/attempt-{number:04d}"
         reservation = {
+            **slot, 'attempt_id': attempt_id, 'attempt_index': number,
             'status': 'reserved', 'started_at': started, 'request': payload,
-            'payload_sha256': digest(body), 'request_body': request_file}
+            'started_monotonic_ns': request_tick,
+            'payload_sha256': digest(body), 'request_body': request_file,
+            **({'request_body_bytes': len(body)} if version2 else {})}
         write_json(reservation_path, reservation)
         response_file = f'response-{number:04d}.body'
         if time.monotonic_ns() >= cell_deadline_ns:
@@ -579,15 +755,21 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
         raw = (output / response_file).read_bytes()
         result, events, answer, status = interpret_response(
             'responses', raw, metadata['transport_status'], 'coverage')
-        status, condition_error, usage, returned_model, value = finalize_response(
+        status, condition_error, usage, returned_model, value, valuation_status = finalize_response(
             condition, result, status)
         attempt = {
-            'status': status, 'condition_error': condition_error, 'started_at': started,
-            'duration_ms': (time.monotonic_ns() - request_tick) / 1_000_000,
+            **slot, 'attempt_id': attempt_id, 'attempt_index': number,
+            **finish_timing(started, request_tick, metadata.get('first_byte_monotonic_ns')),
+            'status': status, 'condition_error': condition_error,
+            'adapter': condition['adapter'], 'endpoint': condition['endpoint'],
+            'billing': condition['billing'],
             'request': payload, 'payload_sha256': digest(body), 'request_body': request_file,
+            **({'request_body_bytes': len(body)} if version2 else {}),
             'requested_model': condition['model'], 'returned_model': returned_model,
             'requested_effort': condition['effort'], 'response_body': response_file,
             'raw_response': result, 'raw_events': events, 'usage': usage,
+            'usage_scope': 'per_request' if isinstance(usage, dict) else 'unknown',
+            'valuation_status': valuation_status,
             'api_rate_equivalent_usd': value, 'confirmed_charge_usd': None,
             'residual_provider_work_unknown': status in {'response_limit', 'timeout', 'transport_error'},
             **metadata}
@@ -597,34 +779,40 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
             break
         history = payload['input'] + [{key: value for key, value in item.items() if key != 'status'}
                                      for item in result['output']]
-        tool_results = []
+        tool_results, result_envelopes = [], []
         for call in result['output']:
             if call.get('type') != 'function_call':
                 continue
             try:
-                args = json.loads(call['arguments'])
-                exact_fields(args, ['source'], 'read_source arguments')
                 call_id = call['call_id']
-                if (call.get('namespace') != 'evidence' or call.get('name') != 'read_source' or
-                        not isinstance(call_id, str) or not call_id or call_id in seen_calls):
+                if not isinstance(call_id, str) or not call_id or call_id in seen_calls:
                     raise ValueError('unsupported or duplicate tool call')
-                content = json.dumps(sources[args['source']], ensure_ascii=True)
+                content = json.dumps(coverage_tool_result(packet, call), ensure_ascii=True)
             except (ValueError, KeyError, TypeError):
                 status = 'tool_error'
                 break
-            size = len(content.encode())
+            tool_result = {'type': 'function_call_output', 'call_id': call_id, 'output': content}
+            envelope = json.dumps(tool_result).encode()
+            size = len(envelope) if version2 else len(content.encode())
             if (operations >= limits['tool_operations'] or size > limits['tool_result_bytes'] or
                     prepared_bytes + size > limits['tool_total_bytes']):
                 status = 'resource_incomplete'
                 break
+            if version2:
+                body_file = f'tool-{number:04d}-{operations:04d}.body'
+                with (output / body_file).open('xb') as stream:
+                    stream.write(envelope)
+                result_envelopes.append({'call_id': call_id, 'body': body_file,
+                                         'sha256': digest(envelope), 'bytes': len(envelope)})
             seen_calls.add(call_id)
             operations += 1
             prepared_bytes += size
-            tool_results.append({'type': 'function_call_output', 'call_id': call_id, 'output': content})
+            tool_results.append(tool_result)
         pending_results = [item['call_id'] for item in tool_results]
         write_json(output / f'tools-{number:04d}.json', {
             'results': tool_results, 'status': status, 'operations': operations,
-            'prepared_bytes': prepared_bytes})
+            'prepared_bytes': prepared_bytes,
+            **({'result_envelopes': result_envelopes} if version2 else {})})
         if status != 'tool_calls':
             unsubmitted_reason = status
             break
@@ -632,18 +820,20 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns):
         status = 'resource_incomplete'
         unsubmitted_reason = 'request_limit'
     write_json(output / 'summary.json', {
+        **slot, **finish_timing(cell_started, tick),
         'status': status, 'answer': answer if status == 'completed' else None,
         'requests': requests, 'tool_operations': operations,
         'tool_prepared_bytes': prepared_bytes,
+        **({'tool_byte_basis': 'serialized_function_call_output'} if version2 else {}),
         'tool_submission_attempted_bytes': submitted_bytes,
         'provider_consumed_tool_bytes': None,
         'unsubmitted_tool_results': pending_results,
-        'unsubmitted_reason': unsubmitted_reason,
-        'duration_ms': (time.monotonic_ns() - tick) / 1_000_000})
+        'unsubmitted_reason': unsubmitted_reason})
     return status, attempts
 
 
 def run(prepared, expected_digest, output, local_http):
+    run_started = datetime.now(timezone.utc).isoformat()
     run_tick = time.monotonic_ns()
     raw = (prepared / 'manifest.json').read_bytes()
     if digest(raw) != expected_digest:
@@ -675,13 +865,15 @@ def run(prepared, expected_digest, output, local_http):
             raise ValueError('prepared input identity changed')
         states[case['id']] = data.decode('utf-8')
     output.mkdir(exist_ok=False)
+    run_id = uuid4().hex
     cases = {case['id']: case for case in manifest['cases']}
     conditions = {condition['id']: condition for condition in manifest['conditions']}
     slots = []
     attempts = []
     stopped = set()
     run_deadline_ns = run_tick + int(manifest['limits']['run_seconds'] * 1_000_000_000)
-    for index, slot in enumerate(manifest['schedule']):
+    for index, scheduled in enumerate(manifest['schedule']):
+        slot = dict(scheduled, run_id=run_id, slot_id=f'{run_id}/slot-{index:04d}', slot_index=index)
         remaining = (run_deadline_ns - time.monotonic_ns()) / 1_000_000_000
         if remaining <= 0:
             slots.append(dict(slot, status='unattempted', reason='run_deadline'))
@@ -693,7 +885,7 @@ def run(prepared, expected_digest, output, local_http):
         state = states[case['id']]
         if manifest['kind'] == 'coverage':
             status, cell_attempts = run_coverage_cell(condition, state, output / f'cell-{index:04d}',
-                                                      manifest['limits'], run_deadline_ns)
+                                                      manifest['limits'], run_deadline_ns, slot)
             attempts.extend(cell_attempts)
             slots.append(dict(slot, status=status))
             if any(attempt['condition_error'] for attempt in cell_attempts) or status not in {'completed', 'refused', 'provider_incomplete',
@@ -709,7 +901,9 @@ def run(prepared, expected_digest, output, local_http):
         with (output / request_file).open('xb') as stream:
             stream.write(body)
         reservation_path = output / f'request-{index:04d}.json'
-        reservation = dict(slot, status='reserved', started_at=started, request=payload,
+        attempt_id = f"{slot['slot_id']}/attempt-0000"
+        reservation = dict(slot, attempt_id=attempt_id, attempt_index=0,
+                           status='reserved', started_at=started, started_monotonic_ns=tick, request=payload,
                            payload_sha256=digest(body), request_body=request_file)
         write_json(reservation_path, reservation)
         if time.monotonic_ns() >= run_deadline_ns:
@@ -731,16 +925,19 @@ def run(prepared, expected_digest, output, local_http):
         response_body = (output / response_file).read_bytes()
         result, events, relation, status = interpret_response(
             condition['adapter'], response_body, metadata['transport_status'])
-        duration = (time.monotonic_ns() - tick) / 1_000_000
-        status, condition_error, usage, returned_model, value = finalize_response(
+        status, condition_error, usage, returned_model, value, valuation_status = finalize_response(
             condition, result, status)
-        attempt = dict(slot, started_at=started, duration_ms=duration, request=payload,
+        attempt = dict(slot, attempt_id=attempt_id, attempt_index=0, request=payload,
+                       adapter=condition['adapter'], endpoint=condition['endpoint'], billing=condition['billing'],
+                       **finish_timing(started, tick, metadata.get('first_byte_monotonic_ns')),
                        payload_sha256=digest(body), request_body=request_file,
                        requested_model=condition['model'], returned_model=returned_model,
                        requested_effort=condition['effort'],
                        status=status, condition_error=condition_error,
                        response_body=response_file, raw_response=result,
                        raw_events=events, relation=relation, usage=usage,
+                       usage_scope='per_request' if isinstance(usage, dict) else 'unknown',
+                       valuation_status=valuation_status,
                        api_rate_equivalent_usd=value, confirmed_charge_usd=None,
                        response_truncated=status in {'response_limit', 'timeout', 'transport_error'},
                        residual_provider_work_unknown=status in {'response_limit', 'timeout', 'transport_error'},
@@ -750,11 +947,17 @@ def run(prepared, expected_digest, output, local_http):
         slots.append(dict(slot, status=status))
         if status != 'completed':
             stopped.add(slot['condition'])
-    write_json(output / 'summary.json', {'slots': slots,
+    write_json(output / 'workflow-evidence.json', {
+        'run_id': run_id, 'manifest_sha256': expected_digest,
+        'measurements': {name: {'status': 'unknown', 'value': None, 'evidence': []}
+                         for name in ['preparation', 'grading', 'operator_effort', 'billing',
+                                      'subscription_usage', 'complete_workflow']}})
+    write_json(output / 'summary.json', {'slots': slots, 'run_id': run_id,
+               'manifest_sha256': expected_digest, 'workflow_evidence': 'workflow-evidence.json',
                'coverage_mode': manifest.get('mode') if manifest['kind'] == 'coverage' else None,
                'cases': [{'case': case['id'], 'status': case['status']} for case in manifest['cases']],
                'request_accounting': request_accounting(attempts),
-               'duration_ms': (time.monotonic_ns() - run_tick) / 1_000_000})
+               **finish_timing(run_started, run_tick)})
 
 
 def main():
