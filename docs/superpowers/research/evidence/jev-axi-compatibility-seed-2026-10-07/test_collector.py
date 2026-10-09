@@ -224,6 +224,55 @@ sys.stdin.buffer.read()
         self.assertFalse(rejected.exists())
         self.assertFalse((output / "attempt").exists())
 
+    def test_native_shaped_fake_version_mismatch_refuses_task_and_retains_attempt(self):
+        cli, _, legacy_output = self.prepare_failure_fixture("sys.stdin.buffer.read()\n")
+        base = legacy_output.parent
+        fixture = base / "fake.py"
+        fixture.write_text(r'''import json
+import sys
+
+initial = json.loads(sys.stdin.buffer.readline())
+assert initial["method"] == "initialize", initial
+sys.stdout.buffer.write((json.dumps({
+    "id": initial["id"], "result": {"userAgent": "synthetic-native/other"}
+}) + "\n").encode())
+sys.stdout.buffer.flush()
+sys.stdin.buffer.read()
+''')
+        profile_path = base / "profile.json"
+        profile = json.loads(profile_path.read_bytes())
+        profile["kind"] = "cooperative-native-app-server-fake/v1"
+        profile["fixture_sha256"] = sha(fixture.read_bytes())
+        profile["app_server_profile"] = {
+            "schema": "compatibility-native-protocol-profile/v1",
+            "version": "synthetic-native/expected"}
+        profile_path.write_bytes(encoded(profile))
+        packet, output = base / "packet", base / "native-shaped-observation"
+        prepared = cli(COLLECTOR, "prepare", "--seed-package", packet,
+                       "--seed-receipt-sha256", sha((packet / "receipt.json").read_bytes()),
+                       "--profile", profile_path, "--profile-sha256", sha(profile_path.read_bytes()),
+                       "--implementation", "inventory.py", "--output", output)
+        self.assertEqual(prepared.returncode, 0, prepared.stderr.decode())
+        run = (COLLECTOR, "run", "--manifest", output / "manifest.json",
+               "--expected-sha256", sha((output / "manifest.json").read_bytes()))
+        result = cli(*run)
+        self.assertNotEqual(result.returncode, 0, result.stdout.decode())
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        self.assertEqual(outcome["status"], "incomplete")
+        self.assertIsNone(outcome["turn_id"])
+        self.assertIn("version", outcome["error"])
+        self.assertIn("synthetic-native/expected", outcome["error"])
+        self.assertIn("synthetic-native/other", outcome["error"])
+        sent = [json.loads(line) for line in
+                (attempt / "collector-sent.jsonl").read_bytes().splitlines()]
+        self.assertEqual(sent[0]["method"], "initialize")
+        self.assertFalse(any(message["method"] == "turn/start" for message in sent))
+        received = [json.loads(line) for line in
+                    (attempt / "collector-stdout.log").read_bytes().splitlines()]
+        self.assertEqual(received[0], {"id": sent[0]["id"], "result": {
+            "userAgent": "synthetic-native/other"}})
+
     def test_amends_once_after_first_implementation_change(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)

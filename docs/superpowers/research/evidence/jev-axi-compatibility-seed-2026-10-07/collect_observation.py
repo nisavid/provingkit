@@ -61,9 +61,17 @@ def relative(root, name):
 
 def fake_profile(raw):
     profile = json.loads(raw)
-    require(set(profile) == {"kind", "command", "python_sha256", "fixture_sha256"}
-            and profile["kind"] == "cooperative-python-fake/v1",
+    fields = {"kind", "command", "python_sha256", "fixture_sha256"}
+    native_shaped = profile.get("kind") == "cooperative-native-app-server-fake/v1"
+    require((set(profile) == fields and profile["kind"] == "cooperative-python-fake/v1")
+            or (native_shaped and set(profile) == fields | {"app_server_profile"}),
             "only an explicitly selected cooperative Python fake is supported; native is unqualified")
+    if native_shaped:
+        expected = profile["app_server_profile"]
+        require(isinstance(expected, dict) and set(expected) == {"schema", "version"}
+                and expected["schema"] == "compatibility-native-protocol-profile/v1"
+                and isinstance(expected["version"], str) and expected["version"],
+                "invalid synthetic native metadata profile")
     command = profile["command"]
     require(isinstance(command, list) and len(command) == 5
             and command[:4] == [sys.executable, "-I", "-S", "-u"],
@@ -233,6 +241,12 @@ def run(args):
                             "unexpected or rejected RPC response")
                     request = pending.pop(ident)
                     if request == "initialize":
+                        if profile["kind"] == "cooperative-native-app-server-fake/v1":
+                            expected = profile["app_server_profile"]["version"]
+                            observed = message["result"].get("userAgent")
+                            require(observed == expected,
+                                    f"server version differs: expected {expected}, observed {observed}")
+                            raise ValueError("native-shaped fake metadata sequence is incomplete")
                         send(raw_send, {"method": "initialized"})
                         send(raw_send, {"id": 2, "method": "thread/start",
                                         "params": {"cwd": str(project)}})
