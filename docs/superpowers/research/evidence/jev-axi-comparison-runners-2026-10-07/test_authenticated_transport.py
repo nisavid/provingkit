@@ -120,6 +120,303 @@ class RecordingHandler(BaseHTTPRequestHandler):
 
 
 class AuthenticatedTransportTest(unittest.TestCase):
+    def test_missing_configured_credential_is_condition_local(self):
+        server = RecordingServer(("127.0.0.1", 0), RecordingHandler)
+        server.requests = []
+        server.requests_lock = threading.Lock()
+        server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+        server_thread.start()
+
+        try:
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                source = root / "claim.txt"
+                spec_path = root / "spec.json"
+                prepared = root / "prepared"
+                run_output = root / "run"
+                source.write_bytes(INPUT)
+
+                missing_selector = "PROVINGKIT_TEST_MISSING_API_KEY"
+                ready_selector = "PROVINGKIT_TEST_API_KEY"
+                endpoint = f"http://127.0.0.1:{server.server_address[1]}/v1/decisions"
+
+                def condition(identity, selector):
+                    return {
+                        "id": identity,
+                        "adapter": "decisions",
+                        "model": "gpt-6-luna",
+                        "effort": None,
+                        "endpoint": endpoint,
+                        "billing": "openai_api",
+                        "auth_env": selector,
+                        "rates": {
+                            "input": "2",
+                            "cached": "0",
+                            "write": "0",
+                            "output": "0",
+                        },
+                    }
+
+                spec = {
+                    "version": 1,
+                    "kind": "claim",
+                    "cases": [
+                        {
+                            "id": "c01",
+                            "status": "ready",
+                            "input": {
+                                "path": str(source),
+                                "sha256": hashlib.sha256(INPUT).hexdigest(),
+                            },
+                        },
+                        {
+                            "id": "c02",
+                            "status": "ready",
+                            "input": {
+                                "path": str(source),
+                                "sha256": hashlib.sha256(INPUT).hexdigest(),
+                            },
+                        },
+                    ],
+                    "conditions": [
+                        condition("decisions_missing", missing_selector),
+                        condition("decisions_ready", ready_selector),
+                    ],
+                    "limits": {
+                        "request_seconds": 3,
+                        "run_seconds": 8,
+                        "input_bytes": 1024,
+                        "request_bytes": 16384,
+                        "response_bytes": 16384,
+                        "requests_per_cell": 1,
+                    },
+                }
+                spec_path.write_text(json.dumps(spec), encoding="utf-8")
+
+                prepare_environment = child_environment()
+                self.assertNotIn(missing_selector, prepare_environment)
+                self.assertNotIn(ready_selector, prepare_environment)
+                prepare = subprocess.run(
+                    [
+                        sys.executable,
+                        str(RUNNER),
+                        "prepare",
+                        "--spec",
+                        str(spec_path),
+                        "--output",
+                        str(prepared),
+                    ],
+                    cwd=root,
+                    env=prepare_environment,
+                    capture_output=True,
+                    timeout=10,
+                    check=False,
+                )
+                self.assertEqual(
+                    prepare.returncode,
+                    0,
+                    prepare.stderr.decode("utf-8", errors="replace"),
+                )
+                manifest_digest = json.loads(prepare.stdout)["sha256"]
+                manifest = json.loads((prepared / "manifest.json").read_bytes())
+                self.assertEqual(
+                    [condition["auth_env"] for condition in manifest["conditions"]],
+                    [missing_selector, ready_selector],
+                )
+
+                run_environment = child_environment()
+                run_environment.pop(missing_selector, None)
+                run_environment[ready_selector] = CREDENTIAL
+                self.assertNotIn(missing_selector, run_environment)
+                execution = subprocess.run(
+                    [
+                        sys.executable,
+                        str(RUNNER),
+                        "run",
+                        "--prepared",
+                        str(prepared),
+                        "--manifest-sha256",
+                        manifest_digest,
+                        "--output",
+                        str(run_output),
+                        "--local-http",
+                    ],
+                    cwd=root,
+                    env=run_environment,
+                    capture_output=True,
+                    timeout=12,
+                    check=False,
+                )
+                self.assertEqual(
+                    execution.returncode,
+                    0,
+                    execution.stderr.decode("utf-8", errors="replace"),
+                )
+
+                with server.requests_lock:
+                    requests = list(server.requests)
+                self.assertEqual(len(requests), 2)
+                for observed in requests:
+                    self.assertEqual(observed["method"], "POST")
+                    self.assertEqual(observed["path"], "/v1/decisions")
+                    self.assertEqual(observed["content_type"], ["application/json"])
+                    self.assertEqual(
+                        observed["authorization"],
+                        [f"Bearer {CREDENTIAL}"],
+                    )
+                    self.assertEqual(observed["body"], EXPECTED_PAYLOAD)
+
+                summary = json.loads((run_output / "summary.json").read_bytes())
+                self.assertEqual(
+                    summary["credential_preflight"],
+                    [
+                        {
+                            "condition": "decisions_missing",
+                            "auth_env": missing_selector,
+                            "status": "credential_missing",
+                            "submission_started": False,
+                        },
+                        {
+                            "condition": "decisions_ready",
+                            "auth_env": ready_selector,
+                            "status": "ready",
+                            "submission_started": False,
+                        },
+                    ],
+                )
+
+                missing_slots = [
+                    {
+                        "slot_index": slot["slot_index"],
+                        "case": slot["case"],
+                        "condition": slot["condition"],
+                        "status": slot["status"],
+                        "reason": slot["reason"],
+                    }
+                    for slot in summary["slots"]
+                    if slot["condition"] == "decisions_missing"
+                ]
+                self.assertEqual(
+                    missing_slots,
+                    [
+                        {"slot_index": 0, "case": "c01", "condition": "decisions_missing", "status": "unattempted", "reason": "credential_missing"},
+                        {"slot_index": 3, "case": "c02", "condition": "decisions_missing", "status": "unattempted", "reason": "credential_missing"},
+                    ],
+                )
+                ready_slots = [
+                    (slot["slot_index"], slot["case"], slot["status"])
+                    for slot in summary["slots"]
+                    if slot["condition"] == "decisions_ready"
+                ]
+                self.assertEqual(
+                    ready_slots,
+                    [(1, "c01", "completed"), (2, "c02", "completed")],
+                )
+
+                for index in (0, 3):
+                    for name in (
+                        f"request-{index:04d}.body",
+                        f"request-{index:04d}.json",
+                        f"response-{index:04d}.body",
+                        f"attempt-{index:04d}.json",
+                    ):
+                        self.assertFalse((run_output / name).exists(), name)
+
+                self.assertEqual(
+                    sorted(path.name for path in run_output.glob("request-*.body")),
+                    ["request-0001.body", "request-0002.body"],
+                )
+                self.assertEqual(
+                    sorted(path.name for path in run_output.glob("request-*.json")),
+                    ["request-0001.json", "request-0002.json"],
+                )
+                self.assertEqual(
+                    sorted(path.name for path in run_output.glob("response-*.body")),
+                    ["response-0001.body", "response-0002.body"],
+                )
+                self.assertEqual(
+                    sorted(path.name for path in run_output.glob("attempt-*.json")),
+                    ["attempt-0001.json", "attempt-0002.json"],
+                )
+
+                for index in (1, 2):
+                    reservation = json.loads((run_output / f"request-{index:04d}.json").read_bytes())
+                    attempt = json.loads((run_output / f"attempt-{index:04d}.json").read_bytes())
+                    self.assertEqual(reservation["attempt_id"], attempt["attempt_id"])
+                    self.assertEqual(attempt["status"], "completed")
+                    self.assertIsNone(attempt["condition_error"])
+                    self.assertEqual(attempt["relation"], "supported")
+                    self.assertEqual(attempt["usage"], {"input_tokens": 100})
+                    self.assertEqual(attempt["valuation_status"], "known")
+                    self.assertEqual(attempt["api_rate_equivalent_usd"], "0.0002")
+                    self.assertEqual(attempt["http_status"], 200)
+                    self.assertEqual(attempt["transport_status"], "received")
+                    self.assertIs(attempt["submission_started"], True)
+                    self.assertEqual(attempt["provider_request_id"], "synthetic-request-0001")
+                    retained_body = (run_output / attempt["request_body"]).read_bytes()
+                    self.assertEqual(retained_body, EXPECTED_PAYLOAD)
+
+                accounting = summary["request_accounting"]
+                self.assertEqual(accounting["attempts"], 2)
+                self.assertEqual(accounting["known_api_rate_equivalent_usd"], "0.0004")
+                self.assertEqual(accounting["unvalued_attempts"], 0)
+                self.assertEqual(accounting["unknown_valuation_attempts"], 0)
+                self.assertEqual(accounting["invalid_valuation_attempts"], 0)
+                self.assertEqual(accounting["api_rate_equivalent_usd"], "0.0004")
+                self.assertEqual(
+                    accounting["input_tokens"],
+                    {
+                        "reported_sum": 200,
+                        "unreported_attempts": 0,
+                        "missing_attempts": 0,
+                        "invalid_attempts": 0,
+                    },
+                )
+
+                workflow = json.loads((run_output / "workflow-evidence.json").read_bytes())
+                self.assertEqual(summary["workflow_evidence"], "workflow-evidence.json")
+                self.assertEqual(workflow["run_id"], summary["run_id"])
+                self.assertEqual(workflow["manifest_sha256"], manifest_digest)
+                expected_measurement = {
+                    "status": "unknown",
+                    "value": None,
+                    "evidence": [],
+                }
+                self.assertEqual(
+                    set(workflow["measurements"]),
+                    {
+                        "preparation",
+                        "grading",
+                        "operator_effort",
+                        "billing",
+                        "subscription_usage",
+                        "complete_workflow",
+                    },
+                )
+                for measurement in workflow["measurements"].values():
+                    self.assertEqual(measurement, expected_measurement)
+
+                credential_bytes = CREDENTIAL.encode("ascii")
+                for captured in (
+                    prepare.stdout,
+                    prepare.stderr,
+                    execution.stdout,
+                    execution.stderr,
+                ):
+                    self.assertNotIn(credential_bytes, captured)
+                for artifact_root in (prepared, run_output):
+                    for artifact in artifact_root.rglob("*"):
+                        if artifact.is_file():
+                            self.assertNotIn(
+                                credential_bytes,
+                                artifact.read_bytes(),
+                                str(artifact.relative_to(artifact_root)),
+                            )
+        finally:
+            server.shutdown()
+            server.server_close()
+            server_thread.join(2)
+
     def test_decisions_claim_uses_runtime_bearer_without_retaining_it(self):
         server = RecordingServer(("127.0.0.1", 0), RecordingHandler)
         server.requests = []

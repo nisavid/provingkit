@@ -911,8 +911,6 @@ def run(prepared, expected_digest, output, local_http):
         endpoint = urlsplit(condition['endpoint'])
         if endpoint.scheme != 'http' or endpoint.hostname != '127.0.0.1':
             raise ValueError('local HTTP tests require a loopback endpoint')
-    for condition in manifest['conditions']:
-        runtime_credential(condition['auth_env'])
     if manifest['runner_sha256'] != digest(Path(__file__).read_bytes()):
         raise ValueError('runner identity changed')
     states = {}
@@ -928,6 +926,19 @@ def run(prepared, expected_digest, output, local_http):
         if digest(data) != case['input']['sha256']:
             raise ValueError('prepared input identity changed')
         states[case['id']] = data.decode('utf-8')
+    credential_preflight = []
+    credential_missing_conditions = set()
+    for condition in manifest['conditions']:
+        auth_env = condition['auth_env']
+        if auth_env is not None and auth_env not in os.environ:
+            status = 'credential_missing'
+            credential_missing_conditions.add(condition['id'])
+        else:
+            runtime_credential(auth_env)
+            status = 'ready'
+        credential_preflight.append({
+            'condition': condition['id'], 'auth_env': auth_env, 'status': status,
+            'submission_started': False})
     output.mkdir(exist_ok=False)
     run_id = uuid4().hex
     cases = {case['id']: case for case in manifest['cases']}
@@ -938,6 +949,9 @@ def run(prepared, expected_digest, output, local_http):
     run_deadline_ns = run_tick + int(manifest['limits']['run_seconds'] * 1_000_000_000)
     for index, scheduled in enumerate(manifest['schedule']):
         slot = dict(scheduled, run_id=run_id, slot_id=f'{run_id}/slot-{index:04d}', slot_index=index)
+        if slot['condition'] in credential_missing_conditions:
+            slots.append(dict(slot, status='unattempted', reason='credential_missing'))
+            continue
         remaining = (run_deadline_ns - time.monotonic_ns()) / 1_000_000_000
         if remaining <= 0:
             slots.append(dict(slot, status='unattempted', reason='run_deadline'))
@@ -1022,6 +1036,7 @@ def run(prepared, expected_digest, output, local_http):
     write_json(output / 'summary.json', {'slots': slots, 'run_id': run_id,
                'manifest_sha256': expected_digest, 'workflow_evidence': 'workflow-evidence.json',
                'coverage_mode': manifest.get('mode') if manifest['kind'] == 'coverage' else None,
+               'credential_preflight': credential_preflight,
                'cases': [{'case': case['id'], 'status': case['status']} for case in manifest['cases']],
                'request_accounting': request_accounting(attempts),
                **finish_timing(run_started, run_tick)})
