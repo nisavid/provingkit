@@ -357,6 +357,130 @@ class ComparisonCLI(unittest.TestCase):
             self.assertEqual(first_attempt['raw_response'], first)
             self.assertEqual(first_attempt['raw_events'], [{'type': 'response.completed', 'response': first}])
 
+    def coverage_v2_boundary_fixture(self, endpoint):
+        self.coverage_fixture(endpoint)
+        source = {'id': 's01', 'snapshot': {'kind': 'git_commit', 'object_id': 'a' * 40},
+                  'path': 'review.md', 'content': 'Evidence "é".\n',
+                  'sha256': '0983f8d5a2ed6fb08391d89e939fde4ea469ab1593e0d76f580ac7179cf29d3d'}
+        packet = {'version': 2, 'task': 'Explain the evidence.',
+                  'common_context': 'Inspect s01.', 'relationship_summary': 'Evidence: s01.',
+                  'sources': [source], 'comparisons': [{
+                      'id': 'd01', 'base': source['snapshot'], 'head': source['snapshot'],
+                      'inventory': {'unavailable_reason': 'Not captured.'},
+                      'patch': {'unavailable_reason': 'Not captured.'}}]}
+        self.input.write_text(json.dumps(packet))
+        self.spec['cases'][0]['input']['sha256'] = hashlib.sha256(self.input.read_bytes()).hexdigest()
+        self.spec['cases'].append(dict(self.spec['cases'][0], id='c02'))
+        self.spec['limits']['requests_per_cell'] = 3
+        return source
+
+    def test_coverage_v2_envelope_limit_accepts_exact_fit_and_rejects_one_byte_over(self):
+        read = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'function_call', 'namespace': 'evidence', 'name': 'read_source',
+             'call_id': 'read_a', 'arguments': '{"source":"s01"}'}]}
+        final = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [
+                {'type': 'output_text', 'text': 'Evidence examined.'}]}]}
+        # The worked fixture has 242 inner bytes and a 341-byte escaped envelope.
+        for limit, accepted in [(341, True), (340, False)]:
+            with self.subTest(limit=limit):
+                responses = [read, final, final] if accepted else [read, final]
+                def reply(_):
+                    return ('data: ' + json.dumps({'type': 'response.completed',
+                        'response': responses.pop(0)}) + '\n\n').encode()
+                with service(reply) as (endpoint, received):
+                    self.spec['cases'] = self.spec['cases'][:1]
+                    source = self.coverage_v2_boundary_fixture(endpoint)
+                    self.spec['limits']['tool_result_bytes'] = limit
+                    self.bundle = self.root / f'prepared-{limit}'
+                    prepared = self.prepare()
+                    self.assertEqual(prepared.returncode, 0, prepared.stderr)
+                    output = self.root / f'run-{limit}'
+                    result = self.run_bundle(output)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                summary = json.loads((output / 'summary.json').read_text())
+                self.assertEqual([slot['status'] for slot in summary['slots']],
+                                 ['completed' if accepted else 'resource_incomplete', 'completed'])
+                self.assertEqual(len(received), 3 if accepted else 2)
+                self.assertEqual(received[-1]['input'], received[0]['input'])
+                cell_path = output / 'cell-0000'
+                cell = json.loads((cell_path / 'summary.json').read_text())
+                tools = json.loads((cell_path / 'tools-0000.json').read_text())
+                self.assertEqual(cell['tool_operations'], int(accepted))
+                self.assertEqual(cell['tool_prepared_bytes'], 341 if accepted else 0)
+                self.assertEqual(cell['tool_submission_attempted_bytes'], 341 if accepted else 0)
+                self.assertEqual(cell['unsubmitted_tool_results'], [])
+                self.assertEqual(cell['unsubmitted_reason'], None if accepted else 'resource_incomplete')
+                self.assertEqual((cell_path / 'request-0001.json').exists(), accepted)
+                if accepted:
+                    envelope = received[1]['input'][-1]
+                    self.assertEqual(json.loads(envelope['output']), source)
+                    self.assertEqual(len(envelope['output'].encode()), 242)
+                    retained = tools['result_envelopes'][0]
+                    raw = (cell_path / retained['body']).read_bytes()
+                    self.assertEqual(len(raw), 341)
+                    self.assertEqual(json.loads(raw), envelope)
+                    self.assertEqual(retained['sha256'], hashlib.sha256(raw).hexdigest())
+                    self.assertEqual(retained['bytes'], 341)
+                    self.assertEqual(tools['results'], [envelope])
+                else:
+                    self.assertEqual(tools['results'], [])
+                    self.assertEqual(tools['result_envelopes'], [])
+                    self.assertFalse(list(cell_path.glob('tool-*.body')))
+
+    def test_coverage_v2_replay_limit_preserves_unsubmitted_envelope_and_later_case(self):
+        reads = [{'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'function_call', 'namespace': 'evidence', 'name': 'read_source',
+             'call_id': name, 'arguments': '{"source":"s01"}'}]} for name in ['read_a', 'read_b']]
+        final = {'model': 'gpt-6-luna', 'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [
+                {'type': 'output_text', 'text': 'Independent case completed.'}]}]}
+        responses = reads + [final]
+        def reply(_):
+            return ('data: ' + json.dumps({'type': 'response.completed',
+                                           'response': responses.pop(0)}) + '\n\n').encode()
+        with service(reply) as (endpoint, received):
+            source = self.coverage_v2_boundary_fixture(endpoint)
+            # Two 341-byte envelopes fit preparation. Replaying the first with the
+            # second would bring cumulative submission from 341 to 1,023 bytes.
+            self.spec['limits'].update(tool_result_bytes=341, tool_total_bytes=682)
+            prepared = self.prepare()
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            output = self.root / 'run'
+            result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(received), 3)
+        self.assertEqual(received[-1]['input'], received[0]['input'])
+        self.assertEqual(received[1]['input'][-1]['call_id'], 'read_a')
+        self.assertEqual(json.loads(received[1]['input'][-1]['output']), source)
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertEqual([slot['status'] for slot in summary['slots']],
+                         ['resource_incomplete', 'completed'])
+        cell_path = output / 'cell-0000'
+        cell = json.loads((cell_path / 'summary.json').read_text())
+        self.assertEqual(cell['requests'], 2)
+        self.assertEqual(cell['tool_operations'], 2)
+        self.assertEqual(cell['tool_prepared_bytes'], 682)
+        self.assertEqual(cell['tool_submission_attempted_bytes'], 341)
+        self.assertIsNone(cell['provider_consumed_tool_bytes'])
+        self.assertEqual(cell['unsubmitted_tool_results'], ['read_b'])
+        self.assertEqual(cell['unsubmitted_reason'], 'tool_submission_bytes')
+        self.assertFalse((cell_path / 'request-0002.json').exists())
+        self.assertFalse((cell_path / 'request-0002.body').exists())
+        for number, name in enumerate(['read_a', 'read_b']):
+            tools = json.loads((cell_path / f'tools-{number:04d}.json').read_text())
+            self.assertEqual(tools['prepared_bytes'], 341 * (number + 1))
+            self.assertEqual(len(tools['results']), 1)
+            envelope = tools['results'][0]
+            self.assertEqual(envelope['call_id'], name)
+            self.assertEqual(json.loads(envelope['output']), source)
+            retained = tools['result_envelopes'][0]
+            raw = (cell_path / retained['body']).read_bytes()
+            self.assertEqual(len(raw), 341)
+            self.assertEqual(json.loads(raw), envelope)
+            self.assertEqual(retained['sha256'], hashlib.sha256(raw).hexdigest())
+            self.assertEqual(retained['bytes'], 341)
+
     def test_prepare_preserves_complete_input_and_freezes_source_identity(self):
         result = self.prepare()
         self.assertEqual(result.returncode, 0, result.stderr)
