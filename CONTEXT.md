@@ -62,6 +62,20 @@ _Avoid_: Poster, transport, actuator
 An operation-specific component that performs a separately authorized state change from fully bound inputs. When it consumes semantic-writer output, that content remains opaque unless the operation contract explicitly says otherwise.
 _Avoid_: Writer, generic GitHub client
 
+### Authority and closeout
+
+**Standing authority**:
+Permission for a class of operations recorded before the task in a durable, reviewable statement, rather than given in the operator's words for this task.
+_Avoid_: Blanket approval, pre-approval
+
+**Autonomy declaration**:
+A repository's durable statement of which operations it leaves open to agents acting on standing authority and which it reserves.
+_Avoid_: Autonomy mode (for the repository's statement)
+
+**Merge closeout**:
+Carrying a pull request through readiness for review, required checks, routine review feedback, merge, and branch and worktree cleanup.
+_Avoid_: Landing (for the whole closeout), shipping
+
 ### Kit and release
 
 **Provingkit**:
