@@ -5,16 +5,26 @@ These research CLIs prepare frozen inputs and retain request, response, outcome,
 From this directory, run the public-interface checks:
 
 ```sh
-python -m unittest test_comparison_runner
+python -m unittest test_comparison_runner test_authenticated_transport
 ```
 
 The tests start a controlled local HTTP service and invoke the preparation and execution CLIs with disposable inputs. Their supplied responses exercise parsing and evidence handling; they establish no model accuracy, workflow benefit, live endpoint compatibility, or economic advantage.
+The authenticated public-CLI checks cover non-reflecting success, body and header reflection for claim and coverage requests, and deadline expiry after an observed reflection. The deadline case deliberately delays transport cleanup through a temporary standard-library shim; a separate no-reflection control still records a timeout. These constructed cases do not establish the frequency of such a race in ordinary use.
+These tests use no real model, native harness, or credential and make no provider calls. Cross-chunk reflection, authentication failures, and general terminal-status precedence remain unqualified.
 
 ## Preparation and execution
 
 `comparison_runner.py prepare --spec INPUT.json --output NEW_DIRECTORY` validates a specification, preserves its input files, and emits a manifest path and SHA-256. The manifest binds the runner, source specification, cases, conditions, limits, and schedule. Existing output directories are refused.
 
-`comparison_runner.py run --prepared PREPARED_DIRECTORY --manifest-sha256 DIGEST --output NEW_DIRECTORY --local-http` verifies the prepared identities and runs the frozen schedule against loopback HTTP endpoints. Every configured endpoint must be supported before any request starts. Without `--local-http`, the current implementation refuses execution because live transport is unfinished.
+`comparison_runner.py run --prepared PREPARED_DIRECTORY --manifest-sha256 DIGEST --output NEW_DIRECTORY --local-http` verifies the prepared identities and runs the frozen schedule against loopback HTTP endpoints. Every configured endpoint must be supported before any request starts. Without `--local-http`, the current implementation refuses execution because live transport is unfinished. HTTPS remains refused, whether live or loopback.
+
+### Synthetic loopback authentication
+
+Each condition's `auth_env` must be `null` or a selector matching `PROVINGKIT_TEST_[A-Za-z0-9_]+`. Its value is resolved only during `run` and must be nonempty ASCII from `!` through `~`. The transport child adds it as a Bearer token; retained request evidence contains no injected authorization header.
+
+Before submission, the runner rejects an exact credential byte sequence in the serialized request body. An exact configured-token occurrence in an observed response header name or value, or in the response body, sets `credential_reflection`. The response-body file retains only the prefix before the token (empty for header reflection); no answer or usage is interpreted, no valuation is produced, and the reflected request is not retried. Reflection leaves residual provider work unknown and marks the claim response as truncated. If the parent deadline expires after reflection was observed, `credential_reflection` remains the transport result and `deadline_expired` records the expiry separately. A complete, within-limit, non-reflecting successful response body is retained exactly. An incomplete authenticated read may omit a suffix held back by streaming reflection detection, so it does not promise complete raw-body preservation.
+
+Preparation does not resolve the selector or screen preparation input against its eventual value; the runtime body check covers only the exact credential bytes as serialized. The spawned transport process inherits the runner's environment rather than receiving a credential-only environment. These are synthetic loopback transport controls, not live credential qualification or a finished comparison runner.
 
 The claim kind shapes requests for Jev, Decisions, and Responses around the same four-way evidence question. The coverage kind supports Responses tool continuations over supplied source records. It retains unavailable sources explicitly. Preparation does not validate a live provider's behavior or grant permission for an experiment.
 

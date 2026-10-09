@@ -6,6 +6,7 @@ import hashlib
 import http.client
 import json
 import multiprocessing
+import os
 import math
 import re
 from pathlib import Path
@@ -43,6 +44,22 @@ def write_json(path, value):
         stream.write('\n')
 
 
+def runtime_credential(auth_env):
+    if auth_env is None:
+        return None
+    credential = os.environ.get(auth_env)
+    if (credential is None or not credential or
+            any(ord(char) < 33 or ord(char) > 126 for char in credential)):
+        raise ValueError('configured credential is missing or invalid')
+    return credential
+
+
+def validate_request_auth(auth_env, body):
+    credential = runtime_credential(auth_env)
+    if credential is not None and credential.encode('ascii') in body:
+        raise ValueError('configured credential occurs in request body')
+
+
 def finish_timing(started_at, started_ns, first_byte_ns=None):
     finished_ns = time.monotonic_ns()
     return {'started_at': started_at, 'finished_at': datetime.now(timezone.utc).isoformat(),
@@ -67,7 +84,7 @@ def strict_json(value):
     return json.loads(value, object_pairs_hook=unique_object, parse_constant=reject_constant)
 
 
-def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, channel):
+def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, auth_env, channel):
     """Stream directly to the reserved attempt; the parent owns the wall-clock limit."""
     url = urlsplit(endpoint)
     connection_type = http.client.HTTPSConnection if url.scheme == 'https' else http.client.HTTPConnection
@@ -82,12 +99,26 @@ def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, 
             channel.send({'transport_status': 'not_submitted'})
             return
         channel.send({'submission_started': True})
-        connection.request('POST', url.path or '/', body=body, headers=headers)
+        request_headers = dict(headers)
+        credential = runtime_credential(auth_env)
+        if credential is not None:
+            request_headers['Authorization'] = 'Bearer ' + credential
+        connection.request('POST', url.path or '/', body=body, headers=request_headers)
         response = connection.getresponse()
+        response_headers = response.getheaders()
+        if credential is not None and any(
+                credential in name or credential in value
+                for name, value in response_headers):
+            channel.send({'http_status': response.status,
+                          'provider_request_id': None,
+                          'transport_status': 'credential_reflection'})
+            return
         channel.send({'http_status': response.status,
                       'provider_request_id': response.getheader('x-request-id')})
+        credential_bytes = credential.encode('ascii') if credential is not None else None
         total = 0
         first = True
+        pending = b''
         with Path(response_path).open('xb', buffering=0) as stream:
             while True:
                 chunk = response.read1(min(65536, byte_limit - total + 1))
@@ -99,11 +130,32 @@ def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, 
                     channel.send({'first_byte_monotonic_ns': time.monotonic_ns()})
                     first = False
                 retained = chunk[:byte_limit - total]
-                stream.write(retained)
                 total += len(retained)
+                if credential_bytes is not None:
+                    candidate = pending + chunk
+                    reflected_at = candidate.find(credential_bytes)
+                    if reflected_at >= 0:
+                        retained_boundary = len(pending) + len(retained)
+                        stream.write(candidate[:min(reflected_at, retained_boundary)])
+                        channel.send({'transport_status': 'credential_reflection'})
+                        return
+                    if len(retained) != len(chunk):
+                        stream.write(pending + retained)
+                        channel.send({'transport_status': 'response_limit'})
+                        return
+                    keep = min(len(credential_bytes) - 1, len(candidate))
+                    if keep:
+                        stream.write(candidate[:-keep])
+                        pending = candidate[-keep:]
+                    else:
+                        stream.write(candidate)
+                        pending = b''
+                else:
+                    stream.write(retained)
                 if len(retained) != len(chunk):
                     channel.send({'transport_status': 'response_limit'})
                     return
+            stream.write(pending)
         channel.send({'transport_status': 'received' if 200 <= response.status < 300 else 'http_error'})
     except (OSError, http.client.HTTPException) as error:
         channel.send({'transport_status': 'timeout' if isinstance(error, TimeoutError) else 'transport_error',
@@ -113,13 +165,13 @@ def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, 
         channel.close()
 
 
-def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline_ns):
+def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline_ns, auth_env):
     if time.monotonic_ns() >= deadline_ns:
         return {'transport_status': 'not_submitted', 'submission_started': False}
     context = multiprocessing.get_context('spawn')
     reader, writer = context.Pipe(duplex=False)
     child = context.Process(target=http_child, args=(
-        endpoint, body, headers, str(response_path), byte_limit, deadline_ns, writer))
+        endpoint, body, headers, str(response_path), byte_limit, deadline_ns, auth_env, writer))
     child.start()
     writer.close()
     child.join(max(0, (deadline_ns - time.monotonic_ns()) / 1_000_000_000))
@@ -132,14 +184,16 @@ def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline
             child.join()
     metadata = {'transport_status': 'transport_error', 'http_status': None,
                 'provider_request_id': None, 'first_byte_monotonic_ns': None,
-                'submission_started': False}
+                'submission_started': False,
+                'deadline_expired': timed_out}
     while reader.poll():
         try:
             metadata.update(reader.recv())
         except EOFError:
             break
     reader.close()
-    if timed_out and metadata['submission_started']:
+    if (timed_out and metadata['submission_started'] and
+            metadata['transport_status'] != 'credential_reflection'):
         metadata['transport_status'] = 'timeout'
     if not metadata['submission_started']:
         metadata['transport_status'] = 'not_submitted'
@@ -383,6 +437,8 @@ def parse_result(adapter, result, events, envelope_status, kind='claim'):
 
 
 def interpret_response(adapter, body, transport_status, kind='claim'):
+    if transport_status == 'credential_reflection':
+        return None, [], None, transport_status
     # Retained complete envelopes remain evidence even when transport fails.
     # Only a successful transport can supply an answer or tool continuation.
     try:
@@ -561,6 +617,10 @@ def validate_spec(spec):
         if spec['kind'] == 'coverage':
             fields += ['arm']
         exact_fields(condition, fields, 'condition')
+        auth_env = condition['auth_env']
+        if auth_env is not None and (not isinstance(auth_env, str) or
+                not re.fullmatch(r'PROVINGKIT_TEST_[A-Za-z0-9_]+', auth_env)):
+            raise ValueError('invalid local credential selector')
         if spec['kind'] == 'coverage' and (condition['adapter'] != 'responses' or
                                            condition['arm'] not in {'ordinary', 'deterministic'}):
             raise ValueError('coverage needs a Responses arm')
@@ -707,6 +767,7 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot):
     for number in range(limits['requests_per_cell']):
         available = (cell_deadline_ns - time.monotonic_ns()) / 1_000_000_000
         body = json.dumps(payload).encode()
+        validate_request_auth(condition['auth_env'], body)
         tool_bytes = sum(len(json.dumps(item).encode()) if version2 else len(item['output'].encode())
                          for item in payload['input']
                          if item.get('type') == 'function_call_output')
@@ -742,7 +803,7 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot):
                                   int(limits['request_seconds'] * 1_000_000_000))
         metadata = request_bounded(condition['endpoint'], body, {'Content-Type': 'application/json'},
                                    output / response_file, limits['response_bytes'],
-                                   request_deadline_ns)
+                                   request_deadline_ns, condition['auth_env'])
         if not metadata['submission_started']:
             unsubmitted_reason = 'cell_deadline' if time.monotonic_ns() >= cell_deadline_ns else 'request_deadline'
             break
@@ -771,7 +832,8 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot):
             'usage_scope': 'per_request' if isinstance(usage, dict) else 'unknown',
             'valuation_status': valuation_status,
             'api_rate_equivalent_usd': value, 'confirmed_charge_usd': None,
-            'residual_provider_work_unknown': status in {'response_limit', 'timeout', 'transport_error'},
+            'residual_provider_work_unknown': status in {
+                'credential_reflection', 'response_limit', 'timeout', 'transport_error'},
             **metadata}
         write_json(output / f'attempt-{number:04d}.json', attempt)
         attempts.append(attempt)
@@ -849,6 +911,8 @@ def run(prepared, expected_digest, output, local_http):
         endpoint = urlsplit(condition['endpoint'])
         if endpoint.scheme != 'http' or endpoint.hostname != '127.0.0.1':
             raise ValueError('local HTTP tests require a loopback endpoint')
+    for condition in manifest['conditions']:
+        runtime_credential(condition['auth_env'])
     if manifest['runner_sha256'] != digest(Path(__file__).read_bytes()):
         raise ValueError('runner identity changed')
     states = {}
@@ -897,6 +961,7 @@ def run(prepared, expected_digest, output, local_http):
         started = datetime.now(timezone.utc).isoformat()
         tick = time.monotonic_ns()
         body = json.dumps(payload).encode()
+        validate_request_auth(condition['auth_env'], body)
         request_file = f'request-{index:04d}.body'
         with (output / request_file).open('xb') as stream:
             stream.write(body)
@@ -915,7 +980,7 @@ def run(prepared, expected_digest, output, local_http):
         metadata = request_bounded(condition['endpoint'], body,
                                    {'Content-Type': 'application/json'}, output / response_file,
                                    manifest['limits']['response_bytes'],
-                                   request_deadline_ns)
+                                   request_deadline_ns, condition['auth_env'])
         if not metadata['submission_started']:
             slots.append(dict(slot, status='unattempted', reason='run_deadline' if
                               time.monotonic_ns() >= run_deadline_ns else 'request_deadline'))
@@ -939,8 +1004,10 @@ def run(prepared, expected_digest, output, local_http):
                        usage_scope='per_request' if isinstance(usage, dict) else 'unknown',
                        valuation_status=valuation_status,
                        api_rate_equivalent_usd=value, confirmed_charge_usd=None,
-                       response_truncated=status in {'response_limit', 'timeout', 'transport_error'},
-                       residual_provider_work_unknown=status in {'response_limit', 'timeout', 'transport_error'},
+                       response_truncated=status in {
+                           'credential_reflection', 'response_limit', 'timeout', 'transport_error'},
+                       residual_provider_work_unknown=status in {
+                           'credential_reflection', 'response_limit', 'timeout', 'transport_error'},
                        **metadata)
         write_json(output / f'attempt-{index:04d}.json', attempt)
         attempts.append(attempt)
