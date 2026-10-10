@@ -144,11 +144,12 @@ async function main() {
     }
   }
   if (!validWindow || (config.expectedCodeId === null && !record.unbound)) record.endpoint = null;
-  const matchingStop = validWindow && acquisition.status === 'complete' && !served
+  const admittedStop = validWindow && acquisition.status === 'complete' && !served
     && event.hook_event_name === 'Stop' && (!!record.responseCandidate || !!record.unbound)
-    && record.binding !== 'mismatch' && text(event.session_id, 256);
+    && record.binding !== 'mismatch' && text(event.session_id, 256)
+    && process.env.CLAUDE_CODE_SESSION_ID === event.session_id;
   record.hostTaskNomination = { status: 'unknown', gap: 'matching_stop_and_hook_identity_required' };
-  if (matchingStop && process.env.CLAUDE_CODE_SESSION_ID === event.session_id) {
+  if (admittedStop) {
     const hostId = process.env.CLAUDE_CODE_HOST_SESSION_ID;
     record.hostTaskNomination = hostId === undefined
       ? { status: 'unknown', gap: 'host_id_missing' }
@@ -161,10 +162,7 @@ async function main() {
   }
   if (config.executorObservation) {
     const claimedPid = process.env.CLAUDE_PID;
-    const admitted = validWindow && acquisition.status === 'complete' && !served
-      && event.hook_event_name === 'Stop' && (!!record.responseCandidate || !!record.unbound)
-      && record.binding !== 'mismatch' && text(event.session_id, 256)
-      && process.env.CLAUDE_CODE_SESSION_ID === event.session_id
+    const admitted = admittedStop
       && typeof claimedPid === 'string' && /^[1-9][0-9]{0,9}$/.test(claimedPid)
       && Number.isSafeInteger(Number(claimedPid)) && Number(claimedPid) !== process.pid;
     record.executorObservation = admitted

@@ -76,20 +76,21 @@ test('a PID outside the collector ancestry leaves the Stop response intact', asy
 });
 
 test('only an admitted Stop with consistent hook identity starts process acquisition', async t => {
-  for (const [env, input] of [
-    [{ CLAUDE_PID: '' }, event],
-    [{ CLAUDE_PID: '1001x' }, event],
-    [{ CLAUDE_CODE_SESSION_ID: 'other' }, event],
-    [{}, { ...event, session_id: 'other' }],
-    [{}, { ...event, hook_event_name: 'Notification' }],
-    [{}, { ...event, last_assistant_message: 'unrelated response' }],
+  for (const [env, input, hostStatus] of [
+    [{ CLAUDE_PID: '' }, event, 'candidate'],
+    [{ CLAUDE_PID: '1001x' }, event, 'candidate'],
+    [{ CLAUDE_CODE_SESSION_ID: 'other' }, event, 'unknown'],
+    [{}, { ...event, session_id: 'other' }, 'unknown'],
+    [{}, { ...event, hook_event_name: 'Notification' }, 'unknown'],
+    [{}, { ...event, last_assistant_message: 'unrelated response' }, 'unknown'],
   ]) {
-    const f = await fixture(t, {}, env);
+    const f = await fixture(t, {}, { CLAUDE_CODE_HOST_SESSION_ID: 'desktop-local-7', ...env });
     await rm(f.procRoot, { recursive: true });
     const { code, record } = await f.finish(input);
     assert.equal(code, 0);
     assert.equal(record.executorObservation.status, 'not_admitted');
     assert.equal(record.executorObservation.processes, undefined);
+    assert.equal(record.hostTaskNomination.status, hostStatus);
   }
 });
 
