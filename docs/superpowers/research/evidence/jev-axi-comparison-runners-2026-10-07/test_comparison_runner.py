@@ -1280,18 +1280,16 @@ class ComparisonCLI(unittest.TestCase):
                                      ['timeout', 'completed' if continues else 'unattempted'])
                     self.assertEqual(len(received), 2 if continues else 1)
 
-    def test_local_run_rejects_all_unsupported_endpoints_before_any_request(self):
+    def test_prepare_rejects_unsupported_endpoints_before_any_request(self):
         with service({}) as (endpoint, received):
             self.spec['conditions'][0]['endpoint'] = endpoint
             self.spec['conditions'].append(dict(self.spec['conditions'][0], id='other',
                                                 endpoint='https://example.invalid/v1/decisions'))
             prepared = self.prepare()
-            self.assertEqual(prepared.returncode, 0, prepared.stderr)
-            output = self.root / 'run'; result = self.run_bundle(output)
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn('loopback endpoint', result.stderr)
+        self.assertEqual(prepared.returncode, 2)
+        self.assertIn('unsupported endpoint or credential selector binding', prepared.stderr)
         self.assertEqual(received, [])
-        self.assertFalse(output.exists())
+        self.assertFalse((self.root / 'prepared').exists())
 
     def test_global_deadline_accounts_for_all_remaining_slots(self):
         def slow_body(handler):

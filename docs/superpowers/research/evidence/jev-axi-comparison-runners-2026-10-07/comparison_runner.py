@@ -33,6 +33,8 @@ RELATIONS = {
     'unresolved': ('Missing referents, conflicting sources, or insufficiently interpretable '
                    'context prevent choosing the other relations.')}
 
+TEST_ONLY_CHILD_ENVIRONMENT = {'PYTHONPATH', 'PROVINGKIT_TEST_CLOSE_DELAY_MARKER'}
+
 TRANSPORT_CHILD_ENVIRONMENT = (
     'PATH', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'PATHEXT',
     'TMPDIR', 'TMP', 'TEMP',
@@ -62,21 +64,23 @@ def runtime_credential(auth_env):
     return credential
 
 
-def transport_child_environment(auth_env, configured_auth_envs):
+def transport_child_environment(auth_env, configured_auth_envs, local_http=False):
     """Construct the environment present when a transport child starts."""
     environment = {
         name: os.environ[name] for name in TRANSPORT_CHILD_ENVIRONMENT
-        if name in os.environ and name not in configured_auth_envs}
+        if (name in os.environ and name not in configured_auth_envs and
+            (local_http or name not in TEST_ONLY_CHILD_ENVIRONMENT))}
     credential = runtime_credential(auth_env)
     if credential is not None:
         environment[auth_env] = credential
     return environment
 
 
-def start_transport_child(child, auth_env, configured_auth_envs):
+def start_transport_child(child, auth_env, configured_auth_envs, local_http=False):
     """Start a transport child with only its selected credential."""
     parent_environment = dict(os.environ)
-    child_environment = transport_child_environment(auth_env, configured_auth_envs)
+    child_environment = transport_child_environment(
+        auth_env, configured_auth_envs, local_http)
     try:
         os.environ.clear()
         os.environ.update(child_environment)
@@ -84,6 +88,42 @@ def start_transport_child(child, auth_env, configured_auth_envs):
     finally:
         os.environ.clear()
         os.environ.update(parent_environment)
+
+
+LIVE_TRANSPORT_ROUTES = {
+    'responses': ('https://api.openai.com/v1/responses', 'OPENAI_API_KEY'),
+    'decisions': ('https://api.openai.com/v1/decisions', 'OPENAI_API_KEY'),
+    'jev': ('https://api.typesafe.ai/v1/systemone', 'TYPESAFE_API_KEY'),
+}
+def condition_transport_mode(condition):
+    """Return the one supported transport mode for an adapter and selector."""
+    endpoint = condition['endpoint']
+    auth_env = condition['auth_env']
+    live_endpoint, live_auth_env = LIVE_TRANSPORT_ROUTES[condition['adapter']]
+    if endpoint == live_endpoint and auth_env == live_auth_env:
+        return 'https'
+    if not isinstance(endpoint, str):
+        raise ValueError('unsupported endpoint or credential selector binding')
+    try:
+        url = urlsplit(endpoint)
+        port = url.port
+    except (TypeError, ValueError):
+        raise ValueError(
+            'unsupported endpoint or credential selector binding') from None
+    local_auth = (
+        auth_env is None or
+        (isinstance(auth_env, str) and
+         re.fullmatch(r'PROVINGKIT_TEST_[A-Za-z0-9_]+', auth_env)))
+    local_endpoint = (
+        url.scheme == 'http' and url.hostname == '127.0.0.1' and
+        port is not None and 1 <= port <= 65535 and
+        not url.username and not url.password and not url.query and not url.fragment and
+        bool(url.path) and url.path.isascii() and
+        not any(ord(char) <= 32 or ord(char) == 127 for char in endpoint))
+    if local_endpoint and local_auth:
+        return 'local_http'
+    raise ValueError('unsupported endpoint or credential selector binding')
+
 
 
 def validate_request_auth(auth_env, body):
@@ -204,7 +244,8 @@ def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline
     reader, writer = context.Pipe(duplex=False)
     child = context.Process(target=http_child, args=(
         endpoint, body, headers, str(response_path), byte_limit, deadline_ns, auth_env, writer))
-    start_transport_child(child, auth_env, configured_auth_envs)
+    start_transport_child(
+        child, auth_env, configured_auth_envs, urlsplit(endpoint).scheme == 'http')
     writer.close()
     child.join(max(0, (deadline_ns - time.monotonic_ns()) / 1_000_000_000))
     timed_out = child.is_alive()
@@ -649,10 +690,6 @@ def validate_spec(spec):
         if spec['kind'] == 'coverage':
             fields += ['arm']
         exact_fields(condition, fields, 'condition')
-        auth_env = condition['auth_env']
-        if auth_env is not None and (not isinstance(auth_env, str) or
-                not re.fullmatch(r'PROVINGKIT_TEST_[A-Za-z0-9_]+', auth_env)):
-            raise ValueError('invalid local credential selector')
         if spec['kind'] == 'coverage' and (condition['adapter'] != 'responses' or
                                            condition['arm'] not in {'ordinary', 'deterministic'}):
             raise ValueError('coverage needs a Responses arm')
@@ -663,15 +700,7 @@ def validate_spec(spec):
                 raise ValueError('unsupported model or effort')
         elif condition['effort'] is not None:
             raise ValueError('effort is not supported by this endpoint')
-        endpoint = condition['endpoint']
-        if (not isinstance(endpoint, str) or
-                any(ord(char) <= 32 or ord(char) == 127 for char in endpoint)):
-            raise ValueError('invalid endpoint')
-        url = urlsplit(endpoint)
-        port = url.port
-        if (url.scheme not in {'http', 'https'} or not url.hostname or url.username or url.password or
-                url.query or url.fragment or port == 0 or not url.path.isascii()):
-            raise ValueError('invalid endpoint')
+        condition_transport_mode(condition)
         exact_fields(condition['rates'], ['input', 'cached', 'write', 'output'], 'rates')
         for value in condition['rates'].values():
             if not isinstance(value, str) or not re.fullmatch(r'[0-9]+(?:\.[0-9]+)?', value):
@@ -927,6 +956,8 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot, c
 
 
 def run(prepared, expected_digest, output, local_http):
+    if sys.platform != 'linux':
+        raise ValueError('transport execution requires Linux')
     run_started = datetime.now(timezone.utc).isoformat()
     run_tick = time.monotonic_ns()
     raw = (prepared / 'manifest.json').read_bytes()
@@ -940,12 +971,15 @@ def run(prepared, expected_digest, output, local_http):
         if condition['auth_env'] is not None}
     if manifest['schedule'] != make_schedule(spec):
         raise ValueError('schedule differs from the protocol')
-    if not local_http:
-        raise ValueError('live transport is not implemented')
-    for condition in manifest['conditions']:
-        endpoint = urlsplit(condition['endpoint'])
-        if endpoint.scheme != 'http' or endpoint.hostname != '127.0.0.1':
-            raise ValueError('local HTTP tests require a loopback endpoint')
+    transport_modes = {
+        condition['id']: condition_transport_mode(condition)
+        for condition in manifest['conditions']}
+    if local_http:
+        if any(mode != 'local_http' for mode in transport_modes.values()):
+            raise ValueError(
+                'local HTTP tests require fixed loopback route bindings')
+    elif any(mode != 'https' for mode in transport_modes.values()):
+        raise ValueError('loopback HTTP requires --local-http')
     if manifest['runner_sha256'] != digest(Path(__file__).read_bytes()):
         raise ValueError('runner identity changed')
     states = {}
@@ -962,15 +996,20 @@ def run(prepared, expected_digest, output, local_http):
             raise ValueError('prepared input identity changed')
         states[case['id']] = data.decode('utf-8')
     credential_preflight = []
-    credential_missing_conditions = set()
+    credential_unavailable_conditions = {}
     for condition in manifest['conditions']:
         auth_env = condition['auth_env']
         if auth_env is not None and auth_env not in os.environ:
             status = 'credential_missing'
-            credential_missing_conditions.add(condition['id'])
+            credential_unavailable_conditions[condition['id']] = status
         else:
-            runtime_credential(auth_env)
-            status = 'ready'
+            try:
+                runtime_credential(auth_env)
+            except ValueError:
+                status = 'credential_invalid'
+                credential_unavailable_conditions[condition['id']] = status
+            else:
+                status = 'ready'
         credential_preflight.append({
             'condition': condition['id'], 'auth_env': auth_env, 'status': status,
             'submission_started': False})
@@ -984,8 +1023,10 @@ def run(prepared, expected_digest, output, local_http):
     run_deadline_ns = run_tick + int(manifest['limits']['run_seconds'] * 1_000_000_000)
     for index, scheduled in enumerate(manifest['schedule']):
         slot = dict(scheduled, run_id=run_id, slot_id=f'{run_id}/slot-{index:04d}', slot_index=index)
-        if slot['condition'] in credential_missing_conditions:
-            slots.append(dict(slot, status='unattempted', reason='credential_missing'))
+        if slot['condition'] in credential_unavailable_conditions:
+            slots.append(dict(
+                slot, status='unattempted',
+                reason=credential_unavailable_conditions[slot['condition']]))
             continue
         remaining = (run_deadline_ns - time.monotonic_ns()) / 1_000_000_000
         if remaining <= 0:
