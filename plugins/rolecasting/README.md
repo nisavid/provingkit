@@ -14,7 +14,7 @@ separate. A transport never determines the
 relationship, and a user-owned peer requires explicit user consent.
 
 Initial operational support uses separate native-child adapter profiles for
-ChatGPT Codex and Codex CLI/TUI. Both freeze the complete plan and assurance
+ChatGPT Codex, Codex CLI/TUI, and local Codex Desktop. All three freeze the complete plan and assurance
 minima before native spawn and bind same-leader launch, status, and result
 observations afterward. A separate verification digest and strict Boolean
 preserve completed-but-blocked or unverified results as unusable. Their current
@@ -80,8 +80,11 @@ is independent of the dispatch-evidence bundle contract. Private tests may
 construct test-owned bootstrap trust to exercise historical validation, but no
 Rolecasting historical trust has been installed and those results cannot
 become authenticated evidence for witnessed publication. The skill-mediated
-native Codex module sequences pre-spawn freeze and post-result same-leader
-recording, but it is not a harness actuator and emits neither portable evidence
+native Codex module supports separate ChatGPT Codex, CLI/TUI, and local Desktop
+profiles. Follow its [native binding procedure](skills/delegating-cross-agent-work/references/native-codex-subagents.md)
+to identify the product and observe the Desktop application version. The module
+sequences pre-spawn freeze and post-result same-leader recording, but it is not
+a harness actuator and emits neither portable evidence
 nor product attestation. Explicitly witnessed publication stays blocked until a
 real native harness integration authenticates execution and its exact owning
 bytes are bound into a newly registered producer/issuer identity.

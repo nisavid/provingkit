@@ -1,27 +1,64 @@
 # Native Codex subagents
 
-This is the initial operational binding for ChatGPT Codex and Codex CLI/TUI.
-They are separate target surfaces with separate adapter profiles, but both use
+This is the operational binding for ChatGPT Codex, Codex CLI/TUI, and Codex
+Desktop. They are separate target surfaces with separate adapter profiles and use
 the harness's native subagent tool as a leader-owned child transport. The
 binding is skill-mediated: `native_codex.py` sequences freeze and record state,
 while the skill invokes the native tool between those operations. The module is
 not a launcher and does not turn caller-supplied facts into portable
 attestation.
 
-The normal topology for either profile is:
+The normal topology for each profile is:
 
-| Dimension | ChatGPT Codex | Codex CLI/TUI |
-| --- | --- | --- |
-| Product family | `codex` | `codex` |
-| Surface | `chatgpt-codex` | `codex-cli-tui` |
-| Relationship | `child` | `child` |
-| Ownership | `leader-owned` | `leader-owned` |
-| Transport | `native-tool` | `native-tool` |
+| Dimension | ChatGPT Codex | Codex CLI/TUI | Codex Desktop |
+| --- | --- | --- | --- |
+| Product family | `codex` | `codex` | `codex` |
+| Surface | `chatgpt-codex` | `codex-cli-tui` | `codex-desktop` |
+| Relationship | `child` | `child` | `child` |
+| Ownership | `leader-owned` | `leader-owned` | `leader-owned` |
+| Transport | `native-tool` | `native-tool` | `native-tool` |
 
 Do not use this binding to create or steer a user-owned task. That ownership
 requires explicit user consent and a separately classified route.
 App-server is an optional later transport, not a Codex surface and not an
 initial-release dependency.
+
+## Identify the Desktop target
+
+Use `codex-desktop` for a local Codex-backed Desktop task whose current harness
+exposes leader-owned native subagent controls. A ChatGPT-backed cloud task
+displayed in Desktop is a separate target. The app's user-owned task controls
+do not supply this native child transport.
+
+Before freezing a Desktop dispatch:
+
+1. Establish the current task's product surface, target host, and available
+   native controller from harness-owned context or controls. Verify that the
+   controller can supply the launch, identity, context, status, and result
+   observations required below. Missing or contradictory target facts block
+   this route before invocation.
+2. Obtain the actual application version from a product-owned observation for
+   that app and host. The Codex app's `check_app_update` response exposes
+   `installedVersion` from Electron's `app.getVersion()`. Its update-check
+   status is separate: an unavailable update check can still return the
+   installed version. Retain the complete response and its source; a missing
+   or unknown version blocks the route. A CLI version, model label, launcher
+   name, or worker statement cannot establish the Desktop product version.
+3. Bind that observation and its app/host context into the content-addressed
+   plan. Pass the observed `installedVersion` as the helper's `version` value,
+   with `surface: codex-desktop` and `executor: codex`. Build and release-channel
+   metadata may accompany the observation without replacing the version.
+4. Reuse the observation only while its product and host context remain
+   current. An app update, target change, or lost connection to the observed
+   app requires a fresh observation and plan. Respect the observation control's
+   usage contract; do not poll update checks per worker.
+
+The helper binds supplied version text and opaque plan digests. It does not
+authenticate the application observation or establish its freshness. The owning
+workflow performs the checks above; acceptance of an input by the helper alone
+does not establish a valid Desktop target. Product-version evidence does not
+identify the engine or executed model, attest effective permissions, or qualify
+a native review. The Desktop profile retains the assurance limits below.
 
 ## Freeze before launch
 
