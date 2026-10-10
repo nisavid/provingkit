@@ -276,9 +276,51 @@ def run(args):
                         require(expected["effort"] in efforts,
                                 f"effort unavailable for {expected['model']}: "
                                 f"expected {expected['effort']}, observed {efforts}")
-                        raise ValueError("native-shaped fake metadata sequence is incomplete")
+                        send(raw_send, {"id": 10, "method": "config/read", "params": {
+                            "cwd": str(project), "includeLayers": False}})
+                    elif request == "config/read":
+                        config = message["result"]
+                        require(isinstance(config.get("config"), dict)
+                                and isinstance(config.get("origins"), dict),
+                                "synthetic effective config and origins required")
+                        send(raw_send, {"id": 11, "method": "configRequirements/read"})
+                    elif request == "configRequirements/read":
+                        result = message["result"]
+                        require(isinstance(result, dict)
+                                and (result.get("requirements") is None
+                                     or isinstance(result["requirements"], dict)),
+                                "invalid synthetic requirements observation")
+                        send(raw_send, {"id": 12, "method": "skills/list", "params": {
+                            "cwds": [str(project)], "forceReload": False}})
+                    elif request == "skills/list":
+                        require(isinstance(message["result"].get("data"), list),
+                                "synthetic skills inventory required")
+                        send(raw_send, {"id": 13, "method": "mcpServerStatus/list", "params": {
+                            "cursor": None, "detail": "full"}})
+                    elif request == "mcpServerStatus/list":
+                        inventory = message["result"]
+                        require(isinstance(inventory.get("data"), list)
+                                and inventory.get("nextCursor") is None,
+                                "complete synthetic MCP inventory required; paging is unqualified")
+                        send(raw_send, {"id": 14, "method": "thread/start", "params": {
+                            "cwd": str(project), "model": profile["app_server_profile"]["model"],
+                            "allowProviderModelFallback": False}})
                     elif request == "thread/start":
                         state["thread_id"] = message["result"]["thread"]["id"]
+                        if profile["kind"] == "cooperative-native-app-server-fake/v1":
+                            result = message["result"]
+                            expected = profile["app_server_profile"]
+                            require(result["model"] == expected["model"],
+                                    f"thread model differs: expected {expected['model']}, "
+                                    f"observed {result['model']}")
+                            state["profile_observation_sequence"] = record(
+                                "fake-profile-observed", response_sequence=event_sequence,
+                                requested_model=expected["model"],
+                                requested_turn_effort=expected["effort"],
+                                effective_profile={key: value for key, value in result.items()
+                                                   if key != "thread"})
+                            state["status"] = "fake-profile-observed"
+                            return True
                         send(raw_send, {"id": 3, "method": "turn/start", "params": {
                             "threadId": state["thread_id"], "input": [
                                 {"type": "text", "text": requests[0], "text_elements": []}]}})
@@ -327,7 +369,8 @@ def run(args):
             transport.collect(manifest["command"], project, attempt, "collector",
                               time.monotonic() + manifest["deadline_seconds"],
                               on_line=receive, begin=begin)
-        state["status"] = "fake-observation-completed"
+        if state["status"] == "incomplete":
+            state["status"] = "fake-observation-completed"
         return state
     except Exception as error:
         state["error"] = type(error).__name__ + ": " + str(error)

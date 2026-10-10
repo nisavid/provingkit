@@ -376,6 +376,155 @@ sys.stdin.buffer.read()
                     self.assertEqual(json.loads(raw), row["message"])
 
 
+    def prepare_native_profile_fixture(self, response_model="gpt-6.1-sol", mcp_result=None):
+        cli, _, legacy_output = self.prepare_failure_fixture("sys.stdin.buffer.read()\n")
+        base = legacy_output.parent
+        fixture = base / "fake.py"
+        fixture.write_text("RESPONSE_MODEL = " + repr(response_model) + "\nMCP_RESULT = "
+                           + repr({"data": []} if mcp_result is None else mcp_result) + "\n" + r'''
+import json
+from pathlib import Path
+import sys
+
+def receive(method):
+    message = json.loads(sys.stdin.buffer.readline())
+    assert message["method"] == method, message
+    return message
+
+def emit(request, result):
+    sys.stdout.buffer.write((json.dumps({"id": request["id"], "result": result}) + "\n").encode())
+    sys.stdout.buffer.flush()
+
+first = receive("initialize")
+emit(first, {"userAgent": "synthetic-native/expected", "codexHome": "/synthetic/codex",
+             "platformFamily": "unix", "platformOs": "linux"})
+receive("initialized")
+listing = receive("model/list")
+emit(listing, {"data": [{"id": "synthetic-sol", "model": "gpt-6.1-sol",
+    "displayName": "Synthetic Sol", "description": "Cooperative fixture",
+    "hidden": False, "isDefault": True, "defaultReasoningEffort": "low",
+    "supportedReasoningEfforts": [{"reasoningEffort": "medium", "description": "Medium"}]}]})
+config = receive("config/read")
+assert config["params"] == {"cwd": str(Path.cwd()), "includeLayers": False}, config
+emit(config, {"config": {"model": "gpt-6-luna", "model_reasoning_effort": "low"},
+              "origins": {}})
+requirements = receive("configRequirements/read")
+assert requirements.get("params") is None, requirements
+emit(requirements, {})
+skills = receive("skills/list")
+assert skills["params"] == {"cwds": [str(Path.cwd())], "forceReload": False}, skills
+emit(skills, {"data": [{"cwd": str(Path.cwd()), "skills": [], "errors": []}]})
+servers = receive("mcpServerStatus/list")
+assert servers["params"] == {"cursor": None, "detail": "full"}, servers
+emit(servers, MCP_RESULT)
+thread = receive("thread/start")
+assert thread["params"] == {"cwd": str(Path.cwd()), "model": "gpt-6.1-sol",
+                             "allowProviderModelFallback": False}, thread
+emit(thread, {"model": RESPONSE_MODEL, "modelProvider": "openai",
+    "cwd": str(Path.cwd()), "approvalPolicy": "on-request", "approvalsReviewer": "user",
+    "sandbox": {"type": "readOnly", "networkAccess": False}, "reasoningEffort": None,
+    "activePermissionProfile": None,
+    "thread": {"id": "profile-thread", "sessionId": "profile-session",
+        "projectId": None, "cliVersion": "synthetic-native/expected", "createdAt": 1,
+        "updatedAt": 1, "cwd": str(Path.cwd()), "ephemeral": True,
+        "modelProvider": "openai", "preview": "", "source": "appServer",
+        "status": {"type": "idle"}, "turns": []}})
+sys.stdin.buffer.read()
+''')
+        profile_path = base / "profile.json"
+        profile = json.loads(profile_path.read_bytes())
+        profile.update(kind="cooperative-native-app-server-fake/v1",
+                       fixture_sha256=sha(fixture.read_bytes()),
+                       app_server_profile={"schema": "compatibility-native-protocol-profile/v1",
+                           "version": "synthetic-native/expected", "model": "gpt-6.1-sol",
+                           "effort": "medium"})
+        profile_path.write_bytes(encoded(profile))
+        packet, output = base / "packet", base / "profile-observation"
+        prepared = cli(COLLECTOR, "prepare", "--seed-package", packet,
+                       "--seed-receipt-sha256", sha((packet / "receipt.json").read_bytes()),
+                       "--profile", profile_path, "--profile-sha256", sha(profile_path.read_bytes()),
+                       "--implementation", "inventory.py", "--output", output)
+        self.assertEqual(prepared.returncode, 0, prepared.stderr.decode())
+        run = (COLLECTOR, "run", "--manifest", output / "manifest.json",
+               "--expected-sha256", sha((output / "manifest.json").read_bytes()))
+        return cli, run, output
+
+    def test_native_shaped_fake_records_profile_without_delivering_a_task(self):
+        cli, run, output = self.prepare_native_profile_fixture()
+        result = cli(*run)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        attempt = output / "attempt"
+        outcome_raw = (attempt / "outcome.json").read_bytes()
+        outcome = json.loads(outcome_raw)
+        self.assertEqual(outcome["status"], "fake-profile-observed")
+        self.assertEqual(outcome["thread_id"], "profile-thread")
+        self.assertIsNone(outcome["turn_id"])
+        self.assertFalse(outcome["amendment_rpc_accepted"])
+        self.assertEqual(outcome["semantic_success"], "not-assessed")
+        self.assertIsNone(outcome["trigger_observation_sequence"])
+        sent_raw = (attempt / "collector-sent.jsonl").read_bytes()
+        sent = [json.loads(line) for line in sent_raw.splitlines()]
+        self.assertEqual([message["method"] for message in sent], [
+            "initialize", "initialized", "model/list", "config/read", "configRequirements/read",
+            "skills/list", "mcpServerStatus/list", "thread/start"])
+        rows = [json.loads(line) for line in (attempt / "receipts.jsonl").read_bytes().splitlines()]
+        observations = [row for row in rows if row["kind"] == "fake-profile-observed"]
+        self.assertEqual(len(observations), 1)
+        observation = observations[0]
+        self.assertEqual(outcome["profile_observation_sequence"], observation["sequence"])
+        self.assertEqual(observation["requested_model"], "gpt-6.1-sol")
+        self.assertEqual(observation["requested_turn_effort"], "medium")
+        self.assertIsNone(observation["effective_profile"]["reasoningEffort"])
+        self.assertIsNone(observation["effective_profile"]["activePermissionProfile"])
+        response = next(row for row in rows if row["sequence"] == observation["response_sequence"])
+        self.assertEqual(response["message"]["result"]["thread"]["id"], "profile-thread")
+        retained = [row for row in rows if row["kind"] == "received"]
+        self.assertEqual(retained[2]["message"]["result"]["config"]["model"], "gpt-6-luna")
+        self.assertEqual(retained[3]["message"]["result"], {})
+        inbound = (attempt / "collector-stdout.log").read_bytes()
+        for row in retained:
+            reference = row["wire"]
+            raw = inbound[reference["offset"]:reference["offset"] + reference["bytes"]]
+            self.assertEqual(sha(raw), reference["sha256"])
+            self.assertEqual(json.loads(raw), row["message"])
+        self.assertNotEqual(cli(*run).returncode, 0)
+        self.assertEqual((attempt / "outcome.json").read_bytes(), outcome_raw)
+        self.assertEqual((attempt / "collector-sent.jsonl").read_bytes(), sent_raw)
+
+    def test_native_shaped_fake_retains_wrong_thread_model_without_task_delivery(self):
+        cli, run, output = self.prepare_native_profile_fixture(response_model="gpt-6-luna")
+        result = cli(*run)
+        self.assertNotEqual(result.returncode, 0)
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        self.assertEqual(outcome["status"], "incomplete")
+        self.assertEqual(outcome["thread_id"], "profile-thread")
+        self.assertIsNone(outcome["turn_id"])
+        self.assertIn("thread model differs", outcome["error"])
+        self.assertIn("gpt-6.1-sol", outcome["error"])
+        self.assertIn("gpt-6-luna", outcome["error"])
+        sent = [json.loads(line) for line in (attempt / "collector-sent.jsonl").read_bytes().splitlines()]
+        self.assertEqual(sent[-1]["method"], "thread/start")
+        self.assertFalse(any(row["method"] in {"turn/start", "turn/steer"} for row in sent))
+        received = [json.loads(line) for line in (attempt / "collector-stdout.log").read_bytes().splitlines()]
+        self.assertEqual(received[-1]["result"]["model"], "gpt-6-luna")
+
+    def test_native_shaped_fake_preserves_incomplete_mcp_inventory_before_thread(self):
+        inventory = {"data": [], "nextCursor": "another-page"}
+        cli, run, output = self.prepare_native_profile_fixture(mcp_result=inventory)
+        self.assertNotEqual(cli(*run).returncode, 0)
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        self.assertEqual(outcome["status"], "incomplete")
+        self.assertIsNone(outcome["thread_id"])
+        self.assertIsNone(outcome["turn_id"])
+        self.assertIn("paging is unqualified", outcome["error"])
+        sent = [json.loads(line) for line in (attempt / "collector-sent.jsonl").read_bytes().splitlines()]
+        self.assertEqual(sent[-1]["method"], "mcpServerStatus/list")
+        self.assertFalse(any(row["method"] in {"thread/start", "turn/start", "turn/steer"} for row in sent))
+        received = [json.loads(line) for line in (attempt / "collector-stdout.log").read_bytes().splitlines()]
+        self.assertEqual(received[-1]["result"], inventory)
+
     def test_amends_once_after_first_implementation_change(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
