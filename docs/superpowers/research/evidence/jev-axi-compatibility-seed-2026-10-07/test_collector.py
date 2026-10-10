@@ -22,6 +22,124 @@ def encoded(value):
 
 
 class CollectorCLI(unittest.TestCase):
+    def prepare_usage_fixture(self, notifications, reject=False):
+        tail = "for message in " + repr(notifications) + ":\n    emit(message)\n"
+        tail += '''
+Path("inventory.py").write_text("DEFAULT = 'json'\\n")
+emit({"method": "item/completed", "params": {"threadId": "thread-1", "turnId": "turn-1",
+    "item": {"type": "commandExecution", "id": "change", "status": "completed"}}})
+steer = receive()
+'''
+        tail += ('''emit({"id": steer["id"], "error": {"code": -32000, "message": "rejected"}})
+''' if reject else '''emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+emit({"method": "turn/completed", "params": {"threadId": "thread-1",
+    "turn": {"id": "turn-1", "status": "completed", "error": None}}})
+''')
+        return self.prepare_failure_fixture(tail + "sys.stdin.buffer.read()\n")
+
+    def test_usage_index_preserves_snapshots_without_combining_threads_or_totals(self):
+        breakdown = {"cachedInputTokens": 20, "inputTokens": 100, "outputTokens": 10,
+                     "reasoningOutputTokens": 4, "totalTokens": 110}
+        first = {"method": "thread/tokenUsage/updated", "params": {
+            "threadId": "thread-1", "turnId": "turn-1",
+            "tokenUsage": {"last": breakdown, "total": breakdown}}}
+        later = json.loads(json.dumps(first))
+        later["params"]["tokenUsage"]["total"] = {
+            "cachedInputTokens": 25, "inputTokens": 130, "outputTokens": 15,
+            "reasoningOutputTokens": 6, "totalTokens": 145}
+        other_thread = json.loads(json.dumps(first))
+        other_thread["params"]["threadId"] = "unattributed-thread"
+        other_turn = json.loads(json.dumps(first))
+        other_turn["params"]["turnId"] = "another-turn"
+        messages = [first, first, later, first, other_thread, other_turn]
+        cli, run, output = self.prepare_usage_fixture(messages)
+        result = cli(*run)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        rows = [json.loads(line) for line in (attempt / "receipts.jsonl").read_bytes().splitlines()]
+        usage_rows = [row for row in rows if row.get("message", {}).get("method") ==
+                      "thread/tokenUsage/updated"]
+        self.assertEqual([row["message"] for row in usage_rows], messages)
+        index = outcome["usage_observations"]
+        self.assertEqual(index["root_event_sequences"], [row["sequence"] for row in usage_rows[:4]])
+        self.assertEqual(index["other_event_sequences"], [row["sequence"] for row in usage_rows[4:]])
+        self.assertEqual(index["invalid_event_sequences"], [])
+        self.assertIsNone(index["whole_episode_tokens"])
+        completion, = [row for row in rows if row.get("message", {}).get("method") == "turn/completed"]
+        self.assertEqual(index["collection_end"], {
+            "reason": "root-turn-completed", "event_sequence": completion["sequence"]})
+        inbound = (attempt / "collector-stdout.log").read_bytes()
+        for row in usage_rows:
+            ref = row["wire"]
+            raw = inbound[ref["offset"]:ref["offset"] + ref["bytes"]]
+            self.assertEqual(sha(raw), ref["sha256"])
+            self.assertEqual(json.loads(raw), row["message"])
+
+    def test_usage_index_marks_missing_counters_without_filling_optional_values(self):
+        counts = {"cachedInputTokens": 0, "inputTokens": 12, "outputTokens": 3,
+                  "reasoningOutputTokens": 1, "totalTokens": 15}
+        valid = {"method": "thread/tokenUsage/updated", "params": {
+            "threadId": "thread-1", "turnId": "turn-1",
+            "tokenUsage": {"last": counts, "total": counts}}}
+        missing = json.loads(json.dumps(valid))
+        del missing["params"]["tokenUsage"]["total"]["outputTokens"]
+        boolean = json.loads(json.dumps(valid))
+        boolean["params"]["tokenUsage"]["last"]["inputTokens"] = True
+        malformed = {"method": "thread/tokenUsage/updated", "params": None}
+        explicit = json.loads(json.dumps(valid))
+        explicit["params"]["tokenUsage"]["modelContextWindow"] = None
+        explicit["params"]["tokenUsage"]["total"]["cacheWriteInputTokens"] = 0
+        messages = [missing, boolean, malformed, valid, explicit]
+        cli, run, output = self.prepare_usage_fixture(messages)
+        result = cli(*run)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        rows = [json.loads(line) for line in (attempt / "receipts.jsonl").read_bytes().splitlines()]
+        usage_rows = [row for row in rows if row.get("message", {}).get("method") ==
+                      "thread/tokenUsage/updated"]
+        self.assertEqual([row["message"] for row in usage_rows], messages)
+        index = outcome["usage_observations"]
+        self.assertEqual(index["root_event_sequences"], [row["sequence"] for row in usage_rows[3:]])
+        self.assertEqual(index["invalid_event_sequences"], [row["sequence"] for row in usage_rows[:3]])
+        self.assertEqual(index["other_event_sequences"], [])
+        self.assertIsNone(index["whole_episode_tokens"])
+        self.assertEqual(outcome["status"], "fake-observation-completed")
+
+    def test_usage_absence_and_failed_attempt_remain_unknown_and_preserved(self):
+        counts = {"cachedInputTokens": 0, "inputTokens": 12, "outputTokens": 3,
+                  "reasoningOutputTokens": 1, "totalTokens": 15}
+        message = {"method": "thread/tokenUsage/updated", "params": {
+            "threadId": "thread-1", "turnId": "turn-1",
+            "tokenUsage": {"last": counts, "total": counts}}}
+        for messages, reject in (([], False), ([message], True)):
+            with self.subTest(reject=reject):
+                cli, run, output = self.prepare_usage_fixture(messages, reject=reject)
+                result = cli(*run)
+                self.assertEqual(result.returncode, 1 if reject else 0, result.stderr.decode())
+                attempt = output / "attempt"
+                before = {p.name: p.read_bytes() for p in attempt.iterdir() if p.is_file()}
+                outcome = json.loads(before["outcome.json"])
+                index = outcome["usage_observations"]
+                self.assertIsNone(index["whole_episode_tokens"])
+                self.assertEqual(index["other_event_sequences"], [])
+                self.assertEqual(index["invalid_event_sequences"], [])
+                rows = [json.loads(line) for line in before["receipts.jsonl"].splitlines()]
+                received = [row for row in rows if row["kind"] == "received"]
+                if reject:
+                    usage, = [row for row in received if row["message"].get("method") ==
+                              "thread/tokenUsage/updated"]
+                    self.assertEqual(index["root_event_sequences"], [usage["sequence"]])
+                    self.assertEqual(outcome["status"], "incomplete")
+                else:
+                    self.assertEqual(index["root_event_sequences"], [])
+                self.assertEqual(index["collection_end"], {
+                    "reason": "incomplete" if reject else "root-turn-completed",
+                    "event_sequence": received[-1]["sequence"]})
+                self.assertNotEqual(cli(*run).returncode, 0)
+                self.assertEqual({p.name: p.read_bytes() for p in attempt.iterdir() if p.is_file()}, before)
+
     def prepare_failure_fixture(self, tail, seed_mode=0o644, mark_launch=False):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

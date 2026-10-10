@@ -163,6 +163,31 @@ def prepare(args):
     return {"manifest": str(output / "manifest.json"), "sha256": sha(raw)}
 
 
+def usage_identifiers(params):
+    if (not isinstance(params, dict)
+            or not isinstance(params.get("threadId"), str)
+            or not isinstance(params.get("turnId"), str)):
+        return None
+    usage = params.get("tokenUsage")
+    if not isinstance(usage, dict):
+        return None
+    if ("modelContextWindow" in usage and usage["modelContextWindow"] is not None
+            and type(usage["modelContextWindow"]) is not int):
+        return None
+    for name in ("last", "total"):
+        counters = usage.get(name)
+        if not isinstance(counters, dict):
+            return None
+        for field in ("cachedInputTokens", "inputTokens", "outputTokens",
+                      "reasoningOutputTokens", "totalTokens"):
+            if type(counters.get(field)) is not int:
+                return None
+        if ("cacheWriteInputTokens" in counters
+                and type(counters["cacheWriteInputTokens"]) is not int):
+            return None
+    return params["threadId"], params["turnId"]
+
+
 def run(args):
     raw = checked(args.manifest, args.expected_sha256)
     manifest = json.loads(raw)
@@ -177,6 +202,9 @@ def run(args):
     state = {"status": "incomplete", "thread_id": None, "turn_id": None,
              "amendment_rpc_accepted": False, "semantic_success": "not-assessed",
              "trigger_observation_sequence": None}
+    usage_events = []
+    invalid_usage_events = []
+    last_received_sequence = None
     try:
         for name, expected in manifest["source_sha256"].items():
             checked(Path(name), expected)
@@ -239,10 +267,11 @@ def run(args):
                     "capabilities": {"experimentalApi": True}}})
 
             def receive(message, raw_send):
-                nonlocal received_offset
+                nonlocal received_offset, last_received_sequence
                 reference = wire("collector-stdout.log", received_offset)
                 received_offset += reference["bytes"]
                 event_sequence = record("received", message=message, wire=reference)
+                last_received_sequence = event_sequence
                 method, ident = message.get("method"), message.get("id")
                 require(not (method is not None and ident is not None),
                         "server input request is unsupported and remains unanswered")
@@ -340,6 +369,12 @@ def run(args):
                         state["amendment_rpc_accepted"] = True
                         record("amendment-rpc-accepted", response_sequence=event_sequence,
                                returned_turn_id=returned, semantic_success="not-assessed")
+                elif method == "thread/tokenUsage/updated":
+                    identifiers = usage_identifiers(message.get("params"))
+                    if identifiers is None:
+                        invalid_usage_events.append(event_sequence)
+                    else:
+                        usage_events.append((event_sequence, *identifiers))
                 elif method == "item/completed":
                     data = message["params"]
                     item = data.get("item", {})
@@ -384,6 +419,20 @@ def run(args):
         state["error"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
+        usage = {"schema": "compatibility-usage-observations/v1",
+                 "root_event_sequences": [], "other_event_sequences": [],
+                 "invalid_event_sequences": invalid_usage_events, "whole_episode_tokens": None,
+                 "collection_end": {"reason": {
+                     "fake-observation-completed": "root-turn-completed",
+                     "fake-profile-observed": "profile-only"}.get(state["status"], "incomplete"),
+                     "event_sequence": last_received_sequence}}
+        for event_sequence, thread_id, turn_id in usage_events:
+            category = ("root_event_sequences" if state["thread_id"] is not None
+                        and state["turn_id"] is not None
+                        and (thread_id, turn_id) == (state["thread_id"], state["turn_id"])
+                        else "other_event_sequences")
+            usage[category].append(event_sequence)
+        state["usage_observations"] = usage
         put(attempt / "outcome.json", encoded(state) + b"\n")
 
 
