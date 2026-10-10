@@ -163,6 +163,58 @@ def prepare(args):
     return {"manifest": str(output / "manifest.json"), "sha256": sha(raw)}
 
 
+def retain_final_source(project, attempt, state, collection_end):
+    files = []
+    inventory = {"schema": "compatibility-final-source/v1",
+                 "thread_id": state["thread_id"], "turn_id": state["turn_id"],
+                 "collection_end": collection_end, "excluded": [".git", "__pycache__", "*.pyc", "*.pyo"],
+                 "source_directory": "final-source", "files": files}
+    status = "complete"
+    error = None
+
+    def copy_tree(directory):
+        require(stat.S_ISDIR(directory.lstat().st_mode), "source directory is not a regular directory")
+        for path in sorted(directory.iterdir()):
+            if path.name in (".git", "__pycache__") or path.suffix in (".pyc", ".pyo"):
+                continue
+            name = path.relative_to(project).as_posix()
+            name.encode("utf-8")
+            mode = path.lstat().st_mode
+            if stat.S_ISDIR(mode):
+                copy_tree(path)
+            else:
+                require(stat.S_ISREG(mode), "unsupported source entry: " + name)
+                raw = path.read_bytes()
+                retained = attempt / "final-source" / name
+                put(retained, raw)
+                permissions = stat.S_IMODE(mode)
+                retained.chmod(permissions)
+                checked(retained, sha(raw))
+                require(stat.S_IMODE(retained.stat().st_mode) == permissions,
+                        "retained source mode differs: " + name)
+                files.append({"path": name, "sha256": sha(raw), "bytes": len(raw),
+                              "mode": permissions, "executable": bool(permissions & 0o111)})
+
+    try:
+        (attempt / "final-source").mkdir(exist_ok=False)
+        copy_tree(project)
+    except Exception as failure:
+        status = "incomplete"
+        error = ascii(failure)
+    try:
+        files.sort(key=lambda entry: entry["path"])
+        inventory["identity"] = sha(encoded(files))
+        inventory["status"] = status
+        if error is not None:
+            inventory["error"] = error
+        raw = encoded(inventory) + b"\n"
+        put(attempt / "final-source.json", raw)
+    except Exception as failure:
+        return {"status": "incomplete",
+                "error": ascii(failure)}
+    return {"status": status, "inventory": "final-source.json", "sha256": sha(raw)}
+
+
 def usage_identifiers(params):
     if (not isinstance(params, dict)
             or not isinstance(params.get("threadId"), str)
@@ -433,6 +485,9 @@ def run(args):
                         else "other_event_sequences")
             usage[category].append(event_sequence)
         state["usage_observations"] = usage
+        state["final_source"] = retain_final_source(
+            root / "project", attempt, state,
+            usage["collection_end"])
         put(attempt / "outcome.json", encoded(state) + b"\n")
 
 

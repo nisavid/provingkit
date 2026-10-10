@@ -1,6 +1,7 @@
 """Public preparation/run CLI contract; no provider or native model."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -140,17 +141,140 @@ emit({"method": "turn/completed", "params": {"threadId": "thread-1",
                 self.assertNotEqual(cli(*run).returncode, 0)
                 self.assertEqual({p.name: p.read_bytes() for p in attempt.iterdir() if p.is_file()}, before)
 
-    def prepare_failure_fixture(self, tail, seed_mode=0o644, mark_launch=False):
+    def test_final_source_capture_retains_post_amendment_refactor(self):
+        trigger_bytes = b"DEFAULT = 'json'\n"
+        final_bytes = b"from lib.replacement import DEFAULT\n"
+        replacement_bytes = b"DEFAULT = 'text'\nJSON_FLAG = True\n"
+        readme_bytes = b"# Disposable inventory project\n"
+        cli, run, output = self.prepare_failure_fixture(r'''
+Path("inventory.py").write_bytes(b"DEFAULT = 'json'\n")
+emit({"method": "item/completed", "params": {"threadId": "thread-1", "turnId": "turn-1",
+    "item": {"type": "commandExecution", "id": "trigger", "status": "completed"}}})
+steer = receive()
+assert steer["method"] == "turn/steer", steer
+assert steer["params"]["expectedTurnId"] == "turn-1", steer
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+Path("inventory.py").write_bytes(b"from lib.replacement import DEFAULT\n")
+Path("inventory.py").chmod(0o644)
+Path("lib").mkdir()
+Path("lib/replacement.py").write_bytes(b"DEFAULT = 'text'\nJSON_FLAG = True\n")
+Path("lib/replacement.py").chmod(0o755)
+Path("old_formatter.py").unlink()
+for directory in (".git", "__pycache__", "lib/__pycache__"):
+    Path(directory).mkdir(parents=True, exist_ok=True)
+    Path(directory, "excluded").write_bytes(b"not candidate source\n")
+Path("loose.pyc").write_bytes(b"compiled cache\n")
+Path("lib/loose.pyo").write_bytes(b"compiled cache\n")
+emit({"method": "turn/completed", "params": {"threadId": "thread-1",
+    "turn": {"id": "turn-1", "status": "completed", "error": None}}})
+sys.stdin.buffer.read()
+''', seed_mode=0o755, extra_seed_files={"old_formatter.py": b"DEFAULT = 'text'\n",
+                      "README.md": readme_bytes})
+        manifest = json.loads((output / "manifest.json").read_bytes())
+        self.assertEqual(manifest["implementation_paths"], ["inventory.py"])
+        self.assertIn("old_formatter.py", manifest["initial_files"])
+        result = cli(*run)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        self.assertEqual(outcome["status"], "fake-observation-completed")
+        self.assertTrue(outcome["amendment_rpc_accepted"])
+        self.assertEqual(outcome["semantic_success"], "not-assessed")
+        rows = [json.loads(line) for line in
+                (attempt / "receipts.jsonl").read_bytes().splitlines()]
+        trigger = next(row for row in rows
+                       if row["sequence"] == outcome["trigger_observation_sequence"])
+        self.assertEqual(trigger["changed"], {"inventory.py": {
+            "before": manifest["initial_files"]["inventory.py"], "after": sha(trigger_bytes)}})
+        completed, = [row for row in rows if row.get("message", {}).get("method") ==
+                      "turn/completed"]
+        boundary = {"reason": "root-turn-completed", "event_sequence": completed["sequence"]}
+        self.assertEqual(outcome["usage_observations"]["collection_end"], boundary)
+
+        # This inventory and retained tree are a proposed public evidence contract.
+        self.assertIn("final_source", outcome, "the attempt must retain its final candidate")
+        reference = outcome["final_source"]
+        self.assertEqual(reference["status"], "complete")
+        self.assertEqual(reference["inventory"], "final-source.json")
+        inventory_raw = (attempt / reference["inventory"]).read_bytes()
+        self.assertEqual(reference["sha256"], sha(inventory_raw))
+        inventory = json.loads(inventory_raw)
+        self.assertEqual(inventory["schema"], "compatibility-final-source/v1")
+        self.assertEqual((inventory["thread_id"], inventory["turn_id"]),
+                         (outcome["thread_id"], outcome["turn_id"]))
+        self.assertEqual(inventory["collection_end"], boundary)
+        self.assertEqual(inventory["excluded"], [".git", "__pycache__", "*.pyc", "*.pyo"])
+        self.assertEqual(inventory["source_directory"], "final-source")
+        expected = {"README.md": (readme_bytes, 0o644),
+                    "inventory.py": (final_bytes, 0o644),
+                    "lib/replacement.py": (replacement_bytes, 0o755)}
+        files = [{"path": name, "sha256": sha(raw), "bytes": len(raw),
+                  "mode": mode, "executable": bool(mode & 0o111)}
+                 for name, (raw, mode) in sorted(expected.items())]
+        self.assertEqual(inventory["files"], files)
+        self.assertEqual(inventory["identity"], sha(encoded(files)))
+        snapshot = attempt / inventory["source_directory"]
+        self.assertEqual(sorted(path.relative_to(snapshot).as_posix()
+                                for path in snapshot.rglob("*") if path.is_file()),
+                         sorted(expected))
+        self.assertFalse((snapshot / "old_formatter.py").exists())
+        self.assertNotEqual(sha(final_bytes), trigger["changed"]["inventory.py"]["after"])
+        # The disposable project may change after collection; evidence must retain its bytes.
+        (output / "project/inventory.py").write_bytes(b"# later workspace change\n")
+        (output / "project/lib/replacement.py").unlink()
+        for name, (raw, mode) in expected.items():
+            retained = snapshot / name
+            self.assertEqual(retained.read_bytes(), raw)
+            self.assertEqual(retained.stat().st_mode & 0o7777, mode)
+        self.assertEqual((attempt / reference["inventory"]).read_bytes(), inventory_raw)
+
+    @unittest.skipUnless(os.name == "posix", "POSIX byte filenames")
+    def test_unencodable_source_name_preserves_collection_outcome(self):
+        cli, run, output = self.prepare_failure_fixture(r'''
+Path("inventory.py").write_bytes(b"DEFAULT = 'json'\n")
+emit({"method": "item/completed", "params": {"threadId": "thread-1", "turnId": "turn-1",
+    "item": {"type": "commandExecution", "id": "change", "status": "completed"}}})
+steer = receive()
+assert steer["method"] == "turn/steer", steer
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+with open(b"bad-\xff.txt", "wb") as stream:
+    stream.write(b"ordinary fixture output\n")
+emit({"method": "turn/completed", "params": {"threadId": "thread-1",
+    "turn": {"id": "turn-1", "status": "completed", "error": None}}})
+sys.stdin.buffer.read()
+''')
+        result = cli(*run)
+        attempt = output / "attempt"
+        outcome_path = attempt / "outcome.json"
+        self.assertTrue(outcome_path.is_file(), result.stderr.decode())
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        outcome = json.loads(outcome_path.read_bytes())
+        self.assertEqual(outcome["status"], "fake-observation-completed")
+        self.assertTrue(outcome["amendment_rpc_accepted"])
+        self.assertEqual((outcome["thread_id"], outcome["turn_id"]), ("thread-1", "turn-1"))
+        self.assertEqual(outcome["semantic_success"], "not-assessed")
+        rows = [json.loads(line) for line in (attempt / "receipts.jsonl").read_bytes().splitlines()]
+        completed, = [row for row in rows if row.get("message", {}).get("method") == "turn/completed"]
+        self.assertEqual(outcome["usage_observations"]["collection_end"],
+                         {"reason": "root-turn-completed", "event_sequence": completed["sequence"]})
+        self.assertEqual(outcome["final_source"]["status"], "incomplete")
+
+    def prepare_failure_fixture(self, tail, seed_mode=0o644, mark_launch=False,
+                                extra_seed_files=None):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         base = Path(temporary.name)
         seed = base / "seed"
         seed.mkdir()
-        initial = b"DEFAULT = 'text'\n"
-        (seed / "inventory.py").write_bytes(initial)
-        (seed / "inventory.py").chmod(seed_mode)
-        entries = [{"path": "inventory.py", "sha256": sha(initial),
-                    "executable": bool(seed_mode & 0o111)}]
+        initial = {"inventory.py": b"DEFAULT = 'text'\n", **(extra_seed_files or {})}
+        for name, raw in initial.items():
+            path = seed / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(raw)
+            path.chmod(seed_mode if name == "inventory.py" else 0o644)
+        entries = [{"path": name, "sha256": sha(raw),
+                    "executable": bool(seed_mode & 0o111) if name == "inventory.py" else False}
+                   for name, raw in sorted(initial.items())]
         requests = []
         for index, text in enumerate([b"Add JSON output.", b"Preserve the existing default."]):
             (base / str(index)).write_bytes(text)
