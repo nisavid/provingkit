@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "78b7e3b2d2bfbed403ca0db1c6edea8139ac3fcaff1dadc784da7d8975cfea3d",
-    "README.md": "d9b34597791b6271f95f0a23025669b1ad240afebaac72b8da1cc5e2de49f47e",
+    "README.md": "1029e24f65f9385ace6612d3da20b77fe4d283d0cd973102413c1e485d4491bc",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
     "plugin.json": "d1833e0a8d23bac7c7c32bcf67880faf28af99e459d7fe57b9eaf33b7a95de29",
     "skills/choosing-agent-models/SKILL.md": "11215cf13709794899c2af3d5c2451d43f9ed0de605677a6a75b57a892a0fe24",

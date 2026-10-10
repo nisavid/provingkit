@@ -14,7 +14,7 @@ separate. A transport never determines the
 relationship, and a user-owned peer requires explicit user consent.
 
 Initial operational support uses separate native-child adapter profiles for
-ChatGPT Codex and Codex CLI/TUI. Both freeze the complete plan and assurance
+ChatGPT Codex, Codex CLI/TUI, and local Codex Desktop. All three freeze the complete plan and assurance
 minima before native spawn and bind same-leader launch, status, and result
 observations afterward. A separate verification digest and strict Boolean
 preserve completed-but-blocked or unverified results as unusable. Their current
