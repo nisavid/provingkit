@@ -376,12 +376,15 @@ sys.stdin.buffer.read()
                     self.assertEqual(json.loads(raw), row["message"])
 
 
-    def prepare_native_profile_fixture(self, response_model="gpt-6.1-sol", mcp_result=None):
+    def prepare_native_profile_fixture(self, response_model="gpt-6.1-sol", mcp_result=None,
+                                       observe_turn=False, reject_steer=False):
         cli, _, legacy_output = self.prepare_failure_fixture("sys.stdin.buffer.read()\n")
         base = legacy_output.parent
         fixture = base / "fake.py"
         fixture.write_text("RESPONSE_MODEL = " + repr(response_model) + "\nMCP_RESULT = "
-                           + repr({"data": []} if mcp_result is None else mcp_result) + "\n" + r'''
+                           + repr({"data": []} if mcp_result is None else mcp_result)
+                           + "\nOBSERVE_TURN = " + repr(observe_turn)
+                           + "\nREJECT_STEER = " + repr(reject_steer) + "\n" + r'''
 import json
 from pathlib import Path
 import sys
@@ -429,6 +432,34 @@ emit(thread, {"model": RESPONSE_MODEL, "modelProvider": "openai",
         "updatedAt": 1, "cwd": str(Path.cwd()), "ephemeral": True,
         "modelProvider": "openai", "preview": "", "source": "appServer",
         "status": {"type": "idle"}, "turns": []}})
+if OBSERVE_TURN:
+    task = receive("turn/start")
+    assert task["params"]["threadId"] == "profile-thread", task
+    assert task["params"]["model"] == "gpt-6.1-sol", task
+    assert task["params"]["effort"] == "medium", task
+    emit(task, {"turn": {"id": "profile-turn", "items": [], "status": "inProgress"}})
+    Path("inventory.py").write_text("DEFAULT = 'json'\n")
+    changed = {"method": "item/completed", "params": {
+        "threadId": "profile-thread", "turnId": "profile-turn", "completedAtMs": 1,
+        "item": {"type": "fileChange", "id": "implementation-change", "status": "completed",
+            "changes": [{"path": "inventory.py", "kind": {"type": "update"},
+                         "diff": "-DEFAULT = 'text'\n+DEFAULT = 'json'\n"}]}}}
+    sys.stdout.buffer.write((json.dumps(changed) + "\n").encode())
+    sys.stdout.buffer.flush()
+    steer = receive("turn/steer")
+    assert steer["params"]["threadId"] == "profile-thread", steer
+    assert steer["params"]["expectedTurnId"] == "profile-turn", steer
+    if REJECT_STEER:
+        sys.stdout.buffer.write((json.dumps({"id": steer["id"], "error": {
+            "code": -32000, "message": "turn is no longer active"}}) + "\n").encode())
+        sys.stdout.buffer.flush()
+    else:
+        emit(steer, {"turnId": "profile-turn"})
+        Path("inventory.py").write_text("DEFAULT = 'text'\nJSON_FLAG = True\n")
+        completed = {"method": "turn/completed", "params": {"threadId": "profile-thread",
+            "turn": {"id": "profile-turn", "items": [], "status": "completed", "error": None}}}
+        sys.stdout.buffer.write((json.dumps(completed) + "\n").encode())
+        sys.stdout.buffer.flush()
 sys.stdin.buffer.read()
 ''')
         profile_path = base / "profile.json"
@@ -438,6 +469,8 @@ sys.stdin.buffer.read()
                        app_server_profile={"schema": "compatibility-native-protocol-profile/v1",
                            "version": "synthetic-native/expected", "model": "gpt-6.1-sol",
                            "effort": "medium"})
+        if observe_turn:
+            profile["app_server_profile"]["observe_turn"] = True
         profile_path.write_bytes(encoded(profile))
         packet, output = base / "packet", base / "profile-observation"
         prepared = cli(COLLECTOR, "prepare", "--seed-package", packet,
@@ -448,6 +481,50 @@ sys.stdin.buffer.read()
         run = (COLLECTOR, "run", "--manifest", output / "manifest.json",
                "--expected-sha256", sha((output / "manifest.json").read_bytes()))
         return cli, run, output
+
+    def test_native_shaped_fake_delivers_bound_requests_and_preserves_steering_outcome(self):
+        for rejected in (False, True):
+            with self.subTest(rejected=rejected):
+                cli, run, output = self.prepare_native_profile_fixture(
+                    observe_turn=True, reject_steer=rejected)
+                result = cli(*run)
+                self.assertEqual(result.returncode == 0, not rejected, result.stderr.decode())
+                attempt = output / "attempt"
+                outcome_raw = (attempt / "outcome.json").read_bytes()
+                outcome = json.loads(outcome_raw)
+                self.assertEqual(outcome["status"],
+                                 "incomplete" if rejected else "fake-observation-completed")
+                self.assertEqual(outcome["thread_id"], "profile-thread")
+                self.assertEqual(outcome["turn_id"], "profile-turn")
+                self.assertEqual(outcome["amendment_rpc_accepted"], not rejected)
+                self.assertEqual(outcome["semantic_success"], "not-assessed")
+                self.assertIsNotNone(outcome["trigger_observation_sequence"])
+                sent_raw = (attempt / "collector-sent.jsonl").read_bytes()
+                sent = [json.loads(line) for line in sent_raw.splitlines()]
+                self.assertEqual([m["method"] for m in sent][-2:], ["turn/start", "turn/steer"])
+                task, steer = sent[-2:]
+                self.assertEqual(task["params"]["model"], "gpt-6.1-sol")
+                self.assertEqual(task["params"]["effort"], "medium")
+                for index, message in enumerate((task, steer)):
+                    self.assertEqual(message["params"]["input"], [{"type": "text",
+                        "text": (output / f"request-{index}.bin").read_text(), "text_elements": []}])
+                rows = [json.loads(line) for line in (attempt / "receipts.jsonl").read_bytes().splitlines()]
+                observed = next(row for row in rows if row["kind"] == "fake-profile-observed")
+                self.assertIsNone(observed["effective_profile"]["reasoningEffort"])
+                trigger = next(row for row in rows
+                               if row["sequence"] == outcome["trigger_observation_sequence"])
+                self.assertEqual(set(trigger["changed"]), {"inventory.py"})
+                received = [json.loads(line) for line in (attempt / "collector-stdout.log").read_bytes().splitlines()]
+                if rejected:
+                    self.assertEqual(received[-1]["error"]["message"], "turn is no longer active")
+                    self.assertIn("rejected RPC", outcome["error"])
+                else:
+                    self.assertEqual(received[-1]["method"], "turn/completed")
+                    self.assertEqual((output / "project/inventory.py").read_text(),
+                                     "DEFAULT = 'text'\nJSON_FLAG = True\n")
+                self.assertNotEqual(cli(*run).returncode, 0)
+                self.assertEqual((attempt / "outcome.json").read_bytes(), outcome_raw)
+                self.assertEqual((attempt / "collector-sent.jsonl").read_bytes(), sent_raw)
 
     def test_native_shaped_fake_records_profile_without_delivering_a_task(self):
         cli, run, output = self.prepare_native_profile_fixture()

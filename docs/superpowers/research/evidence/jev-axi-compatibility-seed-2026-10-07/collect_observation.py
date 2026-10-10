@@ -70,7 +70,8 @@ def fake_profile(raw):
         expected = profile["app_server_profile"]
         require(isinstance(expected, dict)
                 and set(expected) in ({"schema", "version"},
-                                      {"schema", "version", "model", "effort"})
+                                      {"schema", "version", "model", "effort"},
+                                      {"schema", "version", "model", "effort", "observe_turn"})
                 and expected["schema"] == "compatibility-native-protocol-profile/v1"
                 and isinstance(expected["version"], str) and expected["version"],
                 "invalid synthetic native metadata profile")
@@ -78,6 +79,9 @@ def fake_profile(raw):
             require(all(isinstance(expected[key], str) and expected[key]
                         for key in ("model", "effort")),
                     "invalid synthetic model or effort")
+        if "observe_turn" in expected:
+            require(type(expected["observe_turn"]) is bool,
+                    "synthetic observe_turn must be a Boolean")
     command = profile["command"]
     require(isinstance(command, list) and len(command) == 5
             and command[:4] == [sys.executable, "-I", "-S", "-u"],
@@ -319,11 +323,15 @@ def run(args):
                                 requested_turn_effort=expected["effort"],
                                 effective_profile={key: value for key, value in result.items()
                                                    if key != "thread"})
-                            state["status"] = "fake-profile-observed"
-                            return True
-                        send(raw_send, {"id": 3, "method": "turn/start", "params": {
+                            if not expected.get("observe_turn", False):
+                                state["status"] = "fake-profile-observed"
+                                return True
+                        params = {
                             "threadId": state["thread_id"], "input": [
-                                {"type": "text", "text": requests[0], "text_elements": []}]}})
+                                {"type": "text", "text": requests[0], "text_elements": []}]}
+                        if profile["kind"] == "cooperative-native-app-server-fake/v1":
+                            params.update(model=expected["model"], effort=expected["effort"])
+                        send(raw_send, {"id": 3, "method": "turn/start", "params": params})
                     elif request == "turn/start":
                         state["turn_id"] = message["result"]["turn"]["id"]
                     elif request == "turn/steer":
