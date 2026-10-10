@@ -1291,6 +1291,26 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(received, [])
         self.assertFalse((self.root / 'prepared').exists())
 
+    def test_expired_outer_deadline_preserves_unattempted_slots_without_submission(self):
+        with service({}) as (endpoint, received):
+            self.spec['conditions'][0]['endpoint'] = endpoint
+            self.assertEqual(self.prepare().returncode, 0)
+            manifest = (self.bundle / 'manifest.json').read_bytes()
+            expired = time.monotonic_ns() - 1
+            output = self.root / 'run'
+            result = self.cli('run', '--prepared', self.bundle, '--manifest-sha256',
+                              hashlib.sha256(manifest).hexdigest(), '--output', output,
+                              '--local-http', '--deadline-monotonic-ns', expired)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(received, [])
+        self.assertEqual((self.bundle / 'manifest.json').read_bytes(), manifest)
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertEqual(summary['request_accounting']['attempts'], 0)
+        self.assertEqual(summary['slots'][0]['status'], 'unattempted')
+        self.assertEqual(summary['slots'][0]['reason'], 'run_deadline')
+        self.assertEqual(summary['effective_deadline_monotonic_ns'], expired)
+        self.assertEqual(summary['outer_deadline_monotonic_ns'], expired)
+
     def test_global_deadline_accounts_for_all_remaining_slots(self):
         def slow_body(handler):
             handler.send_response(200); handler.send_header('Content-Length', '100')
@@ -1355,6 +1375,31 @@ class ComparisonCLI(unittest.TestCase):
         self.assertEqual(summary['slots'][0]['status'], 'unattempted')
         self.assertEqual(summary['request_accounting']['attempts'], 0)
         self.assertEqual(received, [])
+
+    def test_completed_answer_without_model_identity_is_retained_but_not_qualified(self):
+        response = {'status': 'completed', 'output': [
+            {'type': 'message', 'role': 'assistant', 'content': [
+                {'type': 'output_text', 'text': '{"relation":"supported"}'}]}],
+            'usage': {'input_tokens': 100, 'output_tokens': 10,
+                      'input_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0}}}
+        raw = ('data: ' + json.dumps({'type': 'response.completed', 'response': response}) + '\n\n').encode()
+        with service(raw) as (endpoint, received):
+            self.spec['conditions'][0].update(adapter='responses', endpoint=endpoint, effort='low')
+            self.spec['cases'].append(dict(self.spec['cases'][0], id='c02'))
+            self.assertEqual(self.prepare().returncode, 0)
+            output = self.root / 'run'
+            result = self.run_bundle(output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        attempt = json.loads((output / 'attempt-0000.json').read_text())
+        self.assertEqual(attempt['status'], 'model_unobserved')
+        self.assertEqual(attempt['condition_error'], 'model_unobserved')
+        self.assertEqual(attempt['raw_response'], response)
+        self.assertEqual(attempt['usage'], response['usage'])
+        self.assertIsNone(attempt['returned_model'])
+        self.assertIsNone(attempt['api_rate_equivalent_usd'])
+        self.assertEqual(len(received), 1)
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertEqual(summary['slots'][1]['status'], 'unattempted')
 
     def test_returned_model_mismatch_keeps_usage_but_stops_the_affected_condition(self):
         response = {'model': 'gpt-6.1-sol', 'status': 'completed', 'output': [

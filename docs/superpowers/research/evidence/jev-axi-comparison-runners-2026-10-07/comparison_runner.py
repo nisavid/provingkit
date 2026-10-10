@@ -53,6 +53,19 @@ def write_json(path, value):
         json.dump(value, stream, ensure_ascii=True, indent=2)
         stream.write('\n')
 
+def record_submission_boundary(directory, ordinal, reservation, reason=None):
+    """Retain uncertainty before transport; a returned refusal establishes non-submission."""
+    uncertain = reason is None
+    prefix = 'submission' if uncertain else 'not-submitted'
+    write_json(directory / f'{prefix}-{ordinal:04d}.json', {
+        **reservation,
+        'status': 'submission_uncertain' if uncertain else 'not_submitted',
+        'submission_started': None if uncertain else False,
+        'usage': None,
+        'residual_provider_work_unknown': uncertain,
+        'reason': ('transport call boundary; transmission has not been observed'
+                   if uncertain else reason)})
+
 
 def runtime_credential(auth_env):
     if auth_env is None:
@@ -596,6 +609,12 @@ def finalize_response(condition, result, status):
         condition_error = 'model_mismatch'
         if valuation_status != 'invalid':
             valuation_status = 'unknown'
+    elif returned_model is None and status in {'completed', 'tool_calls'}:
+        value = None
+        if condition_error is None:
+            condition_error = 'model_unobserved'
+        if valuation_status != 'invalid':
+            valuation_status = 'unknown'
     if condition_error and status not in {'response_limit', 'http_error', 'timeout', 'transport_error'}:
         status = condition_error
     return status, condition_error, usage, returned_model, value, valuation_status
@@ -862,13 +881,16 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot, c
             break
         request_deadline_ns = min(cell_deadline_ns, time.monotonic_ns() +
                                   int(limits['request_seconds'] * 1_000_000_000))
+        record_submission_boundary(output, number, reservation)
         metadata = request_bounded(condition['endpoint'], body, {'Content-Type': 'application/json'},
                                    output / response_file, limits['response_bytes'],
                                    request_deadline_ns, condition['auth_env'], configured_auth_envs)
         if not metadata['submission_started']:
             unsubmitted_reason = 'cell_deadline' if time.monotonic_ns() >= cell_deadline_ns else 'request_deadline'
+            record_submission_boundary(output, number, reservation, unsubmitted_reason)
             break
         reservation['status'] = 'started'
+        reservation['submission_started'] = True
         reservation_path.write_text(json.dumps(reservation, ensure_ascii=True, indent=2) + '\n')
         submitted_bytes += tool_bytes
         pending_results = []
@@ -955,7 +977,7 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot, c
     return status, attempts
 
 
-def run(prepared, expected_digest, output, local_http):
+def run(prepared, expected_digest, output, local_http, outer_deadline_ns=None):
     if sys.platform != 'linux':
         raise ValueError('transport execution requires Linux')
     run_started = datetime.now(timezone.utc).isoformat()
@@ -1021,8 +1043,17 @@ def run(prepared, expected_digest, output, local_http):
     attempts = []
     stopped = set()
     run_deadline_ns = run_tick + int(manifest['limits']['run_seconds'] * 1_000_000_000)
-    for index, scheduled in enumerate(manifest['schedule']):
-        slot = dict(scheduled, run_id=run_id, slot_id=f'{run_id}/slot-{index:04d}', slot_index=index)
+    if outer_deadline_ns is not None:
+        run_deadline_ns = min(run_deadline_ns, outer_deadline_ns)
+    identities = [
+        dict(scheduled, run_id=run_id, slot_id=f'{run_id}/slot-{index:04d}', slot_index=index)
+        for index, scheduled in enumerate(manifest['schedule'])]
+    write_json(output / 'run-identity.json', {
+        'run_id': run_id, 'manifest_sha256': expected_digest,
+        'outer_deadline_monotonic_ns': outer_deadline_ns,
+        'effective_deadline_monotonic_ns': run_deadline_ns,
+        'slots': identities})
+    for index, slot in enumerate(identities):
         if slot['condition'] in credential_unavailable_conditions:
             slots.append(dict(
                 slot, status='unattempted',
@@ -1068,15 +1099,19 @@ def run(prepared, expected_digest, output, local_http):
         response_file = f'response-{index:04d}.body'
         request_deadline_ns = min(run_deadline_ns, time.monotonic_ns() +
                                   int(manifest['limits']['request_seconds'] * 1_000_000_000))
+        record_submission_boundary(output, index, reservation)
         metadata = request_bounded(condition['endpoint'], body,
                                    {'Content-Type': 'application/json'}, output / response_file,
                                    manifest['limits']['response_bytes'],
                                    request_deadline_ns, condition['auth_env'], configured_auth_envs)
         if not metadata['submission_started']:
-            slots.append(dict(slot, status='unattempted', reason='run_deadline' if
-                              time.monotonic_ns() >= run_deadline_ns else 'request_deadline'))
+            reason = ('run_deadline' if time.monotonic_ns() >= run_deadline_ns
+                      else 'request_deadline')
+            record_submission_boundary(output, index, reservation, reason)
+            slots.append(dict(slot, status='unattempted', reason=reason))
             continue
         reservation['status'] = 'started'
+        reservation['submission_started'] = True
         reservation_path.write_text(json.dumps(reservation, ensure_ascii=True, indent=2) + '\n')
         response_body = (output / response_file).read_bytes()
         result, events, relation, status = interpret_response(
@@ -1111,6 +1146,8 @@ def run(prepared, expected_digest, output, local_http):
                          for name in ['preparation', 'grading', 'operator_effort', 'billing',
                                       'subscription_usage', 'complete_workflow']}})
     write_json(output / 'summary.json', {'slots': slots, 'run_id': run_id,
+               'outer_deadline_monotonic_ns': outer_deadline_ns,
+               'effective_deadline_monotonic_ns': run_deadline_ns,
                'manifest_sha256': expected_digest, 'workflow_evidence': 'workflow-evidence.json',
                'coverage_mode': manifest.get('mode') if manifest['kind'] == 'coverage' else None,
                'credential_preflight': credential_preflight,
@@ -1130,12 +1167,14 @@ def main():
     execution.add_argument('--manifest-sha256', required=True)
     execution.add_argument('--output', type=Path, required=True)
     execution.add_argument('--local-http', action='store_true')
+    execution.add_argument('--deadline-monotonic-ns', type=int)
     args = parser.parse_args()
     try:
         if args.command == 'prepare':
             prepare(args.spec, args.output)
         else:
-            run(args.prepared, args.manifest_sha256, args.output, args.local_http)
+            run(args.prepared, args.manifest_sha256, args.output, args.local_http,
+                args.deadline_monotonic_ns)
     except (OSError, ValueError, KeyError, TypeError) as error:
         print(type(error).__name__ + ': ' + str(error), file=sys.stderr)
         return 2

@@ -7,7 +7,7 @@ The supported preparation and execution environment for this checkpoint is Linux
 From this directory, run the public-interface checks:
 
 ```sh
-python -m unittest test_comparison_runner test_authenticated_transport test_transport_child_environment test_production_transport
+python -m unittest discover -s . -p 'test_*.py'
 ```
 
 The tests start a controlled local HTTP service and invoke the preparation and execution CLIs with disposable inputs. Their supplied responses exercise parsing and evidence handling; they establish no model accuracy, workflow benefit, live endpoint compatibility, or economic advantage.
@@ -31,6 +31,22 @@ Other production hosts, paths, ports, schemes, and selectors are refused before 
 `--local-http` selects controlled `http://127.0.0.1:<PORT>` fixtures with synthetic credential selectors. Fixture paths may vary to exercise independent server outcomes. A loopback manifest is refused without that flag; production routes are refused with it. Execution is supported on Linux.
 
 Preparation and loopback checks do not establish real DNS/TLS behavior, credential authorization, provider request acceptance, or response compatibility. Those observations belong to the separately accepted comparison invocation.
+
+The optional `run --deadline-monotonic-ns INTEGER` supplies an outer Linux
+monotonic deadline. The effective deadline is the earlier of that value and
+the manifest's run allowance; both values are retained in the run summary.
+An expired outer deadline preserves unattempted slots without submitting a
+request or rewriting the prepared manifest.
+
+`ordinary_preflight.py` checks the first claim or coverage matrix, its ceilings,
+and the frozen dependency files before any runner launch. `ordinary_invocation.py
+start` owns preparation and requests under one clock; `close` binds subsequent
+grading, review, operator, and handback evidence to that same invocation. Missing
+measurements stay explicit gaps. These interfaces and their binding format are
+described in [invocation accounting](invocation-accounting.md), alongside the
+[claim](claim-execution-contract.md) and [coverage](coverage-execution-contract.md)
+execution proposals. A retained or closed ledger does not establish completed
+grading, complete costs, or acceptance to execute an experiment.
 
 ### Synthetic loopback authentication
 
@@ -58,7 +74,7 @@ Version 2 retains each serialized function-result envelope in a `.body` file wit
 
 Each attempted request has a verbatim body file and a recorded digest, alongside its structured reservation and attempt record. Raw response bodies and supported events remain available, including bounded partial responses. Coverage preserves prepared tool results that were never submitted and counts repeated submission of earlier results separately. Recorded submission attempts do not establish provider receipt or consumption.
 
-Cell-local refusals, incomplete or malformed outputs, timeouts, response limits, and resource limits remain outcomes while later independent coverage cases continue. A model mismatch or accounting error stops its affected condition. The claim protocol retains its separate stopping behavior. Unattempted slots and unavailable cases remain visible.
+Cell-local refusals, incomplete or malformed outputs, timeouts, response limits, and resource limits remain outcomes while later independent coverage cases continue. A model mismatch or accounting error stops its affected condition. An otherwise completed answer or tool continuation without a returned model is `model_unobserved`, preserves the response and usage, and stops its condition without valuation. The claim protocol retains its separate stopping behavior. Unattempted slots and unavailable cases remain visible.
 
 The [comparison design](../jev-axi-comparison-producers-2026-10-07/comparison-design.md) defines endpoint-specific accounting. Jev and Decisions accept input-only rate specifications; nonzero cache, write, or output rate components are refused. Responses values the reported input/cache/write/output partitions and keeps missing or inconsistent usage explicit. Raw token counters remain evidence even when a particular counter has no charge. API-rate equivalents, confirmed charges, and subscription quota are different quantities. These CLIs do not measure complete workflow cost.
 
