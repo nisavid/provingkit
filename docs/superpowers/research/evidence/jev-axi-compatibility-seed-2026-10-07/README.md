@@ -30,6 +30,17 @@ Each command has a five-second deadline. On timeout, the comparator kills its ow
 
 The comparator records source inventories before the commands and rechecks both afterward. `source_rechecks` retains each final inventory and whether it changed, or the read error if unavailable. A changed or unavailable final inventory makes the outcome `observation_failed` while preserving the command observations. These endpoint checks do not establish an atomic snapshot, detect a change that was restored before the recheck, or track file-mode changes.
 
+## Final amended-contract evaluation
+
+```sh
+python compare_behavior.py --before PREPARED_PACKAGE/seed --after FINAL_SOURCE \
+  --contract-cases PREPARED_PACKAGE/cases --output NEW_EVALUATION
+```
+
+Keep this evaluator and its cases outside the worker project. This mode checks the four prepared input selections, a constructed Unicode/whitespace identity case, and invalid-input cases. It compares unchanged default text and consumer behavior with the baseline, checks explicit text output, and validates the opt-in JSON schema, selected warehouse, and complete records. Row order and internal module layout may change. Zero-stock rows and empty results remain significant.
+
+The evidence retains commands, raw outputs, expected normalized records, source identities, and endpoint rechecks. An expected rejection requires a nonzero exit, a diagnostic, and no report or archive output. The outcome keeps contract differences separate from observation failures. This bounded evaluator does not assess documentation, ordinary developer tests, review, or local commits; those remain separate completion evidence.
+
 ## Preparation package
 
 ```sh

@@ -232,3 +232,107 @@ class ComparisonCliTests(unittest.TestCase):
         self.assertTrue(self.evidence()['observations']['low_stock']['after']['timed_out'])
         time.sleep(1.2)  # Cross the descendant's planned write time after the CLI returns.
         self.assertFalse(marker.exists(), 'timed-out descendant still performed its write')
+
+    def run_contract(self):
+        return subprocess.run(
+            [sys.executable, str(CLI), '--before', str(self.before), '--after', str(self.after),
+             '--contract-cases', str(ROOT / 'cases'), '--output', str(self.output)],
+            capture_output=True, text=True)
+
+    def install_json_report(self, change=''):
+        report = self.after / 'bin/inventory-report'
+        shutil.copyfile(report, report.with_name('.baseline-report'))
+        report.write_text(
+            'import argparse, json, subprocess, sys\n'
+            'from pathlib import Path\n'
+            'parser = argparse.ArgumentParser()\n'
+            'parser.add_argument("--format", choices=("text", "json"), default="text")\n'
+            'args, rest = parser.parse_known_args()\n'
+            'result = subprocess.run([sys.executable, str(Path(__file__).with_name(".baseline-report")), *rest], capture_output=True, text=True)\n'
+            'if result.returncode:\n'
+            '    sys.stdout.write(result.stdout)\n'
+            '    sys.stderr.write(result.stderr)\n'
+            '    raise SystemExit(result.returncode)\n'
+            'rows = result.stdout.splitlines()\n'
+            'rows[1:] = reversed(rows[1:])\n'
+            'items = [dict(sku=row.split("\\t")[0], warehouse=row.split("\\t")[1], on_hand=int(row.split("\\t")[2])) for row in rows[1:]]\n'
+            'warehouse = rest[rest.index("--warehouse") + 1] if "--warehouse" in rest else None\n'
+            'value = dict(schema="inventory-report/v1", warehouse=warehouse, items=items)\n'
+            + change +
+            '\nprint(json.dumps(value) if args.format == "json" else "\\n".join(rows))\n'
+        )
+
+    def test_contract_mode_rejects_wrong_json_schema_after_compatible_defaults(self):
+        self.install_json_report('value["schema"] = "wrong"\n')
+        result = self.run_contract()
+        self.assertEqual(result.returncode, 1, result.stderr)
+        evidence = self.evidence()
+        self.assertTrue(evidence['observations']['south/default']['matches_contract'])
+        self.assertTrue(evidence['observations']['south/json']['different'])
+        self.assertEqual(evidence['observations']['south/json']['after']['status'], 'malformed')
+        self.assertEqual(evidence['source_rechecks']['after']['status'], 'unchanged')
+
+    def test_contract_mode_accepts_all_cases_and_refactored_reordered_reports(self):
+        self.install_json_report()
+        result = self.run_contract()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        evidence = self.evidence()
+        self.assertEqual(evidence['mode'], 'amended-inventory-contract/v1')
+        for ident in ('unfiltered', 'south', 'empty', 'no-matches'):
+            for boundary in ('default', 'text', 'json', 'low-stock', 'archive'):
+                self.assertTrue(evidence['observations'][ident + '/' + boundary]['matches_contract'])
+            self.assertTrue((self.output / 'cases' / ident / 'input.json').is_file())
+        for observation in evidence['observations'].values():
+            self.assertTrue(observation['matches_contract'])
+        self.assertEqual(evidence['observations']['south/json']['after']['records'],
+                         [['A-100', 'South', 0], ['B-200', 'South', 2]])
+
+    def test_contract_mode_rejects_json_warehouse_quantity_and_dropped_zero(self):
+        for index, change in enumerate((
+                'value["warehouse"] = "Wrong"\n',
+                'value["items"] = [item for item in items if item["on_hand"] > 0]\n',
+                'if items: items[0]["on_hand"] = True\n',
+        )):
+            with self.subTest(change=change):
+                case = self.root / str(index)
+                self.before = case / 'before'
+                self.after = case / 'after'
+                shutil.copytree(SEED, self.before)
+                shutil.copytree(SEED, self.after)
+                self.output = case / 'evidence'
+                self.install_json_report(change)
+                result = self.run_contract()
+                self.assertEqual(result.returncode, 1, result.stderr)
+                self.assertTrue(self.evidence()['observations']['south/json']['different'])
+
+    def test_contract_mode_preserves_rejection_difference_with_consumer_failure(self):
+        self.install_json_report()
+        report = self.after / 'bin/inventory-report'
+        report.write_text(report.read_text().replace(
+            'if result.returncode:', 'if result.returncode and args.format != "json":'
+        ).replace(
+            'rows = result.stdout.splitlines()',
+            'rows = result.stdout.splitlines() or ["sku\\twarehouse\\ton_hand"]'
+        ))
+        (self.after / 'bin/low-stock').write_text('raise SystemExit(7)\n')
+        result = self.run_contract()
+        self.assertEqual(result.returncode, 2, result.stderr)
+        evidence = self.evidence()
+        self.assertTrue(evidence['observations']['invalid/quantity-1/json']['different'])
+        self.assertTrue(evidence['observations']['south/low-stock']['observation_failed'])
+
+    def test_contract_mode_keeps_source_recheck_and_destination_protection(self):
+        self.install_json_report()
+        report = self.after / 'bin/inventory-report'
+        report.write_text(report.read_text() + '\nPath("new.txt").write_text("changed")\n')
+        result = self.run_contract()
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(self.evidence()['source_rechecks']['after']['status'], 'changed')
+        retained = (self.output / 'summary.json').read_bytes()
+        result = self.run_contract()
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual((self.output / 'summary.json').read_bytes(), retained)
+        self.output = self.after / 'evidence'
+        result = self.run_contract()
+        self.assertEqual(result.returncode, 2)
+        self.assertFalse(self.output.exists())
