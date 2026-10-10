@@ -1,0 +1,122 @@
+{
+  "source_base": "5bb59d2d355652c513b961abecfaf67c74175364",
+  "repository_snapshot": "607fc6db51bb0719228238b791bb95e301781763",
+  "snapshot_manifest_sha256": "50f6e199f336e312face01f15dea4a42e4de2ae0dc19cea31e489d1e46f66451",
+  "first_results_freeze_sha256": "99a2dc41c541818fa6c3da8c4b6792217f3df896bdd1e566fa62f55a591b8588",
+  "static_members": [
+    {
+      "member_name": "extra-index.chunk-B9SZqsi8.js",
+      "bytes": 1596495,
+      "sha256": "bd2144a3653bb843f4b75fe652124a4e478f273b5f6c2e10a2139fa3a9a3152f",
+      "kind": "retained_public_static_program"
+    },
+    {
+      "member_name": "extra-index.chunk-CKt-cwRV.js",
+      "bytes": 648655,
+      "sha256": "dad88ac66fe13f72d0225c49d48e124d238ff643ff96426c4a2020482621e62d",
+      "kind": "retained_public_static_program"
+    },
+    {
+      "member_name": "extra-index.chunk-COPWZCsC.js",
+      "bytes": 74622,
+      "sha256": "b22a9dc34684cef348f9c0e72abe88c433bbfc2d350d9a3e61faf7ae22858950",
+      "kind": "retained_public_static_program"
+    },
+    {
+      "member_name": "extra-index.chunk-DuaKZOPP.js",
+      "bytes": 6751779,
+      "sha256": "f160a24940ee11cea6a788a9038e95c14fb150889977dcfa331fd9b07aba0c96",
+      "kind": "retained_public_static_program"
+    },
+    {
+      "member_name": "extra-index.chunk-vRLpacfH.js",
+      "bytes": 1125678,
+      "sha256": "ac8acccdebfdd2a165bb5f4d9710b80540b46ce01207f85eae42696a0c7819e1",
+      "kind": "retained_public_static_program"
+    },
+    {
+      "member_name": "extra-index.chunk-D6vCltAs.js",
+      "bytes": 304489,
+      "sha256": "efb07febd32ac5e276b882844cedd38671b4fdea10ae0b3e8c21bb1ef21ddd7f",
+      "kind": "retained_public_static_program"
+    },
+    {
+      "member_name": "sdk.mjs",
+      "bytes": 1159746,
+      "sha256": "32d062c37b03e10870fbf839f54694545ee01bc0ec719e47078fbed76e30ef71",
+      "kind": "retained_public_static_program"
+    },
+    {
+      "member_name": "claude.bin",
+      "bytes": 243059896,
+      "sha256": "dee301c3e248c62137cc15aafc2781bd5316c66720dd890d72e0054a024ce7d9",
+      "kind": "retained_public_static_program"
+    }
+  ],
+  "additive_normalizer": {
+    "archive_sha256": "4ac2b896dabf3e871f9cf6d9833d02f9f6ad2a839dae6658edc84bb08341238a",
+    "archive_bytes": 54910454,
+    "member": ".vite/build/index.chunk-D8aWeSvo.js",
+    "bytes": 9047,
+    "sha256": "cee58d55b7fd748b938fe966af4a9af5e10d6252ec7f64dc9fb224feaed83e3d",
+    "method": "Read exact recorded public ASAR as data, parse bounded header and extract one named member; no vendor execution, installed-app or private receiver read.",
+    "kind": "additive_public_static_member"
+  },
+  "reports": [
+    {
+      "path": "coverage-first.md",
+      "bytes": 12991,
+      "sha256": "1166381cbce68cd06977d57f66a65de862d7784dbf1dadd36d39741057f24981",
+      "kind": "frozen_source_report"
+    },
+    {
+      "path": "request-first.md",
+      "bytes": 7662,
+      "sha256": "ca46f7297574fe4a6351a4d59a6cc49163a1170eb1693735cd4c1b49e946033b",
+      "kind": "frozen_source_report"
+    },
+    {
+      "path": "owner-request-first.md",
+      "bytes": 1680,
+      "sha256": "d3f1a74545f339bf97b247ffae4dcf994470a867a18b8e13d76e4e677928e2c3",
+      "kind": "frozen_source_report"
+    },
+    {
+      "path": "coverage-cross.md",
+      "bytes": 10726,
+      "sha256": "f1fdc87d7dfdb730d555a756de8010fb48eb15d940eb685acd37731218b4cd5a",
+      "kind": "frozen_source_report"
+    },
+    {
+      "path": "request-cross.md",
+      "bytes": 7439,
+      "sha256": "43521e9a2d864f34e38172a1ddf4cc5bc0e2cc4e6cf833be1f1ce8ef9cf281e7",
+      "kind": "frozen_source_report"
+    },
+    {
+      "path": "owner-request-cross-candidate.md",
+      "bytes": 1867,
+      "sha256": "24ef6416bf6fbabe693ad25e239e70c64f2d5230574ef40985ebf41874294ddd",
+      "kind": "frozen_source_report"
+    },
+    {
+      "path": "normalizer-check.md",
+      "bytes": 5765,
+      "sha256": "c5fb4e1c828f314474854064510854f93901ef2a692017a6e4c11e5973169ae2",
+      "kind": "frozen_source_report"
+    },
+    {
+      "path": "owner-request.md",
+      "bytes": 2231,
+      "sha256": "e077501397c4856e94ff50a3fbf9e70c39445cc7f418593ff69fd4bab533f35e",
+      "kind": "integrated_draft"
+    },
+    {
+      "path": "owner-channel.md",
+      "bytes": 1515,
+      "sha256": "9c2de98bb106c64c68e798182e2c55b70a7181932c0f65f536a85ca09b19688f",
+      "kind": "first_party_channel_observation"
+    }
+  ],
+  "limits": "Public static source and unsent draft only; no installed/running executor, private task data, vendor execution, live endpoint, owner submission or qualification."
+}
