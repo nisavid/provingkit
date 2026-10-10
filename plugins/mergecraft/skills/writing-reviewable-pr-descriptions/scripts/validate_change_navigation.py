@@ -44,7 +44,7 @@ from change_navigation.types import classify_disclosures
 
 
 def _validate_markup(  # noqa: C901
-    body: str, expected_repository: str, expected_pr: int, *, bounded: bool = False
+    body: str, expected_repository: str, expected_pr: int, *, bounded: bool = False, history_only: bool = False
 ) -> list[str]:
     """Return markup-only errors; this private helper is never publication proof."""
     errors: list[str] = []
@@ -68,11 +68,11 @@ def _validate_markup(  # noqa: C901
         )
 
     if labels and labels[0] == "STACK":
-        validate_stack(blocks[0], errors)
+        validate_stack(blocks[0], errors, history_only=history_only)
         if len(blocks) < 2:
             errors.append("stacked PR is missing its Diff disclosure")
         else:
-            validate_diff(blocks[1], errors, expected_identity, bounded=bounded)
+            validate_diff(blocks[1], errors, expected_identity, bounded=bounded, history_only=history_only)
             stack_metrics = current_item_metrics(blocks[0])
             diff_metrics = category_metric_map("\n".join(blocks[1][:2]))
             if stack_metrics != diff_metrics:
@@ -115,7 +115,7 @@ def _validate_markup(  # noqa: C901
                 f"current Stack item must be PR #{expected_pr} in {expected_repository}"
             )
     elif blocks:
-        validate_diff(blocks[0], errors, expected_identity, bounded=bounded)
+        validate_diff(blocks[0], errors, expected_identity, bounded=bounded, history_only=history_only)
     else:
         errors.append("Diff disclosure is missing")
 
@@ -159,6 +159,16 @@ def _validate_manifest_semantics(
     if not blocks or (labels[:1] == ["STACK"] and len(blocks) < 2):
         return ["rendered Diff disclosure is missing"]
     diff_block = blocks[1] if labels[:2] == ["STACK", "DIFF"] else blocks[0]
+    if not review_input.raw["git_diff"]:
+        raw = review_input.raw
+        expected_line = (
+            "No file changes in the reviewer-visible comparison. "
+            f"[Review the commits](https://github.com/{repository}/pull/{pr_number}/commits) and "
+            f"[view the immutable history comparison](https://github.com/{repository}/compare/{raw['base']['oid']}...{raw['head']['oid']})."
+        )
+        significant = [line for line in diff_block if line.strip()]
+        if len(significant) != 4 or significant[2] != expected_line:
+            errors.append("rendered history-only navigation does not match sealed identity")
     expected_category_totals: dict[str, tuple[int, int]] = {}
     expected_category_files: dict[str, set[str]] = {}
     for row in review_input.raw["diff"]:
@@ -264,9 +274,11 @@ def validate(
     try:
         review_input = load_review_input(review_input_path)
         bounded = review_input.raw.get("presentation") is not None
+        history_only = not review_input.raw["git_diff"]
     except ReviewInputError:
         bounded = False
-    errors = _validate_markup(body, expected_repository, expected_pr, bounded=bounded)
+        history_only = False
+    errors = _validate_markup(body, expected_repository, expected_pr, bounded=bounded, history_only=history_only)
     blocks = extract_leading_details(source_lines(body))
     if not title.strip():
         errors.append("candidate title is empty")

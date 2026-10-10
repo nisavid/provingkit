@@ -7,6 +7,7 @@ import re
 from .diff_files import validate_diff_file_items
 from .diff_metrics import Identity
 from .metrics import category_metric_items, category_metric_map
+from .model import PICTURE_SHIELD_RE, alt_values
 from .parsing import summary
 from .types import validate_category_order
 
@@ -17,6 +18,7 @@ def validate_diff(
     expected_identity: Identity | None = None,
     *,
     bounded: bool = False,
+    history_only: bool = False,
 ) -> None:
     diff_summary = summary(block, errors, "Diff")
     if 'alt="DIFF"' not in diff_summary:
@@ -38,6 +40,28 @@ def validate_diff(
         errors.append("Diff summary must not repeat a category metric")
     summary_metrics = category_metric_map(diff_summary)
     expected_files = int(files_match.group(1)) if files_match else None
+    if history_only:
+        if not re.fullmatch(
+            rf"<summary>{PICTURE_SHIELD_RE.pattern}&nbsp;"
+            rf"{PICTURE_SHIELD_RE.pattern}</summary>",
+            diff_summary,
+        ):
+            errors.append(
+                "history-only Diff summary requires only two unlinked shields "
+                "and its label gap"
+            )
+        significant = [line for line in block if line.strip()]
+        if (
+            expected_files != 0 or summary_metrics
+            or alt_values(diff_summary) != ["DIFF", "FILES: 0 touched"]
+        ):
+            errors.append("history-only Diff must show zero touched files and no categories")
+        if (
+            len(significant) != 4
+            or not significant[2].startswith("No file changes in the reviewer-visible comparison. ")
+        ):
+            errors.append("history-only Diff requires only its canonical history navigation")
+        return
     validate_diff_file_items(
         block, errors, expected_files, summary_metrics, expected_identity, bounded
     )
