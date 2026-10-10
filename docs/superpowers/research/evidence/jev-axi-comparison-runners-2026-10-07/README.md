@@ -2,10 +2,12 @@
 
 These research CLIs prepare frozen inputs and retain request, response, outcome, and accounting evidence for the [ordinary comparison contracts](https://github.com/nisavid/provingkit/issues/467). This checkpoint implements local HTTP mechanics. Live transport, complete consumer access, final cases, and execution acceptance remain separate work.
 
+The supported preparation and execution environment for this checkpoint is Linux. Windows remains outside the supported scope: its case-insensitive environment keys can let a case-variant credential selector survive the child allowlist filter. Correcting that behavior and qualifying it through Windows subprocess tests are separate follow-up work before Windows support can be claimed.
+
 From this directory, run the public-interface checks:
 
 ```sh
-python -m unittest test_comparison_runner test_authenticated_transport
+python -m unittest test_comparison_runner test_authenticated_transport test_transport_child_environment
 ```
 
 The tests start a controlled local HTTP service and invoke the preparation and execution CLIs with disposable inputs. Their supplied responses exercise parsing and evidence handling; they establish no model accuracy, workflow benefit, live endpoint compatibility, or economic advantage.
@@ -26,7 +28,7 @@ After shared manifest, endpoint, runner, and input verification, an absent confi
 
 Before submission, the runner rejects an exact credential byte sequence in the serialized request body. An exact configured-token occurrence in an observed response header name or value, or in the response body, sets `credential_reflection`. The response-body file retains only the prefix before the token (empty for header reflection); no answer or usage is interpreted, no valuation is produced, and the reflected request is not retried. Reflection leaves residual provider work unknown and marks the claim response as truncated. If the parent deadline expires after reflection was observed, `credential_reflection` remains the transport result and `deadline_expired` records the expiry separately. A complete, within-limit, non-reflecting successful response body is retained exactly. An incomplete authenticated read may omit a suffix held back by streaming reflection detection, so it does not promise complete raw-body preservation.
 
-Preparation does not resolve the selector or screen preparation input against its eventual value; the runtime body check covers only the exact credential bytes as serialized. The spawned transport process inherits the runner's environment rather than receiving a credential-only environment. These are synthetic loopback transport controls, not live credential qualification or a finished comparison runner.
+Preparation does not resolve the selector or screen preparation input against its eventual value; the runtime body check covers only the exact credential bytes as serialized. At process startup, each transport child receives a fixed set of platform, temporary-directory, locale, Python, and controlled-fixture runtime variables plus only its condition's selected credential. Before adding the selected credential, the runner removes every selector configured by the run from that fixed allowance; `PROVINGKIT_TEST_CLOSE_DELAY_MARKER` remains available when no condition configures it as an authentication selector. The parent environment is restored immediately after the child starts, preserving credentials needed by later scheduled conditions. These are synthetic loopback transport controls, not arbitrary hostile-process isolation, live credential qualification, or a finished comparison runner.
 
 The claim kind shapes requests for Jev, Decisions, and Responses around the same four-way evidence question. The coverage kind supports Responses tool continuations over supplied source records. It retains unavailable sources explicitly. Preparation does not validate a live provider's behavior or grant permission for an experiment.
 

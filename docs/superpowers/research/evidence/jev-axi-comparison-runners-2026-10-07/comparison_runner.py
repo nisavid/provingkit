@@ -33,6 +33,14 @@ RELATIONS = {
     'unresolved': ('Missing referents, conflicting sources, or insufficiently interpretable '
                    'context prevent choosing the other relations.')}
 
+TRANSPORT_CHILD_ENVIRONMENT = (
+    'PATH', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'PATHEXT',
+    'TMPDIR', 'TMP', 'TEMP',
+    'LANG', 'LC_ALL', 'LC_CTYPE',
+    'PYTHONIOENCODING', 'PYTHONPATH',
+    'PROVINGKIT_TEST_CLOSE_DELAY_MARKER',
+)
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -52,6 +60,30 @@ def runtime_credential(auth_env):
             any(ord(char) < 33 or ord(char) > 126 for char in credential)):
         raise ValueError('configured credential is missing or invalid')
     return credential
+
+
+def transport_child_environment(auth_env, configured_auth_envs):
+    """Construct the environment present when a transport child starts."""
+    environment = {
+        name: os.environ[name] for name in TRANSPORT_CHILD_ENVIRONMENT
+        if name in os.environ and name not in configured_auth_envs}
+    credential = runtime_credential(auth_env)
+    if credential is not None:
+        environment[auth_env] = credential
+    return environment
+
+
+def start_transport_child(child, auth_env, configured_auth_envs):
+    """Start a transport child with only its selected credential."""
+    parent_environment = dict(os.environ)
+    child_environment = transport_child_environment(auth_env, configured_auth_envs)
+    try:
+        os.environ.clear()
+        os.environ.update(child_environment)
+        child.start()
+    finally:
+        os.environ.clear()
+        os.environ.update(parent_environment)
 
 
 def validate_request_auth(auth_env, body):
@@ -165,14 +197,14 @@ def http_child(endpoint, body, headers, response_path, byte_limit, deadline_ns, 
         channel.close()
 
 
-def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline_ns, auth_env):
+def request_bounded(endpoint, body, headers, response_path, byte_limit, deadline_ns, auth_env, configured_auth_envs):
     if time.monotonic_ns() >= deadline_ns:
         return {'transport_status': 'not_submitted', 'submission_started': False}
     context = multiprocessing.get_context('spawn')
     reader, writer = context.Pipe(duplex=False)
     child = context.Process(target=http_child, args=(
         endpoint, body, headers, str(response_path), byte_limit, deadline_ns, auth_env, writer))
-    child.start()
+    start_transport_child(child, auth_env, configured_auth_envs)
     writer.close()
     child.join(max(0, (deadline_ns - time.monotonic_ns()) / 1_000_000_000))
     timed_out = child.is_alive()
@@ -749,7 +781,7 @@ def coverage_tool_result(packet, call):
     raise ValueError('unsupported tool function')
 
 
-def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot):
+def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot, configured_auth_envs):
     cell_started = datetime.now(timezone.utc).isoformat()
     output.mkdir(exist_ok=False)
     tick = time.monotonic_ns()
@@ -803,7 +835,7 @@ def run_coverage_cell(condition, state, output, limits, run_deadline_ns, slot):
                                   int(limits['request_seconds'] * 1_000_000_000))
         metadata = request_bounded(condition['endpoint'], body, {'Content-Type': 'application/json'},
                                    output / response_file, limits['response_bytes'],
-                                   request_deadline_ns, condition['auth_env'])
+                                   request_deadline_ns, condition['auth_env'], configured_auth_envs)
         if not metadata['submission_started']:
             unsubmitted_reason = 'cell_deadline' if time.monotonic_ns() >= cell_deadline_ns else 'request_deadline'
             break
@@ -903,6 +935,9 @@ def run(prepared, expected_digest, output, local_http):
     manifest = json.loads(raw)
     spec = {key: value for key, value in manifest.items() if key not in {'source_spec_sha256', 'runner_sha256', 'schedule'}}
     validate_spec(spec)
+    configured_auth_envs = {
+        condition['auth_env'] for condition in manifest['conditions']
+        if condition['auth_env'] is not None}
     if manifest['schedule'] != make_schedule(spec):
         raise ValueError('schedule differs from the protocol')
     if not local_http:
@@ -963,7 +998,8 @@ def run(prepared, expected_digest, output, local_http):
         state = states[case['id']]
         if manifest['kind'] == 'coverage':
             status, cell_attempts = run_coverage_cell(condition, state, output / f'cell-{index:04d}',
-                                                      manifest['limits'], run_deadline_ns, slot)
+                                                      manifest['limits'], run_deadline_ns, slot,
+                                                      configured_auth_envs)
             attempts.extend(cell_attempts)
             slots.append(dict(slot, status=status))
             if any(attempt['condition_error'] for attempt in cell_attempts) or status not in {'completed', 'refused', 'provider_incomplete',
@@ -994,7 +1030,7 @@ def run(prepared, expected_digest, output, local_http):
         metadata = request_bounded(condition['endpoint'], body,
                                    {'Content-Type': 'application/json'}, output / response_file,
                                    manifest['limits']['response_bytes'],
-                                   request_deadline_ns, condition['auth_env'])
+                                   request_deadline_ns, condition['auth_env'], configured_auth_envs)
         if not metadata['submission_started']:
             slots.append(dict(slot, status='unattempted', reason='run_deadline' if
                               time.monotonic_ns() >= run_deadline_ns else 'request_deadline'))
