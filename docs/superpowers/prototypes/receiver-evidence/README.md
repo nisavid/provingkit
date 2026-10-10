@@ -51,7 +51,10 @@ procedure's independent selection/metadata checks can be evaluated. It does
 not open metadata, configure hooks, or invoke the sender. An admitted optional
 host-task ID may nominate a bounded metadata filename. The
 [folder-nomination comparison](../../research/2026-10-10-fixture-folder-nomination.md)
-explains the separate folder-selection input and remaining method choice.
+explains the separate folder-selection input. The maintained procedure prefers
+an independently nominated exact folder and provides a bounded parent-name
+fallback with explicit selection and read-grant prerequisites. Actual inputs
+and live applicability remain unbound.
 
 The proposed fixture procedure still needs exact project/profile paths,
 selected-executor evidence, launcher/environment, settings pre-state,

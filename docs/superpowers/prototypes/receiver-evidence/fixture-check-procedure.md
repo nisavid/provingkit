@@ -10,6 +10,7 @@ or full runtime preservation.
 
 The [accepted experiment decision](https://github.com/nisavid/provingkit/issues/397#issuecomment-5972295427),
 [conditional association decision](https://github.com/nisavid/provingkit/issues/476#issuecomment-6065165501),
+[folder-method decision](https://github.com/nisavid/provingkit/issues/524),
 [collector contract](collector-contract.md), and
 [metadata helper contract](metadata-contract.md) control this source draft.
 [Prepare and review the disposable observer probe](https://github.com/nisavid/provingkit/issues/278)
@@ -27,7 +28,7 @@ proposal. The authorization ticket must record an actual positive grant.
 | Collector slot | New private run directory and exact config, output, claim, and partial paths; expected pre-state and retention disposition |
 | Launcher | Exact command and inherited environment, including proposed socket, hook Code PID, hook session-ID, and optional host-task-ID observations; no implicit environment sanitization claim |
 | Independent witness | Scoped normal-UI creation/selection observation and the unique setup-response text as displayed in that selected task |
-| Metadata directory | Choose and review its nomination method, then bind one explicitly declared account/organization metadata folder; no active-directory claim |
+| Metadata directory | Prefer an independently nominated exact folder; use the bounded parent-name fallback only with independently defensible inputs and a reviewed read grant; no active-directory claim |
 | Candidate selection | Up to three explicitly selected metadata paths from the bounded listing, with the later grant covering each complete file |
 | Association inputs | Exact request file, supplied UI/setup evidence, admitted Stop record, explicitly chosen `cwd` or `originCwd` relation, setup-window beginning, maximum join age, and selection/lifecycle recheck |
 | Receiver effects | Task creation, one model turn, hook command, whole-event acquisition, configuration restoration, output retention, and fixture closeout |
@@ -48,15 +49,65 @@ be observed within the reviewed scope, retain that gap and return for a method
 choice. The app-side projection and old receipt remain references for a specific
 unresolved gap; this method adopts neither.
 
-The [folder-nomination comparison](../../research/2026-10-10-fixture-folder-nomination.md)
-leaves the method choice open: an independently supplied exact folder, or two
-bounded parent-name listings after an independently supplied profile root and
-an explicit account-child choice. The latter would additionally expose sibling
-account/organization names and need its own reviewed selection rules and read
-grant. Opaque or ambiguous names may leave the folder unresolved. Neither a
-host-ID filename hint nor a later matching file proves the active directory.
-The ordered steps below begin with one declared folder; they do not authorize
-or select those additional parent listings.
+Preparation prefers an independently nominated exact folder. The
+[folder-nomination comparison](../../research/2026-10-10-fixture-folder-nomination.md)
+provides the bounded fallback when that input cannot be established: one
+profile metadata-root listing and one explicitly selected account-child
+listing. The fallback adds sibling account/organization names and requires
+independently defensible root/child choices, reviewed selection rules, and an
+exact read grant. Opaque or ambiguous names remain unresolved. Neither a
+host-ID hint nor a later matching file proves the active directory.
+
+## Folder nomination for the approval packet
+
+Nomination selects the declared folder for the conditional check. It does not
+measure Desktop's active account/organization directory. Record the nominated
+path, its independent source and observation interval, selected profile basis,
+and remaining lifecycle limitations. Reuse prior preparation evidence only
+when its scope and relevance still hold; a method choice grants no new read.
+
+1. **Bind an exact folder when available.** Record how it was independently
+   nominated. This path needs no parent-name discovery. The later declared-folder
+   listing, explicit file selection, and independent UI/Stop/metadata join still
+   apply; the supplied path is not task identity evidence.
+2. **Prepare the bounded fallback when the exact input is unavailable.** Before
+   any read, independently nominate one absolute profile root `U` and bind the
+   proposed metadata root `P = join(U, "claude-code-sessions")`. Propose one
+   nonrecursive names/types listing with at most 128 retained entries and one
+   overflow observation. Bind its exact request, path, selection rule, retained
+   output, and grant. No alternative root is searched after failure.
+3. **Select one account child before the second read.** A completed, nonoverflowing
+   first listing supplies candidate names/types only. Record the independent
+   basis for selecting one account child `A`; opaque choices without that basis
+   and ambiguous choices stop before another read. Bind one explicit
+   `Q = join(P, A)` and its separate
+   request and grant under the same 128-entry plus overflow limit. Do not list
+   every account's organizations.
+4. **Nominate one organization folder or retain the gap.** Select one listed
+   directory child `O` with an explicit defensible basis, then nominate
+   `D = join(Q, O)`. A sole child can be a structural candidate but still needs
+   a recorded selection basis; it does not prove active selection. Opaque choices
+   without that basis and ambiguous choices remain unresolved. Both
+   successful parent listings can retain at most 256 names/types in total.
+   An overflow leaves nomination unknown. A command failure can produce exit 1
+   and no JSON record; retain its actual supervisory interval and exit/error
+   observation without inferring that a later listing occurred.
+5. **Finish binding before proposing the fixture check.** Keep nomination
+   intervals separate from later UI, Stop, file, and lifecycle samples. The final
+   metadata scope is still one declared folder, its existing bounded listing,
+   and at most three explicitly selected whole files of at most 1 MiB plus one
+   overflow byte each. Parent request files have their separate 128 KiB plus
+   overflow ceilings. Account/organization names and complete request/output
+   contents belong in the actual read grant. Elapsed filesystem costs remain
+   unmeasured. If neither route supplies a defensible folder, return that
+   specific missing input for a decision instead of expanding discovery.
+
+Private nomination reads require their own reviewed scope and positive grant.
+They are absent from the ordered fixture steps below, which begin with one
+declared folder. Do not silently add parent discovery to an approved one-folder
+fixture grant. A selected fallback or closed decision does not authorize
+metadata acquisition, hook activation, a task, a prompt, an app change, a
+restart, or a send. Task Witness and app instrumentation remain separate choices.
 
 ## Configuration proposal
 
