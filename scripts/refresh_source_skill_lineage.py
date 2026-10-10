@@ -20,7 +20,9 @@ import sys
 import tempfile
 import time
 import types
+from collections.abc import Callable
 from pathlib import Path
+from typing import TypeVar
 
 SCRIPT = Path(__file__).resolve()
 VALIDATOR = SCRIPT.with_name("validate_source_skill_lineage.py")
@@ -30,9 +32,9 @@ RECOVERY_QUARANTINE_PREFIX = ".source-lineage-quarantine-"
 MAX_RECOVERY_QUARANTINE_ATTEMPTS = 128
 TRANSACTION_MARKER = "owner"
 TRANSACTION_CONTRACT = "coordinated-source-skill-lineage-transaction-v1"
-TRUSTED_VALIDATOR_SIZE = 103_566
+TRUSTED_VALIDATOR_SIZE = 104_386
 TRUSTED_VALIDATOR_SHA256 = (
-    "a3065db50f834460856883c4f7cf77a0aceea91ead1c9a69838eeeeb4168745d"
+    "f505fc0f56ff2a05e302b5754ee8ee12d326990afb900717111ebaef62f9d999"
 )
 MATERIALIZE_TIMEOUT_SECONDS = 30.0
 PROCESS_REAP_TIMEOUT_SECONDS = 1.0
@@ -573,7 +575,7 @@ def _candidate_package_tree_receipts(
             },
         )
         for identifier, package in zip(
-            lineage.DISTRIBUTIONS,
+            lineage.RETAINED_DISTRIBUTIONS,
             source["candidate"]["packages"],
         )
     )
@@ -727,7 +729,8 @@ def _candidate_projection_seed(source: dict) -> tuple[str, list[dict]]:
     )
     packages = candidate["packages"]
     lineage.require(
-        type(packages) is list and len(packages) == len(lineage.DISTRIBUTIONS),
+        type(packages) is list
+        and len(packages) == len(lineage.RETAINED_DISTRIBUTIONS),
         diagnostic,
     )
     package_fields = {
@@ -741,7 +744,7 @@ def _candidate_projection_seed(source: dict) -> tuple[str, list[dict]]:
         "total_bytes",
         "version",
     }
-    for identifier, package in zip(lineage.DISTRIBUTIONS, packages):
+    for identifier, package in zip(lineage.RETAINED_DISTRIBUTIONS, packages):
         lineage.require(
             type(package) is dict
             and {"id", "identity_artifacts"} <= set(package) <= package_fields
@@ -1009,6 +1012,13 @@ class _NonDirectoryHandle:
     def __init__(self, descriptor: int | None, identity: tuple[int, ...]):
         self.descriptor = descriptor
         self.identity = identity
+
+
+_MoveHandle = TypeVar("_MoveHandle", _DirectoryHandle, _NonDirectoryHandle)
+_MoveAuthority = Callable[[], None]
+_MoveBindingCallback = Callable[[int, str, _MoveHandle, str], None]
+_MoveSourceExists = Callable[[int, str], bool]
+_MoveApplied = Callable[[], None]
 
 
 class _GenerationBinding:
@@ -2116,27 +2126,30 @@ def _require_recovery_compensation_scope(view, transaction, bindings=()) -> None
     )
 
 
-def _move_bound_directory_noreplace(
+def _move_bound_noreplace(
     source_parent: int,
     source_name: str,
-    source: _DirectoryHandle,
+    source: _MoveHandle,
     destination_parent: int,
     destination_name: str,
     *,
-    authority,
-    applied=None,
+    authority: _MoveAuthority,
+    require_source: _MoveBindingCallback[_MoveHandle],
+    bind_destination_after_move: _MoveBindingCallback[_MoveHandle],
+    require_destination: _MoveBindingCallback[_MoveHandle],
+    source_exists: _MoveSourceExists,
+    applied: _MoveApplied | None = None,
 ) -> None:
     diagnostic = "source-lineage recovery state is ambiguous"
+
+    def require_source_binding():
+        try:
+            require_source(source_parent, source_name, source, diagnostic)
+        except lineage.LineageError:
+            raise _NoReplaceSourceDrift from None
+
     authority()
-    try:
-        _require_directory_name(
-            source_parent,
-            source_name,
-            source,
-            diagnostic,
-        )
-    except lineage.LineageError:
-        raise _NoReplaceSourceDrift from None
+    require_source_binding()
 
     move_applied = False
     first_failure = None
@@ -2157,58 +2170,26 @@ def _move_bound_directory_noreplace(
             diagnostic=diagnostic,
         )
     except _NoReplaceCollision:
-        try:
-            _require_directory_name(
-                source_parent,
-                source_name,
-                source,
-                diagnostic,
-            )
-        except lineage.LineageError:
-            raise _NoReplaceSourceDrift from None
+        require_source_binding()
         authority()
-        try:
-            _require_directory_name(
-                source_parent,
-                source_name,
-                source,
-                diagnostic,
-            )
-        except lineage.LineageError:
-            raise _NoReplaceSourceDrift from None
+        require_source_binding()
         raise
     except BaseException as error:
         if not move_applied:
-            try:
-                _require_directory_name(
-                    source_parent,
-                    source_name,
-                    source,
-                    diagnostic,
-                )
-            except lineage.LineageError:
-                raise _NoReplaceSourceDrift from None
+            require_source_binding()
             authority()
-            try:
-                _require_directory_name(
-                    source_parent,
-                    source_name,
-                    source,
-                    diagnostic,
-                )
-            except lineage.LineageError:
-                raise _NoReplaceSourceDrift from None
+            require_source_binding()
             raise
         first_failure = error
 
     try:
-        _require_directory_name(
+        bind_destination_after_move(
             destination_parent,
             destination_name,
             source,
             diagnostic,
         )
-        if _directory_exists_at(source_parent, source_name):
+        if source_exists(source_parent, source_name):
             raise lineage.LineageError(diagnostic)
     except BaseException as error:  # noqa: BLE001 - retain first applied failure
         if first_failure is None:
@@ -2219,19 +2200,44 @@ def _move_bound_directory_noreplace(
         if first_failure is None:
             first_failure = error
     try:
-        _require_directory_name(
+        require_destination(
             destination_parent,
             destination_name,
             source,
             diagnostic,
         )
-        if _directory_exists_at(source_parent, source_name):
+        if source_exists(source_parent, source_name):
             raise lineage.LineageError(diagnostic)
     except BaseException as error:  # noqa: BLE001 - retain first applied failure
         if first_failure is None:
             first_failure = error
     if first_failure is not None:
         raise first_failure
+
+
+def _move_bound_directory_noreplace(
+    source_parent: int,
+    source_name: str,
+    source: _DirectoryHandle,
+    destination_parent: int,
+    destination_name: str,
+    *,
+    authority: _MoveAuthority,
+    applied: _MoveApplied | None = None,
+) -> None:
+    _move_bound_noreplace(
+        source_parent,
+        source_name,
+        source,
+        destination_parent,
+        destination_name,
+        authority=authority,
+        require_source=_require_directory_name,
+        bind_destination_after_move=_require_directory_name,
+        require_destination=_require_directory_name,
+        source_exists=_directory_exists_at,
+        applied=applied,
+    )
 
 
 def _move_bound_non_directory_noreplace(
@@ -2241,115 +2247,22 @@ def _move_bound_non_directory_noreplace(
     destination_parent: int,
     destination_name: str,
     *,
-    authority,
-    applied=None,
+    authority: _MoveAuthority,
+    applied: _MoveApplied | None = None,
 ) -> None:
-    diagnostic = "source-lineage recovery state is ambiguous"
-    authority()
-    try:
-        _require_non_directory_name(
-            source_parent,
-            source_name,
-            source,
-            diagnostic,
-        )
-    except lineage.LineageError:
-        raise _NoReplaceSourceDrift from None
-
-    move_applied = False
-    first_failure = None
-
-    def mark_applied():
-        nonlocal move_applied
-        move_applied = True
-        if applied is not None:
-            applied()
-
-    try:
-        _rename_noreplace_at(
-            source_parent,
-            source_name,
-            destination_parent,
-            destination_name,
-            applied=mark_applied,
-            diagnostic=diagnostic,
-        )
-    except _NoReplaceCollision:
-        try:
-            _require_non_directory_name(
-                source_parent,
-                source_name,
-                source,
-                diagnostic,
-            )
-        except lineage.LineageError:
-            raise _NoReplaceSourceDrift from None
-        authority()
-        try:
-            _require_non_directory_name(
-                source_parent,
-                source_name,
-                source,
-                diagnostic,
-            )
-        except lineage.LineageError:
-            raise _NoReplaceSourceDrift from None
-        raise
-    except BaseException as error:
-        if not move_applied:
-            try:
-                _require_non_directory_name(
-                    source_parent,
-                    source_name,
-                    source,
-                    diagnostic,
-                )
-            except lineage.LineageError:
-                raise _NoReplaceSourceDrift from None
-            authority()
-            try:
-                _require_non_directory_name(
-                    source_parent,
-                    source_name,
-                    source,
-                    diagnostic,
-                )
-            except lineage.LineageError:
-                raise _NoReplaceSourceDrift from None
-            raise
-        first_failure = error
-
-    try:
-        _rebind_non_directory_name_after_move(
-            destination_parent,
-            destination_name,
-            source,
-            diagnostic,
-        )
-        if _name_exists_at(source_parent, source_name):
-            raise lineage.LineageError(diagnostic)
-    except BaseException as error:  # noqa: BLE001 - retain first applied failure
-        if first_failure is None:
-            first_failure = error
-    try:
-        authority()
-    except BaseException as error:  # noqa: BLE001 - retain first applied failure
-        if first_failure is None:
-            first_failure = error
-    try:
-        _require_non_directory_name(
-            destination_parent,
-            destination_name,
-            source,
-            diagnostic,
-        )
-        if _name_exists_at(source_parent, source_name):
-            raise lineage.LineageError(diagnostic)
-    except BaseException as error:  # noqa: BLE001 - retain first applied failure
-        if first_failure is None:
-            first_failure = error
-    if first_failure is not None:
-        raise first_failure
+    _move_bound_noreplace(
+        source_parent,
+        source_name,
+        source,
+        destination_parent,
+        destination_name,
+        authority=authority,
+        require_source=_require_non_directory_name,
+        bind_destination_after_move=_rebind_non_directory_name_after_move,
+        require_destination=_require_non_directory_name,
+        source_exists=_name_exists_at,
+        applied=applied,
+    )
 
 
 def _retain_ambiguous_transaction(
