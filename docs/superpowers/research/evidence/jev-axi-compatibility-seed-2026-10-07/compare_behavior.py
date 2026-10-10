@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import stat
 import subprocess
 import sys
 
@@ -20,10 +21,16 @@ HEADER = ['sku', 'warehouse', 'on_hand']
 
 
 def source_identity(root):
+    def traversal_error(error):
+        raise error
+
     files = {}
-    for path in sorted(root.rglob('*')):
-        if path.is_file() and '__pycache__' not in path.parts:
-            files[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    for directory, subdirectories, names in os.walk(root, onerror=traversal_error):
+        subdirectories[:] = sorted(name for name in subdirectories if name != '__pycache__')
+        for name in sorted(names):
+            path = Path(directory) / name
+            if '__pycache__' not in path.parts and stat.S_ISREG(path.stat().st_mode):
+                files[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
     return files
 
 
@@ -106,7 +113,10 @@ def main():
         parser.error('require source directories, an input file, a nonnegative threshold, and a new output directory')
     if any(args.output.is_relative_to(root) for root in (args.before, args.after)):
         parser.error('evidence output must be outside both source directories')
-    source = {'before': source_identity(args.before), 'after': source_identity(args.after)}
+    try:
+        source = {'before': source_identity(args.before), 'after': source_identity(args.after)}
+    except OSError as error:
+        parser.error(f'source inventory unavailable: {error}')
     input_bytes = args.input.read_bytes()
     args.output.mkdir(parents=True, exist_ok=False)
     retained = args.output / 'input.json'
@@ -128,8 +138,18 @@ def main():
         failed |= observation_failed
         different |= difference
         observations[name] = {**sides, 'different': difference, 'observation_failed': observation_failed}
+    source_rechecks = {}
+    for side, root in (('before', args.before), ('after', args.after)):
+        try:
+            identity = source_identity(root)
+            status = 'unchanged' if identity == source[side] else 'changed'
+            source_rechecks[side] = {'status': status, 'identity': identity}
+        except OSError as error:
+            source_rechecks[side] = {'status': 'failed', 'identity': None,
+                                     'error': str(error)}
+        failed |= source_rechecks[side]['status'] != 'unchanged'
     outcome = 'observation_failed' if failed else 'different' if different else 'compatible'
-    summary = {'outcome': outcome, 'input_sha256': hashlib.sha256(input_bytes).hexdigest(), 'source_identities': source, 'timeout_seconds': TIMEOUT_SECONDS, 'observations': observations}
+    summary = {'outcome': outcome, 'input_sha256': hashlib.sha256(input_bytes).hexdigest(), 'source_identities': source, 'source_rechecks': source_rechecks, 'timeout_seconds': TIMEOUT_SECONDS, 'observations': observations}
     (args.output / 'summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n', encoding='utf-8')
     print(outcome)
     return {'compatible': 0, 'different': 1, 'observation_failed': 2}[outcome]

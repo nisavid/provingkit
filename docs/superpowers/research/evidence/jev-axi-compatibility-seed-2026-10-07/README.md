@@ -26,7 +26,9 @@ Use trusted, cooperative local source directories on a POSIX host. The comparato
 
 Exit 0 means observed compatibility, exit 1 means a behavioral difference, and exit 2 means an observation failed or invocation was invalid. A command failure cannot establish compatibility. The summary preserves differences at other successful boundaries even when its overall outcome is `observation_failed`. A malformed successful report is a difference. These outcomes describe the selected observations, not every possible input or the JSON addition's full correctness.
 
-Each command has a five-second deadline. On timeout, the comparator kills its owned process group and retains partial output. This provides cooperative resource cleanup, not containment of hostile programs. Source identities hash files under each supplied directory except Python cache files; supply the intended source snapshot, not an unrelated checkout. Evidence output must be outside both source directories; existing evidence directories are refused.
+Each command has a five-second deadline. On timeout, the comparator kills its owned process group and retains partial output. This provides cooperative resource cleanup, not containment of hostile programs. Source identities hash file contents under each supplied directory except paths under `__pycache__`; supply the intended source snapshot, not an unrelated checkout. Evidence output must be outside both source directories; existing evidence directories are refused.
+
+The comparator records source inventories before the commands and rechecks both afterward. `source_rechecks` retains each final inventory and whether it changed, or the read error if unavailable. A changed or unavailable final inventory makes the outcome `observation_failed` while preserving the command observations. These endpoint checks do not establish an atomic snapshot, detect a change that was restored before the recheck, or track file-mode changes.
 
 ## Preparation package
 

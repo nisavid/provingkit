@@ -49,6 +49,83 @@ class ComparisonCliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.evidence()['outcome'], 'compatible')
 
+    def test_source_change_during_observation_leaves_compatibility_unestablished(self):
+        for side in ('before', 'after'):
+            with self.subTest(side=side):
+                case = self.root / ('source-change-' + side)
+                self.before = case / 'before'
+                self.after = case / 'after'
+                shutil.copytree(SEED, self.before)
+                shutil.copytree(SEED, self.after)
+                self.output = case / 'evidence'
+                changed = self.before if side == 'before' else self.after
+                report = changed / 'bin/inventory-report'
+                report.write_text(report.read_text() +
+                                  '\nfrom pathlib import Path\n'
+                                  'Path("generated-note.txt").write_text("created during comparison\\n")\n')
+                result = self.run_comparison()
+                self.assertEqual(result.returncode, 2, result.stderr)
+                evidence = self.evidence()
+                self.assertEqual(evidence['outcome'], 'observation_failed')
+                self.assertNotIn('generated-note.txt', evidence['source_identities'][side])
+                self.assertEqual(evidence['source_rechecks'][side]['status'], 'changed')
+                self.assertIn('generated-note.txt', evidence['source_rechecks'][side]['identity'])
+                other = 'after' if side == 'before' else 'before'
+                self.assertEqual(evidence['source_rechecks'][other]['status'], 'unchanged')
+                for observation in evidence['observations'].values():
+                    self.assertFalse(observation['different'])
+                    self.assertFalse(observation['observation_failed'])
+                    self.assertEqual(observation['before']['records'], observation['after']['records'])
+
+    def test_unreadable_initial_subtree_is_an_observation_failure(self):
+        hidden = self.before / 'unreadable'
+        hidden.mkdir()
+        self.addCleanup(hidden.chmod, 0o700)
+        hidden.chmod(0)
+        try:
+            list(hidden.iterdir())
+        except PermissionError:
+            pass
+        else:
+            self.skipTest('This environment can enumerate mode-000 directories')
+        result = self.run_comparison()
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn('source inventory unavailable', result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
+        self.assertFalse(self.output.exists())
+
+    def test_unreadable_final_subtree_leaves_compatibility_unestablished(self):
+        hidden = self.after / 'generated'
+        hidden.mkdir()
+        self.addCleanup(hidden.chmod, 0o700)
+        hidden.chmod(0)
+        try:
+            list(hidden.iterdir())
+        except PermissionError:
+            pass
+        else:
+            self.skipTest('This environment can enumerate mode-000 directories')
+        finally:
+            hidden.chmod(0o700)
+        report = self.after / 'bin/inventory-report'
+        report.write_text(report.read_text() +
+                          '\nfrom pathlib import Path\n'
+                          'if Path("generated").stat().st_mode & 0o700:\n'
+                          '    Path("generated/note.txt").write_text("created during comparison\\n")\n'
+                          '    Path("generated").chmod(0)\n')
+        result = self.run_comparison()
+        self.assertEqual(result.returncode, 2, result.stderr)
+        evidence = self.evidence()
+        self.assertEqual(evidence['outcome'], 'observation_failed')
+        self.assertEqual(evidence['source_rechecks']['after']['status'], 'failed')
+        self.assertIsNone(evidence['source_rechecks']['after']['identity'])
+        self.assertTrue(evidence['source_rechecks']['after']['error'])
+        self.assertEqual(evidence['source_rechecks']['before']['status'], 'unchanged')
+        for observation in evidence['observations'].values():
+            self.assertFalse(observation['different'])
+            self.assertFalse(observation['observation_failed'])
+            self.assertEqual(observation['before']['records'], observation['after']['records'])
+
     def test_reordered_rows_and_internal_refactor_are_compatible(self):
         formatter = self.after / 'inventory_format.py'
         formatter.write_text('HEADER = "sku\\twarehouse\\ton_hand\\n"\n\ndef render_text(items):\n    rows = list(items)\n    rows.reverse()\n    return HEADER + "".join("%s\\t%s\\t%s\\n" % (r["sku"], r["warehouse"], r["on_hand"]) for r in rows)\n')
