@@ -47,8 +47,9 @@ background commands, and cron prompts. Smaller retained output does not narrow
 that acquisition.
 
 The application selects `CLAUDE_CODE_MESSAGING_SOCKET`, retained up to 4,096 code
-units. Optional executable observation also selects `CLAUDE_PID` and
-`CLAUDE_CODE_SESSION_ID` under its admission checks. A missing or
+units. Filename nomination selects `CLAUDE_CODE_SESSION_ID` and, after its
+admission checks, `CLAUDE_CODE_HOST_SESSION_ID`. Optional executable observation
+also selects `CLAUDE_PID` under its admission checks. A missing or
 larger endpoint becomes a gap. This is an asserted endpoint observation; the
 command does not connect to it, encode a sender destination, authenticate the
 peer, or grant consent. A real Node launch also inherits environment before
@@ -100,6 +101,35 @@ producer bytes are unmeasured.
 Malformed UTF-8/JSON, wrong event shape, missing text, mismatches, byte overflow,
 timeout, and read failure cannot qualify the route. Absence of an observation
 does not establish refusal or nondelivery. No outcome causes a resend.
+
+### Optional host-task filename hint
+
+`hostTaskNomination` is a separate, always-present facet. It can retain a
+`candidate` only after a complete, matching ordinary Stop in the valid receipt
+window, a configured response candidate or admitted unbound response, and
+`CLAUDE_CODE_SESSION_ID` exactly equal to the event's bounded Code ID. An
+unadmitted event or missing/inconsistent hook Code identity produces
+`unknown` with `matching_stop_and_hook_identity_required`.
+
+For an admitted event, a missing `CLAUDE_CODE_HOST_SESSION_ID` produces
+`host_id_missing`. More than 250 code units produces `host_id_oversized`.
+An empty or non-filename-compatible value produces `host_id_invalid`:
+the accepted spelling starts with an ASCII letter or digit and continues
+with only ASCII letters, digits, `.`, `_`, or `-`. No trimming, normalization,
+or truncation occurs. Unknown facets retain neither that raw value nor a
+filename. A candidate retains `desktopSessionId`, its `.json` filename
+(at most 255 ASCII bytes), and source `CLAUDE_CODE_HOST_SESSION_ID`.
+
+The hint can nominate one filename inside a separately declared folder. It
+supplies no folder path, active account/organization, independent task identity,
+producer authentication, or notification evidence. Its absence does not discard
+the Stop or executable observation, and its presence resolves none of their
+gaps. All records remain unqualified. The independent UI/Code/metadata join
+still applies. The [folder-nomination comparison](../../research/2026-10-10-fixture-folder-nomination.md)
+traces a static producer and explains why the hint cannot select a folder.
+Actual inheritance and applicability to a selected Desktop/Code build remain
+unverified. These output limits bound projection and retention after Node has
+inherited its environment; they do not bound environment acquisition by the OS.
 
 The optional [hook-selected executable observation](executor-contract.md) adds
 a separate facet after admitted Stop acquisition. Its incomplete result preserves
@@ -164,6 +194,15 @@ collection, and configuration ceilings. One controlled test-owned Linux child
 exercises actual `/proc` and opened-image mechanics. It is a Node image, not a
 Claude executor or evidence of a native Code role. No Claude process or private
 receiver file is involved.
+
+The host-ID extension adds seven command checks for the admitted hint, missing
+or inconsistent hook identity, missing/invalid/oversized host values, the
+250-character boundary, configured and unbound collection, and rejected input.
+Existing executable checks also verify that a missing hint preserves executable
+evidence and that both candidate facets can coexist. The full receiver-evidence
+suite, including metadata acquisition/association, passes all 83 checks on
+Node.js 26.11.1. This verifies synthetic command behavior; actual environment
+inheritance and Desktop applicability remain unobserved.
 
 The bounded pipe reader uses the documented
 [`net.Socket` `onread` buffer interface](https://nodejs.org/api/net.html#new-netsocketoptions)

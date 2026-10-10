@@ -82,6 +82,100 @@ test('initial acquisition retains a matching setup token without deriving identi
   assert.ok(result.record.gaps.includes('independent_task_binding_required'));
 });
 
+test('an admitted initial Stop can nominate a Desktop metadata filename from its hook environment', async t => {
+  const f = await fixture(t, { expectedCodeId: null });
+  const { code, record } = await collect(f, JSON.stringify(event()), {
+    CLAUDE_CODE_SESSION_ID: 'fixture-code', CLAUDE_CODE_HOST_SESSION_ID: 'desktop-local-7',
+  });
+  assert.equal(code, 0);
+  assert.deepEqual(record.hostTaskNomination, { status: 'candidate',
+    desktopSessionId: 'desktop-local-7', filename: 'desktop-local-7.json',
+    source: 'CLAUDE_CODE_HOST_SESSION_ID' });
+  assert.equal(record.unbound.observedHookSessionId, 'fixture-code');
+  assert.equal(record.qualification, 'unqualified');
+  assert.ok(record.gaps.includes('independent_task_binding_required'));
+});
+
+test('an admitted Stop with no host ID preserves its evidence and reports an unknown filename', async t => {
+  const f = await fixture(t, { expectedCodeId: null });
+  const { code, record } = await collect(f, JSON.stringify(event()), {
+    CLAUDE_CODE_SESSION_ID: 'fixture-code',
+  });
+  assert.equal(code, 0);
+  assert.deepEqual(record.hostTaskNomination, { status: 'unknown', gap: 'host_id_missing' });
+  assert.equal(record.unbound.matchingFinalText, 'FIXTURE run-1');
+  assert.equal(record.acquisition.eof, true);
+});
+
+test('an invalid host ID supplies no filename or raw value while the Stop remains available', async t => {
+  for (const hostId of ['', '../other', 'other/file', 'other\\file', 'private value', 'éxample', '.hidden', 'tail\n']) {
+    const f = await fixture(t, { expectedCodeId: null });
+    const { code, record } = await collect(f, JSON.stringify(event()), {
+      CLAUDE_CODE_SESSION_ID: 'fixture-code', CLAUDE_CODE_HOST_SESSION_ID: hostId,
+    });
+    assert.equal(code, 0);
+    assert.deepEqual(record.hostTaskNomination, { status: 'unknown', gap: 'host_id_invalid' });
+    assert.equal(record.unbound.observedHookSessionId, 'fixture-code');
+  }
+});
+
+test('a host ID beyond the metadata ID ceiling is unknown without truncation', async t => {
+  const f = await fixture(t, { expectedCodeId: null });
+  const { code, record } = await collect(f, JSON.stringify(event()), {
+    CLAUDE_CODE_SESSION_ID: 'fixture-code', CLAUDE_CODE_HOST_SESSION_ID: 'D'.repeat(251),
+  });
+  assert.equal(code, 0);
+  assert.deepEqual(record.hostTaskNomination, { status: 'unknown', gap: 'host_id_oversized' });
+  assert.equal(record.unbound.observedHookSessionId, 'fixture-code');
+});
+
+test('a host ID without the matching hook Code identity cannot nominate a filename', async t => {
+  for (const hookCodeId of [undefined, 'other-code']) {
+    const f = await fixture(t, { expectedCodeId: null });
+    const environment = { CLAUDE_CODE_HOST_SESSION_ID: 'desktop-local-7' };
+    if (hookCodeId !== undefined) environment.CLAUDE_CODE_SESSION_ID = hookCodeId;
+    const { code, record } = await collect(f, JSON.stringify(event()), environment);
+    assert.equal(code, 0);
+    assert.deepEqual(record.hostTaskNomination,
+      { status: 'unknown', gap: 'matching_stop_and_hook_identity_required' });
+    assert.equal(record.unbound.observedHookSessionId, 'fixture-code');
+  }
+});
+
+test('a configured Stop retains its response and accepts the largest supported filename hint', async t => {
+  const f = await fixture(t);
+  const { code, record } = await collect(f, JSON.stringify(event()), {
+    CLAUDE_CODE_SESSION_ID: 'fixture-code', CLAUDE_CODE_HOST_SESSION_ID: 'D'.repeat(250),
+  });
+  assert.equal(code, 0);
+  assert.equal(record.hostTaskNomination.status, 'candidate');
+  assert.equal(record.hostTaskNomination.filename, 'D'.repeat(250) + '.json');
+  assert.equal(record.responseCandidate.text, 'FIXTURE run-1');
+  assert.equal(record.unbound, null);
+  assert.ok(record.gaps.includes('independent_task_binding_required'));
+});
+
+test('rejected, incomplete, and out-of-window Stop input cannot supply a host filename', async t => {
+  for (const [changes, input, hookId] of [
+    [{}, { ...event(), session_id: 'other-code' }, 'other-code'],
+    [{ expectedCodeId: null }, { ...event(), session_id: 'served:fixture-code' }, 'served:fixture-code'],
+    [{ expectedCodeId: null }, { ...event(), hook_event_name: 'Notification' }, 'fixture-code'],
+    [{ expectedCodeId: null }, { ...event(), last_assistant_message: 'unrelated' }, 'fixture-code'],
+    [{ expectedCodeId: null, since: Date.now() + 60000 }, event(), 'fixture-code'],
+    [{ expectedCodeId: null, maxInputBytes: 10 }, event(), 'fixture-code'],
+    [{ expectedCodeId: null }, '{', 'fixture-code'],
+  ]) {
+    const f = await fixture(t, changes);
+    const { code, record } = await collect(f, typeof input === 'string' ? input : JSON.stringify(input), {
+      CLAUDE_CODE_SESSION_ID: hookId, CLAUDE_CODE_HOST_SESSION_ID: 'desktop-local-7',
+    });
+    assert.equal(code, 0);
+    assert.deepEqual(record.hostTaskNomination,
+      { status: 'unknown', gap: 'matching_stop_and_hook_identity_required' });
+    assert.equal(record.qualification, 'unqualified');
+  }
+});
+
 test('a different task cannot supply the configured receiver projection or endpoint', async t => {
   const f = await fixture(t);
   const input = event(); input.session_id = 'different-code';

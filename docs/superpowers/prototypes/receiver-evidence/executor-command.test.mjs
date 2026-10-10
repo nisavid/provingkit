@@ -62,6 +62,7 @@ test('the command observes its claimed ancestor and the opened executable near S
   assert.equal(record.executorObservation.executable.bytesObserved, executable.length);
   assert.deepEqual(record.executorObservation.processes.map(x => x.pid), [f.child.pid, 1001]);
   assert.equal(record.responseCandidate.text, 'FIXTURE run-1');
+  assert.deepEqual(record.hostTaskNomination, { status: 'unknown', gap: 'host_id_missing' });
 });
 
 test('a PID outside the collector ancestry leaves the Stop response intact', async t => {
@@ -191,13 +192,15 @@ test('the observed result retains both endpoint samples and rejects an empty ima
 });
 
 test('initial unbound collection may observe the executor without binding the task', async t => {
-  const f = await fixture(t, {}, {}, { expectedCodeId: null });
+  const f = await fixture(t, {}, { CLAUDE_CODE_HOST_SESSION_ID: 'desktop-local-7' }, { expectedCodeId: null });
   const { code, record } = await f.finish();
   assert.equal(code, 0);
   assert.equal(record.executorObservation.status, 'observed');
   assert.equal(record.binding, 'unbound');
   assert.equal(record.responseCandidate, null);
   assert.equal(record.unbound.observedHookSessionId, 'fixture-code');
+  assert.equal(record.hostTaskNomination.filename, 'desktop-local-7.json');
+  assert.equal(record.hostTaskNomination.status, 'candidate');
   assert.ok(record.gaps.includes('independent_task_binding_required'));
 });
 

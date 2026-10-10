@@ -48,7 +48,10 @@ The collector implements acquisition, projection, output, exit status, and
 one-shot file lifecycle with synthetic inputs. It keeps initial Code identity,
 setup text, optional cwd/mode, and the endpoint observation unbound until the
 procedure's independent selection/metadata checks can be evaluated. It does
-not open metadata, configure hooks, or invoke the sender.
+not open metadata, configure hooks, or invoke the sender. An admitted optional
+host-task ID may nominate a bounded metadata filename. The
+[folder-nomination comparison](../../research/2026-10-10-fixture-folder-nomination.md)
+explains the separate folder-selection input and remaining method choice.
 
 The proposed fixture procedure still needs exact project/profile paths,
 selected-executor evidence, launcher/environment, settings pre-state,

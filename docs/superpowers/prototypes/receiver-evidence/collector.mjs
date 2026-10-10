@@ -144,6 +144,21 @@ async function main() {
     }
   }
   if (!validWindow || (config.expectedCodeId === null && !record.unbound)) record.endpoint = null;
+  const matchingStop = validWindow && acquisition.status === 'complete' && !served
+    && event.hook_event_name === 'Stop' && (!!record.responseCandidate || !!record.unbound)
+    && record.binding !== 'mismatch' && text(event.session_id, 256);
+  record.hostTaskNomination = { status: 'unknown', gap: 'matching_stop_and_hook_identity_required' };
+  if (matchingStop && process.env.CLAUDE_CODE_SESSION_ID === event.session_id) {
+    const hostId = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    record.hostTaskNomination = hostId === undefined
+      ? { status: 'unknown', gap: 'host_id_missing' }
+      : hostId.length > 250
+        ? { status: 'unknown', gap: 'host_id_oversized' }
+        : !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(hostId)
+          ? { status: 'unknown', gap: 'host_id_invalid' }
+          : { status: 'candidate', desktopSessionId: hostId,
+            filename: `${hostId}.json`, source: 'CLAUDE_CODE_HOST_SESSION_ID' };
+  }
   if (config.executorObservation) {
     const claimedPid = process.env.CLAUDE_PID;
     const admitted = validWindow && acquisition.status === 'complete' && !served

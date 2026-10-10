@@ -25,9 +25,9 @@ proposal. The authorization ticket must record an actual positive grant.
 | Dedicated project | Exact project directory and normal UI selection; no existing user task is the fixture |
 | Configuration | Exact project `.claude/settings.local.json`, its current bytes or verified absence, and the single added Stop-hook entry |
 | Collector slot | New private run directory and exact config, output, claim, and partial paths; expected pre-state and retention disposition |
-| Launcher | Exact command and inherited environment, including proposed socket, hook Code PID, and hook session-ID observations; no implicit environment sanitization claim |
+| Launcher | Exact command and inherited environment, including proposed socket, hook Code PID, hook session-ID, and optional host-task-ID observations; no implicit environment sanitization claim |
 | Independent witness | Scoped normal-UI creation/selection observation and the unique setup-response text as displayed in that selected task |
-| Metadata directory | One explicitly declared account/organization metadata folder; record how it was nominated without claiming it is Desktop's active directory |
+| Metadata directory | Choose and review its nomination method, then bind one explicitly declared account/organization metadata folder; no active-directory claim |
 | Candidate selection | Up to three explicitly selected metadata paths from the bounded listing, with the later grant covering each complete file |
 | Association inputs | Exact request file, supplied UI/setup evidence, admitted Stop record, explicitly chosen `cwd` or `originCwd` relation, setup-window beginning, maximum join age, and selection/lifecycle recheck |
 | Receiver effects | Task creation, one model turn, hook command, whole-event acquisition, configuration restoration, output retention, and fixture closeout |
@@ -47,6 +47,16 @@ directory Desktop currently selects. If no unique conditional association can
 be observed within the reviewed scope, retain that gap and return for a method
 choice. The app-side projection and old receipt remain references for a specific
 unresolved gap; this method adopts neither.
+
+The [folder-nomination comparison](../../research/2026-10-10-fixture-folder-nomination.md)
+leaves the method choice open: an independently supplied exact folder, or two
+bounded parent-name listings after an independently supplied profile root and
+an explicit account-child choice. The latter would additionally expose sibling
+account/organization names and need its own reviewed selection rules and read
+grant. Opaque or ambiguous names may leave the folder unresolved. Neither a
+host-ID filename hint nor a later matching file proves the active directory.
+The ordered steps below begin with one declared folder; they do not authorize
+or select those additional parent listings.
 
 ## Configuration proposal
 
@@ -129,7 +139,12 @@ does not authorize them.
 6. **List, select, and acquire metadata in separate actions.** In the declared
    folder, invoke the helper's `list` operation: names and types only, up to 128
    entries plus one overflow entry. Overflow stops this attempt. Select at most
-   three explicit JSON basenames under the reviewed selection rule; obtain the
+   three explicit JSON basenames under the reviewed selection rule. A candidate
+   `hostTaskNomination.filename` may nominate one basename only if it appears in
+   this listing; it does not independently identify the task. Missing or unknown
+   nomination leaves the reviewed explicit selection method responsible for
+   candidate choice, without widening the file count or searching other folders.
+   Obtain the
    grant covering each whole file before acquisition. Recheck that the same
    disposable UI task/project remains selected after the setup and Stop samples.
    Invoke `associate` with the supplied witnesses, recheck, and selected files.
@@ -216,7 +231,8 @@ Delivery and notification acknowledgment still require later exact-peer consent.
 
 Use `capturing-agent-procedures` when consuming this method: load and record the
 published revision of this procedure, metadata helper, collector, and any
-selected executor extension; bind entry inputs and output meaning; record the
+selected executor extension, plus the folder-nomination comparison; bind entry
+inputs and output meaning; record the
 procedure actually used; verify completion and cleanup; return corrections to
 its source. Preparation must retain the result as a conditional association,
 with active-directory proof and full notification qualification separate.
