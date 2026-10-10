@@ -79,8 +79,13 @@ cwd may contain the producer's fallback and mode is a partial permission fact.
 The known `served:` session kind is excluded from this ordinary Desktop
 fixture in both modes. Other strings remain unclassified hook session identities
 until the independent join; a length check does not establish a Code identity.
-The projection remains unknown and
-`responseCandidate` remains null. The observed ID is never fed back as its own
+The configured-ID projection remains unknown, includes
+`invalid_binding_or_rule` in `projection.gaps`, and leaves
+`responseCandidate` null because the expected Code ID is absent. This projection
+gap can coexist with valid `unbound` evidence. In initial acquisition, evaluate
+`unbound`, acquisition completion, the receipt window, and the other gaps;
+neither this projection gap nor a valid unbound record resolves those other
+conditions. The observed ID is never fed back as its own
 expected ID. The subsequent UI/metadata join belongs to the reviewed procedure;
 replaying this file through the command would create new receipt timestamps and
 is not reconciliation.

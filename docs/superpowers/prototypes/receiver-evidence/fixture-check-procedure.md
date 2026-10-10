@@ -114,7 +114,10 @@ does not authorize them.
    uncertainty without trying again. This is a model turn, not a cross-harness
    notification. Additional turns or changed text need a new scoped decision.
 5. **Observe the response and collector result.** The selected UI response must
-   match the configured token. Retain optional unbound event cwd/mode and their
+   match the configured token. Apply the collector contract's
+   [unbound-mode interpretation](collector-contract.md#observation-meaning)
+   of projection gaps and require its `unbound` evidence. Retain optional
+   unbound event cwd/mode and their
    gaps without upgrading them to full runtime observations. The retained hook
    session identity is unclassified until the join; reject a `served:` identity. Compare event cwd
    with the selected project while preserving its source fallback limitation.
