@@ -1,0 +1,384 @@
+{
+  "version": 3,
+  "observed_at": "2026-10-11T23:20:58.916702+00:00",
+  "source": "Matched native child session headers and token_count metadata only; no raw messages published.",
+  "rates_basis": "Frozen Sol 6.1 rate card in the accepted ordinary comparison spec; historical equivalent conditional on requested model, not current pricing or an invoice.",
+  "counter_basis": "Last native-client cumulative total_token_usage event after final answer, including repeated and cached context. Reasoning is already included in output. Cache writes use the explicit cache_write_input_tokens field.",
+  "limits": [
+    "Native-client counters are not independently reconciled provider receipts.",
+    "Effective provider model, actual billing, quota consumption, and complete root-workflow attribution are unknown.",
+    "First nonzero cumulative observation is not subtracted; it is part of the newly created child session.",
+    "Claim ledger remains closed unchanged; this is a later supplementary accounting record.",
+    "Final review usage was acquired after that review completed; its own counters were not included in its reviewed inputs."
+  ],
+  "records": [
+    {
+      "source_sha256": "51f926cdc53da8fc4ae671fc9f67b93365095aec238e32e959552c95968190b3",
+      "source_bytes": 1342604,
+      "usage_events": 90,
+      "first_usage_event": {
+        "timestamp": "2026-10-11T21:28:40.982Z",
+        "usage": {
+          "input_tokens": 50104,
+          "cached_input_tokens": 49536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 118,
+          "reasoning_output_tokens": 18,
+          "total_tokens": 50222
+        }
+      },
+      "last_usage_event": {
+        "timestamp": "2026-10-11T21:34:48.230Z",
+        "usage": {
+          "input_tokens": 7578304,
+          "cached_input_tokens": 7454720,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 10250,
+          "reasoning_output_tokens": 1930,
+          "total_tokens": 7588554
+        }
+      },
+      "final_answer_at": "2026-10-11T21:34:48.090Z",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attestation": null,
+      "uncached_nonwrite_input_tokens": 123584,
+      "api_rates_usd_per_million": {
+        "input": "2.00",
+        "cached": "0.10",
+        "write": "2.50",
+        "output": "10.00"
+      },
+      "api_rate_equivalent_usd": "1.09514",
+      "actual_charge_usd": null,
+      "subscription_quota_units": null,
+      "counter_field_mapping": {
+        "input": "input_tokens",
+        "cached": "cached_input_tokens",
+        "write": "cache_write_input_tokens",
+        "output": "output_tokens",
+        "reasoning": "reasoning_output_tokens"
+      },
+      "launch_acknowledgement_recorded_at": "2026-10-11T21:28:42.942074+00:00",
+      "timing_basis": "Native post-launch acknowledgement recording to final-answer timestamp, an approximate session span; not active effort or exact launch latency.",
+      "approximate_session_span_seconds": 365.147926,
+      "work": "Claim result review"
+    },
+    {
+      "source_sha256": "8433d86d3ede5f708e52074c0bc8d53e36414a7125fd519450528fb029444b49",
+      "source_bytes": 236171,
+      "usage_events": 3,
+      "first_usage_event": {
+        "timestamp": "2026-10-11T21:50:57.960Z",
+        "usage": {
+          "input_tokens": 50141,
+          "cached_input_tokens": 49536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 129,
+          "reasoning_output_tokens": 36,
+          "total_tokens": 50270
+        }
+      },
+      "last_usage_event": {
+        "timestamp": "2026-10-11T21:51:16.885Z",
+        "usage": {
+          "input_tokens": 151588,
+          "cached_input_tokens": 149632,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 565,
+          "reasoning_output_tokens": 161,
+          "total_tokens": 152153
+        }
+      },
+      "final_answer_at": "2026-10-11T21:51:16.834Z",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attestation": null,
+      "uncached_nonwrite_input_tokens": 1956,
+      "api_rates_usd_per_million": {
+        "input": "2.00",
+        "cached": "0.10",
+        "write": "2.50",
+        "output": "10.00"
+      },
+      "api_rate_equivalent_usd": "0.0245252",
+      "actual_charge_usd": null,
+      "subscription_quota_units": null,
+      "counter_field_mapping": {
+        "input": "input_tokens",
+        "cached": "cached_input_tokens",
+        "write": "cache_write_input_tokens",
+        "output": "output_tokens",
+        "reasoning": "reasoning_output_tokens"
+      },
+      "launch_acknowledgement_recorded_at": "2026-10-11T21:51:00.471425+00:00",
+      "timing_basis": "Native post-launch acknowledgement recording to final-answer timestamp, an approximate session span; not active effort or exact launch latency.",
+      "approximate_session_span_seconds": 16.362575,
+      "work": "Incomplete initial coverage review"
+    },
+    {
+      "source_sha256": "3628dd3dc235bf2f4fbca3f24e32930228ca86ef64be73e1a4916a2cbf8ea14e",
+      "source_bytes": 1946089,
+      "usage_events": 125,
+      "first_usage_event": {
+        "timestamp": "2026-10-11T21:59:46.122Z",
+        "usage": {
+          "input_tokens": 50299,
+          "cached_input_tokens": 49536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 90,
+          "reasoning_output_tokens": 0,
+          "total_tokens": 50389
+        }
+      },
+      "last_usage_event": {
+        "timestamp": "2026-10-11T22:08:09.567Z",
+        "usage": {
+          "input_tokens": 13804488,
+          "cached_input_tokens": 13607296,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 12191,
+          "reasoning_output_tokens": 1317,
+          "total_tokens": 13816679
+        }
+      },
+      "final_answer_at": "2026-10-11T22:08:09.416Z",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attestation": null,
+      "uncached_nonwrite_input_tokens": 197192,
+      "api_rates_usd_per_million": {
+        "input": "2.00",
+        "cached": "0.10",
+        "write": "2.50",
+        "output": "10.00"
+      },
+      "api_rate_equivalent_usd": "1.8770236",
+      "actual_charge_usd": null,
+      "subscription_quota_units": null,
+      "counter_field_mapping": {
+        "input": "input_tokens",
+        "cached": "cached_input_tokens",
+        "write": "cache_write_input_tokens",
+        "output": "output_tokens",
+        "reasoning": "reasoning_output_tokens"
+      },
+      "launch_acknowledgement_recorded_at": "2026-10-11T21:59:50.593534+00:00",
+      "timing_basis": "Native post-launch acknowledgement recording to final-answer timestamp, an approximate session span; not active effort or exact launch latency.",
+      "approximate_session_span_seconds": 498.822466,
+      "work": "Coverage review finding unsupported publication claim"
+    },
+    {
+      "source_sha256": "2b60861c7b896891a15e53c46041af689a207c55ec7047d5a43ece44c6d74b83",
+      "source_bytes": 647064,
+      "usage_events": 50,
+      "first_usage_event": {
+        "timestamp": "2026-10-11T22:14:27.489Z",
+        "usage": {
+          "input_tokens": 56224,
+          "cached_input_tokens": 22528,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 139,
+          "reasoning_output_tokens": 35,
+          "total_tokens": 56363
+        }
+      },
+      "last_usage_event": {
+        "timestamp": "2026-10-11T22:18:07.929Z",
+        "usage": {
+          "input_tokens": 3384470,
+          "cached_input_tokens": 3314560,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 4691,
+          "reasoning_output_tokens": 258,
+          "total_tokens": 3389161
+        }
+      },
+      "final_answer_at": "2026-10-11T22:18:07.831Z",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attestation": null,
+      "uncached_nonwrite_input_tokens": 69910,
+      "api_rates_usd_per_million": {
+        "input": "2.00",
+        "cached": "0.10",
+        "write": "2.50",
+        "output": "10.00"
+      },
+      "api_rate_equivalent_usd": "0.518186",
+      "actual_charge_usd": null,
+      "subscription_quota_units": null,
+      "counter_field_mapping": {
+        "input": "input_tokens",
+        "cached": "cached_input_tokens",
+        "write": "cache_write_input_tokens",
+        "output": "output_tokens",
+        "reasoning": "reasoning_output_tokens"
+      },
+      "launch_acknowledgement_recorded_at": "2026-10-11T22:14:26.943760+00:00",
+      "timing_basis": "Native post-launch acknowledgement recording to final-answer timestamp, an approximate session span; not active effort or exact launch latency.",
+      "approximate_session_span_seconds": 220.88724,
+      "work": "Adjudication of publication-claim grade"
+    },
+    {
+      "source_sha256": "7a73ae861d26f94f2ca7bbb7ec2ddf3fe2281679083e88b8e6e2c3efa0357a22",
+      "source_bytes": 2012504,
+      "usage_events": 127,
+      "first_usage_event": {
+        "timestamp": "2026-10-11T22:43:50.353Z",
+        "usage": {
+          "input_tokens": 50413,
+          "cached_input_tokens": 41344,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 93,
+          "reasoning_output_tokens": 0,
+          "total_tokens": 50506
+        }
+      },
+      "last_usage_event": {
+        "timestamp": "2026-10-11T22:54:03.849Z",
+        "usage": {
+          "input_tokens": 14419228,
+          "cached_input_tokens": 14207104,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 14664,
+          "reasoning_output_tokens": 2614,
+          "total_tokens": 14433892
+        }
+      },
+      "final_answer_at": "2026-10-11T22:54:03.675Z",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attestation": null,
+      "uncached_nonwrite_input_tokens": 212124,
+      "api_rates_usd_per_million": {
+        "input": "2.00",
+        "cached": "0.10",
+        "write": "2.50",
+        "output": "10.00"
+      },
+      "api_rate_equivalent_usd": "1.9915984",
+      "actual_charge_usd": null,
+      "subscription_quota_units": null,
+      "counter_field_mapping": {
+        "input": "input_tokens",
+        "cached": "cached_input_tokens",
+        "write": "cache_write_input_tokens",
+        "output": "output_tokens",
+        "reasoning": "reasoning_output_tokens"
+      },
+      "launch_acknowledgement_recorded_at": "2026-10-11T22:43:54.354871+00:00",
+      "timing_basis": "Native post-launch acknowledgement recording to final-answer timestamp, an approximate session span; not active effort or exact launch latency.",
+      "approximate_session_span_seconds": 609.320129,
+      "work": "Coverage review finding conditional-scope grading error"
+    },
+    {
+      "source_sha256": "f3d6e49fe43489fa0b68afd0371249938578a8eae449321ff6a5f3350291721f",
+      "source_bytes": 774905,
+      "usage_events": 54,
+      "first_usage_event": {
+        "timestamp": "2026-10-11T23:01:07.422Z",
+        "usage": {
+          "input_tokens": 56100,
+          "cached_input_tokens": 47360,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 82,
+          "reasoning_output_tokens": 11,
+          "total_tokens": 56182
+        }
+      },
+      "last_usage_event": {
+        "timestamp": "2026-10-11T23:04:44.531Z",
+        "usage": {
+          "input_tokens": 3915644,
+          "cached_input_tokens": 3857152,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6156,
+          "reasoning_output_tokens": 1080,
+          "total_tokens": 3921800
+        }
+      },
+      "final_answer_at": "2026-10-11T23:04:44.466Z",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attestation": null,
+      "uncached_nonwrite_input_tokens": 58492,
+      "api_rates_usd_per_million": {
+        "input": "2.00",
+        "cached": "0.10",
+        "write": "2.50",
+        "output": "10.00"
+      },
+      "api_rate_equivalent_usd": "0.5642592",
+      "actual_charge_usd": null,
+      "subscription_quota_units": null,
+      "counter_field_mapping": {
+        "input": "input_tokens",
+        "cached": "cached_input_tokens",
+        "write": "cache_write_input_tokens",
+        "output": "output_tokens",
+        "reasoning": "reasoning_output_tokens"
+      },
+      "launch_acknowledgement_recorded_at": "2026-10-11T23:01:12.817068+00:00",
+      "timing_basis": "Native post-launch acknowledgement recording to final-answer timestamp, an approximate session span; not active effort or exact launch latency.",
+      "approximate_session_span_seconds": 211.648932,
+      "work": "Adjudication of conditional-scope grade"
+    },
+    {
+      "source_sha256": "ca650bcc67b6662c0b3a4da5c87d38208aa3a46e5b39f415548783aa94ec3d2f",
+      "source_bytes": 862529,
+      "usage_events": 61,
+      "first_usage_event": {
+        "timestamp": "2026-10-11T23:15:06.912Z",
+        "usage": {
+          "input_tokens": 50117,
+          "cached_input_tokens": 49536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 67,
+          "reasoning_output_tokens": 0,
+          "total_tokens": 50184
+        }
+      },
+      "last_usage_event": {
+        "timestamp": "2026-10-11T23:20:09.358Z",
+        "usage": {
+          "input_tokens": 4167252,
+          "cached_input_tokens": 4103296,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6980,
+          "reasoning_output_tokens": 1517,
+          "total_tokens": 4174232
+        }
+      },
+      "final_answer_at": "2026-10-11T23:20:09.181Z",
+      "model_requested": "gpt-6.1-sol",
+      "effort_requested": "high",
+      "effective_model_attestation": null,
+      "uncached_nonwrite_input_tokens": 63956,
+      "api_rates_usd_per_million": {
+        "input": "2.00",
+        "cached": "0.10",
+        "write": "2.50",
+        "output": "10.00"
+      },
+      "api_rate_equivalent_usd": "0.6080416",
+      "actual_charge_usd": null,
+      "subscription_quota_units": null,
+      "counter_field_mapping": {
+        "input": "input_tokens",
+        "cached": "cached_input_tokens",
+        "write": "cache_write_input_tokens",
+        "output": "output_tokens",
+        "reasoning": "reasoning_output_tokens"
+      },
+      "launch_acknowledgement_recorded_at": "2026-10-11T23:15:09.987903+00:00",
+      "timing_basis": "Native post-launch acknowledgement recording to final-answer timestamp, an approximate session span; not active effort or exact launch latency.",
+      "approximate_session_span_seconds": 299.193097,
+      "work": "Final focused coverage result review"
+    }
+  ],
+  "prior_supplement_sha256": "b766b98db99bd233623e10d43d1b8c9a932515cd5f96b673a26c57ff4dd4ed3d",
+  "known_review_api_rate_equivalent_usd": "6.6787740",
+  "claim_review_api_rate_equivalent_usd": "1.09514",
+  "coverage_review_and_adjudication_api_rate_equivalent_usd": "5.5836340"
+}

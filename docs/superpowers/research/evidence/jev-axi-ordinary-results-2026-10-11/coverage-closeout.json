@@ -1,0 +1,38 @@
+{
+  "invocation_id": "0e68aa3bee7741a3821501ebb47ae855",
+  "runner_run_id": "204973ddb827410fad143394b9b49f57",
+  "status": "closed_with_gaps",
+  "started_at": "2026-10-11T21:29:10.286039+00:00",
+  "finished_at": "2026-10-11T23:21:22.251244+00:00",
+  "elapsed_seconds": 6731.965213093999,
+  "deadline_monotonic_ns": 20090931852464,
+  "finished_monotonic_ns": 17822897065558,
+  "within_original_allowance": true,
+  "required_phases_all_represented": true,
+  "review_status": "clean within the joined frozen final-result scopes",
+  "known_request_api_rate_equivalent_usd": "0.382253650",
+  "complete_request_api_rate_equivalent_usd": null,
+  "actual_charges_usd": null,
+  "complete_workflow_cost_usd": null,
+  "known_review_client_input_tokens": 39842670,
+  "known_review_client_output_tokens": 45247,
+  "known_review_api_rate_equivalent_usd": "5.5836340",
+  "complete_coordinator_model_usage": null,
+  "active_operator_effort_seconds": null,
+  "accounting_gaps": [
+    "Failed-request usage and attributable billing",
+    "Complete coordinator attribution",
+    "Active preparation, grading, review, and operator effort",
+    "Historical setup and equipment costs",
+    "Ordinary native consumer benefit and cost"
+  ],
+  "private_ledger_identity": {
+    "sha256": "8a15f7ed27e5bc49d324f33174ba5605bc8b2c9388e787e050ea62b15ec82222",
+    "bytes": 46294
+  },
+  "private_final_review_record_identity": {
+    "sha256": "bf7cc7d49e12f5f2505862125cad3f6b4d1acd31cdb7e1968c871279cba85f39",
+    "bytes": 1933
+  },
+  "claim_limits": "No completed grading, complete cost, or native-benefit claim is established by ledger closure; use the bound evaluation evidence."
+}

@@ -1,0 +1,1016 @@
+{
+  "version": 3,
+  "cases": [
+    {
+      "case": "c01",
+      "name": "Retained commit",
+      "expected": "Nine additions; seven equal reviewed inputs; separate matching review digest; support-record map absence does not establish a review defect. Actual push and native qualification are not established."
+    },
+    {
+      "case": "c04",
+      "name": "Constructed fileset",
+      "expected": "Ten additions; six equal reviewed inputs; inspect changed README and added publication-context note; preserve the separate matching review digest without extending old review to new bytes. No observed publication."
+    }
+  ],
+  "records": [
+    {
+      "output_id": "121d5ebe4b97",
+      "case_id": "c01",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Nine additions, seven matching hashes, and matching separate review digest explicitly reconciled.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Keeps source review distinct from validation, push evidence, and benefit.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "Support-record inspection is framed only for a broader all-nine coverage claim, not a stop on this reconciliation.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "pass",
+          "basis": "Candidate identities, verification.json, review.md, and push-workflow.md uniquely ground the material conclusions.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "pass",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "348e180ed6df",
+      "case_id": "c01",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Nine additions, seven matches, separate review digest match.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Reviewer attestations and missing actual publication evidence remain distinct.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "The proposed checks are conditional on broader commit, tracker, or push claims.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "pass",
+          "basis": "Named comparison and records ground scope, association, and next steps.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "pass",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "4064f872412e",
+      "case_id": "c01",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Explicit nine/seven reconciliation and separate digest match.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Correctly distinguishes absence from defect and limits source review.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "Inspection is conditional on a broader all-nine claim; no mandatory current rerun is demanded.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "pass",
+          "basis": "d00, s09, s10, s00 and instruction sources anchor material claims.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "pass",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "59559f12d144",
+      "case_id": "c01",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "incomplete",
+          "basis": "Seven input matches are stated, but the separate review digest association is omitted.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "No runtime or push success is inferred.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "Further evidence is conditional on broader claims.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "Missing material separate-review association prevents a complete note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "incomplete",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "6e563627efcf",
+      "case_id": "c01",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "incomplete",
+          "basis": "Separate review digest match is not stated.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "fail",
+          "basis": "The categorical claim that the clean review did not cover all nine files turns absence from the input map into established non-coverage.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "fail",
+          "basis": "Requires reviewing the two supporting records based only on their absence, despite supplied nine/seven explanation.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "fail",
+          "basis": "The stronger exclusion and review demand exceed the key.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [
+        {
+          "type": "mistaken_review_demand",
+          "passage": "The clean review did not cover all nine added files.",
+          "source": "key: Retained candidate; absence alone establishes neither unreviewed status nor exemption."
+        }
+      ],
+      "case_result": "fail",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "ba2b5d0fbe46",
+      "case_id": "c01",
+      "terminal_state": "transport_error",
+      "dimensions": {
+        "relationships": {
+          "grade": "incomplete",
+          "basis": "Transport failed without a delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "incomplete",
+          "basis": "Transport failed without a delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "incomplete",
+          "basis": "Transport failed without a delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "Transport failed without a delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "failed_delivery",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": "transport_error"
+    },
+    {
+      "output_id": "c3b5cf9154a3",
+      "case_id": "c01",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "incomplete",
+          "basis": "Identifies the seven-file map and separate review hash, but does not state that either was matched to candidate bytes.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Retained review scope and missing operational outcomes are bounded.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "Additional checks are conditional on stronger coverage claims.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "The asserted candidate coverage lacks the material identity-reconciliation conclusion.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "incomplete",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "e257a5186400",
+      "case_id": "c01",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Nine additions, seven matching inputs, separately matching review.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Explicit source, native, and publication limits.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "Additional work is conditional on broader claims; support-record absence is not pursued as a defect.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "pass",
+          "basis": "Named verification/review/workflow records and candidate endpoints support conclusions.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "pass",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "17e8c75a23dd",
+      "case_id": "c04",
+      "terminal_state": "unattempted",
+      "dimensions": {
+        "relationships": {
+          "grade": "incomplete",
+          "basis": "Unattempted cell has no delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "incomplete",
+          "basis": "Unattempted cell has no delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "incomplete",
+          "basis": "Unattempted cell has no delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "Unattempted cell has no delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "unattempted",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": "unattempted"
+    },
+    {
+      "output_id": "21ba509d8b44",
+      "case_id": "c04",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "fail",
+          "basis": "States eleven additions where the complete candidate has ten; neither six equal entries nor both changed texts are fully reconciled.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "fail",
+          "basis": "Calls the fileset a whole commit candidate and reports a false count.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "incomplete",
+          "basis": "README change is described; the new note content remains unexamined in the delivered note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "fail",
+          "basis": "Material wrong count and missing changed-text discussion/citations prevent a complete note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "fail",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "436a8a797868",
+      "case_id": "c04",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "incomplete",
+          "basis": "Ten additions, six matches and both changed texts are correct, but a separately matching review digest is not explicitly reconciled.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "No defect is inferred from the modest text; historical review is not extended to changed bytes.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "Bounded inspection is tied to extending coverage, not publication actuation.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "Precise d00/d01 and source citations support both texts; missing review association prevents full pass.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "incomplete",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "703fdb3b2396",
+      "case_id": "c04",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Ten additions, six matches, separate review digest match, and both changed texts reconciled.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "fail",
+          "basis": "The answer calls the retained Git commit a previously published packet. The supplied comparison establishes commit identity, while common context and s00 explicitly provide no observed push, destination, or accepted-push receipt. Its later disclaimer about the current candidate does not establish publication of the earlier packet.",
+          "source": "Delivered note 703fdb3b2396, comparison d01 base, common_context, s00; unchanged key evidence_boundaries and grading procedure."
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "Delta disposition is conditional on full candidate coverage; narrow existing claim remains available.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "pass",
+          "basis": "d00/d01, s25/s27 and s00 anchor candidate, texts, review, and limits.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "fail",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "775d4c208f44",
+      "case_id": "c04",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Ten additions, six matches, README mismatch, new note and separate review match are identified.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Preserves fileset and operational limits.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "pass",
+          "basis": "The note conditions the scope clarification on a claim of full candidate coverage, acknowledges the six matching inputs, and permits narrowing the claim. Its question concerns semantic coverage, not known map membership. The bounded inspection of changed texts is relevant.",
+          "source": "fixed evaluator key; complete delivered note, especially the full-candidate-coverage section and final paragraph"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "Does not cite or discuss the contents of either changed text; tool retrieval alone does not supply a material conclusion in the note.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "incomplete",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "85b431d879ca",
+      "case_id": "c04",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "incomplete",
+          "basis": "Counts ten and identifies README/new note/separate review match, but does not reconcile the six equal entries.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Does not infer publication or runtime success.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "incomplete",
+          "basis": "Asks for closer inspection without addressing the supplied content of either changed text.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "No evidence-backed treatment of either changed text or six matching entries is delivered.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "incomplete",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "e3af19992cfe",
+      "case_id": "c04",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Ten additions, six matches, changed README/new note, and separate review association are stated.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "No push or qualification inferred; old review is not extended.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "incomplete",
+          "basis": "README sentence is discussed, but the already-supplied new note is only deferred for scope/inspection.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "The new note content and supporting citation are absent; full changed-text reconciliation is incomplete.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [],
+      "case_result": "incomplete",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    },
+    {
+      "output_id": "ee0dd9b0fafd",
+      "case_id": "c04",
+      "terminal_state": "completed",
+      "dimensions": {
+        "relationships": {
+          "grade": "pass",
+          "basis": "Ten additions, six other matches, both changed paths and separate review match are stated.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "evidence_boundaries": {
+          "grade": "pass",
+          "basis": "Keeps source and publication limits.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "next_action": {
+          "grade": "fail",
+          "basis": "Treats seven Markdown documents versus seven historic reviewed inputs as an inventory mismatch needing reconciliation, although the supplied identities already establish the different sets.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        },
+        "final_quality": {
+          "grade": "incomplete",
+          "basis": "Neither changed text is discussed or precisely cited as text; known membership is turned into a new scope problem.",
+          "source": "fixed evaluator key; delivered note and retained tool trace"
+        }
+      },
+      "false_steering_events": [
+        {
+          "type": "pursuit_of_harmless_inventory_difference",
+          "passage": "Reconcile what the reviewer meant by the \u201cseven-file public candidate\u201d",
+          "source": "key: Case facts and Combined neutral overlay; historic reviewed-input membership is supplied."
+        }
+      ],
+      "case_result": "fail",
+      "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+      "resource_or_delivery_limitations": null
+    }
+  ],
+  "conditions": [
+    {
+      "condition": "profile-0-ordinary",
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "arm": "ordinary",
+      "case_outcomes": {
+        "c01": "incomplete",
+        "c04": "fail"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "condition does not pass both cases; no matched-quality qualification",
+      "attempts": 5,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 103312,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 1843,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 27369,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 75928,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 262,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.010687690",
+      "unvalued_attempts": 0,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 10.475640348,
+        "c04": 9.388517009
+      }
+    },
+    {
+      "condition": "profile-0-deterministic",
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "arm": "deterministic",
+      "case_outcomes": {
+        "c01": "fail",
+        "c04": "incomplete"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "condition does not pass both cases; no matched-quality qualification",
+      "attempts": 5,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 98738,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 1739,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 33926,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 64797,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 359,
+          "reported_attempts": 5,
+          "missing_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.009309885",
+      "unvalued_attempts": 0,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 6.701472082,
+        "c04": 10.695966865
+      }
+    },
+    {
+      "condition": "profile-1-ordinary",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "arm": "ordinary",
+      "case_outcomes": {
+        "c01": "incomplete",
+        "c04": "fail"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "condition does not pass both cases; no matched-quality qualification",
+      "attempts": 7,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 196510,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 9603,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 96115,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 100374,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 7393,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.018311500",
+      "unvalued_attempts": 0,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 38.725457511,
+        "c04": 42.912492707
+      }
+    },
+    {
+      "condition": "profile-1-deterministic",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "arm": "deterministic",
+      "case_outcomes": {
+        "c01": "failed_delivery",
+        "c04": "unattempted"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "condition does not pass both cases; no matched-quality qualification",
+      "attempts": 2,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 3559,
+          "reported_attempts": 1,
+          "missing_attempts": 1
+        },
+        "output_tokens": {
+          "reported_sum": 247,
+          "reported_attempts": 1,
+          "missing_attempts": 1
+        },
+        "cached_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 1,
+          "missing_attempts": 1
+        },
+        "cache_write_tokens": {
+          "reported_sum": 3556,
+          "reported_attempts": 1,
+          "missing_attempts": 1
+        },
+        "reasoning_tokens": {
+          "reported_sum": 55,
+          "reported_attempts": 1,
+          "missing_attempts": 1
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.0005683",
+      "unvalued_attempts": 1,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 3.1395437950000002,
+        "c04": null
+      }
+    },
+    {
+      "condition": "profile-2-ordinary",
+      "model": "gpt-6-luna",
+      "effort": "high",
+      "arm": "ordinary",
+      "case_outcomes": {
+        "c01": "pass",
+        "c04": "incomplete"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "condition does not pass both cases; no matched-quality qualification",
+      "attempts": 7,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 205157,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 13337,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 106210,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 98926,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 11201,
+          "reported_attempts": 7,
+          "missing_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.020098450",
+      "unvalued_attempts": 0,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 51.067998712,
+        "c04": 63.265327965999994
+      }
+    },
+    {
+      "condition": "profile-2-deterministic",
+      "model": "gpt-6-luna",
+      "effort": "high",
+      "arm": "deterministic",
+      "case_outcomes": {
+        "c01": "pass",
+        "c04": "incomplete"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "condition does not pass both cases; no matched-quality qualification",
+      "attempts": 6,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 159571,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 11496,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 70720,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 88833,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 9348,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.017561125",
+      "unvalued_attempts": 0,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 46.211406748,
+        "c04": 52.673980049
+      }
+    },
+    {
+      "condition": "profile-3-ordinary",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "arm": "ordinary",
+      "case_outcomes": {
+        "c01": "pass",
+        "c04": "incomplete"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "condition does not pass both cases; no matched-quality qualification",
+      "attempts": 6,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 69061,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 1958,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 25854,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 43189,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 23,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.1301739",
+      "unvalued_attempts": 0,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 17.584411612,
+        "c04": 22.225774033
+      }
+    },
+    {
+      "condition": "profile-3-deterministic",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "arm": "deterministic",
+      "case_outcomes": {
+        "c01": "pass",
+        "c04": "fail"
+      },
+      "both_cases_complete_passing": false,
+      "matched_quality": "not established: constructed-fileset answer fails evidence boundaries",
+      "attempts": 6,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 116894,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 1986,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 56893,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 59983,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 39,
+          "reported_attempts": 6,
+          "missing_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.1755428",
+      "unvalued_attempts": 0,
+      "confirmed_charge_usd": null,
+      "cell_elapsed_seconds": {
+        "c01": 19.15329601,
+        "c04": 25.611948259000002
+      }
+    }
+  ],
+  "grading_key_identity": {
+    "sha256": "9133211def7e0961e04a9e036c370e0d1f6117f08d0a16b5ae05043a88fd0edd"
+  },
+  "initial_grade_identity": {
+    "sha256": "7e0cdb70452af8c7e5190b34a1758415744e24ce375a9867ce81612e330244d4",
+    "bytes": 23706
+  },
+  "final_grade_identity": {
+    "sha256": "1e6ac9202807fd4b22d978146552d7dce9d46f60106517d21143e1ff9fa76ba4",
+    "bytes": 25341
+  },
+  "original_answers_identity": {
+    "sha256": "72723cbb3508e16eea1e030493aed605c1fa7c274ea46e449c763711d2bf56d9",
+    "bytes": 51331
+  },
+  "limits": "Fixed-case comparison only. No condition passes both supplied cases; no native benefit, actual author correction, review replacement, publication coverage, or whole-workflow superiority follows.",
+  "corrections": [
+    {
+      "output_id": "703fdb3b2396",
+      "finding": "Unsupported claim that the retained Git commit was previously published.",
+      "initial_record": {
+        "output_id": "703fdb3b2396",
+        "case_id": "c04",
+        "terminal_state": "completed",
+        "dimensions": {
+          "relationships": {
+            "grade": "pass",
+            "basis": "Ten additions, six matches, separate review digest match, and both changed texts reconciled.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          },
+          "evidence_boundaries": {
+            "grade": "pass",
+            "basis": "Earlier review is not extended to new bytes; map absence is not treated as proof of defect.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          },
+          "next_action": {
+            "grade": "pass",
+            "basis": "Delta disposition is conditional on full candidate coverage; narrow existing claim remains available.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          },
+          "final_quality": {
+            "grade": "pass",
+            "basis": "d00/d01, s25/s27 and s00 anchor candidate, texts, review, and limits.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          }
+        },
+        "false_steering_events": [],
+        "case_result": "pass",
+        "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+        "resource_or_delivery_limitations": null
+      },
+      "changed_fields": [
+        "dimensions.evidence_boundaries",
+        "case_result"
+      ],
+      "adjudication_identity": {
+        "sha256": "d6320a6c016636d5dab620483ff35828cdef663f2b1cbac43f719aa845843448",
+        "bytes": 3427
+      },
+      "fixed_key_unchanged": true
+    },
+    {
+      "output_id": "775d4c208f44",
+      "finding": "Conditional full-coverage claim scoping was misread as a question about known map membership.",
+      "initial_record": {
+        "output_id": "775d4c208f44",
+        "case_id": "c04",
+        "terminal_state": "completed",
+        "dimensions": {
+          "relationships": {
+            "grade": "pass",
+            "basis": "Ten additions, six matches, README mismatch, new note and separate review match are identified.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          },
+          "evidence_boundaries": {
+            "grade": "pass",
+            "basis": "Preserves fileset and operational limits.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          },
+          "next_action": {
+            "grade": "fail",
+            "basis": "Asks to clarify whether research-record.json is included despite its inclusion in the supplied seven-file map.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          },
+          "final_quality": {
+            "grade": "incomplete",
+            "basis": "Does not cite or discuss the contents of either changed text; tool retrieval alone does not supply a material conclusion in the note.",
+            "source": "fixed evaluator key; delivered note and retained tool trace"
+          }
+        },
+        "false_steering_events": [
+          {
+            "type": "unnecessary_question",
+            "passage": "Clarify which of the added review, verification, research-record, and publication-context files are included",
+            "source": "key: Case facts; research-record.json is a preserved equal reviewed input."
+          }
+        ],
+        "case_result": "fail",
+        "correction": "not_applicable: no visible authored correction in the final note or function-only trace",
+        "resource_or_delivery_limitations": null
+      },
+      "changed_fields": [
+        "dimensions.next_action",
+        "false_steering_events",
+        "case_result"
+      ],
+      "adjudication_identity": {
+        "sha256": "b66367eeb3c6e5580b94e35b4a90135d283afcb3229a399cafa31120058dec37",
+        "bytes": 4855
+      },
+      "fixed_key_unchanged": true
+    }
+  ]
+}

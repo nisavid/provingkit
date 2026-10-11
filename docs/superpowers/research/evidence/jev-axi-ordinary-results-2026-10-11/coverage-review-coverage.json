@@ -1,0 +1,137 @@
+{
+  "status": "clean within the joined frozen scopes",
+  "candidate": {
+    "artifact": "coverage-results.md",
+    "sha256": "c3c78b22a35c8eb28c123f95b1a5b3f402e06fabb5aa73b87e54261255a48b7c",
+    "bytes": 7421
+  },
+  "case_projection": {
+    "artifact": "coverage-case-results.json",
+    "sha256": "cfbff3f99a3180fde866785c2c6ae5e34c8ad61cf3a466537755d7818d95927b",
+    "bytes": 39390
+  },
+  "fresh_review": {
+    "artifact": "coverage-review.md",
+    "sha256": "76876750bd63e04409350f106650bb838cc7491c6db2750871fe15d568624828",
+    "bytes": 4065,
+    "scopes": [
+      "Selected delivered-note grade and false-steering event",
+      "Dependent sixteen-cell reconciliation, aggregate report and public grade projection",
+      "Two additional completed native-client usage records and their arithmetic"
+    ],
+    "native_record_identity": {
+      "sha256": "bf7cc7d49e12f5f2505862125cad3f6b4d1acd31cdb7e1968c871279cba85f39",
+      "bytes": 1933
+    }
+  },
+  "retained_review": {
+    "artifact": "coverage-retained-review.md",
+    "sha256": "31b9a676bb5635226b6c305781b0578e8c77433a62d562debf3bcc550ba6074b",
+    "bytes": 10593,
+    "scopes": [
+      "Semantic grades of the fifteen unchanged cell records, including delivery and unattempted records",
+      "Request, schedule, evidence-tool/replay, token/value/timing accounting and its recorded limits",
+      "Four original supplemental review-client usage records"
+    ],
+    "native_record_identity": {
+      "sha256": "181582dd00410481937fa5112279560eea2065762cda573eedf0f879aa270c92",
+      "bytes": 1933
+    },
+    "unchanged_grade_records": 15,
+    "overall_prior_status": "non-clean; only dependency-proven unaffected scopes are retained"
+  },
+  "retained_dependencies": [
+    {
+      "locally_retained_artifact": "outputs.json",
+      "sha256": "72723cbb3508e16eea1e030493aed605c1fa7c274ea46e449c763711d2bf56d9",
+      "bytes": 51331
+    },
+    {
+      "locally_retained_artifact": "attempts-compact.json",
+      "sha256": "a506b23a0881c7f7a23c5fd6bf7664db2e2872a395352a71a643f6ce20e55652",
+      "bytes": 149995
+    },
+    {
+      "locally_retained_artifact": "tools-compact.json",
+      "sha256": "33bd263491ead656c384a5df2f1f0892ae600126a18e3420b9524380b7a4bcbf",
+      "bytes": 72352
+    },
+    {
+      "locally_retained_artifact": "sources-compact.json",
+      "sha256": "8ebded9c1d00ca3c8285757a5aeebf27a0d0c814ed8617cf4be1047ce906e49b",
+      "bytes": 77126
+    },
+    {
+      "locally_retained_artifact": "projection-notes.md",
+      "sha256": "8eeaf0ad4e1e438fc632e942bd236b5f5726e8a93dda41b8cba09fe590605252",
+      "bytes": 1617
+    },
+    {
+      "locally_retained_artifact": "state.json",
+      "sha256": "c8957bd8351cede518f83430dfa6617b33e10153c36daed59dbf6e72fd68f051",
+      "bytes": 4723
+    },
+    {
+      "locally_retained_artifact": "summary.json",
+      "sha256": "7e314499f841ecfce8d15c3929758c570b379fb804bb2686f6f962006319895a",
+      "bytes": 6992
+    },
+    {
+      "locally_retained_artifact": "evaluator-key.md",
+      "sha256": "9133211def7e0961e04a9e036c370e0d1f6117f08d0a16b5ae05043a88fd0edd",
+      "bytes": 10295
+    },
+    {
+      "locally_retained_artifact": "coverage-execution-contract.md",
+      "sha256": "339043ee55615bb31cd24735c99452b82912ef3cfe05b3e554ad53211e8438aa",
+      "bytes": 16327
+    },
+    {
+      "locally_retained_artifact": "invocation-accounting.md",
+      "sha256": "4cfe65845cc60303e4f4f3f5f69264dc50591f65a0b8bc1f78e6c3c7cae406d3",
+      "bytes": 15252
+    },
+    {
+      "locally_retained_artifact": "reconcile-coverage.py",
+      "sha256": "73885e35e3a1ef75d89dd0d3f889c0effa5dde137f17bb9af7c57c0db46238b3",
+      "bytes": 9788
+    },
+    {
+      "locally_retained_artifact": "review-usage-before-final.json",
+      "sha256": "b766b98db99bd233623e10d43d1b8c9a932515cd5f96b673a26c57ff4dd4ed3d",
+      "bytes": 7812
+    }
+  ],
+  "corrections": [
+    {
+      "artifact": "coverage-adjudication-01.md",
+      "sha256": "d6320a6c016636d5dab620483ff35828cdef663f2b1cbac43f719aa845843448",
+      "bytes": 3427
+    },
+    {
+      "artifact": "coverage-adjudication-02.md",
+      "sha256": "b66367eeb3c6e5580b94e35b4a90135d283afcb3229a399cafa31120058dec37",
+      "bytes": 4855
+    }
+  ],
+  "unusable_initial_review": {
+    "artifact": "coverage-incomplete-review.md",
+    "sha256": "202e9e8282eee9b8c5f0e5a5914d993962c3936815322735c0f56bb0a069c332",
+    "bytes": 1031,
+    "reason": "Prescribed literal-read boundary violated before substantive review; no clean credit."
+  },
+  "private_scope_proof_identity": {
+    "sha256": "8f54181f2229d43e38ca9772d246fde3e97bee7b560867826c91eab3f6c05451",
+    "bytes": 5672
+  },
+  "private_final_synthesis_identity": {
+    "sha256": "1efa71395a702e34922b697d77458c4ceca17952e792507d8a6f8e2d42d95138",
+    "bytes": 1574
+  },
+  "assurance": "Ordinary independent native executions under the same coordinator; controller-observed launch/result, self-reported effective model and authority, no portable or product attestation.",
+  "limits": [
+    "No full raw-request, transport, acquisition, evaluator-isolation or billing audit is claimed.",
+    "Final focused review counters were acquired after it completed; its own counters were not in its reviewed inputs.",
+    "The final ledger closure and public projection use deterministic identity and arithmetic checks after semantic review."
+  ]
+}
