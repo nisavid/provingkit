@@ -8,6 +8,14 @@ import json
 from pathlib import Path
 
 
+class InvalidJsonConstant(ValueError):
+    """A numeric token outside JSON syntax appeared in the request."""
+
+
+def reject_json_constant(value: str) -> None:
+    raise InvalidJsonConstant(value)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--request", required=True, type=Path)
@@ -19,14 +27,14 @@ def main() -> int:
 
     try:
         with arguments.request.open("r", encoding="utf-8") as request:
-            json.load(request)
+            json.load(request, parse_constant=reject_json_constant)
     except OSError:
         check = {
             "id": "request",
             "outcome": "missing",
             "reason": "The request could not be opened.",
         }
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, InvalidJsonConstant):
         check = {
             "id": "request_content",
             "outcome": "invalid",

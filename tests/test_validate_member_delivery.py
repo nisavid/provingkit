@@ -17,6 +17,9 @@ class MemberDeliveryCliTests(unittest.TestCase):
         requests = (
             ("unfinished value", b'{"schema_version":'),
             ("UTF-8 NULs", bytes([0, 91, 0, 93])),
+            ("NaN token", b"NaN"),
+            ("positive infinity token", b"Infinity"),
+            ("negative infinity token", b"-Infinity"),
             ("unclosed deep arrays", b"[" * 2048),
             ("unclosed arrays at byte boundary", b"[" * 4096),
         )
