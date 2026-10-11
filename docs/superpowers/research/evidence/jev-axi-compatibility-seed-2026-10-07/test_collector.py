@@ -2,11 +2,14 @@
 import hashlib
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
+from unittest.mock import patch
 
 
 HERE = Path(__file__).resolve().parent
@@ -23,6 +26,766 @@ def encoded(value):
 
 
 class CollectorCLI(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        base = Path(temporary.name)
+        hooks = base / "empty-hooks"
+        hooks.mkdir()
+        config = base / "gitconfig"
+        config.write_text(
+            "[user]\nname = Compatibility Fixture\nemail = fixture@example.invalid\n"
+            "[commit]\ngpgsign = false\n[core]\nhooksPath = " + str(hooks) + "\n"
+        )
+        environment = {name: value for name, value in os.environ.items()
+                       if not name.startswith("GIT_")}
+        environment.update(GIT_CONFIG_GLOBAL=str(config),
+                           GIT_CONFIG_SYSTEM=os.devnull, GIT_CONFIG_NOSYSTEM="1")
+        changing_environment = patch.dict(os.environ, environment, clear=True)
+        changing_environment.start()
+        self.addCleanup(changing_environment.stop)
+
+    def test_native_cli_discovers_profile_requires_acceptance_and_refuses_drift(self):
+        cli, _, legacy = self.prepare_failure_fixture("sys.stdin.buffer.read()\n")
+        base = legacy.parent
+        packet = base / "packet"
+        codex_home = base / "codex-home"
+        codex_home.mkdir()
+        instruction = codex_home / "AGENTS.md"
+        instruction.write_text("# Synthetic native instructions\n")
+        (codex_home / "config.toml").write_text(
+            '[mcp_servers.alpha]\ncommand = "unused"\n'
+        )
+
+        required = (
+            "checkpointing-and-publishing-git-work",
+            "tdd",
+            "code-review",
+            "capturing-agent-procedures",
+            "writing-for-people",
+            "review",
+            "intent",
+            "runtime",
+            "structure",
+            "loop",
+            "adjudicate",
+            "revise",
+            "delegating-cross-agent-work",
+            "choosing-agent-models",
+        )
+        skills = []
+        for name in required:
+            path = codex_home / "skills" / name / "SKILL.md"
+            path.parent.mkdir(parents=True)
+            path.write_text(f"# {name}\n")
+            reference = path.parent / "references" / "contract.md"
+            reference.parent.mkdir()
+            reference.write_text(f"# {name} contract\n")
+            skills.append({
+                "name": name,
+                "enabled": True,
+                "scope": "user",
+                "path": str(path),
+            })
+        jev_axi = codex_home / "skills" / "jev-axi" / "SKILL.md"
+        jev_axi.parent.mkdir(parents=True)
+        jev_axi.write_text("# jev-axi\n")
+        skills.append({
+            "name": "jev-axi",
+            "enabled": True,
+            "scope": "user",
+            "path": str(jev_axi),
+        })
+
+        effective_config = {
+            "config": {
+                "model": "gpt-6.1-sol",
+                "model_reasoning_effort": "medium",
+                "agents": {
+                    # A legitimate installed setting is observation data. The
+                    # collector must not replace or reject it.
+                    "max_concurrent_threads_per_session": 8,
+                },
+            },
+            "origins": {},
+        }
+        requirements = {"requirements": None}
+        connectors = [
+            {
+                "name": "alpha",
+                "pluginId": None,
+                "runtimeStatus": "disabled",
+                "tools": {},
+            },
+            {
+                "name": "cua_repl",
+                "pluginId": "unified-computer-use@openai-bundled",
+                "runtimeStatus": "disabled",
+                "tools": {},
+            },
+        ]
+
+        executable = base / "codex-fixture"
+        executable.write_text(
+            "#!" + sys.executable + "\n"
+            + "SKILLS = " + repr(skills) + "\n"
+            + "EFFECTIVE_CONFIG = " + repr(effective_config) + "\n"
+            + "REQUIREMENTS = " + repr(requirements) + "\n"
+            + "CONNECTORS = " + repr(connectors) + "\n"
+            + "INSTRUCTION = " + repr(str(instruction)) + "\n"
+            + r'''
+import json
+from pathlib import Path
+import sys
+
+if sys.argv[1:] == ["--version"]:
+    print("codex-cli 9.9.9")
+    raise SystemExit(0)
+
+assert sys.argv[1:5] == [
+    "--no-daemon", "app-server", "--stdio", "--strict-config"
+], sys.argv
+arguments = sys.argv[1:]
+for feature in (
+    "hooks", "plugin_hooks", "memories", "apps", "shell_snapshot",
+    "browser_use", "computer_use", "image_generation",
+):
+    position = arguments.index("--disable")
+    assert feature in arguments, (feature, arguments)
+assert "agents.max_concurrent_threads_per_session=2" not in arguments
+assert not any("synthetic_assessments" in value for value in arguments)
+
+counter = Path(__file__).with_name("native-launch-count")
+launches = int(counter.read_text()) if counter.exists() else 0
+counter.write_text(str(launches + 1))
+
+def receive(method=None):
+    message = json.loads(sys.stdin.buffer.readline())
+    if method is not None:
+        assert message["method"] == method, message
+    return message
+
+def emit(request, result):
+    sys.stdout.buffer.write((json.dumps({
+        "id": request["id"], "result": result,
+    }) + "\n").encode())
+    sys.stdout.buffer.flush()
+
+def notify(message):
+    sys.stdout.buffer.write((json.dumps(message) + "\n").encode())
+    sys.stdout.buffer.flush()
+
+first = receive("initialize")
+emit(first, {
+    "userAgent": "synthetic-native/9.9.9",
+    "codexHome": str(Path(INSTRUCTION).parent),
+    "platformFamily": "unix",
+    "platformOs": "linux",
+})
+receive("initialized")
+
+listing = receive("model/list")
+emit(listing, {
+    "data": [{
+        "id": "synthetic-sol",
+        "model": "gpt-6.1-sol",
+        "displayName": "Synthetic Sol",
+        "description": "Cooperative native fixture",
+        "hidden": False,
+        "isDefault": True,
+        "defaultReasoningEffort": "medium",
+        "supportedReasoningEfforts": [{
+            "reasoningEffort": "medium",
+            "description": "Medium",
+        }],
+    }],
+    "nextCursor": None,
+})
+
+config = receive("config/read")
+assert config["params"] == {
+    "cwd": str(Path.cwd()),
+    "includeLayers": False,
+}, config
+emit(config, EFFECTIVE_CONFIG)
+
+requirements = receive("configRequirements/read")
+assert requirements.get("params") is None, requirements
+emit(requirements, REQUIREMENTS)
+
+skills = receive("skills/list")
+assert skills["params"] == {
+    "cwds": [str(Path.cwd())],
+    "forceReload": True,
+}, skills
+# Deliberately vary row order between launches.
+returned_skills = list(reversed(SKILLS)) if launches else SKILLS
+emit(skills, {
+    "data": [{
+        "cwd": str(Path.cwd()),
+        "skills": returned_skills,
+        "errors": [],
+    }],
+})
+
+next_message = receive()
+if next_message["method"] == "mcpServerStatus/list":
+    assert next_message["params"] == {
+        "cursor": None,
+        "detail": "full",
+    }, next_message
+    emit(next_message, {
+        "data": list(reversed(CONNECTORS)),
+        "nextCursor": None,
+    })
+    # Preparation must stop here without creating a thread or turn.
+    sys.stdin.buffer.read()
+    raise SystemExit(0)
+
+assert next_message["method"] == "thread/start", next_message
+overlay = Path.cwd() / "AGENTS.override.md"
+assert overlay.read_text() == (
+    "# Compatibility observation instruction overlay\n\n"
+    "For this task, do not invoke, consult, or use `jev-axi` or any "
+    "Jev assessment.\n"
+    "All other standing instructions remain in effect.\n"
+), overlay.read_text()
+assert next_message["params"] == {
+    "cwd": str(Path.cwd()),
+    "model": "gpt-6.1-sol",
+    "approvalPolicy": "on-request",
+    "approvalsReviewer": "user",
+    "sandbox": "workspace-write",
+    "ephemeral": False,
+    "historyMode": "paginated",
+    "allowProviderModelFallback": False,
+    "runtimeWorkspaceRoots": [str(Path.cwd())],
+    "environments": [],
+    "config": {
+        "sandbox_workspace_write": {
+            "writable_roots": [],
+            "network_access": False,
+            "exclude_tmpdir_env_var": True,
+            "exclude_slash_tmp": True,
+        },
+    },
+}, next_message
+emit(next_message, {
+    "model": "gpt-6.1-sol",
+    "cwd": str(Path.cwd()),
+    "approvalPolicy": "on-request",
+    "approvalsReviewer": "user",
+    "instructionSources": [INSTRUCTION, str(overlay)],
+    "runtimeWorkspaceRoots": [str(Path.cwd())],
+    "reasoningEffort": "medium",
+    "modelProvider": "unrelated-provider",
+    "serviceTier": "unrelated-tier",
+    "activePermissionProfile": {
+        "id": "unrelated-profile",
+        "extends": None,
+    },
+    "sandbox": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": False,
+        "excludeTmpdirEnvVar": True,
+        "excludeSlashTmp": True,
+    },
+    "thread": {
+        "id": "native-thread",
+        "cliVersion": "9.9.9",
+        "turns": [],
+    },
+})
+
+servers = receive("mcpServerStatus/list")
+assert servers["params"] == {
+    "threadId": "native-thread",
+    "cursor": None,
+    "detail": "full",
+}, servers
+emit(servers, {
+    "data": CONNECTORS,
+    "nextCursor": None,
+})
+
+task = receive("turn/start")
+assert task["params"] == {
+    "threadId": "native-thread",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "cwd": str(Path.cwd()),
+    "approvalPolicy": "on-request",
+    "approvalsReviewer": "user",
+    "runtimeWorkspaceRoots": [str(Path.cwd())],
+    "environments": [],
+    "input": [{
+        "type": "text",
+        "text": "Add JSON output.",
+        "text_elements": [],
+    }],
+    "sandboxPolicy": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": False,
+        "excludeTmpdirEnvVar": True,
+        "excludeSlashTmp": True,
+    },
+}, task
+emit(task, {
+    "turn": {
+        "id": "native-turn",
+        "items": [],
+        "status": "inProgress",
+    },
+})
+
+if (Path.cwd().parent / "contradictory-settings").exists():
+    notify({
+        "method": "thread/settings/updated",
+        "params": {
+            "threadId": "native-thread",
+            "threadSettings": {
+                "model": "gpt-6.1-sol",
+                "effort": "medium",
+                "cwd": str(Path.cwd().parent),
+                "approvalPolicy": "on-request",
+                "approvalsReviewer": "user",
+                "sandboxPolicy": {
+                    "type": "workspaceWrite",
+                    "writableRoots": [],
+                    "networkAccess": False,
+                    "excludeTmpdirEnvVar": True,
+                    "excludeSlashTmp": True,
+                },
+            },
+        },
+    })
+
+sys.stderr.buffer.write(b"x" * 2097153)
+sys.stderr.buffer.flush()
+Path("inventory.py").write_text("DEFAULT = 'json'\n")
+notify({
+    "method": "item/completed",
+    "params": {
+        "threadId": "native-thread",
+        "turnId": "native-turn",
+        "item": {
+            "type": "fileChange",
+            "id": "native-change",
+            "status": "completed",
+        },
+    },
+})
+steer = receive("turn/steer")
+assert steer["params"]["threadId"] == "native-thread", steer
+assert steer["params"]["expectedTurnId"] == "native-turn", steer
+assert steer["params"]["input"] == [{
+    "type": "text",
+    "text": "Preserve the existing default.",
+    "text_elements": [],
+}], steer
+emit(steer, {"turnId": "native-turn"})
+Path("inventory.py").write_text("DEFAULT = 'text'\nJSON_FLAG = True\n")
+completed = {
+    "method": "turn/completed",
+    "params": {
+        "threadId": "native-thread",
+        "turn": {
+            "id": "native-turn",
+            "status": "completed",
+            "error": None,
+        },
+    },
+}
+tail_request = {
+    "id": 99,
+    "method": "item/commandExecution/requestApproval",
+    "params": {
+        "threadId": "native-thread",
+        "turnId": "native-turn",
+        "itemId": "tail",
+        "reason": "tail request",
+    },
+}
+if (Path.cwd().parent / "completion-tail-same-write").exists():
+    sys.stdout.buffer.write((
+        json.dumps(completed) + "\n"
+        + json.dumps(tail_request) + "\n"
+    ).encode())
+    sys.stdout.buffer.flush()
+elif (Path.cwd().parent / "completion-tail-separate-writes").exists():
+    notify(completed)
+    notify(tail_request)
+else:
+    notify(completed)
+sys.stdin.buffer.read()
+''')
+        executable.chmod(0o755)
+
+        environment = dict(os.environ, CODEX_HOME=str(codex_home))
+
+        def native_cli(*args):
+            return subprocess.run(
+                [sys.executable, "-B", *map(str, args)],
+                capture_output=True,
+                timeout=30,
+                env=environment,
+            )
+
+        def prepare_native(output):
+            result = native_cli(
+                COLLECTOR,
+                "prepare",
+                "--native",
+                "--native-executable", executable,
+                "--native-executable-sha256", sha(executable.read_bytes()),
+                "--model", "gpt-6.1-sol",
+                "--effort", "medium",
+                "--seed-package", packet,
+                "--seed-receipt-sha256",
+                sha((packet / "receipt.json").read_bytes()),
+                "--implementation", "inventory.py",
+                "--output", output,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+
+        output = base / "native-observation"
+        prepare_native(output)
+        self.assertEqual((base / "native-launch-count").read_text(), "1")
+
+        preparation_sent = [
+            json.loads(line)
+            for line in (
+                output / "preparation/profile-discovery-sent.jsonl"
+            ).read_bytes().splitlines()
+        ]
+        self.assertEqual(
+            [message["method"] for message in preparation_sent],
+            [
+                "initialize",
+                "initialized",
+                "model/list",
+                "config/read",
+                "configRequirements/read",
+                "skills/list",
+                "mcpServerStatus/list",
+            ],
+        )
+        self.assertFalse(any(
+            message["method"] in {"thread/start", "turn/start"}
+            for message in preparation_sent
+        ))
+
+        manifest_raw = (output / "manifest.json").read_bytes()
+        manifest = json.loads(manifest_raw)
+        profile = json.loads((output / "profile.json").read_bytes())
+        self.assertEqual(manifest["schema"], "compatibility-native-observation/v1")
+        baseline = json.loads((output / manifest["git_baseline"]["path"]).read_bytes())
+        self.assertEqual(baseline["status"], "ready")
+        self.assertIn("AGENTS.override.md", [entry["path"] for entry in baseline["source_inventory"]])
+        self.assertEqual(manifest["deadline_seconds"], 3600)
+        self.assertEqual(manifest["max_output_bytes"], 67108864)
+        self.assertEqual(manifest["shutdown_wait_seconds"], [5, 5])
+        self.assertIn("--disable", manifest["command"])
+        self.assertIn("hooks", manifest["command"])
+        self.assertIn("plugin_hooks", manifest["command"])
+        self.assertNotIn(
+            "agents.max_concurrent_threads_per_session=2",
+            manifest["command"],
+        )
+        self.assertFalse(any(
+            "synthetic_assessments" in value
+            for value in manifest["command"]
+        ))
+        self.assertIsNone(
+            profile["assessment_omission"]["runtime_assessments_absent"]
+        )
+        self.assertEqual(
+            profile["assessment_omission"]["mechanism"],
+            "bound-cooperative-instruction-overlay",
+        )
+        self.assertEqual(
+            profile["assessment_omission"]["product_enforcement"],
+            "unobserved",
+        )
+        self.assertEqual(
+            profile["assessment_omission"]["overlay"],
+            profile["instructions"][1],
+        )
+        self.assertEqual(
+            profile["expected_instruction_sources"],
+            [profile["instructions"][0]["path"],
+             profile["instructions"][1]["path"]],
+        )
+        self.assertEqual(
+            Path(profile["instructions"][1]["path"]).read_text(),
+            "# Compatibility observation instruction overlay\n\n"
+            "For this task, do not invoke, consult, or use `jev-axi` or any "
+            "Jev assessment.\n"
+            "All other standing instructions remain in effect.\n",
+        )
+        jev_entries = [
+            entry for entry in profile["skills"]
+            if entry["name"].split(":")[-1] == "jev-axi"
+        ]
+        self.assertTrue(jev_entries)
+        self.assertTrue(any(entry["enabled"] for entry in jev_entries))
+        self.assertEqual(profile["native_tasks_started"], 0)
+        for name in ("loop", "adjudicate", "revise"):
+            entry, = [
+                item for item in profile["skills"]
+                if item["name"].split(":")[-1] == name
+            ]
+            root = str(Path(entry["path"]).parent)
+            retained = profile["resource_trees"][root]
+            self.assertIn(
+                str(Path(root) / "references" / "contract.md"),
+                [item["path"] for item in retained],
+            )
+
+        run = (
+            COLLECTOR,
+            "run",
+            "--manifest", output / "manifest.json",
+            "--expected-sha256", sha(manifest_raw),
+        )
+        refused = native_cli(*run)
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn(
+            b"separately accepted native invocation required",
+            refused.stderr,
+        )
+        self.assertFalse((output / "attempt").exists())
+        self.assertEqual((base / "native-launch-count").read_text(), "1")
+
+        result = native_cli(*run, "--accept-native")
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertEqual((base / "native-launch-count").read_text(), "2")
+        attempt = output / "attempt"
+        outcome_raw = (attempt / "outcome.json").read_bytes()
+        outcome = json.loads(outcome_raw)
+        self.assertEqual(outcome["status"], "native-observation-completed")
+        self.assertTrue(outcome["amendment_rpc_accepted"])
+        self.assertEqual(outcome["semantic_success"], "not-assessed")
+        self.assertIsNone(
+            outcome["assessment_omission"]["runtime_assessments_absent"]
+        )
+        self.assertEqual(outcome["permission_enforcement"], "unobserved")
+        self.assertEqual(
+            outcome["usage_observations"]["whole_child_usage"]["status"],
+            "unknown",
+        )
+        self.assertEqual(
+            (attempt / "collector-stderr.log").read_bytes(),
+            b"x" * 2097153,
+        )
+        process = json.loads(
+            (attempt / "collector-process.json").read_bytes()
+        )
+        self.assertEqual(process["retained_prefix_limit"], 67108864)
+        self.assertEqual(outcome["final_source"]["status"], "complete")
+        self.assertNotEqual(
+            native_cli(*run, "--accept-native").returncode,
+            0,
+        )
+        self.assertEqual(
+            (attempt / "outcome.json").read_bytes(),
+            outcome_raw,
+        )
+
+        for mode in (
+            "completion-tail-same-write",
+            "completion-tail-separate-writes",
+        ):
+            with self.subTest(native_completion_tail=mode):
+                tail_output = base / ("native-" + mode)
+                prepare_native(tail_output)
+                (tail_output / mode).write_text("enabled\n")
+                tail_manifest = (
+                    tail_output / "manifest.json"
+                ).read_bytes()
+                tail_result = native_cli(
+                    COLLECTOR,
+                    "run",
+                    "--manifest", tail_output / "manifest.json",
+                    "--expected-sha256", sha(tail_manifest),
+                    "--accept-native",
+                )
+                self.assertNotEqual(tail_result.returncode, 0)
+                tail_attempt = tail_output / "attempt"
+                tail_outcome = json.loads(
+                    (tail_attempt / "outcome.json").read_bytes()
+                )
+                self.assertEqual(tail_outcome["status"], "incomplete")
+                retained_request = json.loads(
+                    (
+                        tail_attempt / "native-unanswered-request.json"
+                    ).read_bytes()
+                )
+                self.assertEqual(retained_request["id"], 99)
+                self.assertEqual(
+                    retained_request["method"],
+                    "item/commandExecution/requestApproval",
+                )
+                tail_rows = [
+                    json.loads(line)
+                    for line in (
+                        tail_attempt / "receipts.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                received = [
+                    row["message"]
+                    for row in tail_rows
+                    if row["kind"] == "received"
+                ]
+                self.assertEqual(
+                    received[-2]["method"],
+                    "turn/completed",
+                )
+                self.assertEqual(received[-1], retained_request)
+
+        settings_output = base / "native-contradictory-settings"
+        prepare_native(settings_output)
+        (
+            settings_output / "contradictory-settings"
+        ).write_text("enabled\n")
+        settings_manifest = (
+            settings_output / "manifest.json"
+        ).read_bytes()
+        settings_result = native_cli(
+            COLLECTOR,
+            "run",
+            "--manifest", settings_output / "manifest.json",
+            "--expected-sha256", sha(settings_manifest),
+            "--accept-native",
+        )
+        self.assertNotEqual(settings_result.returncode, 0)
+        settings_outcome = json.loads(
+            (
+                settings_output / "attempt" / "outcome.json"
+            ).read_bytes()
+        )
+        self.assertEqual(settings_outcome["status"], "incomplete")
+        self.assertIn(
+            "native turn settings differ",
+            settings_outcome["error"],
+        )
+
+        drift_output = base / "native-drift-observation"
+        prepare_native(drift_output)
+        launches_before_drift = (
+            base / "native-launch-count"
+        ).read_text()
+        instruction.write_text("# Drifted native instructions\n")
+        drift_manifest = (drift_output / "manifest.json").read_bytes()
+        drift = native_cli(
+            COLLECTOR,
+            "run",
+            "--manifest", drift_output / "manifest.json",
+            "--expected-sha256", sha(drift_manifest),
+            "--accept-native",
+        )
+        self.assertNotEqual(drift.returncode, 0)
+        self.assertEqual(
+            (base / "native-launch-count").read_text(),
+            launches_before_drift,
+        )
+        drift_attempt = drift_output / "attempt"
+        self.assertTrue((drift_attempt / "outcome.json").is_file())
+        self.assertFalse(
+            (drift_attempt / "collector-process.json").exists()
+        )
+        self.assertFalse(
+            (drift_attempt / "collector-sent.jsonl").exists()
+        )
+
+        instruction.write_text("# Synthetic native instructions\n")
+        overlay_output = base / "native-overlay-drift-observation"
+        prepare_native(overlay_output)
+        launches_before_overlay_drift = (
+            base / "native-launch-count"
+        ).read_text()
+        overlay = overlay_output / "project" / "AGENTS.override.md"
+        overlay.write_text("# Removed omission instruction\n")
+        overlay_manifest = (
+            overlay_output / "manifest.json"
+        ).read_bytes()
+        overlay_drift = native_cli(
+            COLLECTOR,
+            "run",
+            "--manifest", overlay_output / "manifest.json",
+            "--expected-sha256", sha(overlay_manifest),
+            "--accept-native",
+        )
+        self.assertNotEqual(overlay_drift.returncode, 0)
+        self.assertEqual(
+            (base / "native-launch-count").read_text(),
+            launches_before_overlay_drift,
+        )
+        overlay_attempt = overlay_output / "attempt"
+        overlay_outcome = json.loads(
+            (overlay_attempt / "outcome.json").read_bytes()
+        )
+        self.assertIn(
+            "baseline Git state changed before task delivery",
+            overlay_outcome["error"],
+        )
+        self.assertEqual(overlay_outcome["status"], "incomplete")
+        overlay_preflight = json.loads(
+            (overlay_attempt / "baseline-preflight" / "preflight.json").read_bytes()
+        )
+        self.assertEqual(overlay_preflight["status"], "incomplete")
+        self.assertFalse(
+            (overlay_attempt / "collector-process.json").exists()
+        )
+        self.assertFalse(
+            (overlay_attempt / "collector-sent.jsonl").exists()
+        )
+
+        for name in ("loop", "adjudicate", "revise"):
+            with self.subTest(resource_drift=name):
+                resource_output = (
+                    base / f"native-{name}-resource-drift-observation"
+                )
+                prepare_native(resource_output)
+                launches_before_resource_drift = (
+                    base / "native-launch-count"
+                ).read_text()
+                reference = (
+                    codex_home / "skills" / name
+                    / "references" / "contract.md"
+                )
+                original = reference.read_text()
+                reference.write_text(original + "# Drift\n")
+                resource_manifest = (
+                    resource_output / "manifest.json"
+                ).read_bytes()
+                resource_drift = native_cli(
+                    COLLECTOR,
+                    "run",
+                    "--manifest", resource_output / "manifest.json",
+                    "--expected-sha256", sha(resource_manifest),
+                    "--accept-native",
+                )
+                self.assertNotEqual(resource_drift.returncode, 0)
+                self.assertEqual(
+                    (base / "native-launch-count").read_text(),
+                    launches_before_resource_drift,
+                )
+                resource_attempt = resource_output / "attempt"
+                resource_outcome = json.loads(
+                    (resource_attempt / "outcome.json").read_bytes()
+                )
+                self.assertIn(
+                    "authoring resource tree differs",
+                    resource_outcome["error"],
+                )
+                self.assertFalse(
+                    (resource_attempt / "collector-sent.jsonl").exists()
+                )
+                reference.write_text(original)
+
     def prepare_usage_fixture(self, notifications, reject=False):
         tail = "for message in " + repr(notifications) + ":\n    emit(message)\n"
         tail += '''
@@ -140,6 +903,115 @@ emit({"method": "turn/completed", "params": {"threadId": "thread-1",
                     "event_sequence": received[-1]["sequence"]})
                 self.assertNotEqual(cli(*run).returncode, 0)
                 self.assertEqual({p.name: p.read_bytes() for p in attempt.iterdir() if p.is_file()}, before)
+
+    def test_tool_inventory_distinguishes_tested_files_from_later_documentation_edit(self):
+        cli, run, output = self.prepare_failure_fixture(r'''
+import time
+
+def completed(ident, command, output):
+    emit({"method": "item/completed", "params": {
+        "threadId": "thread-1", "turnId": "turn-1",
+        "item": {"type": "commandExecution", "id": ident,
+                 "status": "completed", "command": command,
+                 "aggregatedOutput": output, "exitCode": 0}}})
+    deadline = time.monotonic() + 2
+    while time.monotonic() < deadline:
+        rows = [json.loads(line) for line in
+                Path("../attempt/receipts.jsonl").read_text().splitlines()]
+        if any(row["kind"] == "tool-completed" and row["item"]["id"] == ident
+               for row in rows):
+            return
+        time.sleep(0.005)
+    raise RuntimeError("collector did not record the tool boundary")
+
+completed("tests", "python -m unittest", "Ran 3 tests\nOK\n")
+Path("README.md").write_bytes(b"Updated usage\n")
+Path("inventory.py").write_bytes(b"DEFAULT = 'json'\n")
+completed("edit", "update files", "")
+steer = receive()
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+emit({"method": "turn/completed", "params": {"threadId": "thread-1",
+    "turn": {"id": "turn-1", "status": "completed", "error": None}}})
+sys.stdin.buffer.read()
+''', extra_seed_files={"README.md": b"Original usage\n"})
+        result = cli(*run)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        attempt = output / "attempt"
+        rows = [json.loads(line) for line in
+                (attempt / "receipts.jsonl").read_bytes().splitlines()]
+        tests, = [row for row in rows if row["kind"] == "tool-completed"
+                  and row["item"]["id"] == "tests"]
+        self.assertIn("source_inventory", tests)
+        inventory = tests["source_inventory"]
+        self.assertEqual(inventory["status"], "complete")
+        files = {entry["path"]: entry for entry in inventory["files"]}
+        self.assertEqual(files["README.md"]["sha256"], sha(b"Original usage\n"))
+        self.assertEqual(files["inventory.py"]["sha256"], sha(b"DEFAULT = 'text'\n"))
+        self.assertEqual(tests["item"]["aggregatedOutput"], "Ran 3 tests\nOK\n")
+        original = next(row for row in rows if row["sequence"] == tests["event_sequence"])
+        self.assertEqual(original["message"]["params"]["item"], tests["item"])
+        final = json.loads((attempt / "final-source.json").read_bytes())
+        self.assertNotEqual(inventory["identity"], final["identity"])
+        self.assertGreaterEqual(inventory["elapsed_seconds"], 0)
+        self.assertIn("started_at", inventory)
+        self.assertIn("finished_at", inventory)
+
+    def test_started_and_completed_inventories_match_a_later_test_to_final_files(self):
+        variants = {
+            "added": 'Path("new_module.py").write_bytes(b"NEW = True\\n")',
+            "removed": 'Path("helper.py").unlink()',
+            "mode": 'Path("helper.py").chmod(0o755)',
+            "undeclared": 'Path("helper.py").write_bytes(b"VALUE = 2\\n")',
+            "documentation": 'Path("README.md").write_bytes(b"Updated\\n")',
+        }
+        for name, mutation in variants.items():
+            with self.subTest(change=name):
+                cli, run, output = self.prepare_failure_fixture(r'''
+import time
+
+def boundary(method, ident):
+    emit({"method": method, "params": {"threadId": "thread-1", "turnId": "turn-1",
+        "item": {"type": "commandExecution", "id": ident,
+                 "command": "python -m unittest", "status": "completed",
+                 "exitCode": 0, "aggregatedOutput": "Ran 3 tests\nOK\n"}}})
+    deadline = time.monotonic() + 0.5
+    while time.monotonic() < deadline:
+        rows = [json.loads(line) for line in
+                Path("../attempt/receipts.jsonl").read_text().splitlines()]
+        if any(row["kind"] == "tool-" + method.split("/")[1]
+               and row["item"]["id"] == ident for row in rows):
+            return
+        time.sleep(0.005)
+
+boundary("item/started", "old-tests")
+boundary("item/completed", "old-tests")
+MUTATION
+Path("inventory.py").write_bytes(b"DEFAULT = 'json'\n")
+boundary("item/completed", "edit")
+steer = receive()
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+boundary("item/started", "final-tests")
+boundary("item/completed", "final-tests")
+emit({"method": "turn/completed", "params": {"threadId": "thread-1",
+    "turn": {"id": "turn-1", "status": "completed", "error": None}}})
+sys.stdin.buffer.read()
+        '''.replace('MUTATION', mutation),
+                    extra_seed_files={'helper.py': b'VALUE = 1\n', 'README.md': b'Original\n'})
+                result = cli(*run)
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                attempt = output / "attempt"
+                rows = [json.loads(line) for line in
+                        (attempt / "receipts.jsonl").read_bytes().splitlines()]
+                boundaries = {(row["kind"], row["item"]["id"]): row for row in rows
+                              if row["kind"] in ("tool-started", "tool-completed")}
+                self.assertIn(("tool-started", "final-tests"), boundaries)
+                final = json.loads((attempt / "final-source.json").read_bytes())
+                for kind in ("tool-started", "tool-completed"):
+                    inventory = boundaries[kind, "final-tests"]["source_inventory"]
+                    self.assertEqual(inventory["status"], "complete")
+                    self.assertEqual(inventory["identity"], final["identity"])
+                    self.assertNotEqual(boundaries[kind, "old-tests"]["source_inventory"]["identity"],
+                                        final["identity"])
 
     def test_final_source_capture_retains_post_amendment_refactor(self):
         trigger_bytes = b"DEFAULT = 'json'\n"
@@ -260,7 +1132,7 @@ sys.stdin.buffer.read()
         self.assertEqual(outcome["final_source"]["status"], "incomplete")
 
     def prepare_failure_fixture(self, tail, seed_mode=0o644, mark_launch=False,
-                                extra_seed_files=None):
+                                extra_seed_files=None, git_evidence=False, thread_setup=""):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         base = Path(temporary.name)
@@ -297,17 +1169,23 @@ sys.stdin.buffer.read()
 from pathlib import Path
 import sys
 
+EMITTED_BYTES = 0
+
 def receive():
     return json.loads(sys.stdin.buffer.readline())
 
 def emit(value):
-    sys.stdout.buffer.write((json.dumps(value) + "\\n").encode())
+    global EMITTED_BYTES
+    raw = (json.dumps(value) + "\\n").encode()
+    sys.stdout.buffer.write(raw)
     sys.stdout.buffer.flush()
+    EMITTED_BYTES += len(raw)
 
 first = receive()
 emit({"id": first["id"], "result": {}})
 receive()
 thread = receive()
+""" + thread_setup + """
 emit({"id": thread["id"], "result": {"thread": {"id": "thread-1"}}})
 task = receive()
 emit({"id": task["id"], "result": {"turn": {"id": "turn-1"}}})
@@ -321,7 +1199,8 @@ emit({"id": task["id"], "result": {"turn": {"id": "turn-1"}}})
         prepared = cli(COLLECTOR, "prepare", "--seed-package", packet,
                        "--seed-receipt-sha256", sha((packet / "receipt.json").read_bytes()),
                        "--profile", profile_path, "--profile-sha256", sha(profile_path.read_bytes()),
-                       "--implementation", "inventory.py", "--output", output)
+                       "--implementation", "inventory.py", "--output", output,
+                       *(["--git-evidence"] if git_evidence else []))
         self.assertEqual(prepared.returncode, 0, prepared.stderr.decode())
         run = (COLLECTOR, "run", "--manifest", output / "manifest.json",
                "--expected-sha256", sha((output / "manifest.json").read_bytes()))
@@ -386,6 +1265,169 @@ sys.stdin.buffer.read()
         self.assertNotEqual(cli(*run).returncode, 0)
         self.assertEqual((attempt / "outcome.json").read_bytes(), outcome_raw)
         self.assertEqual((attempt / "collector-sent.jsonl").read_bytes(), sent_raw)
+
+    def test_complete_tail_requests_after_completion_remain_unanswered(self):
+        for same_write in (True, False):
+            with self.subTest(same_write=same_write):
+                emission = (
+                    "sys.stdout.buffer.write((json.dumps(completed) + "
+                    "'\\n' + json.dumps(request) + '\\n').encode())\n"
+                    if same_write
+                    else
+                    "sys.stdout.buffer.write((json.dumps(completed) + "
+                    "'\\n').encode())\n"
+                    "sys.stdout.buffer.flush()\n"
+                    "sys.stdout.buffer.write((json.dumps(request) + "
+                    "'\\n').encode())\n"
+                )
+                cli, run, output = self.prepare_failure_fixture(
+                    """
+Path("inventory.py").write_text("DEFAULT = 'json'\\n")
+emit({"method": "item/completed", "params": {
+    "threadId": "thread-1", "turnId": "turn-1",
+    "item": {"type": "commandExecution", "id": "change",
+             "status": "completed"}}})
+steer = receive()
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+completed = {"method": "turn/completed", "params": {
+    "threadId": "thread-1",
+    "turn": {"id": "turn-1", "status": "completed", "error": None}}}
+request = {"id": 99, "method": "item/commandExecution/requestApproval",
+    "params": {"threadId": "thread-1", "turnId": "turn-1",
+               "itemId": "tail", "reason": "tail request"}}
+"""
+                    + emission
+                    + """
+sys.stdout.buffer.flush()
+sys.stdin.buffer.read()
+"""
+                )
+                result = cli(*run)
+                self.assertNotEqual(result.returncode, 0)
+                attempt = output / "attempt"
+                outcome = json.loads(
+                    (attempt / "outcome.json").read_bytes()
+                )
+                self.assertEqual(outcome["status"], "incomplete")
+                self.assertIn("remains unanswered", outcome["error"])
+                rows = [
+                    json.loads(line)
+                    for line in (
+                        attempt / "receipts.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                received = [
+                    row for row in rows if row["kind"] == "received"
+                ]
+                self.assertEqual(
+                    received[-2]["message"]["method"],
+                    "turn/completed",
+                )
+                self.assertEqual(received[-1]["message"]["id"], 99)
+                self.assertEqual(received[-1]["message"]["method"],
+                                 "item/commandExecution/requestApproval")
+                sent = [
+                    json.loads(line)
+                    for line in (
+                        attempt / "collector-sent.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                self.assertFalse(
+                    any(message.get("id") == 99 for message in sent)
+                )
+                self.assertEqual(
+                    (attempt / "collector-undelivered-stdout.log")
+                    .read_bytes(),
+                    b"",
+                )
+
+    def test_shutdown_never_parses_stdout_beyond_retained_prefix(self):
+        cli, _, output = self.prepare_failure_fixture(r'''
+import os
+import signal
+
+Path("inventory.py").write_text("DEFAULT = 'json'\n")
+emit({"method": "item/completed", "params": {
+    "threadId": "thread-1", "turnId": "turn-1",
+    "item": {"type": "commandExecution", "id": "change",
+             "status": "completed"}}})
+steer = receive()
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+
+limit = 4096
+completed = {"method": "turn/completed", "params": {
+    "threadId": "thread-1",
+    "turn": {"id": "turn-1", "status": "completed", "error": None}}}
+request = {"id": 99, "method": "item/commandExecution/requestApproval",
+    "params": {"threadId": "thread-1", "turnId": "turn-1",
+               "itemId": "unretained", "reason": "unretained request"}}
+
+def terminate(signum, frame):
+    remaining = limit - EMITTED_BYTES
+    empty = {"method": "padding", "params": {"value": ""}}
+    overhead = len((json.dumps(empty) + "\n").encode())
+    assert remaining >= overhead, (remaining, overhead)
+    padding = {"method": "padding", "params": {
+        "value": "x" * (remaining - overhead)}}
+    padding_raw = (json.dumps(padding) + "\n").encode()
+    request_raw = (json.dumps(request) + "\n").encode()
+    assert len(padding_raw) == remaining
+    os.write(sys.stdout.fileno(), padding_raw + request_raw)
+    os._exit(0)
+
+signal.signal(signal.SIGTERM, terminate)
+emit(completed)
+signal.pause()
+''')
+        manifest_path = output / "manifest.json"
+        manifest = json.loads(manifest_path.read_bytes())
+        manifest["max_output_bytes"] = 4096
+        manifest_raw = encoded(manifest) + b"\n"
+        manifest_path.write_bytes(manifest_raw)
+        run = (
+            COLLECTOR,
+            "run",
+            "--manifest", manifest_path,
+            "--expected-sha256", sha(manifest_raw),
+        )
+
+        result = cli(*run)
+        self.assertNotEqual(result.returncode, 0)
+        attempt = output / "attempt"
+        outcome = json.loads(
+            (attempt / "outcome.json").read_bytes()
+        )
+        self.assertIn("output bound exceeded", outcome["error"])
+        rows = [
+            json.loads(line)
+            for line in (
+                attempt / "receipts.jsonl"
+            ).read_bytes().splitlines()
+        ]
+        received = [
+            row["message"]
+            for row in rows
+            if row["kind"] == "received"
+        ]
+        self.assertEqual(received[-2]["method"], "turn/completed")
+        self.assertEqual(received[-1]["method"], "padding")
+        self.assertFalse(any(
+            message.get("id") == 99
+            for message in received
+        ))
+        retained = (
+            attempt / "collector-stdout.log"
+        ).read_bytes()
+        self.assertEqual(len(retained), 4096)
+        self.assertNotIn(
+            b"item/commandExecution/requestApproval",
+            retained,
+        )
+        process = json.loads(
+            (attempt / "collector-process.json").read_bytes()
+        )
+        self.assertGreater(process["received_bytes"], 4096)
+        self.assertEqual(process["retained_prefix_limit"], 4096)
 
     def test_rejected_steering_retains_error_and_does_not_start_another_turn(self):
         cli, run, output = self.prepare_failure_fixture("""
@@ -465,6 +1507,247 @@ sys.stdin.buffer.read()
         self.assertIn(b"native is unqualified", result.stderr)
         self.assertFalse(rejected.exists())
         self.assertFalse((output / "attempt").exists())
+
+    def test_allocated_native_discovery_failures_retain_structured_evidence(self):
+        stages = (
+            "initialize",
+            "model/list",
+            "config/read",
+            "configRequirements/read",
+            "skills/list",
+            "mcpServerStatus/list",
+            "native-cli-version",
+        )
+        required = (
+            "checkpointing-and-publishing-git-work",
+            "tdd",
+            "code-review",
+            "capturing-agent-procedures",
+            "writing-for-people",
+            "review",
+            "intent",
+            "runtime",
+            "structure",
+            "loop",
+            "adjudicate",
+            "revise",
+            "delegating-cross-agent-work",
+            "choosing-agent-models",
+        )
+        for stage in stages:
+            with self.subTest(stage=stage):
+                _, _, legacy = self.prepare_failure_fixture(
+                    "sys.stdin.buffer.read()\n"
+                )
+                base = legacy.parent
+                packet = base / "packet"
+                codex_home = base / "codex-home"
+                codex_home.mkdir()
+                instruction = codex_home / "AGENTS.md"
+                instruction.write_text("# Synthetic instructions\n")
+                (codex_home / "config.toml").write_text("")
+                skills = []
+                for name in required:
+                    path = codex_home / "skills" / name / "SKILL.md"
+                    path.parent.mkdir(parents=True)
+                    path.write_text(f"# {name}\n")
+                    reference = (
+                        path.parent / "references" / "contract.md"
+                    )
+                    reference.parent.mkdir()
+                    reference.write_text(f"# {name} contract\n")
+                    skills.append({
+                        "name": name,
+                        "enabled": True,
+                        "scope": "user",
+                        "path": str(path),
+                    })
+
+                executable = base / "failing-codex"
+                executable.write_text(
+                    "#!" + sys.executable + "\n"
+                    + "FAIL = " + repr(stage) + "\n"
+                    + "SKILLS = " + repr(skills) + "\n"
+                    + r'''
+import json
+from pathlib import Path
+import sys
+
+if sys.argv[1:] == ["--version"]:
+    if FAIL != "native-cli-version":
+        print("codex-cli 9.9.9")
+    raise SystemExit(0)
+
+def receive(method):
+    message = json.loads(sys.stdin.buffer.readline())
+    assert message["method"] == method, message
+    return message
+
+def answer(request, result, stage):
+    if FAIL == stage:
+        response = {
+            "id": request["id"],
+            "error": {
+                "code": -32000,
+                "message": "synthetic " + stage + " failure",
+            },
+        }
+    else:
+        response = {"id": request["id"], "result": result}
+    sys.stdout.buffer.write(
+        (json.dumps(response) + "\n").encode()
+    )
+    sys.stdout.buffer.flush()
+    if FAIL == stage:
+        sys.stdin.buffer.read()
+        raise SystemExit(0)
+
+initial = receive("initialize")
+answer(initial, {"userAgent": "synthetic-native/9.9.9"},
+       "initialize")
+receive("initialized")
+listing = receive("model/list")
+answer(listing, {
+    "data": [{
+        "model": "gpt-6.1-sol",
+        "supportedReasoningEfforts": [{
+            "reasoningEffort": "medium",
+        }],
+    }],
+    "nextCursor": None,
+}, "model/list")
+config = receive("config/read")
+answer(config, {"config": {}, "origins": {}}, "config/read")
+requirements = receive("configRequirements/read")
+answer(requirements, {"requirements": None},
+       "configRequirements/read")
+skills = receive("skills/list")
+answer(skills, {
+    "data": [{
+        "cwd": str(Path.cwd()),
+        "skills": SKILLS,
+        "errors": [],
+    }],
+}, "skills/list")
+servers = receive("mcpServerStatus/list")
+answer(servers, {"data": [], "nextCursor": None},
+       "mcpServerStatus/list")
+sys.stdin.buffer.read()
+''')
+                executable.chmod(0o755)
+                output = base / "failed-native-preparation"
+                environment = dict(
+                    os.environ,
+                    CODEX_HOME=str(codex_home),
+                )
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "-B",
+                        str(COLLECTOR),
+                        "prepare",
+                        "--native",
+                        "--native-executable", str(executable),
+                        "--native-executable-sha256",
+                        sha(executable.read_bytes()),
+                        "--model", "gpt-6.1-sol",
+                        "--effort", "medium",
+                        "--seed-package", str(packet),
+                        "--seed-receipt-sha256",
+                        sha((packet / "receipt.json").read_bytes()),
+                        "--implementation", "inventory.py",
+                        "--output", str(output),
+                    ],
+                    capture_output=True,
+                    timeout=30,
+                    env=environment,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                failure_path = output / "preparation-failure.json"
+                self.assertTrue(failure_path.is_file())
+                failure = json.loads(failure_path.read_bytes())
+                self.assertEqual(
+                    failure["schema"],
+                    "compatibility-native-preparation-failure/v1",
+                )
+                self.assertEqual(failure["status"], "incomplete")
+                expected_phase = (
+                    stage if stage == "native-cli-version"
+                    else "profile-discovery:" + stage
+                )
+                self.assertEqual(failure["phase"], expected_phase)
+                self.assertEqual(
+                    failure["terminal_boundary"],
+                    {
+                        "phase": expected_phase,
+                        "native_tasks_started": 0,
+                    },
+                )
+                retained = {
+                    entry["path"]
+                    for entry in failure["retained_evidence"]
+                }
+                self.assertIn(
+                    "preparation/profile-discovery-stdout.log",
+                    retained,
+                )
+                self.assertIn(
+                    "preparation/profile-discovery-stderr.log",
+                    retained,
+                )
+                self.assertIn(
+                    "preparation/profile-discovery-sent.jsonl",
+                    retained,
+                )
+                self.assertIn(
+                    "preparation/profile-discovery-process.json",
+                    retained,
+                )
+                sent = [
+                    json.loads(line)
+                    for line in (
+                        output
+                        / "preparation"
+                        / "profile-discovery-sent.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                self.assertFalse(any(
+                    message["method"] in {
+                        "thread/start",
+                        "turn/start",
+                    }
+                    for message in sent
+                ))
+                self.assertFalse((output / "manifest.json").exists())
+
+    def test_native_failure_before_output_allocation_remains_a_diagnostic(self):
+        cli, _, legacy = self.prepare_failure_fixture(
+            "sys.stdin.buffer.read()\n"
+        )
+        base = legacy.parent
+        packet = base / "packet"
+        output = base / "unallocated-native-failure"
+        missing = base / "missing-native-executable"
+        result = cli(
+            COLLECTOR,
+            "prepare",
+            "--native",
+            "--native-executable", missing,
+            "--native-executable-sha256", "0" * 64,
+            "--model", "gpt-6.1-sol",
+            "--effort", "medium",
+            "--seed-package", packet,
+            "--seed-receipt-sha256",
+            sha((packet / "receipt.json").read_bytes()),
+            "--implementation", "inventory.py",
+            "--output", output,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(output.exists())
+        self.assertIn(
+            b"absolute executable native file required",
+            result.stderr,
+        )
 
     def test_native_shaped_fake_version_mismatch_refuses_task_and_retains_attempt(self):
         cli, _, legacy_output = self.prepare_failure_fixture("sys.stdin.buffer.read()\n")
@@ -618,15 +1901,29 @@ sys.stdin.buffer.read()
                     self.assertEqual(json.loads(raw), row["message"])
 
 
-    def prepare_native_profile_fixture(self, response_model="gpt-6.1-sol", mcp_result=None,
-                                       observe_turn=False, reject_steer=False):
+    def prepare_native_profile_fixture(
+        self,
+        response_model="gpt-6.1-sol",
+        mcp_result=None,
+        observe_turn=False,
+        reject_steer=False,
+        response_roots="matching",
+        response_effort="medium",
+        settings_cwd=None,
+        metadata_variant="null",
+    ):
         cli, _, legacy_output = self.prepare_failure_fixture("sys.stdin.buffer.read()\n")
         base = legacy_output.parent
         fixture = base / "fake.py"
         fixture.write_text("RESPONSE_MODEL = " + repr(response_model) + "\nMCP_RESULT = "
                            + repr({"data": []} if mcp_result is None else mcp_result)
                            + "\nOBSERVE_TURN = " + repr(observe_turn)
-                           + "\nREJECT_STEER = " + repr(reject_steer) + "\n" + r'''
+                           + "\nREJECT_STEER = " + repr(reject_steer)
+                           + "\nRESPONSE_ROOTS = " + repr(response_roots)
+                           + "\nRESPONSE_EFFORT = " + repr(response_effort)
+                           + "\nSETTINGS_CWD = " + repr(settings_cwd)
+                           + "\nMETADATA_VARIANT = " + repr(metadata_variant)
+                           + "\n" + r'''
 import json
 from pathlib import Path
 import sys
@@ -663,23 +1960,118 @@ servers = receive("mcpServerStatus/list")
 assert servers["params"] == {"cursor": None, "detail": "full"}, servers
 emit(servers, MCP_RESULT)
 thread = receive("thread/start")
-assert thread["params"] == {"cwd": str(Path.cwd()), "model": "gpt-6.1-sol",
-                             "allowProviderModelFallback": False}, thread
-emit(thread, {"model": RESPONSE_MODEL, "modelProvider": "openai",
-    "cwd": str(Path.cwd()), "approvalPolicy": "on-request", "approvalsReviewer": "user",
-    "sandbox": {"type": "readOnly", "networkAccess": False}, "reasoningEffort": None,
-    "activePermissionProfile": None,
+assert thread["params"] == {
+    "cwd": str(Path.cwd()),
+    "model": "gpt-6.1-sol",
+    "approvalPolicy": "on-request",
+    "approvalsReviewer": "user",
+    "sandbox": "workspace-write",
+    "ephemeral": False,
+    "historyMode": "paginated",
+    "allowProviderModelFallback": False,
+    "runtimeWorkspaceRoots": [str(Path.cwd())],
+    "environments": [],
+    "config": {
+        "sandbox_workspace_write": {
+            "writable_roots": [],
+            "network_access": False,
+            "exclude_tmpdir_env_var": True,
+            "exclude_slash_tmp": True,
+        },
+    },
+}, thread
+metadata = (
+    {
+        "modelProvider": "unrelated-provider",
+        "serviceTier": "unrelated-tier",
+        "activePermissionProfile": {
+            "id": "unrelated-profile",
+            "extends": None,
+        },
+    }
+    if METADATA_VARIANT == "differing"
+    else {
+        "modelProvider": None,
+        "serviceTier": None,
+        "activePermissionProfile": None,
+    }
+)
+thread_result = {"model": RESPONSE_MODEL,
+    "cwd": str(Path.cwd()), "approvalPolicy": "on-request",
+    "approvalsReviewer": "user",
+    "sandbox": {"type": "readOnly", "networkAccess": False},
+    "reasoningEffort": RESPONSE_EFFORT,
     "thread": {"id": "profile-thread", "sessionId": "profile-session",
         "projectId": None, "cliVersion": "synthetic-native/expected", "createdAt": 1,
         "updatedAt": 1, "cwd": str(Path.cwd()), "ephemeral": True,
-        "modelProvider": "openai", "preview": "", "source": "appServer",
-        "status": {"type": "idle"}, "turns": []}})
+        "modelProvider": metadata["modelProvider"], "preview": "",
+        "source": "appServer",
+        "status": {"type": "idle"}, "turns": []}}
+thread_result.update(metadata)
+if RESPONSE_ROOTS == "matching":
+    thread_result["runtimeWorkspaceRoots"] = [str(Path.cwd())]
+elif RESPONSE_ROOTS == "wrong":
+    thread_result["runtimeWorkspaceRoots"] = [str(Path.cwd().parent)]
+elif RESPONSE_ROOTS == "extra":
+    thread_result["runtimeWorkspaceRoots"] = [
+        str(Path.cwd()),
+        str(Path.cwd().parent),
+    ]
+elif RESPONSE_ROOTS != "missing":
+    raise AssertionError(RESPONSE_ROOTS)
+emit(thread, thread_result)
 if OBSERVE_TURN:
     task = receive("turn/start")
-    assert task["params"]["threadId"] == "profile-thread", task
-    assert task["params"]["model"] == "gpt-6.1-sol", task
-    assert task["params"]["effort"] == "medium", task
+    assert task["params"] == {
+        "threadId": "profile-thread",
+        "model": "gpt-6.1-sol",
+        "effort": "medium",
+        "cwd": str(Path.cwd()),
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "runtimeWorkspaceRoots": [str(Path.cwd())],
+        "environments": [],
+        "input": [{
+            "type": "text",
+            "text": "Add JSON output.",
+            "text_elements": [],
+        }],
+        "sandboxPolicy": {
+            "type": "workspaceWrite",
+            "writableRoots": [],
+            "networkAccess": False,
+            "excludeTmpdirEnvVar": True,
+            "excludeSlashTmp": True,
+        },
+    }, task
     emit(task, {"turn": {"id": "profile-turn", "items": [], "status": "inProgress"}})
+    if SETTINGS_CWD is not None:
+        settings_cwd = (
+            str(Path.cwd())
+            if SETTINGS_CWD == "matching"
+            else str(Path.cwd().parent)
+        )
+        sys.stdout.buffer.write((json.dumps({
+            "method": "thread/settings/updated",
+            "params": {
+                "threadId": "profile-thread",
+                "threadSettings": {
+                    "model": "gpt-6.1-sol",
+                    "effort": "medium",
+                    "cwd": settings_cwd,
+                    "approvalPolicy": "on-request",
+                    "approvalsReviewer": "user",
+                    "sandboxPolicy": {
+                        "type": "workspaceWrite",
+                        "writableRoots": [],
+                        "networkAccess": False,
+                        "excludeTmpdirEnvVar": True,
+                        "excludeSlashTmp": True,
+                    },
+                },
+            },
+        }) + "\n").encode())
+        sys.stdout.buffer.flush()
     Path("inventory.py").write_text("DEFAULT = 'json'\n")
     changed = {"method": "item/completed", "params": {
         "threadId": "profile-thread", "turnId": "profile-turn", "completedAtMs": 1,
@@ -752,7 +2144,7 @@ sys.stdin.buffer.read()
                         "text": (output / f"request-{index}.bin").read_text(), "text_elements": []}])
                 rows = [json.loads(line) for line in (attempt / "receipts.jsonl").read_bytes().splitlines()]
                 observed = next(row for row in rows if row["kind"] == "fake-profile-observed")
-                self.assertIsNone(observed["effective_profile"]["reasoningEffort"])
+                self.assertEqual(observed["effective_profile"]["reasoningEffort"], "medium")
                 trigger = next(row for row in rows
                                if row["sequence"] == outcome["trigger_observation_sequence"])
                 self.assertEqual(set(trigger["changed"]), {"inventory.py"})
@@ -767,6 +2159,93 @@ sys.stdin.buffer.read()
                 self.assertNotEqual(cli(*run).returncode, 0)
                 self.assertEqual((attempt / "outcome.json").read_bytes(), outcome_raw)
                 self.assertEqual((attempt / "collector-sent.jsonl").read_bytes(), sent_raw)
+
+    def test_native_shaped_fake_refuses_unbound_roots_and_effort_before_turn(self):
+        cases = (
+            ("missing-roots", "missing", "medium"),
+            ("wrong-roots", "wrong", "medium"),
+            ("extra-roots", "extra", "medium"),
+            ("wrong-effort", "matching", "low"),
+            ("null-effort", "matching", None),
+        )
+        for name, roots, effort in cases:
+            with self.subTest(case=name):
+                cli, run, output = self.prepare_native_profile_fixture(
+                    observe_turn=True,
+                    response_roots=roots,
+                    response_effort=effort,
+                )
+                result = cli(*run)
+                self.assertNotEqual(result.returncode, 0)
+                attempt = output / "attempt"
+                outcome = json.loads(
+                    (attempt / "outcome.json").read_bytes()
+                )
+                self.assertEqual(outcome["status"], "incomplete")
+                sent = [
+                    json.loads(line)
+                    for line in (
+                        attempt / "collector-sent.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                self.assertEqual(sent[-1]["method"], "thread/start")
+                self.assertFalse(any(
+                    message["method"] == "turn/start"
+                    for message in sent
+                ))
+                if roots != "matching":
+                    self.assertIn(
+                        "runtime workspace roots differ",
+                        outcome["error"],
+                    )
+                else:
+                    self.assertIn(
+                        "thread reasoning effort differs",
+                        outcome["error"],
+                    )
+
+    def test_native_shaped_fake_ignores_unrelated_profile_metadata(self):
+        for metadata_variant in ("null", "differing"):
+            with self.subTest(metadata_variant=metadata_variant):
+                cli, run, output = self.prepare_native_profile_fixture(
+                    observe_turn=True,
+                    metadata_variant=metadata_variant,
+                )
+                result = cli(*run)
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    result.stderr.decode(),
+                )
+                sent = [
+                    json.loads(line)
+                    for line in (
+                        output / "attempt"
+                        / "collector-sent.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                self.assertTrue(any(
+                    message["method"] == "turn/start"
+                    for message in sent
+                ))
+
+    def test_native_shaped_fake_rejects_contradictory_settings_cwd(self):
+        cli, run, output = self.prepare_native_profile_fixture(
+            observe_turn=True,
+            settings_cwd="wrong",
+        )
+        result = cli(*run)
+        self.assertNotEqual(result.returncode, 0)
+        outcome = json.loads(
+            (
+                output / "attempt" / "outcome.json"
+            ).read_bytes()
+        )
+        self.assertEqual(outcome["status"], "incomplete")
+        self.assertIn(
+            "native turn settings differ",
+            outcome["error"],
+        )
 
     def test_native_shaped_fake_records_profile_without_delivering_a_task(self):
         cli, run, output = self.prepare_native_profile_fixture()
@@ -793,7 +2272,7 @@ sys.stdin.buffer.read()
         self.assertEqual(outcome["profile_observation_sequence"], observation["sequence"])
         self.assertEqual(observation["requested_model"], "gpt-6.1-sol")
         self.assertEqual(observation["requested_turn_effort"], "medium")
-        self.assertIsNone(observation["effective_profile"]["reasoningEffort"])
+        self.assertEqual(observation["effective_profile"]["reasoningEffort"], "medium")
         self.assertIsNone(observation["effective_profile"]["activePermissionProfile"])
         response = next(row for row in rows if row["sequence"] == observation["response_sequence"])
         self.assertEqual(response["message"]["result"]["thread"]["id"], "profile-thread")
@@ -1005,6 +2484,402 @@ sys.stdin.buffer.read()
             cli(*run, success=False)
             self.assertEqual((attempt / "outcome.json").read_bytes(), outcome_raw)
             self.assertEqual((attempt / "receipts.jsonl").read_bytes(), rows_raw)
+
+    def test_git_baseline_is_a_clean_local_seed_with_retained_identity(self):
+        _, _, output = self.prepare_failure_fixture(
+            "sys.stdin.buffer.read()\n", git_evidence=True,
+        )
+        manifest = json.loads((output / "manifest.json").read_bytes())
+        ref = manifest["git_baseline"]
+        raw = (output / ref["path"]).read_bytes()
+        self.assertEqual(sha(raw), ref["sha256"])
+        baseline = json.loads(raw)
+        self.assertEqual(baseline["status"], "ready")
+        self.assertEqual(baseline["branch"], "compatibility-observation")
+        self.assertEqual(baseline["initial_status"], "clean")
+        self.assertEqual(baseline["remotes"], "none-observed")
+        names = {entry["name"]: entry["record"] for entry in baseline["commands"]}
+        directory = output / "baseline-git"
+        for name in ("author-identity", "committer-identity"):
+            record = json.loads((directory / names[name]["path"]).read_bytes())
+            content = (directory / name / record["stdout"]["path"]).read_bytes()
+            self.assertIn(b"Compatibility Fixture <fixture@example.invalid>", content)
+            self.assertEqual(record["exit_code"], 0)
+            self.assertLessEqual(record["started_monotonic_ns"], record["finished_monotonic_ns"])
+        commit_record = json.loads((directory / names["seed-commit"]["path"]).read_bytes())
+        commit = (directory / "seed-commit" / commit_record["stdout"]["path"]).read_bytes()
+        self.assertIn(b"commit " + baseline["head"].encode(), commit)
+        self.assertIn(b"chore: prepare compatibility observation seed", commit)
+        self.assertEqual([entry["path"] for entry in baseline["source_inventory"]], ["inventory.py"])
+        self.assertFalse((output / "attempt").exists())
+
+    def test_git_baseline_drift_refuses_task_and_preserves_attempt(self):
+        for change in ("untracked", "head", "branch"):
+            with self.subTest(change=change):
+                cli, run, output = self.prepare_failure_fixture(
+                    "sys.stdin.buffer.read()\n", mark_launch=True,
+                    git_evidence=True,
+                )
+                project = output / "project"
+                if change == "untracked":
+                    (project / "unrelated.txt").write_text("not part of the seed\n")
+                elif change == "head":
+                    changed = subprocess.run(
+                        ["git", "-C", str(project), "commit", "--allow-empty", "-m", "chore: change baseline"],
+                        capture_output=True, timeout=10,
+                    )
+                    self.assertEqual(changed.returncode, 0, changed.stderr.decode())
+                else:
+                    changed = subprocess.run(
+                        ["git", "-C", str(project), "checkout", "-b", "other-branch"],
+                        capture_output=True, timeout=10,
+                    )
+                    self.assertEqual(changed.returncode, 0, changed.stderr.decode())
+                result = cli(*run)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b"baseline Git state changed", result.stderr)
+                self.assertFalse((output.parent / "fake-launched").exists())
+                outcome = json.loads((output / "attempt/outcome.json").read_bytes())
+                self.assertEqual(outcome["status"], "incomplete")
+                self.assertIsNone(outcome["turn_id"])
+                self.assertEqual(outcome["final_source"]["status"], "complete")
+                before = (output / "attempt/outcome.json").read_bytes()
+                self.assertNotEqual(cli(*run).returncode, 0)
+                self.assertEqual((output / "attempt/outcome.json").read_bytes(), before)
+
+    def test_failed_git_construction_retains_command_evidence_without_launch(self):
+        _, _, legacy = self.prepare_failure_fixture(
+            "sys.stdin.buffer.read()\n", mark_launch=True,
+        )
+        base = legacy.parent
+        profile = base / "profile.json"
+        output = base / "failed-git-preparation"
+        environment = dict(os.environ, GIT_AUTHOR_NAME="", GIT_AUTHOR_EMAIL="")
+        result = subprocess.run([
+            sys.executable, "-B", str(COLLECTOR), "prepare", "--git-evidence",
+            "--seed-package", str(base / "packet"),
+            "--seed-receipt-sha256", sha((base / "packet/receipt.json").read_bytes()),
+            "--profile", str(profile), "--profile-sha256", sha(profile.read_bytes()),
+            "--implementation", "inventory.py", "--output", str(output),
+        ], capture_output=True, timeout=15, env=environment)
+        self.assertNotEqual(result.returncode, 0)
+        baseline = json.loads((output / "baseline-git/baseline.json").read_bytes())
+        self.assertEqual(baseline["status"], "failed")
+        self.assertIn("author-identity", baseline["error"])
+        failed = json.loads((output / "baseline-git/author-identity/record.json").read_bytes())
+        self.assertNotEqual(failed["exit_code"], 0)
+        self.assertTrue((output / "baseline-git/author-identity/stderr.bin").read_bytes())
+        self.assertFalse((output / "manifest.json").exists())
+        self.assertFalse((base / "fake-launched").exists())
+
+    def test_final_git_retains_task_commit_staged_and_untracked_work(self):
+        tail = r'''
+import subprocess
+Path("inventory.py").write_text("DEFAULT = 'json'\n")
+emit({"method": "item/completed", "params": {
+    "threadId": "thread-1", "turnId": "turn-1",
+    "item": {"type": "commandExecution", "id": "change", "status": "completed"}}})
+steer = receive()
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+Path("inventory.py").write_text("DEFAULT = 'text'\nJSON = True\n")
+subprocess.run(["git", "add", "inventory.py"], check=True, capture_output=True)
+subprocess.run(["git", "commit", "-m", "feat: preserve default and add opt-in JSON"], check=True, capture_output=True)
+Path("staged.txt").write_text("unfinished staged work\n")
+subprocess.run(["git", "add", "staged.txt"], check=True, capture_output=True)
+Path("untracked.txt").write_text("unfinished untracked work\n")
+emit({"method": "turn/completed", "params": {
+    "threadId": "thread-1", "turn": {"id": "turn-1", "status": "completed", "error": None}}})
+sys.stdin.buffer.read()
+'''
+        cli, run, output = self.prepare_failure_fixture(tail, git_evidence=True)
+        result = cli(*run)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        self.assertEqual(outcome["status"], "fake-observation-completed")
+        self.assertEqual(outcome["semantic_success"], "not-assessed")
+        final = json.loads((attempt / outcome["final_git"]["inventory"]).read_bytes())
+        self.assertEqual(final["status"], "complete")
+        self.assertNotEqual(final["head"], final["baseline_head"])
+        self.assertEqual(final["source_correspondence"], "matched-at-recorded-boundaries")
+        self.assertIn(b"feat: preserve default and add opt-in JSON", (attempt / "final-git/commits/stdout.bin").read_bytes())
+        self.assertIn(b"inventory.py", (attempt / "final-git/committed-paths/stdout.bin").read_bytes())
+        status = (attempt / "final-git/status/stdout.bin").read_bytes()
+        self.assertIn(b"A  staged.txt\0", status)
+        self.assertIn(b"?? untracked.txt\0", status)
+        self.assertEqual((attempt / "final-git/untracked/stdout.bin").read_bytes(), b"untracked.txt\0")
+        self.assertEqual((attempt / "final-git/remotes/stdout.bin").read_bytes(), b"")
+        source = json.loads((attempt / "final-source.json").read_bytes())
+        self.assertEqual({entry["path"] for entry in source["files"]},
+                         {"inventory.py", "staged.txt", "untracked.txt"})
+        self.assertEqual(json.loads((attempt / "task-delivery-git/preflight.json").read_bytes())["status"], "matched")
+
+    def test_final_git_failure_preserves_collection_outcome_source_and_usage(self):
+        tail = r'''
+import shutil
+Path("inventory.py").write_text("DEFAULT = 'json'\n")
+emit({"method": "item/completed", "params": {
+    "threadId": "thread-1", "turnId": "turn-1",
+    "item": {"type": "commandExecution", "id": "change", "status": "completed"}}})
+steer = receive()
+emit({"id": steer["id"], "result": {"turnId": "turn-1"}})
+Path("inventory.py").write_text("DEFAULT = 'text'\nJSON = True\n")
+shutil.rmtree(".git")
+emit({"method": "turn/completed", "params": {
+    "threadId": "thread-1", "turn": {"id": "turn-1", "status": "completed", "error": None}}})
+sys.stdin.buffer.read()
+'''
+        cli, run, output = self.prepare_failure_fixture(tail, git_evidence=True)
+        result = cli(*run)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        attempt = output / "attempt"
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        self.assertEqual(outcome["status"], "fake-observation-completed")
+        self.assertEqual(outcome["final_source"]["status"], "complete")
+        self.assertEqual(outcome["final_git"]["status"], "incomplete")
+        self.assertIn("usage_observations", outcome)
+        final = json.loads((attempt / "final-git/final-git.json").read_bytes())
+        self.assertIn("Git command failed: head", final["errors"])
+        self.assertNotIn("head", final)
+        self.assertEqual((attempt / "final-source/inventory.py").read_text(), "DEFAULT = 'text'\nJSON = True\n")
+
+    def test_deadline_preserves_partial_tool_inventory_and_failed_attempt(self):
+        for boundary in ("started", "completed"):
+            with self.subTest(boundary=boundary):
+                with tempfile.TemporaryDirectory() as temporary:
+                    control = Path(temporary)
+                    trigger = control / "slow-read-trigger"
+                    completed = control / "slow-read-completed"
+                    item = {
+                        "type": "commandExecution", "id": "author-test",
+                        "command": "python -m unittest",
+                        "status": "inProgress" if boundary == "started" else "completed",
+                    }
+                    if boundary == "completed":
+                        item.update(exitCode=0, aggregatedOutput="OK\n")
+                    event = {"method": "item/" + boundary, "params": {
+                        "threadId": "thread-1", "turnId": "turn-1", "item": item,
+                    }}
+                    tail = (
+                        "Path(" + repr(str(trigger)) + ").write_text('ready')\n"
+                        "emit(" + repr(event) + ")\n"
+                        "sys.stdin.buffer.read()\n"
+                    )
+                    cli, _, output = self.prepare_failure_fixture(
+                        tail,
+                        extra_seed_files={
+                            "a-scanned.txt": b"Retain this entry.\n",
+                            "z-slow.txt": b"The delayed file.\n",
+                        },
+                    )
+                    manifest_path = output / "manifest.json"
+                    manifest = json.loads(manifest_path.read_bytes())
+                    manifest["deadline_seconds"] = 1
+                    manifest_raw = encoded(manifest) + b"\n"
+                    manifest_path.write_bytes(manifest_raw)
+                    run = (
+                        "run", "--manifest", manifest_path,
+                        "--expected-sha256", sha(manifest_raw),
+                    )
+                    # Delay one real filesystem read; keep the public CLI and
+                    # transport intact. The trigger is armed by the fake event.
+                    wrapper = control / "delayed-filesystem.py"
+                    wrapper.write_text(
+                        "from pathlib import Path\n"
+                        "import runpy, sys, time\n"
+                        "from unittest.mock import patch\n"
+                        "TRIGGER = Path(" + repr(str(trigger)) + ")\n"
+                        "COMPLETED = Path(" + repr(str(completed)) + ")\n"
+                        "original = Path.read_bytes\n"
+                        "def delayed_read(path):\n"
+                        "    if path.name == 'z-slow.txt' and TRIGGER.exists():\n"
+                        "        TRIGGER.unlink()\n"
+                        "        time.sleep(3)\n"
+                        "        COMPLETED.write_text('read continued')\n"
+                        "    return original(path)\n"
+                        "sys.path.insert(0, " + repr(str(HERE)) + ")\n"
+                        "sys.argv[0] = " + repr(str(COLLECTOR)) + "\n"
+                        "with patch.object(Path, 'read_bytes', delayed_read):\n"
+                        "    runpy.run_path(sys.argv[0], run_name='__main__')\n"
+                    )
+
+                    result = cli(wrapper, *run)
+
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertFalse(trigger.exists(), "the delayed read was not reached")
+                    self.assertFalse(completed.exists(), "the deadline did not interrupt the read")
+                    attempt = output / "attempt"
+                    rows = [json.loads(line) for line in
+                            (attempt / "receipts.jsonl").read_bytes().splitlines()]
+                    received = next(row for row in rows
+                                    if row["kind"] == "received"
+                                    and row["message"] == event)
+                    retained = [row for row in rows
+                                if row["kind"] == "tool-" + boundary]
+                    self.assertEqual(len(retained), 1)
+                    record = retained[0]
+                    self.assertEqual(record["event_sequence"], received["sequence"])
+                    self.assertEqual(record["item"], item)
+                    self.assertEqual(record["thread_id"], "thread-1")
+                    self.assertEqual(record["turn_id"], "turn-1")
+                    inventory = record["source_inventory"]
+                    self.assertEqual(inventory["status"], "incomplete")
+                    self.assertIsNone(inventory["identity"])
+                    self.assertTrue(inventory["error"])
+                    self.assertEqual([entry["path"] for entry in inventory["files"]],
+                                     ["a-scanned.txt", "inventory.py"])
+                    self.assertEqual(inventory["files"][0]["sha256"],
+                                     sha(b"Retain this entry.\n"))
+                    self.assertTrue(inventory["started_at"])
+                    self.assertTrue(inventory["finished_at"])
+                    self.assertGreater(inventory["elapsed_seconds"], 0)
+                    outcome = json.loads((attempt / "outcome.json").read_bytes())
+                    self.assertEqual(outcome["status"], "incomplete")
+                    self.assertEqual(outcome["error"], "TimeoutError: collector deadline exceeded")
+                    process = json.loads((attempt / "collector-process.json").read_bytes())
+                    self.assertIsNotNone(process["exit_code"])
+                    preserved = {p.relative_to(attempt).as_posix(): p.read_bytes()
+                                 for p in attempt.rglob("*") if p.is_file()}
+                    repeated = cli(COLLECTOR, *run)
+                    self.assertNotEqual(repeated.returncode, 0)
+                    self.assertEqual(
+                        {p.relative_to(attempt).as_posix(): p.read_bytes()
+                         for p in attempt.rglob("*") if p.is_file()},
+                        preserved,
+                    )
+
+    def test_callback_deadline_interrupts_slow_git_qualification_and_retains_attempt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            control = Path(temporary)
+            real_git = shutil.which("git")
+            self.assertIsNotNone(real_git)
+            real_git = str(Path(real_git).resolve())
+            trigger = control / "slow-git-trigger"
+            completed = control / "slow-git-completed"
+            wrapper = control / "git"
+            wrapper.write_text(
+                "#!" + sys.executable + "\n"
+                "import os\n"
+                "from pathlib import Path\n"
+                "import sys\n"
+                "import time\n\n"
+                "REAL_GIT = " + repr(real_git) + "\n"
+                "TRIGGER = Path(" + repr(str(trigger)) + ")\n"
+                "COMPLETED = Path(" + repr(str(completed)) + ")\n"
+                "if TRIGGER.exists():\n"
+                "    TRIGGER.unlink()\n"
+                "    time.sleep(3)\n"
+                "    COMPLETED.write_text('completed\\n')\n"
+                "os.execv(REAL_GIT, [REAL_GIT, *sys.argv[1:]])\n"
+            )
+            wrapper.chmod(0o755)
+            path_env = (
+                str(control)
+                + os.pathsep
+                + os.environ.get("PATH", "")
+            )
+
+            with patch.dict(os.environ, {"PATH": path_env}):
+                cli, _, output = self.prepare_failure_fixture(
+                    "raise AssertionError('task must not be delivered')\n",
+                    git_evidence=True,
+                    thread_setup=(
+                        "Path(" + repr(str(trigger)) + ")"
+                        ".write_text('triggered\\n')\n"
+                    ),
+                )
+                manifest_path = output / "manifest.json"
+                manifest = json.loads(manifest_path.read_bytes())
+                manifest["deadline_seconds"] = 1
+                manifest_raw = encoded(manifest) + b"\n"
+                manifest_path.write_bytes(manifest_raw)
+                run = (
+                    COLLECTOR,
+                    "run",
+                    "--manifest", manifest_path,
+                    "--expected-sha256", sha(manifest_raw),
+                )
+
+                started = time.monotonic()
+                result = cli(*run)
+                elapsed = time.monotonic() - started
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(
+                    completed.exists(),
+                    "callback work continued beyond the collector deadline",
+                )
+                self.assertLess(elapsed, 11)
+
+                attempt = output / "attempt"
+                outcome = json.loads(
+                    (attempt / "outcome.json").read_bytes()
+                )
+                self.assertEqual(outcome["status"], "incomplete")
+                self.assertEqual(
+                    outcome["error"],
+                    "TimeoutError: collector deadline exceeded",
+                )
+                self.assertEqual(
+                    outcome["final_source"]["status"],
+                    "complete",
+                )
+
+                process = json.loads(
+                    (attempt / "collector-process.json").read_bytes()
+                )
+                self.assertIsNotNone(process["exit_code"])
+                self.assertLessEqual(
+                    process["received_bytes"],
+                    process["retained_prefix_limit"],
+                )
+
+                sent = [
+                    json.loads(line)
+                    for line in (
+                        attempt / "collector-sent.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                self.assertEqual(
+                    [message["method"] for message in sent],
+                    ["initialize", "initialized", "thread/start"],
+                )
+
+                rows = [
+                    json.loads(line)
+                    for line in (
+                        attempt / "receipts.jsonl"
+                    ).read_bytes().splitlines()
+                ]
+                retained_thread_responses = [
+                    row
+                    for row in rows
+                    if row["kind"] == "received"
+                    and row["message"].get("result", {})
+                    .get("thread", {}).get("id") == "thread-1"
+                ]
+                self.assertEqual(
+                    len(retained_thread_responses),
+                    1,
+                )
+
+    def test_git_metadata_drift_before_task_delivery_is_retained(self):
+        cli, run, output = self.prepare_failure_fixture(
+            "sys.stdin.buffer.read()\n", git_evidence=True,
+            thread_setup="Path('metadata-output.txt').write_text('metadata side effect\\n')\n",
+        )
+        result = cli(*run)
+        self.assertNotEqual(result.returncode, 0)
+        attempt = output / "attempt"
+        sent = [json.loads(line) for line in (attempt / "collector-sent.jsonl").read_bytes().splitlines()]
+        self.assertTrue(any(message["method"] == "thread/start" for message in sent))
+        self.assertFalse(any(message["method"] == "turn/start" for message in sent))
+        check = json.loads((attempt / "task-delivery-git/preflight.json").read_bytes())
+        self.assertEqual(check["status"], "incomplete")
+        self.assertIn("baseline Git state changed", check["error"])
+        outcome = json.loads((attempt / "outcome.json").read_bytes())
+        self.assertEqual(outcome["status"], "incomplete")
+        self.assertEqual(outcome["final_source"]["status"], "complete")
 
 
 if __name__ == "__main__":

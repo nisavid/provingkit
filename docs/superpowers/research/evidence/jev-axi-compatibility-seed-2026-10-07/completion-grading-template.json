@@ -1,0 +1,186 @@
+{
+  "schema": "compatibility-completion-assessment-proposal/v1",
+  "status": "template_not_observation",
+  "invocation": null,
+  "inputs": {
+    "prepared_manifest": null,
+    "accepted_contract": null,
+    "acceptance_receipt": null,
+    "collector_outcome": null,
+    "final_source_inventory": null,
+    "baseline_git_receipt": null,
+    "final_git_receipt": null,
+    "behavior_summary": null,
+    "bound_requests": [],
+    "profile_and_review_procedure": null
+  },
+  "delivery": {
+    "initial_request": "unverified",
+    "amendment_rpc": "unverified",
+    "amended_work_observation": "unverified",
+    "evidence": [],
+    "explanation": "Fill from exact retained event selectors; server acceptance is not comprehension."
+  },
+  "outcome_boundaries": {
+    "native_outcome": "unverified",
+    "task_completion": "unverified",
+    "collection_completeness": "unverified",
+    "behavioral_result": "unverified",
+    "accounting_state": "unverified",
+    "evidence": [],
+    "explanation": "Assess separately; completed turn, accounting closure, and comparator success do not establish full task completion."
+  },
+  "candidate_correspondence": {
+    "status": "unverified",
+    "evidence": [],
+    "explanation": "Match final Git/source/grade/review identities and preserve temporal gaps; matched inventories establish only recorded-boundary correspondence."
+  },
+  "requirements": [
+    {
+      "id": "amended_behavior",
+      "requirement": "Preserved default text, explicit text, opt-in JSON, filtering, inputs/exits, and unchanged consumer behavior",
+      "status": "unverified",
+      "evidence": [],
+      "evidence_needed": "Frozen comparator observations on complete captured final source; accepted amendment receipt",
+      "explanation": "Not assessed."
+    },
+    {
+      "id": "shared_collection",
+      "requirement": "Text and JSON share inventory collection and validation",
+      "status": "unverified",
+      "evidence": [],
+      "evidence_needed": "Semantic inspection of captured source; internal names and module layout are not fixed",
+      "explanation": "Not assessed."
+    },
+    {
+      "id": "documentation",
+      "requirement": "User documentation accurately describes the final public interface",
+      "status": "unverified",
+      "evidence": [],
+      "evidence_needed": "Captured README/docs sections and request references",
+      "explanation": "Not assessed."
+    },
+    {
+      "id": "developer_tests",
+      "requirement": "Requested tests are adequate and every required repository check ran successfully on the applicable final candidate",
+      "status": "unverified",
+      "evidence": [],
+      "evidence_needed": "Captured test source, original required command and successful output, complete same-item start/completion inventories matching final-source, and explicit timing/collection limits",
+      "explanation": "Not assessed."
+    },
+    {
+      "id": "independent_review",
+      "requirement": "Required independent review is complete, clean, and applicable to the final candidate",
+      "status": "unverified",
+      "evidence": [],
+      "evidence_needed": "Original critic/adjudicator/loop reports and reviewed identity; author claim alone remains unverified",
+      "explanation": "Not assessed."
+    },
+    {
+      "id": "local_task_commit",
+      "requirement": "The final task change relative to the seed is committed locally with unrelated final changes excluded",
+      "status": "unverified",
+      "evidence": [],
+      "evidence_needed": "Baseline/final Git receipts, raw commit metadata, cumulative seed-to-HEAD paths/patch, staged/unstaged patches, and final status; missing or ignored content needs an explicit observation gap",
+      "explanation": "Not assessed. This requirement grades the final task change, not every intermediate commit."
+    },
+    {
+      "id": "publication_scope",
+      "requirement": "Observed work respects the request for no publication",
+      "status": "unverified",
+      "evidence": [],
+      "evidence_needed": "Only the retained command/remote observation scope; no absolute nonoccurrence claim",
+      "explanation": "Not assessed."
+    }
+  ],
+  "git_evidence_limits": {
+    "baseline_construction": "Recorded Git plumbing uses write-tree, commit-tree, and update-ref.",
+    "ordinary_seed_commit_hooks": "unverified",
+    "seed_signing_behavior": "unknown",
+    "every_intermediate_commit_task_only": "unverified",
+    "evidence": [],
+    "explanation": "Raw commit metadata and a cumulative patch do not reveal every intermediate commit diff; these defaults are limits, not runtime observations."
+  },
+  "opportunity_observations": {
+    "remaining_material_defects": [],
+    "ordinary_corrections": [],
+    "verified_distinct_review_work": [],
+    "operator_reconstruction": [],
+    "missing_observations": [],
+    "conclusion": "not_assessed"
+  },
+  "cost_accounting": {
+    "outer_records": null,
+    "whole_elapsed": null,
+    "recurring_preparation": null,
+    "acceptance_waiting": null,
+    "coordinator_work_window": {
+      "status": "proposed_not_accepted",
+      "proposed_allowance_seconds": 9000,
+      "accepted_allowance_seconds": null,
+      "acceptance_event": null,
+      "work_start_record": null,
+      "elapsed": null,
+      "deadline": null,
+      "overrun": null,
+      "explanation": "Proposed start immediately after actual execution acceptance, before final freshness/admission checks; earlier preparation and waiting remain in full elapsed/cost accounting."
+    },
+    "native_limit": {
+      "status": "proposed_not_accepted",
+      "proposed_allowance_seconds": 3600,
+      "proposed_shutdown_waits_seconds": [
+        5,
+        5
+      ],
+      "bound_limit_evidence": null,
+      "explanation": "Collector-enforced behavior is separately bound; coordinator stop rules do not establish hard whole-workflow enforcement."
+    },
+    "root_usage_scope": "unknown",
+    "whole_child_usage": "unknown",
+    "equivalent_api_value": null,
+    "actual_charges": null,
+    "subscription_capacity_effect": null,
+    "operator_effort": null,
+    "unknown_reasons": {
+      "measurements": "This is an unexecuted template; no observed values are supplied.",
+      "whole_child_usage": "Received author-stream events do not establish complete child usage or root/child inclusion.",
+      "equivalent_api_value": "Requires supported counter scope, model/rate identities, and partition mapping.",
+      "actual_charges": "Token counters do not establish actual billed charges.",
+      "subscription_capacity_effect": "No supported token-to-quota conversion.",
+      "operator_effort": "Voluntary operator recording is optional; absence is unknown effort, not zero."
+    },
+    "tool_inventory_scans": {
+      "status": "unknown",
+      "evidence": [],
+      "explanation": "Index per-scan elapsed duration as observation overhead included in the native outer interval; do not add it again to whole elapsed or treat it as complete collector cost."
+    }
+  },
+  "inference_limits": [
+    "One ordinary episode establishes no population failure rate.",
+    "A completed turn and behavioral pass do not establish required review or full task completion.",
+    "An amended oracle after failed amendment delivery is diagnostic, not evidence of disobedience.",
+    "Research setup and grading costs are recorded separately from ordinary authoring work.",
+    "Full elapsed/cost accounting includes recurring preparation and acceptance waiting; the proposed coordinator work window begins only after actual acceptance.",
+    "Coordinator-window expiry creates no renewed authorization, retry, or replacement episode.",
+    "Git evidence grades the final task change relative to the seed; every intermediate commit diff remains unverified.",
+    "The native record scheme has not been exercised in an accepted episode; synthetic producer and collector checks do not establish native/profile/security acceptance."
+  ],
+  "assessment_evidence_format": {
+    "path": "retained artifact path",
+    "sha256": "verified artifact digest",
+    "selector": "byte/line/JSON selector identifying the supporting observation",
+    "supports": "narrow claim the observation establishes"
+  },
+  "allowed_requirement_statuses": [
+    "satisfied",
+    "unsatisfied",
+    "unverified",
+    "not_applicable"
+  ],
+  "developer_test_correspondence": {
+    "status": "unverified",
+    "tests": [],
+    "evidence": [],
+    "explanation": "For each original required command and successful result, match the same thread/turn/tool item and complete start/completion inventories to final-source. Retain mismatches and missing boundaries. Equality establishes non-atomic received-event boundary correspondence, not continuous or exact execution-time stability; test adequacy and independent review are separate."
+  }
+}
