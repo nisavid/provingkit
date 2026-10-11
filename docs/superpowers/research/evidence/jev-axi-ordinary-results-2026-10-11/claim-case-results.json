@@ -1,0 +1,1653 @@
+{
+  "cases": [
+    {
+      "case": "c01",
+      "claim": "The retained publication involved nine outgoing files.",
+      "expected": "unsupported_extension",
+      "input_sha256": "d3c4eba146226e64da625f41e0a100784e08695d8ae1ee04d32e2876ccdf4ed2"
+    },
+    {
+      "case": "c02",
+      "claim": "The commit candidate adds nine files; its verification record names seven reviewed content files.",
+      "expected": "supported",
+      "input_sha256": "2958d11635e3c71940437e7bf4d3dc6a2865722cd438593b68477536a861e01c"
+    },
+    {
+      "case": "c03",
+      "claim": "The publication observation established successful publication during the observed interval.",
+      "expected": "contradicted",
+      "input_sha256": "79490ee0f4353f4a8e213761e2b009458afaf9c135d5f5dfab6da080050dc6fb"
+    },
+    {
+      "case": "c04",
+      "claim": "The five reviewed documents were published after the observed interval.",
+      "expected": "supported",
+      "input_sha256": "ea6acfd0921f1d3b1d05e0248e751b67efb3fc1dc1f62de77e56372adb6024dd"
+    },
+    {
+      "case": "c05",
+      "claim": "Retrieving the saved review choice avoided reconstruction work.",
+      "expected": "unsupported_extension",
+      "input_sha256": "39b5e721951a0fb3de05fed52cfefcda594f63c04fd92b6dee26c4272c064dc2"
+    },
+    {
+      "case": "c06",
+      "claim": "The returning agent retrieved the saved review choice and used it in later preparation.",
+      "expected": "supported",
+      "input_sha256": "2d7f2d57aaf6c897f7e3a0b2dcf9cf561cc20aca74936fe1a0c1ae9e09928239"
+    },
+    {
+      "case": "c07",
+      "claim": "The publication study reports that \u201cModel usage, operator effort, money, quota, and comparative savings remain unknown.\u201d",
+      "expected": "supported",
+      "input_sha256": "c723778228b62179a14532adb2c57d02fce9bccd12b119923e3be610984f898b"
+    },
+    {
+      "case": "c08",
+      "claim": "The publication study's results report describes reduced operator verification effort as a known comparative saving.",
+      "expected": "contradicted",
+      "input_sha256": "08170ab8c104b6f3a114b71c8f613843f78ce69613c5d7365bfa13f4176a5418"
+    },
+    {
+      "case": "c09",
+      "claim": "The reports establish that the actual publication had nine outgoing files.",
+      "expected": "unsupported_extension",
+      "input_sha256": "018141d5f320dc8df61ace70db826d1b0d154274c219395e25d02d5682750372"
+    },
+    {
+      "case": "c10",
+      "claim": "The complete actual pushed range contained exactly seven files.",
+      "expected": "unsupported_extension",
+      "input_sha256": "11ebc0f4c645e7b49a9321b84a310bbb8eb9a4000cfdd573d017f01a7ddc66ff"
+    },
+    {
+      "case": "c11",
+      "claim": "The five reviewed documents were published after the observed interval.",
+      "expected": "producer_fallback_no_semantic_request",
+      "input_sha256": "067435e8c0207abaf4540c09639bc17b38fdc1f4b8d5c47394d4289f8f8bf051"
+    }
+  ],
+  "slots": [
+    {
+      "case": "c01",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0000",
+      "slot_index": 0,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0000/attempt-0000",
+      "relation": "supported",
+      "expected": "unsupported_extension",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c01",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0001",
+      "slot_index": 1,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0001/attempt-0000",
+      "relation": "unresolved",
+      "expected": "unsupported_extension",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c01",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0002",
+      "slot_index": 2,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0002/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c01",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0003",
+      "slot_index": 3,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0003/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c01",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0004",
+      "slot_index": 4,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0004/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c01",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0005",
+      "slot_index": 5,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0005/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c04",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0006",
+      "slot_index": 6,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0006/attempt-0000",
+      "relation": "unresolved",
+      "expected": "supported",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c04",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0007",
+      "slot_index": 7,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0007/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c04",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0008",
+      "slot_index": 8,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0008/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c04",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0009",
+      "slot_index": 9,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0009/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c04",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0010",
+      "slot_index": 10,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0010/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c04",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0011",
+      "slot_index": 11,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0011/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c03",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0012",
+      "slot_index": 12,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0012/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c03",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0013",
+      "slot_index": 13,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0013/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c03",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0014",
+      "slot_index": 14,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0014/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c03",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0015",
+      "slot_index": 15,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0015/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c03",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0016",
+      "slot_index": 16,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0016/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c03",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0017",
+      "slot_index": 17,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0017/attempt-0000",
+      "relation": "unresolved",
+      "expected": "contradicted",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c06",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0018",
+      "slot_index": 18,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0018/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c06",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0019",
+      "slot_index": 19,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0019/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c06",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0020",
+      "slot_index": 20,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0020/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c06",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0021",
+      "slot_index": 21,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0021/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c06",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0022",
+      "slot_index": 22,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0022/attempt-0000",
+      "relation": "unresolved",
+      "expected": "supported",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c06",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0023",
+      "slot_index": 23,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0023/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c05",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0024",
+      "slot_index": 24,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0024/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c05",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0025",
+      "slot_index": 25,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0025/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c05",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0026",
+      "slot_index": 26,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0026/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c05",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0027",
+      "slot_index": 27,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0027/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c05",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0028",
+      "slot_index": 28,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0028/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c05",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0029",
+      "slot_index": 29,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0029/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c07",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0030",
+      "slot_index": 30,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0030/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c07",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0031",
+      "slot_index": 31,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0031/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c07",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0032",
+      "slot_index": 32,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0032/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c07",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0033",
+      "slot_index": 33,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0033/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c07",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0034",
+      "slot_index": 34,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0034/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c07",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0035",
+      "slot_index": 35,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0035/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c02",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0036",
+      "slot_index": 36,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0036/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c02",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0037",
+      "slot_index": 37,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0037/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "supported",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c02",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0038",
+      "slot_index": 38,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0038/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c02",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0039",
+      "slot_index": 39,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0039/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c02",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0040",
+      "slot_index": 40,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0040/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c02",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0041",
+      "slot_index": 41,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0041/attempt-0000",
+      "relation": "supported",
+      "expected": "supported",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c08",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0042",
+      "slot_index": 42,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0042/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c08",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0043",
+      "slot_index": 43,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0043/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c08",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0044",
+      "slot_index": 44,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0044/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c08",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0045",
+      "slot_index": 45,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0045/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c08",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0046",
+      "slot_index": 46,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0046/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "contradicted",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c08",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0047",
+      "slot_index": 47,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0047/attempt-0000",
+      "relation": "contradicted",
+      "expected": "contradicted",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c09",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0048",
+      "slot_index": 48,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0048/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c09",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0049",
+      "slot_index": 49,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0049/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c09",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0050",
+      "slot_index": 50,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0050/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c09",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0051",
+      "slot_index": 51,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0051/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c09",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0052",
+      "slot_index": 52,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0052/attempt-0000",
+      "relation": "supported",
+      "expected": "unsupported_extension",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c09",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0053",
+      "slot_index": 53,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0053/attempt-0000",
+      "relation": "supported",
+      "expected": "unsupported_extension",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c10",
+      "condition": "responses-1",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0054",
+      "slot_index": 54,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0054/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c10",
+      "condition": "responses-2",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0055",
+      "slot_index": 55,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0055/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c10",
+      "condition": "responses-3",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0056",
+      "slot_index": 56,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0056/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c10",
+      "condition": "jev",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0057",
+      "slot_index": 57,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0057/attempt-0000",
+      "relation": "supported",
+      "expected": "unsupported_extension",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c10",
+      "condition": "decisions",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0058",
+      "slot_index": 58,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0058/attempt-0000",
+      "relation": "unresolved",
+      "expected": "unsupported_extension",
+      "outcome": "nonmatching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    },
+    {
+      "case": "c10",
+      "condition": "responses-0",
+      "run_id": "0717f357617f425c97fc258c82b32b81",
+      "slot_id": "0717f357617f425c97fc258c82b32b81/slot-0059",
+      "slot_index": 59,
+      "status": "completed",
+      "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0059/attempt-0000",
+      "relation": "unsupported_extension",
+      "expected": "unsupported_extension",
+      "outcome": "matching",
+      "transport_status": "received",
+      "condition_error": null,
+      "valuation_status": "known"
+    }
+  ],
+  "control": {
+    "case": "c11",
+    "outcome": "producer_fallback_no_semantic_request",
+    "semantic_attempts": 0
+  },
+  "conditions": [
+    {
+      "condition": "jev",
+      "model": "jev-1.13.0",
+      "effort": null,
+      "denominator": 10,
+      "outcomes": {
+        "nonmatching": 3,
+        "matching": 7
+      },
+      "supplied_case_feasibility_pass": false,
+      "attempts": 10,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 28809,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 537,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 0,
+          "missing_attempts": 10,
+          "invalid_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 0,
+          "missing_attempts": 10,
+          "invalid_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 0,
+          "missing_attempts": 10,
+          "invalid_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.001209978",
+      "unvalued_attempts": 0,
+      "complete_request_api_rate_equivalent_usd": "0.001209978",
+      "confirmed_charge_usd": null,
+      "attempt_ids": [
+        "0717f357617f425c97fc258c82b32b81/slot-0000/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0011/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0016/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0021/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0026/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0031/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0036/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0047/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0052/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0057/attempt-0000"
+      ],
+      "timing_evidence": [
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0000/attempt-0000",
+          "duration_ms": 376.898307,
+          "first_byte_latency_ms": 360.915143
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0011/attempt-0000",
+          "duration_ms": 277.734491,
+          "first_byte_latency_ms": 266.438696
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0016/attempt-0000",
+          "duration_ms": 262.978277,
+          "first_byte_latency_ms": 248.263113
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0021/attempt-0000",
+          "duration_ms": 329.05999,
+          "first_byte_latency_ms": 318.019143
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0026/attempt-0000",
+          "duration_ms": 315.528448,
+          "first_byte_latency_ms": 302.217086
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0031/attempt-0000",
+          "duration_ms": 289.18805,
+          "first_byte_latency_ms": 273.459758
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0036/attempt-0000",
+          "duration_ms": 330.62434,
+          "first_byte_latency_ms": 318.435084
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0047/attempt-0000",
+          "duration_ms": 265.845814,
+          "first_byte_latency_ms": 253.986033
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0052/attempt-0000",
+          "duration_ms": 353.534892,
+          "first_byte_latency_ms": 339.648864
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0057/attempt-0000",
+          "duration_ms": 289.512957,
+          "first_byte_latency_ms": 276.766122
+        }
+      ]
+    },
+    {
+      "condition": "decisions",
+      "model": "gpt-6-luna",
+      "effort": null,
+      "denominator": 10,
+      "outcomes": {
+        "nonmatching": 7,
+        "matching": 3
+      },
+      "supplied_case_feasibility_pass": false,
+      "attempts": 10,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 22695,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.0022695",
+      "unvalued_attempts": 0,
+      "complete_request_api_rate_equivalent_usd": "0.0022695",
+      "confirmed_charge_usd": null,
+      "attempt_ids": [
+        "0717f357617f425c97fc258c82b32b81/slot-0001/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0006/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0017/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0022/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0027/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0032/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0037/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0042/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0053/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0058/attempt-0000"
+      ],
+      "timing_evidence": [
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0001/attempt-0000",
+          "duration_ms": 1323.787163,
+          "first_byte_latency_ms": 1310.595159
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0006/attempt-0000",
+          "duration_ms": 335.197315,
+          "first_byte_latency_ms": 319.122675
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0017/attempt-0000",
+          "duration_ms": 226.607113,
+          "first_byte_latency_ms": 212.296885
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0022/attempt-0000",
+          "duration_ms": 3216.541416,
+          "first_byte_latency_ms": 3193.770249
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0027/attempt-0000",
+          "duration_ms": 321.808414,
+          "first_byte_latency_ms": 306.899191
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0032/attempt-0000",
+          "duration_ms": 362.975519,
+          "first_byte_latency_ms": 345.87893
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0037/attempt-0000",
+          "duration_ms": 305.13505,
+          "first_byte_latency_ms": 292.922494
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0042/attempt-0000",
+          "duration_ms": 368.817044,
+          "first_byte_latency_ms": 356.817495
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0053/attempt-0000",
+          "duration_ms": 303.21169,
+          "first_byte_latency_ms": 287.245653
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0058/attempt-0000",
+          "duration_ms": 271.110438,
+          "first_byte_latency_ms": 258.86809
+        }
+      ]
+    },
+    {
+      "condition": "responses-0",
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "denominator": 10,
+      "outcomes": {
+        "matching": 10
+      },
+      "supplied_case_feasibility_pass": true,
+      "attempts": 10,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 22175,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 793,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 22145,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 637,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.003167625",
+      "unvalued_attempts": 0,
+      "complete_request_api_rate_equivalent_usd": "0.003167625",
+      "confirmed_charge_usd": null,
+      "attempt_ids": [
+        "0717f357617f425c97fc258c82b32b81/slot-0002/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0007/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0012/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0023/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0028/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0033/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0038/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0043/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0048/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0059/attempt-0000"
+      ],
+      "timing_evidence": [
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0002/attempt-0000",
+          "duration_ms": 3075.241425,
+          "first_byte_latency_ms": 1030.091208
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0007/attempt-0000",
+          "duration_ms": 1405.910797,
+          "first_byte_latency_ms": 425.610423
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0012/attempt-0000",
+          "duration_ms": 1394.000873,
+          "first_byte_latency_ms": 425.561962
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0023/attempt-0000",
+          "duration_ms": 1673.725842,
+          "first_byte_latency_ms": 575.316012
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0028/attempt-0000",
+          "duration_ms": 2156.911791,
+          "first_byte_latency_ms": 719.009111
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0033/attempt-0000",
+          "duration_ms": 1954.933273,
+          "first_byte_latency_ms": 417.613432
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0038/attempt-0000",
+          "duration_ms": 1445.448159,
+          "first_byte_latency_ms": 493.130471
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0043/attempt-0000",
+          "duration_ms": 1583.881715,
+          "first_byte_latency_ms": 487.632155
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0048/attempt-0000",
+          "duration_ms": 3098.088993,
+          "first_byte_latency_ms": 512.562673
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0059/attempt-0000",
+          "duration_ms": 1641.921922,
+          "first_byte_latency_ms": 441.799373
+        }
+      ]
+    },
+    {
+      "condition": "responses-1",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "denominator": 10,
+      "outcomes": {
+        "matching": 10
+      },
+      "supplied_case_feasibility_pass": true,
+      "attempts": 10,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 22175,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 1218,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 22145,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 1060,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.003380125",
+      "unvalued_attempts": 0,
+      "complete_request_api_rate_equivalent_usd": "0.003380125",
+      "confirmed_charge_usd": null,
+      "attempt_ids": [
+        "0717f357617f425c97fc258c82b32b81/slot-0003/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0008/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0013/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0018/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0029/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0034/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0039/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0044/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0049/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0054/attempt-0000"
+      ],
+      "timing_evidence": [
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0003/attempt-0000",
+          "duration_ms": 3787.466725,
+          "first_byte_latency_ms": 905.77462
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0008/attempt-0000",
+          "duration_ms": 1559.17406,
+          "first_byte_latency_ms": 789.539198
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0013/attempt-0000",
+          "duration_ms": 1363.659092,
+          "first_byte_latency_ms": 412.29575
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0018/attempt-0000",
+          "duration_ms": 1961.668647,
+          "first_byte_latency_ms": 955.739276
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0029/attempt-0000",
+          "duration_ms": 1447.391921,
+          "first_byte_latency_ms": 467.961872
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0034/attempt-0000",
+          "duration_ms": 1617.62694,
+          "first_byte_latency_ms": 563.865904
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0039/attempt-0000",
+          "duration_ms": 2459.148558,
+          "first_byte_latency_ms": 450.284773
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0044/attempt-0000",
+          "duration_ms": 3906.102132,
+          "first_byte_latency_ms": 539.115847
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0049/attempt-0000",
+          "duration_ms": 2417.53694,
+          "first_byte_latency_ms": 545.894376
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0054/attempt-0000",
+          "duration_ms": 1792.975042,
+          "first_byte_latency_ms": 387.229428
+        }
+      ]
+    },
+    {
+      "condition": "responses-2",
+      "model": "gpt-6-luna",
+      "effort": "high",
+      "denominator": 10,
+      "outcomes": {
+        "matching": 10
+      },
+      "supplied_case_feasibility_pass": true,
+      "attempts": 10,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 22175,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 3655,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 22145,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 3497,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.004598625",
+      "unvalued_attempts": 0,
+      "complete_request_api_rate_equivalent_usd": "0.004598625",
+      "confirmed_charge_usd": null,
+      "attempt_ids": [
+        "0717f357617f425c97fc258c82b32b81/slot-0004/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0009/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0014/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0019/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0024/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0035/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0040/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0045/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0050/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0055/attempt-0000"
+      ],
+      "timing_evidence": [
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0004/attempt-0000",
+          "duration_ms": 11924.713999,
+          "first_byte_latency_ms": 906.839052
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0009/attempt-0000",
+          "duration_ms": 1200.990357,
+          "first_byte_latency_ms": 389.095873
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0014/attempt-0000",
+          "duration_ms": 1321.61757,
+          "first_byte_latency_ms": 391.344558
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0019/attempt-0000",
+          "duration_ms": 1505.596602,
+          "first_byte_latency_ms": 487.264444
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0024/attempt-0000",
+          "duration_ms": 1577.993772,
+          "first_byte_latency_ms": 535.728989
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0035/attempt-0000",
+          "duration_ms": 1164.630359,
+          "first_byte_latency_ms": 401.963339
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0040/attempt-0000",
+          "duration_ms": 1785.498585,
+          "first_byte_latency_ms": 408.28473
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0045/attempt-0000",
+          "duration_ms": 1897.694737,
+          "first_byte_latency_ms": 354.632428
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0050/attempt-0000",
+          "duration_ms": 8296.549459,
+          "first_byte_latency_ms": 1340.615342
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0055/attempt-0000",
+          "duration_ms": 1473.912165,
+          "first_byte_latency_ms": 456.348526
+        }
+      ]
+    },
+    {
+      "condition": "responses-3",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "denominator": 10,
+      "outcomes": {
+        "matching": 9,
+        "nonmatching": 1
+      },
+      "supplied_case_feasibility_pass": false,
+      "attempts": 10,
+      "counters": {
+        "input_tokens": {
+          "reported_sum": 22175,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "output_tokens": {
+          "reported_sum": 237,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cached_tokens": {
+          "reported_sum": 0,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "cache_write_tokens": {
+          "reported_sum": 22145,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 96,
+          "reported_attempts": 10,
+          "missing_attempts": 0,
+          "invalid_attempts": 0
+        }
+      },
+      "known_api_rate_equivalent_usd": "0.0577925",
+      "unvalued_attempts": 0,
+      "complete_request_api_rate_equivalent_usd": "0.0577925",
+      "confirmed_charge_usd": null,
+      "attempt_ids": [
+        "0717f357617f425c97fc258c82b32b81/slot-0005/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0010/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0015/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0020/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0025/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0030/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0041/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0046/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0051/attempt-0000",
+        "0717f357617f425c97fc258c82b32b81/slot-0056/attempt-0000"
+      ],
+      "timing_evidence": [
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0005/attempt-0000",
+          "duration_ms": 1775.270022,
+          "first_byte_latency_ms": 591.933869
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0010/attempt-0000",
+          "duration_ms": 1550.762618,
+          "first_byte_latency_ms": 497.755469
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0015/attempt-0000",
+          "duration_ms": 1854.41669,
+          "first_byte_latency_ms": 843.908984
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0020/attempt-0000",
+          "duration_ms": 1440.389103,
+          "first_byte_latency_ms": 412.52186
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0025/attempt-0000",
+          "duration_ms": 1883.197269,
+          "first_byte_latency_ms": 467.375761
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0030/attempt-0000",
+          "duration_ms": 1521.064091,
+          "first_byte_latency_ms": 415.818571
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0041/attempt-0000",
+          "duration_ms": 1716.66244,
+          "first_byte_latency_ms": 562.408641
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0046/attempt-0000",
+          "duration_ms": 2845.471118,
+          "first_byte_latency_ms": 865.032013
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0051/attempt-0000",
+          "duration_ms": 1692.169802,
+          "first_byte_latency_ms": 855.146948
+        },
+        {
+          "attempt_id": "0717f357617f425c97fc258c82b32b81/slot-0056/attempt-0000",
+          "duration_ms": 1428.911775,
+          "first_byte_latency_ms": 497.722887
+        }
+      ]
+    }
+  ],
+  "original_grade_identity": {
+    "sha256": "43aed38a1b3d2d1756b841659965fb5a757bbffe533c8d6b60ec34b1e285da7f",
+    "bytes": 75963
+  },
+  "limits": "Supplied-case categorical feasibility only; no native benefit, calibration, population reliability, author correction, or complete-workflow economic result."
+}
