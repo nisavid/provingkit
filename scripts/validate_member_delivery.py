@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Report incomplete evidence through the member-delivery CLI."""
+"""Report request errors and incomplete member-delivery validation."""
 
 from __future__ import annotations
 
@@ -14,16 +14,26 @@ def main() -> int:
     parser.add_argument("--inputs", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     arguments = parser.parse_args()
+    outcome = "incomplete"
+    exit_status = 2
 
     try:
-        with arguments.request.open("rb"):
-            pass
+        with arguments.request.open("r", encoding="utf-8") as request:
+            json.load(request)
     except OSError:
         check = {
             "id": "request",
             "outcome": "missing",
             "reason": "The request could not be opened.",
         }
+    except json.JSONDecodeError:
+        check = {
+            "id": "request_content",
+            "outcome": "invalid",
+            "reason": "The request must contain valid JSON.",
+        }
+        outcome = "rejected"
+        exit_status = 1
     else:
         check = {
             "id": "request_validation",
@@ -32,12 +42,12 @@ def main() -> int:
         }
 
     report = {
-        "outcome": "incomplete",
+        "outcome": outcome,
         "established_claims": [],
         "checks": [check],
     }
     arguments.output.write_text(json.dumps(report, indent=2) + "\n")
-    return 2
+    return exit_status
 
 
 if __name__ == "__main__":
