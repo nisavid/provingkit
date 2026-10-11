@@ -10,6 +10,14 @@ reviewed commit deserves approval. Lead with the resulting behavior and why it
 matters. Explain the concrete problem, current scope, unchanged boundaries,
 efficient review entry point, material contracts or risks, observed evidence,
 and remaining work where each concern naturally belongs.
+
+Phrase summaries of the PR's changes in the imperative: "Preserve existing cache
+entries." Prefer openings centered on the change or its subject for the prose
+and its sections. Use first person for pertinent actions and judgments, such as
+"I tested the recovery path" or "I believe the migration needs another review"
+when they help the reviewer assess the change. Let context, evidence, and open
+questions take the prose form that fits them.
+
 For a fix, say what used to go wrong: the realistic scenario, how bad it could
 get, and whether the failure was hypothetical, accidental, or exploitable,
 naming threat surface and blast radius when security is implicated, with
