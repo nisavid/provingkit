@@ -90,6 +90,7 @@ PUBLIC_SKILLS = (
 ROOT_FILES = {
     ".claude-plugin/plugin.json",
     "CHANGELOG.md",
+    "DEVELOPING.md",
     "LICENSE",
     "README.md",
     "plugin.json",
@@ -2670,20 +2671,19 @@ def render_operation_registry(operations: list[dict[str, Any]]) -> str:
 
 def validate_readme_projection(root: Path) -> None:
     readme = read(root, "README.md")
+    developer_page = read(root, "DEVELOPING.md")
     topology = load_json(root, "topology.json")
+    require("## Public skills" in readme, "README public skills section drift")
     require(
-        all(
-            heading in readme
-            for heading in (
-                "## Public skills",
-                "## Operation registry",
-            )
-        ),
-        "README projection sections drift",
+        "## Operation registry" in developer_page,
+        "developer page operation registry section drift",
     )
-    skill_projection = readme.split("## Public skills", 1)[1].split(
-        "## Operation registry", 1
-    )[0]
+    require(
+        OPERATION_REGISTRY_START not in readme
+        and OPERATION_REGISTRY_END not in readme,
+        "README carries the operation registry",
+    )
+    skill_projection = readme.split("## Public skills", 1)[1].split("\n## ", 1)[0]
     for skill in PUBLIC_SKILLS:
         require(
             re.search(
@@ -2695,20 +2695,20 @@ def validate_readme_projection(root: Path) -> None:
             f"README skill projection drift: {skill}",
         )
     require(
-        readme.count(OPERATION_REGISTRY_START) == 1
-        and readme.count(OPERATION_REGISTRY_END) == 1,
-        "README operation registry markers drift",
+        developer_page.count(OPERATION_REGISTRY_START) == 1
+        and developer_page.count(OPERATION_REGISTRY_END) == 1,
+        "developer page operation registry markers drift",
     )
     projection = (
         OPERATION_REGISTRY_START
-        + readme.split(OPERATION_REGISTRY_START, 1)[1].split(OPERATION_REGISTRY_END, 1)[
-            0
-        ]
+        + developer_page.split(OPERATION_REGISTRY_START, 1)[1].split(
+            OPERATION_REGISTRY_END, 1
+        )[0]
         + OPERATION_REGISTRY_END
     )
     require(
         projection == render_operation_registry(topology["operations"]),
-        "README operation registry stale projection",
+        "developer page operation registry stale projection",
     )
 
 

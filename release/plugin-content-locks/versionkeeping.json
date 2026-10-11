@@ -6,8 +6,12 @@
       "sha256": "fd9896fe779a6311ac4c34d1290802bf334b8dc35f346f0da04e743fbc1eea23",
       "mode": 420
     },
+    "DEVELOPING.md": {
+      "sha256": "b5f3088516cbe0cf2ea49da61001870a065fea42a952324747af00a9d0c9b217",
+      "mode": 420
+    },
     "README.md": {
-      "sha256": "a00f636a3d7ead47a10fb0eb65398ff34763dff25ef715fd3418ae51eee9062d",
+      "sha256": "c8c7492cd85744f979189044033c50ea99e81caaf9e60cb4facc5515b485fd3d",
       "mode": 420
     },
     "plugin.json": {

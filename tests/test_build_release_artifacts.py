@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import tempfile
 import unittest
@@ -8,6 +9,32 @@ from scripts.build_release_artifacts import build
 
 
 ROOT = Path(__file__).resolve().parents[1]
+TARGETS = ("agent-plugins", "claude", "cursor")
+MARKDOWN_LINK = re.compile(r"\[[^\]]*\]\((?P<target>[^)\s]+)(?:\s+[^)]*)?\)")
+MARKDOWN_REFERENCE = re.compile(r"^ {0,3}\[[^\]]+\]:[ \t]*(?P<target>\S+)", re.MULTILINE)
+SOURCE_TREE_URL = "https://github.com/nisavid/provingkit/blob/main/"
+
+
+def markdown_link_targets(text: str):
+    """Yield every inline and reference-definition link target, without its fragment."""
+    for pattern in (MARKDOWN_LINK, MARKDOWN_REFERENCE):
+        for match in pattern.finditer(text):
+            yield match.group("target").removeprefix("<").removesuffix(">").split("#", 1)[0]
+
+
+def developer_pages():
+    """The members' source-only developer pages, which no target may ship."""
+    return sorted(ROOT.glob("plugins/*/DEVELOPING.md"))
+
+
+def developer_page_links():
+    for page in developer_pages():
+        for link in markdown_link_targets(page.read_text(encoding="utf-8")):
+            yield "source", page.relative_to(ROOT).as_posix(), page.parent, link
+
+
+def is_relative(link: str) -> bool:
+    return bool(link) and ":" not in link.split("/", 1)[0]
 
 
 class ReleaseArtifactBuilderTests(unittest.TestCase):
@@ -92,6 +119,40 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             manifest = json.loads((output / "plugins/rolecasting/.cursor-plugin/plugin.json").read_text())
             self.assertEqual(manifest["skills"], "./skills/")
             self.assertNotIn("agents", manifest)
+
+    def shipped_readme_links(self):
+        for target in TARGETS:
+            for output, receipt in self.stage(target):
+                readmes = sorted(output.glob("plugins/*/README.md"))
+                self.assertEqual([path.parent.name for path in readmes], sorted(receipt["plugin_slate"]))
+                for readme in readmes:
+                    for link in markdown_link_targets(readme.read_text(encoding="utf-8")):
+                        yield target, readme.relative_to(output).as_posix(), readme.parent, link
+
+    def test_shipped_readmes_link_only_shipped_files(self):
+        for origin, document, parent, link in self.shipped_readme_links():
+            if is_relative(link):
+                with self.subTest(origin=origin, document=document, link=link):
+                    self.assertTrue((parent / link).is_file())
+
+    def test_developer_page_relative_links_resolve(self):
+        for origin, document, parent, link in developer_page_links():
+            if is_relative(link):
+                with self.subTest(origin=origin, document=document, link=link):
+                    self.assertTrue((parent / link).is_file())
+
+    def test_source_tree_urls_name_source_files(self):
+        for origin, document, _, link in [*self.shipped_readme_links(), *developer_page_links()]:
+            if link.startswith(SOURCE_TREE_URL):
+                with self.subTest(origin=origin, document=document, link=link):
+                    self.assertTrue((ROOT / link.removeprefix(SOURCE_TREE_URL)).is_file())
+
+    def test_developer_pages_stay_in_source(self):
+        members = [page.parent.name for page in developer_pages()]
+        self.assertEqual(members, ["mergecraft", "versionkeeping"])
+        for target in TARGETS:
+            for output, _ in self.stage(target, members):
+                self.assertFalse(any(p.name == "DEVELOPING.md" for p in output.rglob("*")))
 
     def test_staging_is_deterministic(self):
         with tempfile.TemporaryDirectory() as tmp:
