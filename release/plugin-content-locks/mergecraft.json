@@ -3,7 +3,8 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "79c2bb6cd2abc643ecd905e76510610d0acd008930ae5752184d57c1c78f0fbb",
-    "README.md": "73e3b50b0be042b4abdf65cdcf604319c9933ef3e2618964a149b20eb78079bf",
+    "DEVELOPING.md": "43828bbc8908a33c24c01fd6ef650fe51ac551ce5b4df727eeed297ee081fae8",
+    "README.md": "b0bba60c691b2dc35b5b00c5d5f1c5bf9782e1960ca0e26b0315667d2b7b7265",
     "plugin.json": "5d54cc740544d4fa3e63794d6a7d86950829f1b565ae4fec842d3f4da7f1bbcc",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
     "skills/addressing-pr-review-feedback/agents/openai.yaml": "2496f90c970648152cda7b94f40047baab0426c19b47954b87aa6baac563c39c",

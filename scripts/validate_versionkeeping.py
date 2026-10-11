@@ -41,6 +41,7 @@ SAFE_PLUGIN_REGULAR_FILE_MODES = frozenset({0o644, 0o755})
 ROOT_FILES = {
     ".claude-plugin/plugin.json",
     "CHANGELOG.md",
+    "DEVELOPING.md",
     "LICENSE",
     "README.md",
     "plugin.json",
