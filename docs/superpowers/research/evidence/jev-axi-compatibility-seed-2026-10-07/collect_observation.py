@@ -2190,10 +2190,30 @@ def run(args):
                         and item.get("type") in TOOLS
                     ):
                         inventory = {}
+                        details = {}
                         try:
                             source_inventory(project, inventory)
-                        except BaseException:
-                            record(
+                            if method == "item/completed":
+                                try:
+                                    changed = {}
+                                    for name in manifest["implementation_paths"]:
+                                        path = relative(project, name)
+                                        after = (
+                                            sha(path.read_bytes())
+                                            if path.exists() else None
+                                        )
+                                        before = manifest["initial_files"][name]
+                                        if after != before:
+                                            changed[name] = {
+                                                "before": before,
+                                                "after": after,
+                                            }
+                                except BaseException as failure:
+                                    details["change_detection_error"] = ascii(failure)
+                                    raise
+                                details["changed"] = changed
+                        finally:
+                            observed = record(
                                 "tool-" + method.split("/")[1],
                                 event_sequence=event_sequence,
                                 thread_id=state["thread_id"],
@@ -2201,47 +2221,10 @@ def run(args):
                                 item=item,
                                 item_sha256=sha(encoded(item)),
                                 source_inventory=inventory,
+                                **details,
                             )
-                            raise
                         if method == "item/started":
-                            record(
-                                "tool-started",
-                                event_sequence=event_sequence,
-                                thread_id=state["thread_id"],
-                                turn_id=state["turn_id"],
-                                item=item,
-                                item_sha256=sha(encoded(item)),
-                                source_inventory=inventory,
-                            )
                             return False
-                        changed = {}
-                        for name in manifest[
-                            "implementation_paths"
-                        ]:
-                            path = relative(project, name)
-                            after = (
-                                sha(path.read_bytes())
-                                if path.exists()
-                                else None
-                            )
-                            before = manifest[
-                                "initial_files"
-                            ][name]
-                            if after != before:
-                                changed[name] = {
-                                    "before": before,
-                                    "after": after,
-                                }
-                        observed = record(
-                            "tool-completed",
-                            event_sequence=event_sequence,
-                            thread_id=state["thread_id"],
-                            turn_id=state["turn_id"],
-                            item=item,
-                            item_sha256=sha(encoded(item)),
-                            changed=changed,
-                            source_inventory=inventory,
-                        )
                         if (
                             changed
                             and state[

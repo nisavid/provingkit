@@ -2748,6 +2748,129 @@ sys.stdin.buffer.read()
                         preserved,
                     )
 
+    def test_trigger_read_failure_preserves_boundary_inventory_and_failed_attempt(self):
+        for failure in ("read-error", "deadline"):
+            with self.subTest(failure=failure):
+                with tempfile.TemporaryDirectory() as temporary:
+                    control = Path(temporary)
+                    trigger = control / "read-trigger"
+                    reads = control / "read-count"
+                    continued = control / "read-continued"
+                    item = {
+                        "type": "commandExecution", "id": "author-test",
+                        "command": "python -m unittest", "status": "completed",
+                        "exitCode": 0, "aggregatedOutput": "OK\n",
+                    }
+                    event = {"method": "item/completed", "params": {
+                        "threadId": "thread-1", "turnId": "turn-1", "item": item,
+                    }}
+                    tail = (
+                        "Path(" + repr(str(trigger)) + ").write_text('ready')\n"
+                        "emit(" + repr(event) + ")\n"
+                        "sys.stdin.buffer.read()\n"
+                    )
+                    cli, _, output = self.prepare_failure_fixture(
+                        tail, extra_seed_files={"a-scanned.txt": b"Retain this entry.\n"},
+                    )
+                    manifest_path = output / "manifest.json"
+                    manifest = json.loads(manifest_path.read_bytes())
+                    if failure == "deadline":
+                        manifest["deadline_seconds"] = 1
+                    manifest_raw = encoded(manifest) + b"\n"
+                    manifest_path.write_bytes(manifest_raw)
+                    run = (
+                        "run", "--manifest", manifest_path,
+                        "--expected-sha256", sha(manifest_raw),
+                    )
+                    # The event arms failures at the filesystem boundary. Keep
+                    # the public CLI, inventory traversal, and transport intact.
+                    wrapper = control / "failing-filesystem.py"
+                    wrapper.write_text(
+                        "from pathlib import Path\n"
+                        "import runpy, sys, time\n"
+                        "from unittest.mock import patch\n"
+                        "TRIGGER = Path(" + repr(str(trigger)) + ")\n"
+                        "READS = Path(" + repr(str(reads)) + ")\n"
+                        "CONTINUED = Path(" + repr(str(continued)) + ")\n"
+                        "FAILURE = " + repr(failure) + "\n"
+                        "original = Path.read_bytes\n"
+                        "def failed_read(path):\n"
+                        "    if path.name == 'inventory.py' and TRIGGER.exists():\n"
+                        "        count = int(READS.read_text()) + 1 if READS.exists() else 1\n"
+                        "        READS.write_text(str(count))\n"
+                        "        if count == 2:\n"
+                        "            TRIGGER.unlink()\n"
+                        "            if FAILURE == 'deadline':\n"
+                        "                time.sleep(3)\n"
+                        "                CONTINUED.write_text('read continued')\n"
+                        "        if FAILURE == 'read-error':\n"
+                        "            raise PermissionError('synthetic implementation read failure')\n"
+                        "    return original(path)\n"
+                        "sys.path.insert(0, " + repr(str(HERE)) + ")\n"
+                        "sys.argv[0] = " + repr(str(COLLECTOR)) + "\n"
+                        "with patch.object(Path, 'read_bytes', failed_read):\n"
+                        "    runpy.run_path(sys.argv[0], run_name='__main__')\n"
+                    )
+
+                    result = cli(wrapper, *run)
+
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertEqual(reads.read_text(), "2")
+                    self.assertFalse(trigger.exists(), "trigger reread was not reached")
+                    self.assertFalse(continued.exists(), "deadline did not interrupt reread")
+                    attempt = output / "attempt"
+                    rows = [json.loads(line) for line in
+                            (attempt / "receipts.jsonl").read_bytes().splitlines()]
+                    received = next(row for row in rows
+                                    if row["kind"] == "received" and row["message"] == event)
+                    retained = [row for row in rows if row["kind"] == "tool-completed"]
+                    self.assertEqual(len(retained), 1)
+                    record = retained[0]
+                    self.assertEqual(record["event_sequence"], received["sequence"])
+                    self.assertEqual(record["item"], item)
+                    self.assertEqual(record["item_sha256"], sha(encoded(item)))
+                    self.assertEqual(record["thread_id"], "thread-1")
+                    self.assertEqual(record["turn_id"], "turn-1")
+                    self.assertNotIn("changed", record)
+                    self.assertTrue(record["change_detection_error"])
+                    self.assertFalse(any(row["kind"] == "amendment-trigger" for row in rows))
+                    inventory = record["source_inventory"]
+                    expected = [{"path": "a-scanned.txt", "sha256": sha(b"Retain this entry.\n"),
+                                 "bytes": len(b"Retain this entry.\n"), "mode": 0o644,
+                                 "executable": False}]
+                    if failure == "read-error":
+                        self.assertEqual(inventory["status"], "incomplete")
+                        self.assertIsNone(inventory["identity"])
+                        self.assertIn("PermissionError", inventory["error"])
+                        self.assertIn("PermissionError", record["change_detection_error"])
+                        error = "PermissionError: synthetic implementation read failure"
+                    else:
+                        expected.append({"path": "inventory.py", "sha256": sha(b"DEFAULT = 'text'\n"),
+                                         "bytes": len(b"DEFAULT = 'text'\n"), "mode": 0o644,
+                                         "executable": False})
+                        self.assertEqual(inventory["status"], "complete")
+                        self.assertEqual(inventory["identity"], sha(encoded(expected)))
+                        self.assertNotIn("error", inventory)
+                        self.assertIn("_CallbackDeadline", record["change_detection_error"])
+                        error = "TimeoutError: collector deadline exceeded"
+                    self.assertEqual(inventory["files"], expected)
+                    self.assertTrue(inventory["started_at"])
+                    self.assertTrue(inventory["finished_at"])
+                    self.assertGreater(inventory["elapsed_seconds"], 0)
+                    outcome = json.loads((attempt / "outcome.json").read_bytes())
+                    self.assertEqual(outcome["status"], "incomplete")
+                    self.assertEqual(outcome["error"], error)
+                    process = json.loads((attempt / "collector-process.json").read_bytes())
+                    self.assertIsNotNone(process["exit_code"])
+                    preserved = {p.relative_to(attempt).as_posix(): p.read_bytes()
+                                 for p in attempt.rglob("*") if p.is_file()}
+                    repeated = cli(COLLECTOR, *run)
+                    self.assertNotEqual(repeated.returncode, 0)
+                    self.assertEqual(
+                        {p.relative_to(attempt).as_posix(): p.read_bytes()
+                         for p in attempt.rglob("*") if p.is_file()}, preserved,
+                    )
+
     def test_callback_deadline_interrupts_slow_git_qualification_and_retains_attempt(self):
         with tempfile.TemporaryDirectory() as temporary:
             control = Path(temporary)
