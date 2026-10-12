@@ -1,0 +1,48 @@
+# Codex explicit skill mentions are a user-input route
+
+## Answer
+
+In the public release source for Codex CLI 0.162.1, writing `$skill-name` in an assistant message does not enter the explicit skill resolver. That resolver consumes user-input values; assistant messages follow the response-output path. This answers the remaining route-design question in [#188](https://github.com/nisavid/provingkit/issues/188) without rerunning the completed trials. It is source-review evidence, not a newly observed runtime result or proof about every way an agent might obtain a skill's contents.
+
+`policy.allow_implicit_invocation: false` hides a skill from implicit discovery in the model's catalogue. It does not disable explicit user selection. The missing assistant-text route is therefore not a rejection caused by that flag: the traced route is absent for either flag value. The decision in [#189](https://github.com/nisavid/provingkit/issues/189) can proceed without treating assistant-written dollar text as an available native invocation mechanism.
+
+## Evidence identity and method
+
+The inspected upstream tag is `openai/codex` [`rust-v0.162.1`](https://github.com/openai/codex/tree/rust-v0.162.1). Its annotated tag object is `7a078f6bb4ce0dc2a81408b334ce52979d92c603`; it resolves to commit `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`. All source links below bind that commit. The inspection followed the CLI prompt into turn input, both core and extension skill selection, the implicit-discovery flag, and assistant-output processing.
+
+The retained [experimental record](https://github.com/nisavid/provingkit/blob/bc2f4c26d8e0e3926ca589b0ea2c3eb4c96b9871/docs/superpowers/research/2026-10-11-user-only-skill-invocation-evidence.md) and [bounded runtime interpretation](https://github.com/nisavid/provingkit/blob/07a35acce078a98f5dd2e9c4f5d352392121feb7/docs/superpowers/research/2026-10-11-user-only-skill-invocation-interpretation.md) are unchanged. No trial, upstream test, or new skill invocation was run for this addendum. Installed skills, account configuration, and authentication were not changed. The trial's recorded version identifies the release to inspect; it does not attest that the executed binary was built byte-for-byte from this public commit.
+
+## Input and output trace
+
+| Boundary | Inspected implementation | Consequence |
+|---|---|---|
+| CLI prompt enters a turn | `exec` resolves the prompt into `UserInput::Text`, then passes those items as `TurnStartParams.input`. [Prompt construction](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/exec/src/lib.rs#L989-L1007), [turn request](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/exec/src/lib.rs#L1229-L1258) | A literal dollar mention in the supplied CLI prompt reaches a user-input route. |
+| Turn input is filtered | `turn_user_input` collects only `TurnInput::UserInput`; it excludes response items, function-call outputs, and inter-agent communications. [Filter](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/session/turn.rs#L914-L927) | Not every text-bearing item in a turn is eligible for explicit skill selection. |
+| Core explicit selection | `collect_explicit_skill_mentions` takes `&[UserInput]`. It resolves structured skill selections and extracts dollar mentions from `UserInput::Text`. [Selector](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/skills/src/selection.rs#L35-L109) | The mention parser's input is not assistant prose. |
+| Extension explicit selection | The core constructs `TurnInputContext.user_input` from the filtered user input. The skills extension selects mentions from that field, then reads selected skill prompts. [Context construction](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/session/turn.rs#L1175-L1227), [selection and loading](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/skills/src/extension.rs#L349-L510), [selector](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/skills/src/selection.rs#L21-L145) | The extension path preserves the same input-origin distinction. |
+| Assistant output is handled | The tool router recognizes structured function/custom/tool-search calls, not ordinary messages. Non-tool response items are finalized and recorded as output. [Router](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/tools/router.rs#L246-L304), [output handling](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/stream_events_utils.rs#L315-L398) | Emitting `$skill-name` as an assistant message is neither a tool call nor a new user-input skill selection. |
+
+This conclusion concerns assistant-message text in the traced CLI turn path. It does not classify a separate client that submits another turn, a delegated task with its own input, an ordinary file read, an MCP resource, or another version's tools as that same route. Those mechanisms require their own authority and evidence.
+
+## What the implicit-invocation flag changes
+
+The host provider handles disabled skills and prompt-hidden skills separately. A disabled skill gets `disabled()`. A skill whose `allows_implicit_invocation()` is false gets `hidden_from_prompt()`. The executor-backed provider makes the same distinction. [Host provider](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/skills/src/provider/host.rs#L146-L169), [executor provider](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/skills/src/provider/executor.rs#L265-L301).
+
+`hidden_from_prompt()` changes `prompt_visible`, whereas `disabled()` changes `enabled`. Explicit selection checks enabled entries rather than requiring model-catalogue visibility. The upstream test source `prompt_hidden_skill_can_still_be_invoked` supplies a hidden catalogue entry, passes `$hidden-skill` as `UserInput::Text`, and asserts that its prompt was read and injected while its catalogue entry stayed hidden. This test was inspected, not executed. [Catalogue methods](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/skills/src/catalog.rs#L251-L263), [test source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/skills/tests/skills_extension.rs#L2789-L2866).
+
+The current [official skills documentation](https://developers.openai.com/codex/skills/) likewise describes explicit mentions in the user's prompt and says that setting `allow_implicit_invocation` to false retains explicit dollar invocation. The pinned implementation, rather than the mutable documentation page, supplies the version-specific route evidence here.
+
+## Reconciliation with the completed trials
+
+- **C-A, assistant-origin mention:** the user prompt asked the assistant to construct the dollar spelling; it did not contain that literal mention. The saved assistant output contained the spelling but no body canary, tool event, or native error. The source trace explains why that output is not itself an explicit invocation. The assistant's statement that a native route was unavailable remains self-report, not a refusal event.
+- **C-U, user-origin mention:** the user supplied the literal dollar mention, and the saved run returned fixture-only body material with local file tools disabled. The release source provides an explicit-user route consistent with that observation. It does not add missing normalized-input or injection-provenance events to the historical run, so its particular internal injection remains unattributed in the saved JSONL.
+- **C-P, C-N, and C-R, file-mediated access:** the saved reads remain file-access observations, not native invocation controls. They do not establish permission to work around a user-only procedure boundary.
+- **Claude Code 2.1.296:** the retained corrected control and native `Skill` error contrast are unchanged. `skillOverrides: "on"` did not overcome `disable-model-invocation: true` in the tested route. This Codex source review adds no Claude or Desktop evidence.
+
+An unflagged assistant-message positive control cannot establish the proposed route in this release implementation: the missing input conversion precedes the flag distinction. That is a source-based reason to close the route question, not a claim that an additional trial ran or failed. The earlier interpretation correctly left runtime attribution unresolved; this addendum answers the narrower implementation question using newly inspected evidence.
+
+## Decision handoff
+
+The research now supports two bounded exclusions from the proposed mechanisms: do not rely on assistant-written dollar text as native invocation in the inspected Codex release, and do not rely on `skillOverrides: "on"` to enable the flagged native Claude `Skill` call in the tested version. Neither conclusion chooses the cohort's desired invocability policy.
+
+The remaining decision is which cohort procedures should permit agent initiation, in which roles and harnesses, and what supported delivery mechanism should implement that intent. Agent use of `handoff` is already the requested direction. Any chosen mechanism must preserve the existing action grants, user-only delivery transitions, managed-source ownership, and review requirements. Source preparation, installation, route qualification, and operational permission remain separate follow-up work; this research claims none of them.
