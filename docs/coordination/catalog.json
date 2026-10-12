@@ -499,7 +499,9 @@
       "role": "actuator",
       "status": "discovered",
       "parent": null,
-      "dependencies": [],
+      "dependencies": [
+        "codex-exec"
+      ],
       "crosswalk": [
         "R09",
         "Original comparison title: TypeScript SDK (O+)"
@@ -528,7 +530,9 @@
       "role": "actuator",
       "status": "discovered",
       "parent": null,
-      "dependencies": [],
+      "dependencies": [
+        "codex-app-server"
+      ],
       "crosswalk": [
         "R10",
         "Original comparison title: Python SDK (O+)"
@@ -1456,7 +1460,9 @@
       "role": "actuator",
       "status": "discovered",
       "parent": null,
-      "dependencies": [],
+      "dependencies": [
+        "codex-app-server"
+      ],
       "crosswalk": [
         "R42",
         "Original comparison title: AI Functions (S+O+)"
@@ -1771,7 +1777,9 @@
       "role": "support",
       "status": "discovered",
       "parent": "claude-message-entrances",
-      "dependencies": [],
+      "dependencies": [
+        "claude-native-messaging"
+      ],
       "crosswalk": [
         "R21 Claude MCP serve"
       ],
@@ -1799,7 +1807,9 @@
       "role": "support",
       "status": "discovered",
       "parent": "claude-message-entrances",
-      "dependencies": [],
+      "dependencies": [
+        "claude-native-messaging"
+      ],
       "crosswalk": [
         "R21 Claude inbox socket"
       ],
@@ -1883,7 +1893,9 @@
       "role": "actuator",
       "status": "discovered",
       "parent": "t3-host-adapters",
-      "dependencies": [],
+      "dependencies": [
+        "claude-agent-sdk"
+      ],
       "crosswalk": [
         "R35 T3 Claude adapter"
       ],
@@ -2509,7 +2521,9 @@
       "role": "actuator",
       "status": "discovered",
       "parent": "acpx-adapters",
-      "dependencies": [],
+      "dependencies": [
+        "codex-app-server"
+      ],
       "crosswalk": [
         "R33",
         "ACPX Codex adapter"
@@ -2538,7 +2552,9 @@
       "role": "actuator",
       "status": "discovered",
       "parent": "acpx-adapters",
-      "dependencies": [],
+      "dependencies": [
+        "claude-agent-sdk-typescript-query"
+      ],
       "crosswalk": [
         "R33",
         "ACPX Claude adapter"
@@ -16126,6 +16142,64 @@
         "limits": "Presentation, observation or guidance only."
       }
     ],
-    "seed_update_note": "Split named subroutes without inheriting parent capability vectors; kept original comparison titles in the source crosswalk. Granular coverage research and its source-refresh gaps remain separate."
+    "seed_update_note": "Split named subroutes without inheriting parent capability vectors; kept original comparison titles in the source crosswalk. Granular coverage research and its source-refresh gaps remain separate.",
+    "component_dependencies": {
+      "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md",
+      "relations": [
+        {
+          "fabric": "codex-typescript-sdk",
+          "dependency": "codex-exec",
+          "comparison_entry": "R09",
+          "scope": "Local codex exec wrapper"
+        },
+        {
+          "fabric": "codex-python-sdk",
+          "dependency": "codex-app-server",
+          "comparison_entry": "R10",
+          "scope": "Default local stdio App Server path; independent-owner access remains unproved"
+        },
+        {
+          "fabric": "acpx-adapters-acpx-codex-adapter",
+          "dependency": "codex-app-server",
+          "comparison_entry": "R33",
+          "scope": "Codex adapter launches its own App Server"
+        },
+        {
+          "fabric": "acpx-adapters-acpx-claude-adapter",
+          "dependency": "claude-agent-sdk-typescript-query",
+          "comparison_entry": "R33",
+          "scope": "Claude adapter uses the TypeScript SDK0.3.293 query path; source cohort differs from the separately observed newer SDK"
+        },
+        {
+          "fabric": "ai-functions",
+          "dependency": "codex-app-server",
+          "comparison_entry": "R42",
+          "scope": "Own SDK/App Server connection; no access to an arbitrary active owner"
+        },
+        {
+          "fabric": "claude-message-entrances-claude-mcp-serve",
+          "dependency": "claude-native-messaging",
+          "comparison_entry": "R21",
+          "scope": "Older observed peer tool entrance to the native messaging surface; current tool schema remains unestablished"
+        },
+        {
+          "fabric": "claude-message-entrances-claude-inbox-socket",
+          "dependency": "claude-native-messaging",
+          "comparison_entry": "R21",
+          "scope": "Native inbox entrance; complete supported external contract remains missing"
+        },
+        {
+          "fabric": "t3-host-adapters-t3-claude-adapter",
+          "dependency": "claude-agent-sdk",
+          "comparison_entry": "R35",
+          "scope": "SDK query/session mapping for T3-owned tasks; version, language-specific source association and independent Desktop/cloud access remain separate"
+        }
+      ],
+      "limits": [
+        "Source-established component/interface relationships only; grouping membership does not create an edge.",
+        "Alternative candidate combinations are not mandatory compositions.",
+        "A wrapper-owned runtime or historical entry-point relation supplies no installed target binding or directional qualification."
+      ]
+    }
   }
 }
