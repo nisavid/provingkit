@@ -1,0 +1,26 @@
+{
+  "source_base": "5be38ce96e36b08d017fc1e2cfb5bcf9ff606d03",
+  "status": "preparation complete; observation unaccepted",
+  "parallel_first_reports": {
+    "workload": {
+      "path": "workload-preparation.md",
+      "sha256": "a9ddc74bc46ee5d7278acf03697e238a0c4d29a1fd1ade61d795836b6457bc3d"
+    },
+    "accounting": {
+      "path": "accounting-preparation.md",
+      "sha256": "d8ac15efd6624448f5a8e491781ae678b0f9562da359991364e0d2fded4f70e7",
+      "original_sha256": "cfd695c6f8f50bb7119e6f74fa42d1ce391e6a48cb493413ec6263950fc691c8",
+      "publication_transform": "Two trailing-space Markdown hard breaks normalized; original first handback retained unchanged"
+    }
+  },
+  "inputs_reverified": 10,
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "exact_model_attested": false,
+  "source_or_workload_collection": false,
+  "independent_review": "pending",
+  "private_binding_sha256": "a8715ad391c57cf179c33736c016dd232d5b8ecc3ab9d29647c8c0e58ebb5fae",
+  "native_record_limitation": "Original native freeze controller unavailable at intake; original intent, actual native launch/final observations, preserved handbacks and source checks retained. No completed adapter record or portable attestation claimed.",
+  "procedure_sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+  "record_stage": "Preparation checkpoint before final contract review"
+}
