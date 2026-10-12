@@ -135,6 +135,13 @@ publication. A consumer must verify all referenced bytes before accepting a
 preparation record; neither an exit status nor the record's presence is
 sufficient.
 
+The implementation proposal must define how consumers obtain and retain
+preparation-bound invocation-outcome evidence, and how they handle surviving
+records when that outcome is unavailable. Consumers must apply a known
+incomplete or indeterminate publication outcome before accepting a preparation;
+byte verification alone must not erase that outcome. Result serialization and
+diagnostics remain implementation choices.
+
 A preparation remains bound to its original inputs. A changed material
 dependency requires a newly bound preparation, with earlier artifacts
 preserved. Preparation made before a runtime-dependent candidate is final
@@ -150,7 +157,7 @@ required observations for its agreed subprocess boundary, not test results:
 | --- | --- |
 | Preparation uses the named immutable commit. | Exported bytes and modes correspond to that commit's declared inputs; live and untracked source material cannot contaminate the result. |
 | Every actor slot is prepared without starting it. | The complete 78-coordinate inventory and referenced payload bytes match the maintained constructor, with the ordered three-file candidate bundle and empty baseline. Private coordinates and grading material are absent from added actor content. |
-| Publication cannot expose a false complete preparation. | The preparation record is published only after all referenced artifacts. An interrupted or partial publication cannot be accepted as complete. |
+| Publication cannot expose a false complete preparation. | The preparation record is published only after all referenced artifacts. An interrupted or partial publication cannot be accepted as complete, including after final-record visibility; retained byte validity does not override an incomplete or indeterminate invocation outcome. |
 | Existing evidence remains immutable. | Same-byte reuse preserves artifacts. Different-byte collisions reject the preparation without replacement or a false complete result. |
 
 The tests must retain the observed subprocess result and inspect the complete
@@ -185,9 +192,10 @@ them from source preparation alone.
 
 The consuming task must load this procedure at its reviewed revision, record
 that revision and the preparation's bound inputs, and verify the preparation
-record and referenced bytes before use. Final runtime-dependent evaluation
-preparation also requires disposition of findings that affect its runtime
-candidate and fresh binding after any repair. Actor or grader execution needs
+record and referenced bytes, and apply the bound invocation outcome before use.
+Final runtime-dependent evaluation preparation also requires disposition of
+findings that affect its runtime candidate and fresh binding after any repair.
+Actor or grader execution needs
 its separately reviewed payload and transport contract, applicable execution
 authority, and actual observations. This initialization supplies none of those
 execution or qualification results.
