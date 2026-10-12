@@ -1,0 +1,270 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "c01",
+      "assertion": "Trained staff completed the mock North intake tasks without facilitator prompts.",
+      "draft": {
+        "path": "fixtures/drafts/c01.md",
+        "sha256": "aab5531f9d86bd3df548f9a3f9a62c2bf104345f6da18a8e4ab04c57b1a3e4a9",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s01.md",
+          "sha256": "ee2caadab9359150bcf3036b9468a19d70343f75c0dae1b547656e4b63db6b01"
+        }
+      ]
+    },
+    {
+      "id": "c02",
+      "assertion": "Customers completed North intake applications without assistance.",
+      "draft": {
+        "path": "fixtures/drafts/c02.md",
+        "sha256": "dad95281329f5b86e9bd3ba2f9d93ee11a0b9dc65665d5d540504af16811062f",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s01.md",
+          "sha256": "ee2caadab9359150bcf3036b9468a19d70343f75c0dae1b547656e4b63db6b01"
+        }
+      ]
+    },
+    {
+      "id": "c03",
+      "assertion": "The trial participants needed facilitator prompts to finish their assigned tasks.",
+      "draft": {
+        "path": "fixtures/drafts/c03.md",
+        "sha256": "57abfdc274d16d7c47dc13e3e8ccb3105ba88dbd39838d60c9b976f53f237876",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s01.md",
+          "sha256": "ee2caadab9359150bcf3036b9468a19d70343f75c0dae1b547656e4b63db6b01"
+        }
+      ]
+    },
+    {
+      "id": "c04",
+      "assertion": "The gateway rehearsal delivered demonstration envelopes to a local sink.",
+      "draft": {
+        "path": "fixtures/drafts/c04.md",
+        "sha256": "5e453bfd2c3e8b2ada0529e6c12f68087bdeb40590660a3d425c47bb328bf958",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s02.md",
+          "sha256": "f6b3473550de5f1060b0ff67a4e66394e81e11237445dde468e208f49ac9c993"
+        },
+        {
+          "id": "s2",
+          "path": "fixtures/sources/s03.md",
+          "sha256": "c3c6bb6b87e494afff19b5d4c1bfc7d5ecf260e8c08f876559518420f4d55d11"
+        }
+      ]
+    },
+    {
+      "id": "c05",
+      "assertion": "The readiness note establishes successful relay delivery during resumed service.",
+      "draft": {
+        "path": "fixtures/drafts/c05.md",
+        "sha256": "e794702eded21b9201326fddd95b4107007ebf546b1060346dedf534e2b875e4",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s02.md",
+          "sha256": "f6b3473550de5f1060b0ff67a4e66394e81e11237445dde468e208f49ac9c993"
+        },
+        {
+          "id": "s2",
+          "path": "fixtures/sources/s03.md",
+          "sha256": "c3c6bb6b87e494afff19b5d4c1bfc7d5ecf260e8c08f876559518420f4d55d11"
+        }
+      ]
+    },
+    {
+      "id": "c06",
+      "assertion": "The relay transmission unit was connected while the demonstration envelopes were captured.",
+      "draft": {
+        "path": "fixtures/drafts/c06.md",
+        "sha256": "e74e706ef2bf3573f2ae732597a6b4033eb7eb89d92131aaddeef56499dd24cf",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s02.md",
+          "sha256": "f6b3473550de5f1060b0ff67a4e66394e81e11237445dde468e208f49ac9c993"
+        },
+        {
+          "id": "s2",
+          "path": "fixtures/sources/s03.md",
+          "sha256": "c3c6bb6b87e494afff19b5d4c1bfc7d5ecf260e8c08f876559518420f4d55d11"
+        }
+      ]
+    },
+    {
+      "id": "c07",
+      "assertion": "The writer consulted the saved bibliography when selecting a citation.",
+      "draft": {
+        "path": "fixtures/drafts/c07.md",
+        "sha256": "d36ed966fa6efc072723a1ab52ede97907eee155deefa2b2b0320e20ca1f1c6a",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s04.md",
+          "sha256": "1074b3b5daea19784341ab8ea7032643fc51ac197af9c42b86118c9523618297"
+        }
+      ]
+    },
+    {
+      "id": "c08",
+      "assertion": "Consulting the saved bibliography shortened the writer's completion time.",
+      "draft": {
+        "path": "fixtures/drafts/c08.md",
+        "sha256": "5bc686a2611880fce188b8cec58d431c1bdff0198017d48c0a63fef9d5713c66",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s04.md",
+          "sha256": "1074b3b5daea19784341ab8ea7032643fc51ac197af9c42b86118c9523618297"
+        }
+      ]
+    },
+    {
+      "id": "c09",
+      "assertion": "The study measured the time saved by consulting the bibliography.",
+      "draft": {
+        "path": "fixtures/drafts/c09.md",
+        "sha256": "2de524cd6a6238e3904cb3f97fd5ddc1e04336459c47cc61a5138ad300a10212",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s04.md",
+          "sha256": "1074b3b5daea19784341ab8ea7032643fc51ac197af9c42b86118c9523618297"
+        }
+      ]
+    },
+    {
+      "id": "c10",
+      "assertion": "Two inspectors supplied accounts of door C at the same handover.",
+      "draft": {
+        "path": "fixtures/drafts/c10.md",
+        "sha256": "5fdea9580919217e24f2c8370d1099ecc827c074181e8d71c221959910030e13",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s05.md",
+          "sha256": "fc5c38548453d8a5a9fcc481121e40cec66a10232d5f65d9d21dbd1247959a2d"
+        },
+        {
+          "id": "s2",
+          "path": "fixtures/sources/s06.md",
+          "sha256": "a67d49c2282544f0a28d41f1352d24b20267eeff7cafa4fbe439970883e2405e"
+        }
+      ]
+    },
+    {
+      "id": "c11",
+      "assertion": "Door C was operated by its motor at the handover.",
+      "draft": {
+        "path": "fixtures/drafts/c11.md",
+        "sha256": "52bc7be0982122c901ffaf4b73ea16e57b0630e18e5b33c471341ecc9a111cac",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s05.md",
+          "sha256": "fc5c38548453d8a5a9fcc481121e40cec66a10232d5f65d9d21dbd1247959a2d"
+        },
+        {
+          "id": "s2",
+          "path": "fixtures/sources/s06.md",
+          "sha256": "a67d49c2282544f0a28d41f1352d24b20267eeff7cafa4fbe439970883e2405e"
+        }
+      ]
+    },
+    {
+      "id": "c12",
+      "assertion": "The replacement was operating at handover.",
+      "draft": {
+        "path": "fixtures/drafts/c12.md",
+        "sha256": "0ac8adb72a75df1c282d3bf6edf2ee44201a0e07251fe62f90079db69469b84a",
+        "start_line": 1,
+        "end_line": 4,
+        "assertion_line": 4
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s05.md",
+          "sha256": "fc5c38548453d8a5a9fcc481121e40cec66a10232d5f65d9d21dbd1247959a2d"
+        },
+        {
+          "id": "s2",
+          "path": "fixtures/sources/s06.md",
+          "sha256": "a67d49c2282544f0a28d41f1352d24b20267eeff7cafa4fbe439970883e2405e"
+        }
+      ]
+    },
+    {
+      "id": "c13",
+      "assertion": "Trained staff completed the mock North intake tasks without facilitator prompts.",
+      "draft": {
+        "path": "fixtures/drafts/c01.md",
+        "sha256": "aab5531f9d86bd3df548f9a3f9a62c2bf104345f6da18a8e4ab04c57b1a3e4a9",
+        "start_line": 1,
+        "end_line": 3,
+        "assertion_line": 3
+      },
+      "sources": [
+        {
+          "id": "s1",
+          "path": "fixtures/sources/s01.md",
+          "sha256": "ee2caadab9359150bcf3036b9468a19d70343f75c0dae1b547656e4b63db6b01",
+          "availability": "controlled_unavailable"
+        }
+      ]
+    }
+  ]
+}

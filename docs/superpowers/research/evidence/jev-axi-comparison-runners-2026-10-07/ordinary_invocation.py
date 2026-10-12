@@ -53,6 +53,12 @@ def request_inventory(directory):
         evidence.append(reference(path))
     return evidence
 
+def scheduled_identity(slot):
+    identity = dict(case=slot['case'], condition=slot['condition'])
+    if 'treatment' in slot:
+        identity['treatment'] = slot['treatment']
+    return identity
+
 def retain_request_evidence(state, directory, admission, prepared_ref):
     """Bind retained bytes before reconciling a possibly interrupted request phase."""
     evidence = request_inventory(directory)
@@ -62,7 +68,7 @@ def retain_request_evidence(state, directory, admission, prepared_ref):
     identity_ref = reference(directory / 'run-identity.json')
     identity = json.loads(checked(identity_ref))
     identities = identity['slots']
-    actual = [dict(case=slot['case'], condition=slot['condition']) for slot in identities]
+    actual = [scheduled_identity(slot) for slot in identities]
     if (actual != admission['schedule']
             or identity['manifest_sha256'] != prepared_ref['sha256']):
         raise ValueError('partial run identity does not reconcile with admission')
@@ -82,6 +88,7 @@ def retain_request_evidence(state, directory, admission, prepared_ref):
         if (record['run_id'] != identity['run_id']
                 or record['case'] != slot['case']
                 or record['condition'] != slot['condition']
+                or record.get('treatment') != slot.get('treatment')
                 or record['slot_index'] != slot['slot_index']
                 or type(number) is not int
                 or not 0 <= number < admission['spec']['limits']['requests_per_cell']
@@ -176,8 +183,7 @@ def retain_request_evidence(state, directory, admission, prepared_ref):
         summary = json.loads(checked(summary_ref))
         if (summary['run_id'] != identity['run_id']
                 or summary['manifest_sha256'] != prepared_ref['sha256']
-                or [dict(case=slot['case'], condition=slot['condition'])
-                    for slot in summary['slots']] != admission['schedule']
+                or [scheduled_identity(slot) for slot in summary['slots']] != admission['schedule']
                 or len({slot['slot_id'] for slot in summary['slots']}) != len(identities)
                 or any(slot['slot_id'] not in slots
                        or slot['run_id'] != identity['run_id']
@@ -286,6 +292,8 @@ def start(args):
                 or prepared_manifest['limits'] != admission['spec']['limits']
                 or prepared_manifest['conditions'] != admission['spec']['conditions']
                 or prepared_manifest['kind'] != admission['spec']['kind']
+                or prepared_manifest['version'] != admission['spec']['version']
+                or prepared_manifest.get('treatments') != admission['spec'].get('treatments')
                 or [(item['id'], item['status'], item['input']['sha256'])
                     for item in prepared_manifest['cases']]
                    != [(item['id'], item['status'], item['input']['sha256'])
@@ -306,7 +314,7 @@ def start(args):
             checked(dependency)
         summary_ref = reference(results / 'summary.json')
         summary = load_json(summary_ref['path'], summary_ref['sha256'])
-        actual = [dict(case=slot['case'], condition=slot['condition']) for slot in summary['slots']]
+        actual = [scheduled_identity(slot) for slot in summary['slots']]
         if actual != admission['schedule'] or summary['manifest_sha256'] != prepared_ref['sha256']:
             raise ValueError('run slots do not reconcile with admission')
         slots = {slot['slot_id']: slot for slot in summary['slots']}
@@ -318,6 +326,7 @@ def start(args):
             slot = slots[attempt['slot_id']]
             if (attempt['attempt_id'] in attempt_ids or attempt['run_id'] != summary['run_id']
                     or attempt['case'] != slot['case'] or attempt['condition'] != slot['condition']
+                    or attempt.get('treatment') != slot.get('treatment')
                     or slot['status'] == 'unattempted' or attempt['submission_started'] is not True
                     or type(attempt['attempt_index']) is not int
                     or not 0 <= attempt['attempt_index'] < admission['spec']['limits']['requests_per_cell']):

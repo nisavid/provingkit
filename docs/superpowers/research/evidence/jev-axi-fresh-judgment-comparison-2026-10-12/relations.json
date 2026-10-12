@@ -1,0 +1,6 @@
+{
+  "supported": "The supplied evidence warrants the complete assertion at its stated scope.",
+  "contradicted": "A supplied source explicitly states an incompatible fact, and the supplied sources do not conflict about it.",
+  "unsupported_extension": "The assertion claims more than the supplied evidence establishes, without a demonstrated incompatible fact.",
+  "unresolved": "Missing referents, conflicting sources, or insufficiently interpretable context prevent choosing the other relations."
+}

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "cases": {
+    "c01": "supported",
+    "c02": "unsupported_extension",
+    "c03": "contradicted",
+    "c04": "supported",
+    "c05": "unsupported_extension",
+    "c06": "contradicted",
+    "c07": "supported",
+    "c08": "unsupported_extension",
+    "c09": "contradicted",
+    "c10": "supported",
+    "c11": "unresolved",
+    "c12": "unresolved"
+  },
+  "unavailable_control": "c13"
+}

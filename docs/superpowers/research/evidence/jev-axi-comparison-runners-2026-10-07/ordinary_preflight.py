@@ -8,6 +8,7 @@ from pathlib import Path
 PROFILES = [('gpt-6-luna', 'low'), ('gpt-6-luna', 'medium'),
             ('gpt-6-luna', 'high'), ('gpt-6.1-sol', 'low')]
 CLAIMS = ['c01', 'c04', 'c03', 'c06', 'c05', 'c07', 'c02', 'c08', 'c09', 'c10', 'c11']
+PAIRED_CLAIMS = [f'c{n:02d}' for n in range(1, 14)]
 CEILINGS = {
     'claim': dict(request_seconds=120, run_seconds=9000, input_bytes=65536,
                   request_bytes=131072, response_bytes=1048576, requests_per_cell=1),
@@ -48,13 +49,24 @@ def load_json(path, expected):
 
 def matrix(spec):
     kind = spec.get('kind')
-    if type(spec.get('version')) is not int or spec['version'] != 1 or kind not in CEILINGS:
+    paired = spec.get('version') == 2 and kind == 'claim'
+    if (type(spec.get('version')) is not int or kind not in CEILINGS
+            or (spec['version'] != 1 and not paired)):
         raise ValueError('unsupported ordinary protocol')
+    if paired:
+        treatments = spec.get('treatments')
+        if (not isinstance(treatments, list) or len(treatments) != 2
+                or any(not isinstance(t, dict) or set(t) != {'id', 'question'}
+                       or not isinstance(t['question'], str) or not t['question'].strip()
+                       for t in treatments)
+                or [t['id'] for t in treatments] != ['current', 'revised']):
+            raise ValueError('paired claim treatments differ')
     cases, conditions = spec['cases'], spec['conditions']
-    expected = CLAIMS if kind == 'claim' else ['c01', 'c04']
+    expected = (PAIRED_CLAIMS if paired else CLAIMS) if kind == 'claim' else ['c01', 'c04']
+    unavailable = 'c13' if paired else 'c11'
     if [case['id'] for case in cases] != expected:
         raise ValueError(kind + ' case matrix differs')
-    if any(case['status'] != ('unavailable' if case['id'] == 'c11' else 'ready')
+    if any(case['status'] != ('unavailable' if case['id'] == unavailable else 'ready')
            for case in cases):
         raise ValueError('case status differs')
     identities = [condition['id'] for condition in conditions]
@@ -105,7 +117,15 @@ def matrix(spec):
             for profile in range(4):
                 pair = conditions[profile * 2:profile * 2 + 2]
                 ordered += pair if (int(case['id'][1:]) - 1 + profile) % 2 == 0 else pair[::-1]
-        schedule.extend(dict(case=case['id'], condition=item['id']) for item in ordered)
+        for item in ordered:
+            slot = dict(case=case['id'], condition=item['id'])
+            if paired:
+                pair = ['current', 'revised']
+                if (position + conditions.index(item)) % 2:
+                    pair.reverse()
+                schedule.extend(dict(slot, treatment=treatment) for treatment in pair)
+            else:
+                schedule.append(slot)
     return schedule
 
 def admit(spec_path, spec_sha256, bindings_path, bindings_sha256):
@@ -136,16 +156,18 @@ def admit(spec_path, spec_sha256, bindings_path, bindings_sha256):
     for item in dependencies:
         checked(item)
     if spec['kind'] == 'claim':
+        expected = PAIRED_CLAIMS if spec['version'] == 2 else CLAIMS
+        unavailable = 'c13' if spec['version'] == 2 else 'c11'
         corpus = {item['id']: item for item in dependencies if item['role'] == 'corpus'}
         manifest = json.loads(checked(corpus['manifest']))
         records = {item['case']: item for item in manifest['preparations']}
-        if (set(records) != set(CLAIMS)
-                or any(records[case]['status'] != ('non_ready' if case == 'c11' else 'ready')
-                       or records[case]['exit_code'] != (2 if case == 'c11' else 0)
-                       for case in CLAIMS)):
+        if (set(records) != set(expected)
+                or any(records[case]['status'] != ('non_ready' if case == unavailable else 'ready')
+                       or records[case]['exit_code'] != (2 if case == unavailable else 0)
+                       for case in expected)):
             raise ValueError('claim producer outcomes differ')
-        control = json.loads(checked(corpus['c11-packet']))
-        if (control['case_id'] != 'c11' or control['status'] != 'non_ready'
+        control = json.loads(checked(corpus[unavailable + '-packet']))
+        if (control['case_id'] != unavailable or control['status'] != 'non_ready'
                 or control['quotation_status'] != 'unavailable'
                 or len(control['sources']) != 1
                 or control['sources'][0]['status'] != 'controlled_unavailable'

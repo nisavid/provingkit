@@ -1,0 +1,54 @@
+{
+  "observed_date": "2026-10-12",
+  "sources": [
+    {
+      "url": "https://developers.openai.com/api/docs/pricing.md",
+      "sha256": "e0767b5009dcc929a2f9eeb9ce6096a57ff12e5d8c011de9d69ff145aef2fc28",
+      "bytes": 23231
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/decisions.md",
+      "sha256": "518b4297877cb2aa6ddf6b36a1b201d3dd6e657b6171e2c2b2ae01b1d3d4aa77",
+      "bytes": 29581
+    },
+    {
+      "url": "https://docs.typesafe.ai/models.md",
+      "sha256": "15351adaab85874b5f1a942fc2fdf3c7b3ecadcc936d580793d734855a0038f3",
+      "bytes": 6684
+    },
+    {
+      "url": "https://docs.typesafe.ai/primitives.md",
+      "sha256": "fe67e1062c34ffef8f64ba5e541d00159214cd15c48f6c19ef46c25a6357a294",
+      "bytes": 24185
+    }
+  ],
+  "rates_usd": {
+    "jev": {
+      "input_per_million": 0.042,
+      "output_per_million": 0
+    },
+    "decisions": {
+      "input_per_million": 0.1,
+      "output_per_million": 0,
+      "cache_read_per_million": 0,
+      "cache_write_per_million": 0
+    },
+    "luna_responses": {
+      "input_per_million": 0.1,
+      "cache_read_per_million": 0.01,
+      "cache_write_per_million": 0.125,
+      "output_per_million": 0.5
+    },
+    "sol_responses": {
+      "input_per_million": 2,
+      "cache_read_per_million": 0.1,
+      "cache_write_per_million": 2.5,
+      "output_per_million": 10
+    }
+  },
+  "rate_scope": "OpenAI Standard short context and default region; observed non-default tier or region requires separate accounting, never an invented charge.",
+  "decisions": "Documented ordinary API, gpt-6-luna, one choice; no documented Pro route established.",
+  "qualification": "Documentary route and rate check only. No new credential, inference-access, or model probe was run for this preparation.",
+  "actual_billing": "Unknown until independently available; normalized value is not an invoice.",
+  "jev": "Fixed requested selector jev-1.13.0; input includes question and full state. Preserve observed exact model identity."
+}

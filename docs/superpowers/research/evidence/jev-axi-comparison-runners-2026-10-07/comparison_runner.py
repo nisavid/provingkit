@@ -370,7 +370,7 @@ def coverage_packet(state):
     return packet
 
 
-def payload_for(condition, state, kind='claim'):
+def payload_for(condition, state, kind='claim', question=QUESTION):
     if kind == 'coverage':
         packet = coverage_packet(state)
         version2 = packet.get('version') == 2
@@ -414,13 +414,13 @@ def payload_for(condition, state, kind='claim'):
         return payload
     if condition['adapter'] == 'jev':
         return {'model': condition['model'], 'state': state, 'questions': {
-            'claim_relation': {'type': 'choice', 'instructions': QUESTION, 'criteria': RELATIONS}}}
+            'claim_relation': {'type': 'choice', 'instructions': question, 'criteria': RELATIONS}}}
     if condition['adapter'] == 'decisions':
         return {'model': condition['model'], 'input': state, 'questions': [{
-            'type': 'choice', 'name': 'claim_relation', 'instructions': QUESTION,
+            'type': 'choice', 'name': 'claim_relation', 'instructions': question,
             'choices': [{'value': key, 'description': value} for key, value in RELATIONS.items()]}]}
     if condition['adapter'] == 'responses':
-        return {'model': condition['model'], 'instructions': QUESTION + '\n' +
+        return {'model': condition['model'], 'instructions': question + '\n' +
                 '\n'.join(key + ': ' + value for key, value in RELATIONS.items()),
                 'input': [{'role': 'user', 'content': [{'type': 'input_text', 'text': state}]}],
                 'reasoning': {'effort': condition['effort']}, 'stream': True, 'store': False,
@@ -666,11 +666,25 @@ def request_accounting(attempts):
 
 def validate_spec(spec):
     fields = ['version', 'kind', 'cases', 'conditions', 'limits']
+    paired = isinstance(spec, dict) and spec.get('version') == 2 and spec.get('kind') == 'claim'
+    if paired:
+        fields.append('treatments')
     if isinstance(spec, dict) and spec.get('kind') == 'coverage' and 'mode' in spec:
         fields.append('mode')
     exact_fields(spec, fields, 'spec')
-    if type(spec['version']) is not int or spec['version'] != 1 or spec['kind'] not in {'claim', 'coverage'}:
+    if (type(spec['version']) is not int or spec['kind'] not in {'claim', 'coverage'}
+            or (spec['version'] != 1 and not paired)):
         raise ValueError('unsupported protocol')
+    if paired:
+        treatments = spec['treatments']
+        if (not isinstance(treatments, list) or len(treatments) != 2
+                or any(not isinstance(t, dict) or set(t) != {'id', 'question'} for t in treatments)
+                or [t['id'] for t in treatments] != ['current', 'revised']
+                or treatments[0]['question'] != QUESTION
+                or not isinstance(treatments[1]['question'], str)
+                or not treatments[1]['question'].strip()
+                or treatments[1]['question'] == QUESTION):
+            raise ValueError('paired claims require the unchanged current question and one revised question')
     if spec['kind'] == 'coverage' and spec.get('mode', 'comparison') not in {'comparison', 'diagnostic'}:
         raise ValueError('unsupported coverage mode')
     limits = spec['limits']
@@ -758,7 +772,14 @@ def make_schedule(spec):
     for index, case in enumerate(ready):
         start = index % len(conditions)
         for condition in conditions[start:] + conditions[:start]:
-            schedule.append({'case': case['id'], 'condition': condition['id']})
+            slot = {'case': case['id'], 'condition': condition['id']}
+            if spec['version'] == 2:
+                order = ['current', 'revised']
+                if (index + conditions.index(condition)) % 2:
+                    order.reverse()
+                schedule.extend(dict(slot, treatment=treatment) for treatment in order)
+            else:
+                schedule.append(slot)
     return schedule
 
 
@@ -782,8 +803,10 @@ def prepare(spec_path, output):
         state = data.decode('utf-8')
         if case['status'] == 'ready':
             for condition in manifest['conditions']:
-                if len(json.dumps(payload_for(condition, state, manifest['kind'])).encode()) > manifest['limits']['request_bytes']:
-                    raise ValueError('request exceeds byte limit')
+                for treatment in manifest.get('treatments', [{'question': QUESTION}]):
+                    payload = payload_for(condition, state, manifest['kind'], treatment['question'])
+                    if len(json.dumps(payload).encode()) > manifest['limits']['request_bytes']:
+                        raise ValueError('request exceeds byte limit')
         inputs.append(data)
     output.mkdir(exist_ok=False)
     for index, (case, data) in enumerate(zip(manifest['cases'], inputs)):
@@ -1079,10 +1102,14 @@ def run(prepared, expected_digest, output, local_http, outer_deadline_ns=None):
                               'resource_incomplete', 'response_limit', 'tool_error'}:
                 stopped.add(slot['condition'])
             continue
-        payload = payload_for(condition, state)
+        question = next((t['question'] for t in manifest.get('treatments', [])
+                         if t['id'] == slot.get('treatment')), QUESTION)
+        payload = payload_for(condition, state, question=question)
         started = datetime.now(timezone.utc).isoformat()
         tick = time.monotonic_ns()
         body = json.dumps(payload).encode()
+        if len(body) > manifest['limits']['request_bytes']:
+            raise ValueError('request exceeds byte limit')
         validate_request_auth(condition['auth_env'], body)
         request_file = f'request-{index:04d}.body'
         with (output / request_file).open('xb') as stream:
