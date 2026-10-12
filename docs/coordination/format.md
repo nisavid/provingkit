@@ -42,6 +42,14 @@ source requirements, never installed instances or operation success. This
 provenance is reviewed against producer evidence; the command does not certify
 its semantic completeness.
 
+Each alternative keeps producer names in `source_components`. Optional
+`component_ids` refer to already declared fabrics where a reviewed mapping
+exists; source names are not canonical IDs. Preserve selection and binding
+limits separately, and do not turn unselected alternatives into mandatory
+dependencies. Review present component IDs against the declared records.
+The command retains generic provenance; the producer review owns this audit
+grammar, its reference mappings, and source completeness.
+
 `compatibility` carries `status` (`unassessed`, `assessed`, `incompatible`,
 or `mixed`), a behavior-specific `scope`, and `evidence`. Assessed or
 incompatible status requires evidence. Include carry-forward rationale and
