@@ -212,7 +212,7 @@ def validate(catalog):
         path = f"profiles[{index}]"
         choice(profile["population"], ["existing", "controlled"], path + ".population")
         choice(profile["target_input"], ["exact-reference", "creation-contract"], path + ".target_input")
-        if "source_assessment" in profile and not re.fullmatch(r"[SKP?U–-]{6}", profile["source_assessment"]["vector"]):
+        if "source_assessment" in profile and not re.fullmatch(r"[SP?U–]{6}", profile["source_assessment"]["vector"]):
             errors.append(f"{path}.source_assessment.vector: expected six archived capability symbols")
         for number, reference in enumerate(profile["consent"]["references"]):
             pointer(reference, f"{path}.consent.references[{number}]", https_only=True)

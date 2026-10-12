@@ -450,7 +450,7 @@ class CatalogCommandTests(unittest.TestCase):
         self.assertEqual(json.loads(result.stdout)["fabrics"][0]["effort"]["active_minutes"], 10 ** 400)
 
     def test_archived_source_vectors_have_six_declared_symbols(self):
-        for vector in ("K", "KKKKKKK", "success"):
+        for vector in ("K", "KKKKKK", "SS-SPS", "KKKKKKK", "success"):
             with self.subTest(vector=vector):
                 catalog = specimen()
                 catalog["profiles"][0]["source_assessment"] = {
@@ -460,6 +460,10 @@ class CatalogCommandTests(unittest.TestCase):
                 result = self.invoke("validate", catalog)
                 self.assertEqual(result.returncode, 1)
                 self.assertIn("source_assessment.vector", result.stderr)
+                projection = self.invoke("project", catalog)
+                self.assertEqual(projection.returncode, 1)
+                self.assertIn("source_assessment.vector", projection.stderr)
+                self.assertEqual(projection.stdout, "")
 
     def test_dated_source_vector_stays_archived_instead_of_a_positive_claim(self):
         catalog = specimen()
