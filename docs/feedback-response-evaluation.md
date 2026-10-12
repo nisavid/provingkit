@@ -28,16 +28,16 @@ must not become preparation inputs.
 Tests will invoke this command as a separate process and observe its result,
 public output, and retained artifacts. They will not call private controller
 helpers or inspect internal state. A process result alone cannot establish
-complete preparation: the consumer must verify the manifest and every artifact
-it references.
+complete preparation: the consumer must verify the preparation record and
+every artifact it references.
 
 The public artifact contract below specifies the information and byte
 relationships that must be retained. The implementation proposal must settle
-the public manifest locator and serialized schema, referenced-artifact
-addressing, and process result and diagnostic contract before tests depend on
-them. Resolve those choices through this same reviewed contract. A change to
-the selected command or its acceptance requirements must return for interface
-confirmation before tests are written.
+the public preparation record's locator and serialized schema,
+referenced-artifact addressing, and process result and diagnostic contract
+before tests depend on them. Resolve those choices through this same reviewed
+contract. A change to the selected command or its acceptance requirements must
+return for interface confirmation before tests are written.
 
 ## Source and payload contract
 
@@ -65,13 +65,13 @@ Preparation must proceed in this order:
    Encode the returned canonical string as UTF-8 and retain those exact bytes,
    without adding labels, metadata, formatting, or a trailing newline.
 4. Retain and verify all required source bindings and actor artifacts before
-   publishing the preparation manifest.
+   publishing the preparation record.
 
 The selected evaluation has 13 original case IDs, 0–12, with repetitions 1–3
 for each of `with_skill` and `without_skill`: 78 unstarted actor slots. Case,
-variant, and repetition coordinates belong in the private manifest. Repeated
-slots may have identical request bytes; their distinct coordinates must remain
-represented.
+variant, and repetition coordinates belong in the private preparation record.
+Repeated slots may have identical request bytes; their distinct coordinates
+must remain represented.
 
 The maintained request contains only `prompt`, `fixture`, and
 `candidate_bundle`. For `with_skill`, the bundle preserves this order:
@@ -103,7 +103,7 @@ The complete preparation must retain enough information to verify:
   digests, including the ordered candidate bundle and empty baseline.
 - The private expected outputs, expectations, and grading-constructor binding
   required by a later consumer.
-- Every artifact referenced by the preparation manifest.
+- Every artifact referenced by the preparation record.
 
 [`scripts/evidence_transport.py`](../scripts/evidence_transport.py) supplies
 existing Git, safe-path, and immutable-write primitives. The controller should
@@ -112,7 +112,16 @@ reuse `run_candidate_git` for narrowly declared read-only Git operations and
 `candidate_content_identity` inventories tracked and unignored working-tree
 material, so it does not establish the selected commit's export.
 
-The preparation manifest must be published last, after every referenced
+Retained-artifact publication assumes trusted, same-user, same-machine local
+POSIX storage with atomic same-filesystem hard links and reliable file and
+directory `fsync`, matching the storage assumptions in
+[ADR 0001](adr/0001-crash-recoverable-response-outcome-bundle.md). The controller
+does not detect or certify the physical backing store. Checking retained bytes
+establishes their correspondence, not crash durability. An observed publication
+primitive failure must follow the incomplete or indeterminate rule below,
+including after a final artifact becomes visible.
+
+The preparation record must be published last, after every referenced
 artifact is retained and verified. Publishing one file atomically does not
 make the complete preparation a transaction. The implementation must establish
 the ordering and completeness of the multi-artifact result through the public
@@ -123,7 +132,8 @@ collision must fail without replacing the artifact. On interrupted or failed
 publication, preserve already published artifacts and report incomplete or
 indeterminate preparation, including when failure follows a durable file
 publication. A consumer must verify all referenced bytes before accepting a
-manifest; neither an exit status nor the manifest's presence is sufficient.
+preparation record; neither an exit status nor the record's presence is
+sufficient.
 
 A preparation remains bound to its original inputs. A changed material
 dependency requires a newly bound preparation, with earlier artifacts
@@ -140,12 +150,12 @@ required observations for its agreed subprocess boundary, not test results:
 | --- | --- |
 | Preparation uses the named immutable commit. | Exported bytes and modes correspond to that commit's declared inputs; live and untracked source material cannot contaminate the result. |
 | Every actor slot is prepared without starting it. | The complete 78-coordinate inventory and referenced payload bytes match the maintained constructor, with the ordered three-file candidate bundle and empty baseline. Private coordinates and grading material are absent from added actor content. |
-| Publication cannot expose a false complete preparation. | The manifest is published only after all referenced artifacts. An interrupted or partial publication cannot be accepted as complete. |
+| Publication cannot expose a false complete preparation. | The preparation record is published only after all referenced artifacts. An interrupted or partial publication cannot be accepted as complete. |
 | Existing evidence remains immutable. | Same-byte reuse preserves artifacts. Different-byte collisions reject the preparation without replacement or a false complete result. |
 
 The tests must retain the observed subprocess result and inspect the complete
-manifest and referenced artifacts. They must exercise failure and reuse
-behavior through the same public boundary. These checks do not establish
+preparation record and referenced artifacts. They must exercise failure and
+reuse behavior through the same public boundary. These checks do not establish
 provider-session isolation, tool enforcement, actual served model, exchange
 capture, grading truth, response-runtime reconciliation, or qualification.
 
@@ -174,10 +184,10 @@ CI integration remain separate work; this three-path increment cannot claim
 them from source preparation alone.
 
 The consuming task must load this procedure at its reviewed revision, record
-that revision and the preparation's bound inputs, and verify the manifest and
-referenced bytes before use. Final runtime-dependent evaluation preparation
-also requires disposition of findings that affect its runtime candidate and
-fresh binding after any repair. Actor or grader execution needs its separately
-reviewed payload and transport contract, applicable execution authority, and
-actual observations. This initialization supplies none of those execution or
-qualification results.
+that revision and the preparation's bound inputs, and verify the preparation
+record and referenced bytes before use. Final runtime-dependent evaluation
+preparation also requires disposition of findings that affect its runtime
+candidate and fresh binding after any repair. Actor or grader execution needs
+its separately reviewed payload and transport contract, applicable execution
+authority, and actual observations. This initialization supplies none of those
+execution or qualification results.
