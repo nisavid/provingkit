@@ -28,6 +28,13 @@ from it and verify byte equality before publishing procedure changes.
 
 ## Project context
 
+Before closing a cross-harness discovery, prototype, selection, implementation,
+qualification, release, or deployment batch, use `updating-cross-harness-catalog`
+from `.agents/skills/updating-cross-harness-catalog/`. Maintain that canonical
+source and regenerate its `.claude/skills/updating-cross-harness-catalog/`
+projection with byte equality. The procedure records relevant catalog changes
+or the supported reason that no update is needed.
+
 Read `CONTEXT.md` before planning or editing, and use its canonical language
 in code, tests, documentation, issues, and commits. Where the glossary gives an
 Agent Plugins term and a Claude equivalent, the Agent Plugins term is the
