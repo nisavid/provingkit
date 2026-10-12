@@ -97,5 +97,20 @@ channel details, and all fabric/profile/evidence records. Sorting is stable;
 `--through-wave N` limits navigation to endpoints in waves 1 through N while
 keeping supporting fabric and evidence records available.
 
+Projection supports at most 64 selected endpoints and selected endpoint IDs of
+at most 256 characters. These checks run before ordered-pair allocation: a
+64-endpoint view has 4,032 directed channels and 4,096 matrix cells. A wave
+filter can select a supported subset of a larger catalog. Metadata validation
+can accept an inventory that exceeds projection capacity; `project` then
+returns a named diagnostic, exit status 1, and no partial view. These working
+limits do not exclude fabrics or discard directions within an admitted view.
+If reconciled required coverage exceeds them, revise the capacity design before
+claiming a complete view.
+
+Intake is limited to 8 MiB. Output uses JSON escapes so admitted free text,
+including escaped surrogate values, can round-trip through strict UTF-8 output.
+These metadata and navigation bounds establish no hostile-input isolation or
+live harness capability.
+
 These records describe capabilities and evidence. Tracker state and authority
 remain with their owning decisions and native graph.

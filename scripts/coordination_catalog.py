@@ -60,6 +60,8 @@ OPERATIONS = {
 STAGES = ["discovered", "source-assessed", "prototyped", "selected", "implemented", "qualified", "released", "deployed"]
 COVERAGE = ["unknown", "partial", "declared", "proved", "unsuitable", "inapplicable"]
 OUTCOMES = ["queued", "held", "refused", "stale", "incomplete", "unknown"]
+MAX_NAVIGATION_ENDPOINTS = 64
+MAX_NAVIGATION_ID_CHARACTERS = 256
 
 
 def shape_errors(value, schema, path="catalog"):
@@ -269,6 +271,10 @@ def validate(catalog):
 def project(catalog, source_sha256, through_wave):
     endpoints = sorted((endpoint for endpoint in catalog["endpoints"] if endpoint["wave"] <= through_wave),
                        key=lambda record: record["id"])
+    if len(endpoints) > MAX_NAVIGATION_ENDPOINTS:
+        raise ValueError(f"navigation supports at most {MAX_NAVIGATION_ENDPOINTS} selected endpoints")
+    if any(len(endpoint["id"]) > MAX_NAVIGATION_ID_CHARACTERS for endpoint in endpoints):
+        raise ValueError(f"selected navigation endpoint IDs support at most {MAX_NAVIGATION_ID_CHARACTERS} characters")
     selected = {endpoint["id"] for endpoint in endpoints}
     associations = {(channel["source"], channel["target"]): channel for channel in catalog["channels"]
                     if channel["source"] in selected and channel["target"] in selected}
@@ -356,7 +362,13 @@ def main():
         print("\n".join(errors), file=sys.stderr)
         return 1
     if args.command == "project":
-        print(json.dumps(project(catalog, hashlib.sha256(raw).hexdigest(), args.through_wave), indent=2, ensure_ascii=False, sort_keys=True))
+        try:
+            output = json.dumps(project(catalog, hashlib.sha256(raw).hexdigest(), args.through_wave),
+                                indent=2, ensure_ascii=True, sort_keys=True)
+        except (ValueError, RecursionError, MemoryError) as error:
+            print(f"Catalog projection failed: {error}", file=sys.stderr)
+            return 1
+        print(output)
     else:
         print("Catalog metadata accepted; source truth and harness outcomes are not verified.")
 

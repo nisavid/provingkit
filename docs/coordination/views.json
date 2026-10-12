@@ -7822,7 +7822,7 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Same native-ID and reply gaps; Slack’s behavior is not evidence for Teams."
+        "Same native-ID and reply gaps; Slack\u2019s behavior is not evidence for Teams."
       ],
       "id": "codex-service-integrations-teams-delegation",
       "name": "Teams delegation",
@@ -8839,14 +8839,14 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Every enabled operation requires that deployment’s schema; no arbitrary native GUI attach or later reply guarantee."
+        "Every enabled operation requires that deployment\u2019s schema; no arbitrary native GUI attach or later reply guarantee."
       ],
       "id": "t3-connectors-emmsixx-t3code-mcp",
       "name": "emmsixx t3code-mcp",
       "next_check": "Assess the exact named subroute and task population; retain parent source limits.",
       "parent": "t3-connectors",
       "role": "router",
-      "source_scope": "Exact T3-owned threads through the connector’s operation journal and selected server.",
+      "source_scope": "Exact T3-owned threads through the connector\u2019s operation journal and selected server.",
       "status": "discovered"
     },
     {
@@ -8931,7 +8931,7 @@
       "next_check": "Assess the exact named subroute and task population; retain parent source limits.",
       "parent": "t3-host-adapters",
       "role": "actuator",
-      "source_scope": "T3-owned thread → SDK session mapping; query/resume, prompt queue, interrupt.",
+      "source_scope": "T3-owned thread \u2192 SDK session mapping; query/resume, prompt queue, interrupt.",
       "status": "discovered"
     },
     {
@@ -8959,7 +8959,7 @@
       "next_check": "Assess the exact named subroute and task population; retain parent source limits.",
       "parent": "t3-host-adapters",
       "role": "actuator",
-      "source_scope": "T3-owned Codex thread → native thread → run mapping; read/resume/turn calls.",
+      "source_scope": "T3-owned Codex thread \u2192 native thread \u2192 run mapping; read/resume/turn calls.",
       "status": "discovered"
     },
     {
@@ -8987,7 +8987,7 @@
       "next_check": "Assess the exact named subroute and task population; retain parent source limits.",
       "parent": "t3-host-adapters",
       "role": "actuator",
-      "source_scope": "T3-owned thread → Cursor SDK agent/run mapping; run and declared steer.",
+      "source_scope": "T3-owned thread \u2192 Cursor SDK agent/run mapping; run and declared steer.",
       "status": "discovered"
     },
     {
@@ -12327,7 +12327,7 @@
           "Broker/worker tasks, not native inbox.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -12421,7 +12421,7 @@
           "Service-managed Claude CLI context.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -12609,7 +12609,7 @@
           "Service/native mapping per backend.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -12703,7 +12703,7 @@
           "Relay only; underlying adapter required.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -12797,7 +12797,7 @@
           "Own queue/CLI dispatcher.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -13173,7 +13173,7 @@
           "Protocol alone controls nothing.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -13455,7 +13455,7 @@
           "Adapter-owned sessions; reconnect may replace.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -13733,7 +13733,7 @@
           "Explicit binding; turn-start receipt, not semantic result.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PPP"
+        "vector": "PP\u2013PPP"
       },
       "target_input": "exact-reference"
     },
@@ -14011,7 +14011,7 @@
           "Registered peers; daemon ACK may precede turn.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PPP"
+        "vector": "PP\u2013PPP"
       },
       "target_input": "exact-reference"
     },
@@ -14105,7 +14105,7 @@
           "Stored resume; idle notify buffers, no wake.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -14291,7 +14291,7 @@
           "Adjacent identity, not interchangeable Cloud task.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -14477,7 +14477,7 @@
           "Eligible stored SDK/Code session resume, not the currently held Desktop/cloud query.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PUP"
+        "vector": "PP\u2013PUP"
       },
       "target_input": "exact-reference"
     },
@@ -14939,7 +14939,7 @@
           "Active initialization; worker receipt is not result.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–SPP"
+        "vector": "PP\u2013SPP"
       },
       "target_input": "exact-reference"
     },
@@ -15309,7 +15309,7 @@
           "Configured session; optional reply and drop/hold semantics.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–?PP"
+        "vector": "PP\u2013?PP"
       },
       "target_input": "exact-reference"
     },
@@ -15683,7 +15683,7 @@
           "CLI submit only; UI reader/result is separate.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "SS–SPS"
+        "vector": "SS\u2013SPS"
       },
       "target_input": "exact-reference"
     },
@@ -15777,7 +15777,7 @@
           "Eligible app-run tabs; creation is separate UI action.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "SS–SSS"
+        "vector": "SS\u2013SSS"
       },
       "target_input": "exact-reference"
     },
@@ -16423,7 +16423,7 @@
           "Distinct local worker, UI/pane, and child populations; no common arbitrary Desktop/cloud route.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -16981,7 +16981,7 @@
           "Distinct entrances to eligible Claude peers; current schema and raw external socket contract differ.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -17075,7 +17075,7 @@
           "Admission/idle notice distinct from content ACK.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "SS–PSS"
+        "vector": "SS\u2013PSS"
       },
       "target_input": "exact-reference"
     },
@@ -17353,7 +17353,7 @@
           "Read evidence only, never actuator.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–PUU"
+        "vector": "UU\u2013PUU"
       },
       "target_input": "exact-reference"
     },
@@ -17723,7 +17723,7 @@
           "Configured CLI Channel, deleted bus row is transport return.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–?PP"
+        "vector": "PP\u2013?PP"
       },
       "target_input": "exact-reference"
     },
@@ -17817,7 +17817,7 @@
           "User-role event unsuitable for peer-origin claim.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–PUU"
+        "vector": "UU\u2013PUU"
       },
       "target_input": "exact-reference"
     },
@@ -17911,7 +17911,7 @@
           "Registered labels and wake delegate; native delivery open.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -18099,7 +18099,7 @@
           "Opted-in exact existing CLI pane/spool, not arbitrary Desktop/cloud; modal refusal.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PPP"
+        "vector": "PP\u2013PPP"
       },
       "target_input": "exact-reference"
     },
@@ -18285,7 +18285,7 @@
           "Product conversations; external exact-task API open.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -18471,7 +18471,7 @@
           "Opted-in local session and remote identity required.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -18565,7 +18565,7 @@
           "New cloud session only.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -18659,7 +18659,7 @@
           "Owned worker registration, not passive attach.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -18753,7 +18753,7 @@
           "Same owning server or eligible cold resume required.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PPS"
+        "vector": "PP\u2013PPS"
       },
       "target_input": "exact-reference"
     },
@@ -18847,7 +18847,7 @@
           "Eligible tracked/imported plugin-associated jobs only; boolean selector does not accept an arbitrary exact ID.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–SPP"
+        "vector": "PP\u2013SPP"
       },
       "target_input": "exact-reference"
     },
@@ -18941,7 +18941,7 @@
           "Create/read; no inspected existing follow-up command.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–S??"
+        "vector": "??\u2013S??"
       },
       "target_input": "exact-reference"
     },
@@ -19035,7 +19035,7 @@
           "Human workflow, automated caller unproved.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "SS–SPS"
+        "vector": "SS\u2013SPS"
       },
       "target_input": "exact-reference"
     },
@@ -19129,7 +19129,7 @@
           "Eligible stored CLI/native session only; independently opened active owner unproved.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PUP"
+        "vector": "PP\u2013PUP"
       },
       "target_input": "exact-reference"
     },
@@ -19499,7 +19499,7 @@
           "Trigger or transport only.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -19869,7 +19869,7 @@
           "Tool-content origin, not authenticated peer or reverse route.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -19963,7 +19963,7 @@
           "History edit is not notification.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUP"
+        "vector": "UU\u2013UUP"
       },
       "target_input": "exact-reference"
     },
@@ -20151,7 +20151,7 @@
           "Removed server unsuitable on inspected release; outgoing client has no receiver operation without a backend.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -20339,7 +20339,7 @@
           "Own stdio App Server; eligible stored native session resume, active owner unproved.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PUP"
+        "vector": "PP\u2013PUP"
       },
       "target_input": "exact-reference"
     },
@@ -20621,7 +20621,7 @@
           "Admission/start only; no creation or return inbox.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -20715,7 +20715,7 @@
           "Transport needs owner and target binding.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -21085,7 +21085,7 @@
           "Separate Slack, Teams, Linear, and GitHub lifecycles; see subprofiles.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -21739,7 +21739,7 @@
           "Interactive route, exact owner and automated caller open.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PPS"
+        "vector": "PP\u2013PPS"
       },
       "target_input": "exact-reference"
     },
@@ -22017,7 +22017,7 @@
           "Own child `exec`; eligible stored native session resume, not active GUI attach.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–PUP"
+        "vector": "PP\u2013PUP"
       },
       "target_input": "exact-reference"
     },
@@ -22111,7 +22111,7 @@
           "Transcript selection and resumed process are weaker than current owner.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -22205,7 +22205,7 @@
           "App-exposed caller only; reverse external route open.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "SS–SPS"
+        "vector": "SS\u2013SPS"
       },
       "target_input": "exact-reference"
     },
@@ -22299,7 +22299,7 @@
           "Terminal buffer is partial inspection.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -22393,7 +22393,7 @@
           "Existing Hermes-owned live Bot Chat has an HTTP candidate; ACP and history/tools have distinct limits.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -22957,7 +22957,7 @@
           "Service executor and native mapping required.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -23329,7 +23329,7 @@
           "New one-shot workers and declared model fallback.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -23423,7 +23423,7 @@
           "Native leader/child relationship only.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -23517,7 +23517,7 @@
           "Existing Gateway sessions, channel bindings, and eligible paired-node native tasks are distinct; local branch creates.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -24269,7 +24269,7 @@
           "Presentation, observation or guidance only.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–PUU"
+        "vector": "UU\u2013PUU"
       },
       "target_input": "exact-reference"
     },
@@ -24551,7 +24551,7 @@
           "Own provider sessions, no native peer actuator.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "UU–UUU"
+        "vector": "UU\u2013UUU"
       },
       "target_input": "exact-reference"
     },
@@ -24595,7 +24595,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "Existing or created T3-owned threads; each connector’s operations depend on its selected deployment.",
+          "Existing or created T3-owned threads; each connector\u2019s operations depend on its selected deployment.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "PP?P?P"
@@ -24642,7 +24642,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "Exact T3-owned threads through the connector’s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
+          "Exact T3-owned threads through the connector\u2019s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -24689,7 +24689,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "Exact T3-owned threads through the connector’s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
+          "Exact T3-owned threads through the connector\u2019s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -24736,10 +24736,10 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "Existing or created T3-owned threads; each connector’s operations depend on its selected deployment.",
+          "Existing or created T3-owned threads; each connector\u2019s operations depend on its selected deployment.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "PP–P?P"
+        "vector": "PP\u2013P?P"
       },
       "target_input": "exact-reference"
     },
@@ -24927,7 +24927,7 @@
           "Existing T3-owned threads and created T3 threads both have candidates; backend and caller profiles below.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
-        "vector": "??–???"
+        "vector": "??\u2013???"
       },
       "target_input": "exact-reference"
     },
@@ -24971,7 +24971,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread → SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread \u2192 SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -25018,7 +25018,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread → SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread \u2192 SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -25065,7 +25065,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned Codex thread → native thread → run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
+          "T3-owned Codex thread \u2192 native thread \u2192 run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -25112,7 +25112,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned Codex thread → native thread → run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
+          "T3-owned Codex thread \u2192 native thread \u2192 run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -25159,7 +25159,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread → Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread \u2192 Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -25206,7 +25206,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread → Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread \u2192 Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ],
         "vector": "??????"
@@ -25312,331 +25312,331 @@
     "archived_operation_vectors": [
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "SS–SPS",
+        "existing_vector": "SS\u2013SPS",
         "limits": "App-exposed caller only; reverse external route open.",
         "route": "R01 Desktop Codex chats"
       },
       {
         "controlled_vector": "SSSSSS",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Native leader/child relationship only.",
         "route": "R02 native children"
       },
       {
         "controlled_vector": "PSSSPS",
-        "existing_vector": "PP–PPS",
+        "existing_vector": "PP\u2013PPS",
         "limits": "Interactive route, exact owner and automated caller open.",
         "route": "R03 CLI/TUI"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–PUP",
+        "existing_vector": "PP\u2013PUP",
         "limits": "Eligible stored CLI/native session only; independently opened active owner unproved.",
         "route": "R04 `codex exec`"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–PPS",
+        "existing_vector": "PP\u2013PPS",
         "limits": "Same owning server or eligible cold resume required.",
         "route": "R05 App Server"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Admission/start only; no creation or return inbox.",
         "route": "R06 queue"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Tool-content origin, not authenticated peer or reverse route.",
         "route": "R07 ExternalMessage"
       },
       {
         "controlled_vector": "UU?UUP",
-        "existing_vector": "UU–UUP",
+        "existing_vector": "UU\u2013UUP",
         "limits": "History edit is not notification.",
         "route": "R08 raw injection"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–PUP",
+        "existing_vector": "PP\u2013PUP",
         "limits": "Own child `exec`; eligible stored native session resume, not active GUI attach.",
         "route": "R09 TypeScript SDK"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–PUP",
+        "existing_vector": "PP\u2013PUP",
         "limits": "Own stdio App Server; eligible stored native session resume, active owner unproved.",
         "route": "R10 Python SDK"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Transport needs owner and target binding.",
         "route": "R11 remote TUI/control/SSH"
       },
       {
         "controlled_vector": "?SSSP?",
-        "existing_vector": "??–S??",
+        "existing_vector": "??\u2013S??",
         "limits": "Create/read; no inspected existing follow-up command.",
         "route": "R12 Codex cloud CLI"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "SS–SPS",
+        "existing_vector": "SS\u2013SPS",
         "limits": "Human workflow, automated caller unproved.",
         "route": "R13 Codex cloud UI"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Separate Slack, Teams, Linear, and GitHub lifecycles; see subprofiles.",
         "route": "R14 service integrations"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–SPP",
+        "existing_vector": "PP\u2013SPP",
         "limits": "Eligible tracked/imported plugin-associated jobs only; boolean selector does not accept an arbitrary exact ID.",
         "route": "R15 Codex Claude plugin"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Removed server unsuitable on inspected release; outgoing client has no receiver operation without a backend.",
         "route": "R16 removed server / MCP client"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Trigger or transport only.",
         "route": "R17 helpers/hooks/schedules"
       },
       {
         "controlled_vector": "PSSSPP",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Adjacent identity, not interchangeable Cloud task.",
         "route": "R18 Work cloud mode"
       },
       {
         "controlled_vector": "SSPSSS",
-        "existing_vector": "SS–SSS",
+        "existing_vector": "SS\u2013SSS",
         "limits": "Eligible app-run tabs; creation is separate UI action.",
         "route": "R19 Claude Desktop tabs"
       },
       {
         "controlled_vector": "SS?PSS",
-        "existing_vector": "SS–PSS",
+        "existing_vector": "SS\u2013PSS",
         "limits": "Admission/idle notice distinct from content ACK.",
         "route": "R20 native Claude messages"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Distinct entrances to eligible Claude peers; current schema and raw external socket contract differ.",
         "route": "R21 MCP serve/socket entrance"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "SS–SPS",
+        "existing_vector": "SS\u2013SPS",
         "limits": "CLI submit only; UI reader/result is separate.",
         "route": "R22 Claude cloud CLI/UI"
       },
       {
         "controlled_vector": "PP?SPP",
-        "existing_vector": "PP–SPP",
+        "existing_vector": "PP\u2013SPP",
         "limits": "Active initialization; worker receipt is not result.",
         "route": "R23 browser transport"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Owned worker registration, not passive attach.",
         "route": "R24 worker bridge"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–PUP",
+        "existing_vector": "PP\u2013PUP",
         "limits": "Eligible stored SDK/Code session resume, not the currently held Desktop/cloud query.",
         "route": "R25 main Claude SDK"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Opted-in local session and remote identity required.",
         "route": "R26 Claude Remote Control"
       },
       {
         "controlled_vector": "PP??PP",
-        "existing_vector": "PP–?PP",
+        "existing_vector": "PP\u2013?PP",
         "limits": "Configured session; optional reply and drop/hold semantics.",
         "route": "R27 Channels"
       },
       {
         "controlled_vector": "PSSP??",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "New cloud session only.",
         "route": "R28 Routine API"
       },
       {
         "controlled_vector": "PSSSPP",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Product conversations; external exact-task API open.",
         "route": "R29 Projects/Dispatch"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Distinct local worker, UI/pane, and child populations; no common arbitrary Desktop/cloud route.",
         "route": "R30 Agent View/CLI/teams"
       },
       {
         "controlled_vector": "UU?PUU",
-        "existing_vector": "UU–PUU",
+        "existing_vector": "UU\u2013PUU",
         "limits": "Read evidence only, never actuator.",
         "route": "R31 observation"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Protocol alone controls nothing.",
         "route": "R32 ACP v1/v2/CAP protocols"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Adapter-owned sessions; reconnect may replace.",
         "route": "R33 ACPX with adapters"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Service executor and native mapping required.",
         "route": "R34 MCP tasks/A2A protocol"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Existing T3-owned threads and created T3 threads both have candidates; backend and caller profiles below.",
         "route": "R35 T3 host/adapters"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Existing Gateway sessions, channel bindings, and eligible paired-node native tasks are distinct; local branch creates.",
         "route": "R36 OpenClaw routes"
       },
       {
         "controlled_vector": "??????",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Existing Hermes-owned live Bot Chat has an HTTP candidate; ACP and history/tools have distinct limits.",
         "route": "R37 Hermes routes"
       },
       {
         "controlled_vector": "PP?PPP",
-        "existing_vector": "PP–PPP",
+        "existing_vector": "PP\u2013PPP",
         "limits": "Explicit binding; turn-start receipt, not semantic result.",
         "route": "R38 Agent Bridge"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–PPP",
+        "existing_vector": "PP\u2013PPP",
         "limits": "Registered peers; daemon ACK may precede turn.",
         "route": "R39 Intercom"
       },
       {
         "controlled_vector": "PSSSSP",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "New one-shot workers and declared model fallback.",
         "route": "R40 mcp-agents"
       },
       {
         "controlled_vector": "PPSSPP",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Terminal buffer is partial inspection.",
         "route": "R41 Forge"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Stored resume; idle notify buffers, no wake.",
         "route": "R42 AI Functions"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "PP–P?P",
-        "limits": "Existing or created T3-owned threads; each connector’s operations depend on its selected deployment.",
+        "existing_vector": "PP\u2013P?P",
+        "limits": "Existing or created T3-owned threads; each connector\u2019s operations depend on its selected deployment.",
         "route": "R43 T3 connectors"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Transcript selection and resumed process are weaker than current owner.",
         "route": "R44 cross-agent_mcp"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "PP–P?P",
+        "existing_vector": "PP\u2013P?P",
         "limits": "Registered labels and wake delegate; native delivery open.",
         "route": "R45a Claude Relay"
       },
       {
         "controlled_vector": "PP??PP",
-        "existing_vector": "PP–?PP",
+        "existing_vector": "PP\u2013?PP",
         "limits": "Configured CLI Channel, deleted bus row is transport return.",
         "route": "R45b cc-dm"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "UU–PUU",
+        "existing_vector": "UU\u2013PUU",
         "limits": "User-role event unsuitable for peer-origin claim.",
         "route": "R45c cc-tap"
       },
       {
         "controlled_vector": "PP?PPP",
-        "existing_vector": "PP–PPP",
+        "existing_vector": "PP\u2013PPP",
         "limits": "Opted-in exact existing CLI pane/spool, not arbitrary Desktop/cloud; modal refusal.",
         "route": "R45d tmux-ccm"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Service-managed Claude CLI context.",
         "route": "R46a claude-a2a"
       },
       {
         "controlled_vector": "SSSSPS",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Service/native mapping per backend.",
         "route": "R46b Hybro A2A adapters"
       },
       {
         "controlled_vector": "PP?P?P",
-        "existing_vector": "??–???",
+        "existing_vector": "??\u2013???",
         "limits": "Relay only; underlying adapter required.",
         "route": "R46c Hybro Hub"
       },
       {
         "controlled_vector": "PSSSPP",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Broker/worker tasks, not native inbox.",
         "route": "R46d A2A Nexus"
       },
       {
         "controlled_vector": "PSSSPP",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Own queue/CLI dispatcher.",
         "route": "R46e Superharness"
       },
       {
         "controlled_vector": "PSSSPP",
-        "existing_vector": "UU–UUU",
+        "existing_vector": "UU\u2013UUU",
         "limits": "Own provider sessions, no native peer actuator.",
         "route": "R47 react-agent-harness"
       },
       {
         "controlled_vector": "UU?PUU",
-        "existing_vector": "UU–PUU",
+        "existing_vector": "UU\u2013PUU",
         "limits": "Presentation, observation or guidance only.",
         "route": "R48 AXI/Recensa/Rolecasting/observers"
       }
@@ -25648,14 +25648,14 @@
     "original_wave_one_endpoints": 5,
     "original_wave_one_pairs": 20,
     "seed_update_note": "Split named subroutes without inheriting parent capability vectors; kept original comparison titles in the source crosswalk. Granular coverage research and its source-refresh gaps remain separate.",
-    "source_order_crosswalk": ", the initial **OpenAI** capability rows map in source order to R01, R02, R06, R03, R04, R05, R06, R07, R08, R09, R10, R11, R11, R12, R13, R14 (Slack/Teams), R14 (Linear), R14 (GitHub), R15, R16 (removed server), and R16 (MCP client). Its prose-only Work and helper/trigger leads map to R18 and R17. The initial **Claude** capability rows map in source order to R19, R20, R21 (MCP), R21 (socket), R22 (cloud CLI), R22 (cloud UI), R23, R24, R25, R26, R27, R28, R29 (Projects/Dispatch), and R30 (Agent View/teams). Its additional native rows map Remote Control R26; Channels and permission relay R27; Routine R28; Projects and Dispatch R29; Agent View, `--desktop`/resume and teams R30; observation R31; removed SDK V2 R25. Its five third-party rows map cc-dm R45b, Relay R45a, Intercom R39, Agent Bridge R38, and mcp-agents R40.\n\nThe initial **shared** tables map ACP v1/v2/CAP to R32, ACPX/codex-acp/claude-agent-acp to R33, MCP/A2A to R34; Codex plugin R15; T3 outside host and its three backends R35; OpenClaw Gateway/MCP/ACP/Codex supervision R36; Hermes HTTP/ACP/CLI-tools R37; Agent Bridge R38; Intercom R39; mcp-agents R40; Forge R41; AI Functions R42; the two T3 connectors R43; cross-agent_mcp R44; Claude Relay/cc-dm/cc-tap/tmux-ccm R45a–d; claude-a2a, Hybro adapters/Hub, A2A Nexus and Superharness R46a–e; react-agent-harness R47; AXI, Recensa and Rolecasting/app observers R48. These source-order crosswalks retain the first reports' overlaps; the plus marks in the registry specify which later corrections govern them.",
+    "source_order_crosswalk": ", the initial **OpenAI** capability rows map in source order to R01, R02, R06, R03, R04, R05, R06, R07, R08, R09, R10, R11, R11, R12, R13, R14 (Slack/Teams), R14 (Linear), R14 (GitHub), R15, R16 (removed server), and R16 (MCP client). Its prose-only Work and helper/trigger leads map to R18 and R17. The initial **Claude** capability rows map in source order to R19, R20, R21 (MCP), R21 (socket), R22 (cloud CLI), R22 (cloud UI), R23, R24, R25, R26, R27, R28, R29 (Projects/Dispatch), and R30 (Agent View/teams). Its additional native rows map Remote Control R26; Channels and permission relay R27; Routine R28; Projects and Dispatch R29; Agent View, `--desktop`/resume and teams R30; observation R31; removed SDK V2 R25. Its five third-party rows map cc-dm R45b, Relay R45a, Intercom R39, Agent Bridge R38, and mcp-agents R40.\n\nThe initial **shared** tables map ACP v1/v2/CAP to R32, ACPX/codex-acp/claude-agent-acp to R33, MCP/A2A to R34; Codex plugin R15; T3 outside host and its three backends R35; OpenClaw Gateway/MCP/ACP/Codex supervision R36; Hermes HTTP/ACP/CLI-tools R37; Agent Bridge R38; Intercom R39; mcp-agents R40; Forge R41; AI Functions R42; the two T3 connectors R43; cross-agent_mcp R44; Claude Relay/cc-dm/cc-tap/tmux-ccm R45a\u2013d; claude-a2a, Hybro adapters/Hub, A2A Nexus and Superharness R46a\u2013e; react-agent-harness R47; AXI, Recensa and Rolecasting/app observers R48. These source-order crosswalks retain the first reports' overlaps; the plus marks in the registry specify which later corrections govern them.",
     "source_scope_note": "Codex `rust-v0.162.1` resolves to `092d3acd`, while observed development main was `cc7ba336`; TypeScript and Python SDK published metadata named 0.162.1. Claude Code `v2.1.296` and Agent SDK `v0.3.296` are public releases; the previously assessed Desktop route used Code RC 2.1.284 and other distinct wrapper inputs. The Claude ACP adapter pinned SDK 0.3.293. T3 outside-caller claims came from main `5ce5a8f` and cannot be assigned to v0.0.45. OpenClaw claims use stable v2026.10.1, not the newer observed main. AI Functions behavior uses commit `145efc8` under an `openai-codex>=0.147.0` dependency, not an inferred 0.162.1 runtime. Public source revisions and mutable documentation access dates identify evidence, not installed executors or live account access.",
     "source_vector_legend": {
       "?": "Not established by the reviewed packet",
       "P": "Necessary component or narrower result",
       "S": "Source declares an operation-shaped call for its eligible population",
       "U": "Unsuitable for claimed population",
-      "–": "Creation inapplicable to existing addressed task"
+      "\u2013": "Creation inapplicable to existing addressed task"
     }
   },
   "schema_version": 1,

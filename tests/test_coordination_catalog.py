@@ -1,6 +1,7 @@
 """Catalog behavior through its command interface, using invented evidence."""
 
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -80,6 +81,7 @@ class CatalogCommandTests(unittest.TestCase):
             return subprocess.run(
                 [sys.executable, str(COMMAND), command, str(path), *extra],
                 capture_output=True, text=True, timeout=10,
+                env={**os.environ, "PYTHONIOENCODING": "utf-8:strict"},
             )
 
     def test_valid_source_catalog_is_accepted_without_qualifying_it(self):
@@ -344,6 +346,67 @@ class CatalogCommandTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout, "")
         self.assertIn("8 MiB", result.stderr)
+
+    def test_free_text_round_trips_with_strict_utf8_output(self):
+        for name in ("\ud800", "\udfff", "λ — 中文"):
+            with self.subTest(name=ascii(name)):
+                catalog = specimen()
+                catalog["endpoints"][0]["name"] = name
+                result = self.invoke("project", catalog)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                view = json.loads(result.stdout)
+                self.assertEqual(view["graph"]["nodes"][0]["name"], name)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_escaped_surrogate_in_an_invalid_reference_is_a_diagnostic(self):
+        catalog = specimen()
+        catalog["profiles"][0]["fabric"] = "\ud800"
+        result = self.invoke("project", catalog)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("unknown fabrics identity", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_projection_capacity_applies_to_selected_endpoints(self):
+        catalog = specimen()
+        catalog["fabrics"] = []
+        catalog["profiles"] = []
+        catalog["channels"] = []
+        template = catalog["endpoints"][0]
+        catalog["endpoints"] = [dict(template, id=f"endpoint-{i}") for i in range(64)]
+        accepted = self.invoke("project", catalog)
+        self.assertEqual(accepted.returncode, 0, accepted.stderr)
+        view = json.loads(accepted.stdout)
+        self.assertEqual(view["counts"]["potential_channels"], 64 * 63)
+        self.assertEqual(len(view["matrix"]["rows"]), 64)
+        catalog["endpoints"].append(dict(template, id="later-endpoint", wave=2))
+        metadata = self.invoke("validate", catalog)
+        self.assertEqual(metadata.returncode, 0, metadata.stderr)
+        filtered = self.invoke("project", catalog, "--through-wave", "1")
+        self.assertEqual(filtered.returncode, 0, filtered.stderr)
+        self.assertEqual(json.loads(filtered.stdout)["counts"]["endpoints"], 64)
+        rejected = self.invoke("project", catalog)
+        self.assertEqual(rejected.returncode, 1)
+        self.assertEqual(rejected.stdout, "")
+        self.assertIn("64 selected endpoints", rejected.stderr)
+        self.assertNotIn("Traceback", rejected.stderr)
+
+    def test_projection_identity_capacity_has_a_named_diagnostic(self):
+        catalog = specimen()
+        catalog["fabrics"] = []
+        catalog["profiles"] = []
+        catalog["channels"] = []
+        catalog["endpoints"][0]["id"] = "a" * 256
+        accepted = self.invoke("project", catalog)
+        self.assertEqual(accepted.returncode, 0, accepted.stderr)
+        catalog["endpoints"][0]["id"] += "a"
+        metadata = self.invoke("validate", catalog)
+        self.assertEqual(metadata.returncode, 0, metadata.stderr)
+        rejected = self.invoke("project", catalog)
+        self.assertEqual(rejected.returncode, 1)
+        self.assertEqual(rejected.stdout, "")
+        self.assertIn("256 characters", rejected.stderr)
+        self.assertNotIn("Traceback", rejected.stderr)
 
 
     def test_invalid_url_syntax_is_a_field_diagnostic(self):
