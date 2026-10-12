@@ -1,0 +1,69 @@
+{
+  "source_revision": "6d885174b919802c3550c7d591aad3f94d39601a",
+  "decision": "https://github.com/nisavid/provingkit/issues/558",
+  "method": {
+    "path": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+    "sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981"
+  },
+  "first_reports_preserved_before_join": true,
+  "cross_lane_exchange_before_first_reports": false,
+  "lanes": {
+    "workflow": {
+      "requested_model": "gpt-6.1-sol",
+      "requested_effort": "high",
+      "effective_model_attestation": null,
+      "terminal_status": "completed",
+      "worker_report_status": "DONE_WITH_CONCERNS",
+      "frozen_request_sha256": "1a87ce15fd596fcd60b2b326302a880711cd6ea554249ec0fb8d039e7764dbbc",
+      "frozen_plan_sha256": "a863d1dd535c5c69c2e7d73f83a125599bd9638f54d52a2c012ce9a2a4d6337d",
+      "native_binding_sha256": "51fb07cd0a4c0bdd6cf7d2570138d1ffa68117b88dee54446c11f1ab03047d53",
+      "input_count": 15,
+      "original_first_report_bytes": 24537,
+      "original_first_report_sha256": "f07a3f6923b4bdb6e1415f583b34e84f6dc00c63a17f9a9979b5864d17c75879",
+      "published_report": "workflow-investigation.md",
+      "published_report_sha256": "fe62a175e1b2dcc961b257cebc428534599b806dfc0e60b2f905c19b3da7fed0",
+      "publication_transform": "Remove leading status marker, normalize terminal newline; workflow only: resolve repository-root reference links to immutable source URLs. No substantive first-report edits.",
+      "native_record_usable": true,
+      "portable_evidence": false,
+      "product_attested": false,
+      "coordinator_verification_sha256": "643d9e40741efa816b02018c3e0b92def3edae43a18916674317e6943c26990e"
+    },
+    "errors": {
+      "requested_model": "gpt-6.1-sol",
+      "requested_effort": "high",
+      "effective_model_attestation": null,
+      "terminal_status": "completed",
+      "worker_report_status": "DONE_WITH_CONCERNS",
+      "frozen_request_sha256": "911ef28781a4472a2ff75b8e7d984061afff13d367b7eb83c186b87268b622c5",
+      "frozen_plan_sha256": "fd65d10f9f199650a50b4fd19cef4bf722d3afaa49d6185e35786577f3f7df4d",
+      "native_binding_sha256": "c041ee56c5cca33ecaeb57cbd5e2438746b5d460479070d7d29fd0a70c3f1c99",
+      "input_count": 17,
+      "original_first_report_bytes": 23423,
+      "original_first_report_sha256": "6a815fd32c152cdb1008d194cdb8320e7d82d4d316fc15d237f73f6150e658d2",
+      "published_report": "errors-investigation.md",
+      "published_report_sha256": "081a7e9106c7c8600a8881f3c0367869532094ce13914e54a4c6736e26264561",
+      "publication_transform": "Remove leading status marker, normalize terminal newline; workflow only: resolve repository-root reference links to immutable source URLs. No substantive first-report edits.",
+      "native_record_usable": true,
+      "portable_evidence": false,
+      "product_attested": false,
+      "coordinator_verification_sha256": "9d66521dac9c06c1f5a9cde2adcabef8805c96698b70e740361acc295292aafa"
+    }
+  },
+  "coordinator_checks": {
+    "all_60_claim_requests_equal_original_records": true,
+    "both_input_manifests_verified": true,
+    "producer_input_boundaries_inspected": true,
+    "material_answer_and_grade_passages_checked": true,
+    "new_provider_experiment_requests": 0,
+    "new_private_history_collection": false,
+    "live_configuration_changed": false,
+    "required_review_removed": false
+  },
+  "limits": [
+    "Native input readiness, intervention effects, operator benefit, and full workflow costs remain unmeasured.",
+    "The error investigator did not receive complete coverage request or function-result bodies.",
+    "The coordinator qualifies the reports\u2019 timing recommendation in README.md: prior author judgment does not defeat independent error checking.",
+    "Requested model identity is not an attestation of the effective model.",
+    "Native child research usage is not experiment or production-workflow usage; no savings or billing claim is made."
+  ]
+}
