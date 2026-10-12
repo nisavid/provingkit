@@ -31,6 +31,17 @@ Fabrics carry `id`, `name`, `role`, `status`, `parent` (ID or null),
 Parent and dependency edges must be acyclic. A composition names its component
 dependencies; a component's evidence does not qualify their combination.
 
+`provenance.component_dependencies.reconciliation` retains the finite
+source-to-component audit for a batch. Its records identify the fabric,
+source crosswalk, mandatory component IDs, alternatives, grouping-only
+relation, unresolved binding, and evidence rationale. A full seed covers every
+fabric; later batches preserve unrelated records and reconsider affected
+dependents. Required component classes with unresolved exact identities use
+explicit `support` fabric records with binding gaps. Their dependencies express
+source requirements, never installed instances or operation success. This
+provenance is reviewed against producer evidence; the command does not certify
+its semantic completeness.
+
 `compatibility` carries `status` (`unassessed`, `assessed`, `incompatible`,
 or `mixed`), a behavior-specific `scope`, and `evidence`. Assessed or
 incompatible status requires evidence. Include carry-forward rationale and
@@ -79,6 +90,10 @@ outcome. Receipt, acknowledgment, output, validated fulfillment, synchronous
 return, later reply, same-task continuation, and replacement remain separate
 claims. A profile with no claim for an operation leaves it explicitly unknown
 in the view.
+
+The archived vector uses exactly six positions from `S`, `P`, `?`, `U`, and
+`–`, following its retained legend. ASCII `-` and symbols from other report
+legends are rejected rather than silently reinterpreted.
 
 ## Channels and projections
 

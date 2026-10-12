@@ -4987,14 +4987,15 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established."
+        "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established.",
+        "The Hub requires one selected adapter; this class record does not require all backend alternatives or identify any installed adapter."
       ],
       "id": "a2a-dispatchers-hybro-a2a-adapters",
       "name": "Hybro A2A adapters",
       "next_check": "Bind an actual caller, eligible target and evidence path before a bounded capability probe.",
       "parent": "a2a-dispatchers",
       "role": "router",
-      "source_scope": "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established.",
+      "source_scope": "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established. For the R46c Hub dependency, this record identifies the underlying adapter class: the selected backend, service/native mapping, version and deployment remain unresolved.",
       "status": "discovered"
     },
     {
@@ -5008,7 +5009,9 @@
         "Hybro Hub",
         "R46c"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "a2a-dispatchers-hybro-a2a-adapters"
+      ],
       "effort": {
         "active_minutes": null,
         "cost": null
@@ -5017,7 +5020,8 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established."
+        "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established.",
+        "Relay requires one selected underlying adapter from the Hybro adapter class; neither every backend nor an installed backend is asserted"
       ],
       "id": "a2a-dispatchers-hybro-hub",
       "name": "Hybro Hub",
@@ -7533,7 +7537,9 @@
         "R06",
         "App Server queue frontend"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "codex-shared-queue-backend"
+      ],
       "effort": {
         "active_minutes": null,
         "cost": null
@@ -7542,7 +7548,8 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Same queue backend, two caller interfaces. Can admit eligible stored input and wake a loaded idle thread through owner or conditional shared-store watcher; enqueue/dequeue/start are not consumption. [Queue source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/queue/src/service.rs#L89)."
+        "Same queue backend, two caller interfaces. Can admit eligible stored input and wake a loaded idle thread through owner or conditional shared-store watcher; enqueue/dequeue/start are not consumption. [Queue source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/queue/src/service.rs#L89).",
+        "App Server entrance to shared queue backend; admission is not receiver consumption"
       ],
       "id": "codex-queue-app-server-queue-frontend",
       "name": "App Server queue frontend",
@@ -7562,7 +7569,9 @@
         "R06",
         "CLI queue frontend"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "codex-shared-queue-backend"
+      ],
       "effort": {
         "active_minutes": null,
         "cost": null
@@ -7571,7 +7580,8 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Same queue backend, two caller interfaces. Can admit eligible stored input and wake a loaded idle thread through owner or conditional shared-store watcher; enqueue/dequeue/start are not consumption. [Queue source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/queue/src/service.rs#L89)."
+        "Same queue backend, two caller interfaces. Can admit eligible stored input and wake a loaded idle thread through owner or conditional shared-store watcher; enqueue/dequeue/start are not consumption. [Queue source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/queue/src/service.rs#L89).",
+        "CLI entrance to shared queue backend; actual owner/store association remains a separate input"
       ],
       "id": "codex-queue-cli-queue-frontend",
       "name": "CLI queue frontend",
@@ -7842,6 +7852,35 @@
       "parent": "codex-service-integrations",
       "role": "router",
       "source_scope": "Teams-associated cloud lifecycle: creation/request and service-tied result workflow.",
+      "status": "discovered"
+    },
+    {
+      "compatibility": {
+        "evidence": [],
+        "scope": "CLI queue and App Server queue are two frontends to the same queue backend at the frozen comparison source. Backend admission/wake is separate from receiver consumption.",
+        "status": "unassessed"
+      },
+      "crosswalk": [
+        "R06",
+        "Required source component class; no deployed identity"
+      ],
+      "dependencies": [],
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "evidence": [
+        "reviewed-comparison"
+      ],
+      "gaps": [
+        "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt."
+      ],
+      "id": "codex-shared-queue-backend",
+      "name": "Codex shared queue backend",
+      "next_check": "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt.",
+      "parent": "codex-queue",
+      "role": "support",
+      "source_scope": "CLI queue and App Server queue are two frontends to the same queue backend at the frozen comparison source. Backend admission/wake is separate from receiver consumption.",
       "status": "discovered"
     },
     {
@@ -8613,7 +8652,9 @@
       "crosswalk": [
         "R36 OpenClaw MCP serve"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "openclaw-routes-openclaw-gateway-sessions-and-external-conversations"
+      ],
       "effort": {
         "active_minutes": null,
         "cost": null
@@ -8622,7 +8663,8 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Not arbitrary native-task control; disconnect loses the live event queue, so history and gap recovery need separate evidence."
+        "Not arbitrary native-task control; disconnect loses the live event queue, so history and gap recovery need separate evidence.",
+        "Gateway-connected stdio client; exact Gateway deployment/session and caller access remain unbound"
       ],
       "id": "openclaw-routes-openclaw-mcp-serve",
       "name": "OpenClaw MCP serve",
@@ -8844,7 +8886,9 @@
       "crosswalk": [
         "R43 emmsixx t3code-mcp"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "t3-selected-server-requirement"
+      ],
       "effort": {
         "active_minutes": null,
         "cost": null
@@ -8853,7 +8897,8 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Every enabled operation requires that deployment\u2019s schema; no arbitrary native GUI attach or later reply guarantee."
+        "Every enabled operation requires that deployment\u2019s schema; no arbitrary native GUI attach or later reply guarantee.",
+        "Journal connector requires selected T3 server/schema; optional outside MCP entrance is not assumed"
       ],
       "id": "t3-connectors-emmsixx-t3code-mcp",
       "name": "emmsixx t3code-mcp",
@@ -8872,7 +8917,9 @@
       "crosswalk": [
         "R43 gfsaaser24 t3-code-agent-mcp"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "t3-selected-server-requirement"
+      ],
       "effort": {
         "active_minutes": null,
         "cost": null
@@ -8881,7 +8928,8 @@
         "reviewed-comparison"
       ],
       "gaps": [
-        "Separate implementation from the journal connector; no capability transfer without matching source/deployment evidence."
+        "Separate implementation from the journal connector; no capability transfer without matching source/deployment evidence.",
+        "HTTP/WebSocket connector requires selected T3 server/schema; exact deployment remains unresolved"
       ],
       "id": "t3-connectors-gfsaaser24-t3-code-agent-mcp",
       "name": "gfsaaser24 t3-code-agent-mcp",
@@ -9032,6 +9080,35 @@
       "parent": "t3-host-adapters",
       "role": "host",
       "source_scope": "Existing independently opened T3 threads and created T3 threads: project/thread reads, start/message/stop, queue, and configuration calls.",
+      "status": "discovered"
+    },
+    {
+      "compatibility": {
+        "evidence": [],
+        "scope": "Both T3 connectors require a selected T3 server deployment and its enabled operation schema. The frozen comparison establishes this component class, not an exact deployment, protocol version or optional MCP entrance.",
+        "status": "unassessed"
+      },
+      "crosswalk": [
+        "R43",
+        "Required source component class; no deployed identity"
+      ],
+      "dependencies": [],
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "evidence": [
+        "reviewed-comparison"
+      ],
+      "gaps": [
+        "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route."
+      ],
+      "id": "t3-selected-server-requirement",
+      "name": "Selected T3 server component requirement",
+      "next_check": "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route.",
+      "parent": "t3-host-adapters",
+      "role": "support",
+      "source_scope": "Both T3 connectors require a selected T3 server deployment and its enabled operation schema. The frozen comparison establishes this component class, not an exact deployment, protocol version or optional MCP entrance.",
       "status": "discovered"
     }
   ],
@@ -21482,6 +21559,102 @@
       "target_input": "exact-reference"
     },
     {
+      "assurance": "Source-level supporting requirement only; no deployed component or operation qualified.",
+      "channel": null,
+      "claims": [],
+      "consent": {
+        "limits": [
+          "Contract reference supplies no live grant; verify original and valid transitive authority without adding operator-only permission."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765"
+        ]
+      },
+      "continuity": {
+        "busy": "Unqualified; queue, steer, hold and refusal remain distinct.",
+        "idle": "Unqualified; inspect source limits.",
+        "restart": "Unassessed separately."
+      },
+      "fabric": "codex-shared-queue-backend",
+      "gaps": [
+        "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt."
+      ],
+      "id": "codex-shared-queue-backend-controlled",
+      "input_semantics": "Source-dependent; prefer native peer input and disclose any peer-labelled user-role fallback.",
+      "next_check": "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [],
+        "request-work": []
+      },
+      "ownership": "Must be bound separately; created provenance does not establish ownership.",
+      "population": "controlled",
+      "relationship": "Eligible population described by the source; exact caller/receiver relationship remains unproved.",
+      "source_assessment": {
+        "evidence": [
+          "reviewed-comparison"
+        ],
+        "limits": [
+          "CLI queue and App Server queue are two frontends to the same queue backend at the frozen comparison source. Backend admission/wake is separate from receiver consumption.",
+          "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt.",
+          "Supporting class does not inherit the parent operation vector."
+        ],
+        "vector": "??????"
+      },
+      "target_input": "creation-contract"
+    },
+    {
+      "assurance": "Source-level supporting requirement only; no deployed component or operation qualified.",
+      "channel": null,
+      "claims": [],
+      "consent": {
+        "limits": [
+          "Contract reference supplies no live grant; verify original and valid transitive authority without adding operator-only permission."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765"
+        ]
+      },
+      "continuity": {
+        "busy": "Unqualified; queue, steer, hold and refusal remain distinct.",
+        "idle": "Unqualified; inspect source limits.",
+        "restart": "Unassessed separately."
+      },
+      "fabric": "codex-shared-queue-backend",
+      "gaps": [
+        "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt."
+      ],
+      "id": "codex-shared-queue-backend-existing",
+      "input_semantics": "Source-dependent; prefer native peer input and disclose any peer-labelled user-role fallback.",
+      "next_check": "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [],
+        "request-work": []
+      },
+      "ownership": "Must be bound separately; created provenance does not establish ownership.",
+      "population": "existing",
+      "relationship": "Eligible population described by the source; exact caller/receiver relationship remains unproved.",
+      "source_assessment": {
+        "evidence": [
+          "reviewed-comparison"
+        ],
+        "limits": [
+          "CLI queue and App Server queue are two frontends to the same queue backend at the frozen comparison source. Backend admission/wake is separate from receiver consumption.",
+          "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt.",
+          "Supporting class does not inherit the parent operation vector."
+        ],
+        "vector": "??????"
+      },
+      "target_input": "exact-reference"
+    },
+    {
       "assurance": "Reviewed source assessment only; no live operation or runtime-preservation proof.",
       "channel": null,
       "claims": [],
@@ -25322,6 +25495,102 @@
         "vector": "??????"
       },
       "target_input": "exact-reference"
+    },
+    {
+      "assurance": "Source-level supporting requirement only; no deployed component or operation qualified.",
+      "channel": null,
+      "claims": [],
+      "consent": {
+        "limits": [
+          "Contract reference supplies no live grant; verify original and valid transitive authority without adding operator-only permission."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765"
+        ]
+      },
+      "continuity": {
+        "busy": "Unqualified; queue, steer, hold and refusal remain distinct.",
+        "idle": "Unqualified; inspect source limits.",
+        "restart": "Unassessed separately."
+      },
+      "fabric": "t3-selected-server-requirement",
+      "gaps": [
+        "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route."
+      ],
+      "id": "t3-selected-server-requirement-controlled",
+      "input_semantics": "Source-dependent; prefer native peer input and disclose any peer-labelled user-role fallback.",
+      "next_check": "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [],
+        "request-work": []
+      },
+      "ownership": "Must be bound separately; created provenance does not establish ownership.",
+      "population": "controlled",
+      "relationship": "Eligible population described by the source; exact caller/receiver relationship remains unproved.",
+      "source_assessment": {
+        "evidence": [
+          "reviewed-comparison"
+        ],
+        "limits": [
+          "Both T3 connectors require a selected T3 server deployment and its enabled operation schema. The frozen comparison establishes this component class, not an exact deployment, protocol version or optional MCP entrance.",
+          "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route.",
+          "Supporting class does not inherit the parent operation vector."
+        ],
+        "vector": "??????"
+      },
+      "target_input": "creation-contract"
+    },
+    {
+      "assurance": "Source-level supporting requirement only; no deployed component or operation qualified.",
+      "channel": null,
+      "claims": [],
+      "consent": {
+        "limits": [
+          "Contract reference supplies no live grant; verify original and valid transitive authority without adding operator-only permission."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765"
+        ]
+      },
+      "continuity": {
+        "busy": "Unqualified; queue, steer, hold and refusal remain distinct.",
+        "idle": "Unqualified; inspect source limits.",
+        "restart": "Unassessed separately."
+      },
+      "fabric": "t3-selected-server-requirement",
+      "gaps": [
+        "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route."
+      ],
+      "id": "t3-selected-server-requirement-existing",
+      "input_semantics": "Source-dependent; prefer native peer input and disclose any peer-labelled user-role fallback.",
+      "next_check": "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [],
+        "request-work": []
+      },
+      "ownership": "Must be bound separately; created provenance does not establish ownership.",
+      "population": "existing",
+      "relationship": "Eligible population described by the source; exact caller/receiver relationship remains unproved.",
+      "source_assessment": {
+        "evidence": [
+          "reviewed-comparison"
+        ],
+        "limits": [
+          "Both T3 connectors require a selected T3 server deployment and its enabled operation schema. The frozen comparison establishes this component class, not an exact deployment, protocol version or optional MCP entrance.",
+          "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route.",
+          "Supporting class does not inherit the parent operation vector."
+        ],
+        "vector": "??????"
+      },
+      "target_input": "exact-reference"
     }
   ],
   "provenance": {
@@ -25661,7 +25930,2720 @@
       "limits": [
         "Source-established component/interface relationships only; grouping membership does not create an edge.",
         "Alternative candidate combinations are not mandatory compositions.",
-        "A wrapper-owned runtime or historical entry-point relation supplies no installed target binding or directional qualification."
+        "A wrapper-owned runtime or historical entry-point relation supplies no installed target binding or directional qualification.",
+        "Complete finite comparison reconciliation covers every fabric, required classes, alternatives and grouping; independent source review checks completeness. This is not a full software/build dependency inventory."
+      ],
+      "reconciliation": [
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "App-exposed create/fork/list/read/wait/follow-up for reachable chats; tool declaration is caller-specific, busy and external access unproved."
+          ],
+          "crosswalk": [
+            "R01",
+            "Original comparison title: Desktop Codex chat tools (O)"
+          ],
+          "fabric": "desktop-chat-tools",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Leader/child spawn, message, wait, follow-up, result; unsuitable for an arbitrary independent sidebar task."
+          ],
+          "crosswalk": [
+            "R02",
+            "Original comparison title: Codex native child tools (O)"
+          ],
+          "fabric": "native-child-tools",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Interactive local controls; a pane or displayed session does not establish a structured outside caller or active GUI owner."
+          ],
+          "crosswalk": [
+            "R03",
+            "Original comparison title: CLI/TUI agents, resume, fork, composer (O)"
+          ],
+          "fabric": "codex-terminal-controls",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Local controlled job and stored-ID continuation with JSON events; no current GUI attachment."
+          ],
+          "crosswalk": [
+            "R04",
+            "Original comparison title: `codex exec` and `exec resume` (O)"
+          ],
+          "fabric": "codex-exec",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Start/fork/read/resume/turn/steer/events; loaded owner, eligible cold resume, overrides, and current-owner binding differ. [Resume source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/app-server/src/request_processors/thread_processor.rs#L4281)."
+          ],
+          "crosswalk": [
+            "R05",
+            "Original comparison title: App Server thread/turn API (O+)"
+          ],
+          "fabric": "codex-app-server",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [
+            {
+              "components": [
+                "codex-queue-cli-queue-frontend",
+                "codex-queue-app-server-queue-frontend"
+              ],
+              "scope": "Two caller entrances to the required shared backend; either entrance can be selected"
+            }
+          ],
+          "binding_gaps": [
+            "Same queue backend, two caller interfaces. Can admit eligible stored input and wake a loaded idle thread through owner or conditional shared-store watcher; enqueue/dequeue/start are not consumption. [Queue source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/queue/src/service.rs#L89)."
+          ],
+          "crosswalk": [
+            "R06",
+            "Original comparison title: CLI `queue` and App Server queue API (O+)"
+          ],
+          "fabric": "codex-queue",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The comparison names these alternative or claim-specific compositions; they do not establish one unconditional component set for this aggregate record.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [
+            {
+              "components": [
+                "codex-python-sdk",
+                "codex-app-server"
+              ],
+              "scope": "Python wrapper versus direct App Server tool-input entrances; their binding is not interchangeable"
+            }
+          ],
+          "binding_gaps": [
+            "External tool-content representation can join an active regular turn or start idle work; names do not authenticate a peer or supply a reverse route. [Contract](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/sdk/python/docs/api-reference.md#externalmessage)."
+          ],
+          "crosswalk": [
+            "R07",
+            "Original comparison title: Python `ExternalMessage` / App Server tool output (O+)"
+          ],
+          "fabric": "codex-external-message",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The comparison names these alternative or claim-specific compositions; they do not establish one unconditional component set for this aggregate record.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Raw history mutation; unsuitable as first notification because insertion does not itself start work."
+          ],
+          "crosswalk": [
+            "R08",
+            "Original comparison title: `thread/inject_items` (O)"
+          ],
+          "fabric": "codex-history-injection",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Local `codex exec` wrapper with start/resume and result collection; not a GUI/cloud attach path."
+          ],
+          "crosswalk": [
+            "R09",
+            "Original comparison title: TypeScript SDK (O+)"
+          ],
+          "fabric": "codex-typescript-sdk",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [
+            "codex-exec"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Default local stdio App Server with thread and turn controls; independent active-owner access unproved."
+          ],
+          "crosswalk": [
+            "R10",
+            "Original comparison title: Python SDK (O+)"
+          ],
+          "fabric": "codex-python-sdk",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [
+            "codex-app-server"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Transport/client routes for a configured host, not a native peer inbox by themselves; host pairing, route, and owner identity are prerequisites."
+          ],
+          "crosswalk": [
+            "R11",
+            "Original comparison title: Remote TUI socket and managed remote control/SSH (O)"
+          ],
+          "fabric": "codex-remote-control",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Create/list/status/diff/apply; inspected enum has no general existing-task follow-up. Cloud backend identity remains distinct from Work and legacy. [CLI enum](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/cloud-tasks/src/cli.rs#L16)."
+          ],
+          "crosswalk": [
+            "R12",
+            "Original comparison title: `codex cloud` CLI (O+)"
+          ],
+          "fabric": "codex-cloud-cli",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Human creation, inspection and follow-up; automated caller, exact backend identity and busy behavior unproved."
+          ],
+          "crosswalk": [
+            "R13",
+            "Original comparison title: Codex Cloud web/mobile/desktop UI (O+)"
+          ],
+          "fabric": "codex-cloud-ui",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four distinct originating-service lifecycles. Slack/Teams create associated cloud tasks; Linear comment follow-up and GitHub PR review/fix stay tied to their workflow, not arbitrary task IDs."
+          ],
+          "crosswalk": [
+            "R14",
+            "Original comparison title: Slack and Teams delegation; Linear and GitHub legacy integrations (O)"
+          ],
+          "fabric": "codex-service-integrations",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Local plugin-created or imported Codex jobs, status/result and selected associated resume; booleans `--resume`/`--resume-last` do not accept arbitrary IDs. Selector includes nonqueued/nonrunning tracked jobs and a cwd-filtered fallback without a Claude session. Desktop/cloud plugin availability unproved. [Selector](https://github.com/openai/codex-plugin-cc/blob/db52e28f4d9ded852ab3942cea316258ae4ef346/plugins/codex/scripts/codex-companion.mjs#L298)."
+          ],
+          "crosswalk": [
+            "R15",
+            "Original comparison title: OpenAI Codex plugin for Claude Code (O+S+)"
+          ],
+          "fabric": "codex-claude-plugin",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Former server is unsuitable on observed release. Outgoing MCP client tools are a supporting caller interface, not a native inbox."
+          ],
+          "crosswalk": [
+            "R16",
+            "Original comparison title: Removed `codex mcp-server`; Codex MCP client/plugin tools (O)"
+          ],
+          "fabric": "codex-mcp-surfaces",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Execution, transport or trigger leads; no independent task address or result contract established."
+          ],
+          "crosswalk": [
+            "R17",
+            "Original comparison title: Codex execution-service, socket-relay, API-proxy, command/filesystem helpers, hooks and schedules (O)"
+          ],
+          "fabric": "codex-execution-helpers",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Adjacent product population with separate history and mode binding; cannot be silently identified with Codex Cloud, legacy tasks, or desktop chats."
+          ],
+          "crosswalk": [
+            "R18",
+            "Original comparison title: ChatGPT Work cloud/local-computer mode (O+)"
+          ],
+          "fabric": "chatgpt-work-mode",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Eligible app-run local/SSH/WSL tabs; busy message waits for current work. Cloud, terminal and VS Code are excluded; outside callable endpoint unproved. [Desktop contract](https://code.claude.com/docs/en/desktop#work-across-sessions)."
+          ],
+          "crosswalk": [
+            "R19",
+            "Original comparison title: Claude Desktop tab tools (C+)"
+          ],
+          "fabric": "claude-desktop-tab-tools",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Eligible peers can receive idle wake or between-tool-call busy message, subject to accept/hold/refuse; native state notice is not content acknowledgment. [Messaging](https://code.claude.com/docs/en/cross-session-messaging)."
+          ],
+          "crosswalk": [
+            "R20",
+            "Original comparison title: Claude native ListAgents/SendMessage (C+)"
+          ],
+          "fabric": "claude-native-messaging",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Stdio tool-server entrance and local socket protocol are distinct access leads to R20. Peer-tool schema was observed at 2.1.280/2.1.283, not established for current 2.1.296; raw socket lacks a complete supported external contract."
+          ],
+          "crosswalk": [
+            "R21",
+            "Original comparison title: `claude mcp serve` and native inbox socket (C+)"
+          ],
+          "fabric": "claude-message-entrances",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [
+            {
+              "components": [
+                "claude-cloud-controls-claude-cloud-exact-id-cli-follow-up",
+                "claude-cloud-controls-claude-cloud-ui-result-reader"
+              ],
+              "scope": "CLI submission and independent UI reader are complementary choices for particular claims; generic cloud controls group is not one deployed composition"
+            }
+          ],
+          "binding_gaps": [
+            "CLI queues and exits; UI can show conversation/diff. Submission is not a waited result; `--teleport` continues locally and is unsuitable as transparent cloud continuation. [Cloud reference](https://code.claude.com/docs/en/claude-code-on-the-web#send-follow-ups-from-the-cli)."
+          ],
+          "crosswalk": [
+            "R22",
+            "Original comparison title: Claude cloud CLI exact-ID follow-up and cloud UI (C+)"
+          ],
+          "fabric": "claude-cloud-controls",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The comparison names these alternative or claim-specific compositions; they do not establish one unconditional component set for this aggregate record.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Bound remote session input/events; SSE has durable event IDs/cursor and nonreplayed delivery updates, but query initialization is active. Header names are declared; accepted credentials, Desktop mapping and concurrent effects remain open. [Versioned package](https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.3.296.tgz)."
+          ],
+          "crosswalk": [
+            "R23",
+            "Original comparison title: Agent SDK browser SSE/WebSocket (C+)"
+          ],
+          "fabric": "claude-browser-transport",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Create/attach an owned remote worker and report events/state. Credential fetch registers and advances worker epoch; unsuitable as passive selected-Desktop observation."
+          ],
+          "crosswalk": [
+            "R24",
+            "Original comparison title: Agent SDK worker `/bridge` (C+)"
+          ],
+          "fabric": "claude-worker-bridge",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Controlled SDK lifecycle and stored-history reads; not the Desktop/cloud held query. Removed V2 session API is unsuitable as a current candidate."
+          ],
+          "crosswalk": [
+            "R25",
+            "Original comparison title: Main Claude Agent SDK `query()`, resume/fork and session readers (C)"
+          ],
+          "fabric": "claude-agent-sdk",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Opted-in local execution exposed through remote clients; web view is not cloud execution or an automatically callable peer API."
+          ],
+          "crosswalk": [
+            "R26",
+            "Original comparison title: Claude Remote Control (C)"
+          ],
+          "fabric": "claude-remote-control",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Configured session event ingress, optional reply tool; event can be dropped or grouped while busy. Permission relay is a separate authority and is not inherited by a notification route."
+          ],
+          "crosswalk": [
+            "R27",
+            "Original comparison title: Claude Channels and permission relay (C)"
+          ],
+          "fabric": "claude-channels",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Experimental trigger creates a new cloud session with untrusted context; cannot target an existing task."
+          ],
+          "crosswalk": [
+            "R28",
+            "Original comparison title: Claude Routine API (C)"
+          ],
+          "fabric": "claude-routine-api",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Distinct product-owned conversations that start sessions and show results; no general external exact-task controller established."
+          ],
+          "crosswalk": [
+            "R29",
+            "Original comparison title: Claude Projects and Dispatch (C)"
+          ],
+          "fabric": "claude-projects-dispatch",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Local/owned-worker views and lifecycles. `--desktop` opens the app without a prompt; terminal attach and child creation do not address arbitrary Desktop/cloud tasks."
+          ],
+          "crosswalk": [
+            "R30",
+            "Original comparison title: Claude Agent View/background CLI, `--desktop`/local resume, teams/subagents (C)"
+          ],
+          "fabric": "claude-local-worker-controls",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Observation only; selected-query binding and complete applied-state fields remain missing."
+          ],
+          "crosswalk": [
+            "R31",
+            "Original comparison title: Claude hooks, transcript readers, Desktop host/renderer readers, retained observer prototype (C+S)"
+          ],
+          "fabric": "claude-observers",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Protocols, not native identity. ACP v1 load/replay differs from resume; v2 acceptance differs from completion; CAP has no demonstrated driver. [ACP contract](https://github.com/agentclientprotocol/agent-client-protocol/blob/schema-v1.25.0/docs/protocol/v1/session-setup.mdx)."
+          ],
+          "crosswalk": [
+            "R32",
+            "Original comparison title: ACP v1, ACP v2 draft, CAP draft (S)"
+          ],
+          "fabric": "acp-protocols",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [
+            {
+              "components": [
+                "acpx-adapters-acpx-codex-adapter",
+                "acpx-adapters-acpx-claude-adapter"
+              ],
+              "scope": "Selected backend adapter; not a requirement to instantiate both"
+            }
+          ],
+          "binding_gaps": [
+            "Common controlled-worker queue/watch and stored-session adapters; loaded reuse, cold reconnect, replacement creation and adapter-specific context must be distinguished. Codex adapter launches its own App Server; Claude adapter uses SDK 0.3.293 and may recreate its query. [ACPX contract](https://github.com/openclaw/acpx/blob/v0.19.4/docs/CLI.md)."
+          ],
+          "crosswalk": [
+            "R33",
+            "Original comparison title: ACPX with codex-acp and claude-agent-acp (S+C+)"
+          ],
+          "fabric": "acpx-adapters",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The comparison names these alternative or claim-specific compositions; they do not establish one unconditional component set for this aggregate record.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Tool/task protocols with deferred status/artifacts; neither binds a native peer. A2A v0.3 services below require compatibility assessment. [MCP tasks](https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks), [A2A](https://a2a-protocol.org/v1.0.0/specification/)."
+          ],
+          "crosswalk": [
+            "R34",
+            "Original comparison title: MCP tasks and A2A v1 (S)"
+          ],
+          "fabric": "mcp-a2a-protocols",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four entries: one host plus three distinct provider populations. Main supports outside OAuth target IDs/mode ceilings; in-thread delegation requires an actual T3 thread caller. Host/native IDs are not independently opened native GUI tasks. Release applicability unresolved. [Outside callers](https://github.com/pingdotgg/t3code/blob/5ce5a8f658b229c36fc4dc371bb4dc4157500c00/docs/user/outside-agents.md)."
+          ],
+          "crosswalk": [
+            "R35",
+            "Original comparison title: T3 outside-agent MCP host and Codex, Claude, Cursor adapters (S+)"
+          ],
+          "fabric": "t3-host-adapters",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four separate host routes. Gateway session IDs are not foreign native IDs; local Continue as branch creates new context, while eligible paired-node continuation resumes exact native ID. Steer/queue admission differs from transcript commitment and model consumption. [Thread contract](https://github.com/openclaw/openclaw/blob/v2026.10.1/docs/plugins/codex-harness-runtime/threads.md)."
+          ],
+          "crosswalk": [
+            "R36",
+            "Original comparison title: OpenClaw Gateway sessions/external conversations, MCP serve, ACP host/bindings, native Codex harness/supervision (S+)"
+          ],
+          "fabric": "openclaw-routes",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Three separate routes. HTTP can reach a selected Hermes-owned live Bot Chat owner; ACP unknown-ID resume can create replacement and history replay can be partial. CLI/history and tools MCP are not general inboxes. [ACP handlers](https://github.com/NousResearch/hermes-agent/blob/v0.21.6/acp_adapter/server.py#L590)."
+          ],
+          "crosswalk": [
+            "R37",
+            "Original comparison title: Hermes HTTP sessions/runs, ACP adapter, CLI history/tools MCP (S+)"
+          ],
+          "fabric": "hermes-routes",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Opted-in binding/SSH/inbox with separate Codex and Claude adapters; Codex v4.10.0 delivered follows turn start, not model result, and foreign active turns defer. Claude HEAD is a different cohort. [Codex delivery](https://github.com/EthanSK/agent-bridge/blob/v4.10.0/codex-channel/src/delivery.js#L942)."
+          ],
+          "crosswalk": [
+            "R38",
+            "Original comparison title: Agent Bridge (C+S+)"
+          ],
+          "fabric": "agent-bridge",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Registered peers, ask/reply and sidecars. Broker delivered can follow daemon scheduling ACK before turn; Codex resume failure creates replacement. Claude native return requires SendMessage, not ordinary output. [Broker](https://github.com/dataforxyz/agent-intercom-claude/blob/7de76e5d4f6461b007b19dfc5dbcf11928868adc/broker/broker.ts#L1823)."
+          ],
+          "crosswalk": [
+            "R39",
+            "Original comparison title: Agent Intercom Claude broker and Codex daemon (C+S+)"
+          ],
+          "fabric": "agent-intercom",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Created CLI/review jobs with status/result; Claude path uses no-session-persistence and model fallback/retry. Inspected commit has manifest 0.34.0, not verified release identity. Unsuitable for preserved existing Desktop/cloud task. [Backend](https://github.com/thomaswitt/mcp-agents/blob/96f58a08439b0f4a1eb42e8076bec1bb5a64a7c4/server.js#L404)."
+          ],
+          "crosswalk": [
+            "R40",
+            "Original comparison title: mcp-agents (C+S+)"
+          ],
+          "fabric": "mcp-agents",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "PTY/buffer/wait controller for created terminals; terminal output is not native task/result proof."
+          ],
+          "crosswalk": [
+            "R41",
+            "Original comparison title: Forge (S)"
+          ],
+          "fabric": "forge-terminal-controller",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Registered coordinator and explicit Codex stored-ID resume; own SDK/App Server connection. Active notify steers user input, idle notify buffers until execute and may be lost on teardown. Current Codex source supplies a home-scoped writer lock; runtime/version applicability and active-owner coexistence remain unproved. [Notify](https://github.com/strands-labs/ai-functions/blob/145efc8398dc1a0d91fface870a240e6d813a0b2/src/ai_functions/codex/codex.py#L492)."
+          ],
+          "crosswalk": [
+            "R42",
+            "Original comparison title: AI Functions (S+O+)"
+          ],
+          "fabric": "ai-functions",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [
+            "codex-app-server"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Separate connector implementations for T3 target IDs; operation journal versus HTTP/WebSocket orchestration. Both inherit selected T3 deployment/tool limits, not native GUI attachment."
+          ],
+          "crosswalk": [
+            "R43",
+            "Original comparison title: Two T3 connectors: emmsixx `t3code-mcp` and gfsaaser24 `t3-code-agent-mcp` (S+)"
+          ],
+          "fabric": "t3-connectors",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Transcript discovery and CLI resume/panel shims; recency is not exact target proof and a resumed process may not be the active owner. Private transcript access is a later grant."
+          ],
+          "crosswalk": [
+            "R44",
+            "Original comparison title: `cross-agent_mcp` (S)"
+          ],
+          "fabric": "cross-agent-mcp",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four different partial adapters: registered relay; configured Claude SQLite channel; Remote Control user-role sender unsuitable for peer-origin claim; CLI tmux pane/spool with modal refusal. None proves arbitrary Desktop/cloud attachment."
+          ],
+          "crosswalk": [
+            "R45",
+            "Original comparison title: Claude Relay, cc-dm, cc-tap, tmux-ccm (C+S+)"
+          ],
+          "fabric": "claude-partial-adapters",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established."
+          ],
+          "crosswalk": [
+            "R46",
+            "Original comparison title: `claude-a2a`; Hybro A2A adapters and Hub; A2A Nexus; Superharness (S)"
+          ],
+          "fabric": "a2a-dispatchers",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Provider framework and persistent own sessions, unsuitable as native cross-harness evidence. Commit `6b399e5` is immutable 0.14.0 comparison source; current HEAD was not established."
+          ],
+          "crosswalk": [
+            "R47",
+            "Original comparison title: `react-agent-harness` (S+)"
+          ],
+          "fabric": "react-agent-harness",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Presentation, transcript index, route guidance and evidence layers, respectively. They can make a selected actuator easier to inspect but cannot send, wake, or prove nondelivery from silence."
+          ],
+          "crosswalk": [
+            "R48",
+            "Original comparison title: AXI, Recensa, Rolecasting and app-observer proposals (S+C)"
+          ],
+          "fabric": "presentation-and-evidence",
+          "grouping_only": {
+            "children_are_grouped": true,
+            "parent": null
+          },
+          "mandatory_components": [],
+          "rationale": "The frozen description groups named entrances, operations, transports or providers; group membership alone supplies no unconditional component edge. Mandatory routes are reconciled individually.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "An arbitrary existing native Cloud ID, independently initiated peer reply, and busy owner mapping are unproved."
+          ],
+          "crosswalk": [
+            "R14 Slack delegation"
+          ],
+          "fabric": "codex-service-integrations-slack-delegation",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-service-integrations"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Same native-ID and reply gaps; Slack\u2019s behavior is not evidence for Teams."
+          ],
+          "crosswalk": [
+            "R14 Teams delegation"
+          ],
+          "fabric": "codex-service-integrations-teams-delegation",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-service-integrations"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Follow-up is tied to that originating workflow, not a supplied arbitrary native task ID."
+          ],
+          "crosswalk": [
+            "R14 Linear integration"
+          ],
+          "fabric": "codex-service-integrations-linear-integration",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-service-integrations"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "A PR-triggered review is not a general notification, reply inbox, or arbitrary native-task continuation."
+          ],
+          "crosswalk": [
+            "R14 GitHub integration"
+          ],
+          "fabric": "codex-service-integrations-github-integration",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-service-integrations"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Inspected older versions do not prove the latest tool list; no general external current-Desktop sender/result contract is established."
+          ],
+          "crosswalk": [
+            "R21 Claude MCP serve"
+          ],
+          "fabric": "claude-message-entrances-claude-mcp-serve",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-message-entrances"
+          },
+          "mandatory_components": [
+            "claude-native-messaging"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "A complete supported external sender/discovery contract and correlated receiver readback remain missing."
+          ],
+          "crosswalk": [
+            "R21 Claude inbox socket"
+          ],
+          "fabric": "claude-message-entrances-claude-inbox-socket",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-message-entrances"
+          },
+          "mandatory_components": [
+            "claude-native-messaging"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Outside OAuth caller lacks an in-thread calling identity for delegated-task operations; release applicability, correlated acknowledgment, and independent later reply remain unproved."
+          ],
+          "crosswalk": [
+            "R35 T3 outside-agent MCP host"
+          ],
+          "fabric": "t3-host-adapters-t3-outside-agent-mcp-host",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "t3-host-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Existing T3 threads are candidates, but arbitrary independently opened ChatGPT GUI tasks are not thereby addressable. Result correlation and busy behavior need proof."
+          ],
+          "crosswalk": [
+            "R35 T3 Codex adapter"
+          ],
+          "fabric": "t3-host-adapters-t3-codex-adapter",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "t3-host-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Not automatic attachment to an independently opened Desktop/cloud Code query; actual busy delivery and preservation remain open."
+          ],
+          "crosswalk": [
+            "R35 T3 Claude adapter"
+          ],
+          "fabric": "t3-host-adapters-t3-claude-adapter",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "t3-host-adapters"
+          },
+          "mandatory_components": [
+            "claude-agent-sdk"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Distinct Wave 2 endpoint; native Cursor CLI/cloud ID equivalence is unproved."
+          ],
+          "crosswalk": [
+            "R35 T3 Cursor adapter"
+          ],
+          "fabric": "t3-host-adapters-t3-cursor-adapter",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "t3-host-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Native foreign IDs are different. Notify/steer/resume/follow-up and acceptance/result/reply boundaries vary; actual caller access and authority need separate review."
+          ],
+          "crosswalk": [
+            "R36 OpenClaw Gateway sessions and external conversations"
+          ],
+          "fabric": "openclaw-routes-openclaw-gateway-sessions-and-external-conversations",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "openclaw-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Not arbitrary native-task control; disconnect loses the live event queue, so history and gap recovery need separate evidence.",
+            "Gateway-connected stdio client; exact Gateway deployment/session and caller access remain unbound"
+          ],
+          "crosswalk": [
+            "R36 OpenClaw MCP serve"
+          ],
+          "fabric": "openclaw-routes-openclaw-mcp-serve",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "openclaw-routes"
+          },
+          "mandatory_components": [
+            "openclaw-routes-openclaw-gateway-sessions-and-external-conversations"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Channel-specific support, native mapping, result/reply, and close versus unbind behavior remain distinct."
+          ],
+          "crosswalk": [
+            "R36 OpenClaw ACP conversation binding"
+          ],
+          "fabric": "openclaw-routes-openclaw-acp-conversation-binding",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "openclaw-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Unsuitable as continuation of the source thread; source reasoning/tool history is not fully carried over."
+          ],
+          "crosswalk": [
+            "R36 OpenClaw Codex local branch"
+          ],
+          "fabric": "openclaw-routes-openclaw-codex-local-branch",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "openclaw-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Actual node eligibility, owner/runtime/home, busy behavior, and reverse reply remain unproved."
+          ],
+          "crosswalk": [
+            "R36 OpenClaw Codex paired-node continuation"
+          ],
+          "fabric": "openclaw-routes-openclaw-codex-paired-node-continuation",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "openclaw-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "CLI/gateway/API equivalence and result/reply correlation are unproved; 409 refusal is not delivery."
+          ],
+          "crosswalk": [
+            "R37 Hermes HTTP sessions/runs"
+          ],
+          "fabric": "hermes-routes-hermes-http-sessions-runs",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "hermes-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Resume of an unknown ID can create replacement; partial history replay and arbitrary existing CLI/gateway attachment are gaps."
+          ],
+          "crosswalk": [
+            "R37 Hermes ACP"
+          ],
+          "fabric": "hermes-routes-hermes-acp",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "hermes-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Observation/lifecycle only; no general notification or work-request inbox established."
+          ],
+          "crosswalk": [
+            "R37 Hermes CLI history"
+          ],
+          "fabric": "hermes-routes-hermes-cli-history",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "hermes-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Session/delegation/memory/search omissions make it unsuitable as a generic session inbox; needs a separate actuator."
+          ],
+          "crosswalk": [
+            "R37 Hermes tools MCP"
+          ],
+          "fabric": "hermes-routes-hermes-tools-mcp",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "hermes-routes"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Every enabled operation requires that deployment\u2019s schema; no arbitrary native GUI attach or later reply guarantee.",
+            "Journal connector requires selected T3 server/schema; optional outside MCP entrance is not assumed"
+          ],
+          "crosswalk": [
+            "R43 emmsixx t3code-mcp"
+          ],
+          "fabric": "t3-connectors-emmsixx-t3code-mcp",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "t3-connectors"
+          },
+          "mandatory_components": [
+            "t3-selected-server-requirement"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Separate implementation from the journal connector; no capability transfer without matching source/deployment evidence.",
+            "HTTP/WebSocket connector requires selected T3 server/schema; exact deployment remains unresolved"
+          ],
+          "crosswalk": [
+            "R43 gfsaaser24 t3-code-agent-mcp"
+          ],
+          "fabric": "t3-connectors-gfsaaser24-t3-code-agent-mcp",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "t3-connectors"
+          },
+          "mandatory_components": [
+            "t3-selected-server-requirement"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Same queue backend, two caller interfaces. Can admit eligible stored input and wake a loaded idle thread through owner or conditional shared-store watcher; enqueue/dequeue/start are not consumption. [Queue source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/queue/src/service.rs#L89).",
+            "CLI entrance to shared queue backend; actual owner/store association remains a separate input"
+          ],
+          "crosswalk": [
+            "R06",
+            "CLI queue frontend"
+          ],
+          "fabric": "codex-queue-cli-queue-frontend",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-queue"
+          },
+          "mandatory_components": [
+            "codex-shared-queue-backend"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Same queue backend, two caller interfaces. Can admit eligible stored input and wake a loaded idle thread through owner or conditional shared-store watcher; enqueue/dequeue/start are not consumption. [Queue source](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/ext/queue/src/service.rs#L89).",
+            "App Server entrance to shared queue backend; admission is not receiver consumption"
+          ],
+          "crosswalk": [
+            "R06",
+            "App Server queue frontend"
+          ],
+          "fabric": "codex-queue-app-server-queue-frontend",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-queue"
+          },
+          "mandatory_components": [
+            "codex-shared-queue-backend"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Removed at the reviewed source cohort; no current supported call is established.",
+            "Removed on the inspected release; unavailable as the claimed current server."
+          ],
+          "crosswalk": [
+            "R16",
+            "Removed Codex MCP server"
+          ],
+          "fabric": "codex-mcp-surfaces-removed-codex-mcp-server",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-mcp-surfaces"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Former server is unsuitable on observed release. Outgoing MCP client tools are a supporting caller interface, not a native inbox."
+          ],
+          "crosswalk": [
+            "R16",
+            "Codex MCP client"
+          ],
+          "fabric": "codex-mcp-surfaces-codex-mcp-client",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-mcp-surfaces"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "CLI queues and exits; UI can show conversation/diff. Submission is not a waited result; `--teleport` continues locally and is unsuitable as transparent cloud continuation. [Cloud reference](https://code.claude.com/docs/en/claude-code-on-the-web#send-follow-ups-from-the-cli)."
+          ],
+          "crosswalk": [
+            "R22",
+            "Claude cloud exact-ID CLI follow-up"
+          ],
+          "fabric": "claude-cloud-controls-claude-cloud-exact-id-cli-follow-up",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-cloud-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "CLI queues and exits; UI can show conversation/diff. Submission is not a waited result; `--teleport` continues locally and is unsuitable as transparent cloud continuation. [Cloud reference](https://code.claude.com/docs/en/claude-code-on-the-web#send-follow-ups-from-the-cli)."
+          ],
+          "crosswalk": [
+            "R22",
+            "Claude cloud UI result reader"
+          ],
+          "fabric": "claude-cloud-controls-claude-cloud-ui-result-reader",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-cloud-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Protocols, not native identity. ACP v1 load/replay differs from resume; v2 acceptance differs from completion; CAP has no demonstrated driver. [ACP contract](https://github.com/agentclientprotocol/agent-client-protocol/blob/schema-v1.25.0/docs/protocol/v1/session-setup.mdx)."
+          ],
+          "crosswalk": [
+            "R32",
+            "ACP v1"
+          ],
+          "fabric": "acp-protocols-acp-v1",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "acp-protocols"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Protocols, not native identity. ACP v1 load/replay differs from resume; v2 acceptance differs from completion; CAP has no demonstrated driver. [ACP contract](https://github.com/agentclientprotocol/agent-client-protocol/blob/schema-v1.25.0/docs/protocol/v1/session-setup.mdx)."
+          ],
+          "crosswalk": [
+            "R32",
+            "ACP v2 draft"
+          ],
+          "fabric": "acp-protocols-acp-v2-draft",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "acp-protocols"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Protocols, not native identity. ACP v1 load/replay differs from resume; v2 acceptance differs from completion; CAP has no demonstrated driver. [ACP contract](https://github.com/agentclientprotocol/agent-client-protocol/blob/schema-v1.25.0/docs/protocol/v1/session-setup.mdx)."
+          ],
+          "crosswalk": [
+            "R32",
+            "CAP draft"
+          ],
+          "fabric": "acp-protocols-cap-draft",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "acp-protocols"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Common controlled-worker queue/watch and stored-session adapters; loaded reuse, cold reconnect, replacement creation and adapter-specific context must be distinguished. Codex adapter launches its own App Server; Claude adapter uses SDK 0.3.293 and may recreate its query. [ACPX contract](https://github.com/openclaw/acpx/blob/v0.19.4/docs/CLI.md)."
+          ],
+          "crosswalk": [
+            "R33",
+            "ACPX Codex adapter"
+          ],
+          "fabric": "acpx-adapters-acpx-codex-adapter",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "acpx-adapters"
+          },
+          "mandatory_components": [
+            "codex-app-server"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Common controlled-worker queue/watch and stored-session adapters; loaded reuse, cold reconnect, replacement creation and adapter-specific context must be distinguished. Codex adapter launches its own App Server; Claude adapter uses SDK 0.3.293 and may recreate its query. [ACPX contract](https://github.com/openclaw/acpx/blob/v0.19.4/docs/CLI.md)."
+          ],
+          "crosswalk": [
+            "R33",
+            "ACPX Claude adapter"
+          ],
+          "fabric": "acpx-adapters-acpx-claude-adapter",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "acpx-adapters"
+          },
+          "mandatory_components": [
+            "claude-agent-sdk-typescript-query"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Tool/task protocols with deferred status/artifacts; neither binds a native peer. A2A v0.3 services below require compatibility assessment. [MCP tasks](https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks), [A2A](https://a2a-protocol.org/v1.0.0/specification/)."
+          ],
+          "crosswalk": [
+            "R34",
+            "MCP tasks"
+          ],
+          "fabric": "mcp-a2a-protocols-mcp-tasks",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "mcp-a2a-protocols"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Tool/task protocols with deferred status/artifacts; neither binds a native peer. A2A v0.3 services below require compatibility assessment. [MCP tasks](https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks), [A2A](https://a2a-protocol.org/v1.0.0/specification/)."
+          ],
+          "crosswalk": [
+            "R34",
+            "A2A v1"
+          ],
+          "fabric": "mcp-a2a-protocols-a2a-v1",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "mcp-a2a-protocols"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Presentation, transcript index, route guidance and evidence layers, respectively. They can make a selected actuator easier to inspect but cannot send, wake, or prove nondelivery from silence."
+          ],
+          "crosswalk": [
+            "R48",
+            "AXI"
+          ],
+          "fabric": "presentation-and-evidence-axi",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "presentation-and-evidence"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Presentation, transcript index, route guidance and evidence layers, respectively. They can make a selected actuator easier to inspect but cannot send, wake, or prove nondelivery from silence."
+          ],
+          "crosswalk": [
+            "R48",
+            "Recensa"
+          ],
+          "fabric": "presentation-and-evidence-recensa",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "presentation-and-evidence"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Presentation, transcript index, route guidance and evidence layers, respectively. They can make a selected actuator easier to inspect but cannot send, wake, or prove nondelivery from silence."
+          ],
+          "crosswalk": [
+            "R48",
+            "Rolecasting"
+          ],
+          "fabric": "presentation-and-evidence-rolecasting",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "presentation-and-evidence"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Presentation, transcript index, route guidance and evidence layers, respectively. They can make a selected actuator easier to inspect but cannot send, wake, or prove nondelivery from silence."
+          ],
+          "crosswalk": [
+            "R48",
+            "App observer proposals"
+          ],
+          "fabric": "presentation-and-evidence-app-observer-proposals",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "presentation-and-evidence"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four different partial adapters: registered relay; configured Claude SQLite channel; Remote Control user-role sender unsuitable for peer-origin claim; CLI tmux pane/spool with modal refusal. None proves arbitrary Desktop/cloud attachment."
+          ],
+          "crosswalk": [
+            "R45",
+            "Claude Relay",
+            "R45a"
+          ],
+          "fabric": "claude-partial-adapters-claude-relay",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-partial-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four different partial adapters: registered relay; configured Claude SQLite channel; Remote Control user-role sender unsuitable for peer-origin claim; CLI tmux pane/spool with modal refusal. None proves arbitrary Desktop/cloud attachment."
+          ],
+          "crosswalk": [
+            "R45",
+            "cc-dm",
+            "R45b"
+          ],
+          "fabric": "claude-partial-adapters-cc-dm",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-partial-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four different partial adapters: registered relay; configured Claude SQLite channel; Remote Control user-role sender unsuitable for peer-origin claim; CLI tmux pane/spool with modal refusal. None proves arbitrary Desktop/cloud attachment."
+          ],
+          "crosswalk": [
+            "R45",
+            "cc-tap",
+            "R45c"
+          ],
+          "fabric": "claude-partial-adapters-cc-tap",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-partial-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Four different partial adapters: registered relay; configured Claude SQLite channel; Remote Control user-role sender unsuitable for peer-origin claim; CLI tmux pane/spool with modal refusal. None proves arbitrary Desktop/cloud attachment."
+          ],
+          "crosswalk": [
+            "R45",
+            "tmux-ccm",
+            "R45d"
+          ],
+          "fabric": "claude-partial-adapters-tmux-ccm",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-partial-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established."
+          ],
+          "crosswalk": [
+            "R46",
+            "claude-a2a",
+            "R46a"
+          ],
+          "fabric": "a2a-dispatchers-claude-a2a",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "a2a-dispatchers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established.",
+            "The Hub requires one selected adapter; this class record does not require all backend alternatives or identify any installed adapter."
+          ],
+          "crosswalk": [
+            "R46",
+            "Hybro A2A adapters",
+            "R46b"
+          ],
+          "fabric": "a2a-dispatchers-hybro-a2a-adapters",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "a2a-dispatchers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established.",
+            "Relay requires one selected underlying adapter from the Hybro adapter class; neither every backend nor an installed backend is asserted"
+          ],
+          "crosswalk": [
+            "R46",
+            "Hybro Hub",
+            "R46c"
+          ],
+          "fabric": "a2a-dispatchers-hybro-hub",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "a2a-dispatchers"
+          },
+          "mandatory_components": [
+            "a2a-dispatchers-hybro-a2a-adapters"
+          ],
+          "rationale": "The comparison establishes the mandatory source component relationships recorded in relations; each retains its own scope and binding gap.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established."
+          ],
+          "crosswalk": [
+            "R46",
+            "A2A Nexus",
+            "R46d"
+          ],
+          "fabric": "a2a-dispatchers-a2a-nexus",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "a2a-dispatchers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Five service/dispatcher candidates for managed workers. Context/service/broker IDs require native mapping; private packages, portals, resident workers and backend processes are costs. No arbitrary native-peer inbox established."
+          ],
+          "crosswalk": [
+            "R46",
+            "Superharness",
+            "R46e"
+          ],
+          "fabric": "a2a-dispatchers-superharness",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "a2a-dispatchers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Interactive local controls; a pane or displayed session does not establish a structured outside caller or active GUI owner."
+          ],
+          "crosswalk": [
+            "R03",
+            "Original comparison title: CLI/TUI agents, resume, fork, composer (O)",
+            "Distinct named subroute: Codex terminal agent browser"
+          ],
+          "fabric": "codex-terminal-controls-agents-browser",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-terminal-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Interactive local controls; a pane or displayed session does not establish a structured outside caller or active GUI owner."
+          ],
+          "crosswalk": [
+            "R03",
+            "Original comparison title: CLI/TUI agents, resume, fork, composer (O)",
+            "Distinct named subroute: Codex terminal resume"
+          ],
+          "fabric": "codex-terminal-controls-resume",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-terminal-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Interactive local controls; a pane or displayed session does not establish a structured outside caller or active GUI owner."
+          ],
+          "crosswalk": [
+            "R03",
+            "Original comparison title: CLI/TUI agents, resume, fork, composer (O)",
+            "Distinct named subroute: Codex terminal fork"
+          ],
+          "fabric": "codex-terminal-controls-fork",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-terminal-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Interactive local controls; a pane or displayed session does not establish a structured outside caller or active GUI owner."
+          ],
+          "crosswalk": [
+            "R03",
+            "Original comparison title: CLI/TUI agents, resume, fork, composer (O)",
+            "Distinct named subroute: Codex terminal composer"
+          ],
+          "fabric": "codex-terminal-controls-composer",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-terminal-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Transport/client routes for a configured host, not a native peer inbox by themselves; host pairing, route, and owner identity are prerequisites."
+          ],
+          "crosswalk": [
+            "R11",
+            "Original comparison title: Remote TUI socket and managed remote control/SSH (O)",
+            "Distinct named subroute: Codex remote TUI socket"
+          ],
+          "fabric": "codex-remote-control-remote-tui-socket",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-remote-control"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Transport/client routes for a configured host, not a native peer inbox by themselves; host pairing, route, and owner identity are prerequisites."
+          ],
+          "crosswalk": [
+            "R11",
+            "Original comparison title: Remote TUI socket and managed remote control/SSH (O)",
+            "Distinct named subroute: Codex managed remote control"
+          ],
+          "fabric": "codex-remote-control-managed-remote-control",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-remote-control"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Transport/client routes for a configured host, not a native peer inbox by themselves; host pairing, route, and owner identity are prerequisites."
+          ],
+          "crosswalk": [
+            "R11",
+            "Original comparison title: Remote TUI socket and managed remote control/SSH (O)",
+            "Distinct named subroute: Codex SSH control"
+          ],
+          "fabric": "codex-remote-control-ssh",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-remote-control"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Execution, transport or trigger leads; no independent task address or result contract established."
+          ],
+          "crosswalk": [
+            "R17",
+            "Original comparison title: Codex execution-service, socket-relay, API-proxy, command/filesystem helpers, hooks and schedules (O)",
+            "Distinct named subroute: Codex execution service"
+          ],
+          "fabric": "codex-execution-helpers-execution-service",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-execution-helpers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Execution, transport or trigger leads; no independent task address or result contract established."
+          ],
+          "crosswalk": [
+            "R17",
+            "Original comparison title: Codex execution-service, socket-relay, API-proxy, command/filesystem helpers, hooks and schedules (O)",
+            "Distinct named subroute: Codex socket relay"
+          ],
+          "fabric": "codex-execution-helpers-socket-relay",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-execution-helpers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Execution, transport or trigger leads; no independent task address or result contract established."
+          ],
+          "crosswalk": [
+            "R17",
+            "Original comparison title: Codex execution-service, socket-relay, API-proxy, command/filesystem helpers, hooks and schedules (O)",
+            "Distinct named subroute: Codex API proxy"
+          ],
+          "fabric": "codex-execution-helpers-api-proxy",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-execution-helpers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Execution, transport or trigger leads; no independent task address or result contract established."
+          ],
+          "crosswalk": [
+            "R17",
+            "Original comparison title: Codex execution-service, socket-relay, API-proxy, command/filesystem helpers, hooks and schedules (O)",
+            "Distinct named subroute: Codex command and filesystem helpers"
+          ],
+          "fabric": "codex-execution-helpers-command-filesystem",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-execution-helpers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Execution, transport or trigger leads; no independent task address or result contract established."
+          ],
+          "crosswalk": [
+            "R17",
+            "Original comparison title: Codex execution-service, socket-relay, API-proxy, command/filesystem helpers, hooks and schedules (O)",
+            "Distinct named subroute: Codex hooks"
+          ],
+          "fabric": "codex-execution-helpers-hooks",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-execution-helpers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Execution, transport or trigger leads; no independent task address or result contract established."
+          ],
+          "crosswalk": [
+            "R17",
+            "Original comparison title: Codex execution-service, socket-relay, API-proxy, command/filesystem helpers, hooks and schedules (O)",
+            "Distinct named subroute: Codex schedules"
+          ],
+          "fabric": "codex-execution-helpers-schedules",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-execution-helpers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Adjacent product population with separate history and mode binding; cannot be silently identified with Codex Cloud, legacy tasks, or desktop chats."
+          ],
+          "crosswalk": [
+            "R18",
+            "Original comparison title: ChatGPT Work cloud/local-computer mode (O+)",
+            "Distinct named subroute: ChatGPT Work cloud"
+          ],
+          "fabric": "chatgpt-work-mode-cloud",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "chatgpt-work-mode"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Adjacent product population with separate history and mode binding; cannot be silently identified with Codex Cloud, legacy tasks, or desktop chats."
+          ],
+          "crosswalk": [
+            "R18",
+            "Original comparison title: ChatGPT Work cloud/local-computer mode (O+)",
+            "Distinct named subroute: ChatGPT Work local-computer mode"
+          ],
+          "fabric": "chatgpt-work-mode-local-computer",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "chatgpt-work-mode"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Eligible app-run local/SSH/WSL tabs; busy message waits for current work. Cloud, terminal and VS Code are excluded; outside callable endpoint unproved. [Desktop contract](https://code.claude.com/docs/en/desktop#work-across-sessions)."
+          ],
+          "crosswalk": [
+            "R19",
+            "Original comparison title: Claude Desktop tab tools (C+)",
+            "Distinct named subroute: Claude Desktop local Code tab"
+          ],
+          "fabric": "claude-desktop-tab-tools-local",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-desktop-tab-tools"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Eligible app-run local/SSH/WSL tabs; busy message waits for current work. Cloud, terminal and VS Code are excluded; outside callable endpoint unproved. [Desktop contract](https://code.claude.com/docs/en/desktop#work-across-sessions)."
+          ],
+          "crosswalk": [
+            "R19",
+            "Original comparison title: Claude Desktop tab tools (C+)",
+            "Distinct named subroute: Claude Desktop SSH Code tab"
+          ],
+          "fabric": "claude-desktop-tab-tools-ssh",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-desktop-tab-tools"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Eligible app-run local/SSH/WSL tabs; busy message waits for current work. Cloud, terminal and VS Code are excluded; outside callable endpoint unproved. [Desktop contract](https://code.claude.com/docs/en/desktop#work-across-sessions)."
+          ],
+          "crosswalk": [
+            "R19",
+            "Original comparison title: Claude Desktop tab tools (C+)",
+            "Distinct named subroute: Claude Desktop WSL Code tab"
+          ],
+          "fabric": "claude-desktop-tab-tools-wsl",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-desktop-tab-tools"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Bound remote session input/events; SSE has durable event IDs/cursor and nonreplayed delivery updates, but query initialization is active. Header names are declared; accepted credentials, Desktop mapping and concurrent effects remain open. [Versioned package](https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.3.296.tgz)."
+          ],
+          "crosswalk": [
+            "R23",
+            "Original comparison title: Agent SDK browser SSE/WebSocket (C+)",
+            "Distinct named subroute: Claude browser SSE transport"
+          ],
+          "fabric": "claude-browser-transport-sse",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-browser-transport"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Bound remote session input/events; SSE has durable event IDs/cursor and nonreplayed delivery updates, but query initialization is active. Header names are declared; accepted credentials, Desktop mapping and concurrent effects remain open. [Versioned package](https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.3.296.tgz)."
+          ],
+          "crosswalk": [
+            "R23",
+            "Original comparison title: Agent SDK browser SSE/WebSocket (C+)",
+            "Distinct named subroute: Claude browser WebSocket transport"
+          ],
+          "fabric": "claude-browser-transport-websocket",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-browser-transport"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Controlled SDK lifecycle and stored-history reads; not the Desktop/cloud held query. Removed V2 session API is unsuitable as a current candidate."
+          ],
+          "crosswalk": [
+            "R25",
+            "Original comparison title: Main Claude Agent SDK `query()`, resume/fork and session readers (C)",
+            "Distinct named subroute: Claude TypeScript SDK query/resume/fork"
+          ],
+          "fabric": "claude-agent-sdk-typescript-query",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-agent-sdk"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Controlled SDK lifecycle and stored-history reads; not the Desktop/cloud held query. Removed V2 session API is unsuitable as a current candidate."
+          ],
+          "crosswalk": [
+            "R25",
+            "Original comparison title: Main Claude Agent SDK `query()`, resume/fork and session readers (C)",
+            "Distinct named subroute: Claude TypeScript SDK session readers"
+          ],
+          "fabric": "claude-agent-sdk-typescript-readers",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-agent-sdk"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Controlled SDK lifecycle and stored-history reads; not the Desktop/cloud held query. Removed V2 session API is unsuitable as a current candidate."
+          ],
+          "crosswalk": [
+            "R25",
+            "Original comparison title: Main Claude Agent SDK `query()`, resume/fork and session readers (C)",
+            "Distinct named subroute: Claude Python Agent SDK"
+          ],
+          "fabric": "claude-agent-sdk-python",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-agent-sdk"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Removed at the reviewed source cohort; no current supported call is established.",
+            "Component-level positive operation evidence is not separately established.",
+            "Controlled SDK lifecycle and stored-history reads; not the Desktop/cloud held query. Removed V2 session API is unsuitable as a current candidate."
+          ],
+          "crosswalk": [
+            "R25",
+            "Original comparison title: Main Claude Agent SDK `query()`, resume/fork and session readers (C)",
+            "Distinct named subroute: Removed Claude SDK V2 cohort"
+          ],
+          "fabric": "claude-agent-sdk-removed-v2",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-agent-sdk"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Configured session event ingress, optional reply tool; event can be dropped or grouped while busy. Permission relay is a separate authority and is not inherited by a notification route."
+          ],
+          "crosswalk": [
+            "R27",
+            "Original comparison title: Claude Channels and permission relay (C)",
+            "Distinct named subroute: Claude Channels event ingress"
+          ],
+          "fabric": "claude-channels-channel-input",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-channels"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Configured session event ingress, optional reply tool; event can be dropped or grouped while busy. Permission relay is a separate authority and is not inherited by a notification route."
+          ],
+          "crosswalk": [
+            "R27",
+            "Original comparison title: Claude Channels and permission relay (C)",
+            "Distinct named subroute: Claude permission relay"
+          ],
+          "fabric": "claude-channels-permission-relay",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-channels"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Distinct product-owned conversations that start sessions and show results; no general external exact-task controller established."
+          ],
+          "crosswalk": [
+            "R29",
+            "Original comparison title: Claude Projects and Dispatch (C)",
+            "Distinct named subroute: Claude Projects"
+          ],
+          "fabric": "claude-projects-dispatch-projects",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-projects-dispatch"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Distinct product-owned conversations that start sessions and show results; no general external exact-task controller established."
+          ],
+          "crosswalk": [
+            "R29",
+            "Original comparison title: Claude Projects and Dispatch (C)",
+            "Distinct named subroute: Claude Dispatch"
+          ],
+          "fabric": "claude-projects-dispatch-dispatch",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-projects-dispatch"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Local/owned-worker views and lifecycles. `--desktop` opens the app without a prompt; terminal attach and child creation do not address arbitrary Desktop/cloud tasks."
+          ],
+          "crosswalk": [
+            "R30",
+            "Original comparison title: Claude Agent View/background CLI, `--desktop`/local resume, teams/subagents (C)",
+            "Distinct named subroute: Claude Agent View"
+          ],
+          "fabric": "claude-local-worker-controls-agent-view",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-local-worker-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Local/owned-worker views and lifecycles. `--desktop` opens the app without a prompt; terminal attach and child creation do not address arbitrary Desktop/cloud tasks."
+          ],
+          "crosswalk": [
+            "R30",
+            "Original comparison title: Claude Agent View/background CLI, `--desktop`/local resume, teams/subagents (C)",
+            "Distinct named subroute: Claude background CLI"
+          ],
+          "fabric": "claude-local-worker-controls-background-cli",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-local-worker-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Local/owned-worker views and lifecycles. `--desktop` opens the app without a prompt; terminal attach and child creation do not address arbitrary Desktop/cloud tasks."
+          ],
+          "crosswalk": [
+            "R30",
+            "Original comparison title: Claude Agent View/background CLI, `--desktop`/local resume, teams/subagents (C)",
+            "Distinct named subroute: Claude Desktop launch selector"
+          ],
+          "fabric": "claude-local-worker-controls-desktop-launch",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-local-worker-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Local/owned-worker views and lifecycles. `--desktop` opens the app without a prompt; terminal attach and child creation do not address arbitrary Desktop/cloud tasks."
+          ],
+          "crosswalk": [
+            "R30",
+            "Original comparison title: Claude Agent View/background CLI, `--desktop`/local resume, teams/subagents (C)",
+            "Distinct named subroute: Claude local resume"
+          ],
+          "fabric": "claude-local-worker-controls-local-resume",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-local-worker-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Local/owned-worker views and lifecycles. `--desktop` opens the app without a prompt; terminal attach and child creation do not address arbitrary Desktop/cloud tasks."
+          ],
+          "crosswalk": [
+            "R30",
+            "Original comparison title: Claude Agent View/background CLI, `--desktop`/local resume, teams/subagents (C)",
+            "Distinct named subroute: Claude agent teams"
+          ],
+          "fabric": "claude-local-worker-controls-teams",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-local-worker-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Local/owned-worker views and lifecycles. `--desktop` opens the app without a prompt; terminal attach and child creation do not address arbitrary Desktop/cloud tasks."
+          ],
+          "crosswalk": [
+            "R30",
+            "Original comparison title: Claude Agent View/background CLI, `--desktop`/local resume, teams/subagents (C)",
+            "Distinct named subroute: Claude subagents"
+          ],
+          "fabric": "claude-local-worker-controls-subagents",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-local-worker-controls"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Observation only; selected-query binding and complete applied-state fields remain missing."
+          ],
+          "crosswalk": [
+            "R31",
+            "Original comparison title: Claude hooks, transcript readers, Desktop host/renderer readers, retained observer prototype (C+S)",
+            "Distinct named subroute: Claude hooks"
+          ],
+          "fabric": "claude-observers-hooks",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-observers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Observation only; selected-query binding and complete applied-state fields remain missing."
+          ],
+          "crosswalk": [
+            "R31",
+            "Original comparison title: Claude hooks, transcript readers, Desktop host/renderer readers, retained observer prototype (C+S)",
+            "Distinct named subroute: Claude transcript readers"
+          ],
+          "fabric": "claude-observers-transcripts",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-observers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Observation only; selected-query binding and complete applied-state fields remain missing."
+          ],
+          "crosswalk": [
+            "R31",
+            "Original comparison title: Claude hooks, transcript readers, Desktop host/renderer readers, retained observer prototype (C+S)",
+            "Distinct named subroute: Claude Desktop host readers"
+          ],
+          "fabric": "claude-observers-desktop-host",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-observers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Observation only; selected-query binding and complete applied-state fields remain missing."
+          ],
+          "crosswalk": [
+            "R31",
+            "Original comparison title: Claude hooks, transcript readers, Desktop host/renderer readers, retained observer prototype (C+S)",
+            "Distinct named subroute: Claude Desktop renderer readers"
+          ],
+          "fabric": "claude-observers-desktop-renderer",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-observers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Observation only; selected-query binding and complete applied-state fields remain missing."
+          ],
+          "crosswalk": [
+            "R31",
+            "Original comparison title: Claude hooks, transcript readers, Desktop host/renderer readers, retained observer prototype (C+S)",
+            "Distinct named subroute: Retained Desktop observer prototype"
+          ],
+          "fabric": "claude-observers-retained-observer",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "claude-observers"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Opted-in binding/SSH/inbox with separate Codex and Claude adapters; Codex v4.10.0 delivered follows turn start, not model result, and foreign active turns defer. Claude HEAD is a different cohort. [Codex delivery](https://github.com/EthanSK/agent-bridge/blob/v4.10.0/codex-channel/src/delivery.js#L942)."
+          ],
+          "crosswalk": [
+            "R38",
+            "Original comparison title: Agent Bridge (C+S+)",
+            "Distinct named subroute: Agent Bridge Codex adapter"
+          ],
+          "fabric": "agent-bridge-codex",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "agent-bridge"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Opted-in binding/SSH/inbox with separate Codex and Claude adapters; Codex v4.10.0 delivered follows turn start, not model result, and foreign active turns defer. Claude HEAD is a different cohort. [Codex delivery](https://github.com/EthanSK/agent-bridge/blob/v4.10.0/codex-channel/src/delivery.js#L942)."
+          ],
+          "crosswalk": [
+            "R38",
+            "Original comparison title: Agent Bridge (C+S+)",
+            "Distinct named subroute: Agent Bridge Claude adapter"
+          ],
+          "fabric": "agent-bridge-claude",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "agent-bridge"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [
+            {
+              "components": [
+                "claude-native-messaging"
+              ],
+              "scope": "Claude native return requires SendMessage; generic broker admission is a separate stage"
+            }
+          ],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Registered peers, ask/reply and sidecars. Broker delivered can follow daemon scheduling ACK before turn; Codex resume failure creates replacement. Claude native return requires SendMessage, not ordinary output. [Broker](https://github.com/dataforxyz/agent-intercom-claude/blob/7de76e5d4f6461b007b19dfc5dbcf11928868adc/broker/broker.ts#L1823)."
+          ],
+          "crosswalk": [
+            "R39",
+            "Original comparison title: Agent Intercom Claude broker and Codex daemon (C+S+)",
+            "Distinct named subroute: Agent Intercom Claude broker"
+          ],
+          "fabric": "agent-intercom-claude-broker",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "agent-intercom"
+          },
+          "mandatory_components": [],
+          "rationale": "The comparison names these alternative or claim-specific compositions; they do not establish one unconditional component set for this aggregate record.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Registered peers, ask/reply and sidecars. Broker delivered can follow daemon scheduling ACK before turn; Codex resume failure creates replacement. Claude native return requires SendMessage, not ordinary output. [Broker](https://github.com/dataforxyz/agent-intercom-claude/blob/7de76e5d4f6461b007b19dfc5dbcf11928868adc/broker/broker.ts#L1823)."
+          ],
+          "crosswalk": [
+            "R39",
+            "Original comparison title: Agent Intercom Claude broker and Codex daemon (C+S+)",
+            "Distinct named subroute: Agent Intercom Codex daemon"
+          ],
+          "fabric": "agent-intercom-codex-daemon",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "agent-intercom"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Created CLI/review jobs with status/result; Claude path uses no-session-persistence and model fallback/retry. Inspected commit has manifest 0.34.0, not verified release identity. Unsuitable for preserved existing Desktop/cloud task. [Backend](https://github.com/thomaswitt/mcp-agents/blob/96f58a08439b0f4a1eb42e8076bec1bb5a64a7c4/server.js#L404)."
+          ],
+          "crosswalk": [
+            "R40",
+            "Original comparison title: mcp-agents (C+S+)",
+            "Distinct named subroute: mcp-agents Codex worker"
+          ],
+          "fabric": "mcp-agents-codex-worker",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "mcp-agents"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Component-level positive operation evidence is not separately established.",
+            "Created CLI/review jobs with status/result; Claude path uses no-session-persistence and model fallback/retry. Inspected commit has manifest 0.34.0, not verified release identity. Unsuitable for preserved existing Desktop/cloud task. [Backend](https://github.com/thomaswitt/mcp-agents/blob/96f58a08439b0f4a1eb42e8076bec1bb5a64a7c4/server.js#L404)."
+          ],
+          "crosswalk": [
+            "R40",
+            "Original comparison title: mcp-agents (C+S+)",
+            "Distinct named subroute: mcp-agents Claude worker"
+          ],
+          "fabric": "mcp-agents-claude-worker",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "mcp-agents"
+          },
+          "mandatory_components": [],
+          "rationale": "This finite comparison describes the named interface/operation or component and its retained limits without establishing another specifically cataloged mandatory route component. This is not a claim that its implementation has no dependencies.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Select and bind the actual T3 server/schema without substituting the outside-agent MCP route."
+          ],
+          "crosswalk": [
+            "R43",
+            "Required source component class; no deployed identity"
+          ],
+          "fabric": "t3-selected-server-requirement",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "t3-host-adapters"
+          },
+          "mandatory_components": [],
+          "rationale": "Explicit source-level component class only; its actual owner/backend remains unresolved and no further catalog component is established by this comparison.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Bind the actual queue store and loaded owner/watch profile; shared source does not prove installed sharing or receipt."
+          ],
+          "crosswalk": [
+            "R06",
+            "Required source component class; no deployed identity"
+          ],
+          "fabric": "codex-shared-queue-backend",
+          "grouping_only": {
+            "children_are_grouped": false,
+            "parent": "codex-queue"
+          },
+          "mandatory_components": [],
+          "rationale": "Explicit source-level component class only; its actual owner/backend remains unresolved and no further catalog component is established by this comparison.",
+          "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
+        }
       ],
       "relations": [
         {
@@ -25711,6 +28693,42 @@
           "dependency": "claude-agent-sdk",
           "fabric": "t3-host-adapters-t3-claude-adapter",
           "scope": "SDK query/session mapping for T3-owned tasks; version, language-specific source association and independent Desktop/cloud access remain separate"
+        },
+        {
+          "comparison_entry": "R36",
+          "dependency": "openclaw-routes-openclaw-gateway-sessions-and-external-conversations",
+          "fabric": "openclaw-routes-openclaw-mcp-serve",
+          "scope": "Gateway-connected stdio client; exact Gateway deployment/session and caller access remain unbound"
+        },
+        {
+          "comparison_entry": "R43",
+          "dependency": "t3-selected-server-requirement",
+          "fabric": "t3-connectors-emmsixx-t3code-mcp",
+          "scope": "Journal connector requires selected T3 server/schema; optional outside MCP entrance is not assumed"
+        },
+        {
+          "comparison_entry": "R43",
+          "dependency": "t3-selected-server-requirement",
+          "fabric": "t3-connectors-gfsaaser24-t3-code-agent-mcp",
+          "scope": "HTTP/WebSocket connector requires selected T3 server/schema; exact deployment remains unresolved"
+        },
+        {
+          "comparison_entry": "R46c",
+          "dependency": "a2a-dispatchers-hybro-a2a-adapters",
+          "fabric": "a2a-dispatchers-hybro-hub",
+          "scope": "Relay requires one selected underlying adapter from the Hybro adapter class; neither every backend nor an installed backend is asserted"
+        },
+        {
+          "comparison_entry": "R06",
+          "dependency": "codex-shared-queue-backend",
+          "fabric": "codex-queue-cli-queue-frontend",
+          "scope": "CLI entrance to shared queue backend; actual owner/store association remains a separate input"
+        },
+        {
+          "comparison_entry": "R06",
+          "dependency": "codex-shared-queue-backend",
+          "fabric": "codex-queue-app-server-queue-frontend",
+          "scope": "App Server entrance to shared queue backend; admission is not receiver consumption"
         }
       ],
       "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
@@ -25735,8 +28753,8 @@
   "schema_version": 1,
   "snapshot": {
     "coverage": "Dated reviewed inventory seed, including distinct named components. No operation is live qualified. Endpoint granularity and channel/profile expansion remain provisional pending the independent Wave 1 coverage batch and the cohort join.",
-    "generated_at": "2026-10-12T10:35:41.413060+00:00",
-    "revision": "reviewed-inventory-seed-61b99e73"
+    "generated_at": "2026-10-12T16:39:47.346951+00:00",
+    "revision": "reviewed-inventory-seed-component-reconciliation"
   },
-  "source_sha256": "94cfeef187467157191a76db590b0c938e1c71bdbb7bb66522eae1403e39f2f9"
+  "source_sha256": "c5be91ee8f50d9c9c964eb0b75bb3c714e4db2c5bb81da83dfff96107df13421"
 }

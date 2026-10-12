@@ -35,6 +35,24 @@ the map driver. Retain distinct candidates, partial mechanisms, unsuccessful
 probes, unsuitable reasons, and the source crosswalk. Link immutable evidence
 with its acquisition date, source/build/configuration scope, and limits.
 
+Reconcile every affected fabric against the complete finite producer evidence.
+Maintain a source-to-component record in
+`provenance.component_dependencies.reconciliation`: identify mandatory
+components, alternative combinations, grouping-only relations, or a source
+that establishes no additional component requirement. Name the evidence and
+scope for each conclusion; an empty dependency list is not its own proof.
+For a full seed or comparison batch, cover every fabric; later batches
+preserve unrelated reconciliation records and reassess affected dependents.
+
+Put every established mandatory component in the fabric's `dependencies`
+and its generated card. If the source establishes a required component class
+but not its precise backend or deployment, retain an explicit supporting
+component record with its source crosswalk and unresolved binding. For
+example, a connector's required selected server is distinct from that server's
+optional MCP entrance. Group membership and alternatives create no mandatory
+edge. Independent review checks this reconciliation against the producer
+evidence; metadata validation cannot discover an omitted source requirement.
+
 State the reached milestone and outstanding observations separately. For
 example, queue admission supports submission; receiver evidence is needed
 for receipt, and returned output needs the caller's checks before fulfillment.
@@ -64,6 +82,11 @@ generated graph and matrix: both must refer to the same channel records and
 preserve mixed progress. Check the diff for lost candidates, unrelated edits,
 private identifiers, and inferred qualifications. Regeneration performs no
 new harness observation.
+
+Verify that the reconciliation covers the batch's fabrics and that each
+mandatory component appears in both the canonical dependencies and generated
+cards, with the same scope and unresolved binding. Include that crosswalk in
+the completion evidence; preserve alternatives and grouping separately.
 
 Use the owning independent-review workflow on the final candidate, including
 the evidence interpretation and procedure changes where applicable. Resolve
