@@ -138,3 +138,31 @@ test('two caller profiles remain distinct and prior transitive grants survive', 
  }
  const i = fixture(); i.profile = 'other'; assert.equal(inspect(i).reason, 'unsupported_profile');
 });
+
+test('unproved failure keeps uncertainty latched against a later bare proof', () => {
+ const observations = [event('before_submission_failure', {proven: false, transient: true}), event('before_submission_failure', {proven: true, transient: true})];
+ const r = inspect(fixture(), observations);
+ assert.equal(r.outcome, 'unknown'); assert.equal(r.reason, 'possible_submission'); assert.equal(r.resend, 'reconcile_first');
+ assert.deepEqual(r.evidence, observations); assert.deepEqual(r.provedStages, []);
+ for (const last of [event('receipt'), event('acknowledgment', {explicit: true})]) {
+  const resolved = inspect(fixture(), [...observations, last, event('before_submission_failure', {proven: true, transient: true})]);
+  assert.equal(resolved.resend, 'no_resend'); assert.equal(resolved.reason, null);
+ }
+});
+
+test('dequeue is retained without proving a stage or loosening resend policy', () => {
+ const dequeue = event('dequeued', {queueId: 'queue-one'});
+ for (const [prior, outcome, stages, resend] of [
+  [null, 'not_attempted', [], 'not_needed'],
+  [event('admitted', {state: 'queued'}), 'queued', ['submission', 'admission'], 'reconcile_first'],
+  [event('receipt'), 'received', ['receipt'], 'no_resend'],
+  [event('acknowledgment', {explicit: true}), 'acknowledged', ['acknowledgment'], 'no_resend']
+ ]) {
+  const observations = prior ? [prior, dequeue] : [dequeue]; const r = inspect(fixture(), observations);
+  assert.deepEqual(r.evidence, observations); assert.equal(r.outcome, outcome); assert.deepEqual(r.provedStages, stages); assert.equal(r.resend, resend);
+ }
+ for (const extra of [{correlationId: 'other'}, {observedAt: 80}]) {
+  const r = inspect(fixture(), [event('dequeued', extra)]);
+  assert.deepEqual(r.evidence, []); assert.equal(r.ignored.length, 1); assert.deepEqual(r.provedStages, []);
+ }
+});

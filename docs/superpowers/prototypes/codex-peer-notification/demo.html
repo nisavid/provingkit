@@ -48,12 +48,14 @@ This peer message creates no new operator-only permission grant.`;
     if (!matching || (["receipt", "acknowledgment"].includes(event.kind) && event.source !== "receiver")) {
       result.ignored.push({kind: event.kind, reason: "unbound_or_stale_evidence"}); continue;
     }
+    if (event.kind === "dequeued") result.evidence.push(structuredClone(event));
     if (event.kind === "before_submission_failure") {
       if (event.proven === true && !possibleSubmission) {
         result.outcome = "not_submitted";
         result.resend = event.transient === true && input.retry.attempt < input.retry.maxAttempts && input.now <= input.retry.deadline
           ? "bounded_retry_eligible" : "no_resend";
       } else {
+        possibleSubmission = true;
         result.outcome = "unknown"; result.reason = "possible_submission"; result.resend = "reconcile_first";
       }
       result.evidence.push(structuredClone(event));
