@@ -5,14 +5,25 @@ remains to be proved. The atlas consumes generated graph and matrix data from
 the same record. GitHub remains the source for operator decisions, claims, and
 blocking relationships in the [portfolio map](https://github.com/nisavid/provingkit/issues/533).
 
-`catalog.json` is the maintained source. Its first snapshot preserves the
-[reviewed inventory and comparison](https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md).
-Those findings describe interfaces and eligible populations; they establish no
-live-qualified direction. The accepted operation outcomes come from
+`catalog.json` is the maintained source. The dated first-cohort snapshot
+integrates the [granular coverage investigation](https://github.com/nisavid/provingkit/issues/560)
+and eight published directional preparations. It contains 23 Wave 1 operational
+surface views, 28 across all waves, and 160 candidate/supporting fabric records.
+All 150 seed fabrics, their distinct source cohorts, unsuccessful/unsuitable
+leads, archived vectors and unresolved mappings remain discoverable.
+
+The generated register has 756 potential directed view pairs and 26 explicit
+source-candidate associations. Those counts are neither unique native
+populations nor supported routes. No actual fabric operation is qualified.
+Pure invented Queue/Steer and worker/Cloud state models are separate synthetic
+evidence; they do not establish a working transport or backend capability.
+
+The original [reviewed inventory and comparison](https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md)
+remains archived in provenance. Broad legacy Desktop/SDK associations have
+unresolved correspondence to narrower display views; they supply no inferred
+SSH, WSL, Python, IDE, child/team or reverse caller access. Source updates do
+not refresh unrelated deployed builds. The accepted operation outcomes remain
 [Choose Wave 1 operation and evidence contracts](https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765).
-The [granular coverage investigation](https://github.com/nisavid/provingkit/issues/560)
-will refine the endpoint inventory. Current counts describe this dated
-snapshot, rather than an exhaustive support promise.
 
 ## Read the record
 
