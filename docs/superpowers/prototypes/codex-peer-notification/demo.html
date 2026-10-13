@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Peer notification prototype</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#20303c;background:#f3f5f7;line-height:1.5}body{max-width:1040px;margin:36px auto;padding:0 24px}h1{font-size:28px;margin-bottom:8px}h2{font-size:18px;margin:0 0 12px}.intro{max-width:820px}.notice{background:#e2ebf5;border-left:4px solid #28679e;padding:12px 16px}.panel{background:white;border:1px solid #d8e0e5;border-radius:8px;padding:20px;margin:18px 0}.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select{font:inherit;border:1px solid #b8c8d4;background:white;border-radius:5px;padding:7px 11px;color:inherit}button{cursor:pointer}button:hover{background:#eaf1f7}button[aria-pressed=true]{background:#28679e;color:white}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.label{font-size:13px;color:#567080}.value{font-weight:600}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f2f5f7;padding:12px}details{margin-top:12px}ol{padding-left:20px}li{margin:8px 0}.small{font-size:13px;color:#567080}
+</style></head>
+<script id="prototype-model">
+function inspectNotification(input, events = []) {
+  const result = {capturedRequest: null, outcome: "not_attempted", reason: null,
+    provedStages: [], evidence: [], ignored: [], resend: "not_needed",
+    priorGrants: structuredClone(input.consent.grants), qualified: false};
+  result.profile = input.profile; result.authorityCreated = false;
+  const block = reason => ({...result, capturedRequest: null, outcome: "blocked", reason});
+  if (!["desktop-to-chatgpt", "chatgpt-to-terminal"].includes(input.profile)) return block("unsupported_profile");
+  if (input.peer.ownerId !== input.owner.id) return block("owner_mismatch");
+  if (input.peer.storeId !== input.owner.storeId) return block("store_mismatch");
+  if (["threadId", "ownerId", "storeId"].some(k => input.peer[k] !== input.witness[k]))
+    return block("peer_witness_mismatch");
+  if (["threadId", "ownerId", "storeId"].some(k => input.peer[k] !== input.consent[k]) ||
+      input.message.purpose !== input.consent.purpose || !input.consent.strategies.includes(input.strategy))
+    return block("consent_mismatch");
+  if (!["queue", "steer"].includes(input.strategy) || !input.owner.supports.includes(input.strategy))
+    return block("unsupported_strategy");
+  const fresh = time => Number.isFinite(time) && time <= input.now && input.now - time <= input.maxAge;
+  if (![input.owner, input.witness, input.consent].every(x => fresh(x.observedAt)))
+    return block("stale_binding");
+  const text = `[Peer notification]
+From: ${input.message.origin}
+Correlation: ${input.message.id}
+Purpose: ${input.message.purpose}
+Prior grant references: ${input.consent.grants.map(g => g.id).join(", ")}
+
+${input.message.text}
+
+This peer message creates no new operator-only permission grant.`;
+  result.capturedRequest = {method: "thread/queue/add", params: {
+    threadId: input.peer.threadId, clientUserMessageId: input.message.id,
+    input: [{type: "text", text, text_elements: []}]}};
+  if (input.strategy === "steer") {
+    if (!input.owner.activeTurnId) return block("no_active_turn");
+    result.capturedRequest.method = "turn/steer";
+    result.capturedRequest.params.expectedTurnId = input.owner.activeTurnId;
+  }
+  let possibleSubmission = false;
+  const prove = stage => { if (!result.provedStages.includes(stage)) result.provedStages.push(stage); };
+  for (const event of events) {
+    const matching = event.ownerId === input.peer.ownerId && event.storeId === input.peer.storeId &&
+      event.threadId === input.peer.threadId && event.correlationId === input.message.id && fresh(event.observedAt);
+    if (!matching || (["receipt", "acknowledgment"].includes(event.kind) && event.source !== "receiver")) {
+      result.ignored.push({kind: event.kind, reason: "unbound_or_stale_evidence"}); continue;
+    }
+    if (event.kind === "before_submission_failure") {
+      if (event.proven === true && !possibleSubmission) {
+        result.outcome = "not_submitted";
+        result.resend = event.transient === true && input.retry.attempt < input.retry.maxAttempts && input.now <= input.retry.deadline
+          ? "bounded_retry_eligible" : "no_resend";
+      } else {
+        result.outcome = "unknown"; result.reason = "possible_submission"; result.resend = "reconcile_first";
+      }
+      result.evidence.push(structuredClone(event));
+    }
+    if (event.kind === "response_lost") {
+      possibleSubmission = true; result.outcome = "unknown"; result.reason = "possible_submission";
+      result.resend = "reconcile_first"; result.evidence.push(structuredClone(event));
+    }
+    if (event.kind === "receipt") {
+      possibleSubmission = true; prove("receipt"); result.outcome = "received";
+      result.resend = "no_resend"; result.evidence.push(structuredClone(event));
+    }
+    if (event.kind === "acknowledgment" && event.explicit === true) {
+      possibleSubmission = true; prove("acknowledgment"); result.outcome = "acknowledged";
+      result.resend = "no_resend"; result.evidence.push(structuredClone(event));
+    }
+    if (event.kind === "admitted") {
+      possibleSubmission = true; prove("submission"); prove("admission");
+      result.outcome = ["queued", "held", "refused"].includes(event.state) ? event.state : "submitted";
+      result.resend = ["held", "refused"].includes(event.state) ? "no_resend" : "reconcile_first";
+      result.evidence.push(structuredClone(event));
+    }
+  }
+  if (result.provedStages.includes("acknowledgment") || result.provedStages.includes("receipt")) {
+    result.outcome = result.provedStages.includes("acknowledgment") ? "acknowledged" : "received";
+    result.reason = null; result.resend = "no_resend";
+  }
+  return result;
+}
+globalThis.peerNotificationPrototype = Object.freeze({inspectNotification});
+</script>
+<body>
+<h1>Peer notification prototype</h1>
+<p class="intro">Explore whether one model can keep owner binding, Queue versus Steer, receiver receipt, and uncertain outcomes distinct across two directed channels.</p>
+<p class="notice"><strong>Invented records and events only.</strong> Every result is unqualified. This page has no harness connection and cannot send a message, authenticate a caller, or verify a real permission grant.</p>
+<section class="panel"><h2>Current synthetic binding</h2><div class="controls">
+<label>Direction <select id="profile"><option value="desktop-to-chatgpt">Claude Desktop → ChatGPT Codex</option><option value="chatgpt-to-terminal">ChatGPT Codex → Codex terminal</option></select></label>
+<label>Control <select id="strategy"><option value="queue">Queue</option><option value="steer">Steer</option></select></label>
+<button id="wrongOwner">Use wrong owner</button><button id="reset">Reset</button></div>
+<p class="small">The invented peer is thread-one in owner-one/store-one. Its owner and consent records are fresh. Steer uses turn-one. Prior grant references remain references; this model does not authenticate their scope.</p></section>
+<section class="panel" aria-live="polite"><h2>Evidence and outcome</h2><div class="grid" id="state"></div>
+<details><summary>Captured request</summary><pre id="request"></pre></details>
+<details><summary>Complete synthetic input and evidence</summary><pre id="record"></pre></details></section>
+<section class="panel"><h2>Free play</h2><p class="small">Add invented events in any order. Request construction itself does not submit anything.</p><div class="controls" id="actions"></div></section>
+<section class="panel"><h2>Guided cases</h2><div class="controls" id="tabs"></div><p id="description"></p><ol id="steps"></ol></section>
+<p class="small">Source model for preparation tickets 561 and 562. Queue admission and dequeue are narrower than receiver receipt; acknowledgment is a separate observation. A real adapter would need its own owner, access, producer, freshness, and correlation evidence.</p>
+<script>
+const model = globalThis.peerNotificationPrototype;
+function inventedInput(){return {
+ profile:document.getElementById('profile').value, now:100,maxAge:10,
+ peer:{threadId:'thread-one',ownerId:'owner-one',storeId:'store-one'},
+ witness:{threadId:'thread-one',ownerId:'owner-one',storeId:'store-one',observedAt:95},
+ owner:{id:'owner-one',storeId:'store-one',observedAt:95,supports:['queue','steer'],activeTurnId:'turn-one'},
+ consent:{threadId:'thread-one',ownerId:'owner-one',storeId:'store-one',purpose:'status notice',observedAt:95,strategies:['queue','steer'],grants:[{id:'prior-grant',transitive:true,scope:'declared existing scope'}]},
+ message:{id:'message-one',origin:'Identified peer',purpose:'status notice',text:'The source report is ready.'},
+ strategy:document.getElementById('strategy').value,retry:{attempt:1,maxAttempts:2,deadline:110}
+};}
+const definitions={
+ queued:['Queue admitted',{kind:'admitted',state:'queued'}],dequeued:['Dequeued',{kind:'dequeued'}],
+ receipt:['Receiver receipt',{kind:'receipt'}],ack:['Explicit acknowledgment',{kind:'acknowledgment',explicit:true}],
+ lost:['Response lost',{kind:'response_lost'}],held:['Held',{kind:'admitted',state:'held'}],refused:['Refused',{kind:'admitted',state:'refused'}],
+ transient:['Proven failure before submission',{kind:'before_submission_failure',proven:true,transient:true}],
+ wrong:['Wrong correlation',{kind:'receipt',correlationId:'message-other'}]
+};
+let input=inventedInput(),events=[];
+function append(name){events.push({source:'receiver',ownerId:'owner-one',storeId:'store-one',threadId:'thread-one',correlationId:'message-one',observedAt:100,...definitions[name][1]});render();}
+function reset(){input=inventedInput();events=[];document.getElementById('wrongOwner').textContent='Use wrong owner';render();}
+function render(){const r=model.inspectNotification(input,events);const entries=[['Outcome',r.outcome.replaceAll('_',' ')],['Reason',r.reason?.replaceAll('_',' ')||'None'],['Proved stages',r.provedStages.join(', ')||'None'],['Resend policy',r.resend.replaceAll('_',' ')],['Prior grants',r.priorGrants.map(g=>g.id).join(', ')],['Qualification','Unqualified'],['Owner',input.owner.id],['Ignored evidence',String(r.ignored.length)]];
+ const state=document.getElementById('state');state.replaceChildren();for(const [label,value]of entries){const cell=document.createElement('div');const l=document.createElement('div');l.className='label';l.textContent=label;const v=document.createElement('div');v.className='value';v.textContent=value;cell.append(l,v);state.append(cell);}
+ document.getElementById('request').textContent=JSON.stringify(r.capturedRequest,null,2);
+ document.getElementById('record').textContent=JSON.stringify({input,events,result:r},null,2);
+}
+for(const [name,[label]]of Object.entries(definitions)){const b=document.createElement('button');b.textContent=label;b.onclick=()=>append(name);document.getElementById('actions').append(b);}
+const cases=[
+ ['Queue and receipt','Admission can persist while a receiver is busy or unloaded. Dequeue alone is insufficient. Add receiver evidence and then a separate acknowledgment.',['queued','dequeued','receipt','ack']],
+ ['Lost response','Possible submission stays unknown. A matching receiver record can resolve receipt; retry remains unavailable.',['lost','wrong','receipt']],
+ ['Held or refused','These are distinct outcomes. Neither invites an automatic resend.',['held','refused']],
+ ['Retry eligibility','Only a proven transient failure before any possible submission can be eligible within the declared limits. A later lost response removes that eligibility.',['transient','lost','transient']],
+ ['Steer','Steer captures a required active-turn precondition. The synthetic receipt is still separate from request construction.',['receipt','ack']]
+];
+function choose(index){document.getElementById('strategy').value=index===4?'steer':'queue';reset();document.querySelectorAll('#tabs button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));document.getElementById('description').textContent=cases[index][1];const list=document.getElementById('steps');list.replaceChildren();for(const name of cases[index][2]){const li=document.createElement('li'),b=document.createElement('button');b.textContent=definitions[name][0];b.onclick=()=>append(name);li.append(b);list.append(li);}}
+cases.forEach(([title],index)=>{const b=document.createElement('button');b.textContent=title;b.onclick=()=>choose(index);document.getElementById('tabs').append(b);});
+document.getElementById('reset').onclick=reset;document.getElementById('profile').onchange=reset;document.getElementById('strategy').onchange=reset;
+document.getElementById('wrongOwner').onclick=()=>{input.owner.id=input.owner.id==='owner-one'?'owner-other':'owner-one';document.getElementById('wrongOwner').textContent=input.owner.id==='owner-one'?'Use wrong owner':'Restore owner';render();};choose(0);
+</script></body></html>
