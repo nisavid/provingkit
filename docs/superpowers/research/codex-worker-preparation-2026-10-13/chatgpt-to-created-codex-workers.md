@@ -46,7 +46,7 @@ The separately identified direct-server subroute would use `initialize`, `initia
 
 ## ACPX with codex-acp
 
-Retain two combinations: ACPX’s built-in Codex route and explicitly selected codex-acp 2.2.2. [The actual registry](https://github.com/openclaw/acpx/blob/95adbc569fb6aa2e8c021c4f352ffee05cc835ad/src/agent-registry.ts#L9) uses `@agentclientprotocol/codex-acp@^1.1.5` and an installed-command route; that package range excludes 2.2.2. The CLI prose’s unversioned mapping does not override source. An explicit `--agent <bound command>` is a proposed way to select the admitted adapter after exact executable verification.
+Retain ACPX’s built-in resolution and explicit codex-acp 2.2.2 selection as candidate entrances. [The package-execution fallback](https://github.com/openclaw/acpx/blob/95adbc569fb6aa2e8c021c4f352ffee05cc835ad/src/agent-registry.ts#L453) requests `@agentclientprotocol/codex-acp@^1.1.5`, whose range excludes 2.2.2. The [preferred installed-package resolver](https://github.com/openclaw/acpx/blob/95adbc569fb6aa2e8c021c4f352ffee05cc835ad/src/agent-registry.ts#L379) checks package name, declared bin, and existence without testing that range (379–450, 492–500); a resolvable installed 2.2.2 package can pass. Neither source branch proves which executable actually launches. An explicit `--agent <bound command>` is another proposed entrance after exact executable verification.
 
 Proposed persistent CLI sequence: named `sessions new` → `sessions show` plus adapter-native list/readback → bounded `prompt -s <name>` → `sessions watch`/result validation → one further prompt on that same native task. Use exact cwd/name/command binding; `sessions ensure` can reuse an existing session, and `exec` is a separate one-shot profile.
 
