@@ -30,7 +30,7 @@ receiver input association. These are conservative prototype conditions for
 the selected experiments, not assertions about a vendor's event grammar.
 
 The output contains an abstract captured request or an admission gap, separate
-observed stages, raw normalized terminal statuses, literal check status,
+observed stages (including addressability), raw normalized terminal statuses, literal check status,
 submission outcome, gaps, and a next recommendation. Later evidence gaps do
 not erase the captured request. The request records original grant references;
 it neither authenticates them nor creates authority. The setting request and
@@ -40,8 +40,11 @@ Normalized events must match the declared owner, native task, request, and
 correlation. Receiver observations require receiver origin. The SSE receipt
 specimen additionally ties the envelope to the same JavaScript event object;
 a copied object supplies no such association. Real envelope acquisition and
-normalization remain absent. Conflicting outputs or terminal observations
-remain incomplete or require reconciliation. Correct arithmetic from a failed
+normalization remain absent. Matching receiver output is retained as operation
+evidence even when merged input association excludes it from caller checks;
+that uncertainty requires reconciliation and withholds fulfillment. Same-text
+complete independent readback survives weaker duplicate observations. Different
+text or terminal conflicts remain incomplete or require reconciliation. Correct arithmetic from a failed
 or interrupted run does not establish fulfillment.
 
 Caller checks parse complete JSON and compare `ascending` and `sum` with the
@@ -52,8 +55,11 @@ cannot pass these checks. No semantic model or behavioral eval is invoked.
 A recommendation can be `hold`, `read`, `reconcile`, or
 `eligible-bounded-retry`. The last requires supplied proof of non-submission,
 remaining declared attempts, and no contradictory operation evidence. It
-performs no retry. Possible submission requires reconciliation; held and
-refused responses do not trigger resubmission.
+performs no retry. Possible submission remains a separate fact requiring reconciliation even
+when later output is incomplete. One final rule owns the recommendation; held
+and refused responses do not trigger resubmission. A continuation identity
+replacement refuses the request and its success claims while retaining earlier
+observations from the unchanged admitted task scope.
 
 ## Source candidates and directional limits
 

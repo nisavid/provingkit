@@ -173,3 +173,57 @@ test('captured requests retain their caller, owner, candidate, operation and pur
  assert.equal(result.request.fabric,'python-app-server');assert.equal(result.request.operation,'work');
  assert.equal(result.request.purpose,'no-edit arithmetic');
 });
+
+test('addressability is visible for created work, continuation and existing Cloud tasks', () => {
+ for(const change of [{},{operation:'continue',priorNativeId:'native-a'},{fabric:'cloud-cli-reader',target:{...fixture().target,population:'existing'}}]) {
+  const input=fixture({...change,events:[event('addressable',{source:'independent-read'})]});
+  const result=run(input);assert.ok(result.stages.includes('addressability'));
+  assert.equal(result.stages.includes('creation'),input.operation==='work' && input.target.population==='controlled');
+ }
+ assert.ok(!run(fixture({events:[event('created',{source:'creation-response'})]})).stages.includes('addressability'));
+});
+
+test('possible submission retains reconciliation with every output completeness profile and order', () => {
+ const lost=event('submission',{origin:'client',status:'unknown',possibleSubmission:true});
+ for(const output of [event('output',{text:answer,complete:false,source:'independent-read'}),event('output',{text:answer,complete:true,truncated:true,source:'independent-read'}),event('output',{text:answer,complete:true,source:'stream'}),event('output',{text:answer,complete:true,source:'independent-read'})]) {
+  for(const events of [[lost,output],[output,lost]]) {
+   const result=run(fixture({retry:{attempts:1,maxAttempts:2},events}));
+   assert.equal(result.outcome,'unknown');assert.equal(result.next,'reconcile');assert.ok(result.stages.includes('output'));
+  }
+ }
+});
+
+test('native replacement refuses continuation while preserving scoped prior observations', () => {
+ const input=fixture({operation:'continue',priorNativeId:'native-a',checks:{numbers:[12,-4,7,7],marker:'prior-amber'},events:[event('addressable',{source:'independent-read'}),event('receipt'),event('output',{text:'{"ascending":[-4,7,7,12],"sum":22,"marker":"prior-amber"}',complete:true,source:'independent-read'}),event('terminal',{status:'success'})]});
+ assert.ok(run(input).stages.includes('continuation'));
+ input.priorNativeId='former-native';const result=run(input);
+ assert.equal(result.request,null);assert.ok(result.gaps.includes('native task replacement'));
+ for(const stage of ['addressability','receipt','output'])assert.ok(result.stages.includes(stage));
+ assert.deepEqual(result.terminal,['success']);assert.equal(result.checks.state,'passed');
+ assert.ok(!result.stages.includes('fulfillment'));assert.ok(!result.stages.includes('continuation'));
+});
+
+test('merged receiver output contradicts non-submission and preserves earlier result facts', () => {
+ const merged=event('output',{text:'{"ascending":[-4,7,7,12],"sum":23}',complete:true,source:'independent-read',inputIds:['request-a','request-b']});
+ const failure=event('pre-submission-failure',{origin:'client',provenNonSubmission:true});
+ for(const events of [[failure,merged],[merged,failure]]) {
+  const result=run(fixture({retry:{attempts:1,maxAttempts:2},events}));
+  assert.equal(result.next,'reconcile');assert.ok(result.stages.includes('output'));assert.notEqual(result.next,'eligible-bounded-retry');
+ }
+ const valid=event('output',{text:answer,complete:true,source:'independent-read'});
+ for(const pair of [[valid,merged],[merged,valid]]) {
+  const result=run(fixture({events:[event('addressable',{source:'independent-read'}),...pair,event('terminal',{status:'success'})]}));
+  assert.equal(result.next,'reconcile');assert.ok(result.gaps.includes('multiple input association'));assert.ok(result.stages.includes('output'));
+  assert.deepEqual(result.terminal,['success']);assert.ok(!result.stages.includes('fulfillment'));
+ }
+});
+
+test('identical weaker output never erases complete independently read evidence', () => {
+ const independent=event('output',{text:answer,complete:true,source:'independent-read'});
+ const stream=event('output',{text:answer,complete:true,source:'stream'});
+ for(const pair of [[independent,stream],[stream,independent]]) {
+  const result=run(fixture({events:[event('addressable',{source:'independent-read'}),...pair,event('terminal',{status:'success'})]}));
+  assert.equal(result.checks.state,'passed');assert.ok(result.stages.includes('fulfillment'));assert.equal(result.next,'hold');
+  assert.ok(!result.gaps.includes('independent readback incomplete'));
+ }
+});

@@ -18,56 +18,60 @@ globalThis.WorkerCloudModel = Object.freeze({
   evaluate(input) {
     const gaps=[];
     if(input.target.ownerId !== input.target.observedOwnerId) gaps.push('owner mismatch');
-    if(input.operation==='continue' && input.priorNativeId!==input.target.nativeId) gaps.push('native task replacement');
+    const continuationEligible=input.operation!=='continue' || input.priorNativeId===input.target.nativeId;
     if(!input.access) gaps.push('caller access unproved');
     if(!input.target.exactReferenceMatched) gaps.push('exact target unproved');
     if(!input.consent.verified || input.consent.taskId!==input.target.nativeId || input.consent.purpose!==input.purpose) gaps.push('task-scoped consent unproved');
     const admitted=gaps.length===0;
+    if(!continuationEligible) gaps.push('native task replacement');
     const stages=[], terminal=[];
-    let outcome='unknown', next='hold';
-    let addressable=false, output=null, conflictingOutput=false, checks={state:'unavailable'}, nonSubmission=false, anySubmission=false;
-    for(const event of gaps.length ? [] : input.events) {
+    let outcome='unknown', readNeeded=false, reconcileNeeded=false, submissionBlocked=false;
+    let addressable=false, output=null, conflictingOutput=false, unresolvedAssociation=false, checks={state:'unavailable'}, nonSubmission=false, anySubmission=false;
+    for(const event of admitted ? input.events : []) {
       if(event.nativeId!==input.target.nativeId || event.ownerId!==input.target.ownerId || event.requestId!==input.requestId || event.correlation!==input.correlation) continue;
       if(event.type==='pre-submission-failure' && event.provenNonSubmission===true) nonSubmission=true;
       if(event.type==='submission') {
         anySubmission=true;
         if(event.status!=='unknown') stages.push('submission');
-        outcome=event.status;next=['held','refused'].includes(event.status)?'hold':event.possibleSubmission?'reconcile':'read';
+        outcome=event.status;submissionBlocked ||= ['held','refused'].includes(event.status);readNeeded ||= !['held','refused'].includes(event.status);reconcileNeeded ||= event.possibleSubmission===true;
       }
       if(event.type==='receipt' && event.origin==='receiver') {
         if(input.fabric==='cloud-sse' && event.envelope?.subject!==event) gaps.push('envelope association unproved');
         else stages.push('receipt');
       }
       if(event.type==='addressable' && event.origin==='receiver' && event.source==='independent-read') {
-        addressable=true;
+        addressable=true;stages.push('addressability');
         if(input.target.population==='controlled' && input.operation==='work') stages.push('creation');
       }
       if(event.origin==='receiver' && event.type==='execution') stages.push('execution');
       if(event.origin==='receiver' && event.type==='terminal') terminal.push(event.status);
       if(event.origin==='receiver' && event.type==='output') {
-        if(event.inputIds && (event.inputIds.length!==1 || event.inputIds[0]!==input.requestId)) {gaps.push('multiple input association');continue;}
+        stages.push('output');
+        if(event.inputIds && (event.inputIds.length!==1 || event.inputIds[0]!==input.requestId)) {gaps.push('multiple input association');unresolvedAssociation=true;reconcileNeeded=true;continue;}
         if(output && output.text!==event.text) conflictingOutput=true;
-        output=event;stages.push('output');
+        const rank=e=>(e.complete===true && !e.truncated ? 2 : 0)+(e.source==='independent-read' ? 1 : 0);
+        if(!output || output.text!==event.text || rank(event)>rank(output)) output=event;
       }
     }
     if(output && (output.complete!==true || output.truncated)) {
-      checks={state:'incomplete'};gaps.push('output incomplete');next='read';
+      checks={state:'incomplete'};gaps.push('output incomplete');readNeeded=true;
     } else if(output) {
       try {
         const parsed=JSON.parse(output.text), expected=[...input.checks.numbers].sort((a,b)=>a-b);
         checks={state:JSON.stringify(parsed.ascending)===JSON.stringify(expected) && parsed.sum===input.checks.numbers.reduce((a,b)=>a+b,0) && (input.operation!=='continue' || parsed.marker===input.checks.marker) ? 'passed':'failed'};
       } catch {checks={state:'failed'};}
     }
-    if(conflictingOutput) {checks={state:'incomplete'};gaps.push('conflicting outputs');next='reconcile';}
+    if(conflictingOutput) {checks={state:'incomplete'};gaps.push('conflicting outputs');reconcileNeeded=true;}
     if(terminal.some(status=>status!=='success')) gaps.push('terminal non-success');
-    if(new Set(terminal).size>1) {gaps.push('conflicting terminal observations');next='reconcile';}
+    if(new Set(terminal).size>1) {gaps.push('conflicting terminal observations');reconcileNeeded=true;}
     const independent=output?.source==='independent-read' && (input.target.population==='existing' || addressable);
-    if(output && !independent) {gaps.push('independent readback incomplete');if(next!=='reconcile') next='read';}
+    if(output && !independent) {gaps.push('independent readback incomplete');readNeeded=true;}
     if(output && input.settings.appliedNoEdit!==true) gaps.push('applied no-edit evidence missing');
     if(input.fabric.startsWith('cloud-') && output && !stages.includes('receipt')) gaps.push('receiver input association missing');
-    if(checks.state==='passed' && (!input.fabric.startsWith('cloud-') || stages.includes('receipt')) && input.settings.appliedNoEdit===true && independent && terminal.length>0 && terminal.every(status=>status==='success')) {stages.push('fulfillment');if(input.operation==='continue') stages.push('continuation');if(next!=='reconcile') next='hold';}
-    if(admitted && nonSubmission && !anySubmission && stages.length===0 && terminal.length===0 && input.retry?.attempts<input.retry?.maxAttempts) next='eligible-bounded-retry';
-    return {request: !admitted ? null : {caller:input.caller, ownerId:input.target.ownerId, fabric:input.fabric, operation:input.operation, purpose:input.purpose, nativeId: input.target.nativeId, correlation:input.correlation,
+    if(!unresolvedAssociation && continuationEligible && checks.state==='passed' && (!input.fabric.startsWith('cloud-') || stages.includes('receipt')) && input.settings.appliedNoEdit===true && independent && terminal.length>0 && terminal.every(status=>status==='success')) {stages.push('fulfillment');if(input.operation==='continue') stages.push('continuation');}
+    const retryEligible=admitted && continuationEligible && nonSubmission && !anySubmission && stages.length===0 && terminal.length===0 && input.retry?.attempts<input.retry?.maxAttempts;
+    const next=reconcileNeeded ? 'reconcile' : (!admitted || !continuationEligible || submissionBlocked || stages.includes('fulfillment')) ? 'hold' : readNeeded ? 'read' : retryEligible ? 'eligible-bounded-retry' : 'hold';
+    return {request: !admitted || !continuationEligible ? null : {caller:input.caller, ownerId:input.target.ownerId, fabric:input.fabric, operation:input.operation, purpose:input.purpose, nativeId: input.target.nativeId, correlation:input.correlation,
       requestId:input.requestId, settings:{requested:input.settings.requested}, priorGrants:[...input.consent.priorGrants]},
       stages, terminal, checks, outcome, next, gaps,
       authorityCreated:false, qualified:false, evidenceKind:'synthetic'};
@@ -112,7 +116,7 @@ const limits={
  'cloud-ws':'Existing-task source candidate: constructor headers, delivery readback and reconnect behavior have distinct gaps; SSE guarantees do not transfer.'
 };
 function reset(){const fabric=$('fabric').value;input={caller:$('caller').value,fabric,operation:'work',target:{population:fabric.startsWith('cloud-')?'existing':'controlled',nativeId:'native-a',ownerId:'owner-a',observedOwnerId:'owner-a',exactReferenceMatched:true},consent:{verified:true,taskId:'native-a',purpose:'no-edit arithmetic',priorGrants:['grant-original','grant-transitive']},access:true,requestId:'request-a',correlation:'correlation-a',purpose:'no-edit arithmetic',settings:{requested:'read-only',appliedNoEdit:true},checks:{numbers:[12,-4,7,7]},events:[]};position=0;render();}
-function render(){const result=WorkerCloudModel.evaluate(input);$('candidate-limit').textContent=limits[input.fabric];$('stages').replaceChildren();for(const name of ['creation','submission','receipt','execution','output','fulfillment','continuation']){const el=document.createElement('span');el.className='badge '+(result.stages.includes(name)?'yes':'no');el.textContent=name+': '+(result.stages.includes(name)?'observed in trace':'unproved');$('stages').append(el);}for(const [id,value] of [['outcome',result.outcome],['terminal',result.terminal.join(', ')||'unavailable'],['checks',result.checks.state],['next',result.next],['gaps',result.gaps.length?'Gaps: '+result.gaps.join('; '):'No model gap in this constructed trace'],['request',JSON.stringify(result.request,null,2)],['identity','Caller: '+input.caller+'; population: '+input.target.population+'; native task: '+input.target.nativeId]])$(id).textContent=value;
+function render(){const result=WorkerCloudModel.evaluate(input);$('candidate-limit').textContent=limits[input.fabric];$('stages').replaceChildren();for(const name of ['addressability','creation','submission','receipt','execution','output','fulfillment','continuation']){const el=document.createElement('span');el.className='badge '+(result.stages.includes(name)?'yes':'no');el.textContent=name+': '+(result.stages.includes(name)?'observed in trace':'unproved');$('stages').append(el);}for(const [id,value] of [['outcome',result.outcome],['terminal',result.terminal.join(', ')||'unavailable'],['checks',result.checks.state],['next',result.next],['gaps',result.gaps.length?'Gaps: '+result.gaps.join('; '):'No model gap in this constructed trace'],['request',JSON.stringify(result.request,null,2)],['identity','Caller: '+input.caller+'; population: '+input.target.population+'; native task: '+input.target.nativeId]])$(id).textContent=value;
  const display={input:{...input,events:input.events.map(e=>({...e,envelope:e.envelope?{sameObject:e.envelope.subject===e}:undefined}))},result};$('state').textContent=JSON.stringify(display,null,2);$('description').textContent=scenarios[scenario][1];$('progress').textContent=position+' / '+scenarios[scenario][2].length+' guided observations added';$('step').disabled=position>=scenarios[scenario][2].length;for(const [i,b] of [...$('tabs').children].entries())b.setAttribute('aria-selected',String(i===scenario));}
 for(const [i,item] of scenarios.entries()){const b=document.createElement('button');b.textContent=item[0];b.setAttribute('role','tab');b.onclick=()=>{scenario=i;reset();};$('tabs').append(b);}
 for(const [name,fn] of Object.entries(actions)){const b=document.createElement('button');b.textContent=name;b.onclick=()=>{fn();render();};$('actions').append(b);}
