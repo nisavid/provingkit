@@ -109,6 +109,9 @@
     "tests": 83,
     "wall_seconds": 100.9,
     "result": "passed",
-    "log_sha256": "301d9e7d5f8e3b616ec89e9cf9c6604fa275d03b33ec6948729db2cfec9e5375"
-  }
+    "log_sha256": "301d9e7d5f8e3b616ec89e9cf9c6604fa275d03b33ec6948729db2cfec9e5375",
+    "timing_basis": "Duration reported by the unittest runner for 83 tests; not a measurement of all CLI/process setup and teardown."
+  },
+  "producer_timing_basis": "Each producer_ms and sum_producer_ms value is an internal receipt interval: the clock starts inside prepare and is sampled before writing receipt.json. CLI/process setup and receipt-writing completion are excluded. Complete producer process wall time is unknown.",
+  "complete_producer_wall_seconds": null
 }

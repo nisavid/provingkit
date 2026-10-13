@@ -3981,7 +3981,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
@@ -4107,7 +4107,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
@@ -4233,7 +4233,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
@@ -4359,7 +4359,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
@@ -4485,7 +4485,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
@@ -4611,7 +4611,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
@@ -4737,7 +4737,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
@@ -4863,7 +4863,7 @@
       "outcomes": {
         "matching": 12
       },
-      "supplied_case_feasibility_pass": false,
+      "supplied_case_feasibility_pass": true,
       "attempts": 12,
       "counters": {
         "input_tokens": {
