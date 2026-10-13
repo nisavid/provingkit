@@ -26,9 +26,9 @@ For the existing-task profile, the following assessment is conditional source co
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Exact-ID Cloud CLI | P | P | – | ?/? | ? | P | Authorized existing Cloud ID; queues input |
 | Cloud UI independent reader | – | – | – | P/P | ? | – | Human conversation/diff route; automated access unknown |
-| Browser SSE query | P | P | – | P/P | P | P | Correctly bound CCR session; active client |
+| Browser SSE query | P | P | – | P/P | ? | P | Correctly bound CCR session; active client; partial streamed return, later sender route unknown |
 | Raw SSE GET / REST event-list reader proposal | – | – | – | ?/? | – | – | No standalone reader/server contract established |
-| Legacy browser WebSocket query | P | P | – | P/P | P | P | Bound legacy remote session; no SSE helpers |
+| Legacy browser WebSocket query | P | P | – | P/P | ? | P | Bound legacy remote session; no SSE helpers; partial streamed return, later sender route unknown |
 | Native ListAgents/SendMessage | P | P | – | P/? | P | P | Eligible discovered peers; Cloud discovery/auth/return connection unknown |
 | External MCP entrance / raw inbox socket | ? | ? | – | ?/? | ? | ? | Current MCP peer schema unknown; socket contract incomplete |
 | Desktop tab tools | U | U | – | U/U | U | U | Documented eligible local/SSH/WSL app tabs exclude Cloud |

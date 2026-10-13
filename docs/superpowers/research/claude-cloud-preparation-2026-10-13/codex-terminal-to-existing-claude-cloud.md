@@ -24,8 +24,8 @@ Coverage order is notification / work / creation / inspection / reply / continua
 | Cloud CLI creation form | P / P / P / U / U / U | Separate created cloud lifecycle; not this existing task |
 | Cloud web conversation/progress/diff reader | U / P / I / P / P / P | Research describes UI workflow; this terminal's browser/control access and result correlation unproved |
 | Independent raw REST event-list/SSE GET reader | U / U / I / P / U / U | Candidate reader class; producer body, supported contract, credentials, and binding absent |
-| Browser SSE query | P / P / I / P / P / P | Already bound remote CCR session; active control/input client |
-| Legacy browser WebSocket query | P / P / I / P / P / P | Separately bound remote connection; no SSE envelope/cursor/delivery helper guarantees |
+| Browser SSE query | P / P / I / P / P / P | Already bound remote CCR session; active control/input client; fifth P is partial streamed return, later sender route unknown |
+| Legacy browser WebSocket query | P / P / I / P / P / P | Separately bound remote connection; no SSE envelope/cursor/delivery helper guarantees; fifth P is partial streamed return, later sender route unknown |
 | Browser Query getStatus/exportConversation | U / P / I / P / U / U | Active control requests inside a query; not independent passive retrieval |
 | Bridge create/register/attach | P / P / P / P / P / P | Declared owned worker lifecycle; unsuitable as passive reader of the existing worker |
 | Main SDK query/resume/fork and transcript readers | P / P / P / P / P / P | Owned local/SDK session or supplied storage; no arbitrary existing cloud attach |
