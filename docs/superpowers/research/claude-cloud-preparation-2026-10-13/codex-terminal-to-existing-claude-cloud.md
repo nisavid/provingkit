@@ -23,7 +23,7 @@ Coverage order is notification / work / creation / inspection / reply / continua
 | Exact-ID cloud CLI follow-up | P / P / I / U / U / P | Independently existing supplied cloud ID/URL; submission output only |
 | Cloud CLI creation form | P / P / P / U / U / U | Separate created cloud lifecycle; not this existing task |
 | Cloud web conversation/progress/diff reader | U / P / I / P / P / P | Research describes UI workflow; this terminal's browser/control access and result correlation unproved |
-| Independent raw REST event-list/SSE GET reader | U / U / I / P / U / U | Candidate reader class; producer body, supported contract, credentials, and binding absent |
+| Independent raw REST event-list/SSE GET reader | U / U / I / U / U / U | Candidate reader class; independent producer body, supported contract, credentials, and binding absent. Inspected GET/parsing belongs to the active Browser SSE query below |
 | Browser SSE query | P / P / I / P / P / P | Already bound remote CCR session; active control/input client; fifth P is partial streamed return, later sender route unknown |
 | Legacy browser WebSocket query | P / P / I / P / P / P | Separately bound remote connection; no SSE envelope/cursor/delivery helper guarantees; fifth P is partial streamed return, later sender route unknown |
 | Browser Query getStatus/exportConversation | U / P / I / P / U / U | Active control requests inside a query; not independent passive retrieval |
