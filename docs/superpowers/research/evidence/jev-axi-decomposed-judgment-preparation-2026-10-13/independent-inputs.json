@@ -1,0 +1,21 @@
+{
+  "source_revision": "e76d8545154c336bfff16fd76e619f8dc7c5b54b",
+  "records": [
+    {
+      "artifact": "question-design.md",
+      "bytes": 16897,
+      "sha256": "bb3558c1a8fa9818c7866455cb0a99f4ed0fa28c26561db12a16f83b04a75a01",
+      "role": "questions preparation",
+      "result": "DONE_WITH_CONCERNS",
+      "effective_model": "not independently attested"
+    },
+    {
+      "artifact": "workload-design.md",
+      "bytes": 23752,
+      "sha256": "a127e4ecfe54a365324e1788056b248a617c2c7fb7697188ded075cabc7d6701",
+      "role": "workload preparation",
+      "result": "DONE_WITH_CONCERNS",
+      "effective_model": "not independently attested"
+    }
+  ]
+}
