@@ -1,0 +1,114 @@
+{
+  "kind": "preparation-accounting",
+  "producer_runs": [
+    {
+      "case": "c01",
+      "producer_ms": 10.204111,
+      "git_blob_bytes_read": 458,
+      "receipt_sha256": "1b7ed9413bb0d8915925f77ac69c70ec142adcbfdf67d73eb8ec475a2ce56d95"
+    },
+    {
+      "case": "c02",
+      "producer_ms": 9.377397,
+      "git_blob_bytes_read": 443,
+      "receipt_sha256": "7870530dffc3cfc095cd2d65f09c01756dd5751fd9cbcd33c164ff0a96fb917d"
+    },
+    {
+      "case": "c03",
+      "producer_ms": 9.887191,
+      "git_blob_bytes_read": 459,
+      "receipt_sha256": "f4618514c3c3f30c26e2c05b9c7d16943ef10888644ea47415d6255cf820cbde"
+    },
+    {
+      "case": "c04",
+      "producer_ms": 12.15205,
+      "git_blob_bytes_read": 639,
+      "receipt_sha256": "b2f42f9626e77375b0bf7f66e7bfe3ed9bb0e36ac8c704de9f0116d6265f6323"
+    },
+    {
+      "case": "c05",
+      "producer_ms": 12.062432,
+      "git_blob_bytes_read": 647,
+      "receipt_sha256": "8532fd6f170c03eb05dce7ff91783e00bc76b9be38a810169c10fbf3def79cac"
+    },
+    {
+      "case": "c06",
+      "producer_ms": 11.859759,
+      "git_blob_bytes_read": 657,
+      "receipt_sha256": "33f6363c71a9845d4001f3ce3d64b40a72b37705d9549e03036df470cbb1904b"
+    },
+    {
+      "case": "c07",
+      "producer_ms": 10.645947,
+      "git_blob_bytes_read": 557,
+      "receipt_sha256": "55af36fb927ba5426c031b6bdd76991931fa0196a4b33f2274d36128b96b5a1a"
+    },
+    {
+      "case": "c08",
+      "producer_ms": 9.069526,
+      "git_blob_bytes_read": 560,
+      "receipt_sha256": "0d3db6a2ff83b3aea88b801c2701d60239d6bd7ae819f181bdfe74ea246fb893"
+    },
+    {
+      "case": "c09",
+      "producer_ms": 10.012436,
+      "git_blob_bytes_read": 552,
+      "receipt_sha256": "3818c2df9af0ec52efe439cb24cc4e1aad4bff23f9a5736604289e486623c2d8"
+    },
+    {
+      "case": "c10",
+      "producer_ms": 12.576536,
+      "git_blob_bytes_read": 913,
+      "receipt_sha256": "0334cdde16f051bbb0d4bc5f5ad6b035ae5bab764a82ef514ac474676a1aac7e"
+    },
+    {
+      "case": "c11",
+      "producer_ms": 13.639834,
+      "git_blob_bytes_read": 898,
+      "receipt_sha256": "f184c1962df7565276e634e8057ba6b2cbb8ab576fc97ef567df7708c9cd5eca"
+    },
+    {
+      "case": "c12",
+      "producer_ms": 12.590346,
+      "git_blob_bytes_read": 985,
+      "receipt_sha256": "79bb0cadac38ebbcbdd892e8ece88533fa20e9d3e989f976fbefb6ef10fa5445"
+    },
+    {
+      "case": "c13",
+      "producer_ms": 5.376372,
+      "git_blob_bytes_read": 101,
+      "receipt_sha256": "c751fa065c746fa80038391c5fbbf020f9c6af1daa4fd638291510ec5ef1ae0a"
+    }
+  ],
+  "sum_producer_ms": 139.453937,
+  "sum_git_blob_bytes_read": 7869,
+  "model_preparation": {
+    "completed_native_design_passes": 2,
+    "completed_native_label_passes": 2,
+    "review_critics_running": 0,
+    "native_usage": null,
+    "unknown_reason": "Native collaboration control surface does not return per-dispatch token or billing counters.",
+    "completed_native_critic_passes": 6,
+    "completed_native_adjudications": 3,
+    "adjudications_running": 0
+  },
+  "operator_questions_this_preparation": 0,
+  "experimental_provider_requests": 0,
+  "unknowns": [
+    "Coordinator model tokens and cost for this increment",
+    "Operator active effort",
+    "Complete setup and review active time",
+    "Attributable preparation billing",
+    "Recurring workflow cost or benefit"
+  ],
+  "notes": [
+    "Producer byte totals count repeated reads; they are not unique source bytes or model tokens.",
+    "Research preparation and equipment work cannot be omitted from total effort or called recurring native savings."
+  ],
+  "committed_source_tests": {
+    "tests": 83,
+    "wall_seconds": 100.9,
+    "result": "passed",
+    "log_sha256": "301d9e7d5f8e3b616ec89e9cf9c6604fa275d03b33ec6948729db2cfec9e5375"
+  }
+}
