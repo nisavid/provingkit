@@ -1,0 +1,55 @@
+{
+  "observed_date": "2026-10-15",
+  "sources": [
+    {
+      "url": "https://developers.openai.com/api/docs/pricing.md",
+      "sha256": "e0767b5009dcc929a2f9eeb9ce6096a57ff12e5d8c011de9d69ff145aef2fc28",
+      "bytes": 23231
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/decisions.md",
+      "sha256": "518b4297877cb2aa6ddf6b36a1b201d3dd6e657b6171e2c2b2ae01b1d3d4aa77",
+      "bytes": 29581
+    },
+    {
+      "url": "https://docs.typesafe.ai/api.md",
+      "sha256": "37f0f3a41917e17592876f67848bd63329ba576081a89704f28210f0efc3c0f6",
+      "bytes": 12905
+    },
+    {
+      "url": "https://docs.typesafe.ai/models.md",
+      "sha256": "02b7682a7176d2d6649a2fa4588df45cbbaa3c3460f721828d632a7577e606df",
+      "bytes": 7971
+    }
+  ],
+  "rates_usd": {
+    "jev": {
+      "input_per_million": 0.042,
+      "output_per_million": 0
+    },
+    "decisions": {
+      "input_per_million": 0.1,
+      "output_per_million": 0,
+      "cache_read_per_million": 0,
+      "cache_write_per_million": 0
+    },
+    "luna_responses": {
+      "input_per_million": 0.1,
+      "cache_read_per_million": 0.01,
+      "cache_write_per_million": 0.125,
+      "output_per_million": 0.5
+    },
+    "sol_responses": {
+      "input_per_million": 2,
+      "cache_read_per_million": 0.1,
+      "cache_write_per_million": 2.5,
+      "output_per_million": 10
+    }
+  },
+  "rate_scope": "OpenAI Standard short context and default region; observed non-default tier or region requires separate accounting, never an invented charge.",
+  "decisions": "Documented ordinary API, gpt-6-luna, ordered one or four Choice questions in one request; no documented Pro route established. Decisions documents a maximum of 200 questions.",
+  "qualification": "Documentary route and rate check only. No new credential, inference-access, or model probe was run for this preparation.",
+  "actual_billing": "Unknown until independently available; normalized value is not an invoice.",
+  "jev": "Fixed requested selector jev-1.13.0; direct one or decomposed four named Choice questions in one request. Input usage includes questions and full state. A newer jev-1.14.0 preview is documented; this comparison preserves the earlier selector rather than silently switching models.",
+  "grouping": "All six conditions use one request per treatment. Jev documents independent questions over shared state; Responses returns one joint structured object. This API distinction remains part of the treatment comparison and does not justify multiplying probabilities or request usage."
+}

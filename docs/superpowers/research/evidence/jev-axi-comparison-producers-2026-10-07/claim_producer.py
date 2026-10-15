@@ -122,7 +122,9 @@ def prepare(repository, case_spec, output):
             draft_lines = text.splitlines(keepends=True)
             a, b, n = entry['start_line'], entry['end_line'], entry['assertion_line']
             packet['context'] = ''.join(draft_lines[a-1:b])
-            if status == 'ready' and (b > len(draft_lines) or case['assertion'] not in draft_lines[n-1]):
+            if status == 'ready' and (b > len(draft_lines) or
+                                      case['assertion'] not in draft_lines[n-1] or
+                                      packet['context'].count(case['assertion']) != 1):
                 record['status'] = 'malformed_context'
                 packet['status'] = 'non_ready'
         else:
@@ -143,6 +145,11 @@ def prepare(repository, case_spec, output):
         lines += [f'{n:04d} | {line}' for n, line in enumerate(text.splitlines(), 1)]
     write('packet.json', (json.dumps(packet, ensure_ascii=False, indent=2) + '\n').encode())
     write('packet.md', ('\n'.join(lines) + '\n').encode())
+    if packet['status'] == 'ready':
+        inference = {'assertion': case['assertion'], 'draft_context': packet['context'],
+                     'sources': [{'id': f'source-{index}', 'text': text}
+                                 for index, text in enumerate(texts, 1)]}
+        write('inference.json', (json.dumps(inference, ensure_ascii=False, indent=2) + '\n').encode())
     receipt = {'producer_sha256': sha(Path(__file__).read_bytes()), 'case_spec_sha256': sha(raw),
                'git_blob_bytes_read': blob_bytes, 'case_spec_bytes': len(raw), 'artifacts': dict(artifacts),
                'duration_monotonic_ms': (time.monotonic_ns()-started)/1_000_000}

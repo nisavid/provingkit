@@ -1,0 +1,364 @@
+{
+  "input_verification": {
+    "pinned_files": 29,
+    "sha256_matches": 29,
+    "missing_or_changed_inputs": [],
+    "independent_report_quote_errors": []
+  },
+  "cases": [
+    {
+      "packet": "p01.json",
+      "packet_sha256": "d65f82e590a5b15394c23401c7faae6d9d2acdaf6c67a6e84c8106a0a9fc0a07",
+      "admissible": true,
+      "relation": "unresolved",
+      "components": {
+        "interpretability": "blocked",
+        "relevant_conflict": "no",
+        "incompatible_fact": "unanswerable",
+        "complete_warrant": "unanswerable"
+      },
+      "rationale": "The assertion does not identify the screening. The corrected 09:00 account supports image appearance, the retained 20:00 account contradicts it, and the 14:00 account supplies no image observation. These are distinct events, not conflicting accounts of one event.",
+      "uncertainties": [
+        "The screening referent determines incompatible_fact and complete_warrant. Neither component can be fixed without selecting a referent."
+      ]
+    },
+    {
+      "packet": "p02.json",
+      "packet_sha256": "352c2cdcc9eb4ad79aa5dd57fb0c7a00da88ce08ba32f4c2c1eb770cbd1c13b9",
+      "admissible": true,
+      "relation": "unresolved",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "yes",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "Mira and Niko supply independent observations of the same border at the same unveiling, reporting blue and amber respectively. Niko explicitly says not blue. Neither account is corrected or reconciled; the later writing date does not resolve the conflict.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p03.json",
+      "packet_sha256": "ebdfbaf028f368aa605d3503e4ddad24d85e9ffe5c4e9e57172fffb07d84fd16",
+      "admissible": true,
+      "relation": "unsupported_extension",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "no"
+      },
+      "rationale": "Admissions and a running-order entry do not establish image appearance during the matinee. The blank observation field and amendment's lack of an added observation leave the outcome unestablished without establishing darkness.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p04.json",
+      "packet_sha256": "19c0a39051d9c16df65f4a1a7c61745362ec1ebe72597fe422aa37948664cc94",
+      "admissible": true,
+      "relation": "contradicted",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "Both accounts describe lifting and carrying away the cover during the opening, which is incompatible with its remaining throughout. Their border-color disagreement does not concern this assertion.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p05.json",
+      "packet_sha256": "d4eb0647d472aabe7feaa4d389123a0b177c1b66d9589cc9704bb6f800b1579d",
+      "admissible": true,
+      "relation": "supported",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "yes"
+      },
+      "rationale": "The observer explicitly retracts the 09:00 darkness statement and reports checking a photograph identified by the focusing slate. The supplied correction resolves the earlier contrary entry and warrants image appearance during the specified run.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p06.json",
+      "packet_sha256": "5b595b7efc0bcd2e9afa1d0c45091ca51f2dd33476f1c8e303acf5c069e96f63",
+      "admissible": true,
+      "relation": "contradicted",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "The beginner-session note explicitly reports omitted final consonants and incorrect pronunciation in both rooms, including the loft. Correct pronunciation by returning members concerns a separate group and session.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p07.json",
+      "packet_sha256": "aa0c8c78a9242bf55aadb4ba8ee85414a30e784af2d4d034cc95fc190c6c23fc",
+      "admissible": true,
+      "relation": "contradicted",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "The ledger records observation of darkness throughout the closing show's title reel. The amendment expressly preserves that entry; its correction applies only to the 09:00 run.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p08.json",
+      "packet_sha256": "19d4ed89ed5dc52b708a62ceb3663afa1949d2a23c7671af13a280a3a93e4395",
+      "admissible": true,
+      "relation": "contradicted",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "The daylight notebook identifies Tavi's glaze as ochre, incompatible with cobalt blue at that inspection. The disagreement about Lumo's rim concerns another object and property.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p09.json",
+      "packet_sha256": "8f16614bad9dd54ee960de7ef9add0abf7658412b10a2fe980749c0af4da4b0b",
+      "admissible": true,
+      "relation": "unsupported_extension",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "no"
+      },
+      "rationale": "Bobbin use and a subjective impression about getting started do not establish reduced scarf-weaving duration. The measured improvement concerns trolley deliveries. The explicit absence of weaving measurements does not establish that weaving duration failed to decrease.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p10.json",
+      "packet_sha256": "04975f45f086f1c7db614f325a8d76f52c6e439bb8295244a4d5fbeb948c2a71",
+      "admissible": true,
+      "relation": "unsupported_extension",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "no"
+      },
+      "rationale": "The bulletin repeats the assertion but explicitly derives its Kesta wording only from color and gloss observations. Under the controlling dependency rule, that repetition supplies no washing warrant. No source states an incompatible washing property or outcome.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p11.json",
+      "packet_sha256": "a60c25dc3b59748c120d48eb1f98170c51166dcc5b534c582a6366130bc5ff1a",
+      "admissible": true,
+      "relation": "unsupported_extension",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "no"
+      },
+      "rationale": "The sources establish a courtyard program and audience arrival, but no audience rendition or pronunciation result. The correct and incorrect workshop results concern other identified groups in other sessions.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p12.json",
+      "packet_sha256": "021b07dd184b479983af1afe8d73eb6c359ff5966833a0cba9bdc172c869380f",
+      "admissible": true,
+      "relation": "unresolved",
+      "components": {
+        "interpretability": "blocked",
+        "relevant_conflict": "no",
+        "incompatible_fact": "unanswerable",
+        "complete_warrant": "unanswerable"
+      },
+      "rationale": "Both trees are called new pear. The identified cistern tree has blossoms and the identified shed tree has no flowers. The missing tree referent changes the relation; the survey itself contains no conflicting account of either tree.",
+      "uncertainties": [
+        "Identifying the tree is necessary to determine incompatible_fact and complete_warrant."
+      ]
+    },
+    {
+      "packet": "p13.json",
+      "packet_sha256": "34f1556500fea65d10a47ab6883fc319c2b0d931ba1f21efce05eeb167a03e87",
+      "admissible": true,
+      "relation": "supported",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "yes"
+      },
+      "rationale": "The dated weaving-room log directly states that the weavers installed and used prewound bobbins for the scarf-weaving session. The assertion makes no duration claim.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p14.json",
+      "packet_sha256": "12f1d5688dc60af0199b3210b731a1622a45d11141c02183eef5798a24d6e978",
+      "admissible": true,
+      "relation": "contradicted",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "The survey records no flowers on the shed tree at the specified survey. Blossoms on the separate cistern tree do not create disagreement about the identified tree.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p15.json",
+      "packet_sha256": "d001a4f34d4d16ca5a34ce8e1bf1ec589902f23481facb3cd0e7238dbab8249c",
+      "admissible": true,
+      "relation": "supported",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "yes"
+      },
+      "rationale": "Two supplied accounts describe their authors personally witnessing the specified unveiling. Their incompatible color reports do not block the narrower assertion that two eyewitness accounts describe that event.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p16.json",
+      "packet_sha256": "543afb287740c7ad4441d1c298fbaa3583bc87806ec377f76ed714a2a5f301f4",
+      "admissible": true,
+      "relation": "unsupported_extension",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "no"
+      },
+      "rationale": "Neither eyewitness account establishes construction material or recycled provenance. The color disagreement neither demonstrates an incompatible material nor prevents recognizing this absence of warrant.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p17.json",
+      "packet_sha256": "a900768eeb65065921ba3d75c531bd0249a835839e5da505582e04147934525a",
+      "admissible": true,
+      "relation": "supported",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "yes"
+      },
+      "rationale": "The survey directly records open blossoms on the identified cistern tree on the stated date. The shed tree's condition concerns another referent.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p18.json",
+      "packet_sha256": "028a0fad0260798547fa702fcde7a9dff6d7b6e01516e0182045aa4fe1633e25",
+      "admissible": true,
+      "relation": "unresolved",
+      "components": {
+        "interpretability": "blocked",
+        "relevant_conflict": "no",
+        "incompatible_fact": "unanswerable",
+        "complete_warrant": "unanswerable"
+      },
+      "rationale": "Both groups used the loft. Returning members pronounced the verse correctly, while first-time singers pronounced it incorrectly in a separate session. The draft does not identify its group, so choosing a referent changes the relation.",
+      "uncertainties": [
+        "The group referent is necessary to determine incompatible_fact and complete_warrant."
+      ]
+    },
+    {
+      "packet": "p19.json",
+      "packet_sha256": "d565cded79f4d5a7647d46cceb6fb570ecad3be573461d782561e87df97d70a1",
+      "admissible": true,
+      "relation": "supported",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "yes"
+      },
+      "rationale": "The notebook directly states Kesta's cobalt-blue color at the specified daylight inspection. The derivative bulletin is unnecessary to that warrant, and the independent Lumo-rim disagreement concerns a different fact.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p20.json",
+      "packet_sha256": "ae1a8f704d26a078bbaf70b1d4802550951990e4beafed59ad087b5b3c4e4e24",
+      "admissible": true,
+      "relation": "unsupported_extension",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "no"
+      },
+      "rationale": "April planting and blossom observations do not establish ripe pears on the specified September date. The sources supply no incompatible September condition.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p21.json",
+      "packet_sha256": "31c95aa55a9c9948505ee3e3c9e91c6290a0d4786ddc678cad3a1c574562fb4c",
+      "admissible": true,
+      "relation": "unresolved",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "yes",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "Iona and Oren report independent examinations of the same rim during the specified inspection, giving incompatible crack conditions. The bulletin's derivative qualification concerns its Kesta wording, not Oren's personal Lumo observation. No supplied resolution withdraws either account.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p22.json",
+      "packet_sha256": "8abe1f09ea20336f1cddfb5fbf93f80ee1ac9281c0411af776ec616cee9e09f9",
+      "admissible": true,
+      "relation": "contradicted",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "yes",
+        "complete_warrant": "no"
+      },
+      "rationale": "The log explicitly states that nobody timed scarf weaving or recorded scarf-completion durations during the session. This contradicts the measurement assertion. Delivery measurements concern a separate task.",
+      "uncertainties": []
+    },
+    {
+      "packet": "p23.json",
+      "packet_sha256": "f1eb9e2db12ac71567daf5c7bb28f1e8ec835d74023dc771253051717c1166b4",
+      "admissible": true,
+      "relation": "unresolved",
+      "components": {
+        "interpretability": "blocked",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "unanswerable"
+      },
+      "rationale": "The change and task are unidentified. The route-change reading has paired delivery timings supporting shorter duration; the bobbin-and-weaving reading lacks duration warrant. These are distinct tasks. Neither supplied reading has an explicit incompatible duration outcome.",
+      "uncertainties": [
+        "Complete warrant depends on the unidentified change and task.",
+        "The blocked interpretation does not prevent incompatible_fact from being no across both supplied readings."
+      ]
+    },
+    {
+      "packet": "p24.json",
+      "packet_sha256": "dda542d7cd2a75f43a147a249218eb5bda1bcc41b10cf8e85f301ce5de956ab2",
+      "admissible": true,
+      "relation": "supported",
+      "components": {
+        "interpretability": "clear",
+        "relevant_conflict": "no",
+        "incompatible_fact": "no",
+        "complete_warrant": "yes"
+      },
+      "rationale": "Both rooms called small room have correct renditions by the specified returning members. The room ambiguity leaves the evidence relation unchanged. Incorrect pronunciation by first-time singers concerns a separate group and session.",
+      "uncertainties": [
+        "The room is not uniquely identified, but either supplied room warrants the assertion."
+      ]
+    }
+  ],
+  "source_or_definition_defects": [],
+  "adjudication": {
+    "final_relation_corrections": [],
+    "component_corrections": [],
+    "conclusion": "All 24 final relations in both independent reports are defensible under the controlling definitions. The material missing referents remain unresolved; they do not make those packets inadmissible. No source rewriting or definition correction is required."
+  },
+  "status": "DONE"
+}

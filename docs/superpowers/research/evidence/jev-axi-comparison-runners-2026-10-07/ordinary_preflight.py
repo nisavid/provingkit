@@ -9,6 +9,7 @@ PROFILES = [('gpt-6-luna', 'low'), ('gpt-6-luna', 'medium'),
             ('gpt-6-luna', 'high'), ('gpt-6.1-sol', 'low')]
 CLAIMS = ['c01', 'c04', 'c03', 'c06', 'c05', 'c07', 'c02', 'c08', 'c09', 'c10', 'c11']
 PAIRED_CLAIMS = [f'c{n:02d}' for n in range(1, 14)]
+DECOMPOSED_CLAIMS = [f'c{n:02d}' for n in range(1, 26)]
 CEILINGS = {
     'claim': dict(request_seconds=120, run_seconds=9000, input_bytes=65536,
                   request_bytes=131072, response_bytes=1048576, requests_per_cell=1),
@@ -50,8 +51,9 @@ def load_json(path, expected):
 def matrix(spec):
     kind = spec.get('kind')
     paired = spec.get('version') == 2 and kind == 'claim'
+    decomposed = spec.get('version') == 3 and kind == 'claim'
     if (type(spec.get('version')) is not int or kind not in CEILINGS
-            or (spec['version'] != 1 and not paired)):
+            or (spec['version'] != 1 and not (paired or decomposed))):
         raise ValueError('unsupported ordinary protocol')
     if paired:
         treatments = spec.get('treatments')
@@ -61,9 +63,33 @@ def matrix(spec):
                        for t in treatments)
                 or [t['id'] for t in treatments] != ['current', 'revised']):
             raise ValueError('paired claim treatments differ')
+    if decomposed:
+        treatments = spec.get('treatments')
+        if (not isinstance(treatments, list) or len(treatments) != 2 or
+                any(not isinstance(t, dict) or set(t) != {'id', 'questions'} for t in treatments) or
+                [t['id'] for t in treatments] != ['direct', 'decomposed']):
+            raise ValueError('decomposed treatments differ')
+        names = [['claim_relation'], ['interpretability', 'relevant_conflict',
+                                     'incompatible_fact', 'complete_warrant']]
+        for treatment, expected_names in zip(treatments, names):
+            questions = treatment['questions']
+            if (not isinstance(questions, list) or len(questions) != len(expected_names) or
+                    any(not isinstance(q, dict) or set(q) != {'id', 'instructions', 'options'} or
+                        not isinstance(q['instructions'], str) or not q['instructions'].strip() or
+                        not isinstance(q['options'], dict) for q in questions) or
+                    [q['id'] for q in questions] != expected_names):
+                raise ValueError('decomposed questions differ')
+            for q in questions:
+                options = (['supported', 'contradicted', 'unsupported_extension', 'unresolved']
+                           if q['id'] == 'claim_relation' else
+                           ['clear', 'blocked', 'unanswerable'] if q['id'] == 'interpretability'
+                           else ['yes', 'no', 'unanswerable'])
+                if list(q['options']) != options or any(
+                        not isinstance(v, str) or not v.strip() for v in q['options'].values()):
+                    raise ValueError('decomposed options differ')
     cases, conditions = spec['cases'], spec['conditions']
-    expected = (PAIRED_CLAIMS if paired else CLAIMS) if kind == 'claim' else ['c01', 'c04']
-    unavailable = 'c13' if paired else 'c11'
+    expected = (DECOMPOSED_CLAIMS if decomposed else PAIRED_CLAIMS if paired else CLAIMS) if kind == 'claim' else ['c01', 'c04']
+    unavailable = 'c25' if decomposed else 'c13' if paired else 'c11'
     if [case['id'] for case in cases] != expected:
         raise ValueError(kind + ' case matrix differs')
     if any(case['status'] != ('unavailable' if case['id'] == unavailable else 'ready')
@@ -119,8 +145,8 @@ def matrix(spec):
                 ordered += pair if (int(case['id'][1:]) - 1 + profile) % 2 == 0 else pair[::-1]
         for item in ordered:
             slot = dict(case=case['id'], condition=item['id'])
-            if paired:
-                pair = ['current', 'revised']
+            if paired or decomposed:
+                pair = ['direct', 'decomposed'] if decomposed else ['current', 'revised']
                 if (position + conditions.index(item)) % 2:
                     pair.reverse()
                 schedule.extend(dict(slot, treatment=treatment) for treatment in pair)
@@ -156,8 +182,8 @@ def admit(spec_path, spec_sha256, bindings_path, bindings_sha256):
     for item in dependencies:
         checked(item)
     if spec['kind'] == 'claim':
-        expected = PAIRED_CLAIMS if spec['version'] == 2 else CLAIMS
-        unavailable = 'c13' if spec['version'] == 2 else 'c11'
+        expected = {1: CLAIMS, 2: PAIRED_CLAIMS, 3: DECOMPOSED_CLAIMS}[spec['version']]
+        unavailable = {1: 'c11', 2: 'c13', 3: 'c25'}[spec['version']]
         corpus = {item['id']: item for item in dependencies if item['role'] == 'corpus'}
         manifest = json.loads(checked(corpus['manifest']))
         records = {item['case']: item for item in manifest['preparations']}

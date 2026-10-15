@@ -1,0 +1,17 @@
+# Grade direct and decomposed judgments
+
+After the fixed request phase, join every scheduled slot by index, case, condition, and treatment to the frozen key. Never send this directory, expected components, rationale, other answers, or grading feedback to inference. The final relation is the critical outcome; individual component agreement explains a result but cannot compensate for an incorrect combined relation.
+
+Record `matching`, `nonmatching`, `judgment_abstained`, `inconsistent_answers`, `invalid_output`, `refused`, `failed`, or `unattempted` for every slot. Preserve operational status, model identity, usage validity, and semantic status separately. A valid-looking answer from an unsuccessful attempt cannot count as a correct judgment. Correct `unresolved` is a substantive match; an unanswerable component or absent final relation is not. Keep c25 outside all semantic denominators.
+
+There are 288 slots: 24 cases for each of six model conditions and two treatments. Each condition/treatment must supply 24 valid matching relations to pass the initial categorical feasibility bar. All six supported cases must remain supported. No average, confidence score, reduced intervention count, or success on a different case compensates for a failure. A proposed trade-off returns to the operator.
+
+Show all case outcomes before aggregates. For each model condition, show direct-to-decomposed transitions: wrong to right, right to wrong, unchanged right, unchanged wrong, and incomplete pairs. Report six cases per final category, source-family clustering, and the four material-reference and two independent-conflict cases separately. Count component disagreements and cross-question tensions diagnostically, including later answers bypassed by an earlier semantic gate. An affirmative incompatible fact in an unresolved conflict is not itself an inconsistent final combination; the selected precedence governs.
+
+Retain available confidence and distributions without a threshold, probability product, or argmax repair. Responses supplies no equivalent native option distribution. One answer per case is not calibration. Label disputes require a documented independent adjudication, a newly frozen key, and rescoring every retained answer; never tune the key to a preferred model result.
+
+If decomposition fails any critical case, it does not qualify on this set. If it passes where direct Jev fails, compare its measured request and combination costs with the ordinary-model conditions before proposing a workflow trial. If both pass, these cases demonstrate no quality advantage for the extra questions. If neither passes, retain the errors and consider another boundary or omission. These are decision inputs, not an automatic next experiment or integration assignment.
+
+Omission issues no judgment and incurs no classifier request; it is not labeled as perfect accuracy. Deterministic organization supplies and verifies evidence but makes no semantic claim. Neither reference establishes what ordinary authoring would do. A later workflow comparison must measure actual corrections, review work removed, or operator benefit, with no additional false interventions or loss of task quality.
+
+Account for grading, independent result review, corrections, and handback under the original invocation clock. The result reviewer checks every grade, complete slot and usage joins, and the distinction between supplied-case feasibility and a useful System One integration.

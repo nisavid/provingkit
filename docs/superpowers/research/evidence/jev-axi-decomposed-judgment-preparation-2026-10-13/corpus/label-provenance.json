@@ -1,0 +1,168 @@
+{
+  "construction": "Six fresh synthetic source families; four assertions each; neutral case order frozen before independent labeling. Constructor target labels were withheld.",
+  "authoritative_semantics": "selected-questions.md",
+  "labeling": {
+    "workers": 2,
+    "independent_contexts": true,
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "high",
+    "effective_model": "not independently attested",
+    "input": "Same neutral packets and selected definitions; no constructor target, prior answer, evaluator key, or provider experiment results.",
+    "agreed_relations": 24,
+    "agreed_component_sets": 24,
+    "evidence_quotes_found": true
+  },
+  "adjudication": {
+    "independent_context": true,
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "high",
+    "effective_model": "not independently attested",
+    "scope": "Both label reports, complete neutral packets, and selected definitions; confirm defensibility rather than treat agreement as proof.",
+    "admissible_cases": 24,
+    "corrected_labels": 0,
+    "source_or_definition_defects": []
+  },
+  "assurance": "Same-leader native observations of separate workers and returned original reports; read-only instructions were cooperative, not product-enforced. No authenticated terminal receipt or model-performance claim.",
+  "artifacts": [
+    {
+      "path": "corpus/labeler-packets/p01.json",
+      "sha256": "d65f82e590a5b15394c23401c7faae6d9d2acdaf6c67a6e84c8106a0a9fc0a07",
+      "bytes": 1536
+    },
+    {
+      "path": "corpus/labeler-packets/p02.json",
+      "sha256": "352c2cdcc9eb4ad79aa5dd57fb0c7a00da88ce08ba32f4c2c1eb770cbd1c13b9",
+      "bytes": 1048
+    },
+    {
+      "path": "corpus/labeler-packets/p03.json",
+      "sha256": "ebdfbaf028f368aa605d3503e4ddad24d85e9ffe5c4e9e57172fffb07d84fd16",
+      "bytes": 1568
+    },
+    {
+      "path": "corpus/labeler-packets/p04.json",
+      "sha256": "19c0a39051d9c16df65f4a1a7c61745362ec1ebe72597fe422aa37948664cc94",
+      "bytes": 1045
+    },
+    {
+      "path": "corpus/labeler-packets/p05.json",
+      "sha256": "d4eb0647d472aabe7feaa4d389123a0b177c1b66d9589cc9704bb6f800b1579d",
+      "bytes": 1568
+    },
+    {
+      "path": "corpus/labeler-packets/p06.json",
+      "sha256": "5b595b7efc0bcd2e9afa1d0c45091ca51f2dd33476f1c8e303acf5c069e96f63",
+      "bytes": 1299
+    },
+    {
+      "path": "corpus/labeler-packets/p07.json",
+      "sha256": "aa0c8c78a9242bf55aadb4ba8ee85414a30e784af2d4d034cc95fc190c6c23fc",
+      "bytes": 1585
+    },
+    {
+      "path": "corpus/labeler-packets/p08.json",
+      "sha256": "19d4ed89ed5dc52b708a62ceb3663afa1949d2a23c7671af13a280a3a93e4395",
+      "bytes": 1269
+    },
+    {
+      "path": "corpus/labeler-packets/p09.json",
+      "sha256": "8f16614bad9dd54ee960de7ef9add0abf7658412b10a2fe980749c0af4da4b0b",
+      "bytes": 1218
+    },
+    {
+      "path": "corpus/labeler-packets/p10.json",
+      "sha256": "04975f45f086f1c7db614f325a8d76f52c6e439bb8295244a4d5fbeb948c2a71",
+      "bytes": 1184
+    },
+    {
+      "path": "corpus/labeler-packets/p11.json",
+      "sha256": "a60c25dc3b59748c120d48eb1f98170c51166dcc5b534c582a6366130bc5ff1a",
+      "bytes": 1300
+    },
+    {
+      "path": "corpus/labeler-packets/p12.json",
+      "sha256": "021b07dd184b479983af1afe8d73eb6c359ff5966833a0cba9bdc172c869380f",
+      "bytes": 871
+    },
+    {
+      "path": "corpus/labeler-packets/p13.json",
+      "sha256": "34f1556500fea65d10a47ab6883fc319c2b0d931ba1f21efce05eeb167a03e87",
+      "bytes": 1160
+    },
+    {
+      "path": "corpus/labeler-packets/p14.json",
+      "sha256": "12f1d5688dc60af0199b3210b731a1622a45d11141c02183eef5798a24d6e978",
+      "bytes": 944
+    },
+    {
+      "path": "corpus/labeler-packets/p15.json",
+      "sha256": "d001a4f34d4d16ca5a34ce8e1bf1ec589902f23481facb3cd0e7238dbab8249c",
+      "bytes": 1067
+    },
+    {
+      "path": "corpus/labeler-packets/p16.json",
+      "sha256": "543afb287740c7ad4441d1c298fbaa3583bc87806ec377f76ed714a2a5f301f4",
+      "bytes": 995
+    },
+    {
+      "path": "corpus/labeler-packets/p17.json",
+      "sha256": "a900768eeb65065921ba3d75c531bd0249a835839e5da505582e04147934525a",
+      "bytes": 940
+    },
+    {
+      "path": "corpus/labeler-packets/p18.json",
+      "sha256": "028a0fad0260798547fa702fcde7a9dff6d7b6e01516e0182045aa4fe1633e25",
+      "bytes": 1239
+    },
+    {
+      "path": "corpus/labeler-packets/p19.json",
+      "sha256": "d565cded79f4d5a7647d46cceb6fb570ecad3be573461d782561e87df97d70a1",
+      "bytes": 1271
+    },
+    {
+      "path": "corpus/labeler-packets/p20.json",
+      "sha256": "ae1a8f704d26a078bbaf70b1d4802550951990e4beafed59ad087b5b3c4e4e24",
+      "bytes": 933
+    },
+    {
+      "path": "corpus/labeler-packets/p21.json",
+      "sha256": "31c95aa55a9c9948505ee3e3c9e91c6290a0d4786ddc678cad3a1c574562fb4c",
+      "bytes": 1300
+    },
+    {
+      "path": "corpus/labeler-packets/p22.json",
+      "sha256": "8abe1f09ea20336f1cddfb5fbf93f80ee1ac9281c0411af776ec616cee9e09f9",
+      "bytes": 1177
+    },
+    {
+      "path": "corpus/labeler-packets/p23.json",
+      "sha256": "f1eb9e2db12ac71567daf5c7bb28f1e8ec835d74023dc771253051717c1166b4",
+      "bytes": 1120
+    },
+    {
+      "path": "corpus/labeler-packets/p24.json",
+      "sha256": "dda542d7cd2a75f43a147a249218eb5bda1bcc41b10cf8e85f301ce5de956ab2",
+      "bytes": 1296
+    },
+    {
+      "path": "corpus/evaluator/labels_a.md",
+      "sha256": "8216af5da1c96109ffc1b57f2fcd9907a2e672c0b0217a681f932314bb8dcc13",
+      "bytes": 23062
+    },
+    {
+      "path": "corpus/evaluator/labels_b.md",
+      "sha256": "a53c382306731245102d1fd7638ea6d586229decb9ecc3b7c974f31134e59e91",
+      "bytes": 23931
+    },
+    {
+      "path": "corpus/evaluator/adjudication.json",
+      "sha256": "7c79216962122181e7384acf96f56e5899f51a66074800eea30f488cf793cf37",
+      "bytes": 16483
+    },
+    {
+      "path": "corpus/evaluator/key.json",
+      "sha256": "afe60665023f8a515c839eb5f9af3175169c033aa75e884d9dc77de872cf47b9",
+      "bytes": 16400
+    }
+  ]
+}

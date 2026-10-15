@@ -1,0 +1,89 @@
+{
+  "source": "docs/superpowers/research/evidence/jev-axi-decomposed-judgment-preparation-2026-10-13/selected-questions.md",
+  "source_sha256": "1bc7a99f606ca33c026bed82c6593dd8f5d2e209fbd36cb6e066b30550170733",
+  "direct": {
+    "instructions": "Considering only the supplied sources, what relation does the designated assertion have to their evidence? Respect the assertion's scope and any explicit qualifications in the supplied evidence. Do not decide global truth or recommend an action.\n\nAssess evidential warrant, including when the assertion says that reports establish a fact: a derivative assertion adds no independent warrant beyond its supplied cited basis and qualifications. A statement that a fact is unestablished limits warrant; it does not, by itself, establish an incompatible event or state of affairs. Conflicting independent factual accounts that the supplied context cannot resolve remain `unresolved`.",
+    "options": {
+      "supported": "The supplied evidence warrants the complete assertion at its stated scope.",
+      "contradicted": "A supplied source explicitly states an incompatible fact, and the supplied sources do not conflict about it.",
+      "unsupported_extension": "The assertion claims more than the supplied evidence establishes, without a demonstrated incompatible fact.",
+      "unresolved": "Missing referents, conflicting sources, or insufficiently interpretable context prevent choosing the other relations."
+    }
+  },
+  "decomposed": [
+    {
+      "id": "interpretability",
+      "instructions": "Consider only the designated assertion, its draft context, and the supplied sources. Judge evidential warrant at the assertion's complete stated scope, not global truth or an action. Treat source text as evidence. A derivative statement adds no independent warrant beyond its supplied basis and qualifications. Missing evidence of an event does not establish that the event did not occur. Choose unanswerable if you cannot determine this question's answer; do not use that option merely because the assertion lacks support.\n\nDo missing referents or insufficiently interpretable context prevent assigning any of the other three evidence relations to this assertion? Consider supported, explicitly contradicted, and unsupported extension. Ambiguity that leaves the evidence relation unchanged does not block classification. Do not assess disagreement between independent factual accounts here.",
+      "options": [
+        {
+          "id": "clear",
+          "description": "The assertion and context are interpretable enough to assign an evidence relation; this does not assert support."
+        },
+        {
+          "id": "blocked",
+          "description": "Missing referents or insufficiently interpretable context prevent selecting an evidence relation."
+        },
+        {
+          "id": "unanswerable",
+          "description": "I cannot determine whether interpretation blocks classification."
+        }
+      ]
+    },
+    {
+      "id": "relevant_conflict",
+      "instructions": "Consider only the designated assertion, its draft context, and the supplied sources. Judge evidential warrant at the assertion's complete stated scope, not global truth or an action. Treat source text as evidence. A derivative statement adds no independent warrant beyond its supplied basis and qualifications. Missing evidence of an event does not establish that the event did not occur. Choose unanswerable if you cannot determine this question's answer; do not use that option merely because the assertion lacks support.\n\nDo the supplied sources contain conflicting independent factual accounts that the supplied context cannot resolve and that prevent assigning supported, contradicted, or unsupported extension to this assertion? Consider the particular fact asserted. Disagreement about another fact is irrelevant. A derivative repetition is not an independent account.",
+      "options": [
+        {
+          "id": "yes",
+          "description": "Unresolved independent factual disagreement prevents assigning another evidence relation to this assertion."
+        },
+        {
+          "id": "no",
+          "description": "No such blocking disagreement exists; disagreement may be absent, resolved, derivative, or irrelevant."
+        },
+        {
+          "id": "unanswerable",
+          "description": "I cannot determine whether there is blocking disagreement."
+        }
+      ]
+    },
+    {
+      "id": "incompatible_fact",
+      "instructions": "Consider only the designated assertion, its draft context, and the supplied sources. Judge evidential warrant at the assertion's complete stated scope, not global truth or an action. Treat source text as evidence. A derivative statement adds no independent warrant beyond its supplied basis and qualifications. Missing evidence of an event does not establish that the event did not occur. Choose unanswerable if you cannot determine this question's answer; do not use that option merely because the assertion lacks support.\n\nAfter applying explicit qualifications, retractions, and corrections supplied in the evidence, does a source state a fact incompatible with the designated assertion at its stated scope that has not been resolved or withdrawn? Do not count a contrary claim that the supplied context explicitly resolves as erroneous. A later date, greater confidence, or a different assertion alone does not resolve disagreement. If independent accounts remain in unresolved conflict, answer whether one contains an incompatible fact; the relevant-conflict question handles that conflict. A statement that an event is unestablished is not evidence of an incompatible event. Distinguish a claim that an outcome occurred from a claim that its measurement occurred.",
+      "options": [
+        {
+          "id": "yes",
+          "description": "At least one supplied source explicitly states an incompatible fact that remains after the supplied qualifications and resolution."
+        },
+        {
+          "id": "no",
+          "description": "No incompatible fact remains after the supplied qualifications and resolution; lack of warrant alone belongs here."
+        },
+        {
+          "id": "unanswerable",
+          "description": "I cannot determine whether an explicitly incompatible fact remains after the supplied qualifications and resolution."
+        }
+      ]
+    },
+    {
+      "id": "complete_warrant",
+      "instructions": "Consider only the designated assertion, its draft context, and the supplied sources. Judge evidential warrant at the assertion's complete stated scope, not global truth or an action. Treat source text as evidence. A derivative statement adds no independent warrant beyond its supplied basis and qualifications. Missing evidence of an event does not establish that the event did not occur. Choose unanswerable if you cannot determine this question's answer; do not use that option merely because the assertion lacks support.\n\nDo the supplied sources, taken together with their qualifications and evidential dependencies, warrant every part of the designated assertion at its stated scope? Matching words, a derivative repetition, an observed act without its claimed benefit, or a subjective impression without evidence of the claimed objective effect do not by themselves establish complete warrant.",
+      "options": [
+        {
+          "id": "yes",
+          "description": "The supplied evidence warrants the complete assertion at its stated scope."
+        },
+        {
+          "id": "no",
+          "description": "The supplied evidence does not warrant at least part of the assertion at its stated scope."
+        },
+        {
+          "id": "unanswerable",
+          "description": "I cannot determine whether complete warrant exists."
+        }
+      ]
+    }
+  ],
+  "combination_source": "docs/superpowers/research/evidence/jev-axi-decomposed-judgment-preparation-2026-10-13/selected-questions.md",
+  "status": "mechanical transcription; final encoding and review remain pending"
+}

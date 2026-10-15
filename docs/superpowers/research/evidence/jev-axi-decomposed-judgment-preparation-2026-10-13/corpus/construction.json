@@ -1,0 +1,378 @@
+{
+  "cases": [
+    {
+      "id": "c01",
+      "assertion": "An image appeared on the screen during the screening's title reel on 14 August 2027.",
+      "draft": "drafts/c01.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s01.txt",
+        "sources/s02.txt"
+      ],
+      "labeler_packet_sha256": "d65f82e590a5b15394c23401c7faae6d9d2acdaf6c67a6e84c8106a0a9fc0a07"
+    },
+    {
+      "id": "c02",
+      "assertion": "The east mosaic's border was blue when it was unveiled at the garden opening on 4 June 2027.",
+      "draft": "drafts/c02.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s03.txt",
+        "sources/s04.txt"
+      ],
+      "labeler_packet_sha256": "352c2cdcc9eb4ad79aa5dd57fb0c7a00da88ce08ba32f4c2c1eb770cbd1c13b9"
+    },
+    {
+      "id": "c03",
+      "assertion": "An image appeared on the screen during the 14:00 paid matinee's title reel on 14 August 2027.",
+      "draft": "drafts/c03.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s01.txt",
+        "sources/s02.txt"
+      ],
+      "labeler_packet_sha256": "ebdfbaf028f368aa605d3503e4ddad24d85e9ffe5c4e9e57172fffb07d84fd16"
+    },
+    {
+      "id": "c04",
+      "assertion": "The canvas cover stayed over the east mosaic throughout the garden opening on 4 June 2027.",
+      "draft": "drafts/c04.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s03.txt",
+        "sources/s04.txt"
+      ],
+      "labeler_packet_sha256": "19c0a39051d9c16df65f4a1a7c61745362ec1ebe72597fe422aa37948664cc94"
+    },
+    {
+      "id": "c05",
+      "assertion": "An image appeared on the screen during the 09:00 focusing run's title reel on 14 August 2027.",
+      "draft": "drafts/c05.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s01.txt",
+        "sources/s02.txt"
+      ],
+      "labeler_packet_sha256": "d4eb0647d472aabe7feaa4d389123a0b177c1b66d9589cc9704bb6f800b1579d"
+    },
+    {
+      "id": "c06",
+      "assertion": "The first-time singers pronounced the Catalan verse correctly in the loft on 6 May 2027.",
+      "draft": "drafts/c06.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s05.txt",
+        "sources/s06.txt"
+      ],
+      "labeler_packet_sha256": "5b595b7efc0bcd2e9afa1d0c45091ca51f2dd33476f1c8e303acf5c069e96f63"
+    },
+    {
+      "id": "c07",
+      "assertion": "An image appeared on the screen during the 20:00 closing show's title reel on 14 August 2027.",
+      "draft": "drafts/c07.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s01.txt",
+        "sources/s02.txt"
+      ],
+      "labeler_packet_sha256": "aa0c8c78a9242bf55aadb4ba8ee85414a30e784af2d4d034cc95fc190c6c23fc"
+    },
+    {
+      "id": "c08",
+      "assertion": "Tavi's glaze was cobalt blue during the daylight inspection on 9 September 2027.",
+      "draft": "drafts/c08.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s07.txt",
+        "sources/s08.txt"
+      ],
+      "labeler_packet_sha256": "19d4ed89ed5dc52b708a62ceb3663afa1949d2a23c7671af13a280a3a93e4395"
+    },
+    {
+      "id": "c09",
+      "assertion": "Using prewound bobbins shortened scarf-weaving time during the 6 March 2027 session.",
+      "draft": "drafts/c09.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s09.txt",
+        "sources/s10.txt"
+      ],
+      "labeler_packet_sha256": "8f16614bad9dd54ee960de7ef9add0abf7658412b10a2fe980749c0af4da4b0b"
+    },
+    {
+      "id": "c10",
+      "assertion": "Kesta's glaze is dishwasher-proof.",
+      "draft": "drafts/c10.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s07.txt",
+        "sources/s08.txt"
+      ],
+      "labeler_packet_sha256": "04975f45f086f1c7db614f325a8d76f52c6e439bb8295244a4d5fbeb948c2a71"
+    },
+    {
+      "id": "c11",
+      "assertion": "Audience members pronounced the Catalan verse correctly in the courtyard on 6 May 2027.",
+      "draft": "drafts/c11.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s05.txt",
+        "sources/s06.txt"
+      ],
+      "labeler_packet_sha256": "a60c25dc3b59748c120d48eb1f98170c51166dcc5b534c582a6366130bc5ff1a"
+    },
+    {
+      "id": "c12",
+      "assertion": "The new pear flowered during the 19 April 2027 survey.",
+      "draft": "drafts/c12.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s11.txt",
+        "sources/s12.txt"
+      ],
+      "labeler_packet_sha256": "021b07dd184b479983af1afe8d73eb6c359ff5966833a0cba9bdc172c869380f"
+    },
+    {
+      "id": "c13",
+      "assertion": "Prewound bobbins were used for scarf weaving on 6 March 2027.",
+      "draft": "drafts/c13.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s09.txt",
+        "sources/s10.txt"
+      ],
+      "labeler_packet_sha256": "34f1556500fea65d10a47ab6883fc319c2b0d931ba1f21efce05eeb167a03e87"
+    },
+    {
+      "id": "c14",
+      "assertion": "The pear beside the tool shed flowered during the 19 April 2027 survey.",
+      "draft": "drafts/c14.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s11.txt",
+        "sources/s12.txt"
+      ],
+      "labeler_packet_sha256": "12f1d5688dc60af0199b3210b731a1622a45d11141c02183eef5798a24d6e978"
+    },
+    {
+      "id": "c15",
+      "assertion": "Two eyewitness accounts describe the east mosaic's unveiling at the garden opening on 4 June 2027.",
+      "draft": "drafts/c15.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s03.txt",
+        "sources/s04.txt"
+      ],
+      "labeler_packet_sha256": "d001a4f34d4d16ca5a34ce8e1bf1ec589902f23481facb3cd0e7238dbab8249c"
+    },
+    {
+      "id": "c16",
+      "assertion": "The east mosaic's border was made from recycled glass.",
+      "draft": "drafts/c16.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s03.txt",
+        "sources/s04.txt"
+      ],
+      "labeler_packet_sha256": "543afb287740c7ad4441d1c298fbaa3583bc87806ec377f76ed714a2a5f301f4"
+    },
+    {
+      "id": "c17",
+      "assertion": "The pear beside the cistern flowered during the 19 April 2027 survey.",
+      "draft": "drafts/c17.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s11.txt",
+        "sources/s12.txt"
+      ],
+      "labeler_packet_sha256": "a900768eeb65065921ba3d75c531bd0249a835839e5da505582e04147934525a"
+    },
+    {
+      "id": "c18",
+      "assertion": "The group pronounced the Catalan verse correctly in the loft on 6 May 2027.",
+      "draft": "drafts/c18.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s05.txt",
+        "sources/s06.txt"
+      ],
+      "labeler_packet_sha256": "028a0fad0260798547fa702fcde7a9dff6d7b6e01516e0182045aa4fe1633e25"
+    },
+    {
+      "id": "c19",
+      "assertion": "Kesta's glaze was cobalt blue during the daylight inspection on 9 September 2027.",
+      "draft": "drafts/c19.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s07.txt",
+        "sources/s08.txt"
+      ],
+      "labeler_packet_sha256": "d565cded79f4d5a7647d46cceb6fb570ecad3be573461d782561e87df97d70a1"
+    },
+    {
+      "id": "c20",
+      "assertion": "The pear beside the cistern bore ripe pears on 18 September 2027.",
+      "draft": "drafts/c20.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s11.txt",
+        "sources/s12.txt"
+      ],
+      "labeler_packet_sha256": "ae1a8f704d26a078bbaf70b1d4802550951990e4beafed59ad087b5b3c4e4e24"
+    },
+    {
+      "id": "c21",
+      "assertion": "The Lumo bowl's rim had no crack at the 17:00 handover-bench inspection on 9 September 2027.",
+      "draft": "drafts/c21.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s07.txt",
+        "sources/s08.txt"
+      ],
+      "labeler_packet_sha256": "31c95aa55a9c9948505ee3e3c9e91c6290a0d4786ddc678cad3a1c574562fb4c"
+    },
+    {
+      "id": "c22",
+      "assertion": "Scarf-weaving durations were measured during the 6 March 2027 session.",
+      "draft": "drafts/c22.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s09.txt",
+        "sources/s10.txt"
+      ],
+      "labeler_packet_sha256": "8abe1f09ea20336f1cddfb5fbf93f80ee1ac9281c0411af776ec616cee9e09f9"
+    },
+    {
+      "id": "c23",
+      "assertion": "The change shortened task duration on 6 March 2027.",
+      "draft": "drafts/c23.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s09.txt",
+        "sources/s10.txt"
+      ],
+      "labeler_packet_sha256": "f1eb9e2db12ac71567daf5c7bb28f1e8ec835d74023dc771253051717c1166b4"
+    },
+    {
+      "id": "c24",
+      "assertion": "The returning choir members pronounced the Catalan verse correctly in the small room on 6 May 2027.",
+      "draft": "drafts/c24.md",
+      "start_line": 1,
+      "end_line": 3,
+      "assertion_line": 3,
+      "sources": [
+        "sources/s05.txt",
+        "sources/s06.txt"
+      ],
+      "labeler_packet_sha256": "dda542d7cd2a75f43a147a249218eb5bda1bcc41b10cf8e85f301ce5de956ab2"
+    }
+  ],
+  "sources": [
+    {
+      "path": "sources/s01.txt",
+      "sha256": "521079a124577ed19eea79eb3bc0e3bdd03073121d820c48bd260caae665731c",
+      "bytes": 566
+    },
+    {
+      "path": "sources/s02.txt",
+      "sha256": "dc674c802124e4d6dae05f139007811b9dbaa9baf200f6fae73b7dec80c00c5f",
+      "bytes": 582
+    },
+    {
+      "path": "sources/s03.txt",
+      "sha256": "328735cf736b6a7410cdbfd73e6b7b97aaaf578492f748d6b1b0b092885f8d9c",
+      "bytes": 313
+    },
+    {
+      "path": "sources/s04.txt",
+      "sha256": "8bdb97baf1d91de6b9a4ab0d11274180f4e10f9eb5e7e85598ac71bad837dc35",
+      "bytes": 322
+    },
+    {
+      "path": "sources/s05.txt",
+      "sha256": "9f4c6e3a02ebb83f7284d688c5deb7903cc3666114ae45c58468b0d94320aa49",
+      "bytes": 451
+    },
+    {
+      "path": "sources/s06.txt",
+      "sha256": "a2fc8ff16dd9a4b06fa8dee03538cfbc3e08ed85c98c3d0ad7bd662ee28a2169",
+      "bytes": 435
+    },
+    {
+      "path": "sources/s07.txt",
+      "sha256": "3b9819284960f04602bc33fc36657d9dbea90edbef3b98df35dd0550579ed056",
+      "bytes": 410
+    },
+    {
+      "path": "sources/s08.txt",
+      "sha256": "cb9d550d2b2964daf085b0e1ffb7f1775442e1a9dc47870ceab7f87f7b96620c",
+      "bytes": 463
+    },
+    {
+      "path": "sources/s09.txt",
+      "sha256": "45d95badaa76d602def84c0e15ec8ab110021f3b2065bc963b686f9c1084a5bf",
+      "bytes": 373
+    },
+    {
+      "path": "sources/s10.txt",
+      "sha256": "7f5ac7424794036cc7f3bf4242bb49cdc43916160785663ec1e92773de858502",
+      "bytes": 426
+    },
+    {
+      "path": "sources/s11.txt",
+      "sha256": "9a2736717c7d355058f3f4b2a575b9bd313c53612128d1c05694bab2ede8f970",
+      "bytes": 312
+    },
+    {
+      "path": "sources/s12.txt",
+      "sha256": "6f4a5d1fa178f51978ffcc43efa97452d3847f6e7e618eb9ffc825b959e29fea",
+      "bytes": 259
+    }
+  ]
+}

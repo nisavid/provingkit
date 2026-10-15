@@ -370,7 +370,7 @@ def coverage_packet(state):
     return packet
 
 
-def payload_for(condition, state, kind='claim', question=QUESTION):
+def payload_for(condition, state, kind='claim', question=QUESTION, questions=None):
     if kind == 'coverage':
         packet = coverage_packet(state)
         version2 = packet.get('version') == 2
@@ -412,6 +412,40 @@ def payload_for(condition, state, kind='claim', question=QUESTION):
                                     'view': {'type': 'string', 'enum': ['inventory', 'patch']}},
                      'required': ['comparison', 'view'], 'additionalProperties': False}}])
         return payload
+    if questions is not None:
+        packet = strict_json(state)
+        exact_fields(packet, ['assertion', 'draft_context', 'sources'], 'claim inference')
+        if (not isinstance(packet['assertion'], str) or not packet['assertion'].strip() or
+                not isinstance(packet['draft_context'], str) or
+                packet['draft_context'].count(packet['assertion']) != 1 or
+                not isinstance(packet['sources'], list) or not 1 <= len(packet['sources']) <= 2):
+            raise ValueError('claim inference requires an identified assertion and complete sources')
+        for index, source in enumerate(packet['sources'], 1):
+            exact_fields(source, ['id', 'text'], 'claim inference source')
+            if source['id'] != f'source-{index}' or not isinstance(source['text'], str):
+                raise ValueError('claim inference source identity or text is invalid')
+        if len(questions) == 1:
+            return payload_for(condition, state, kind, questions[0]['instructions'])
+        if condition['adapter'] == 'jev':
+            return {'model': condition['model'], 'state': state, 'questions': {
+                q['id']: {'type': 'choice', 'instructions': q['instructions'],
+                          'criteria': q['options']} for q in questions}}
+        if condition['adapter'] == 'decisions':
+            return {'model': condition['model'], 'input': state, 'questions': [
+                {'type': 'choice', 'name': q['id'], 'instructions': q['instructions'],
+                 'choices': [{'value': key, 'description': value}
+                             for key, value in q['options'].items()]} for q in questions]}
+        properties = {('relation' if q['id'] == 'claim_relation' else q['id']):
+                      {'type': 'string', 'enum': list(q['options'])} for q in questions}
+        return {'model': condition['model'], 'instructions': '\n\n'.join(
+                    q['id'] + ':\n' + q['instructions'] + '\n' +
+                    '\n'.join(key + ': ' + value for key, value in q['options'].items())
+                    for q in questions),
+                'input': [{'role': 'user', 'content': [{'type': 'input_text', 'text': state}]}],
+                'reasoning': {'effort': condition['effort']}, 'stream': True, 'store': False,
+                'text': {'format': {'type': 'json_schema', 'name': 'evidence_judgments',
+                    'strict': True, 'schema': {'type': 'object', 'properties': properties,
+                        'required': list(properties), 'additionalProperties': False}}}}
     if condition['adapter'] == 'jev':
         return {'model': condition['model'], 'state': state, 'questions': {
             'claim_relation': {'type': 'choice', 'instructions': question, 'criteria': RELATIONS}}}
@@ -431,7 +465,7 @@ def payload_for(condition, state, kind='claim', question=QUESTION):
     raise ValueError('unsupported adapter')
 
 
-def response_evidence(adapter, body):
+def response_evidence(adapter, body, strict=False):
     """Acquire the response envelope before interpreting its answer."""
     events = []
     if adapter == 'responses':
@@ -441,7 +475,7 @@ def response_evidence(adapter, body):
                               if line.startswith(b'data:'))
             if data and data != b'[DONE]':
                 try:
-                    event = json.loads(data)
+                    event = strict_json(data) if strict else json.loads(data)
                 except ValueError:
                     malformed = True
                     continue
@@ -465,10 +499,10 @@ def response_evidence(adapter, body):
                       'response.incomplete': 'provider_incomplete'}[event['type']]
             return result, events, status
         return result, events, 'invalid_response' if malformed else 'completed'
-    return json.loads(body), events, 'completed'
+    return strict_json(body) if strict else json.loads(body), events, 'completed'
 
 
-def parse_result(adapter, result, events, envelope_status, kind='claim'):
+def parse_result(adapter, result, events, envelope_status, kind='claim', questions=None):
     if envelope_status != 'completed':
         return result, events, None, envelope_status
     if adapter == 'responses':
@@ -505,11 +539,35 @@ def parse_result(adapter, result, events, envelope_status, kind='claim'):
             return result, events, answer or None, 'completed' if answer.strip() else 'invalid_response'
         try:
             value = strict_json(''.join(texts))
+            if questions is not None and len(questions) == 4:
+                options = {q['id']: q['options'] for q in questions}
+                valid = (isinstance(value, dict) and set(value) == set(options) and
+                         all(isinstance(v, str) and v in options[k] for k, v in value.items()))
+                return result, events, value if valid else None, 'completed' if valid else 'invalid_response'
             relation = value['relation'] if set(value) == {'relation'} and value['relation'] in RELATIONS else None
         except (ValueError, TypeError, KeyError):
             relation = None
     else:
         answers = result.get('answers')
+        if questions is not None:
+            names = [q['id'] for q in questions]
+            if adapter == 'jev' and isinstance(answers, dict) and set(answers) == set(names):
+                if any(not isinstance(answers[name], dict) or
+                       answers[name].get('name', name) != name for name in names):
+                    return result, events, None, 'invalid_response'
+                answers = [dict(answers[name], name=name) for name in names]
+            if (not isinstance(answers, list) or len(answers) != len(names) or
+                    any(not isinstance(a, dict) for a in answers) or
+                    [a.get('name') for a in answers] != names):
+                return result, events, None, 'invalid_response'
+            if any(a.get('type') == 'refusal' for a in answers):
+                return result, events, None, 'refused'
+            valid = all(a.get('type') == 'choice' and isinstance(a.get('choice'), str) and
+                        a['choice'] in q['options'] and valid_probabilities(adapter, a, q['options'])
+                        for a, q in zip(answers, questions))
+            values = {a['name']: a['choice'] for a in answers} if valid else None
+            answer = values if len(names) == 4 else values['claim_relation'] if valid else None
+            return result, events, answer, 'completed' if valid else 'invalid_response'
         if adapter == 'jev' and isinstance(answers, dict) and set(answers) == {'claim_relation'}:
             answers = [dict(answers['claim_relation'], name='claim_relation')]
         if (isinstance(answers, list) and len(answers) == 1 and
@@ -522,39 +580,62 @@ def parse_result(adapter, result, events, envelope_status, kind='claim'):
     return result, events, relation, 'completed' if relation is not None else 'invalid_response'
 
 
-def interpret_response(adapter, body, transport_status, kind='claim'):
+def interpret_response(adapter, body, transport_status, kind='claim', questions=None):
     if transport_status == 'credential_reflection':
         return None, [], None, transport_status
     # Retained complete envelopes remain evidence even when transport fails.
     # Only a successful transport can supply an answer or tool continuation.
     try:
-        result, events, envelope_status = response_evidence(adapter, body)
+        result, events, envelope_status = response_evidence(adapter, body, strict=questions is not None)
     except (ValueError, TypeError, KeyError, AttributeError, IndexError):
         result, events, envelope_status = None, [], 'invalid_response'
     if transport_status != 'received':
         return result, events, None, transport_status
     try:
-        return parse_result(adapter, result, events, envelope_status, kind)
+        return parse_result(adapter, result, events, envelope_status, kind, questions)
     except (ValueError, TypeError, KeyError, AttributeError, IndexError):
         return result, events, None, 'invalid_response'
 
 
-def valid_probabilities(adapter, answer):
+def valid_probabilities(adapter, answer, options=RELATIONS):
     def probability(value):
         return type(value) in {int, float} and math.isfinite(value) and 0 <= value <= 1
     if not probability(answer.get('confidence')):
         return False
     probabilities = answer.get('probabilities')
     if adapter == 'decisions':
-        if not isinstance(probabilities, list) or len(probabilities) != len(RELATIONS):
+        if not isinstance(probabilities, list) or len(probabilities) != len(options):
             return False
         if any(not isinstance(item, dict) or set(item) != {'value', 'probability'}
                for item in probabilities):
             return False
         probabilities = {item['value']: item['probability'] for item in probabilities}
-    return (isinstance(probabilities, dict) and set(probabilities) == set(RELATIONS) and
+    return (isinstance(probabilities, dict) and set(probabilities) == set(options) and
             all(probability(value) for value in probabilities.values()) and
             math.isclose(sum(probabilities.values()), 1.0, rel_tol=0, abs_tol=1e-6))
+
+
+def combine_judgments(values):
+    """Apply the categorical precedence in selected-questions.md; no probability fusion."""
+    interpretation = values['interpretability']
+    conflict = values['relevant_conflict']
+    incompatible = values['incompatible_fact']
+    warrant = values['complete_warrant']
+    if interpretation == 'unanswerable':
+        return None, 'judgment_abstained'
+    if interpretation == 'blocked':
+        return 'unresolved', 'classified'
+    if conflict == 'unanswerable':
+        return None, 'judgment_abstained'
+    if conflict == 'yes':
+        return 'unresolved', 'classified'
+    if incompatible == 'unanswerable':
+        return None, 'judgment_abstained'
+    if incompatible == 'yes':
+        return (None, 'inconsistent_answers') if warrant == 'yes' else ('contradicted', 'classified')
+    if warrant == 'unanswerable':
+        return None, 'judgment_abstained'
+    return ('supported' if warrant == 'yes' else 'unsupported_extension'), 'classified'
 
 
 def value_usage(condition, usage):
@@ -667,13 +748,14 @@ def request_accounting(attempts):
 def validate_spec(spec):
     fields = ['version', 'kind', 'cases', 'conditions', 'limits']
     paired = isinstance(spec, dict) and spec.get('version') == 2 and spec.get('kind') == 'claim'
-    if paired:
+    decomposed = isinstance(spec, dict) and spec.get('version') == 3 and spec.get('kind') == 'claim'
+    if paired or decomposed:
         fields.append('treatments')
     if isinstance(spec, dict) and spec.get('kind') == 'coverage' and 'mode' in spec:
         fields.append('mode')
     exact_fields(spec, fields, 'spec')
     if (type(spec['version']) is not int or spec['kind'] not in {'claim', 'coverage'}
-            or (spec['version'] != 1 and not paired)):
+            or (spec['version'] != 1 and not (paired or decomposed))):
         raise ValueError('unsupported protocol')
     if paired:
         treatments = spec['treatments']
@@ -685,6 +767,31 @@ def validate_spec(spec):
                 or not treatments[1]['question'].strip()
                 or treatments[1]['question'] == QUESTION):
             raise ValueError('paired claims require the unchanged current question and one revised question')
+    if decomposed:
+        treatments = spec['treatments']
+        if (not isinstance(treatments, list) or len(treatments) != 2 or
+                any(not isinstance(t, dict) or set(t) != {'id', 'questions'} for t in treatments) or
+                [t['id'] for t in treatments] != ['direct', 'decomposed']):
+            raise ValueError('decomposed claims require direct and decomposed treatments')
+        expected = [['claim_relation'], ['interpretability', 'relevant_conflict',
+                                        'incompatible_fact', 'complete_warrant']]
+        for treatment, names in zip(treatments, expected):
+            questions = treatment['questions']
+            if (not isinstance(questions, list) or len(questions) != len(names) or
+                    any(not isinstance(q, dict) or set(q) != {'id', 'instructions', 'options'}
+                        for q in questions) or [q['id'] for q in questions] != names):
+                raise ValueError('unsupported judgment questions')
+            for q in questions:
+                options = (list(RELATIONS) if q['id'] == 'claim_relation' else
+                           ['clear', 'blocked', 'unanswerable'] if q['id'] == 'interpretability'
+                           else ['yes', 'no', 'unanswerable'])
+                if (not isinstance(q['instructions'], str) or not q['instructions'].strip() or
+                        not isinstance(q['options'], dict) or list(q['options']) != options or
+                        any(not isinstance(v, str) or not v.strip() for v in q['options'].values())):
+                    raise ValueError('unsupported judgment options or instructions')
+        direct = treatments[0]['questions'][0]
+        if direct['instructions'] != QUESTION or direct['options'] != RELATIONS:
+            raise ValueError('the direct baseline must remain unchanged')
     if spec['kind'] == 'coverage' and spec.get('mode', 'comparison') not in {'comparison', 'diagnostic'}:
         raise ValueError('unsupported coverage mode')
     limits = spec['limits']
@@ -773,8 +880,8 @@ def make_schedule(spec):
         start = index % len(conditions)
         for condition in conditions[start:] + conditions[:start]:
             slot = {'case': case['id'], 'condition': condition['id']}
-            if spec['version'] == 2:
-                order = ['current', 'revised']
+            if spec['version'] in {2, 3}:
+                order = ['current', 'revised'] if spec['version'] == 2 else ['direct', 'decomposed']
                 if (index + conditions.index(condition)) % 2:
                     order.reverse()
                 schedule.extend(dict(slot, treatment=treatment) for treatment in order)
@@ -804,7 +911,8 @@ def prepare(spec_path, output):
         if case['status'] == 'ready':
             for condition in manifest['conditions']:
                 for treatment in manifest.get('treatments', [{'question': QUESTION}]):
-                    payload = payload_for(condition, state, manifest['kind'], treatment['question'])
+                    payload = payload_for(condition, state, manifest['kind'],
+                                          treatment.get('question', QUESTION), treatment.get('questions'))
                     if len(json.dumps(payload).encode()) > manifest['limits']['request_bytes']:
                         raise ValueError('request exceeds byte limit')
         inputs.append(data)
@@ -1102,9 +1210,11 @@ def run(prepared, expected_digest, output, local_http, outer_deadline_ns=None):
                               'resource_incomplete', 'response_limit', 'tool_error'}:
                 stopped.add(slot['condition'])
             continue
-        question = next((t['question'] for t in manifest.get('treatments', [])
-                         if t['id'] == slot.get('treatment')), QUESTION)
-        payload = payload_for(condition, state, question=question)
+        treatment = next((t for t in manifest.get('treatments', [])
+                          if t['id'] == slot.get('treatment')), {})
+        questions = treatment.get('questions')
+        payload = payload_for(condition, state, question=treatment.get('question', QUESTION),
+                              questions=questions)
         started = datetime.now(timezone.utc).isoformat()
         tick = time.monotonic_ns()
         body = json.dumps(payload).encode()
@@ -1142,9 +1252,25 @@ def run(prepared, expected_digest, output, local_http, outer_deadline_ns=None):
         reservation_path.write_text(json.dumps(reservation, ensure_ascii=True, indent=2) + '\n')
         response_body = (output / response_file).read_bytes()
         result, events, relation, status = interpret_response(
-            condition['adapter'], response_body, metadata['transport_status'])
+            condition['adapter'], response_body, metadata['transport_status'], questions=questions)
         status, condition_error, usage, returned_model, value, valuation_status = finalize_response(
             condition, result, status)
+        judgment = {}
+        if questions is not None:
+            components, combination_ms = None, None
+            judgment_status = 'not_classified'
+            if status == 'completed':
+                if len(questions) == 4:
+                    components = relation
+                    combination_tick = time.monotonic_ns()
+                    relation, judgment_status = combine_judgments(components)
+                    combination_ms = (time.monotonic_ns() - combination_tick) / 1_000_000
+                else:
+                    judgment_status = 'classified'
+            else:
+                relation = None
+            judgment = dict(question_count=len(questions), component_answers=components,
+                            combination_duration_ms=combination_ms, judgment_status=judgment_status)
         attempt = dict(slot, attempt_id=attempt_id, attempt_index=0, request=payload,
                        adapter=condition['adapter'], endpoint=condition['endpoint'], billing=condition['billing'],
                        **finish_timing(started, tick, metadata.get('first_byte_monotonic_ns')),
@@ -1161,7 +1287,7 @@ def run(prepared, expected_digest, output, local_http, outer_deadline_ns=None):
                            'credential_reflection', 'response_limit', 'timeout', 'transport_error'},
                        residual_provider_work_unknown=status in {
                            'credential_reflection', 'response_limit', 'timeout', 'transport_error'},
-                       **metadata)
+                       **metadata, **judgment)
         write_json(output / f'attempt-{index:04d}.json', attempt)
         attempts.append(attempt)
         slots.append(dict(slot, status=status))
@@ -1172,7 +1298,16 @@ def run(prepared, expected_digest, output, local_http, outer_deadline_ns=None):
         'measurements': {name: {'status': 'unknown', 'value': None, 'evidence': []}
                          for name in ['preparation', 'grading', 'operator_effort', 'billing',
                                       'subscription_usage', 'complete_workflow']}})
-    write_json(output / 'summary.json', {'slots': slots, 'run_id': run_id,
+    judgment_accounting = {}
+    if manifest['version'] == 3:
+        sizes = {t['id']: len(t['questions']) for t in manifest['treatments']}
+        judgment_accounting = {'judgment_accounting': {
+            'scheduled_request_groups': len(identities),
+            'scheduled_questions': sum(sizes[s['treatment']] for s in identities),
+            'submitted_request_groups': len(attempts),
+            'submitted_questions': sum(a['question_count'] for a in attempts),
+            'combinations': sum(a['combination_duration_ms'] is not None for a in attempts)}}
+    write_json(output / 'summary.json', {'slots': slots, 'run_id': run_id, **judgment_accounting,
                'outer_deadline_monotonic_ns': outer_deadline_ns,
                'effective_deadline_monotonic_ns': run_deadline_ns,
                'manifest_sha256': expected_digest, 'workflow_evidence': 'workflow-evidence.json',

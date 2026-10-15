@@ -1,0 +1,14 @@
+{
+  "assertion": "The east mosaic's border was blue when it was unveiled at the garden opening on 4 June 2027.",
+  "draft_context": "The report describes the mosaic at the unveiling.\n\nThe east mosaic's border was blue when it was unveiled at the garden opening on 4 June 2027.",
+  "sources": [
+    {
+      "id": "source-1",
+      "text": "Mira's garden-opening account, written 4 June 2027\n\nI stood in front of the east mosaic when it was unveiled at the garden opening today. As the canvas cover was lifted, I saw a blue border around the central bird. The cover was carried away before the speeches. I made this note from what I saw at the unveiling."
+    },
+    {
+      "id": "source-2",
+      "text": "Niko's garden-opening account, written 5 June 2027\n\nAt the garden opening on 4 June I stood in front of the east mosaic. At the moment its canvas cover was lifted, the border around the central bird was amber, not blue. The cover was carried away before the speeches. This is my own recollection of watching the unveiling."
+    }
+  ]
+}

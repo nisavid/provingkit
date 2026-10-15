@@ -75,6 +75,35 @@ class ClaimProducerTests(unittest.TestCase):
         self.assertEqual(packet['quotation_status'], 'unavailable')
         self.assertEqual((target / 'source-1.source').read_bytes(), self.source)
 
+    def test_ready_inference_contains_only_assertion_context_and_complete_source_text(self):
+        result, target = self.invoke(self.case())
+        self.assertEqual(result.returncode, 0, result.stderr)
+        raw = (target / 'inference.json').read_bytes()
+        self.assertEqual(json.loads(raw), {
+            'assertion': 'The report says “Unknown costs remain.”',
+            'draft_context': 'Opening.\nThe report says “Unknown costs remain.”\nClosing.\n',
+            'sources': [{'id': 'source-1', 'text':
+                         'Unknown costs remain.\nA separate qualification.\n'}],
+        })
+        receipt = json.loads((target / 'receipt.json').read_text())
+        self.assertEqual(receipt['artifacts']['inference.json'], {
+            'sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw)})
+
+    def test_repeated_assertion_in_context_cannot_produce_inference(self):
+        case = self.case()
+        repeated = ('Opening.\n' + self.assertion + '\n' + self.assertion + '\n').encode()
+        (self.repo / 'draft.md').write_bytes(repeated)
+        self.git('add', 'draft.md')
+        self.git('-c', 'core.hooksPath=/dev/null', '-c', 'user.name=Test',
+                 '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'repeated assertion')
+        case['draft'].update(commit=self.git('rev-parse', 'HEAD').decode().strip(),
+                             sha256=hashlib.sha256(repeated).hexdigest())
+        result, target = self.invoke(case)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(json.loads((target / 'packet.json').read_text())['draft']['status'],
+                         'malformed_context')
+        self.assertFalse((target / 'inference.json').exists())
+
     def test_controlled_unavailability_is_distinct_from_missing(self):
         for state in ['controlled_unavailable', 'missing']:
             with self.subTest(state=state):
@@ -90,6 +119,7 @@ class ClaimProducerTests(unittest.TestCase):
                 self.assertEqual(packet['sources'][0]['status'], state)
                 self.assertEqual(packet['quotation_status'], 'unavailable')
                 self.assertFalse((target / 'source-1.source').exists())
+                self.assertFalse((target / 'inference.json').exists())
 
     def test_invalid_or_evaluator_bearing_specs_deliver_no_candidate_sources(self):
         for variant in ['key', 'revision', 'path', 'version', 'range', 'quote', 'assertion']:
@@ -108,6 +138,7 @@ class ClaimProducerTests(unittest.TestCase):
                 self.assertEqual(packet['status'], 'non_ready')
                 self.assertTrue((target / 'receipt.json').exists())
                 self.assertNotIn('expected_relation', (target / 'packet.json').read_text())
+                self.assertFalse((target / 'inference.json').exists())
 
     def test_existing_result_is_untouched(self):
         target = self.root / 'result'
@@ -165,6 +196,9 @@ class ClaimProducerTests(unittest.TestCase):
         self.assertEqual([s['path'] for s in packet['sources']], ['draft.md', 'source.md'])
         self.assertEqual((target / 'source-1.source').read_bytes(), self.draft)
         self.assertEqual((target / 'source-2.source').read_bytes(), self.source)
+        self.assertEqual(json.loads((target / 'inference.json').read_text())['sources'], [
+            {'id': 'source-1', 'text': self.draft.decode()},
+            {'id': 'source-2', 'text': self.source.decode()}])
 
     def test_literal_quote_only_normalizes_line_endings(self):
         self.assertion = 'The report says “Café”.'
@@ -183,6 +217,10 @@ class ClaimProducerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads((target / 'packet.json').read_text())['quotation_status'], 'unmatched')
         self.assertEqual((target / 'source-1.source').read_bytes(), self.source)
+        inference = json.loads((target / 'inference.json').read_bytes())
+        self.assertEqual(inference['draft_context'], 'The report says “Café”.\r\n')
+        self.assertEqual(inference['sources'], [
+            {'id': 'source-1', 'text': 'Cafe\u0301\r\nAnother line.\r\n'}])
 
 
 if __name__ == '__main__':

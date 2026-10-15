@@ -1,0 +1,14 @@
+{
+  "assertion": "The Lumo bowl's rim had no crack at the 17:00 handover-bench inspection on 9 September 2027.",
+  "draft_context": "The studio report describes the bowl before wrapping.\n\nThe Lumo bowl's rim had no crack at the 17:00 handover-bench inspection on 9 September 2027.",
+  "sources": [
+    {
+      "id": "source-1",
+      "text": "Pottery studio notebook, 9 September 2027\n\nIn the daylight inspection, Kesta's glaze was cobalt blue and glossy. Tavi's glaze was ochre and glossy. These entries record surface color and appearance; the notebook contains no washing observations.\n\nAt the 17:00 handover-bench inspection, before the Lumo bowl was wrapped, I examined its rim. The rim was continuous and had no crack.\n\nSigned, Iona, studio potter"
+    },
+    {
+      "id": "source-2",
+      "text": "Studio bulletin, 10 September 2027\n\nKesta: cobalt-blue gloss. Kesta's glaze is dishwasher-proof.\n\nProduction note: The Kesta wording was assembled only from the 9 September notebook's color and gloss entry. No washing report was used for the caption.\n\nI also attended the Lumo bowl's 17:00 handover-bench inspection on 9 September, before wrapping. I examined its rim during that inspection and saw a hairline crack through the rim.\n\nSigned, Oren, bulletin editor"
+    }
+  ]
+}

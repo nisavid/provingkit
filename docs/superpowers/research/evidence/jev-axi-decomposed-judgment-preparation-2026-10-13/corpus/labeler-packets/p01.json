@@ -1,0 +1,14 @@
+{
+  "assertion": "An image appeared on the screen during the screening's title reel on 14 August 2027.",
+  "draft_context": "Screening note, 14 August 2027\n\nAn image appeared on the screen during the screening's title reel on 14 August 2027.",
+  "sources": [
+    {
+      "id": "source-1",
+      "text": "Cinema booth ledger, 14 August 2027\n\n09:00, focusing run: The screen remained black throughout the title reel.\n\n14:00, paid matinee: Doors opened and admissions were checked. The title reel was on the running order. The image-observation field is blank; there is no booth or house observation of the projected image for this show in the ledger.\n\n20:00, closing show: The house observer watched the screen throughout the title reel. It remained dark throughout that reel.\n\nThe page headings for the 09:00 focusing run and the 20:00 closing show both read 'Screening'."
+    },
+    {
+      "id": "source-2",
+      "text": "Amendment to the cinema booth ledger, 16 August 2027\n\nI wrote the house-observation entries for 14 August. I transposed a line when entering the 09:00 focusing run. The title-reel image was visible on the screen during that run. I checked my photograph of the screen, which includes the 09:00 focusing slate. I retract the sentence saying that the screen remained black during the 09:00 title reel.\n\nThe 20:00 closing-show entry is unchanged: the screen remained dark throughout its title reel. I have no image observation to add for the 14:00 matinee.\n\nSigned, Esme, house observer"
+    }
+  ]
+}

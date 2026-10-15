@@ -1,0 +1,14 @@
+{
+  "assertion": "The pear beside the cistern bore ripe pears on 18 September 2027.",
+  "draft_context": "The orchard report includes an autumn paragraph.\n\nThe pear beside the cistern bore ripe pears on 18 September 2027.",
+  "sources": [
+    {
+      "id": "source-1",
+      "text": "Orchard planting card, 18 April 2027\n\nThe pear beside the cistern and the pear beside the tool shed were planted during the same planting day. The order book calls each tree 'new pear'. For the survey, the cistern tree has tag C and the shed tree has tag S. Both trees were tied to their stakes with white cloth."
+    },
+    {
+      "id": "source-2",
+      "text": "Orchard survey, 19 April 2027\n\nC, beside the cistern: open blossoms on the branches; white cloth tie intact.\n\nS, beside the tool shed: no flowers on the branches; white cloth tie intact.\n\nThis survey records the trees on 19 April. It contains no later visits."
+    }
+  ]
+}

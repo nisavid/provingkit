@@ -1,0 +1,14 @@
+{
+  "assertion": "Scarf-weaving durations were measured during the 6 March 2027 session.",
+  "draft_context": "The workshop report includes a paragraph about timing.\n\nScarf-weaving durations were measured during the 6 March 2027 session.",
+  "sources": [
+    {
+      "id": "source-1",
+      "text": "Weaving-room log, 6 March 2027\n\nThe weavers installed prewound bobbins and used them for the scarf-weaving session. At the end, Léa said, 'It feels quicker to get going.' The session page records the yarn and scarf pattern. Nobody timed scarf weaving or recorded scarf-completion durations during the session.\n\nThe prewound bobbins remained in the looms after the session."
+    },
+    {
+      "id": "source-2",
+      "text": "Yarn-delivery note, 6 March 2027\n\nThe workshop changed the yarn trolley's route from the courtyard passage to the covered passage. The porter timed paired deliveries of the same load along the old and new routes. The deliveries along the covered passage took less time than those along the courtyard passage.\n\nThe delivery timing concerns the trolley journey. The scarf-weaving session was a separate task in the weaving room."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "assertion": "The returning choir members pronounced the Catalan verse correctly in the small room on 6 May 2027.",
+  "draft_context": "Workshop summary, 6 May 2027\n\nThe returning choir members pronounced the Catalan verse correctly in the small room on 6 May 2027.",
+  "sources": [
+    {
+      "id": "source-1",
+      "text": "Choir workshop register, 6 May 2027\n\nReturning choir members rehearsed the Catalan verse in the loft and then in the side hall. The pronunciation coach listened to their rendition in each room and marked both renditions correct. Each room appears as 'small room' on its booking sheet.\n\nThe evening program listed a courtyard performance for the festival audience. This register covers the workshops; the courtyard program lists repertoire and seating."
+    },
+    {
+      "id": "source-2",
+      "text": "Beginner-session note, 6 May 2027\n\nFirst-time singers rehearsed the same Catalan verse in the loft before moving to the side hall. In each room they omitted the final consonants that the coach had asked them to pronounce. The coach marked their pronunciation incorrect in both rooms.\n\nThe returning choir members and the first-time singers had separate workshop sessions. Audience members arrived for the evening courtyard performance."
+    }
+  ]
+}
