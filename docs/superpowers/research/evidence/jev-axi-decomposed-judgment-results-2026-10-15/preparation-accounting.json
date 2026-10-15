@@ -1,0 +1,564 @@
+{
+  "version": 1,
+  "cohorts": [
+    {
+      "preparation": "execution-v1",
+      "producer_runs": [
+        {
+          "case": "c01",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "7b6a221bcb45c598a635a8d3cc5f946f91d86194e4d78cd20fd0a933c1d03a5b",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 21.04911,
+          "logical_git_blob_bytes": 1264
+        },
+        {
+          "case": "c02",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "d27cff75bec9dfa67806e8f0a298b15d8f46c0b971097ee5157142ee554d5d98",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 12.871774,
+          "logical_git_blob_bytes": 778
+        },
+        {
+          "case": "c03",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "5ebfe427634dc2e38a3a0b2bd6dedc361334a0d0832314526139bbad4230a637",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 14.779813,
+          "logical_git_blob_bytes": 1287
+        },
+        {
+          "case": "c04",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "5a912bd5e52907932c900f518ae9d1b90cccfa79dbb4427219ec0d5507648417",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 14.019468,
+          "logical_git_blob_bytes": 777
+        },
+        {
+          "case": "c05",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "e45ebf91301c5d9a00141d5ff38c7fe3ab4730f032a8ad71ffbd8660072f4cfa",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 13.30886,
+          "logical_git_blob_bytes": 1287
+        },
+        {
+          "case": "c06",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "164f1f0972eb5884d6844a369ead0f2146e97b85a888dcd9e3d72ce8ad0c7e98",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 11.699003,
+          "logical_git_blob_bytes": 1029
+        },
+        {
+          "case": "c07",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "ab8cd6451ed7b02a5f401843370f41285ae7b32c9804df08cb100d7506620818",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 14.399375,
+          "logical_git_blob_bytes": 1304
+        },
+        {
+          "case": "c08",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "94b4564cfa858dcf06c7c799e8edd639cb15944e7bb2f5f8c3b072831568616b",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 14.266299,
+          "logical_git_blob_bytes": 1001
+        },
+        {
+          "case": "c09",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "c0de9d0032e0547566a0867f456c378fe427837ad96ac1b8242dcb8b9d226600",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 14.202742,
+          "logical_git_blob_bytes": 952
+        },
+        {
+          "case": "c10",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "3ec9db02338c12a7713d951724cf32770b7e620652ef8771cd0f5135fea1aa0e",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 14.266959,
+          "logical_git_blob_bytes": 962
+        },
+        {
+          "case": "c11",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "6cdc14de729faa8cefef4e8103b870830473a95cf5553a711512504cb52b9dd3",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 13.789774,
+          "logical_git_blob_bytes": 1031
+        },
+        {
+          "case": "c12",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "04e637b899703d28d214d8fb0d4aee65e45ee3822cbf3352eecf3efe8e56f795",
+            "original_bytes": 1095
+          },
+          "internal_duration_ms": 13.362409,
+          "logical_git_blob_bytes": 635
+        },
+        {
+          "case": "c13",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "51d71353dd2a64d7cc7d38b7397f17b69affa862a6cd7042c9bfc7ca44948ca1",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 14.839061,
+          "logical_git_blob_bytes": 917
+        },
+        {
+          "case": "c14",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "1203da4f41819b6e4930cae6cc50b2fd4d13647edf963fff2522e37a6c5e926d",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 13.501594,
+          "logical_git_blob_bytes": 691
+        },
+        {
+          "case": "c15",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "465d56a6b8d134b40b34f61f44be00410740905d8a6e5ce5095da1b0007f8dc4",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 13.049989,
+          "logical_git_blob_bytes": 791
+        },
+        {
+          "case": "c16",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "a3b6bf48b011d90c1b540ee23c5310936467f4cc06c5514970f70ae206d4c61d",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 13.367679,
+          "logical_git_blob_bytes": 763
+        },
+        {
+          "case": "c17",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "970d1153c26d2cf6daf0b70b3c504e85c5c1936d85a9bc38c383de5aa291e627",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 12.975011,
+          "logical_git_blob_bytes": 689
+        },
+        {
+          "case": "c18",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "3ed63b4dba600d33abee426f754bddf0a1c7bc59bccf105b8cac2259a1c0d891",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 11.728251,
+          "logical_git_blob_bytes": 982
+        },
+        {
+          "case": "c19",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "8dd274b3bb4a0f056c18d6fda3e9aa8997d4d71296ba6930f76aded9dda5b2bc",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 16.353792,
+          "logical_git_blob_bytes": 1002
+        },
+        {
+          "case": "c20",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "8ca66a571bd007b35b964b4677d2006cfda34aa299467a2ba4b3bbef3fb596da",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 15.973635,
+          "logical_git_blob_bytes": 686
+        },
+        {
+          "case": "c21",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "b116ed4ce7fbb924a5147a2aab6c25f6ce6772ab1a1cfdea461e88e6b8f5db2f",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 12.760218,
+          "logical_git_blob_bytes": 1020
+        },
+        {
+          "case": "c22",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "9e05e6a1a24a5f698cab2f22fcaa10ed9d6ce0ddc79a3a9fe28954799192fc93",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 12.39421,
+          "logical_git_blob_bytes": 925
+        },
+        {
+          "case": "c23",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "2fb0a484021b0f76f0083a6a4fbf9237dde70e56a4da993ab4179d0cfeb60fc8",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 12.002003,
+          "logical_git_blob_bytes": 887
+        },
+        {
+          "case": "c24",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "57edfb8dc6072dd40db4bb36dc3cdcbc3a666ff1947c460bdd4f5f72a0d6ab02",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 12.760288,
+          "logical_git_blob_bytes": 1015
+        },
+        {
+          "case": "c25",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "d14ff7c6736db8eb01b7c503b9312bb04a9e22edc7cd18ea8b33d3fbc6e6c626",
+            "original_bytes": 689
+          },
+          "internal_duration_ms": 4.722567,
+          "logical_git_blob_bytes": 116
+        }
+      ],
+      "internal_duration_ms_sum": 338.44388399999997,
+      "logical_git_blob_bytes_sum": 22791
+    },
+    {
+      "preparation": "execution-v2-jev114",
+      "producer_runs": [
+        {
+          "case": "c01",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "16ea8092c7d7f7815fefffe94c63bb94542759e56c3d52d254c3842af5b37b56",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 16.559551,
+          "logical_git_blob_bytes": 1264
+        },
+        {
+          "case": "c02",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "f8f15e12239cd35d3d0d31fa105d67c3ac68374535f282ca87e1b689a39c0c5d",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 16.288979,
+          "logical_git_blob_bytes": 778
+        },
+        {
+          "case": "c03",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "68ef3add36956c899b31fddea7c3486f00addc8ba3d812e02fcab756ec31a55c",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 11.368887,
+          "logical_git_blob_bytes": 1287
+        },
+        {
+          "case": "c04",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "6c168f0d5880ed936f89eec11b672dd19ba6f034d0fcb5ac6e7a6616c057256b",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 11.503723,
+          "logical_git_blob_bytes": 777
+        },
+        {
+          "case": "c05",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "06953e8e631c84ddd12aba3dc61a0687c08fd4b99ee4820dfbcfb988f61c657f",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 10.733387,
+          "logical_git_blob_bytes": 1287
+        },
+        {
+          "case": "c06",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "88218e80d152857096b87d6ac2cf22a7d1f5a4d54eec0abea10f6a75c621f230",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 15.900772,
+          "logical_git_blob_bytes": 1029
+        },
+        {
+          "case": "c07",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "dac41dbc8a7d4a4217ba1600d8e9134da9cf8de690e6afd504a79f4e1c69ff9e",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 10.352949,
+          "logical_git_blob_bytes": 1304
+        },
+        {
+          "case": "c08",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "d62d89e4cc87571242d2c844392680102f6948f965af5e29ca7368c49e4cc6db",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 10.912091,
+          "logical_git_blob_bytes": 1001
+        },
+        {
+          "case": "c09",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "584bf13222b8febb4fe924d4f95437df0a9575fe5c391f095e5129609328aa3b",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 14.975341,
+          "logical_git_blob_bytes": 952
+        },
+        {
+          "case": "c10",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "dac159648566d542fca6336e7c04832ff7d09effe3abeef5c49ff77b4b8ab350",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 12.302997,
+          "logical_git_blob_bytes": 962
+        },
+        {
+          "case": "c11",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "d28af9890b128380abd3eb04dddfee6366472008a60fcc519457cb67babc9a65",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 10.821694,
+          "logical_git_blob_bytes": 1031
+        },
+        {
+          "case": "c12",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "d69cc71c21db4938588ae1e2c81becf8d738b3845ae118ee705247d3150518d0",
+            "original_bytes": 1095
+          },
+          "internal_duration_ms": 11.597529,
+          "logical_git_blob_bytes": 635
+        },
+        {
+          "case": "c13",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "595985a733bc846cd63c663a59577efad4660aa099ee5750f449af1bdd26eb07",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 11.29372,
+          "logical_git_blob_bytes": 917
+        },
+        {
+          "case": "c14",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "496e1487b1365c36d2e8fd34aaf503fbdaf8c7693cf6fad77a523831355da576",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 12.358155,
+          "logical_git_blob_bytes": 691
+        },
+        {
+          "case": "c15",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "f8c69ffd1f8cbb1bdac63bbd1ec1677b41a5eccd5c1dfeba130d2c6e20f26bb0",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 18.976973,
+          "logical_git_blob_bytes": 791
+        },
+        {
+          "case": "c16",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "9f043837692afc8dc7703bf9c7e07e203862951513b76114637eb74cecae4db7",
+            "original_bytes": 1095
+          },
+          "internal_duration_ms": 13.12652,
+          "logical_git_blob_bytes": 763
+        },
+        {
+          "case": "c17",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "a4042b6ba4cdf6179fe6ff50f695be2ec5ac3a100dadfe0fa58e68aaf5593e24",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 10.546403,
+          "logical_git_blob_bytes": 689
+        },
+        {
+          "case": "c18",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "720c9ddda431f92276c9e6b3cd9d4c045d4c7cfd8c2c6fe991ca6fe8db077c59",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 10.969569,
+          "logical_git_blob_bytes": 982
+        },
+        {
+          "case": "c19",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "ece00734f08468eeddf83fb6f3cdcf09842fcb28913b2f6a1e39b6503368bd48",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 10.759546,
+          "logical_git_blob_bytes": 1002
+        },
+        {
+          "case": "c20",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "19fdaa66c83d5c67a5f4acec47e60ec4bd97554a9414b137616bff563448b598",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 10.599042,
+          "logical_git_blob_bytes": 686
+        },
+        {
+          "case": "c21",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "80b4a4c8197880e18da93ff7eecd942934c12e12ed2f469a76c088a30bf0f2da",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 11.278239,
+          "logical_git_blob_bytes": 1020
+        },
+        {
+          "case": "c22",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "57d87caa233d7a3c17b7f643e27d0a323de79d82e2a9b973c6c10133e2fce69e",
+            "original_bytes": 1097
+          },
+          "internal_duration_ms": 11.383516,
+          "logical_git_blob_bytes": 925
+        },
+        {
+          "case": "c23",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "d391e9f246b8034d8043f28ae7d2267612a1075708868def06586b4e67f3d4a6",
+            "original_bytes": 1096
+          },
+          "internal_duration_ms": 16.097115,
+          "logical_git_blob_bytes": 887
+        },
+        {
+          "case": "c24",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "79ee2413baa1c1d3758c9a1f59a9238ca7dd10097c1304c4c1d82e56d9a245ae",
+            "original_bytes": 1098
+          },
+          "internal_duration_ms": 20.065949,
+          "logical_git_blob_bytes": 1015
+        },
+        {
+          "case": "c25",
+          "receipt": {
+            "retained_name": "receipt.json",
+            "original_sha256": "a69d612beb5691605d7c1ea64916d1cbe1be8930f84c486175df2bf7ead194cc",
+            "original_bytes": 689
+          },
+          "internal_duration_ms": 4.257904,
+          "logical_git_blob_bytes": 116
+        }
+      ],
+      "internal_duration_ms_sum": 315.030551,
+      "logical_git_blob_bytes_sum": 22791
+    }
+  ],
+  "source_checks": {
+    "candidate": "b4c3fc5303b24a56c91a914e286f0a7b63bf73a4",
+    "byte_identical_to_tested_files": true,
+    "producer_tests": 23,
+    "runner_tests": 90,
+    "experiments": 0,
+    "logs": [
+      {
+        "retained_name": "producer-tests.log",
+        "original_sha256": "1411b937a88f252db703f79eb2fe2b05e8283ff3684400ebb9a71cca38aa1a07",
+        "original_bytes": 122
+      },
+      {
+        "retained_name": "runner-tests.log",
+        "original_sha256": "72239b751175815b877fb22e5ee90271341dc59d8dc33686b102204b33fcbb9a",
+        "original_bytes": 2531
+      }
+    ]
+  },
+  "timing_basis": "Internal producer intervals begin inside prepare and are sampled before receipt writing; they exclude CLI setup and receipt-writing completion. Original and amended preparations are separate incurred setup work.",
+  "complete_preparation_wall_seconds": null,
+  "corpus_authoring_effort": null,
+  "native_preparation_tokens": null,
+  "operator_active_effort": null,
+  "amendment_reviews": [
+    {
+      "retained_name": "response.md",
+      "original_sha256": "42d1962b89dcb2e4158044d4699e6cf80b6eb86e0eafb6ea866deaa31b32062a",
+      "original_bytes": 2182
+    },
+    {
+      "retained_name": "response.md",
+      "original_sha256": "24483558a30f86c060735cf11a6d6fa8329ccc2a5bb3827fac0f3cdecd308d01",
+      "original_bytes": 2994
+    },
+    {
+      "retained_name": "response.md",
+      "original_sha256": "52c8d6064a343db2d5f2027c774f6ea8c3833c590accb4a6982db56a65b6fe1b",
+      "original_bytes": 2250
+    }
+  ],
+  "notes": [
+    "The superseded incomplete amendment review remains incurred work.",
+    "The storage wait and source preparation occurred before the experimental clock; no unmeasured duration is treated as zero."
+  ]
+}
