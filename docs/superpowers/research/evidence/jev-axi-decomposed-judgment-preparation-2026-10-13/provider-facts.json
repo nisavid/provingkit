@@ -50,6 +50,6 @@
   "decisions": "Documented ordinary API, gpt-6-luna, ordered one or four Choice questions in one request; no documented Pro route established. Decisions documents a maximum of 200 questions.",
   "qualification": "Documentary route and rate check only. No new credential, inference-access, or model probe was run for this preparation.",
   "actual_billing": "Unknown until independently available; normalized value is not an invoice.",
-  "jev": "Fixed requested selector jev-1.13.0; direct one or decomposed four named Choice questions in one request. Input usage includes questions and full state. A newer jev-1.14.0 preview is documented; this comparison preserves the earlier selector rather than silently switching models.",
+  "jev": "Fixed requested selector jev-1.14.0, documented as the newest official release from October 14, 2026; direct one or decomposed four named Choice questions in one request. Input usage includes questions and full state. Rate and endpoint are unchanged from the preceding proposal.",
   "grouping": "All six conditions use one request per treatment. Jev documents independent questions over shared state; Responses returns one joint structured object. This API distinction remains part of the treatment comparison and does not justify multiplying probabilities or request usage."
 }

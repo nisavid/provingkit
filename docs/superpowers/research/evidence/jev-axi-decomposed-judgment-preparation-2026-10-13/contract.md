@@ -18,7 +18,7 @@ Bind corpus files, original label reports, adjudication, key and grading, select
 
 | Order | Adapter | Requested model | Effort |
 | --- | --- | --- | --- |
-| 0 | Jev Choice | `jev-1.13.0` | none |
+| 0 | Jev Choice | `jev-1.14.0` | none |
 | 1 | Decisions Choice | `gpt-6-luna` | none |
 | 2 | Responses | `gpt-6-luna` | low |
 | 3 | Responses | `gpt-6-luna` | medium |
@@ -31,7 +31,7 @@ Run serially, with one fresh request per slot, one repetition, and no retry, add
 
 Jev sends a named map of one or four Choice questions; Decisions sends an ordered list of one or four Choice questions. Responses sends the same instructions and option meanings and requires either the original single-relation JSON object or one four-field JSON object. Tools are omitted. Jev documents independent questions over shared state; Responses can reason jointly. Preserve that distinction rather than claim identical internal execution. The direct request encoding remains unchanged from the prior comparison. No four-request decomposition fallback is permitted.
 
-The newer Jev 1.14 preview is not substituted for the previously used 1.13 selector. [Provider facts](provider-facts.json) record the public interface and rate evidence checked for this proposal. Documentary support and fake-service tests establish no live access or successful provider execution.
+Jev uses the fixed `jev-1.14.0` selector, the latest official release verified on October 15, 2026. The direct and decomposed treatments use this same version; historical results from 1.13 remain version-specific. [Provider facts](provider-facts.json) record the public interface and rate evidence checked for this proposal. Documentary support and fake-service tests establish no live access or successful provider execution.
 
 ## Routes, limits, and response validity
 
