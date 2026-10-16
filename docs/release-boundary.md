@@ -43,6 +43,11 @@ source contracts. A green run proves only the contract exercised by that run.
 These checks do not grant release, installation, runtime, or host-mutation
 authority. Opening or merging a source change does not authorize those operations.
 
+For a Mergecraft-only delivery's host-preservation inputs, use the prepared
+[capture-time admission contract](host-preservation-admission.md). Its schema
+describes request-bound observations; an actual baseline admission and current
+host applicability require the deployment owner's separate evidence.
+
 [Amberbridge](amberbridge.md) is the release-evidence bridge between the public
 Kit and its private deployment context. Its contracts and tests are present;
 live release routes remain unavailable in this source stage.
