@@ -26,6 +26,11 @@ and a replaceable pointer to the history's head. The repository-configuration
 owner consumes the deployment owner's return and owns the delivery validator.
 Dotfiles owns the installation-view exporter and its inner schema.
 
+The schema has two disjoint, closed branches: a complete observation record and
+an explicitly nonpassing response. The following fields describe the complete
+observation. A complete shape still requires the semantic checks below before
+any correspondence result.
+
 | Record field | Meaning |
 | --- | --- |
 | `record_origin` | `constructed` for test data or `owner-reported` for a supplied owner observation; neither label authenticates its author. |
@@ -54,6 +59,31 @@ from dotfiles commit `e463260bd6879fb41d2cb977075ac70ae8f5fc6c`. This contract
 references it without changing it. Consumers load the exporter procedure from
 its independently reviewed source before processing its records. An archive
 digest described by that exporter as declared remains declared here.
+
+## Missing or unavailable evidence
+
+When a required identity is unknown, return the nonpassing branch. It retains
+the exact `admission_request`, independently reviewed `reviewed_contract`,
+`observed_at`, and available file identities in `known_records`. Its
+`dependencies` entries name each missing or unavailable dependency and give a
+reason. They describe missing evidence without supplying a fabricated byte
+count or hash. The response also requires an overall `reason` and an `outcome`
+of `missing-evidence` or `unavailable`.
+
+This branch fixes `claim` to `no-preservation-correspondence`. It carries no
+complete owner decision or `currentness` object and cannot claim a matching
+observation. Keep a known expected identity in `known_records` when the file
+itself is inaccessible; describe the access failure in `dependencies`.
+Preserving known identities is a semantic requirement beyond schema syntax.
+
+Both branches use the same prepared schema identity and status. Validate the
+selected branch before interpreting its outcome; a malformed or mixed response
+is a contradiction. A well-formed nonpassing response keeps its declared
+missing/unavailable outcome, subject to consistent reasons and dependency
+states. Obtaining the missing evidence later requires a new complete observation
+and owner return, rather than upgrading the old response. If the immutable
+request or reviewed contract cannot be identified, stop before constructing a
+bound response and report that prerequisite through the owner channel.
 
 ## Preservation coverage
 
@@ -104,7 +134,8 @@ work continues through its separately selected installation procedure.
 1. Freeze the claim, route, complete member identities, development and delivery
    commits, required coverage, consumer request bytes, input map, reviewed
    contract identity, and original owner-decision evidence. Missing inputs remain
-   explicit missing evidence.
+   explicit missing evidence in the nonpassing branch. The immutable request
+   and reviewed-contract identities are prerequisites for either branch.
 2. Consume the exact raw subject and baseline statements, full export records,
    inventories, both raw receipts, and mode evidence. Verify bytes and digests
    before parsing and identities after consumption. Reject duplicate JSON keys,
@@ -117,8 +148,9 @@ work continues through its separately selected installation procedure.
    maintained decision history, original decision evidence, observed head, and
    current material dependencies. Return an explicit nonpassing outcome for an
    unavailable decision source or any failed binding.
-5. Receive the raw admission record, its digest, reviewed contract identity,
-   request identity, and observed head identity through the private owner channel.
+5. Receive the raw complete record or nonpassing response, its digest, reviewed
+   contract identity, request identity, and head identity when observed through
+   the private owner channel.
    The consumer obtains the expected digest and contract identity independently
    of its candidate packet and compares them before interpretation.
 6. Report the outcome and its capture-time limit. Retain the raw inputs,

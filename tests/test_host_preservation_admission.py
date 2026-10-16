@@ -99,6 +99,75 @@ class HostPreservationAdmissionShapeTests(unittest.TestCase):
             self.record["baseline"]["record"]["sha256"],
         )
 
+    def nonpassing_response(self, dependencies, outcome="missing-evidence"):
+        return {
+            "schema": self.fixture["schema"],
+            "contract_status": "prepared-not-adopted",
+            "record_origin": "constructed",
+            "reviewed_contract": copy.deepcopy(self.fixture["producer_contract"]),
+            "admission_request": copy.deepcopy(
+                self.fixture["currentness"]["admission_request"]
+            ),
+            "observed_at": "2026-01-01T00:00:00Z",
+            "outcome": outcome,
+            "claim": "no-preservation-correspondence",
+            "known_records": [],
+            "dependencies": [
+                {
+                    "dependency": dependency,
+                    "state": "missing" if outcome == "missing-evidence" else "unavailable",
+                    "reason": "Constructed case: no observed file identity",
+                }
+                for dependency in dependencies
+            ],
+            "reason": "Required owner evidence could not be obtained",
+        }
+
+    def test_unknown_owner_evidence_has_a_nonpassing_response(self):
+        for dependencies in (
+            ["decision-source"],
+            ["original-owner-decision"],
+            ["decision-source", "original-owner-decision"],
+        ):
+            with self.subTest(dependencies=dependencies):
+                response = self.nonpassing_response(dependencies)
+                self.validator.validate(response)
+                self.assertNotIn("owner_decision", response)
+                self.assertNotIn("currentness", response)
+                self.assertEqual(
+                    response["admission_request"],
+                    self.fixture["currentness"]["admission_request"],
+                )
+
+    def test_unavailable_identity_keeps_only_known_records(self):
+        response = self.nonpassing_response(["decision-source"], "unavailable")
+        response["known_records"] = [copy.deepcopy(self.fixture["baseline"]["record"])]
+        self.validator.validate(response)
+
+    def test_nonpassing_response_requires_request_contract_and_explanation(self):
+        response = self.nonpassing_response(["decision-source"])
+        for field in ("admission_request", "reviewed_contract", "outcome", "reason", "dependencies"):
+            with self.subTest(field=field):
+                incomplete = copy.deepcopy(response)
+                del incomplete[field]
+                self.assertFalse(self.validator.is_valid(incomplete))
+        response["dependencies"] = []
+        self.assertFalse(self.validator.is_valid(response))
+
+    def test_nonpassing_response_cannot_claim_correspondence_or_mix_branches(self):
+        for field, value in (
+            ("outcome", "matches-admitted-observation-at-capture"),
+            ("claim", "correspondence-to-owner-admitted-observation-at-capture"),
+            ("owner_decision", self.fixture["owner_decision"]),
+        ):
+            with self.subTest(field=field):
+                response = self.nonpassing_response(["original-owner-decision"])
+                response[field] = value
+                self.assertFalse(self.validator.is_valid(response))
+        ambiguous = copy.deepcopy(self.fixture)
+        ambiguous.update(self.nonpassing_response(["decision-source"]))
+        self.assertFalse(self.validator.is_valid(ambiguous))
+
 
 if __name__ == "__main__":
     unittest.main()
