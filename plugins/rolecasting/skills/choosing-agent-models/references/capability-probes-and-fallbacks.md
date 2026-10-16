@@ -14,7 +14,40 @@ Catalog presence never proves that a native subagent, task, CLI, app-server,
 remote API, or peer accepts the pair. Proof for one product surface does not
 prove its paired surface. Model support also does not prove relationship,
 ownership, transport, or assurance. When the target exposes no selection
-fields, omit them only when current evidence proves an eligible inherited or environment-fixed model and effort; otherwise do not dispatch.
+fields, apply the fixed-binding branch below; otherwise pass every supported
+selection field.
+
+## Pass Every Supported Selection Field
+
+Choose deliberately under the existing selection order before creating any
+agent thread, task, session, or subagent. Inspect each field independently:
+
+| Target controls | Creation request and selection record |
+| --- | --- |
+| Model and effort | Pass the selected model and effort explicitly, even when they equal the global, desktop, or parent defaults. |
+| Model only | Pass the selected model. Record that the surface exposes no effort control and the observed fixed effort or its absence. |
+| Effort only | Pass the selected effort. Record the inherited model binding and the absence of a model control. |
+| Neither | Record the inherited model and effort binding and why neither can be set. |
+
+Omit only a field the exact surface does not expose. Model inheritance is
+permitted only without a model field, with its binding and reason recorded.
+For every unavailable control, establish the fixed binding sufficiently to
+pass suitability, effort eligibility, and consumer requirements before sending
+task data. A missing effort control does not waive a named-family effort floor;
+an unknown or ineligible binding returns `NEEDS_CONTEXT` or `BLOCKED` through
+the existing route gates. Never invent an unsupported field or value.
+
+Claude Code's Agent tool and native Codex subagent or task creation follow the
+same rule. Set Claude Code Agent `model` and `effort` when supported; this is
+the instruction to expose its effort control. If the actual tool schema still
+lacks effort, set model and record that limitation. For CLI and app-server
+creation, bind the outgoing creation fields and any separate turn-level effort
+control before the first worker inference. A selected pair written only in a
+plan or worker prompt does not apply an exposed request field.
+
+Retain the actual outgoing selection fields with the selection record, including
+omission reasons and proven fixed bindings. This establishes requested
+configuration, not actual model execution or product-enforced authority.
 
 ## Resolve Named Successors
 
@@ -50,13 +83,26 @@ Initial capability proof does not prove continuation capability. Before sending 
 
 Require the continuation actuator to select and observe the same private account binding used for the successful initial dispatch. If it cannot, treat capability as unproven and fail closed without sending the continuation payload. A newly created dedicated task or session still requires the owning workflow's creation authority and a fresh capability proof; it does not make an unrelated task eligible.
 
+Pass the deliberately resolved model and effort in every supported continuation
+field. When a continuation has no selection control, verify and record its
+retained binding; a stored model alone cannot establish current account affinity
+or effort. Apply the field-specific rules above without silently inheriting a
+global, desktop, or parent default. A continuation that creates a replacement
+thread, task, session, or subagent must also satisfy the creation requirement.
+
 ## Handle Probe Failure
 
 Treat capability as unproven when the executable is absent, a probe exits nonzero, output is malformed or unparseable, or the surface cannot isolate the requested scope and authority. Record the attempted surface, probe, and result. Never invent a slug, selection field, or dispatch.
 
 When a task that must be isolated cannot be created or verified, do not dispatch: return `NEEDS_CONTEXT` or `BLOCKED` so the owning workflow can select its no-runnable-route disposition. Unrelated-task reuse is never a fallback.
 
-Use a sufficient native route only when it preserves the original task contract. When current evidence proves an eligible inherited or environment-fixed model and effort that preserve that contract, omit unsupported model and effort fields. Unknown defaults cannot establish a required suitability or policy gate; fixed low defaults are ineligible for Astra/Fable and Sol/Opus, while other models follow their own effort rules. Otherwise, omit model and effort selection and do not dispatch: return `NEEDS_CONTEXT` with the missing fact when new evidence could establish capability, or `BLOCKED` with the failed-probe evidence when no permitted route can satisfy the contract.
+Use a sufficient native route only when it preserves the original task contract.
+Pass every supported selection field and apply the fixed-binding rules only to
+controls the surface lacks. Unknown defaults cannot establish a required
+suitability or policy gate; fixed low defaults are ineligible for Astra/Fable
+and Sol/Opus, while other models follow their own effort rules. If no eligible
+binding can be established, do not dispatch: return `NEEDS_CONTEXT` with the
+missing fact or `BLOCKED` with the failed-probe evidence.
 
 ## Apply Fallbacks
 
@@ -64,7 +110,7 @@ For roles without a fixed effort, choose the lowest accepted effort that preserv
 
 Prove every replacement model-effort pair independently in both the current catalog and executor schema, including a lower effort on the same model. Rejecting the requested pair establishes no capability for an alternative. Evidence for GPT does not prove an Opus pair, and schema support alone does not prove catalog availability. If either observation is missing, leave the replacement unselected and return `NEEDS_CONTEXT` or `BLOCKED` with the missing evidence.
 
-When GPT-6 Luna fits but is absent from the target executor schema, choose an accepted GPT-6.1 Sol or Claude Opus 5.5 pair that preserves the task contract. If explicit selection is unavailable, inherit only a proven eligible fixed model and effort. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
+When GPT-6 Luna fits but is absent from the target executor schema, choose an accepted GPT-6.1 Sol or Claude Opus 5.5 pair that preserves the task contract. Pass every supported model and effort field; use a proven eligible fixed binding only for an absent control. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
 
 For another harness, inspect its local capability surface and use only its exact supported values. Report an unavailable user-requested model rather than silently substituting.
 

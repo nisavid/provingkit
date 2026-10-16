@@ -1,6 +1,6 @@
 ---
 name: choosing-agent-models
-description: Use when selecting a model or effort after delegation, classifying security scope or continuations, or diagnosing routing blocks or refusals.
+description: Use when creating an agent thread, task, session, or subagent after delegation, selecting model and effort for continuations, classifying security scope, or diagnosing routing blocks or refusals.
 ---
 
 # Choosing Agent Models
@@ -18,5 +18,14 @@ Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fa
 3. Otherwise use [general tiers and preferences](references/general-tiers.md): GPT-6.1 Sol and Claude Opus 5.5 serve the same ordinary demanding roles, with existing provider preferences; Luna and proven Grok serve bounded work; Astra and proven Fable require the exceptional-tier conjunction.
 
 ## Prove Target Capability
+
+Every new agent thread, task, session, or subagent must deliberately select
+model and effort under the selection order and pass both supported creation
+fields. Global, desktop, and
+parent defaults never substitute for an exposed selection field. Set the model
+on a model-only surface and record the missing effort control. Inherit model
+only without a model field; record the proven binding and reason. Apply the
+[field and continuation rules](references/capability-probes-and-fallbacks.md#pass-every-supported-selection-field)
+including native Codex subagents and Claude Code's Agent tool.
 
 Use the newest proven version of the same named GPT or Claude model, preserving its role and gates. Earlier Sol versions are superseded by GPT-6.1 Sol. Read [capability and fallbacks](references/capability-probes-and-fallbacks.md) for successor identity, exact catalog/schema intersection, fixed selection, Fable proof, and unavailable routes. Never invent a slug, infer support from another surface, or treat selection as invocation authority. Return `adapter:model-selection-record` for ordinary same-leader selection. It proves the selected request and observed capability, not actual execution or authority.
