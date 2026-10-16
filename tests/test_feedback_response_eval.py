@@ -126,66 +126,166 @@ class PreparationTests(unittest.TestCase):
             (evidence_directory / "stdout").write_bytes(result.stdout)
         return result
 
-    def oracle(self):
-        constructor = types.ModuleType("clean_constructor_oracle")
-        content = self.git("show", self.revision + ":" + TOOLS["constructor"])
-        self.assertEqual(sha256(content), sha256((ROOT / TOOLS["constructor"]).read_bytes()))
-        exec(compile(content, "committed-constructor-oracle", "exec"), constructor.__dict__)
-        source = self.directory / "oracle-source"
-        source.mkdir(exist_ok=True)
-        for relative in self.git("ls-tree", "-r", "--name-only", self.revision).decode().splitlines():
-            path = source / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(self.git("show", self.revision + ":" + relative))
-        cases = json.loads((source / MANIFEST).read_bytes())["evals"]
-        requests = {(case["id"], variant): constructor.executor_request(source, case, variant).encode()
-                    for case in cases for variant in ("with_skill", "without_skill")}
-        return constructor, source, cases, requests
-
-    def verify_artifacts(self, record, output=None, repository=None, revision=None):
+    def verify_preparation(self, record, output=None, repository=None, revision=None, complete=True):
         output = output or self.output
         repository = repository or self.repository
         revision = revision or self.revision
-        tree = subprocess.check_output(
-            ["git", "ls-tree", "-r", "-z", "--full-tree", revision], cwd=repository,
-        )
+        self.assertFalse(output.is_symlink())
+
+        def git(*arguments):
+            return subprocess.check_output(["git", *arguments], cwd=repository)
+
         committed = {}
-        for raw_entry in tree.split(b"\0"):
+        for raw_entry in git("ls-tree", "-r", "-z", "--full-tree", revision).split(b"\0"):
             if raw_entry:
                 metadata, raw_path = raw_entry.split(b"\t", 1)
                 mode, kind, oid = metadata.decode("ascii").split(" ")
                 committed[os.fsdecode(raw_path)] = (mode, kind, oid)
-        entries = record["artifacts"]
-        self.assertEqual(len(entries), len({entry["relpath"] for entry in entries}))
-        for entry in entries:
-            content = (output / entry["relpath"]).read_bytes()
-            self.assertEqual(sha256(content), entry["sha256"])
-            self.assertEqual(len(content), entry["byte_count"])
-        for relative, entry in record["source"]["inventory"].items():
-            path = output / entry["relpath"]
+
+        def blob(relative):
             mode, kind, oid = committed[relative]
             self.assertEqual(kind, "blob")
             self.assertIn(mode, ("100644", "100755"))
-            self.assertEqual(entry["oid"], oid)
-            self.assertEqual(entry["mode"], mode)
-            self.assertEqual(path.stat().st_mode & 0o777, 0o700 if mode == "100755" else 0o600)
-            self.assertEqual(path.read_bytes(), subprocess.check_output(
-                ["git", "show", revision + ":" + relative], cwd=repository,
-            ))
+            return git("cat-file", "blob", oid)
+
+        def reference(relative, content):
+            return {"relpath": relative, "sha256": sha256(content), "byte_count": len(content)}
+
+        tools = {role: {"path": path, "oid": committed[path][2], "sha256": sha256(blob(path))}
+                 for role, path in TOOLS.items()}
+        binding = {"schema": "provingkit.feedback-response-preparation.binding.v1", "source_commit": revision,
+                   "object_format": git("rev-parse", "--show-object-format").decode().strip(), "tools": tools}
+        preparation_id = hashlib.sha256(canonical(binding)).hexdigest()
+        prefix = "preparations/" + preparation_id
+        constructor = types.ModuleType("independent_committed_constructor")
+        exec(compile(blob(TOOLS["constructor"]), "independent-committed-constructor", "exec"), constructor.__dict__)
+        self.assertEqual(list(constructor.CANDIDATE_PATHS), CANDIDATES)
+        self.assertEqual(constructor.MANIFEST, MANIFEST)
+        corpus_bytes = blob(MANIFEST)
+        corpus = json.loads(corpus_bytes)
+        cases = sorted(corpus["evals"], key=lambda case: case["id"])
+        self.assertEqual([case["id"] for case in cases], list(range(13)))
+        self.assertTrue(all(type(case["id"]) is int for case in cases))
+        case_files = sorted({"evals/mergecraft/skills/" + name for case in cases for name in case["files"]})
+        glob_matches = {pattern: sorted(path for path in committed if PurePosixPath(path).full_match(pattern))
+                        for pattern in constructor.SOURCE_GLOBS}
+        self.assertTrue(all(glob_matches.values()))
+        declared = set(CANDIDATES) | {MANIFEST} | set(case_files)
+        for matches in glob_matches.values():
+            declared.update(matches)
+        material = {}
+        for relative in sorted(declared):
+            path = PurePosixPath(relative)
+            relative.encode("utf-8", "strict")
+            self.assertFalse(path.is_absolute())
+            self.assertEqual(path.as_posix(), relative)
+            self.assertNotIn("..", path.parts)
+            self.assertNotIn("\\", relative)
+            self.assertNotIn("__pycache__", path.parts)
+            self.assertNotEqual(path.suffix, ".pyc")
+            material[relative] = blob(relative)
+        artifact_bytes = {prefix + "/source/" + path: content for path, content in material.items()}
+        source_inventory = {path: {"mode": committed[path][0], "oid": committed[path][2],
+                                   **reference(prefix + "/source/" + path, content)}
+                            for path, content in material.items()}
+        slots = []
+        requests = {}
+        with tempfile.TemporaryDirectory(dir=self.directory) as directory:
+            oracle = Path(directory)
+            for relative, content in material.items():
+                path = oracle / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+            self.assertEqual(constructor.source_paths(oracle, cases), sorted(declared))
+            for case in cases:
+                for variant in ("with_skill", "without_skill"):
+                    content = constructor.executor_request(oracle, case, variant).encode("utf-8")
+                    digest = sha256(content)
+                    relative = prefix + "/requests/" + digest.removeprefix("sha256:") + ".request"
+                    if relative in artifact_bytes:
+                        self.assertEqual(artifact_bytes[relative], content)
+                    artifact_bytes[relative] = content
+                    request = requests.setdefault(digest, {"relpath": relative, "byte_count": len(content), "slot_count": 0})
+                    for repetition in (1, 2, 3):
+                        request["slot_count"] += 1
+                        slots.append({"case_id": case["id"], "variant": variant, "repetition": repetition,
+                                      "state": "unstarted", "request_sha256": digest, "request_byte_count": len(content),
+                                      "request_relpath": relative,
+                                      "fixture_paths": ["evals/mergecraft/skills/" + name for name in case["files"]],
+                                      "candidate_bundle_paths": CANDIDATES if variant == "with_skill" else []})
+        grading_constructor = {"path": TOOLS["constructor"], "function": "grading_request",
+                               "sha256": tools["constructor"]["sha256"]}
+        grading_document = {"schema": "provingkit.feedback-response-preparation.grading", "cases": {
+            str(case["id"]): {"expected_output": case["expected_output"], "expectations": [
+                {"id": f"case-{case['id']}-expectation-{index}", "text": text, "severity": "safety"}
+                for index, text in enumerate(case["expectations"], 1)]} for case in cases},
+                            "grading_constructor": grading_constructor}
+        grading_bytes = canonical(grading_document) + b"\n"
+        grading_relative = prefix + "/grading/cases.json"
+        artifact_bytes[grading_relative] = grading_bytes
+        expected = {"schema": "provingkit.feedback-response-preparation", "schema_version": 1,
+                    "preparation_id": preparation_id, "binding": binding,
+                    "tree_oid": git("rev-parse", revision + "^{tree}").decode().strip(),
+                    "source": {"root_relpath": prefix + "/source", "declaration": {
+                        "candidate_paths": CANDIDATES, "manifest": MANIFEST, "case_files": case_files,
+                        "source_globs": list(constructor.SOURCE_GLOBS), "glob_matches": glob_matches}, "inventory": source_inventory},
+                    "corpus": {"path": MANIFEST, "oid": committed[MANIFEST][2], "sha256": sha256(corpus_bytes),
+                               "skill_name": corpus["skill_name"], "case_ids": list(range(13))},
+                    "slots": {"count": 78, "case_ids": list(range(13)), "variants": ["with_skill", "without_skill"],
+                              "repetitions": [1, 2, 3], "entries": slots}, "requests": requests,
+                    "grading": {**reference(grading_relative, grading_bytes), "constructor": grading_constructor,
+                                "requires_at_grading_time": ["response", "response_sha256"]},
+                    "artifacts": [reference(path, content) for path, content in sorted(artifact_bytes.items())],
+                    "actor_content_policy": {"request_fields": ["prompt", "fixture", "candidate_bundle"],
+                                             "excluded_from_actor_content": ["source paths", "case labels", "repetition labels", "condition labels", "corpus", "expected outputs", "expectations", "runtime helpers", "grading results", "execution metadata"]},
+                    "authority": {"kind": "preparation_only", "claims": [], "excluded": ["actor_execution", "grader_execution", "attempt_reservation", "provider_call", "qualification", "release", "durability_certification"]}}
+        self.assertEqual(canonical(record), canonical(expected))
+        for relative, content in artifact_bytes.items():
+            path = output
+            for part in PurePosixPath(relative).parts:
+                path /= part
+                self.assertFalse(path.is_symlink())
+            self.assertTrue(path.is_file())
+            self.assertEqual(path.read_bytes(), content)
+        for entry in source_inventory.values():
+            self.assertEqual((output / entry["relpath"]).stat().st_mode & 0o777,
+                             0o700 if entry["mode"] == "100755" else 0o600)
+        if complete:
+            record_relative = prefix + "/preparation.json"
+            record_path = output / record_relative
+            self.assertFalse(record_path.is_symlink())
+            self.assertTrue(record_path.is_file())
+            self.assertEqual(record_path.read_bytes(), canonical(expected) + b"\n")
+            expected_files = set(artifact_bytes) | {record_relative}
+            expected_directories = {parent.as_posix() for path in expected_files for parent in PurePosixPath(path).parents
+                                    if parent.as_posix().startswith(prefix + "/")}
+            actual_files, actual_directories = set(), set()
+            for directory, directories, files in os.walk(output / prefix, followlinks=False):
+                for name in directories:
+                    path = Path(directory) / name
+                    self.assertFalse(path.is_symlink())
+                    actual_directories.add(path.relative_to(output).as_posix())
+                for name in files:
+                    path = Path(directory) / name
+                    self.assertFalse(path.is_symlink())
+                    self.assertTrue(path.is_file())
+                    actual_files.add(path.relative_to(output).as_posix())
+            self.assertEqual(actual_files, expected_files)
+            self.assertEqual(actual_directories, expected_directories)
 
     def test_source_metadata_verification_rejects_oid_and_mode_only_drift(self):
         _, record = self.completed(self.prepare())
-        self.verify_artifacts(record)
+        self.verify_preparation(record)
         changed_oid = copy.deepcopy(record)
         changed_oid["source"]["inventory"][self.runtime]["oid"] = "0" * 40
         with self.assertRaises(AssertionError):
-            self.verify_artifacts(changed_oid)
+            self.verify_preparation(changed_oid)
         changed_mode = copy.deepcopy(record)
         changed_mode["source"]["inventory"][self.runtime]["mode"] = "100644"
         exported = self.output / record["source"]["inventory"][self.runtime]["relpath"]
         exported.chmod(0o600)
         with self.assertRaises(AssertionError):
-            self.verify_artifacts(changed_mode)
+            self.verify_preparation(changed_mode)
 
     def test_baseline_prepares_every_coordinate_and_verifiable_artifact(self):
         result = self.prepare()
@@ -203,34 +303,7 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(canonical(record["binding"])).hexdigest(), record["preparation_id"])
         self.assertEqual(record["binding"]["source_commit"], self.revision)
         self.assertEqual(record["tree_oid"], self.git("rev-parse", self.revision + "^{tree}").decode().strip())
-        constructor, source, cases, requests = self.oracle()
-        self.assertEqual(sorted(record["source"]["inventory"]), constructor.source_paths(source, cases))
-        coordinates = [(case_id, variant, repetition) for case_id in range(13)
-                       for variant in ("with_skill", "without_skill") for repetition in (1, 2, 3)]
-        self.assertEqual(record["slots"]["count"], 78)
-        self.assertEqual([(slot["case_id"], slot["variant"], slot["repetition"])
-                          for slot in record["slots"]["entries"]], coordinates)
-        for slot in record["slots"]["entries"]:
-            self.assertEqual(slot["state"], "unstarted")
-            expected = requests[slot["case_id"], slot["variant"]]
-            self.assertEqual((self.output / slot["request_relpath"]).read_bytes(), expected)
-            self.assertEqual(slot["request_sha256"], sha256(expected))
-            self.assertEqual(slot["request_byte_count"], len(expected))
-            self.assertEqual(slot["candidate_bundle_paths"], CANDIDATES if slot["variant"] == "with_skill" else [])
-        self.assertEqual(len(record["requests"]), len(set(requests.values())))
-        self.assertEqual(len(record["artifacts"]), len(constructor.source_paths(source, cases)) + len(set(requests.values())) + 1)
-        grading_reference = {key: record["grading"][key] for key in ("relpath", "sha256", "byte_count")}
-        self.assertIn(grading_reference, record["artifacts"])
-        grading = json.loads((self.output / grading_reference["relpath"]).read_bytes())
-        self.assertEqual(grading["cases"]["0"], {"expected_output": "Private expected answer 0", "expectations": [
-            {"id": "case-0-expectation-1", "text": "Preserve contract 0.", "severity": "safety"}]})
-        self.verify_artifacts(record)
-        expected_files = {entry["relpath"] for entry in record["artifacts"]} | {outcome["preparation_relpath"]}
-        actual_files = {path.relative_to(self.output).as_posix() for path in
-                        (self.output / "preparations" / record["preparation_id"]).rglob("*") if path.is_file()}
-        self.assertEqual(actual_files, expected_files)
-        self.assertEqual(record["authority"]["kind"], "preparation_only")
-        self.assertEqual(record["authority"]["claims"], [])
+        self.verify_preparation(record)
 
     def completed(self, result, output=None):
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -252,6 +325,7 @@ class PreparationTests(unittest.TestCase):
         identities = {path: (path.stat().st_ino, path.stat().st_mode, path.read_bytes()) for path in paths}
         second, second_record = self.completed(self.prepare())
         self.assertEqual(record, second_record)
+        self.verify_preparation(second_record)
         self.assertTrue({entry["relpath"] for entry in record["artifacts"]} <= set(second["reused_relpaths"]))
         self.assertEqual({path: (path.stat().st_ino, path.stat().st_mode, path.read_bytes()) for path in paths}, identities)
         target = self.output / record["source"]["inventory"][self.runtime]["relpath"]
@@ -311,7 +385,7 @@ class PreparationTests(unittest.TestCase):
                         self.assertFalse(record_path.exists())
                     self.assertEqual(target.read_bytes(), b"interruption-compatible retained bytes")
                     self.assertEqual((target.stat().st_ino, target.stat().st_mode, target.stat().st_mtime_ns), before)
-                    self.verify_artifacts(record, output)
+                    self.verify_preparation(record, output, complete=False)
 
     def test_output_safety_checks_selected_head_and_index_paths_before_mutation(self):
         private = self.repository / "private"
@@ -377,7 +451,7 @@ class PreparationTests(unittest.TestCase):
                 self.assertTrue(target.is_dir())
                 self.assertFalse(any(target.iterdir()))
                 if kind == "record":
-                    self.verify_artifacts(record, output)
+                    self.verify_preparation(record, output, complete=False)
 
     def test_revision_and_declared_input_admission(self):
         for revision in (self.revision[:12], "HEAD", "fixture-tag"):
@@ -423,26 +497,6 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual((self.output / record["source"]["inventory"][CANDIDATES[0]]["relpath"]).read_bytes(), original)
         self.assertTrue(outcome["record_observed"])
 
-    def verify_independently_derived_inventory(self, record):
-        constructor, source, cases, requests = self.oracle()
-        paths = constructor.source_paths(source, cases)
-        self.assertEqual(sorted(record["source"]["inventory"]), paths)
-        expected_requests = {sha256(content): content for content in requests.values()}
-        self.assertEqual(set(record["requests"]), set(expected_requests))
-        prefix = "preparations/" + record["preparation_id"]
-        expected_artifacts = {prefix + "/source/" + path for path in paths}
-        expected_artifacts.update(prefix + "/requests/" + digest.removeprefix("sha256:") + ".request"
-                                  for digest in expected_requests)
-        expected_artifacts.add(prefix + "/grading/cases.json")
-        self.assertEqual({entry["relpath"] for entry in record["artifacts"]}, expected_artifacts)
-        self.assertEqual(len(record["artifacts"]), len(paths) + len(expected_requests) + 1)
-        for slot in record["slots"]["entries"]:
-            expected = requests[slot["case_id"], slot["variant"]]
-            self.assertEqual((self.output / slot["request_relpath"]).read_bytes(), expected)
-            self.assertEqual(slot["request_sha256"], sha256(expected))
-            self.assertEqual(slot["request_byte_count"], len(expected))
-        self.verify_artifacts(record)
-
     def verify_changed_inventory_reuse_and_collision(self, result, outcome, record):
         paths = [self.output / entry["relpath"] for entry in record["artifacts"]]
         record_path = self.output / outcome["preparation_relpath"]
@@ -450,6 +504,7 @@ class PreparationTests(unittest.TestCase):
         identities = {path: (path.stat().st_ino, path.stat().st_mode, path.read_bytes()) for path in paths}
         reused, reused_record = self.completed(self.prepare())
         self.assertEqual(reused_record, record)
+        self.verify_preparation(reused_record)
         self.assertTrue({entry["relpath"] for entry in record["artifacts"]} <= set(reused["reused_relpaths"]))
         self.assertEqual({path: (path.stat().st_ino, path.stat().st_mode, path.read_bytes()) for path in paths}, identities)
         target = self.output / next(iter(record["requests"].values()))["relpath"]
@@ -470,7 +525,7 @@ class PreparationTests(unittest.TestCase):
         outcome, record = self.completed(result)
         self.assertEqual(len(record["source"]["inventory"]), len(baseline["source"]["inventory"]) + 1)
         self.assertEqual(set(record["requests"]), set(baseline["requests"]))
-        self.verify_independently_derived_inventory(record)
+        self.verify_preparation(record)
         self.verify_changed_inventory_reuse_and_collision(result, outcome, record)
 
     def test_identical_requests_preserve_all_coordinates_with_one_artifact_per_byte_string(self):
@@ -484,7 +539,7 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(len(record["requests"]), 2)
         self.assertEqual([entry["slot_count"] for entry in record["requests"].values()], [39, 39])
         self.assertEqual(len(record["slots"]["entries"]), 78)
-        self.verify_independently_derived_inventory(record)
+        self.verify_preparation(record)
         self.verify_changed_inventory_reuse_and_collision(result, outcome, record)
 
     def test_captured_source_excludes_timestamp_and_unchecked_hash_caches(self):
@@ -503,9 +558,7 @@ class PreparationTests(unittest.TestCase):
                     cache.parent.mkdir(exist_ok=True)
                     cache.write_bytes(header + marshal.dumps(code))
                 _, record = self.completed(self.prepare())
-                _, _, _, requests = self.oracle()
-                for slot in record["slots"]["entries"]:
-                    self.assertEqual((self.output / slot["request_relpath"]).read_bytes(), requests[slot["case_id"], slot["variant"]])
+                self.verify_preparation(record)
                 self.assertFalse(marker.exists())
         helper = self.repository / TOOLS["storage_helper"]
         helper.write_bytes(f"from pathlib import Path\nPath({str(marker)!r}).write_text('ran')\n".encode() + helper.read_bytes())
@@ -519,7 +572,7 @@ class PreparationTests(unittest.TestCase):
         output = self.directory / "bare-output"
         _, bare_record = self.completed(self.prepare(repository=bare, output=output), output)
         self.assertEqual(checkout_record, bare_record)
-        self.verify_artifacts(bare_record, output)
+        self.verify_preparation(bare_record, output)
         self.failure(self.prepare(repository=bare, output=bare / "private"), "rejected", "unsafe-output-overlap")
 
     def test_checkout_with_unset_optional_bare_config_remains_eligible(self):
@@ -528,7 +581,7 @@ class PreparationTests(unittest.TestCase):
         output = self.directory / "unset-bare-output"
         _, record = self.completed(self.prepare(output=output), output)
         self.assertEqual(record, control)
-        self.verify_artifacts(record, output)
+        self.verify_preparation(record, output)
         self.failure(self.prepare(output=self.repository / ".git/private"), "rejected", "unsafe-output-overlap")
 
     def test_unborn_head_names_are_lossless_and_metadata_failures_reject(self):
@@ -541,7 +594,7 @@ class PreparationTests(unittest.TestCase):
                 output = self.directory / f"unborn-output-{index}"
                 _, record = self.completed(self.prepare(output=output), output)
                 self.assertEqual(record, control)
-                self.verify_artifacts(record, output)
+                self.verify_preparation(record, output)
                 self.assertEqual((self.repository / ".git/HEAD").read_bytes(), head_bytes)
                 self.assertEqual(self.git("ls-files", "--stage", "-z"), original_index)
         (self.repository / ".git/HEAD").write_bytes(b"invalid HEAD metadata\n")
@@ -560,7 +613,7 @@ class PreparationTests(unittest.TestCase):
                 output = self.directory / f"prefix-output-{index}"
                 _, record = self.completed(self.prepare(output=output), output)
                 self.assertEqual(record, control)
-                self.verify_artifacts(record, output)
+                self.verify_preparation(record, output)
         blob_oid = self.git("rev-parse", self.revision + ":" + CANDIDATES[0]).strip()
         target = self.repository / ".git/refs/heads/present-invalid"
         target.write_bytes(blob_oid + b"\n")
@@ -578,10 +631,12 @@ class PreparationTests(unittest.TestCase):
         _, record = self.completed(self.prepare())
         self.assertEqual(set(record["source"]["inventory"]), set(baseline["source"]["inventory"]))
         self.assertEqual(set(record["requests"]), set(baseline["requests"]))
+        self.verify_preparation(record)
         self.write(f"{SKILL}/scripts/café.py", b"unicode source")
         self.revision = self.commit()
         _, unicode_record = self.completed(self.prepare())
         self.assertIn(f"{SKILL}/scripts/café.py", unicode_record["source"]["inventory"])
+        self.verify_preparation(unicode_record)
         self.write(f"{SKILL}/scripts/" + os.fsdecode(b"bad-\xff.py"), b"selected invalid encoding")
         self.revision = self.commit()
         self.failure(self.prepare(), "rejected", "declared-input-unsafe")
@@ -646,23 +701,7 @@ class PreparationTests(unittest.TestCase):
         result = self.prepare(repository=ROOT, revision=real_revision, script=SCRIPT)
         self.assertEqual(result.returncode, 0, result.stderr)
         record = json.loads((self.output / json.loads(result.stdout)["preparation_relpath"]).read_bytes())
-        self.assertEqual(record["slots"]["count"], 78)
-        self.assertEqual(record["slots"]["case_ids"], list(range(13)))
-        constructor = types.ModuleType("real_committed_oracle")
-        source = subprocess.check_output(["git", "show", real_revision + ":" + TOOLS["constructor"]], cwd=ROOT)
-        exec(compile(source, "real-committed-oracle", "exec"), constructor.__dict__)
-        oracle = self.directory / "real-oracle"
-        oracle.mkdir()
-        for relative in record["source"]["inventory"]:
-            path = oracle / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(subprocess.check_output(["git", "show", real_revision + ":" + relative], cwd=ROOT))
-        cases = {case["id"]: case for case in json.loads((oracle / MANIFEST).read_bytes())["evals"]}
-        for slot in record["slots"]["entries"]:
-            expected = constructor.executor_request(oracle, cases[slot["case_id"]], slot["variant"]).encode()
-            self.assertEqual((self.output / slot["request_relpath"]).read_bytes(), expected)
-            self.assertEqual(slot["candidate_bundle_paths"], CANDIDATES if slot["variant"] == "with_skill" else [])
-        self.verify_artifacts(record, repository=ROOT, revision=real_revision)
+        self.verify_preparation(record, repository=ROOT, revision=real_revision)
 
     def consumer_status(self, result, invocation_id):
         try:
@@ -676,67 +715,30 @@ class PreparationTests(unittest.TestCase):
             self.assertEqual(result.stdout, outcome_bytes)
             self.assertEqual(started["invocation_id"], invocation_id)
             self.assertEqual(outcome["status"], "complete")
-            record_path = self.output / outcome["preparation_relpath"]
+            self.assertEqual(started["schema"], "provingkit.feedback-response-preparation.started.v1")
+            self.assertEqual(outcome["schema"], "provingkit.feedback-response-preparation.outcome.v1")
+            preparation_id = outcome["preparation_id"]
+            self.assertEqual(len(preparation_id), 64)
+            self.assertTrue(all(character in "0123456789abcdef" for character in preparation_id))
+            self.assertEqual(outcome["preparation_relpath"], "preparations/" + preparation_id + "/preparation.json")
+            record_path = self.output
+            for part in PurePosixPath(outcome["preparation_relpath"]).parts:
+                record_path /= part
+                self.assertFalse(record_path.is_symlink())
+            self.assertTrue(record_path.is_file())
             record_bytes = record_path.read_bytes()
             self.assertEqual(sha256(record_bytes), outcome["preparation_sha256"])
             record = json.loads(record_bytes)
-            identity = hashlib.sha256(canonical(record["binding"])).hexdigest()
-            self.assertEqual(identity, record["preparation_id"])
-            self.assertEqual(identity, record_path.parent.name)
-            self.assertEqual(record["binding"]["source_commit"], self.revision)
-            for role, relative in TOOLS.items():
-                expected_bytes = self.git("show", self.revision + ":" + relative)
-                expected_oid = self.git("rev-parse", self.revision + ":" + relative).decode().strip()
-                self.assertEqual(record["binding"]["tools"][role],
-                                 {"path": relative, "oid": expected_oid, "sha256": sha256(expected_bytes)})
-            for entry in record["artifacts"]:
-                relative = PurePosixPath(entry["relpath"])
-                self.assertFalse(relative.is_absolute())
-                self.assertEqual(relative.as_posix(), entry["relpath"])
-                self.assertNotIn("..", relative.parts)
-                current = self.output
-                for part in relative.parts:
-                    current /= part
-                    self.assertFalse(current.is_symlink())
-            self.verify_artifacts(record)
-            source_root = self.output / record["source"]["root_relpath"]
-            expected_files = set(record["source"]["inventory"])
-            expected_directories = {parent.as_posix() for path in expected_files
-                                    for parent in PurePosixPath(path).parents if str(parent) != "."}
-            actual_files = set()
-            actual_directories = set()
-            for directory, directories, files in os.walk(source_root, followlinks=False):
-                for name in directories:
-                    path = Path(directory) / name
-                    self.assertFalse(path.is_symlink())
-                    actual_directories.add(path.relative_to(source_root).as_posix())
-                for name in files:
-                    path = Path(directory) / name
-                    self.assertFalse(path.is_symlink())
-                    self.assertTrue(path.is_file())
-                    actual_files.add(path.relative_to(source_root).as_posix())
-            self.assertEqual(actual_files, expected_files)
-            self.assertEqual(actual_directories, expected_directories)
-            artifacts = {entry["relpath"]: entry for entry in record["artifacts"]}
-            for entry in record["source"]["inventory"].values():
-                self.assertEqual(artifacts[entry["relpath"]], {key: entry[key] for key in ("relpath", "sha256", "byte_count")})
-            for pattern, matches in record["source"]["declaration"]["glob_matches"].items():
-                self.assertEqual(matches, sorted(path for path in actual_files if PurePosixPath(path).full_match(pattern)))
-            expected_coordinates = [(case_id, variant, repetition) for case_id in range(13)
-                                    for variant in ("with_skill", "without_skill") for repetition in (1, 2, 3)]
-            self.assertEqual([(slot["case_id"], slot["variant"], slot["repetition"])
-                              for slot in record["slots"]["entries"]], expected_coordinates)
-            for slot in record["slots"]["entries"]:
-                self.assertEqual(slot["state"], "unstarted")
-                self.assertEqual(artifacts[slot["request_relpath"]],
-                                 {"relpath": slot["request_relpath"], "sha256": slot["request_sha256"],
-                                  "byte_count": slot["request_byte_count"]})
-            grading = record["grading"]
-            self.assertEqual(artifacts[grading["relpath"]], {key: grading[key] for key in ("relpath", "sha256", "byte_count")})
-            self.assertEqual(json.loads((self.output / grading["relpath"]).read_bytes())["cases"], {
-                str(case["id"]): {"expected_output": case["expected_output"], "expectations": [
-                    {"id": f"case-{case['id']}-expectation-{index}", "text": text, "severity": "safety"}
-                    for index, text in enumerate(case["expectations"], 1)]} for case in self.cases})
+            self.verify_preparation(record)
+            self.assertEqual(outcome["invocation_id"], invocation_id)
+            self.assertEqual(outcome["intended_exit_status"], 0)
+            self.assertIs(outcome["record_observed"], True)
+            self.assertEqual(outcome["preparation_id"], record["preparation_id"])
+            self.assertEqual(outcome["preparation_relpath"], "preparations/" + record["preparation_id"] + "/preparation.json")
+            self.assertEqual(started["source_revision"], self.revision)
+            self.assertEqual(started["controller_sha256"], record["binding"]["tools"]["controller"]["sha256"])
+            self.assertEqual(started["output_dir"], path_bytes(self.output))
+            self.assertEqual(started["repository"], path_bytes(self.repository))
             retained = {"procedure_revision": self.revision, "invocation_id": invocation_id,
                         "started_sha256": sha256(started_bytes), "outcome_sha256": sha256(outcome_bytes),
                         "process_result": {"returncode": result.returncode, "stdout_sha256": sha256(result.stdout)}}
@@ -760,7 +762,7 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(outcome["status"], "complete")
         self.assertEqual(outcome["intended_exit_status"], 0)
         record = json.loads((self.output / outcome["preparation_relpath"]).read_bytes())
-        self.verify_artifacts(record)
+        self.verify_preparation(record)
         self.assertEqual(self.consumer_status(failed, outcome["invocation_id"]), "indeterminate")
         result = self.prepare()
         ordinary, _ = self.completed(result)
@@ -778,13 +780,74 @@ class PreparationTests(unittest.TestCase):
         outcome_path.unlink()
         self.assertEqual(self.consumer_status(result, invocation_id), "indeterminate")
         outcome_path.write_bytes(content)
-        extra = self.output / record["source"]["root_relpath"] / "extra-empty"
-        extra.mkdir()
-        self.assertEqual(self.consumer_status(result, invocation_id), "indeterminate")
-        extra.rmdir()
+        prefix = self.output / "preparations" / record["preparation_id"]
+        for parent in (prefix / "source", prefix / "requests", prefix / "grading", prefix):
+            with self.subTest(parent=parent):
+                extra = parent / "extra-empty"
+                extra.mkdir()
+                self.assertEqual(self.consumer_status(result, invocation_id), "indeterminate")
+                extra.rmdir()
         result = self.prepare()
         fresh, _ = self.completed(result)
         self.assertEqual(self.consumer_status(result, fresh["invocation_id"]), "accepted")
+
+    def test_constructed_consistent_envelopes_cannot_hide_broken_preparation_references(self):
+        observed = self.prepare()
+        outcome, record = self.completed(observed)
+        invocation_id = outcome["invocation_id"]
+        self.assertEqual(self.consumer_status(observed, invocation_id), "accepted")
+        record_path = self.output / outcome["preparation_relpath"]
+        outcome_path = self.output / "invocations" / invocation_id / "outcome.json"
+        original_record = record_path.read_bytes()
+        original_outcome = outcome_path.read_bytes()
+        retained_process = {path: path.read_bytes() for path in self.directory.glob("process-*/*")}
+        digest = next(iter(record["requests"]))
+        corruptions = [
+            (("requests", digest, "byte_count"), record["requests"][digest]["byte_count"] + 1),
+            (("requests", digest, "slot_count"), record["requests"][digest]["slot_count"] + 1),
+            (("requests", digest, "relpath"), record["grading"]["relpath"]),
+            (("requests",), {}),
+            (("slots", "entries", 0, "fixture_paths"), []),
+            (("slots", "entries", 0, "candidate_bundle_paths"), []),
+            (("slots", "entries", 0, "request_byte_count"), 0),
+            (("slots", "entries", 0, "state"), "started"),
+            (("slots", "count"), 77),
+            (("grading", "constructor", "sha256"), "sha256:" + "0" * 64),
+            (("grading", "requires_at_grading_time"), []),
+            (("source", "declaration", "case_files"), []),
+            (("source", "inventory"), {}),
+            (("artifacts",), record["artifacts"][:-1]),
+            (("artifacts",), record["artifacts"] + [record["artifacts"][0]]),
+            (("binding", "tools", "constructor", "oid"), "0" * 40),
+            (("tree_oid",), "0" * 40),
+            (("corpus", "sha256"), "sha256:" + "0" * 64),
+            (("authority", "claims"), ["actor_execution"]),
+        ]
+        try:
+            for path, replacement in corruptions:
+                with self.subTest(path=path):
+                    changed = copy.deepcopy(record)
+                    parent = changed
+                    for key in path[:-1]:
+                        parent = parent[key]
+                    parent[path[-1]] = replacement
+                    constructed_record = canonical(changed) + b"\n"
+                    record_path.write_bytes(constructed_record)
+                    constructed_outcome = {**outcome, "preparation_sha256": sha256(constructed_record)}
+                    constructed_stdout = canonical(constructed_outcome) + b"\n"
+                    outcome_path.write_bytes(constructed_stdout)
+                    constructed_process = subprocess.CompletedProcess(
+                        observed.args, observed.returncode, constructed_stdout, observed.stderr,
+                    )
+                    with self.assertRaises(AssertionError):
+                        self.verify_preparation(changed)
+                    self.assertEqual(self.consumer_status(constructed_process, invocation_id), "indeterminate")
+        finally:
+            record_path.write_bytes(original_record)
+            outcome_path.write_bytes(original_outcome)
+        self.assertEqual({path: path.read_bytes() for path in retained_process}, retained_process)
+        self.assertEqual(observed.stdout, original_outcome)
+        self.assertEqual(self.consumer_status(observed, invocation_id), "accepted")
 
 
 class CommandTests(unittest.TestCase):

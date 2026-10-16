@@ -321,6 +321,11 @@ reference's `constructor`, has the constructor `path`,
 Every source, slot, request, and grading reference must agree with exactly one
 `artifacts` entry in path, digest, and byte count. Inventory modes are Git
 `100644` or `100755`; retained source modes are respectively `0600` or `0700`.
+Each request-index key supplies the request digest; its path and byte count
+must match that artifact and every referring slot. Its `slot_count` equals
+the number of referring coordinates. The artifact list contains exactly the
+independently derived source, unique request, and grading set, with no extra
+or duplicate entries.
 
 ## Preparation procedure and recovery
 
@@ -446,10 +451,14 @@ Accept through one named invocation only when:
    the expected private mode from that committed mode. Exhaustive traversal
    finds exactly the source inventory files and
    ancestor directories; constructor glob equality alone is insufficient.
-4. All 78 distinct ordered coordinates reference listed requests; globs and
-   source inventory agree; grading references agree with the artifact list
-   and independently verified grading bytes. The consumer may also recompute
-   requests through the bound constructor.
+4. All 78 distinct ordered coordinates reference listed requests; each
+   request-index digest, path, byte count, and coordinate multiplicity agrees
+   with its artifact and slots. Globs and source inventory agree with the
+   selected commit's declarations. Grading references, constructor identity,
+   and required future inputs agree with the artifact list and independently
+   verified grading bytes. The consumer may also recompute requests through
+   the bound constructor. The preparation tree contains only those artifacts,
+   the record, and their necessary directories.
 5. The consumer retains its loaded procedure revision, invocation ID, both
    evidence-file digests, and the observed process result.
 
@@ -472,3 +481,15 @@ between record publication and outcome publication. Mode/fsync exception paths
 that cannot be deterministically driven through the public seam remain source
 review coverage; no fault-injection option or private-helper test seam is part
 of this interface.
+
+The test-side verifier derives the entire expected preparation from independent
+selected-commit tree metadata and blobs, then compiles the bound constructor
+separately and constructs requests against a clean oracle export. Baseline,
+growth, deduplication, reuse, real-corpus, and consumer checks use this same
+complete-contract verifier. Known incomplete-publication controls verify the
+references and retained artifacts without asserting a complete tree.
+Negative controls construct changed records with matching enclosing record
+digests, retained outcome bytes, and supplied process envelopes. They check
+that broken contract relationships still prevent acceptance; these envelopes
+are constructed inputs, not observed process results. The original subprocess
+captures remain unchanged.
