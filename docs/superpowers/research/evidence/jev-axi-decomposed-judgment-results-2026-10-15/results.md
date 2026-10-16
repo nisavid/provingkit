@@ -43,6 +43,23 @@ At c14, the direct Jev response selected `contradicted`, but its probabilities w
 
 Decisions changed two correct answers to incorrect ones and repaired none. Decomposition changed c10 from an unwarranted dishwasher-proof claim to a contradiction, and c24 from a supported pronunciation observation to an unsupported extension. Both Decisions treatments also missed all four material-reference cases. Luna 6 Low decomposition introduced one error on c23, failing to preserve the ambiguity in “the change” and “task duration.” Its direct question matched all cases. Luna 6 Medium, Luna 6 High, and Sol 6.1 Low matched all cases in both treatments. Neither treatment produced a semantic abstention or inconsistent combination.
 
+## Intermediate answers and cross-question tensions
+
+The complete offline join covers all 134 valid decomposed answer vectors. Nineteen records contain 34 component disagreements with the frozen key. Eight of those records still produce the correct final relation because the earlier interpretation gate bypasses the disagreeing later answers.
+
+| Condition | Records with disagreements | Component disagreements | Correct final relations among those records |
+| --- | ---: | ---: | ---: |
+| Jev 1.14.0 | 2 | 6 | 0 |
+| Decisions / Luna 6 | 8 | 16 | 0 |
+| Luna 6 Low | 4 | 6 | 3 |
+| Luna 6 Medium | 3 | 4 | 3 |
+| Luna 6 High | 2 | 2 | 2 |
+| Sol 6.1 Low | 0 | 0 | 0 |
+
+The disagreements comprise seven interpretation answers, ten incompatible-fact answers, and seventeen complete-warrant answers; relevant-conflict answers all match the key. The eight correct records contain ten disagreements in bypassed answers. These remain diagnostic discrepancies even though they do not change the accepted final grading.
+
+No vector combines an affirmative incompatible fact with affirmative complete warrant. None asserts complete warrant while reporting blocked interpretation or blocking independent conflict. Eleven vectors report a blocking independent conflict and an incompatible fact; the selected meanings expressly permit that combination, and the conflict gate correctly yields `unresolved`. Fifteen vectors use the interpretation gate. Their later answers, including the eight records with bypassed disagreements, remain visible in `component_diagnostics.records` in [results.json](results.json). The diagnostic counts distinguish disagreement with the key, tension between answers, and inconsistent final combinations; they neither repair answers nor override the frozen precedence.
+
 ## Quality and measured request cost
 
 The acceptance denominator remains 24 per condition/treatment. Every critical case must pass; an average cannot compensate for an error or missing answer. Jev has only fourteen attempted cases per treatment, so its totals must not be read as a complete 24-case comparison. Each table cell lists direct / decomposed.
