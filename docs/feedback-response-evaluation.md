@@ -317,6 +317,7 @@ Every source, slot, request, and grading reference must agree with exactly one
 1. Parse arguments; capture and admit tools, commit, and actual required
    capabilities; establish output write safety; derive the binding and ID.
 2. Prepare the private output root and allocate a fresh invocation directory.
+   Sync its parent directory after allocation to retain the new UUID entry.
    Freeze `started.json` before export. Strictly parse the committed corpus and
    require 13 unique integer IDs, 0–12. Establish the declared inventory.
 3. Read each blob through the admitted Git adapter and recompute its Git OID.
@@ -340,7 +341,9 @@ Every source, slot, request, and grading reference must agree with exactly one
    source file's mapped mode. Sync files and directories, including reuse.
    Repeat exhaustive export closure before the record pre-check.
 8. Pre-check the record path: absent or a regular file with identical bytes.
-   Freeze `preparation.json` last among preparation artifacts and reread it.
+   Freeze `preparation.json` last among preparation artifacts, then verify and
+   sync its file descriptor and parent directory, including same-byte reuse.
+   Check that the verified descriptor still corresponds to the final path.
 9. Freeze `outcome.json` as the last controller file write. Emit those same
    bytes on stdout, flush, and exit. The invoker retains the actual result.
 

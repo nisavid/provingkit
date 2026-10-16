@@ -215,7 +215,7 @@ class PreparationTests(unittest.TestCase):
 
     def test_reuse_preserves_files_and_rejects_same_bytes_in_wrong_mode(self):
         first, record = self.completed(self.prepare())
-        paths = [self.output / entry["relpath"] for entry in record["artifacts"]]
+        paths = [self.output / entry["relpath"] for entry in record["artifacts"]] + [self.output / first["preparation_relpath"]]
         identities = {path: (path.stat().st_ino, path.stat().st_mode, path.read_bytes()) for path in paths}
         second, second_record = self.completed(self.prepare())
         self.assertEqual(record, second_record)
@@ -294,7 +294,8 @@ class PreparationTests(unittest.TestCase):
         self.completed(self.prepare(output=self.repository), self.repository)
 
     def test_collisions_preserve_artifacts_and_record_and_report_incomplete(self):
-        outcome, record = self.completed(self.prepare())
+        first_result = self.prepare()
+        outcome, record = self.completed(first_result)
         record_path = self.output / outcome["preparation_relpath"]
         original_record = record_path.read_bytes()
         request = self.output / next(iter(record["requests"].values()))["relpath"]
@@ -305,6 +306,7 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(request.read_bytes(), b"existing differing request")
         self.assertEqual(request.stat().st_mtime_ns, before)
         self.assertEqual(record_path.read_bytes(), original_record)
+        self.assertEqual(self.consumer_status(first_result, outcome["invocation_id"]), "indeterminate")
         request.write_bytes(original_request)
         record_path.write_bytes(b"existing differing record")
         self.failure(self.prepare(), "incomplete", "record-collision")
@@ -365,21 +367,69 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual((self.output / record["source"]["inventory"][CANDIDATES[0]]["relpath"]).read_bytes(), original)
         self.assertTrue(outcome["record_observed"])
 
-    def test_inventory_growth_and_identical_requests_are_derived(self):
+    def verify_independently_derived_inventory(self, record):
+        constructor, source, cases, requests = self.oracle()
+        paths = constructor.source_paths(source, cases)
+        self.assertEqual(sorted(record["source"]["inventory"]), paths)
+        expected_requests = {sha256(content): content for content in requests.values()}
+        self.assertEqual(set(record["requests"]), set(expected_requests))
+        prefix = "preparations/" + record["preparation_id"]
+        expected_artifacts = {prefix + "/source/" + path for path in paths}
+        expected_artifacts.update(prefix + "/requests/" + digest.removeprefix("sha256:") + ".request"
+                                  for digest in expected_requests)
+        expected_artifacts.add(prefix + "/grading/cases.json")
+        self.assertEqual({entry["relpath"] for entry in record["artifacts"]}, expected_artifacts)
+        self.assertEqual(len(record["artifacts"]), len(paths) + len(expected_requests) + 1)
+        for slot in record["slots"]["entries"]:
+            expected = requests[slot["case_id"], slot["variant"]]
+            self.assertEqual((self.output / slot["request_relpath"]).read_bytes(), expected)
+            self.assertEqual(slot["request_sha256"], sha256(expected))
+            self.assertEqual(slot["request_byte_count"], len(expected))
+        self.verify_artifacts(record)
+
+    def verify_changed_inventory_reuse_and_collision(self, result, outcome, record):
+        paths = [self.output / entry["relpath"] for entry in record["artifacts"]]
+        record_path = self.output / outcome["preparation_relpath"]
+        paths.append(record_path)
+        identities = {path: (path.stat().st_ino, path.stat().st_mode, path.read_bytes()) for path in paths}
+        reused, reused_record = self.completed(self.prepare())
+        self.assertEqual(reused_record, record)
+        self.assertTrue({entry["relpath"] for entry in record["artifacts"]} <= set(reused["reused_relpaths"]))
+        self.assertEqual({path: (path.stat().st_ino, path.stat().st_mode, path.read_bytes()) for path in paths}, identities)
+        target = self.output / next(iter(record["requests"].values()))["relpath"]
+        record_bytes = record_path.read_bytes()
+        target.write_bytes(b"conflicting changed-inventory request")
+        modified_at = target.stat().st_mtime_ns
+        self.failure(self.prepare(), "incomplete", "artifact-collision")
+        self.assertEqual(target.read_bytes(), b"conflicting changed-inventory request")
+        self.assertEqual(target.stat().st_mtime_ns, modified_at)
+        self.assertEqual(record_path.read_bytes(), record_bytes)
+        self.assertEqual(self.consumer_status(result, outcome["invocation_id"]), "indeterminate")
+
+    def test_added_glob_match_grows_the_complete_derived_inventory(self):
         _, baseline = self.completed(self.prepare())
         self.write(f"{SKILL}/scripts/additional.py", b"additional source")
+        self.revision = self.commit()
+        result = self.prepare()
+        outcome, record = self.completed(result)
+        self.assertEqual(len(record["source"]["inventory"]), len(baseline["source"]["inventory"]) + 1)
+        self.assertEqual(set(record["requests"]), set(baseline["requests"]))
+        self.verify_independently_derived_inventory(record)
+        self.verify_changed_inventory_reuse_and_collision(result, outcome, record)
+
+    def test_identical_requests_preserve_all_coordinates_with_one_artifact_per_byte_string(self):
         for case in self.cases:
             case["prompt"] = "Shared prompt."
             case["files"] = self.cases[0]["files"]
         self.write(MANIFEST, canonical({"skill_name": "interacting-with-pr-review-feedback", "evals": self.cases}))
         self.revision = self.commit()
-        _, record = self.completed(self.prepare())
-        self.assertEqual(len(record["source"]["inventory"]), len(baseline["source"]["inventory"]) - 11)
+        result = self.prepare()
+        outcome, record = self.completed(result)
         self.assertEqual(len(record["requests"]), 2)
         self.assertEqual([entry["slot_count"] for entry in record["requests"].values()], [39, 39])
         self.assertEqual(len(record["slots"]["entries"]), 78)
-        self.verify_artifacts(record)
-        self.completed(self.prepare())
+        self.verify_independently_derived_inventory(record)
+        self.verify_changed_inventory_reuse_and_collision(result, outcome, record)
 
     def test_captured_source_excludes_timestamp_and_unchecked_hash_caches(self):
         marker = self.directory / "cached-code-ran"
@@ -415,6 +465,15 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(checkout_record, bare_record)
         self.verify_artifacts(bare_record, output)
         self.failure(self.prepare(repository=bare, output=bare / "private"), "rejected", "unsafe-output-overlap")
+
+    def test_checkout_with_unset_optional_bare_config_remains_eligible(self):
+        _, control = self.completed(self.prepare())
+        self.git("config", "--unset", "core.bare")
+        output = self.directory / "unset-bare-output"
+        _, record = self.completed(self.prepare(output=output), output)
+        self.assertEqual(record, control)
+        self.verify_artifacts(record, output)
+        self.failure(self.prepare(output=self.repository / ".git/private"), "rejected", "unsafe-output-overlap")
 
     def test_lossless_source_selection_and_unicode_material(self):
         _, baseline = self.completed(self.prepare())
@@ -466,13 +525,21 @@ class PreparationTests(unittest.TestCase):
         self.failure(self.prepare(output=private), "rejected", "unsafe-output-overlap")
         self.assertEqual(invocations.stat().st_mode & 0o777, 0o755)
         self.assertEqual((self.repository / relative).read_bytes(), b"raw tracked sentinel")
-        self.git("reset", "--quiet", "HEAD", "--", relative)
-        preparations = private / "preparations"
-        preparations.mkdir(mode=0o700)
-        other = "private/preparations/" + os.fsdecode(b"selected-\xff")
+        isolated = self.repository / "selected-private"
+        isolated.mkdir(mode=0o700)
+        preparations = isolated / "preparations"
+        preparations.mkdir(mode=0o755)
+        other = "selected-private/preparations/" + os.fsdecode(b"selected-\xff")
         self.write(other, b"selected raw sentinel")
         self.revision = self.commit()
-        self.failure(self.prepare(output=private), "rejected", "unsafe-output-overlap")
+        before_head = self.git("rev-parse", "HEAD")
+        before_index = self.git("ls-files", "--stage", "-z")
+        self.failure(self.prepare(output=isolated), "rejected", "unsafe-output-overlap")
+        self.assertEqual(self.git("rev-parse", "HEAD"), before_head)
+        self.assertEqual(self.git("ls-files", "--stage", "-z"), before_index)
+        self.assertEqual(preparations.stat().st_mode & 0o777, 0o755)
+        self.assertEqual((self.repository / other).read_bytes(), b"selected raw sentinel")
+        self.assertFalse((isolated / "invocations").exists())
 
     def test_real_committed_corpus_uses_the_bound_constructor(self):
         real_revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip()

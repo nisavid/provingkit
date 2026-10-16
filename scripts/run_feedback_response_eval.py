@@ -198,7 +198,7 @@ class Preparation:
         self.stage = "repository"
         git_directory = Path(os.fsdecode(self.git("rev-parse", "--absolute-git-dir").removesuffix(b"\n")))
         common_directory = Path(os.fsdecode(self.git("rev-parse", "--path-format=absolute", "--git-common-dir").removesuffix(b"\n")))
-        bare = self.git("config", "--bool", "--get", "core.bare").strip() == b"true"
+        bare = self.git("config", "--bool", "--default", "false", "--get", "core.bare").strip() == b"true"
         protected = [git_directory.resolve(), common_directory.resolve(), *self.tool_paths.values()]
         checkout = None if bare else self.repository.resolve()
         if checkout is not None:
@@ -271,6 +271,8 @@ class Preparation:
         except OSError:
             self.invocation_id = None
             raise self.error("invocation-allocation-failed", "Cannot allocate a fresh invocation directory.") from None
+        self.helper.fsync_directory(invocation.parent, error_factory=lambda message: self.error(
+            "invocation-allocation-failed", "Cannot sync the new invocation directory entry."))
         started = {"schema": "provingkit.feedback-response-preparation.started.v1",
                    "invocation_id": self.invocation_id, "started_at": self.started_at,
                    "command": [encoded_path(value) for value in self.command],
@@ -503,30 +505,40 @@ class Preparation:
         self.grading = {**self.reference(grading_relative, grading_content), "constructor": grading_constructor,
                         "requires_at_grading_time": ["response", "response_sha256"]}
 
+    def verify_file(self, relative, content, mode=None):
+        path = self.output / relative
+        try:
+            observed, metadata = read_regular(path)
+            if observed != content or (mode is not None and stat.S_IMODE(metadata.st_mode) != mode):
+                raise OSError("artifact drift")
+            descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            try:
+                def identity(status):
+                    return (status.st_dev, status.st_ino, status.st_mode, status.st_size,
+                            status.st_mtime_ns, status.st_ctime_ns)
+
+                if identity(os.fstat(descriptor)) != identity(metadata):
+                    raise OSError("artifact identity drift")
+                os.fsync(descriptor)
+                if identity(path.lstat()) != identity(metadata):
+                    raise OSError("artifact pathname drift")
+            finally:
+                os.close(descriptor)
+            self.helper.fsync_directory(path.parent, error_factory=ValueError)
+        except (ValueError, OSError):
+            raise self.error("artifact-verification-failed", "Cannot verify and sync artifact " + display(relative) + ".") from None
+
     def verify(self):
         self.stage = "artifact_verification"
         source_modes = {entry["relpath"]: 0o700 if entry["mode"] == "100755" else 0o600
                         for entry in self.source_inventory.values()}
         directories = {self.output}
         for relative, content in self.artifact_bytes.items():
-            try:
-                observed, metadata = read_regular(self.output / relative)
-                if observed != content:
-                    raise OSError("artifact drift")
-                if relative in source_modes and stat.S_IMODE(metadata.st_mode) != source_modes[relative]:
-                    raise OSError("source mode drift")
-                descriptor = os.open(self.output / relative, os.O_RDONLY | os.O_NOFOLLOW)
-                try:
-                    os.fsync(descriptor)
-                finally:
-                    os.close(descriptor)
-                self.helper.fsync_directory((self.output / relative).parent, error_factory=ValueError)
-                parent = (self.output / relative).parent
-                while parent != self.output:
-                    directories.add(parent)
-                    parent = parent.parent
-            except (ValueError, OSError):
-                raise self.error("artifact-verification-failed", "Cannot verify and sync artifact " + display(relative) + ".") from None
+            self.verify_file(relative, content, source_modes.get(relative))
+            parent = (self.output / relative).parent
+            while parent != self.output:
+                directories.add(parent)
+                parent = parent.parent
         for directory in sorted(directories, key=lambda path: len(path.parts), reverse=True):
             self.helper.fsync_directory(directory, error_factory=lambda message: self.error(
                 "artifact-verification-failed", "Cannot sync artifact ancestor " + display(directory) + "."))
@@ -561,8 +573,7 @@ class Preparation:
         self.record_started = True
         self.freeze(self.record_relpath, self.record_bytes, "record-publication-failed")
         self.stage = "record_verification"
-        if read_regular(self.output / self.record_relpath)[0] != self.record_bytes:
-            raise self.error("artifact-verification-failed", "The published preparation record does not verify.")
+        self.verify_file(self.record_relpath, self.record_bytes)
 
     def run(self):
         if sys.version_info < (3, 13):
