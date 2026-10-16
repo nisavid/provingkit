@@ -34,9 +34,10 @@ what a rule fixes:
 
 Write equipment principle-first. Prescribe exact wording or commands only where
 an external system matches on them, such as the Conventional Commits header
-that Cocogitto's `commit-msg` hook checks. Mark that wording as an adapter to
-the system and name the principle it serves, so agents use the adapter only
-where that system applies and reason from the principle everywhere else.
+that Cocogitto's `commit-msg` hook checks. Mark that wording or command as an
+adapter to the system and name the principle it serves, so agents use the
+adapter only where that system applies and reason from the principle everywhere
+else.
 
 ## Design for the agents we have
 

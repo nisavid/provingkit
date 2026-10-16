@@ -34,8 +34,8 @@ Agent Plugins term and a Claude equivalent, the Agent Plugins term is the
 repository's word. Keep `README.md` as the verified human entrypoint and keep
 detailed contracts, research, and specs under `docs/`.
 
-Equipment is principle-first. Before writing, revising, or reviewing it, read
-the core maxim that opens `docs/plugin-system/design-principles.md`.
+Equipment is designed principle-first. Before writing, revising, or reviewing
+it, read the core maxim that opens `docs/plugin-system/design-principles.md`.
 
 Each member under `plugins/` is a package. Its README is the front page for
 people using the plugin and ships in installed copies, so its relative links
