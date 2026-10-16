@@ -431,8 +431,10 @@ Accept through one named invocation only when:
    yields its preparation ID and directory name, and the binding matches the
    commit and tools expected by the consumer's reviewed procedure revision.
 3. Every artifact resolves safely under the same root, without symlinks, with
-   matching bytes, digest, and length. Source modes match the committed mode
-   mapping. Exhaustive traversal finds exactly the source inventory files and
+   matching bytes, digest, and length. Compare each source inventory OID and
+   mode with independently obtained selected-commit tree metadata, then derive
+   the expected private mode from that committed mode. Exhaustive traversal
+   finds exactly the source inventory files and
    ancestor directories; constructor glob equality alone is insufficient.
 4. All 78 distinct ordered coordinates reference listed requests; globs and
    source inventory agree; grading references agree with the artifact list

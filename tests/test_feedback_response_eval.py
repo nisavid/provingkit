@@ -1,3 +1,4 @@
+import copy
 import hashlib
 import importlib.util
 import json
@@ -141,8 +142,19 @@ class PreparationTests(unittest.TestCase):
                     for case in cases for variant in ("with_skill", "without_skill")}
         return constructor, source, cases, requests
 
-    def verify_artifacts(self, record, output=None):
+    def verify_artifacts(self, record, output=None, repository=None, revision=None):
         output = output or self.output
+        repository = repository or self.repository
+        revision = revision or self.revision
+        tree = subprocess.check_output(
+            ["git", "ls-tree", "-r", "-z", "--full-tree", revision], cwd=repository,
+        )
+        committed = {}
+        for raw_entry in tree.split(b"\0"):
+            if raw_entry:
+                metadata, raw_path = raw_entry.split(b"\t", 1)
+                mode, kind, oid = metadata.decode("ascii").split(" ")
+                committed[os.fsdecode(raw_path)] = (mode, kind, oid)
         entries = record["artifacts"]
         self.assertEqual(len(entries), len({entry["relpath"] for entry in entries}))
         for entry in entries:
@@ -151,8 +163,29 @@ class PreparationTests(unittest.TestCase):
             self.assertEqual(len(content), entry["byte_count"])
         for relative, entry in record["source"]["inventory"].items():
             path = output / entry["relpath"]
-            self.assertEqual(path.stat().st_mode & 0o777, 0o700 if entry["mode"] == "100755" else 0o600)
-            self.assertEqual(path.read_bytes(), self.git("show", self.revision + ":" + relative))
+            mode, kind, oid = committed[relative]
+            self.assertEqual(kind, "blob")
+            self.assertIn(mode, ("100644", "100755"))
+            self.assertEqual(entry["oid"], oid)
+            self.assertEqual(entry["mode"], mode)
+            self.assertEqual(path.stat().st_mode & 0o777, 0o700 if mode == "100755" else 0o600)
+            self.assertEqual(path.read_bytes(), subprocess.check_output(
+                ["git", "show", revision + ":" + relative], cwd=repository,
+            ))
+
+    def test_source_metadata_verification_rejects_oid_and_mode_only_drift(self):
+        _, record = self.completed(self.prepare())
+        self.verify_artifacts(record)
+        changed_oid = copy.deepcopy(record)
+        changed_oid["source"]["inventory"][self.runtime]["oid"] = "0" * 40
+        with self.assertRaises(AssertionError):
+            self.verify_artifacts(changed_oid)
+        changed_mode = copy.deepcopy(record)
+        changed_mode["source"]["inventory"][self.runtime]["mode"] = "100644"
+        exported = self.output / record["source"]["inventory"][self.runtime]["relpath"]
+        exported.chmod(0o600)
+        with self.assertRaises(AssertionError):
+            self.verify_artifacts(changed_mode)
 
     def test_baseline_prepares_every_coordinate_and_verifiable_artifact(self):
         result = self.prepare()
@@ -475,6 +508,45 @@ class PreparationTests(unittest.TestCase):
         self.verify_artifacts(record, output)
         self.failure(self.prepare(output=self.repository / ".git/private"), "rejected", "unsafe-output-overlap")
 
+    def test_unborn_head_names_are_lossless_and_metadata_failures_reject(self):
+        _, control = self.completed(self.prepare())
+        original_index = self.git("ls-files", "--stage", "-z")
+        for index, branch in enumerate(("unborn", "café", os.fsdecode(b"unborn-\xff"))):
+            with self.subTest(branch=branch):
+                self.git("symbolic-ref", "HEAD", "refs/heads/" + branch)
+                head_bytes = (self.repository / ".git/HEAD").read_bytes()
+                output = self.directory / f"unborn-output-{index}"
+                _, record = self.completed(self.prepare(output=output), output)
+                self.assertEqual(record, control)
+                self.verify_artifacts(record, output)
+                self.assertEqual((self.repository / ".git/HEAD").read_bytes(), head_bytes)
+                self.assertEqual(self.git("ls-files", "--stage", "-z"), original_index)
+        (self.repository / ".git/HEAD").write_bytes(b"invalid HEAD metadata\n")
+        rejected_output = self.directory / "invalid-head-output"
+        result = self.prepare(output=rejected_output)
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["status"], "rejected")
+        self.assertFalse(rejected_output.exists())
+
+    def test_unborn_head_is_distinct_from_prefix_neighbors_and_present_invalid_targets(self):
+        _, control = self.completed(self.prepare())
+        for index, branch in enumerate(("unborn-parent", "café-parent", os.fsdecode(b"unborn-parent-\xff"))):
+            with self.subTest(branch=branch):
+                self.git("branch", branch + "/child", self.revision)
+                self.git("symbolic-ref", "HEAD", "refs/heads/" + branch)
+                output = self.directory / f"prefix-output-{index}"
+                _, record = self.completed(self.prepare(output=output), output)
+                self.assertEqual(record, control)
+                self.verify_artifacts(record, output)
+        blob_oid = self.git("rev-parse", self.revision + ":" + CANDIDATES[0]).strip()
+        target = self.repository / ".git/refs/heads/present-invalid"
+        target.write_bytes(blob_oid + b"\n")
+        self.git("symbolic-ref", "HEAD", "refs/heads/present-invalid")
+        rejected_output = self.directory / "present-invalid-output"
+        self.failure(self.prepare(output=rejected_output), "rejected", "required-capability-unavailable")
+        self.assertFalse(rejected_output.exists())
+        self.assertEqual(target.read_bytes(), blob_oid + b"\n")
+
     def test_lossless_source_selection_and_unicode_material(self):
         _, baseline = self.completed(self.prepare())
         unrelated = os.fsdecode(b"unrelated-\xff")
@@ -567,6 +639,7 @@ class PreparationTests(unittest.TestCase):
             expected = constructor.executor_request(oracle, cases[slot["case_id"]], slot["variant"]).encode()
             self.assertEqual((self.output / slot["request_relpath"]).read_bytes(), expected)
             self.assertEqual(slot["candidate_bundle_paths"], CANDIDATES if slot["variant"] == "with_skill" else [])
+        self.verify_artifacts(record, repository=ROOT, revision=real_revision)
 
     def consumer_status(self, result, invocation_id):
         try:

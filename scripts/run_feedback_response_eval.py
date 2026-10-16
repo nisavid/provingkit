@@ -207,8 +207,11 @@ class Preparation:
                 head = self.git("rev-parse", "--verify", "--quiet", "HEAD^{commit}").decode("ascii").strip()
             except PreparationError:
                 try:
-                    reference = self.git("symbolic-ref", "--quiet", "HEAD").decode("ascii").strip()
-                    if not reference.startswith("refs/heads/") or self.git("for-each-ref", "--format=%(objectname)", reference):
+                    reference = os.fsdecode(self.git("symbolic-ref", "--quiet", "HEAD").removesuffix(b"\n"))
+                    if not reference.startswith("refs/heads/"):
+                        raise ValueError
+                    existing_refs = self.git("for-each-ref", "--format=%(refname)", reference).splitlines()
+                    if os.fsencode(reference) in existing_refs:
                         raise ValueError
                 except (PreparationError, ValueError, UnicodeError):
                     raise self.error("required-capability-unavailable", "Cannot establish current HEAD pathname safety.") from None
