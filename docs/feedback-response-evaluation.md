@@ -117,6 +117,16 @@ make the complete preparation a transaction. The implementation must establish
 the ordering and completeness of the multi-artifact result through the public
 command's acceptance checks.
 
+Before record publication, the preparation tree must contain only the declared
+source export, unique requests, grading dependencies, and their necessary
+directories. The record path is checked separately for an immutable collision.
+After record publication, the same closure check includes the record itself.
+Unexpected entries, including temporary publication remnants, are preserved,
+not removed or repaired. A detected remnant prevents completion: the outcome
+is incomplete before record publication begins and indeterminate afterward.
+Tests construct retained remnant states through the public command; those
+checks do not claim to reproduce an actual hard-link race or unlink failure.
+
 An existing artifact with the same bytes may be reused. A different-byte
 collision must fail without replacing the artifact. On interrupted or failed
 publication, preserve already published artifacts and report incomplete or

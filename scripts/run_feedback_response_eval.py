@@ -423,8 +423,7 @@ class Preparation:
         self.helper.safe_relative_path(relative, label="artifact", error_factory=ValueError)
         return {"relpath": relative, "sha256": self.helper.digest_bytes(content), "byte_count": len(content)}
 
-    def source_closure(self):
-        expected_files = set(self.source_entries)
+    def tree_closure(self, root, expected_files, code, label, ignored=()):
         expected_directories = {parent.as_posix() for path in expected_files
                                 for parent in PurePosixPath(path).parents if parent.as_posix() != "."}
         found_files = set()
@@ -432,6 +431,8 @@ class Preparation:
 
         def walk(descriptor, prefix):
             for name in os.listdir(descriptor):
+                if not prefix and name in ignored:
+                    continue
                 relative = prefix + name
                 metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
                 if stat.S_ISDIR(metadata.st_mode) and relative in expected_directories:
@@ -445,20 +446,30 @@ class Preparation:
                 elif stat.S_ISREG(metadata.st_mode) and relative in expected_files:
                     found_files.add(relative)
                 else:
-                    raise self.error("export-closure-mismatch", "Unexpected source entry " + display(relative) + ".",
-                                     "Preserve the export and use a clean output root or separately authorized recovery.")
+                    raise self.error(code, "Unexpected " + label + " entry " + display(relative) + ".",
+                                     "Preserve existing evidence and use a clean output root or separately authorized recovery.")
 
         try:
-            descriptor = os.open(self.source_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+            descriptor = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
             try:
                 walk(descriptor, "")
                 os.fsync(descriptor)
             finally:
                 os.close(descriptor)
             if found_files != expected_files or found_directories != expected_directories:
-                raise self.error("export-closure-mismatch", "The source tree does not contain exactly the declared files and ancestors.")
+                raise self.error(code, "The " + label + " tree does not contain exactly the declared files and ancestors.")
         except OSError:
-            raise self.error("export-closure-mismatch", "Cannot establish exhaustive source-tree closure.") from None
+            raise self.error(code, "Cannot establish exhaustive " + label + "-tree closure.") from None
+
+    def source_closure(self):
+        self.tree_closure(self.source_root, set(self.source_entries), "export-closure-mismatch", "source")
+
+    def preparation_closure(self, include_record=False):
+        expected_files = {relative.removeprefix(self.prefix + "/") for relative in self.artifact_bytes}
+        if include_record:
+            expected_files.add("preparation.json")
+        self.tree_closure(self.output / self.prefix, expected_files, "artifact-verification-failed", "preparation",
+                          ignored=() if include_record else ("preparation.json",))
 
     def construct(self):
         self.stage = "constructor_verification"
@@ -547,6 +558,8 @@ class Preparation:
                 "artifact-verification-failed", "Cannot sync artifact ancestor " + display(directory) + "."))
         self.source_closure()
 
+        self.preparation_closure()
+
     def publish_record(self):
         record = {"schema": "provingkit.feedback-response-preparation", "schema_version": 1,
                   "preparation_id": self.preparation_id, "binding": self.binding, "tree_oid": self.tree_oid,
@@ -577,6 +590,7 @@ class Preparation:
         self.freeze(self.record_relpath, self.record_bytes, "record-publication-failed")
         self.stage = "record_verification"
         self.verify_file(self.record_relpath, self.record_bytes)
+        self.preparation_closure(include_record=True)
 
     def run(self):
         if sys.version_info < (3, 13):

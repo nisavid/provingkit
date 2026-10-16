@@ -290,6 +290,29 @@ class PreparationTests(unittest.TestCase):
                 else:
                     self.assertTrue(target.is_symlink())
 
+    def test_preparation_publication_remnants_are_preserved_and_prevent_completion(self):
+        outcome, record = self.completed(self.prepare())
+        for index, relative in enumerate(("requests/.earlier-request.tmp", "grading/.earlier-grading.tmp", ".earlier-record.tmp")):
+            for reuse in (False, True):
+                with self.subTest(relative=relative, reuse=reuse):
+                    output = self.directory / f"publication-remnant-{index}-{reuse}"
+                    record_path = output / outcome["preparation_relpath"]
+                    if reuse:
+                        self.completed(self.prepare(output=output), output)
+                        original_record = record_path.read_bytes()
+                    target = output / "preparations" / record["preparation_id"] / relative
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(b"interruption-compatible retained bytes")
+                    before = (target.stat().st_ino, target.stat().st_mode, target.stat().st_mtime_ns)
+                    self.failure(self.prepare(output=output), "incomplete", "artifact-verification-failed")
+                    if reuse:
+                        self.assertEqual(record_path.read_bytes(), original_record)
+                    else:
+                        self.assertFalse(record_path.exists())
+                    self.assertEqual(target.read_bytes(), b"interruption-compatible retained bytes")
+                    self.assertEqual((target.stat().st_ino, target.stat().st_mode, target.stat().st_mtime_ns), before)
+                    self.verify_artifacts(record, output)
+
     def test_output_safety_checks_selected_head_and_index_paths_before_mutation(self):
         private = self.repository / "private"
         private.mkdir(mode=0o700)
