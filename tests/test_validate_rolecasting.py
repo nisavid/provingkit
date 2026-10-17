@@ -648,6 +648,7 @@ class ValidateRolecastingTests(unittest.TestCase):
     def test_content_lock_covers_discovery_contracts(self) -> None:
         for relative_path in (
             "README.md",
+            "DEVELOPING.md",
             ".claude-plugin/plugin.json",
             "plugin.json",
         ):
@@ -657,6 +658,10 @@ class ValidateRolecastingTests(unittest.TestCase):
                 path.write_text(original + "\n")
                 self.assert_rejected("semantic content lock mismatch")
                 path.write_text(original)
+
+    def test_rejects_missing_developer_page(self) -> None:
+        (self.plugin / "DEVELOPING.md").unlink()
+        self.assert_rejected("component inventory drift")
 
     def test_rejects_topology_that_skips_resolved_continuations(self) -> None:
         path = self.plugin / "topology.json"

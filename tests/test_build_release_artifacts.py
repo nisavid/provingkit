@@ -149,7 +149,17 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
 
     def test_developer_pages_stay_in_source(self):
         members = [page.parent.name for page in developer_pages()]
-        self.assertEqual(members, ["mergecraft", "versionkeeping"])
+        self.assertEqual(
+            members,
+            [
+                "artifact-customs",
+                "mergecraft",
+                "proseweaving",
+                "rolecasting",
+                "tricritical",
+                "versionkeeping",
+            ],
+        )
         for target in TARGETS:
             for output, _ in self.stage(target, members):
                 self.assertFalse(any(p.name == "DEVELOPING.md" for p in output.rglob("*")))

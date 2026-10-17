@@ -112,6 +112,7 @@ PORTABILITY_PATTERNS = (
 BASE_FILES = {
     ".claude-plugin/plugin.json",
     "CHANGELOG.md",
+    "DEVELOPING.md",
     "LICENSE",
     "README.md",
     "content-lock.json",
@@ -1374,6 +1375,7 @@ def inspect_contract(root: Path) -> tuple[dict, set[str]]:
     delivery = validate_delivery(root)
     semantic_files |= {
         ".claude-plugin/plugin.json",
+        "DEVELOPING.md",
         "README.md",
         "plugin.json",
         "topology.json",

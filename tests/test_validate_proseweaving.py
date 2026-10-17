@@ -71,6 +71,7 @@ class ValidateProseweavingTests(unittest.TestCase):
             {
                 ".claude-plugin/plugin.json",
                 "CHANGELOG.md",
+                "DEVELOPING.md",
                 "LICENSE",
                 "README.md",
                 "evals/delivery.json",
@@ -136,6 +137,10 @@ class ValidateProseweavingTests(unittest.TestCase):
 
     def test_rejects_inventory_drift(self) -> None:
         (self.plugin / "NOTES.md").write_text("stray\n")
+        self.assert_rejected("component inventory drift")
+
+    def test_rejects_missing_developer_page(self) -> None:
+        (self.plugin / "DEVELOPING.md").unlink()
         self.assert_rejected("component inventory drift")
 
     def test_rejects_symlinked_inventory(self) -> None:

@@ -6,11 +6,9 @@ identity or byte sequence crossing a declared trust boundary.
 
 The root `plugin.json` is the canonical Agent Plugins v1 package identity.
 Codex reads its `com.openai` interface extension and the standard skills;
-Claude Code uses the `.claude-plugin/plugin.json` identity projection and the
+Claude Code uses an adapter manifest projected from that identity and the
 same skills. Each skill carries ordinary local projections of the shared
 contracts it reads so standard clients do not depend on package-sibling access.
-Release validation requires every projection to match its single authored
-package-level source byte for byte.
 
 The plugin has three public skills:
 
@@ -64,6 +62,12 @@ to a later research cycle for ecosystem evidence. Treat compromised-artifact
 risk fail-closed. No autonomy mode expands mutation authority beyond the named
 existing policy.
 
-Development evals, fixtures, tests, and generated content locks live in the
-repository-level `evals/`, `tests/`, and `release/` trees rather than this
-runtime plugin root.
+## Developing this plugin
+
+This section is for people who want to contribute to Artifact Customs, fork
+it, or work with its internals. An installed copy leaves out the topology
+(`topology.json`). The evaluation corpus, fixtures, validator, tests, and
+content lock live outside the plugin root, in the source repository. The
+[developer page](https://github.com/nisavid/provingkit/blob/main/plugins/artifact-customs/DEVELOPING.md)
+describes the source layout, the shared-contract projections, and repository
+validation.

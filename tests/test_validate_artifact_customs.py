@@ -155,6 +155,10 @@ class ArtifactCustomsExactContractTests(unittest.TestCase):
             json.dumps(value, indent=2) + "\n", encoding="utf-8"
         )
 
+    def test_rejects_missing_developer_page(self) -> None:
+        (self.plugin / "DEVELOPING.md").unlink()
+        self.assert_rejected("plugin root file inventory drift")
+
     def test_runtime_root_has_required_contract_and_no_development_artifacts(
         self,
     ) -> None:

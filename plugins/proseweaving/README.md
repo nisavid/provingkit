@@ -24,8 +24,8 @@ publication boundaries; projections do not cross plugin boundaries.
 
 Claude Code also discovers the native `proseweaver` agent alias. It is a thin
 forwarder to the public skill, so the skill remains the portable policy owner.
-Codex and other Agent Plugins clients consume the standard skill surface and do
-not load this Claude-native agent definition.
+Codex consumes the standard skill surface and does not load this Claude-native
+agent definition.
 
 ## Public skills
 
@@ -35,24 +35,13 @@ not load this Claude-native agent definition.
 | `writing-for-people` | human-facing-register, evidence-in-prose, post-draft-edit-pass | - |
 <!-- END GENERATED SKILL ROSTER -->
 
-## Adapter boundary
+## Developing this plugin
 
-Root `plugin.json` and `skills/` are the canonical Agent Plugins plugin root;
-`.claude-plugin/plugin.json` is a projection of the same identity. Skill-to-skill
-edges use literal public identities linked to sibling `SKILL.md` files. Codex
-adapters and each skill's `agents/openai.yaml` use `$proseweaving:<skill>` targets.
-The root `agents/proseweaver.md` file is a Claude-native adapter and is not a
-portable Agent Plugins component. The roster projection above is generated from
-`topology.json` by the content-lock writer.
-
-## Validation
-
-`python -m unittest tests.test_validate_proseweaving` exercises the focused
-contract suite. `python3 scripts/validate_proseweaving.py .` validates the plugin from the
-repository root: manifest identity and projection, topology, skill contracts,
-the generated roster projection, inventory, portability, and the semantic content lock.
-`--write-content-lock` regenerates the roster projection and the lock after an
-authored change. `evals/delivery.json` governs plugin delivery, while
-`skills/writing-for-people/evals/evals.json` carries the skill behavior corpus.
-The plugin declares no Task Witness provider yet; publication eligibility and
-inclusion in a release slate is decided outside this plugin.
+This section is for people who want to contribute to Proseweaving, fork it, or
+work with its internals. An installed copy leaves out the topology
+(`topology.json`), the content lock, the evaluation corpus and its delivery
+contract, the validator, and the tests; they stay in the source repository.
+The
+[developer page](https://github.com/nisavid/provingkit/blob/main/plugins/proseweaving/DEVELOPING.md)
+describes the adapter boundary, the generated roster, and repository
+validation.

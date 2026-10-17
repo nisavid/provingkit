@@ -64,6 +64,7 @@ GRADER_LEAK_PATTERNS = (
 BASE_FILES = {
     ".claude-plugin/plugin.json",
     "CHANGELOG.md",
+    "DEVELOPING.md",
     "LICENSE",
     "README.md",
     "content-lock.json",

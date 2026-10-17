@@ -4,8 +4,9 @@
   "files": {
     ".claude-plugin/plugin.json": "30adcd47fd8c9b885666ff648e162beacdf7d967b07fb3348c67c84310a27e5f",
     "CHANGELOG.md": "2c0998a6a499ae7578182b010ca7cfef77e0a8c01b29381bdf40b26384c7b0db",
+    "DEVELOPING.md": "7436d3d943564285cacbd658271a301c1928ff33c1dc508c0f4c75cf3ed9463c",
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
-    "README.md": "3e3fcdc2a6deea752d9be9ecddc567ea5d3881395bc94090d401ab447b24000e",
+    "README.md": "249ae497ff475057a8c754980cad3a27a656c66111ad2b1113ec821b655be649",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
     "plugin.json": "6efb1cccd07a51f0f1066c95399d74da51352de826d0243e321dcf3f76bf0639",
     "skills/writing-for-people/SKILL.md": "587a17cc6e7755755d8eb51b92118f5c1c62687b7fbea58da8f685eaca61ea5c",

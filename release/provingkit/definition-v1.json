@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:a3f794343970f2d1383bbea03de7239304813273f494078f816f7b873119c93a"
+          "sha256": "sha256:50f228710826f7ee6bea7f811e612d8bed894f344ca374275540a8be69a56530"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -82,7 +82,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/artifact-customs.json",
-          "sha256": "sha256:3a2cf96c58ebb6cb2396ac8a4c4d599a2a37378b33155c8c6886ba9998e30f7d"
+          "sha256": "sha256:d2aded79323aae96d303c62c083e80d614d7af863e6b0002056ab4a366dcaf4f"
         },
         "display_name": "Artifact Customs",
         "distribution_kind": "agent-plugin",
@@ -97,7 +97,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/proseweaving/content-lock.json",
-          "sha256": "sha256:0bb015901c73b1eb3387629ae25400e0cd8b7cc0205cb996288dd5ce85fe1c20"
+          "sha256": "sha256:2e7ad29460d38c6700471c42d2587fdd4e56bcc05d36167693ca45a41925fa00"
         },
         "display_name": "Proseweaving",
         "distribution_kind": "agent-plugin",
