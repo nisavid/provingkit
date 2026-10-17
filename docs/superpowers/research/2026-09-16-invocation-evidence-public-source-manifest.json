@@ -1,0 +1,766 @@
+{
+  "schema": "nisavid.provingkit.public-source-manifest/v1",
+  "title": "Invocation evidence and protected-evidence handles",
+  "research_issue": "https://github.com/nisavid/provingkit/issues/43",
+  "observation_date": "2026-09-16",
+  "retrieval_completed_at": "2026-09-16T06:16:38Z",
+  "scope": "Primary public documentation and pinned public source for the six harness surfaces selected by nisavid/provingkit#43. No live harness, inference, account, credential, host, signing, or provider operation was performed.",
+  "digest_algorithm": "sha256",
+  "digest_encoding": "lowercase hexadecimal",
+  "correction_revalidation": {
+    "retrieved_at": "2026-09-17T03:46:16Z",
+    "method": "Fresh unauthenticated retrieval of every cited moving document and immutable raw source. These are new captures, not recovered historical bytes. Directly retrievable bodies were SHA-256 digested; OpenAI Help and Admin facts were also rechecked through current public indexed primary-source retrieval because direct curl returned HTTP 403.",
+    "admin_openapi": {
+      "historical_schema_version": "2.5.20",
+      "fresh_schema_version": "2.5.21",
+      "version_drift": "changed",
+      "direct_http_status": 403,
+      "direct_response_sha256": "0f54d4131662f3b16cbf73f6db8499a5ce2a9d766cd3d9f49cddbbde41ab2672",
+      "indexed_primary_body_sha256": null,
+      "digest_limit": "The current indexed primary representation exposed the official JSON fields but not exact downloadable response bytes, so no digest is claimed for that representation.",
+      "verified_json_pointers": [
+        "/components/schemas/ComplianceLogFileMetadata/properties/file_sha256",
+        "/components/schemas/ComplianceLogFileMetadata/required",
+        "/components/schemas/ComplianceLogFileList/properties/data/items",
+        "/components/schemas/CodexClient/enum",
+        "/components/schemas/RemoteControlClient/properties/device_key_public_spki_der_base64"
+      ],
+      "verified_values": {
+        "file_sha256_type": "string",
+        "file_sha256_description": "Hex-encoded SHA-256 checksum of the file contents; use to verify integrity.",
+        "file_sha256_required": true,
+        "desktop_enum_members": [
+          "CODEX_DESKTOP_APP",
+          "CODEX_CHATGPT_DESKTOP"
+        ],
+        "remote_control_device_key_boundary": "The Admin schema exposes RemoteControlClient device public-key metadata, but no reviewed source binds that key to a CODEX_LOG event or file signature, candidate bytes, or a Q11 capability-scoped authority generation."
+      },
+      "drift_result": "The schema version advanced for Codex analytics documentation. The Compliance file checksum, list-reference, signed-download, at-least-once, retention, and distinct desktop-enum facts used by this report remain present. Exact emitted desktop mapping and exhaustive coverage remain unspecified."
+    },
+    "moving_document_captures": [
+      {
+        "id": "OAI-D1",
+        "http_status": 200,
+        "fresh_sha256": "70fc82c11faf98db944ed0ef3879295ba0d0c3485280db9b5060f95dd5dbea3e",
+        "historical_sha256": "a46c8a8901c55466f591669ed17ad93123e3cc14d12769eb296d499c149da055",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "OAI-D2",
+        "http_status": 200,
+        "fresh_sha256": "bf5607cef7429046faf1d77b672b3005629cf3cadf347e78396b20332e4b2106",
+        "historical_sha256": "9f892830bf46bbc31359d657b0d45cfa464173f365bb1bc60be55c6fdd19b8d5",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "OAI-D3",
+        "http_status": 200,
+        "fresh_sha256": "9b7fdff8665cecf33e4288d5f94851895c2395907c5a6c7ed9dc451b433be5e5",
+        "historical_sha256": "a8e3ca2d42a37c3e140b4d2f32bc823037e34fe3738417bbd2c8568109106a11",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "OAI-D4",
+        "direct_http_status": 403,
+        "direct_response_sha256": "bb1952571c3ab0bbf4f74159a0327df17938bd7409b38c5b868b95cca49eaec7",
+        "indexed_primary_body_sha256": null,
+        "drift": "not byte-comparable",
+        "claim_revalidation": "pass through current public indexed primary content"
+      },
+      {
+        "id": "OAI-D5",
+        "direct_http_status": 403,
+        "direct_response_sha256": "b50ae5138e6b46ab069e07172f0fc2f50da5a028a33fd2d4fb1aea0b0f662e02",
+        "indexed_primary_body_sha256": null,
+        "drift": "not byte-comparable",
+        "claim_revalidation": "pass through current public indexed primary content"
+      },
+      {
+        "id": "ANT-D1",
+        "http_status": 200,
+        "fresh_sha256": "5e8fc4641a0880ca87ef515c8750cc0ee2ab982f560be92704efd288d54faea6",
+        "historical_sha256": "a20233da19f243df4820f63e1cf6c27102be31d26422b4f1b2bf19ad844c2173",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "ANT-D2",
+        "http_status": 200,
+        "fresh_sha256": "077c6c5e5c537a00f25e6f2b09c23a46ca4a4c1c3064a8d1a43cd093611fc452",
+        "historical_sha256": "dc123f0bba33d7ff1aedfb0f943abc2d65fd6198fbd48726e7fa44bb83355d11",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "ANT-D3",
+        "http_status": 200,
+        "fresh_sha256": "928a04a45c49b3fdd7c3fd45a412d41c8bc3031635cf9297c48d1ac92f6cc466",
+        "historical_sha256": "ffdba78699459f792e8b3e2d7c848774950494e887e36cfbd6825631eb2213d8",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "ANT-D4",
+        "http_status": 200,
+        "fresh_sha256": "89e5f0401c07b5cea034eb4a4f0a0fa8f0a1b5bb00733ef8e026615cfc5967f6",
+        "historical_sha256": "8856bc596e24109218806eeb2816d24a02f72ad8588b42931fd0d08d4ae833ba",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "ANT-D5",
+        "http_status": 200,
+        "fresh_sha256": "2f6e63dac9e67c3975dad12fbf14db4c2dc0f0731015ed90322b9342c76a1d6a",
+        "historical_sha256": "56c81a1f0350ea57a142e4d31b919b79fab1635e928f07e0d1199a586202861d",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "ANT-D6",
+        "http_status": 200,
+        "fresh_sha256": "549583f8ea4eb538d0dd633ef56845d48c2331a08c8cc78777ec8d7b5be900dc",
+        "historical_sha256": "f66e1f4728959e5470308db9bad98542fc140e7b424173e14d4ef88c596e2752",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "CUR-D1",
+        "http_status": 200,
+        "fresh_sha256": "3100c90ac825583042d37529753f9b2eaa5ae937231769fc9c10fdcb8f941fdf",
+        "historical_sha256": "ad1c00b214cbd614812ea3b75d178f93bbd95cdd243661d149ea29080b979fc1",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "CUR-D2",
+        "http_status": 200,
+        "fresh_sha256": "de79dd944548d744c3f82428f54765e082a81b7c79fd119a5356ad1e55ea81a3",
+        "historical_sha256": "0e6abb631962e6edbeb632d54a06199881b7f767ac8e46ed0ad64c34f375ca59",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      },
+      {
+        "id": "CUR-D3",
+        "http_status": 200,
+        "fresh_sha256": "e2fc3d12c1e6b65d40df226fd3340947343f585781ab5793d1a7fd847e07a6ce",
+        "historical_sha256": "e3b6a9de654394346cf23fbb06ee7e1c12ee2955a747053bb876f29104a2c61a",
+        "drift": "changed",
+        "claim_revalidation": "pass"
+      }
+    ],
+    "immutable_source_revalidation": {
+      "files_checked": 13,
+      "matched": 13,
+      "mismatched": 0,
+      "historical_attachment_absence": {
+        "rust-v0.152.1_revision": "5adb68a49933ae446bf11935662c83dba55a0804",
+        "rust-v0.152.1_http_status": 404,
+        "rust-v0.153.4_revision": "3d2ee51ca2d5db578f328aa75e20aa22c0197c9a",
+        "rust-v0.153.4_http_status": 404
+      },
+      "moving_source_head": {
+        "repository": "openai/codex",
+        "initial_revision": "50d77959bf927293c4b5ddcca81d05331ae582ea",
+        "fresh_revision": "f3da3861c557b4813d9840177a45940a465f9efe",
+        "fresh_revision_time": "2026-09-17T03:27:21Z",
+        "revision_drift": "changed",
+        "thread_attachment_sha256": "c4032983a5da5e0ecf71bcc3ef650a1074aaf0352ecefaec65860bff851d4b48",
+        "thread_attachment_drift": "unchanged",
+        "app_server_readme_sha256": "e27c6b71a7f37262b36a12481727518d14f85ea09f8b3037713653fa813e9e87",
+        "app_server_readme_drift": "changed",
+        "attachment_behavior_revalidation": "pass; the add/list/remove, idempotency, pagination, best-effort fork-copy, referenced-resource, and owning-thread-deletion statements remain present"
+      },
+      "result": "All 13 freshly retrieved raw files at the recorded revisions matched the manifest SHA-256 values; both historical attachment paths still returned 404; the moving Codex main revision changed while the attachment schema and cited behavior remained materially unchanged."
+    }
+  },
+  "frozen_input_manifest": {
+    "sha256": "2366ff995e88ae13529a63707398c0f272adea6394c9d466ee3d25bdd214efc4",
+    "verification": "The manifest digest and every listed file digest were recomputed and matched before research.",
+    "files": [
+      {
+        "path": "composition-contract.md",
+        "sha256": "034cef5c72fff9cdeeaf7d393fc55d65ec971342be7e80a0ec232379aab0cc76"
+      },
+      {
+        "path": "context7-claude-code-docs.txt",
+        "sha256": "b43b2befee759774734b50be30f9faf7261a458d8878a10fac22c7d684ccc4be"
+      },
+      {
+        "path": "context7-claude-code-library.txt",
+        "sha256": "57d7d5ca854c560526445c4c4daecb9fc5dc7acee35684692dbfcb2b21562e8d"
+      },
+      {
+        "path": "context7-codex-docs.txt",
+        "sha256": "bb1e1aca9d7cf54a31a264a77a3719c26670b63644d266cb3495848c28e13746"
+      },
+      {
+        "path": "context7-codex-library.txt",
+        "sha256": "e8e397ad3cb29dce676f84dd58bf2b09b2a27c147c33ffd3684bc9aa0f5a0c16"
+      },
+      {
+        "path": "context7-cursor-docs.txt",
+        "sha256": "e38b8f7921e2c16a123b0b17c6a52caf4995058fff10b53199c075078307778c"
+      },
+      {
+        "path": "context7-cursor-library.txt",
+        "sha256": "b3e082d87215b438cdb688317ccc13e792b2f23f4f3c69ea2ff33819d6411346"
+      },
+      {
+        "path": "context7-retrieval.json",
+        "sha256": "db7b6ca9f5d3a5903af48e336f8df160efa69efa684b22f80b8c717acd0389ce"
+      },
+      {
+        "path": "harness-route-report.md",
+        "sha256": "664f6a7af4fb8a9e60c6922ecd45ec0a70b814a9c0ca3eec5f57131a5b345405"
+      },
+      {
+        "path": "historical-host-inventory.md",
+        "sha256": "0f734c65dca89c80dcbcf4fd32b11feb36b6612192ff12a2a76baac31e4891b1"
+      },
+      {
+        "path": "provingkit-43.json",
+        "sha256": "862ed9a1cb30d21f2231c8d384dae0ee565259617275dddc7a5677c3b52caf2c"
+      },
+      {
+        "path": "provingkit-44.json",
+        "sha256": "6f8ed482570ea589c8e04884d8712910735799e6f44f96d1e6338ae30abaf37e"
+      },
+      {
+        "path": "provingkit-8.json",
+        "sha256": "3e34238b618bad950b3b83b745642041564111d867250c27c81772000f1054bf"
+      },
+      {
+        "path": "source-baseline.json",
+        "sha256": "204bb9bd3d5205c3fd808104e7871bde3860ab8d6b3f60bccc181c57c1b67f3b"
+      }
+    ]
+  },
+  "controlling_public_inputs": [
+    {
+      "id": "provingkit-43",
+      "title": "Research invocation evidence and protected-evidence transport",
+      "url": "https://github.com/nisavid/provingkit/issues/43",
+      "source_kind": "frozen-public-issue-export",
+      "observed_sha256": "862ed9a1cb30d21f2231c8d384dae0ee565259617275dddc7a5677c3b52caf2c",
+      "digest_scope": "Supplied JSON export, exact bytes",
+      "limit": "The frozen body controls this increment; live tracker state was not mutated."
+    },
+    {
+      "id": "provingkit-8",
+      "title": "Choose the production evidence producer and issuer boundary",
+      "url": "https://github.com/nisavid/provingkit/issues/8",
+      "source_kind": "frozen-public-issue-export",
+      "observed_sha256": "3e34238b618bad950b3b83b745642041564111d867250c27c81772000f1054bf",
+      "digest_scope": "Supplied JSON export including accepted public comments, exact bytes",
+      "limit": "Accepted Q1-Q11 are controlling inputs and were not reopened."
+    },
+    {
+      "id": "harness-release-route-report",
+      "title": "Release and update routes for six target harness surfaces",
+      "url": "https://github.com/nisavid/provingkit/blob/8a7abac196be1fe6d89315f2937707048ee93a46/docs/superpowers/research/2026-09-07-harness-release-update-routes.md",
+      "source_kind": "immutable-public-report",
+      "revision": "8a7abac196be1fe6d89315f2937707048ee93a46",
+      "observed_sha256": "664f6a7af4fb8a9e60c6922ecd45ec0a70b814a9c0ca3eec5f57131a5b345405",
+      "digest_scope": "Supplied Markdown, exact bytes",
+      "limit": "Release/update evidence is context, not invocation evidence."
+    },
+    {
+      "id": "historical-host-inventory",
+      "title": "Selected live harness inventory observed 2026-09-07",
+      "url": "https://github.com/nisavid/agents/blob/3e30fec6f0379b15ded9ba71fbd83114872390a7/docs/superpowers/research/2026-09-07-live-harness-inventory.md",
+      "source_kind": "immutable-public-historical-report",
+      "revision": "3e30fec6f0379b15ded9ba71fbd83114872390a7",
+      "observed_sha256": "0f734c65dca89c80dcbcf4fd32b11feb36b6612192ff12a2a76baac31e4891b1",
+      "digest_scope": "Supplied Markdown, exact bytes",
+      "limit": "Historical document evidence only; not current host state or permission to inspect a host."
+    },
+    {
+      "id": "base-host-composition-contract",
+      "title": "Base Loadout and two-host binding composition",
+      "url": "https://github.com/nisavid/agents/blob/537ff5d38b334598aab8c8abec092dbd7e827c7a/docs/superpowers/specs/2026-09-08-base-host-loadout-composition.md",
+      "source_kind": "immutable-public-contract",
+      "revision": "537ff5d38b334598aab8c8abec092dbd7e827c7a",
+      "observed_sha256": "034cef5c72fff9cdeeaf7d393fc55d65ec971342be7e80a0ec232379aab0cc76",
+      "digest_scope": "Supplied Markdown, exact bytes",
+      "limit": "Composition terminology is context; it does not establish invocation behavior."
+    },
+    {
+      "id": "provingkit-source-baseline",
+      "title": "Provingkit source baseline",
+      "url": "https://github.com/nisavid/provingkit/commit/23912695a636d5357e04ba02c61504a866942144",
+      "source_kind": "immutable-public-source-revision",
+      "revision": "23912695a636d5357e04ba02c61504a866942144",
+      "observed_sha256": "204bb9bd3d5205c3fd808104e7871bde3860ab8d6b3f60bccc181c57c1b67f3b",
+      "digest_scope": "Supplied source-baseline metadata JSON, exact bytes",
+      "limit": "Repository topology and empty producer/issuer inventories are decision context, not selected-harness evidence."
+    }
+  ],
+  "context7_locator_inputs": {
+    "retrieved_at": "2026-09-16T05:15:00Z",
+    "classification": "Locator only; claims were rechecked against primary sources.",
+    "libraries": [
+      {
+        "surface": "Codex",
+        "library_id": "/openai/codex",
+        "library_result_sha256": "e8e397ad3cb29dce676f84dd58bf2b09b2a27c147c33ffd3684bc9aa0f5a0c16",
+        "docs_result_sha256": "bb1e1aca9d7cf54a31a264a77a3719c26670b63644d266cb3495848c28e13746"
+      },
+      {
+        "surface": "Claude Code",
+        "library_id": "/websites/code_claude",
+        "library_result_sha256": "57d7d5ca854c560526445c4c4daecb9fc5dc7acee35684692dbfcb2b21562e8d",
+        "docs_result_sha256": "b43b2befee759774734b50be30f9faf7261a458d8878a10fac22c7d684ccc4be"
+      },
+      {
+        "surface": "Cursor Agent CLI",
+        "library_id": "/websites/cursor_cli",
+        "library_result_sha256": "b3e082d87215b438cdb688317ccc13e792b2f23f4f3c69ea2ff33819d6411346",
+        "docs_result_sha256": "e38b8f7921e2c16a123b0b17c6a52caf4995058fff10b53199c075078307778c"
+      }
+    ]
+  },
+  "primary_sources": [
+    {
+      "id": "OAI-D1",
+      "owner": "OpenAI",
+      "title": "Non-interactive mode",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "moving-documentation",
+      "requested_url": "https://developers.openai.com/codex/noninteractive/",
+      "effective_url": "https://learn.chatgpt.com/docs/non-interactive-mode",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "a46c8a8901c55466f591669ed17ad93123e3cc14d12769eb296d499c149da055",
+      "digest_scope": "HTTP response body after redirects",
+      "supports": "codex exec JSONL event mode and session resume",
+      "limit": "Moving documentation; interface description is not a live invocation result."
+    },
+    {
+      "id": "OAI-D2",
+      "owner": "OpenAI",
+      "title": "App server",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "moving-documentation",
+      "requested_url": "https://developers.openai.com/codex/app-server/",
+      "effective_url": "https://learn.chatgpt.com/docs/app-server",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "9f892830bf46bbc31359d657b0d45cfa464173f365bb1bc60be55c6fdd19b8d5",
+      "digest_scope": "HTTP response body after redirects",
+      "supports": "app-server JSON-RPC lifecycle and local readback locator",
+      "limit": "Moving documentation; exact field claims use pinned source."
+    },
+    {
+      "id": "OAI-D3",
+      "owner": "OpenAI",
+      "title": "Hooks",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "moving-documentation",
+      "requested_url": "https://developers.openai.com/codex/hooks/",
+      "effective_url": "https://learn.chatgpt.com/docs/hooks",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "a8e3ca2d42a37c3e140b4d2f32bc823037e34fe3738417bbd2c8568109106a11",
+      "digest_scope": "HTTP response body after redirects",
+      "supports": "local lifecycle hook fields and unstable transcript locator",
+      "limit": "Moving documentation; no historical build applicability or event authenticity follows."
+    },
+    {
+      "id": "OAI-D4",
+      "owner": "OpenAI",
+      "title": "Using Codex with your ChatGPT plan",
+      "surfaces": [
+        "ChatGPT desktop Codex mode"
+      ],
+      "source_kind": "moving-documentation",
+      "requested_url": "https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan",
+      "effective_url": "https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 403,
+      "media_type": "text/html; charset=UTF-8",
+      "observed_sha256": null,
+      "digest_scope": null,
+      "supports": "desktop Codex surface, model defaults, data controls, and Record & Replay limitations",
+      "limit": "Primary page content was verified through public indexed retrieval; direct raw-body retrieval returned HTTP 403, so no body digest was obtainable."
+    },
+    {
+      "id": "OAI-D5",
+      "owner": "OpenAI",
+      "title": "ChatGPT Work and Codex",
+      "surfaces": [
+        "ChatGPT desktop Codex mode"
+      ],
+      "source_kind": "moving-documentation",
+      "requested_url": "https://help.openai.com/en/articles/20001275",
+      "effective_url": "https://help.openai.com/en/articles/20001275",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 403,
+      "media_type": "text/html; charset=UTF-8",
+      "observed_sha256": null,
+      "digest_scope": null,
+      "supports": "desktop Codex view, separate history, local/cloud distinction, and user-facing readback",
+      "limit": "Primary page content was verified through public indexed retrieval; direct raw-body retrieval returned HTTP 403, so no body digest was obtainable."
+    },
+    {
+      "id": "OAI-D6",
+      "owner": "OpenAI",
+      "title": "OpenAI Programmatic Admin Platform OpenAPI",
+      "surfaces": [
+        "ChatGPT desktop Codex mode",
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "moving-public-openapi",
+      "schema_version": "2.5.20",
+      "requested_url": "https://chatgpt.com/public/admin/api-reference/openapi.json",
+      "effective_primary_url": "https://chatgpt.com/public/admin/api-reference/openapi.json",
+      "retrieval_transport": "https://r.jina.ai/http://chatgpt.com/public/admin/api-reference/openapi.json",
+      "retrieved_at": "2026-09-16T06:08:00Z",
+      "direct_http_status": 403,
+      "retrieval_transport_http_status": 200,
+      "retrieval_transport_media_type": "text/plain; charset=utf-8",
+      "retrieval_wrapper_sha256": "44005d1bc9dddb42a7c6037097707ff701edf73a2260241dbdf4a88a23ed36b3",
+      "observed_sha256": "4c3359b2d197285465235900b297b555562661969459cb498c7d88107a7ad24a",
+      "digest_scope": "Exact OpenAPI JSON payload extracted without byte changes from the public renderer response",
+      "supports": "Compliance CODEX_LOG immutable file feed, event/session/turn/call identities, prompt/response/model/status fields, normalized clients including distinct CODEX_DESKTOP_APP and CODEX_CHATGPT_DESKTOP enum values, scoped Admin API readback, required ComplianceLogFileMetadata.file_sha256 whole-file integrity metadata, 30-day retention, at-least-once delivery, stable event-ID deduplication, and short-lived signed file-download URLs",
+      "limit": "The historical primary host returned HTTP 403 to unauthenticated curl, so the v2.5.20 schema payload was obtained through a read-only renderer. Fresh revalidation also received 403 directly and used current public indexed primary content at v2.5.21 without claiming exact response bytes. file_sha256 proves downloaded-byte equality to authenticated metadata; it is not an event/file signature, issuer key, portable OpenAI origin proof, candidate binding, authority binding, or qualification proof. The schema does not bind an app/CLI build or exact candidate bytes, formally type CODEX_LOG.client_id as CodexClient, settle direct API-key CLI coverage, choose between the two desktop identifiers for a given emitted event, or establish exhaustive desktop coverage."
+    },
+    {
+      "id": "OAI-S1-0.152.1",
+      "owner": "OpenAI",
+      "title": "Codex exec event schema at rust-v0.152.1",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "pinned-public-source",
+      "tag": "rust-v0.152.1",
+      "tag_object": "3c6cfbab81e44218c729dc8c6b304cb760d1b8a1",
+      "revision": "5adb68a49933ae446bf11935662c83dba55a0804",
+      "url": "https://github.com/openai/codex/blob/5adb68a49933ae446bf11935662c83dba55a0804/codex-rs/exec/src/exec_events.rs",
+      "path": "codex-rs/exec/src/exec_events.rs",
+      "git_blob": "30df7f176a02c5283405a70fac2d5ef9acdcb66e",
+      "observed_sha256": "c404928e0f2a463e19d1b263081c9d5e0380aec9f651a05ee0766f7bb7527f32",
+      "digest_scope": "Raw source-file bytes at revision",
+      "supports": "thread, item, result, failure, and error event fields",
+      "limit": "Source shape is not invocation or distributed-binary evidence."
+    },
+    {
+      "id": "OAI-S1-0.153.4",
+      "owner": "OpenAI",
+      "title": "Codex exec event schema at rust-v0.153.4",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "pinned-public-source",
+      "tag": "rust-v0.153.4",
+      "tag_object": "042fb41b7c813ac7999105e886b2b7aa715b5081",
+      "revision": "3d2ee51ca2d5db578f328aa75e20aa22c0197c9a",
+      "url": "https://github.com/openai/codex/blob/3d2ee51ca2d5db578f328aa75e20aa22c0197c9a/codex-rs/exec/src/exec_events.rs",
+      "path": "codex-rs/exec/src/exec_events.rs",
+      "git_blob": "30df7f176a02c5283405a70fac2d5ef9acdcb66e",
+      "observed_sha256": "c404928e0f2a463e19d1b263081c9d5e0380aec9f651a05ee0766f7bb7527f32",
+      "digest_scope": "Raw source-file bytes at revision",
+      "supports": "byte-identical event schema applicability across both historical tags",
+      "limit": "Source shape is not invocation or distributed-binary evidence."
+    },
+    {
+      "id": "OAI-S2-0.152.1",
+      "owner": "OpenAI",
+      "title": "Codex app-server v2 protocol at rust-v0.152.1",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "pinned-public-source-set",
+      "tag": "rust-v0.152.1",
+      "tag_object": "3c6cfbab81e44218c729dc8c6b304cb760d1b8a1",
+      "revision": "5adb68a49933ae446bf11935662c83dba55a0804",
+      "files": [
+        {
+          "path": "codex-rs/app-server/README.md",
+          "url": "https://github.com/openai/codex/blob/5adb68a49933ae446bf11935662c83dba55a0804/codex-rs/app-server/README.md",
+          "git_blob": "5b99a2b2d0ab78d820b3294443930d1cca8ce884",
+          "observed_sha256": "de0925791ce8d4eabc07b740ec325aedadd8e1c9a514508f42f6c43158065bff"
+        },
+        {
+          "path": "codex-rs/app-server-protocol/src/protocol/v2/turn.rs",
+          "url": "https://github.com/openai/codex/blob/5adb68a49933ae446bf11935662c83dba55a0804/codex-rs/app-server-protocol/src/protocol/v2/turn.rs",
+          "git_blob": "3222bb38bbe3f82c77a375ad242a724b70f0915a",
+          "observed_sha256": "cec88af173ad2be290fc55eebedb585ee19ffe3e486ff68613096c620b9673f2"
+        },
+        {
+          "path": "codex-rs/app-server-protocol/src/protocol/v2/thread_data.rs",
+          "url": "https://github.com/openai/codex/blob/5adb68a49933ae446bf11935662c83dba55a0804/codex-rs/app-server-protocol/src/protocol/v2/thread_data.rs",
+          "git_blob": "131d42347c30020fd7387b51af7d37095b460ecc",
+          "observed_sha256": "7436c46b015b0de7aab37ba1449e6c45d9e70554a35a255e951b08e3501d1fbd"
+        },
+        {
+          "path": "codex-rs/app-server-protocol/src/protocol/v2/thread.rs",
+          "url": "https://github.com/openai/codex/blob/5adb68a49933ae446bf11935662c83dba55a0804/codex-rs/app-server-protocol/src/protocol/v2/thread.rs",
+          "git_blob": "5c1b1921245b31a254536d816e21ddaa73795e5b",
+          "observed_sha256": "5161c3546ed56013c3ba8ffec81b4be1310c60be709b802f4eda45647324b514"
+        }
+      ],
+      "digest_scope": "Raw source-file bytes at revision",
+      "supports": "historical app-server v2 thread/turn protocol applicability",
+      "limit": "No attachment protocol file exists at this tag; source shape is not distributed-binary or invocation evidence."
+    },
+    {
+      "id": "OAI-S2-0.153.4",
+      "owner": "OpenAI",
+      "title": "Codex app-server v2 protocol at rust-v0.153.4",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "pinned-public-source-set",
+      "tag": "rust-v0.153.4",
+      "tag_object": "042fb41b7c813ac7999105e886b2b7aa715b5081",
+      "revision": "3d2ee51ca2d5db578f328aa75e20aa22c0197c9a",
+      "files": [
+        {
+          "path": "codex-rs/app-server/README.md",
+          "url": "https://github.com/openai/codex/blob/3d2ee51ca2d5db578f328aa75e20aa22c0197c9a/codex-rs/app-server/README.md",
+          "git_blob": "a0aa92b7fcef8ee5fcc5c1810d7f2459429c8aad",
+          "observed_sha256": "1142bff07746d3b54dccf39fd84b58798ae609cd73fa26c82fa07743abc0395a"
+        },
+        {
+          "path": "codex-rs/app-server-protocol/src/protocol/v2/turn.rs",
+          "url": "https://github.com/openai/codex/blob/3d2ee51ca2d5db578f328aa75e20aa22c0197c9a/codex-rs/app-server-protocol/src/protocol/v2/turn.rs",
+          "git_blob": "9629a784102d9d16a93b5a2646a35ca5948b74a6",
+          "observed_sha256": "49098e1b594835e6376952c35a0b13cfacd1316eb68bd8a46553842534a86bb2"
+        },
+        {
+          "path": "codex-rs/app-server-protocol/src/protocol/v2/thread_data.rs",
+          "url": "https://github.com/openai/codex/blob/3d2ee51ca2d5db578f328aa75e20aa22c0197c9a/codex-rs/app-server-protocol/src/protocol/v2/thread_data.rs",
+          "git_blob": "649a94be493dadac887a9eb67cecae1365ff3c1e",
+          "observed_sha256": "e65e1d72523da1799a93f28fa6228cc21f155b5529fcfda44db167d1824f0a9e"
+        },
+        {
+          "path": "codex-rs/app-server-protocol/src/protocol/v2/thread.rs",
+          "url": "https://github.com/openai/codex/blob/3d2ee51ca2d5db578f328aa75e20aa22c0197c9a/codex-rs/app-server-protocol/src/protocol/v2/thread.rs",
+          "git_blob": "2a08c9fd1d4c6bf478a3c7881816c7766d3c4b59",
+          "observed_sha256": "09af5f213e01a4507b1f33162dc97744ecc2b1d87d2826efbe56f973bff0dcbb"
+        }
+      ],
+      "digest_scope": "Raw source-file bytes at revision",
+      "supports": "thread/turn identity, input, configured model, source/version, outcome, timing, and local history readback",
+      "limit": "No attachment protocol file exists at this tag; configured model is expressly not per-turn execution telemetry."
+    },
+    {
+      "id": "OAI-S3-current",
+      "owner": "OpenAI",
+      "title": "Codex current stored thread attachment protocol",
+      "surfaces": [
+        "Codex CLI/TUI"
+      ],
+      "source_kind": "pinned-public-source-set",
+      "revision": "50d77959bf927293c4b5ddcca81d05331ae582ea",
+      "revision_time": "2026-09-16T04:59:23Z",
+      "files": [
+        {
+          "path": "codex-rs/app-server-protocol/src/protocol/v2/thread_attachment.rs",
+          "url": "https://github.com/openai/codex/blob/50d77959bf927293c4b5ddcca81d05331ae582ea/codex-rs/app-server-protocol/src/protocol/v2/thread_attachment.rs",
+          "git_blob": "ed8c5766b2dad9d0ebd74f96c7817ee681703bae",
+          "observed_sha256": "c4032983a5da5e0ecf71bcc3ef650a1074aaf0352ecefaec65860bff851d4b48"
+        },
+        {
+          "path": "codex-rs/app-server/README.md",
+          "url": "https://github.com/openai/codex/blob/50d77959bf927293c4b5ddcca81d05331ae582ea/codex-rs/app-server/README.md",
+          "git_blob": "beecd0557627dc41e96d64667db00ed6b10a3bf1",
+          "observed_sha256": "f8b273b5e1f7bc513f2041dac7ba4068d48f99ea84e18063c5888c1485549692"
+        }
+      ],
+      "digest_scope": "Raw source-file bytes at revision",
+      "supports": "thread-local attachment identity, idempotent add/list/remove, fork and deletion behavior",
+      "limit": "Current source only; absent from 0.152.1 and 0.153.4 tags; arbitrary JSON payload is neither protected nor authenticated evidence."
+    },
+    {
+      "id": "ANT-D1",
+      "owner": "Anthropic",
+      "title": "Run Claude Code programmatically",
+      "surfaces": [
+        "Claude Code"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://code.claude.com/docs/en/headless",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "a20233da19f243df4820f63e1cf6c27102be31d26422b4f1b2bf19ad844c2173",
+      "digest_scope": "HTTP response body",
+      "supports": "headless JSON/JSONL output, session metadata, structured output, and API retry events",
+      "limit": "Moving documentation; no invocation was performed."
+    },
+    {
+      "id": "ANT-D2",
+      "owner": "Anthropic",
+      "title": "Hooks reference",
+      "surfaces": [
+        "Claude Code",
+        "Claude Desktop Code tab"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://code.claude.com/docs/en/hooks",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "dc123f0bba33d7ff1aedfb0f943abc2d65fd6198fbd48726e7fa44bb83355d11",
+      "digest_scope": "HTTP response body",
+      "supports": "hook delivery, common/event-specific fields, and HTTP-hook authentication options",
+      "limit": "Moving documentation; hook transport is not product-signed invocation evidence."
+    },
+    {
+      "id": "ANT-D3",
+      "owner": "Anthropic",
+      "title": "Manage sessions",
+      "surfaces": [
+        "Claude Code",
+        "Claude Desktop Code tab"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://code.claude.com/docs/en/sessions",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "ffdba78699459f792e8b3e2d7c848774950494e887e36cfbd6825631eb2213d8",
+      "digest_scope": "HTTP response body",
+      "supports": "local persistence, resume, and fork behavior",
+      "limit": "Local session state is not authenticated producer readback."
+    },
+    {
+      "id": "ANT-D4",
+      "owner": "Anthropic",
+      "title": "Use Claude Code Desktop",
+      "surfaces": [
+        "Claude Desktop Code tab"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://code.claude.com/docs/en/desktop",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "8856bc596e24109218806eeb2816d24a02f72ad8588b42931fd0d08d4ae833ba",
+      "digest_scope": "HTTP response body",
+      "supports": "Code-tab scope, shared hooks/settings, transcript views, model selection, and interactive-only limitation",
+      "limit": "Does not cover the separate general Claude Desktop chat surface as a hook interface."
+    },
+    {
+      "id": "ANT-D5",
+      "owner": "Anthropic",
+      "title": "Agent SDK streaming output",
+      "surfaces": [
+        "Claude Code"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://code.claude.com/docs/en/agent-sdk/streaming-output",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "56c81a1f0350ea57a142e4d31b919b79fab1635e928f07e0d1199a586202861d",
+      "digest_scope": "HTTP response body",
+      "supports": "Agent SDK message streaming lifecycle",
+      "limit": "Moving documentation; typed stream is not authenticated receipt evidence."
+    },
+    {
+      "id": "ANT-D6",
+      "owner": "Anthropic",
+      "title": "Agent SDK TypeScript reference",
+      "surfaces": [
+        "Claude Code"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://code.claude.com/docs/en/agent-sdk/typescript",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "f66e1f4728959e5470308db9bad98542fc140e7b424173e14d4ef88c596e2752",
+      "digest_scope": "HTTP response body",
+      "supports": "typed result and session interfaces plus field-specific minimum versions",
+      "limit": "Moving documentation; exact Python type claims use pinned source."
+    },
+    {
+      "id": "ANT-S1",
+      "owner": "Anthropic",
+      "title": "Claude Agent SDK Python type definitions",
+      "surfaces": [
+        "Claude Code"
+      ],
+      "source_kind": "pinned-public-source",
+      "tag": "v0.2.153",
+      "revision": "763922b0de2c9fb5371504d73ae54cde49536fe1",
+      "revision_time": "2026-09-15T20:38:01Z",
+      "url": "https://github.com/anthropics/claude-agent-sdk-python/blob/763922b0de2c9fb5371504d73ae54cde49536fe1/src/claude_agent_sdk/types.py",
+      "path": "src/claude_agent_sdk/types.py",
+      "git_blob": "7b5ba4314c1a85b45ff3e8f7f63799fc46ac2581",
+      "observed_sha256": "fa526a35292a7463c35793cc4246364caa2e286c5c229cf0cfe2fa3cbd7efafe",
+      "digest_scope": "Raw source-file bytes at revision",
+      "supports": "assistant, result, stream, identity, model, error, provider-label, and semantic-origin fields",
+      "limit": "SDK type shape is not proof of bundled runtime version, event delivery, or product authenticity."
+    },
+    {
+      "id": "CUR-D1",
+      "owner": "Cursor",
+      "title": "Hooks",
+      "surfaces": [
+        "Cursor desktop"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://cursor.com/docs/hooks",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "ad1c00b214cbd614812ea3b75d178f93bbd95cdd243661d149ea29080b979fc1",
+      "digest_scope": "HTTP response body",
+      "supports": "conversation/generation identity, configured model, product version, prompt, tool, response, failure, stop, and transcript fields",
+      "limit": "Local hook fields have no documented product signature and do not attest to effective backend execution."
+    },
+    {
+      "id": "CUR-D2",
+      "owner": "Cursor",
+      "title": "Agent CLI output format",
+      "surfaces": [
+        "Cursor Agent CLI"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://cursor.com/docs/cli/reference/output-format",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "0e6abb631962e6edbeb632d54a06199881b7f767ac8e46ed0ad64c34f375ca59",
+      "digest_scope": "HTTP response body",
+      "supports": "Agent CLI init, user, tool, and result event fields plus incomplete-terminal failure caveat",
+      "limit": "Moving documentation; no public pinned implementation source was found for this output schema."
+    },
+    {
+      "id": "CUR-D3",
+      "owner": "Cursor",
+      "title": "Agent CLI parameters",
+      "surfaces": [
+        "Cursor Agent CLI"
+      ],
+      "source_kind": "moving-documentation",
+      "url": "https://cursor.com/docs/cli/reference/parameters",
+      "retrieved_at": "2026-09-16T05:55:16Z",
+      "http_status": 200,
+      "media_type": "text/html; charset=utf-8",
+      "observed_sha256": "e3b6a9de654394346cf23fbb06ee7e1c12ee2955a747053bb876f29104a2c61a",
+      "digest_scope": "HTTP response body",
+      "supports": "output-format, model selection, resume, and related CLI controls",
+      "limit": "Moving documentation; command inputs are controller observations, not authenticated result fields."
+    }
+  ],
+  "negative_search_result": {
+    "statement": "No selected primary source documented a per-invocation digital signature or MAC, portable product-issued receipt, exported public origin-verification material, or a value-free protected-evidence handle with stable authenticated lookup and retention/access semantics. OpenAI Compliance CODEX_LOG is the bounded exception for authenticated product readback and file-content integrity material: it supplies immutable, scope-gated files for covered Codex workspace clients plus required ComplianceLogFileMetadata.file_sha256, but no portable OpenAI signature or key over those files, metadata, or events.",
+    "interpretation": "The missing portable-verification and protected-handle results are unknown/no-interface-found within the dated source set, except where a source expressly marks a feature unsupported. They are not proof that private, future, or undocumented capability cannot exist."
+  }
+}
