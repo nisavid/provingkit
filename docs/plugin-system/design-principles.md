@@ -11,6 +11,34 @@ describe current behavior and authority. Release ledgers record what has been
 proved for a particular candidate. A design principle never substitutes for
 release evidence.
 
+## Equip agents to adapt from principles
+
+Provingkit's core architectural maxim is to equip agents with guidelines and
+techniques by which they can dynamically adapt their behavior to any
+circumstances, use cases, and requirements, deriving situational policies from
+a foundation of consistent principles toward a destination of satisfied
+intents. This combination of grounding and agility keeps agents coherent and
+predictable while enabling autonomy and flexibility.
+
+Equipment therefore codifies clear principles and boundaries within which
+agents use their judgment case by case, rather than declaring specific
+commands or command shapes to govern them. Tell the two approaches apart by
+what a rule fixes:
+
+- A **principle-first** rule names the intent it serves, the principle, and
+  the boundary, and leaves the agent to derive the wording, commands, and steps
+  each situation needs.
+- A **shape-first** rule prescribes the wording or command itself. It fits only
+  the situations its author foresaw; elsewhere an agent either forces the shape
+  onto a case it does not fit or has no rule to follow.
+
+Write equipment principle-first. Prescribe exact wording or commands only where
+an external system matches on them, such as the Conventional Commits header
+that Cocogitto's `commit-msg` hook checks. Mark that wording or command as an
+adapter to the system and name the principle it serves, so agents use the
+adapter only where that system applies and reason from the principle everywhere
+else.
+
 ## Design for the agents we have
 
 Agent instructions are model-relative. Guidance that once rescued weaker
