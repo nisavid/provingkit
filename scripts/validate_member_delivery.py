@@ -5,8 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from member_delivery_preservation import validate_nonpassing
 
 class InvalidJsonConstant(ValueError):
     """A numeric token outside JSON syntax appeared in the request."""
@@ -29,6 +32,11 @@ def unique_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
     return result
 
 
+def decode_json(raw: bytes) -> object:
+    return json.loads(raw.decode("utf-8"), parse_constant=reject_json_constant,
+                      object_pairs_hook=unique_json_object)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--request", required=True, type=Path)
@@ -39,12 +47,7 @@ def main() -> int:
     exit_status = 2
 
     try:
-        with arguments.request.open("r", encoding="utf-8") as request:
-            json.load(
-                request,
-                parse_constant=reject_json_constant,
-                object_pairs_hook=unique_json_object,
-            )
+        request = decode_json(arguments.request.read_bytes())
     except OSError:
         check = {
             "id": "request",
@@ -73,6 +76,10 @@ def main() -> int:
         outcome = "rejected"
         exit_status = 1
     else:
+        preservation = validate_nonpassing(request, arguments.inputs, decode_json)
+        if preservation is not None:
+            arguments.output.write_text(json.dumps(preservation, indent=2) + "\n")
+            return 1 if preservation["outcome"] == "rejected" else 2
         check = {
             "id": "request_validation",
             "outcome": "missing",
