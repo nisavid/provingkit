@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "79c2bb6cd2abc643ecd905e76510610d0acd008930ae5752184d57c1c78f0fbb",
-    "DEVELOPING.md": "43828bbc8908a33c24c01fd6ef650fe51ac551ce5b4df727eeed297ee081fae8",
+    "DEVELOPING.md": "58e3147daa8ef8c9dc265bcbc64d3ff62bf6a14d51726897f60065063a0d1ba5",
     "README.md": "b0bba60c691b2dc35b5b00c5d5f1c5bf9782e1960ca0e26b0315667d2b7b7265",
     "plugin.json": "5d54cc740544d4fa3e63794d6a7d86950829f1b565ae4fec842d3f4da7f1bbcc",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
