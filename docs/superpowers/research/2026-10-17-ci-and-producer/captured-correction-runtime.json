@@ -1,0 +1,62 @@
+{
+  "candidate_sha256": "3ce28729ae896fdab600a427f3468fd293fae300ef2e515b07c6e6905cfaac00",
+  "review_input_sha256": "c3fed62aee6fe026219a318765d2b4467faa4bd90c0c076dabf51bf80714a7a3",
+  "scope": "runtime",
+  "findings": [],
+  "falsification_attempts": [
+    {
+      "id": "RUNTIME-R2-FA-01",
+      "claim_tested": "Removing both cache:false inputs avoids unsupported package-manager cache selection without selecting a replacement cache.",
+      "evidence": [
+        "Case 4 successor omits cache from both setup-python steps and retains their explicit python-version values.",
+        "Pinned action.yml declares cache without a default and describes supported values as pip, pipenv, and poetry.",
+        "Pinned src/setup-python.ts calls cacheDependencies only inside `if (cache && isCacheFeatureAvailable())`.",
+        "Pinned cache-factory.ts throws `Caching for '${packageManager}' is not supported` for unsupported nonempty values."
+      ],
+      "causal_trace": "The original false input could reach the string-valued cache selector as a nonempty unsupported value. Omission supplies no selected package manager, so the supplied setup path skips cacheDependencies while retaining interpreter setup.",
+      "result": "Survived within the supplied source boundary; no contradictory cache selection was found."
+    },
+    {
+      "id": "RUNTIME-R2-FA-02",
+      "claim_tested": "The private qualification proposal no longer presents timeout arithmetic as an aggregate execution or billing guarantee.",
+      "evidence": [
+        "Case 5 successor calls 105 minutes a planning allowance and explicitly denies a source-enforced aggregate cap, reservation, or guarantee about final billed minutes.",
+        "It counts every created execution, retry, and canceled execution toward the procedural limit and 200-minute ceiling.",
+        "It requires stopping margin for cancellations, retries, rounding, and overhead."
+      ],
+      "causal_trace": "An execution consuming time beyond the simple sum, or a canceled execution consuming billable time, cannot be omitted merely because the configured job timeouts total 21 minutes. The revised plan requires reconciliation against the larger task boundary and stops incomplete when that bound cannot be established.",
+      "result": "Survived; the revised accounting language does not assert a hard aggregate counter."
+    },
+    {
+      "id": "RUNTIME-R2-FA-03",
+      "claim_tested": "A stale organization balance cannot independently authorize the next qualification trigger.",
+      "evidence": [
+        "Case 5 successor requires current queued, running, and planned competing organization usage.",
+        "It requires an authorized coordination window and refresh immediately before every admitted trigger and retry.",
+        "It states that billing snapshots and the local ledger do not reserve minutes, and records the observation-to-dispatch race.",
+        "Missing access, coordination, margin, or current evidence keeps hosted execution held."
+      ],
+      "causal_trace": "Competing work may consume allowance after a billing snapshot. The revised proposal treats that snapshot as insufficient, adds current demand and coordination checks, and preserves a hold when sufficient capacity cannot be established.",
+      "result": "Survived as a cooperative admission procedure; atomic reservation is explicitly unclaimed."
+    },
+    {
+      "id": "RUNTIME-R2-FA-04",
+      "claim_tested": "Publishing ordinary PR/push workflow source cannot silently start an unaccounted qualification experiment under the revised procedure.",
+      "evidence": [
+        "Case 5 successor keeps the workflow unpublished or inactive until prerequisites and an activation procedure exist.",
+        "If publication could start it before workflow-specific disabling takes effect, it requires an authorized repository-level pause or another verified preventive control.",
+        "It coordinates writers, admits one intended triggering action at a time, enumerates actual runs, and verifies completion or cancellation before another admission.",
+        "Unexpected runs stop admission and require reconciliation rather than automatic retry.",
+        "The controlled window ends with the new workflow inactive pending a separate ordinary-operation activation decision."
+      ],
+      "causal_trace": "Publication, a concurrent writer, or one source action could create additional executions. The added procedure requires preventive control before publication, counts actual executions after each trigger, and stops when unexpected activity defeats the remaining bound. It expressly requires separate authority for interrupting existing CI.",
+      "result": "Survived within the explicitly cooperative scope; ordinary PR/push YAML remains unchanged."
+    }
+  ],
+  "limitations": [
+    "Reviewed only the changed ordinary correction seams in the four verified packet parts. No tools or external actions followed intake.",
+    "No hosted execution, billing balance, effective pause or disable behavior, quiet window, check identity, installation state, or enforcement was observed.",
+    "The cache trace uses the supplied pinned action metadata and TypeScript sources; the packet does not include the bundled JavaScript or post-action implementation.",
+    "No dependency invalidation of retained security judgments was identified within the changed seams. This review does not renew or certify those judgments or other unchanged claims."
+  ]
+}

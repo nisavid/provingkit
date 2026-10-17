@@ -46,7 +46,7 @@ Before each run, establish actual executable/version and supported flags, fresh 
 
 ## Live hosted cases and authority
 
-The authorized fixtures are `nisavid/provingkit-repo-config-public-qualification` (personal/public, generated Python and content-contract project) and `nisavid-io/provingkit-repo-config-private-qualification` (organization/private, generated TypeScript project). They have not yet been created. Recheck names, actor permissions, owner/plan, effective inherited controls, and other writers immediately before dependent effects. A private 404 does not prove a name is free.
+The authorized fixtures are `nisavid/provingkit-repo-config-public-qualification` (personal/public, generated Python and content-contract project) and `nisavid-io/provingkit-repo-config-private-qualification` (organization/private, generated TypeScript project). Recheck names, actor permissions, owner/plan, effective inherited controls, and other writers immediately before dependent effects. A private 404 does not prove a name is free.
 
 The operator authorized creation, generated source publication, repository-only settings/protections, fixture PRs and merges, bounded workflows, and positive/negative enforcement attempts. This scope excludes production repositories, organization-wide policy changes, entitlement purchase/activation, deployment credentials, and deletion. Use non-sensitive content because organization members may access the private fixture. Retain private control evidence privately and publish a value-free summary.
 

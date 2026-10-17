@@ -1,0 +1,108 @@
+{
+  "candidate_sha256": "3ce28729ae896fdab600a427f3468fd293fae300ef2e515b07c6e6905cfaac00",
+  "review_input_sha256": "70d82b19e63883dc3533c3de04753b67337b2f77abf3fca449e2f5cb0f7cf782",
+  "critic_common_input_sha256": "c3fed62aee6fe026219a318765d2b4467faa4bd90c0c076dabf51bf80714a7a3",
+  "scope": "adjudicate",
+  "dispositions": [
+    {
+      "finding_id": "case4-output-48d27cc5b8a1-expectation-4",
+      "disposition": "already addressed",
+      "evidence": "The frozen diff removes exactly both cache:false inputs. The pinned action.yml supplies no cache default, and src/setup-python.ts calls cacheDependencies only for a nonempty cache input. Interpreter versions and all other proposal bytes remain unchanged.",
+      "next_owner": "Caller performing final verification"
+    },
+    {
+      "finding_id": "case5-output-f0a9127e4d6c-expectation-4",
+      "disposition": "already addressed",
+      "evidence": "The successor requires inspection of queued, running, and planned organization usage, an authorized coordination window, and refreshed owner balance, stop-use controls, competing work, and stopping margin immediately before each admitted trigger and retry. Missing evidence or coordination preserves the execution hold, and the observation-to-dispatch race is explicit.",
+      "next_owner": "Caller performing final verification"
+    },
+    {
+      "finding_id": "case5-output-f0a9127e4d6c-other-1",
+      "disposition": "already addressed",
+      "evidence": "The successor describes 105 minutes as timeout-budget planning rather than an enforced aggregate cap, reservation, or billed-minute guarantee. It adds conditional preventive controls before publication, coordinated writers, admission of one triggering action at a time, enumeration and reconciliation of actual executions, completion or cancellation acknowledgements, and closure with the workflow inactive. Ordinary PR/push YAML remains unchanged.",
+      "next_owner": "Caller performing final verification"
+    }
+  ],
+  "prior_findings_resolution": [
+    {
+      "finding_id": "case4-output-48d27cc5b8a1-expectation-4",
+      "resolved": true,
+      "evidence": "Both unsupported inputs are absent from successor 2af59d21b81dc3fa1bc2b0d2a96f782e7a9ce05e68fe2f8ef2cd1906201f87de. Supplied pinned action metadata and setup source support omission as no selected package-manager cache. This is source evidence, not an observed action run."
+    },
+    {
+      "finding_id": "case5-output-f0a9127e4d6c-expectation-4",
+      "resolved": true,
+      "evidence": "Successor cb92202188bb56c398f7d927dbd90abad1b339eb59b0cea50d1e4c92493ebee0 makes current competing usage, coordination, applicable controls, capacity, and stopping margin prerequisites before every trigger and retry, with a hold when they cannot be established."
+    },
+    {
+      "finding_id": "case5-output-f0a9127e4d6c-other-1",
+      "resolved": true,
+      "evidence": "The source-controlled ceiling overclaim is removed. Per-job timeouts, procedural execution limits, actual consumption, activation controls, retries, cancellations, and remaining race are distinguished. Unexpected activity requires reconciliation and can terminate qualification incomplete."
+    }
+  ],
+  "affected_expectation_judgments": [
+    {
+      "case_id": 4,
+      "expectation_id": "4",
+      "passed": true,
+      "evidence": "The only correction removes both unsupported setup-python cache inputs using the supplied pinned action contract. Permissions and candidate pins remain unchanged, and pin provenance and hosted usability remain explicitly unverified."
+    },
+    {
+      "case_id": 4,
+      "expectation_id": "6",
+      "passed": true,
+      "evidence": "Omitting cache selects no package-manager cache under the supplied pinned setup source. The proposal retains standard Ubuntu runners and its exclusions of schedules, paid features, artifact uploads, and hosted execution."
+    },
+    {
+      "case_id": 5,
+      "expectation_id": "4",
+      "passed": true,
+      "evidence": "Hosted admission remains held for owner capacity, stop-use control, Actions admission, inherited policy, and current competing organization usage. Source preparation proceeds independently; no current capacity or control availability is asserted."
+    },
+    {
+      "case_id": 5,
+      "expectation_id": "5",
+      "passed": true,
+      "evidence": "The revised plan preserves the 200 aggregate standard Linux minute boundary and no-additional-charge condition, counts created executions, retries, cancellations, rounding, and overhead, and requires current margin and actual-run reconciliation. Five executions and 105 timeout minutes are procedural planning limits rather than a reservation or hard workflow counter. Existing schedule, cache-persistence, and artifact-upload exclusions remain."
+    }
+  ],
+  "scope_assessments": [
+    {
+      "scope": "intent",
+      "report_sha256": "05b7f054646469d01e6f789bbcfd5f919cd3559e2974f2600160ef4586038db9",
+      "assessment": "The report is usable and supports the changed ordinary scope without unresolved findings.",
+      "evidence": "Its falsification attempts address omitted cache selection, competing capacity, automatic starts, accounting overclaims, and dependency invalidation against the frozen successors. Its conclusions agree with the direct supplied diff and source."
+    },
+    {
+      "scope": "runtime",
+      "report_sha256": "c88755e13f5b1366c6413fceb4d663a74e26aac0da80d76bf9677d00bb690c40",
+      "assessment": "The report is usable and supports the changed ordinary scope without unresolved findings.",
+      "evidence": "It traces the cache selector and examines billing lag, publication-triggered starts, concurrent writers, actual execution counts, cancellation accounting, and activation closure. It preserves the distinction between a conditional cooperative procedure and observed or enforced behavior."
+    }
+  ],
+  "unchanged_dependency_retention": {
+    "retention_supported": true,
+    "canonical_source_commit": "e50777edc12c17f5c5f1c4ede245c2a45064476a",
+    "original_grade_sha256": "090032e013cf127b4bcc40f640e2cde3d76c56fb8f3d65827e7a8653422af1a3",
+    "independent_adjudication_sha256": "73aceb1f6e2e42d534c2da3542824f380d032875bc982770ae09d94eed5c5375",
+    "evidence": [
+      "The supplied diff limits case 4 changes to the two unsupported cache inputs.",
+      "Case 5 workflow bytes are unchanged; its additions govern conditional activation and resource accounting.",
+      "The additions require separate authority for preventive controls and restrict cancellation to qualification-owned runs under actual authority.",
+      "No changed seam requires renewing trust, token, permissions, security-analysis, producer, enforcement, or containment judgments."
+    ],
+    "invalidated_dependencies": [],
+    "retention_limit": "This retains prior judgments only for unchanged dependencies. It supplies no fresh security pass. Original failed grades, original outputs, controls, and caller-assisted successor provenance remain unchanged. Final verification must confirm those identities and change boundaries."
+  },
+  "permits_final_verification": true,
+  "blockers": [],
+  "limitations": [
+    "All six ordered intake parts passed their prescribed byte-count and SHA-256 checks and were read completely.",
+    "No tools, delegation, mutation, revision, external action, or loop followed intake.",
+    "No new findings were submitted by either critic.",
+    "The cache judgment uses supplied pinned metadata and TypeScript source; bundled JavaScript and post-action implementation were not supplied.",
+    "No hosted run, organization balance, entitlement, effective preventive control, quiet window, check identity, installation state, or merge enforcement was observed.",
+    "Cooperative activation and accounting retain an acknowledged race; unavailable controls, authority, coordination, or capacity keep later execution held.",
+    "This adjudication permits the declared final verification. It does not declare final clean, establish overall alpha completion, or authorize hosted execution, settings changes, expenditure, publication, or installation."
+  ]
+}

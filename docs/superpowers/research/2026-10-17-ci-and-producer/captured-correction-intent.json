@@ -1,0 +1,65 @@
+{
+  "candidate_sha256": "3ce28729ae896fdab600a427f3468fd293fae300ef2e515b07c6e6905cfaac00",
+  "review_input_sha256": "c3fed62aee6fe026219a318765d2b4467faa4bd90c0c076dabf51bf80714a7a3",
+  "scope": "intent",
+  "findings": [],
+  "falsification_attempts": [
+    {
+      "id": "INTENT-FA-01",
+      "claim_tested": "Removing the two cache inputs preserves the requested absence of package-manager caching.",
+      "evidence": [
+        "Case 4 successor omits cache:false from both setup-python steps.",
+        "Pinned src/setup-python.ts reads core.getInput('cache') and calls cacheDependencies only when that value is truthy.",
+        "Pinned action.yml declares no default for cache."
+      ],
+      "result": "The bounded source evidence supports omission as the correction. No other case 4 behavior needed changing to satisfy this requirement."
+    },
+    {
+      "id": "INTENT-FA-02",
+      "claim_tested": "The organization capacity procedure could mistake a balance snapshot for reserved capacity.",
+      "evidence": [
+        "Case 5 successor requires inspection of queued, running, and planned organization usage and an authorized coordination window.",
+        "It states that neither a billing snapshot nor the local ledger reserves included minutes.",
+        "It requires refreshing capacity, controls, competing work, and stopping margin before every admitted trigger and retry, and explicitly records the observation-to-dispatch race."
+      ],
+      "result": "The successor preserves the cooperative nature of the procedure and holds execution when its prerequisites cannot be established."
+    },
+    {
+      "id": "INTENT-FA-03",
+      "claim_tested": "The five-execution plan could silently authorize uncontrolled PR or push starts.",
+      "evidence": [
+        "Case 5 successor keeps the workflow unpublished or inactive pending a separately authorized activation procedure.",
+        "Where publication could start runs before workflow disabling takes effect, it requires an authorized repository Actions pause or another verified preventive control.",
+        "It coordinates writers, admits one triggering action at a time, verifies disable and outstanding-run acknowledgements, and reconciles every created execution."
+      ],
+      "result": "The proposal gives an actionable conditional activation procedure without claiming that suitable controls or authority currently exist. It retains ordinary PR/push CI for a later activation decision."
+    },
+    {
+      "id": "INTENT-FA-04",
+      "claim_tested": "Timeout arithmetic could still be presented as an enforced resource cap or permit omitted consumption.",
+      "evidence": [
+        "Case 5 successor calls 105 minutes a planning allowance, explicitly excluding source enforcement, reservation, and a billed-minute guarantee.",
+        "Every created execution, retry, and canceled execution counts toward the procedural limit and 200-minute ceiling.",
+        "Stopping margin includes cancellations, retries, rounding, and overhead; unexpected starts require reconciliation, and an unestablishable remaining bound ends the experiment incomplete."
+      ],
+      "result": "The changed prose satisfies the requested accounting distinction and preserves the no-additional-charge boundary as an admission condition."
+    },
+    {
+      "id": "INTENT-FA-05",
+      "claim_tested": "The corrections could depend on a fresh security judgment while retaining the previous judgment.",
+      "evidence": [
+        "Case 4 changes only the two unsupported cache inputs.",
+        "Case 5 retains the workflow and adds conditional activation and accounting prose.",
+        "The added procedure requires separate authorization for controls and restricts cancellation to qualification-owned runs under actual authority."
+      ],
+      "result": "I found no dependency invalidation within the changed intent seams that requires returning this correction to the security route. This is not a renewed judgment on unchanged security claims."
+    }
+  ],
+  "limitations": [
+    "All four ordered packet parts passed their prescribed byte-count and SHA-256 checks and were read completely.",
+    "Review covers only the specified ordinary correction seams; unchanged proposal content was read for context and dependencies.",
+    "No hosted run, account balance, entitlement, control availability, installation, gate enforcement, or security property was verified.",
+    "The cooperative activation procedure leaves an explicitly acknowledged race and requires repository-specific controls and current evidence before execution.",
+    "Root verification and independent adjudication remain separate obligations."
+  ]
+}

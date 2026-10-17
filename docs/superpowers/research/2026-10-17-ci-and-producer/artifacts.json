@@ -1,0 +1,73 @@
+{
+  "scope": "Captured source proposals, original grades and independently reviewed caller-assisted corrections; no live or installed qualification.",
+  "files": [
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case4-captured-source.md",
+      "bytes": 11509,
+      "sha256": "4404d4db8ee0fe6c10eca6d8113ef273f2582236930837fcc6fe3f6b7df58fc8"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case4-captured-control.md",
+      "bytes": 16583,
+      "sha256": "fdd1f0e77a87ec1a9be7c5e53b314a8e319bc4e57ea895f41a4b76febeaff5a2"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case4-assisted-successor.md",
+      "bytes": 11463,
+      "sha256": "2af59d21b81dc3fa1bc2b0d2a96f782e7a9ce05e68fe2f8ef2cd1906201f87de"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case5-captured-source.md",
+      "bytes": 9955,
+      "sha256": "33146812f4330ccaf5ecd61970944e9fc243e8cdeb098c786f3520788ef94f40"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case5-captured-control.md",
+      "bytes": 8835,
+      "sha256": "43932c86c2542691df513628f86a0d2b308f785a1215febb00bc779f6af6f2dd"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case5-assisted-successor.md",
+      "bytes": 13518,
+      "sha256": "cb92202188bb56c398f7d927dbd90abad1b339eb59b0cea50d1e4c92493ebee0"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case8-captured-source.md",
+      "bytes": 4627,
+      "sha256": "397f746793a381a65ea662daeed1b879a5ad5806e68c8f4e6d8b2ea165f5fbe0"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/case8-captured-control.json",
+      "bytes": 5079,
+      "sha256": "1441c7d9f651c335d25d3b5df5ee2cac0def99d687dfdd1c48448f4dbb299436",
+      "encoding": "json-string-utf8",
+      "decoded_bytes": 4819,
+      "decoded_sha256": "e94be9900146d5007170821e2ad502ccc26746257490588e72533305d095a330"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/captured-original-grade.json",
+      "bytes": 11192,
+      "sha256": "090032e013cf127b4bcc40f640e2cde3d76c56fb8f3d65827e7a8653422af1a3"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/captured-original-adjudication.json",
+      "bytes": 31825,
+      "sha256": "73aceb1f6e2e42d534c2da3542824f380d032875bc982770ae09d94eed5c5375"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/captured-correction-intent.json",
+      "bytes": 4689,
+      "sha256": "05b7f054646469d01e6f789bbcfd5f919cd3559e2974f2600160ef4586038db9"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/captured-correction-runtime.json",
+      "bytes": 5498,
+      "sha256": "c88755e13f5b1366c6413fceb4d663a74e26aac0da80d76bf9677d00bb690c40"
+    },
+    {
+      "path": "docs/superpowers/research/2026-10-17-ci-and-producer/captured-correction-adjudicate.json",
+      "bytes": 8164,
+      "sha256": "1b36e09f83398eacb3dbb7aa75ace1c74ff57de789cd9b53fca2b1ffc4a34ad5"
+    }
+  ]
+}

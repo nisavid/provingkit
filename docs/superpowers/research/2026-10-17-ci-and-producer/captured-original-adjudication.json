@@ -1,0 +1,397 @@
+{
+  "status": "incomplete / non-clean",
+  "candidateSha256": "acbf848f3f79dfb185a3436592ace003621b26716e0c7d8f766f965c20533b20",
+  "reviewInputSha256": "e97d3858b981093bca6d10abab2ba1191a6d8647c03d1eb455265326e259ac2f",
+  "requirementsSha256": "052b6925e2de3a5993e511a3609dc7a5fa2d98f661a1e5bdf2469ef4f55e9952",
+  "dispositions": [
+    {
+      "id": "case4-output-48d27cc5b8a1-expectation-4",
+      "disposition": "accept",
+      "subject": "source-supplied candidate",
+      "scope": "Case 4 expectation 4 and the usability of the proposed Python CI source.",
+      "directEvidence": "Both setup-python steps set `cache: false`. The supplied action.yml defines `cache` as an optional package-manager string, and the pinned source calls getCacheDistributor whenever that input is nonempty. Its factory accepts only `pip`, `pipenv`, or `poetry` and throws for other values, including the string `false` supplied by workflow inputs.",
+      "affectedContract": "Case 4 expectation 4 requires action dependencies to be configured for their actual operations and incomplete setup not to be represented as usable coverage. The qualification contract also requires meaningful source validation before hosted qualification.",
+      "causalPath": "`cache: false` becomes a nonempty action input, selects unsupported-cache handling, and fails setup-python before the proposed unittest or content-validation commands run.",
+      "severity": {
+        "rating": "medium",
+        "impact": "The ordinary Python jobs are unusable as proposed, so the source cannot supply its claimed test and content evidence.",
+        "likelihood": "High if the proposal is activated unchanged because both affected steps contain the input.",
+        "recoverability": "High; omitting the input restores setup-python's documented default of disabled caching.",
+        "detectability": "Moderate; YAML parsing succeeds and the defect appears only through action metadata review or execution."
+      },
+      "smallestAction": "Correct the generated proposal by deleting both `cache: false` inputs; do not replace them with another false-like string.",
+      "requiredProof": "On a new response digest, verify both inputs are absent, confirm against the exact pinned setup-python metadata that caching defaults off, and obtain a fresh independent judgment for expectation 4 and this concern. If the correction changes anything else, regrade every affected case 4 criterion.",
+      "limitations": "The supplied evidence proves the action-input semantics, not an actual workflow failure; no action or workflow was executed.",
+      "residualRisk": "Other workflow-schema, pin-provenance, command, permission, and hosted-behavior questions remain for later verification.",
+      "nextOwner": "Case 4 candidate-proposal owner",
+      "gradeConsequence": "The original failure of case 4 expectation 4 remains correct.",
+      "candidateConsequence": "Blocks case 4 from final verification until the proposal is corrected and freshly graded.",
+      "canonicalSkillConsequence": "This establishes an erroneous generated proposal, not a defect in the canonical Skill. The Skill does not instruct authors to pass `cache: false`."
+    },
+    {
+      "id": "case4-output-48d27cc5b8a1-other-1",
+      "disposition": "duplicate",
+      "duplicateOf": "case4-output-48d27cc5b8a1-expectation-4",
+      "subject": "source-supplied candidate",
+      "scope": "The same two setup-python steps and the same unsupported cache input.",
+      "directEvidence": "The concern cites the identical `cache: false` values and their identical setup-python failure mechanism.",
+      "affectedContract": "The same case 4 expectation 4 and source-usability obligations addressed by the accepted finding.",
+      "causalPath": "The same nonempty unsupported cache value reaches getCacheDistributor and prevents the Python jobs from reaching their commands.",
+      "severity": {
+        "rating": "medium",
+        "impact": "Identical to the accepted expectation-4 finding.",
+        "likelihood": "High if activated unchanged.",
+        "recoverability": "High by removing the two inputs.",
+        "detectability": "Moderate because syntax parsing does not expose it."
+      },
+      "smallestAction": "Use the correction attached to the accepted expectation-4 finding; do not create a second corrective track.",
+      "requiredProof": "The fresh proof required by the accepted expectation-4 finding also resolves this duplicate.",
+      "limitations": "Independent restatement does not add a distinct cause or prove execution.",
+      "residualRisk": "The non-duplicate workflow and hosted-verification risks remain.",
+      "nextOwner": "Case 4 candidate-proposal owner",
+      "gradeConsequence": "No additional grade change; expectation 4 remains failed once, and this concern remains covered.",
+      "candidateConsequence": "No blocker beyond the accepted expectation-4 finding.",
+      "canonicalSkillConsequence": "No separate canonical Skill consequence."
+    },
+    {
+      "id": "case4-output-9ba3d520f76e-other-1",
+      "disposition": "accept",
+      "subject": "immutable no-supplied-Skill control",
+      "scope": "Accuracy of the control proposal's lexical workflow-policy checker.",
+      "directEvidence": "The checker strips lines and then matches exact unquoted forms such as `permissions: write-all` and unquoted permission entries. Valid YAML using quoted keys or `permissions: \"write-all\"` can avoid those expressions, while the response says the script prevents repository-mutating permissions.",
+      "affectedContract": "The case 4 source proposal must tighten workflow permissions and avoid overstating what source validation establishes.",
+      "causalPath": "A valid alternate YAML spelling can evade the lexical pattern, allowing a prohibited permission while the policy job reports success.",
+      "severity": {
+        "rating": "low",
+        "impact": "The helper supplies weaker permission assurance than its prose suggests, although the proposed workflow itself uses restricted permissions.",
+        "likelihood": "Moderate if future workflow edits use alternate valid YAML forms.",
+        "recoverability": "High through YAML-aware validation or narrower claims.",
+        "detectability": "Low without adversarial fixtures because the included tests cover only canonical spellings."
+      },
+      "smallestAction": "Do not rewrite this frozen control. Retain the concern with its grade; any future reuse should narrow the checker claim or use YAML-aware validation with alternate-form tests.",
+      "requiredProof": "The frozen source already proves the concern. No corrected control or passing control is required for candidate acceptance.",
+      "limitations": "No bypass fixture was executed, and this finding does not turn the control into an implementation candidate.",
+      "residualRisk": "Other YAML constructs may also evade a lexical scanner.",
+      "nextOwner": "Evaluation-record owner; a future control-proposal owner only if the control is reused",
+      "gradeConsequence": "The control's seven expectation judgments remain passed; this accepted additional concern remains recorded.",
+      "candidateConsequence": "None. It does not block the separate source-supplied case 4 candidate.",
+      "canonicalSkillConsequence": "None; the checker was invented by the control response rather than required by the canonical Skill."
+    },
+    {
+      "id": "case5-output-6c934ed1a2a0-expectation-2",
+      "disposition": "accept",
+      "subject": "immutable no-supplied-Skill control",
+      "scope": "Case 5 expectation 2 for ordinary private CI.",
+      "directEvidence": "The control replaces PR and push triggers with `workflow_dispatch` only and says automatic triggers should not be enabled under the present authorization.",
+      "affectedContract": "Case 5 expectation 2 requires useful ordinary private CI to be preserved while avoiding unsupported Code Security assumptions.",
+      "causalPath": "Without a pull-request trigger, ordinary PR revisions do not automatically produce the proposed validation or required result.",
+      "severity": {
+        "rating": "medium",
+        "impact": "The proposal does not provide the ordinary private CI route requested by the case.",
+        "likelihood": "Certain from the proposed event block.",
+        "recoverability": "High in a future proposal by separating reviewable ordinary-CI source from controlled activation and run admission.",
+        "detectability": "High from direct inspection of the workflow events."
+      },
+      "smallestAction": "Preserve the failed control grade. Do not rewrite the frozen control; a future proposal would need a PR route plus an independently bounded activation procedure.",
+      "requiredProof": "The frozen event block is sufficient proof. No corrected control is required for candidate acceptance.",
+      "limitations": "Manual dispatch could run a selected revision, but it is not ordinary PR-event coverage.",
+      "residualRisk": "Any future PR-triggered design still requires organization capacity, stop-use, policy, and competing-usage admission.",
+      "nextOwner": "Evaluation-record owner",
+      "gradeConsequence": "The original failure of control expectation 2 remains correct.",
+      "candidateConsequence": "None; controls may genuinely fail and need not be repaired for candidate acceptance.",
+      "canonicalSkillConsequence": "None."
+    },
+    {
+      "id": "case5-output-6c934ed1a2a0-expectation-6",
+      "disposition": "accept",
+      "subject": "immutable no-supplied-Skill control",
+      "scope": "Case 5 expectation 6 for PR-event coverage and later gate qualification.",
+      "directEvidence": "The proposed workflow has only `workflow_dispatch`; the response makes adding `pull_request` conditional on a later spending-boundary change and proposes testing a manually dispatched PR head.",
+      "affectedContract": "Case 5 expectation 6 requires PR-event coverage, required-result identity, and causal enforcement to remain explicit qualification obligations.",
+      "causalPath": "A manually dispatched run on a PR commit does not establish that the `pull_request` event emits the required result for new PR revisions.",
+      "severity": {
+        "rating": "medium",
+        "impact": "The proposed qualification could record a check without proving the intended pre-merge event route.",
+        "likelihood": "Certain under the written plan.",
+        "recoverability": "High through a future event-correct proposal and controlled hosted evidence.",
+        "detectability": "High from the event configuration and qualification steps."
+      },
+      "smallestAction": "Retain the failed control judgment; do not mutate the frozen control.",
+      "requiredProof": "The source is sufficient to sustain the failure. A future replacement would need an actual PR-event run bound to its revision, context, and producing App.",
+      "limitations": "No hosted run occurred, so this adjudication does not claim the manual result would or would not satisfy any live rule.",
+      "residualRisk": "Even with a PR trigger, source alone would not prove check identity or enforcement.",
+      "nextOwner": "Evaluation-record owner",
+      "gradeConsequence": "The original failure of control expectation 6 remains correct.",
+      "candidateConsequence": "None beyond preserving an accurate control grade.",
+      "canonicalSkillConsequence": "None."
+    },
+    {
+      "id": "case5-output-6c934ed1a2a0-other-1",
+      "disposition": "already addressed",
+      "subject": "immutable no-supplied-Skill control",
+      "scope": "Meaning of the word `reserve` in the control's private-minute ledger.",
+      "directEvidence": "The response describes a local minute ledger, separately requires confirmation that competing organization workflows will not consume the minutes, requires a recheck before retry, and stops when evidence becomes stale. It never claims a GitHub platform reservation.",
+      "affectedContract": "The no-additional-charge boundary requires actual organization capacity and competing-usage evidence rather than an assumed reservation.",
+      "causalPath": "The possible ambiguity is already constrained by explicit ledger and competing-use language, so no unsupported platform-reservation conclusion follows from the complete response.",
+      "severity": {
+        "rating": "low",
+        "impact": "At most a terminology ambiguity; the operative procedure already treats capacity as unreserved.",
+        "likelihood": "Low when the complete procedure is read.",
+        "recoverability": "Immediate through the existing surrounding text.",
+        "detectability": "High."
+      },
+      "smallestAction": "Retain the explanatory concern if useful, but require no change to the frozen control.",
+      "requiredProof": "The quoted ledger, competing-usage, and recheck provisions already supply the proof.",
+      "limitations": "This disposition does not validate actual capacity or billing admission.",
+      "residualRisk": "Concurrent use can still consume capacity, which is why the stated rechecks remain necessary.",
+      "nextOwner": "Evaluation-record owner",
+      "gradeConsequence": "No expectation judgment changes.",
+      "candidateConsequence": "None.",
+      "canonicalSkillConsequence": "None."
+    },
+    {
+      "id": "case5-output-6c934ed1a2a0-other-2",
+      "disposition": "duplicate",
+      "duplicateOf": "case5-output-6c934ed1a2a0-expectation-6",
+      "subject": "immutable no-supplied-Skill control",
+      "scope": "The workflow_dispatch-only route and its inability to establish pull-request event coverage.",
+      "directEvidence": "The concern cites the same absent `pull_request` trigger and manual production requirement as the expectation-6 finding.",
+      "affectedContract": "The same case 5 expectation 6.",
+      "causalPath": "The same event mismatch prevents a manual dispatch from proving PR-event emission.",
+      "severity": {
+        "rating": "medium",
+        "impact": "Identical to the accepted expectation-6 finding.",
+        "likelihood": "Certain under the written workflow.",
+        "recoverability": "High in a future proposal.",
+        "detectability": "High."
+      },
+      "smallestAction": "Track the issue once under the accepted expectation-6 finding.",
+      "requiredProof": "No proof beyond that finding is required.",
+      "limitations": "The duplicate adds no separate causal defect.",
+      "residualRisk": "The later identity and enforcement obligations remain unproved.",
+      "nextOwner": "Evaluation-record owner",
+      "gradeConsequence": "No additional grade change; control expectation 6 remains failed.",
+      "candidateConsequence": "None.",
+      "canonicalSkillConsequence": "None."
+    },
+    {
+      "id": "case5-output-f0a9127e4d6c-expectation-4",
+      "disposition": "accept",
+      "subject": "source-supplied candidate",
+      "scope": "Case 5 expectation 4 and admission of bounded organization-owned private runs.",
+      "directEvidence": "The candidate requires billing, stop-use, Actions admission, and inherited-policy evidence and says to recheck reported usage. It does not require inspection or coordination of queued, running, or otherwise competing organization workflows before admitting each bounded run group.",
+      "affectedContract": "Case 5 expectation 4 and the qualification contract expressly require competing account activity evidence before private-run admission.",
+      "causalPath": "Lagging billing totals can show sufficient included capacity while already queued or running organization jobs consume it, making the proposed admission calculation stale.",
+      "severity": {
+        "rating": "high",
+        "impact": "A stale admission decision can violate the included-allowance boundary or cause an unexpected stop during qualification.",
+        "likelihood": "Environment-dependent but credible in a shared organization account.",
+        "recoverability": "High before execution by adding current queue/running-work and coordination checks; lower after usage has accrued.",
+        "detectability": "Low from periodic billing summaries alone because usage reporting can lag."
+      },
+      "smallestAction": "Correct the generated proposal to require current queued/running workflow inspection, coordination with competing organization use, and a fresh admission check immediately before each bounded run group and retry.",
+      "requiredProof": "Produce a new response digest and obtain a fresh independent judgment for expectation 4 confirming the admission procedure covers reported balance, applicable stop-use controls, queued/running work, and other competing usage. Broader edits require regrading every affected criterion.",
+      "limitations": "No live organization state was available, so this identifies a missing prerequisite rather than asserting that competing work exists.",
+      "residualRisk": "A race remains between observation and dispatch unless the eventual procedure records its coordination and race limitation.",
+      "nextOwner": "Case 5 candidate-proposal owner",
+      "gradeConsequence": "The original failure of candidate expectation 4 remains correct.",
+      "candidateConsequence": "Blocks case 5 from final verification until corrected and freshly graded.",
+      "canonicalSkillConsequence": "The qualification contract already states the missing requirement, and the canonical Skill requires actual owner allowance and controls. This isolated omission establishes a proposal defect, not a necessary canonical Skill change."
+    },
+    {
+      "id": "case5-output-f0a9127e4d6c-other-1",
+      "disposition": "accept",
+      "subject": "source-supplied candidate",
+      "scope": "Accuracy and enforceability of the candidate's five-execution, 105-minute qualification bound.",
+      "directEvidence": "The response calls 105 minutes a `source-controlled ceiling`, but the workflow source only limits each job to 20 and 1 minutes and automatically triggers on pull requests and pushes. The five-execution maximum exists only in prose.",
+      "affectedContract": "The qualification contract requires explicit maximum trigger/job counts, cancellation observations, stopping margin, and no automatic retriggers beyond the admitted bound.",
+      "causalPath": "Additional PR updates, pushes, reruns, or other trigger activity can start more than five executions even though each individual execution has timeouts, so source does not enforce the claimed aggregate ceiling.",
+      "severity": {
+        "rating": "medium",
+        "impact": "Following the proposal can exceed its planned qualification allocation and undermine the no-additional-charge admission case.",
+        "likelihood": "Moderate once automatic triggers are activated during an iterative qualification.",
+        "recoverability": "High before activation by describing the limit as procedural and supplying an actual bounded activation/admission mechanism.",
+        "detectability": "Moderate; the mismatch is visible in source review but may be missed because the arithmetic itself is correct."
+      },
+      "smallestAction": "Replace the `source-controlled ceiling` claim with a procedural admission limit and state how automatic triggering and reruns remain disabled, paused, or otherwise bounded during qualification while preserving the eventual ordinary PR CI design.",
+      "requiredProof": "On the corrected response, independently verify that per-job timeouts, aggregate trigger count, retries, cancellations, and activation state are distinguished and that no source-enforced aggregate cap is claimed without an enforcing mechanism.",
+      "limitations": "No workflow was activated, so no minutes were consumed and no bound was actually exceeded.",
+      "residualRisk": "Always-on ordinary CI cannot guarantee a lifetime aggregate run count from job timeouts alone; later operation still needs current billing and stop-use evidence.",
+      "nextOwner": "Case 5 candidate-proposal owner",
+      "gradeConsequence": "No original pass/fail criterion changes beyond the already failed expectation 4, but this accepted material concern independently blocks candidate acceptance.",
+      "candidateConsequence": "Blocks case 5 from final verification until the proposal accurately separates source limits from operator admission controls.",
+      "canonicalSkillConsequence": "This is a generated-proposal overclaim. The canonical Skill already requires estimating selected runs, counting repeated attempts, and comparing actual owner allowance; no canonical change is evidenced."
+    },
+    {
+      "id": "case8-output-a6708c62b443-expectation-4",
+      "disposition": "accept",
+      "subject": "immutable no-supplied-Skill control",
+      "scope": "Case 8 expectation 4 and isolation of the required-check cause in the control's verification design.",
+      "directEvidence": "The control requires an approval and says no bypass exists, but its causal test does not explicitly establish that the PR is non-draft or that the observing actor could otherwise merge.",
+      "affectedContract": "Case 8 expectation 4 and the qualification contract require neighboring review, draft, actor, bypass, and other blockers to be satisfied before attributing rejection to the selected check.",
+      "causalPath": "A draft PR or an actor lacking merge eligibility can remain ineligible independently of `quality`, so observing ineligibility would not isolate the check as the cause.",
+      "severity": {
+        "rating": "medium",
+        "impact": "The proposed experiment could produce an ambiguous enforcement conclusion.",
+        "likelihood": "Moderate because the omitted states are common merge blockers.",
+        "recoverability": "High in a future design by recording non-draft state and actor eligibility before varying the check.",
+        "detectability": "Low if only the final merge-eligibility outcome is retained."
+      },
+      "smallestAction": "Retain the failed control judgment. Do not rewrite the frozen control; a future verification design should record non-draft state and an otherwise eligible observing actor.",
+      "requiredProof": "The frozen text is sufficient for the disposition. A future replacement would need a complete neighboring-condition precheck, selected failure, attributable rejection, and restored passing control.",
+      "limitations": "No live experiment occurred, so this finding concerns design completeness rather than an observed false attribution.",
+      "residualRisk": "Inherited rules or concurrent state can still confound a future experiment unless read immediately before each observation.",
+      "nextOwner": "Evaluation-record owner",
+      "gradeConsequence": "The original failure of control expectation 4 remains correct.",
+      "candidateConsequence": "None. The separate source-supplied case 8 candidate passed this criterion and is not blocked by the control's failure.",
+      "canonicalSkillConsequence": "None; the canonical application guide already requires actor, bypass, rule, result, event, and neighboring-gate evidence."
+    }
+  ],
+  "gradeConsequences": {
+    "judgmentChanges": [],
+    "summary": "All 40 original pass/fail judgments remain unchanged. Accepted concerns, duplicates, and the already-addressed wording issue do not justify altering any original judgment.",
+    "totals": {
+      "passed": 35,
+      "failed": 5,
+      "total": 40
+    },
+    "outputs": [
+      {
+        "caseId": 4,
+        "outputId": "output-48d27cc5b8a1",
+        "subject": "source-supplied candidate",
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "consequence": "Expectation 4 remains failed; correction is required."
+      },
+      {
+        "caseId": 4,
+        "outputId": "output-9ba3d520f76e",
+        "subject": "immutable control",
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "consequence": "All criteria remain passed, with the accepted lexical-checker concern retained."
+      },
+      {
+        "caseId": 5,
+        "outputId": "output-6c934ed1a2a0",
+        "subject": "immutable control",
+        "passed": 5,
+        "failed": 2,
+        "total": 7,
+        "consequence": "Expectations 2 and 6 remain failed; no control rewrite is required."
+      },
+      {
+        "caseId": 5,
+        "outputId": "output-f0a9127e4d6c",
+        "subject": "source-supplied candidate",
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "consequence": "Expectation 4 remains failed, and the aggregate-ceiling overclaim is an additional material blocker."
+      },
+      {
+        "caseId": 8,
+        "outputId": "output-0453bd987c65",
+        "subject": "source-supplied candidate",
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "consequence": "No accepted finding blocks final verification."
+      },
+      {
+        "caseId": 8,
+        "outputId": "output-a6708c62b443",
+        "subject": "immutable control",
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "consequence": "Expectation 4 remains failed; this does not block the candidate."
+      }
+    ]
+  },
+  "candidateCases": [
+    {
+      "name": "case 4",
+      "caseId": 4,
+      "candidateOutputId": "output-48d27cc5b8a1",
+      "permitsFinalVerification": false,
+      "blockers": [
+        "case4-output-48d27cc5b8a1-expectation-4"
+      ],
+      "minimumCorrection": "Remove both unsupported `cache: false` inputs while preserving the no-cache design and all otherwise unchanged proposal content.",
+      "requiredFreshEvidence": "A new exact response digest, verification against the pinned setup-python input contract, and a fresh independent grade of expectation 4 and the cache concern on that revision. Regrade other criteria only if their evidence changes."
+    },
+    {
+      "name": "case 5",
+      "caseId": 5,
+      "candidateOutputId": "output-f0a9127e4d6c",
+      "permitsFinalVerification": false,
+      "blockers": [
+        "case5-output-f0a9127e4d6c-expectation-4",
+        "case5-output-f0a9127e4d6c-other-1"
+      ],
+      "minimumCorrection": "Add queued, running, and otherwise competing organization usage to pre-run admission and relabel the five-run limit as a procedural bound with a concrete activation and retrigger-control design; do not claim source-enforced aggregate control from job timeouts.",
+      "requiredFreshEvidence": "A new exact response digest and fresh independent grading of expectation 4 plus the aggregate-bound concern. The review must confirm that ordinary PR CI remains the eventual design while bounded qualification cannot automatically exceed the admitted trigger and retry count."
+    },
+    {
+      "name": "case 8",
+      "caseId": 8,
+      "candidateOutputId": "output-0453bd987c65",
+      "permitsFinalVerification": true,
+      "blockers": [],
+      "minimumCorrection": "None.",
+      "requiredFreshEvidence": "Final verification must bind the exact candidate response, input, fixture, materialized bytes, and existing six-of-six criterion evidence. A label alone is insufficient. Hosted producer, queue, and causal-enforcement evidence remain later obligations and must not be inferred."
+    }
+  ],
+  "callerObservationCoverage": {
+    "resolved": true,
+    "findingIds": [
+      "case4-output-48d27cc5b8a1-expectation-4",
+      "case4-output-48d27cc5b8a1-other-1"
+    ],
+    "resolution": "The expectation-4 finding is accepted from the caller-supplied exact action metadata and pinned source. The other-concern finding is a duplicate of that same evidenced cause. Together they fully cover the cache-input observation without inferring that the action or workflow executed.",
+    "currentContractConsequence": "Case 4 candidate expectation 4 remains failed, and case 4 cannot proceed to final verification until the generated proposal is corrected and freshly graded."
+  },
+  "canonicalSkillConsequences": {
+    "changeRequired": false,
+    "basis": "The accepted candidate findings are response-specific errors or omissions. The canonical Skill already separates source from hosted evidence, requires actual allowance and controls, counts repeated attempts, and requires causal gate evidence. It does not prescribe `cache: false`, omit competing activity, or claim that job timeouts enforce an aggregate trigger cap.",
+    "candidateOutputCorrections": [
+      "Correct case 4 output-48d27cc5b8a1 at the setup-python input seam.",
+      "Correct case 5 output-f0a9127e4d6c at the competing-usage admission and aggregate-bound description seams."
+    ],
+    "futureEscalation": "A canonical Skill change would require evidence that the same cause recurs across distinct corrected successors or that the existing instructions cannot support the frozen contract. That evidence is not present here."
+  },
+  "verificationDecision": {
+    "overall": "Do not close the three-case candidate set or advance it as a whole. Cases 4 and 5 require output corrections and fresh independent evidence. Case 8 may proceed to final verification.",
+    "operatorDecisionRequiredNow": false,
+    "operatorDecisionNotes": "No accepted candidate finding requires a product or authority trade-off to make the minimum correction. A genuine operator decision would be needed only if the owner prefers a different supported-input claim or run-admission model instead of the stated corrections.",
+    "notEstablished": [
+      "native Skill invocation or installed discovery",
+      "actual workflow or action execution",
+      "useful hosted coverage",
+      "organization billing admission",
+      "required-result enforcement",
+      "queue acceptance or merge",
+      "publication, installation, or release"
+    ]
+  },
+  "assumptions": [
+    "The frozen candidate, review-input, and requirements identities supplied by the caller are authoritative for this adjudication.",
+    "The operator override controls: topology.json was neither sought nor read, and no topology claim is made.",
+    "The supplied adjudicate Skill and the review-input, review-output, invocation-boundary, and dispositions references were applied without invoking another Skill or starting a review loop.",
+    "The actualDelivery records establish inline delivery of the six source files to the three candidate subjects, but do not establish native Skill discovery or invocation.",
+    "The three source-supplied outputs are candidate subjects; the three no-supplied-Skill outputs are immutable controls whose accurate failures do not need correction for candidate acceptance.",
+    "The coordinator evidence establishes byte-preserving materialization, basic YAML parsing, and process closure only.",
+    "The earlier incomplete execution remains retained as incomplete. It received no semantic feedback before the fresh longer-window attempts and is not converted into a completed or graded response."
+  ],
+  "remainingFog": [
+    "Hosted workflow-schema acceptance, action-pin provenance beyond the supplied setup-python source, command success, effective permissions, CodeQL coverage, and result identities remain unobserved.",
+    "The public and private hosted fixtures, final source join, publication, installation, fresh installed-client discovery, and live causal enforcement remain separate incomplete obligations.",
+    "The private organization's current included balance, stop-use controls, queued or running competing usage, Actions policy, and inherited rules remain unknown.",
+    "The fixture-enforcement method decision remains pending.",
+    "Case 8 may enter final verification, but its proposed live correction and causal experiment still require separate authority and fresh target evidence before any operational claim."
+  ]
+}
