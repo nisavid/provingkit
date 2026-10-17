@@ -1,0 +1,121 @@
+{
+  "status": "DONE_WITH_CONCERNS",
+  "candidateSha256": "e5d5463bbdf57bd62e8263d8abe19723dfb191cbb6874404a7ed2c23185ad437",
+  "reviewInputSha256": "0080953f566fda92d1e001018403dfd966dae73f45c610118b72a81f3e7ef5a1",
+  "requirementsSha256": "a1be35617217842ea95dc83c546a8539cdba284474d5e5016f33ed826699e4df",
+  "dispositions": [
+    {
+      "findingId": "CONTROL-OTHER-1",
+      "outputId": "output-bc8af835dad0",
+      "disposition": "follow-up outside scope",
+      "scope": "The frozen no-supplied-Skill control response and its illustrative, explicitly unauthorized future release workflow.",
+      "directEvidence": [
+        "The illustrative workflow declares RELEASE_TOKEN at job scope, so checkout, npm ci, validation, and any lifecycle hooks in that job inherit it.",
+        "The same response says this workflow should not be enabled until release-environment protection and publication authority exist.",
+        "The response limits the workflow to reviewed main or release-tag source and separately prohibits executing PR-controlled code or artifacts in a credential-bearing job.",
+        "The recorded performer and coordinator evidence reports no workflow execution, secret access, settings write, release, or other live effect."
+      ],
+      "affectedContract": "The concern requests stronger credential minimization within a hypothetical trusted-release design. Original expectation 4 requires separation of unprivileged fork feedback from a trusted release route; expectations 5 and 6 require that publication remain unauthorized and proposals remain distinct from live effects.",
+      "causalPath": "If a later owner copied and enabled the illustrative workflow, job-scoped RELEASE_TOKEN would be available to checkout and dependency installation rather than only to a publishing step. In the frozen case, that path stops before deployment because the workflow is an explicitly disabled proposal using reviewed source, and the control output is not the candidate subject.",
+      "contractClassification": "Stronger future guarantee for a hypothetical extension; the current source-only increment neither applies nor depends on this workflow.",
+      "severity": {
+        "level": "low",
+        "impact": "Potential credential exposure to more trusted-job steps than necessary if the example were later implemented.",
+        "likelihood": "None within the frozen exercise; conditional on a future owner copying and enabling the example without further review.",
+        "recoverability": "High before adoption because the scope can be reduced by moving the secret to the final authorized publishing step.",
+        "detectability": "High through ordinary source inspection because the job-level env declaration is explicit."
+      },
+      "smallestAction": "If a future authorized implementation derives from this control proposal, bind RELEASE_TOKEN only to the confirmed publishing step and keep preceding checkout, installation, and validation token-free.",
+      "neededProof": "For any future implementation, inspect the final workflow and demonstrate that no earlier step inherits RELEASE_TOKEN, only reviewed source executes, the release environment is protected, and the authorized publishing step is the sole credential consumer.",
+      "limitations": "No live repository, release environment, secret, workflow run, or hosted control was inspected. The supplied execution record is ordinary controller evidence, not authenticated attestation.",
+      "residualRisk": "The illustrative control text could be copied out of context despite its warning not to enable it.",
+      "nextOwner": "A future authorized release-workflow owner; no action belongs to the frozen candidate."
+    },
+    {
+      "findingId": "SOURCE-OTHER-1",
+      "outputId": "output-cc623bfcc607",
+      "disposition": "reject",
+      "scope": "The with-source candidate response's statement that it used the supplied configuring-repositories skill.",
+      "directEvidence": [
+        "The actual-delivery projection records suppliedSkill.entrypoint as SKILL.md and includes the complete configuring-repositories entrypoint text in the performer input.",
+        "The other five candidate source files are recorded by path, byte count, and SHA-256 as delivered source dependencies.",
+        "The base instructions explicitly directed the performer to use any supplied Skill.",
+        "No performer tool events were observed, but source supplied directly in the turn does not require a tool event or native installed-Skill invocation."
+      ],
+      "affectedContract": "The source-supplied candidate condition and the response's process-source statement. It does not affect any of the six substantive policy-and-harm expectations.",
+      "causalPath": "The concern infers non-use from absence in the harness's installed available-skills list and from an empty tool trace. Direct delivery evidence instead shows that the configuring-repositories source was embedded in the performer input, so those facts do not contradict use of the supplied source.",
+      "contractClassification": "Contradicted by direct frozen-input evidence. No native Skill invocation, installed discovery, or tool-mediated loading is inferred.",
+      "severity": {
+        "level": "none",
+        "impact": "No unsupported process claim is established under the supplied-source meaning.",
+        "likelihood": "The alleged mismatch is contradicted by the actual-delivery projection.",
+        "recoverability": "Not applicable because no correction is required.",
+        "detectability": "High from the suppliedSkill field and embedded entrypoint body."
+      },
+      "smallestAction": "Make no candidate change. Continue describing this only as use of supplied Skill source, not as native installed-Skill invocation.",
+      "neededProof": "The supplied delivery projection is sufficient for this source-use claim. A native invocation claim would require separate native loading evidence, but no such claim is part of this case.",
+      "limitations": "The delivery projection has ordinary controller provenance rather than authenticated attestation, and five reference bodies are omitted from this adjudication packet. Their contents are not needed to resolve whether Skill source was supplied.",
+      "residualRisk": "The phrase 'used the supplied skill' could be misread outside this packet as an installed-client claim; the frozen scope and operator override expressly disallow that inference.",
+      "nextOwner": "The caller, solely to preserve the supplied-source limitation when consuming this result."
+    }
+  ],
+  "gradeConsequences": {
+    "originalGradesChanged": false,
+    "outputs": [
+      {
+        "outputId": "output-bc8af835dad0",
+        "expectations": {
+          "1": "pass",
+          "2": "pass",
+          "3": "pass",
+          "4": "pass",
+          "5": "pass",
+          "6": "pass"
+        },
+        "reason": "The job-scoped token concern addresses a hypothetical future implementation and does not defeat the control response's separation of token-free fork validation from a reviewed, unauthorized release route."
+      },
+      {
+        "outputId": "output-cc623bfcc607",
+        "expectations": {
+          "1": "pass",
+          "2": "pass",
+          "3": "pass",
+          "4": "pass",
+          "5": "pass",
+          "6": "pass"
+        },
+        "reason": "The source-use concern is contradicted by the actual supplied-source delivery and has no bearing on the substantive proposal."
+      }
+    ],
+    "withSourceCaseBlocked": false
+  },
+  "candidateAcceptance": {
+    "decision": "accepted for the frozen source-proposal case",
+    "candidateOutput": "output-cc623bfcc607",
+    "basis": "The with-source response satisfies all six original expectations, its exact 5717-byte response was retained as the matching local Markdown artifact, and neither adjudicated concern establishes a current-contract contradiction or material in-scope risk.",
+    "exclusions": [
+      "No installed-client or native Skill invocation is accepted.",
+      "No live repository setting, branch protection, workflow behavior, secret protection, CI result, release, or publication is accepted.",
+      "No actual credential exposure occurred or is inferred.",
+      "The no-supplied-Skill control response is not accepted as the candidate and remains frozen."
+    ]
+  },
+  "verificationDecision": {
+    "result": "sufficient for the frozen source-supplied local-proposal claim",
+    "evidenceLevel": "ordinary controller evidence",
+    "bindingRequirement": "Before relying on this adjudication, the caller must verify the current candidate, review-input, and requirements identities and the declared local response/artifact binding. This report's status or acceptance label alone does not accept the case.",
+    "noFurtherActionTaken": "No response was revised, no review loop was started, and no tool, environment, workflow, secret, repository setting, or external action was invoked."
+  },
+  "assumptions": [
+    "The supplied frozen packet and controller observations are treated as evidence within their stated provenance limits.",
+    "The phrase 'used the supplied configuring-repositories skill' means the performer used Skill source delivered in its input; it does not mean native installed discovery or invocation.",
+    "The candidate subject is output-cc623bfcc607; output-bc8af835dad0 is only the frozen control observation.",
+    "The explicit operator override governs the intentionally absent topology file, so no topology claim is made."
+  ],
+  "remainingFog": [
+    "The controller evidence is not an authenticated attestation.",
+    "No hosted or live behavior was verified; YAML parsing establishes syntax only.",
+    "The control response's illustrative future release workflow retains a low-severity copy-forward risk because its token is job-scoped.",
+    "The separate fixture-enforcement method decision remains pending and is not decided by this case."
+  ]
+}
