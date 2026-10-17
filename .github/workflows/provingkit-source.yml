@@ -201,7 +201,7 @@ jobs:
 
       - name: Validate Proseweaving
         run: |
-          python -m unittest tests.test_validate_proseweaving
+          python -m unittest tests.test_validate_proseweaving tests.test_proseweaving_eval_preparation
           python scripts/validate_proseweaving.py .
 
   artifact-projections:
