@@ -1397,6 +1397,19 @@ class ValidateTricriticalTests(unittest.TestCase):
                 self.assertIn("component inventory", result.stderr)
                 path.unlink()
 
+    def test_rejects_missing_developer_page(self):
+        (self.plugin_root / "DEVELOPING.md").unlink()
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        # The adapter scan reads every expected file before the inventory check,
+        # so either rejection may report the missing page.
+        self.assertTrue(
+            "DEVELOPING.md" in result.stderr
+            or "component inventory" in result.stderr,
+            result.stderr,
+        )
+        self.assertNotIn("Traceback", result.stderr)
+
     def test_rejects_special_plugin_entries(self):
         special_path = self.plugin_root / "unexpected-pipe"
         try:

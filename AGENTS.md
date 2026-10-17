@@ -37,13 +37,13 @@ detailed contracts, research, and specs under `docs/`.
 Each member under `plugins/` is a package. Its README is the front page for
 people using the plugin and ships in installed copies, so its relative links
 name only files the release projection includes. Its developer page,
-`DEVELOPING.md` where the member has one and otherwise the README, names its
-validator (`scripts/validate_<plugin>.py`), tests, evals, governed content
-identity, and supported regeneration commands. Edit canonical source first. Use
+`DEVELOPING.md`, stays in the source and names its validator
+(`scripts/validate_<plugin>.py`), tests, evals, governed content identity, and
+supported regeneration commands. Edit canonical source first. Use
 `--write-content-lock` only where the member's validator documents that mode;
 Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write only their
 content locks, while Tricritical also regenerates its per-skill reference
-projections. Task Witness uses an independently reviewed source-shape identity,
+projections and Proseweaving its README skill roster. Task Witness uses an independently reviewed source-shape identity,
 has no mechanical writer, and must never be rebaselined as an ordinary content
 lock.
 

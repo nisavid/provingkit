@@ -1008,6 +1008,7 @@ def expected_plugin_tree() -> tuple[set[str], set[str]]:
     files = {
         ".claude-plugin/plugin.json",
         "CHANGELOG.md",
+        "DEVELOPING.md",
         "LICENSE",
         "NOTICE",
         "README.md",
