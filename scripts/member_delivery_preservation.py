@@ -179,6 +179,21 @@ def consume(request: dict, root: Path, decode: Callable[[bytes], object]) -> dic
                     raise Contradiction("The raw " + field + " statement must contain valid JSON.") from None
                 require(json_values_equal(statement, response[field]["statement"]),
                         "The raw " + field + " statement differs from the response statement.")
+        require(response["owner_decision"]["baseline_record_sha256"] == response["baseline"]["record"]["sha256"],
+                "The decision baseline differs from the supplied baseline record.")
+        require(response["owner_decision"]["subject_sha256"] == response["subject"]["record"]["sha256"],
+                "The decision subject differs from the supplied subject record.")
+        export_hashes = [export["record"]["sha256"] for export in response["exports"]]
+        require(len(export_hashes) == len(set(export_hashes)), "Export records repeat a digest.")
+        require(set(response["owner_decision"]["export_record_sha256s"]) == set(export_hashes),
+                "The decision export digests differ from the supplied export records.")
+        baseline = response["baseline"]["statement"]
+        timestamps = [baseline["observed_at"], response["owner_decision"]["decided_at"],
+                      response["currentness"]["observed_at"]]
+        timestamps.extend(client["evidence"]["observed_at"] for client in baseline["clients"].values()
+                          if client["evidence"]["state"] == "measured")
+        require(all(timestamp_valid(value) for value in timestamps),
+                "Decision and observation timestamps must be timezone-aware RFC 3339.")
         if missing:
             return result("incomplete", "missing", "Required input files are unavailable: " + ", ".join(missing))
         return result("incomplete", "missing", "Complete preservation admission is not implemented.")

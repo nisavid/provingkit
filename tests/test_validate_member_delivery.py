@@ -67,15 +67,97 @@ class NonpassingPreservationCliTests(unittest.TestCase):
             logical_name = name + "-statement"
             self.add_record(logical_name, (json.dumps(self.response[name]["statement"]) + "\n").encode())
             self.response[name]["record"] = self.reference(logical_name)
+        self.response["owner_decision"]["baseline_record_sha256"] = self.reference("baseline-statement")["sha256"]
+        self.response["owner_decision"]["subject_sha256"] = self.reference("subject-statement")["sha256"]
         self.expected_dependencies = {"original-owner-decision": "unavailable"}
 
-    def test_complete_statement_consistency_does_not_establish_admission(self) -> None:
+    def test_complete_decision_cannot_name_a_different_baseline(self) -> None:
         self.use_complete_response()
+        self.response["owner_decision"]["baseline_record_sha256"] = "0" * 64
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (1, "rejected", []), report)
+        self.assertIn("decision baseline", report["checks"][0]["reason"])
+
+    def test_complete_statement_consistency_does_not_establish_admission(self) -> None:
+        for origin in ("constructed", "owner-reported"):
+            with self.subTest(origin=origin):
+                self.use_complete_response()
+                self.response["record_origin"] = origin
+
+                result, report = self.invoke()
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (2, "incomplete", []), report)
+
+    def test_complete_export_digest_order_does_not_establish_admission(self) -> None:
+        self.use_complete_response()
+        extra = copy.deepcopy(self.response["exports"][0])
+        extra["record"]["logical_name"] = "another-constructed-export"
+        extra["record"]["sha256"] = "c" * 64
+        extra["relative_path"] = "another-constructed-export"
+        self.response["exports"].append(extra)
+        self.response["owner_decision"]["export_record_sha256s"] = ["c" * 64, "a" * 64]
 
         result, report = self.invoke()
 
         self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
                          (2, "incomplete", []), report)
+
+    def test_unavailable_complete_client_evidence_stays_incomplete(self) -> None:
+        self.use_complete_response()
+        self.response["baseline"]["statement"]["clients"]["cursor"]["evidence"] = {
+            "state": "unavailable", "reason": "This constructed case has no Cursor observation.",
+        }
+        self.add_record("baseline-statement", (json.dumps(self.response["baseline"]["statement"]) + "\n").encode())
+        self.response["baseline"]["record"] = self.reference("baseline-statement")
+        self.response["owner_decision"]["baseline_record_sha256"] = self.reference("baseline-statement")["sha256"]
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (2, "incomplete", []), report)
+
+    def test_missing_input_cannot_hide_a_complete_decision_contradiction(self) -> None:
+        self.use_complete_response()
+        (self.inputs / "admission-request").unlink()
+        self.response["owner_decision"]["subject_sha256"] = "0" * 64
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (1, "rejected", []), report)
+        self.assertIn("decision subject", report["checks"][0]["reason"])
+
+    def test_complete_decision_cannot_name_a_different_subject(self) -> None:
+        self.use_complete_response()
+        self.response["owner_decision"]["subject_sha256"] = "0" * 64
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (1, "rejected", []), report)
+        self.assertIn("decision subject", report["checks"][0]["reason"])
+
+    def test_complete_decision_and_exports_need_the_same_unique_digest_set(self) -> None:
+        for case in ("another digest", "extra export", "duplicate export"):
+            with self.subTest(case=case):
+                self.use_complete_response()
+                if case == "another digest":
+                    self.response["owner_decision"]["export_record_sha256s"] = ["0" * 64]
+                else:
+                    extra = copy.deepcopy(self.response["exports"][0])
+                    if case == "extra export":
+                        extra["record"]["sha256"] = "c" * 64
+                    self.response["exports"].append(extra)
+
+                result, report = self.invoke()
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (1, "rejected", []), report)
+                self.assertIn("export", report["checks"][0]["reason"].lower())
 
     def test_complete_response_cannot_substitute_a_different_raw_statement(self) -> None:
         for field in ("subject", "baseline"):
@@ -95,6 +177,32 @@ class NonpassingPreservationCliTests(unittest.TestCase):
                 self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
                                  (1, "rejected", []), report)
                 self.assertIn(field + " statement", report["checks"][0]["reason"])
+
+    def test_complete_decision_and_observation_timestamps_need_valid_dates(self) -> None:
+        locations = [
+            ("owner_decision", "decided_at"),
+            ("currentness", "observed_at"),
+            ("baseline", "statement", "observed_at"),
+            *(("baseline", "statement", "clients", client, "evidence", "observed_at")
+              for client in ("codex", "claude-code", "cursor")),
+        ]
+        for location in locations:
+            with self.subTest(location=location):
+                self.use_complete_response()
+                selected = self.response
+                for field in location[:-1]:
+                    selected = selected[field]
+                selected[location[-1]] = "2026-02-30T12:00:00Z"
+                if location[0] == "baseline":
+                    self.add_record("baseline-statement", (json.dumps(self.response["baseline"]["statement"]) + "\n").encode())
+                    self.response["baseline"]["record"] = self.reference("baseline-statement")
+                    self.response["owner_decision"]["baseline_record_sha256"] = self.reference("baseline-statement")["sha256"]
+
+                result, report = self.invoke()
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (1, "rejected", []), report)
+                self.assertIn("timestamp", report["checks"][0]["reason"])
 
     def test_raw_statement_boolean_cannot_replace_a_number(self) -> None:
         self.use_complete_response()
@@ -176,6 +284,7 @@ class NonpassingPreservationCliTests(unittest.TestCase):
         equivalent["route_contract"]["bytes"] = 1.0
         self.add_record("subject-statement", (json.dumps(equivalent, sort_keys=True, indent=2) + "\n").encode())
         self.response["subject"]["record"] = self.reference("subject-statement")
+        self.response["owner_decision"]["subject_sha256"] = self.reference("subject-statement")["sha256"]
 
         result, report = self.invoke()
 
