@@ -1,10 +1,11 @@
-"""Check a prepared nonpassing response against caller-supplied identities."""
+"""Check prepared preservation-record consistency without admitting a delivery."""
 
 from __future__ import annotations
 
 import hashlib
 import calendar
 import re
+from decimal import Decimal, DecimalException
 from pathlib import Path, PurePosixPath
 from typing import Callable
 
@@ -50,11 +51,34 @@ def timestamp_valid(value: str) -> bool:
     return True
 
 
+def json_values_equal(left: object, right: object) -> bool:
+    pending = [(left, right)]
+    while pending:
+        left, right = pending.pop()
+        if type(left) is not type(right) and not (
+            type(left) in (int, float, Decimal) and type(right) in (int, float, Decimal)
+        ):
+            return False
+        if isinstance(left, dict):
+            if left.keys() != right.keys():
+                return False
+            pending.extend((left[key], right[key]) for key in left)
+        elif isinstance(left, list):
+            if len(left) != len(right):
+                return False
+            pending.extend(zip(left, right))
+        elif left != right:
+            return False
+    return True
+
+
 def validate_nonpassing(request: object, root: Path, decode: Callable[[bytes], object]) -> dict | None:
     if not isinstance(request, dict) or request.get("schema_version") != REQUEST_VERSION:
         return None
     try:
         return consume(request, root, decode)
+    except DecimalException:
+        return result("rejected", "invalid", "A JSON number exceeds the supported numeric range.")
     except (Contradiction, ValueError, UnicodeDecodeError, RecursionError) as error:
         return result("rejected", "invalid", str(error) or "Invalid preservation input.")
 
@@ -119,17 +143,46 @@ def consume(request: dict, root: Path, decode: Callable[[bytes], object]) -> dic
     if spec["response"] in missing:
         return result("incomplete", "missing", "Required input files are unavailable: " + ", ".join(missing))
     try:
-        from jsonschema import Draft202012Validator
+        from jsonschema import Draft202012Validator, validators
     except ImportError:
         return result("incomplete", "unavailable", "The jsonschema dependency is unavailable.")
-    invalid = next(Draft202012Validator(schema).iter_errors(response), None)
+    def integer_type(checker, value):
+        return Draft202012Validator.TYPE_CHECKER.is_type(value, "integer") or (
+            isinstance(value, Decimal) and value.is_finite()
+            and value == value.to_integral_value()
+        )
+
+    type_checker = Draft202012Validator.TYPE_CHECKER.redefine("integer", integer_type)
+    validator_type = validators.extend(Draft202012Validator, type_checker=type_checker)
+    invalid = next(validator_type(schema).iter_errors(response), None)
     require(invalid is None, "The response does not match either prepared response shape.")
-    if response["claim"] == "correspondence-to-owner-admitted-observation-at-capture":
-        return result("incomplete", "missing", "Complete preservation observations are not implemented.")
-    require(timestamp_valid(response["observed_at"]), "The observation timestamp must be timezone-aware RFC 3339.")
 
     def reference(name: str) -> dict:
         return {"logical_name": name, "bytes": inputs[name]["bytes"], "sha256": inputs[name]["sha256"]}
+
+    if response["claim"] == "correspondence-to-owner-admitted-observation-at-capture":
+        require(response["producer_contract"] == reference(spec["reviewed_contract"]),
+                "The response is bound to a different reviewed contract.")
+        require(response["currentness"]["admission_request"] == reference(spec["admission_request"]),
+                "The response is bound to a different admission request.")
+        for field in ("subject", "baseline"):
+            record = response[field]["record"]
+            name = record["logical_name"]
+            require(name in inputs, "The " + field + " statement is absent from the input map.")
+            require(record == reference(name), "The " + field + " statement has a different byte identity.")
+            if name in raw_inputs:
+                try:
+                    statement = decode(raw_inputs[name])
+                except DecimalException:
+                    raise Contradiction("The raw " + field + " statement exceeds the supported numeric range.") from None
+                except (ValueError, UnicodeDecodeError, RecursionError):
+                    raise Contradiction("The raw " + field + " statement must contain valid JSON.") from None
+                require(json_values_equal(statement, response[field]["statement"]),
+                        "The raw " + field + " statement differs from the response statement.")
+        if missing:
+            return result("incomplete", "missing", "Required input files are unavailable: " + ", ".join(missing))
+        return result("incomplete", "missing", "Complete preservation admission is not implemented.")
+    require(timestamp_valid(response["observed_at"]), "The observation timestamp must be timezone-aware RFC 3339.")
 
     require(response["admission_request"] == reference(spec["admission_request"]),
             "The response is bound to a different admission request.")

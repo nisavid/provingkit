@@ -13,6 +13,7 @@ from pathlib import Path
 REPOSITORY = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY / "scripts" / "validate_member_delivery.py"
 PREPARED_SCHEMA = REPOSITORY / "tests/fixtures/member_delivery/prepared-admission-schema.json"
+COMPLETE_RECORD = REPOSITORY / "tests/fixtures/member_delivery/constructed-complete-record.json"
 
 
 class NonpassingPreservationCliTests(unittest.TestCase):
@@ -57,6 +58,185 @@ class NonpassingPreservationCliTests(unittest.TestCase):
         return {"logical_name": name, **{
             key: self.records[name][key] for key in ("bytes", "sha256")
         }}
+
+    def use_complete_response(self) -> None:
+        self.response = json.loads(COMPLETE_RECORD.read_text())
+        self.response["producer_contract"] = self.reference("reviewed-contract")
+        self.response["currentness"]["admission_request"] = self.reference("admission-request")
+        for name in ("subject", "baseline"):
+            logical_name = name + "-statement"
+            self.add_record(logical_name, (json.dumps(self.response[name]["statement"]) + "\n").encode())
+            self.response[name]["record"] = self.reference(logical_name)
+        self.expected_dependencies = {"original-owner-decision": "unavailable"}
+
+    def test_complete_statement_consistency_does_not_establish_admission(self) -> None:
+        self.use_complete_response()
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (2, "incomplete", []), report)
+
+    def test_complete_response_cannot_substitute_a_different_raw_statement(self) -> None:
+        for field in ("subject", "baseline"):
+            with self.subTest(statement=field):
+                self.use_complete_response()
+                changed = copy.deepcopy(self.response[field]["statement"])
+                if field == "subject":
+                    changed["delivery_commit"] = "c" * 40
+                else:
+                    changed["id"] = "another-constructed-baseline"
+                name = field + "-statement"
+                self.add_record(name, (json.dumps(changed) + "\n").encode())
+                self.response[field]["record"] = self.reference(name)
+
+                result, report = self.invoke()
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (1, "rejected", []), report)
+                self.assertIn(field + " statement", report["checks"][0]["reason"])
+
+    def test_raw_statement_boolean_cannot_replace_a_number(self) -> None:
+        self.use_complete_response()
+        changed = copy.deepcopy(self.response["subject"]["statement"])
+        changed["route_contract"]["bytes"] = True
+        self.add_record("subject-statement", (json.dumps(changed) + "\n").encode())
+        self.response["subject"]["record"] = self.reference("subject-statement")
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (1, "rejected", []), report)
+        self.assertIn("subject statement", report["checks"][0]["reason"])
+
+    def test_unequal_decimal_tokens_cannot_round_to_the_same_statement_value(self) -> None:
+        for changed_record in ("raw statement", "response"):
+            with self.subTest(record=changed_record):
+                self.use_complete_response()
+                if changed_record == "raw statement":
+                    content = json.dumps(self.response["subject"]["statement"]).encode()
+                    content = content.replace(b'"bytes": 1,', b'"bytes": 1.0000000000000001,', 1)
+                    self.add_record("subject-statement", content)
+                    self.response["subject"]["record"] = self.reference("subject-statement")
+                    response_bytes = None
+                else:
+                    response_bytes = json.dumps(self.response).encode().replace(
+                        b'"bytes": 1,', b'"bytes": 1.0000000000000001,', 1,
+                    )
+
+                result, report = self.invoke(response_bytes)
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (1, "rejected", []), report)
+
+    def test_equivalent_decimal_response_values_pass_shape_without_admission(self) -> None:
+        self.use_complete_response()
+        self.response["subject"]["statement"]["route_contract"]["bytes"] = 1.0
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (2, "incomplete", []), report)
+
+    def test_nonpassing_decimal_byte_counts_remain_nonpassing(self) -> None:
+        for record in self.response["known_records"]:
+            record["bytes"] = float(record["bytes"])
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (2, "incomplete", []), report)
+        self.assertEqual(report["preservation_response"]["outcome"], "missing-evidence")
+
+    def test_statement_numbers_outside_parser_range_are_rejected(self) -> None:
+        for changed_record in ("raw statement", "response"):
+            with self.subTest(record=changed_record):
+                self.use_complete_response()
+                if changed_record == "raw statement":
+                    content = json.dumps(self.response["subject"]["statement"]).encode().replace(
+                        b'"bytes": 1,', b'"bytes": 1e9999999999999999999,', 1,
+                    )
+                    self.add_record("subject-statement", content)
+                    self.response["subject"]["record"] = self.reference("subject-statement")
+                    response_bytes = None
+                else:
+                    response_bytes = json.dumps(self.response).encode().replace(
+                        b'"bytes": 1,', b'"bytes": 1e9999999999999999999,', 1,
+                    )
+
+                result, report = self.invoke(response_bytes)
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (1, "rejected", []), report)
+                self.assertIn("numeric range", report["checks"][0]["reason"])
+
+    def test_equivalent_statement_formatting_does_not_establish_admission(self) -> None:
+        self.use_complete_response()
+        equivalent = copy.deepcopy(self.response["subject"]["statement"])
+        equivalent["route_contract"]["bytes"] = 1.0
+        self.add_record("subject-statement", (json.dumps(equivalent, sort_keys=True, indent=2) + "\n").encode())
+        self.response["subject"]["record"] = self.reference("subject-statement")
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (2, "incomplete", []), report)
+
+    def test_complete_references_must_match_the_caller_input_identities(self) -> None:
+        for field in ("producer_contract", "admission_request", "subject", "baseline"):
+            with self.subTest(reference=field):
+                self.use_complete_response()
+                if field == "admission_request":
+                    reference = self.response["currentness"][field]
+                elif field in ("subject", "baseline"):
+                    reference = self.response[field]["record"]
+                else:
+                    reference = self.response[field]
+                reference["sha256"] = "0" * 64
+
+                result, report = self.invoke()
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (1, "rejected", []), report)
+                self.assertIn("different", report["checks"][0]["reason"])
+
+    def test_raw_statements_require_strict_json(self) -> None:
+        self.use_complete_response()
+        original = json.dumps(self.response["subject"]["statement"]).encode()
+        duplicate = original.replace(b'"changed_member": "mergecraft"',
+                                     b'"changed_member": "mergecraft", "changed_member": "mergecraft"')
+        for content in (duplicate, b"NaN", b"\xff", b'{"unfinished":'):
+            with self.subTest(content=content):
+                self.use_complete_response()
+                self.add_record("subject-statement", content)
+                self.response["subject"]["record"] = self.reference("subject-statement")
+
+                result, report = self.invoke()
+
+                self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                                 (1, "rejected", []), report)
+                self.assertIn("raw subject statement must contain valid JSON", report["checks"][0]["reason"])
+
+    def test_missing_statement_stays_named_and_incomplete(self) -> None:
+        self.use_complete_response()
+        (self.inputs / "subject-statement").unlink()
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (2, "incomplete", []), report)
+        self.assertIn("subject-statement", report["checks"][0]["reason"])
+
+    def test_missing_statement_cannot_hide_another_statement_contradiction(self) -> None:
+        self.use_complete_response()
+        (self.inputs / "subject-statement").unlink()
+        self.response["baseline"]["statement"]["id"] = "a-different-statement"
+
+        result, report = self.invoke()
+
+        self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                         (1, "rejected", []), report)
+        self.assertIn("baseline statement", report["checks"][0]["reason"])
 
     def invoke(self, response_bytes: bytes | None = None) -> tuple[subprocess.CompletedProcess[str], dict[str, object]]:
         if response_bytes is None:
@@ -286,6 +466,54 @@ class NonpassingPreservationCliTests(unittest.TestCase):
 
 
 class MemberDeliveryCliTests(unittest.TestCase):
+    def test_request_integer_beyond_enabled_digit_limit_returns_rejected_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            prepared = Path(temporary)
+            inputs = prepared / "inputs"
+            inputs.mkdir()
+            request = prepared / "request.json"
+            request.write_bytes(b'{"schema_version":' + b"9" * 641 + b"}")
+            output = prepared / "result.json"
+
+            result = subprocess.run(
+                [sys.executable, "-I", "-B", "-X", "int_max_str_digits=640", str(VALIDATOR),
+                 "--request", str(request), "--inputs", str(inputs), "--output", str(output)],
+                cwd=REPOSITORY, text=True, capture_output=True, check=False, timeout=20,
+            )
+
+            self.assertTrue(output.is_file(), result.stderr)
+            report = json.loads(output.read_text())
+            self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                             (1, "rejected", []), report)
+            self.assertEqual(report["checks"], [{
+                "id": "request_content", "outcome": "invalid",
+                "reason": "The request exceeds the supported JSON numeric range.",
+            }])
+
+    def test_request_number_outside_parser_range_returns_rejected_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            prepared = Path(temporary)
+            inputs = prepared / "inputs"
+            inputs.mkdir()
+            request = prepared / "request.json"
+            request.write_bytes(b'{"schema_version":1e9999999999999999999}')
+            output = prepared / "result.json"
+
+            result = subprocess.run(
+                [sys.executable, "-I", "-B", str(VALIDATOR),
+                 "--request", str(request), "--inputs", str(inputs), "--output", str(output)],
+                cwd=REPOSITORY, text=True, capture_output=True, check=False, timeout=20,
+            )
+
+            self.assertTrue(output.is_file(), result.stderr)
+            report = json.loads(output.read_text())
+            self.assertEqual((result.returncode, report["outcome"], report["established_claims"]),
+                             (1, "rejected", []), report)
+            self.assertEqual(report["checks"], [{
+                "id": "request_content", "outcome": "invalid",
+                "reason": "The request exceeds the supported JSON numeric range.",
+            }])
+
     def test_request_beyond_parser_nesting_limit_returns_rejected_evidence(self) -> None:
         requests = (
             ("closed deep arrays", b"[" * 100_000 + b"0" + b"]" * 100_000),

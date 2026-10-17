@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from decimal import Decimal, DecimalException
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -34,7 +35,7 @@ def unique_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
 
 def decode_json(raw: bytes) -> object:
     return json.loads(raw.decode("utf-8"), parse_constant=reject_json_constant,
-                      object_pairs_hook=unique_json_object)
+                      object_pairs_hook=unique_json_object, parse_float=Decimal)
 
 
 def main() -> int:
@@ -72,6 +73,14 @@ def main() -> int:
             "id": "request_content",
             "outcome": "invalid",
             "reason": "The request must contain valid JSON.",
+        }
+        outcome = "rejected"
+        exit_status = 1
+    except (DecimalException, ValueError):
+        check = {
+            "id": "request_content",
+            "outcome": "invalid",
+            "reason": "The request exceeds the supported JSON numeric range.",
         }
         outcome = "rejected"
         exit_status = 1
