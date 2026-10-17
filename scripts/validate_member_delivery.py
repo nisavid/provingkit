@@ -12,8 +12,21 @@ class InvalidJsonConstant(ValueError):
     """A numeric token outside JSON syntax appeared in the request."""
 
 
+class DuplicateJsonKey(ValueError):
+    """An object contains the same decoded key more than once."""
+
+
 def reject_json_constant(value: str) -> None:
     raise InvalidJsonConstant(value)
+
+
+def unique_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJsonKey(key)
+        result[key] = value
+    return result
 
 
 def main() -> int:
@@ -27,14 +40,31 @@ def main() -> int:
 
     try:
         with arguments.request.open("r", encoding="utf-8") as request:
-            json.load(request, parse_constant=reject_json_constant)
+            json.load(
+                request,
+                parse_constant=reject_json_constant,
+                object_pairs_hook=unique_json_object,
+            )
     except OSError:
         check = {
             "id": "request",
             "outcome": "missing",
             "reason": "The request could not be opened.",
         }
-    except (json.JSONDecodeError, InvalidJsonConstant):
+    except RecursionError:
+        check = {
+            "id": "request_content",
+            "outcome": "invalid",
+            "reason": "The request exceeds the JSON parser nesting limit.",
+        }
+        outcome = "rejected"
+        exit_status = 1
+    except (
+        json.JSONDecodeError,
+        InvalidJsonConstant,
+        DuplicateJsonKey,
+        UnicodeDecodeError,
+    ):
         check = {
             "id": "request_content",
             "outcome": "invalid",
