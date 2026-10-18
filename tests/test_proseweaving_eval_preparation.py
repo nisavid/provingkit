@@ -22,6 +22,7 @@ TOOLS = [
 ]
 SKILL = "---\nname: writing-for-people\ndescription: Use when comparing a pair for a reader.\n---\n\nExplain the supplied comparison.\n"
 EXPECTED_ACTOR = b'{"prompt":"Compare A and B.","fixture":"A costs 3; B costs 5.\\n","candidate_bundle":{"skills/writing-for-people/SKILL.md":"---\\nname: writing-for-people\\ndescription: Use when comparing a pair for a reader.\\n---\\n\\nExplain the supplied comparison.\\n"}}\n'
+EXPECTED_SECOND_ACTOR = b'{"prompt":"Compare pair 2.","fixture":"A takes 2 days; B takes 4 days.\\n","candidate_bundle":{"skills/writing-for-people/SKILL.md":"---\\nname: writing-for-people\\ndescription: Use when comparing a pair for a reader.\\n---\\n\\nExplain the supplied comparison.\\n"}}\n'
 
 
 @unittest.skipUnless(os.name == "posix", "POSIX preparation contract")
@@ -63,7 +64,10 @@ class WriterPreparationTests(unittest.TestCase):
         cases = []
         for number in range(1, 6):
             name = f"case-{number}.md"
-            (writer / "evals/fixtures" / name).write_text("A costs 3; B costs 5.\n")
+            (writer / "evals/fixtures" / name).write_text(
+                "A takes 2 days; B takes 4 days.\n" if number == 2
+                else "A costs 3; B costs 5.\n"
+            )
             cases.append({
                 "id": number, "name": f"comparison-{number}",
                 "prompt": "Compare A and B." if number == 1 else f"Compare pair {number}.",
@@ -112,6 +116,8 @@ class WriterPreparationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertEqual((self.output / "requests/case-001.json").read_bytes(),
                          EXPECTED_ACTOR)
+        self.assertEqual((self.output / "requests/case-002.json").read_bytes(),
+                         EXPECTED_SECOND_ACTOR)
         coordinates = json.loads((self.output / "coordinates.json").read_bytes())
         self.assertEqual(
             [(row["case_id"], row["repetition"], row["state"]) for row in coordinates],
@@ -161,12 +167,115 @@ class WriterPreparationTests(unittest.TestCase):
         self.assertEqual(prepared["source_revision"], self.revision)
         self.assertEqual(prepared["coordinate_count"], 15)
 
+    def test_consumer_accepts_original_packet_from_distinct_python_path(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        inventory_path = self.output / "source-inventory.json"
+        original_inventory = inventory_path.read_bytes()
+        observed_stdout = self.base / "producer-stdout"
+        observed_stdout.write_bytes(result.stdout)
+        alternate_python = self.base / "consumer-python"
+        shutil.copy2(Path(sys.executable).resolve(), alternate_python)
+        code = """
+import importlib.util, json, pathlib, sys
+assert sys.version_info >= (3, 13)
+path, repository, revision, output, stdout = sys.argv[1:]
+spec = importlib.util.spec_from_file_location("consumer", path)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+prepared = module.verify_preparation(
+    output, repository=repository, source_revision=revision,
+    stdout=pathlib.Path(stdout).read_bytes(), returncode=0,
+)
+print(json.dumps({"python_executable": str(pathlib.Path(sys.executable).resolve()),
+                  "coordinate_count": prepared["coordinate_count"]}))
+"""
+        consumed = subprocess.run([
+            str(alternate_python), "-c", code, str(self.repo / SCRIPT),
+            str(self.repo), self.revision, str(self.output), str(observed_stdout),
+        ], env=self.env, capture_output=True, timeout=30)
+        self.assertEqual(consumed.returncode, 0, consumed.stderr.decode())
+        consumer = json.loads(consumed.stdout)
+        producer = json.loads(original_inventory)["runtime"]
+        self.assertNotEqual(consumer["python_executable"], producer["python_executable"])
+        self.assertEqual(consumer["coordinate_count"], 15)
+        self.assertEqual(inventory_path.read_bytes(), original_inventory)
+
     def check(self, result, **changes):
         return self.consumer().verify_preparation(
-            self.output, repository=self.repo, source_revision=self.revision,
+            self.output, repository=changes.get("repository", self.repo),
+            source_revision=changes.get("source_revision", self.revision),
             stdout=changes.get("stdout", result.stdout),
             returncode=changes.get("returncode", result.returncode),
         )
+
+    def test_consumer_rejects_changed_runtime_under_original_stdout(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        path = self.output / "source-inventory.json"
+        inventory = json.loads(path.read_bytes())
+        inventory["runtime"]["python_executable"] = "/different/producer-python"
+        path.write_bytes((json.dumps(inventory, sort_keys=True, ensure_ascii=False,
+                                    separators=(",", ":")) + "\n").encode())
+        with self.assertRaises(self.consumer().PreparationError):
+            self.check(result)
+
+    def test_consumer_rejects_another_expected_revision(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        fixture = self.repo / "plugins/proseweaving/skills/writing-for-people/evals/fixtures/case-1.md"
+        fixture.write_text("A costs 10; B costs 20.\n")
+        validated = subprocess.run([
+            sys.executable, str(self.repo / "scripts/validate_proseweaving.py"),
+            "--write-content-lock", str(self.repo),
+        ], env=self.env, capture_output=True)
+        self.assertEqual(validated.returncode, 0, validated.stderr.decode())
+        changed_revision = self.commit()
+        with self.assertRaises(self.consumer().PreparationError):
+            self.check(result, source_revision=changed_revision)
+
+    def test_consumer_rejects_repository_without_expected_source(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        other = self.base / "unrelated-repository"
+        other.mkdir()
+        subprocess.run(["git", "-C", str(other), "init", "-q"],
+                       env=self.env, capture_output=True, check=True)
+        with self.assertRaises(self.consumer().PreparationError):
+            self.check(result, repository=other)
+
+    def test_consumer_rejects_changed_grading(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        (self.output / "grading/case-001.json").write_bytes(b'{}\n')
+        with self.assertRaises(self.consumer().PreparationError):
+            self.check(result)
+
+    def test_consumer_rejects_changed_coordinates(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        (self.output / "coordinates.json").write_bytes(b'[]\n')
+        with self.assertRaises(self.consumer().PreparationError):
+            self.check(result)
+
+    def test_consumer_rejects_missing_listed_artifact(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        (self.output / "requests/case-001.json").unlink()
+        with self.assertRaises(self.consumer().PreparationError):
+            self.check(result)
+
+    def test_consumer_rejects_retained_artifact_symlink(self):
+        result = self.prepare()
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        artifact = self.output / "requests/case-001.json"
+        outside = self.base / "same-actor-bytes"
+        outside.write_bytes(artifact.read_bytes())
+        outside.chmod(0o600)
+        artifact.unlink()
+        artifact.symlink_to(outside)
+        with self.assertRaises(self.consumer().PreparationError):
+            self.check(result)
 
     def test_rejects_executing_method_from_another_revision(self):
         path = self.repo / SCRIPT

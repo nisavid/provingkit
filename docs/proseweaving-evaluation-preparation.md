@@ -10,10 +10,17 @@ python scripts/prepare_proseweaving_eval.py prepare --repository . --source-revi
 ```
 
 Run on a POSIX host with directory file descriptors, no-follow opens, and hard
-links. Windows execution is unsupported. The output parent must already exist,
-and the output leaf must be new. The executing preparer and bootstrap transport
-must match the selected commit; the remaining helpers load from that commit. The writer corpus is enumerated; the command
-supports only `writing-for-people` and repetitions 1–3. Twenty-eight cases yield
+links. Both preparation and consumer readback inherit the evidence transport’s
+trusted-Git policy: `/usr/bin/git` must resolve strictly to that same path, be a
+root-owned regular file with at least one executable bit, and have no group or
+other write bits. `/`, `/usr`, and `/usr/bin` must each be root-owned real
+directories with no group or other write bits. A symlink in that fixed Git path
+is unsupported. These checks are admission requirements, not a claim of
+alternate-platform qualification. Windows execution is unsupported.
+The output parent must already exist, and the output leaf must be new. The
+executing preparer and bootstrap transport must match the selected commit; the
+remaining helpers load from that commit. The writer corpus is enumerated; the
+command supports only `writing-for-people` and repetitions 1–3. Twenty-eight cases yield
 84 unstarted coordinates. This prepares explicit input delivery; it establishes
 no native discovery, tool isolation, model behavior, or release qualification.
 
@@ -22,7 +29,10 @@ no native discovery, tool isolation, model behavior, or release qualification.
 - `source/<repository-relative-path>` preserves the method, its declared local
   import helpers, this procedure, and Proseweaving input files.
 - `source-inventory.json` binds their Git modes, byte counts, and SHA-256 digests.
-  Private copy modes and host runtime identity are recorded separately.
+  Private copy modes and producer runtime identity are recorded separately.
+  Its `runtime` object records the producer’s Python version, resolved executable
+  path and digest, PyYAML version and entry-file digest, and
+  `hermetic_runtime: false`; it is not an attestation of that environment.
 - `requests/case-001.json` and its peers contain only `prompt`, `fixture`, and
   `candidate_bundle`, in that order. Bundle keys are sorted logical paths.
 - `grading/case-001.json` and its peers contain `expected_output` and
@@ -67,6 +77,14 @@ admitted from the candidate packet. This raises `PreparationError` unless the
 observed outcome, source/method identity, every retained file's bytes and modes, expected directory shape,
 actor/grading separation, and complete case/repetition coverage agree. A
 complete flag or intended exit code alone cannot establish acceptance.
+
+Readback validates the retained producer runtime record’s fields and digest
+shapes, and binds its bytes through the preparation to the original captured
+stdout. It independently reconstructs the source and payloads using the selected
+commit. The consumer’s own eligible Python or PyYAML identity may differ; it
+does not replace the producer record or require identical runtime metadata.
+Changing that record without changing the original observed stdout is rejected.
+Matching recorded identities do not establish a hermetic runtime.
 
 The command reuses the existing Proseweaving builders and evidence transport.
 Its source selection never traverses other plugins. It reads Git objects rather

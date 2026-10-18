@@ -169,12 +169,17 @@ def _batch(helper, snapshot):
             "request": request, "state": "unstarted",
         } for repetition in [1, 2, 3])
     files["coordinates.json"] = helper.json_file_bytes(coordinates)
-    return files, len(coordinates), {
+    return files, len(coordinates)
+
+
+def _producer_runtime():
+    import yaml
+    return {
         "python_version": sys.version,
         "python_executable": str(Path(sys.executable).resolve()),
         "python_sha256": hashlib.sha256(Path(sys.executable).read_bytes()).hexdigest(),
-        "pyyaml_version": validator.yaml.__version__,
-        "pyyaml_entry_sha256": hashlib.sha256(Path(validator.yaml.__file__).read_bytes()).hexdigest(),
+        "pyyaml_version": yaml.__version__,
+        "pyyaml_entry_sha256": hashlib.sha256(Path(yaml.__file__).read_bytes()).hexdigest(),
         "hermetic_runtime": False,
     }
 
@@ -196,13 +201,13 @@ def _reserve_output(path):
         os.close(parent)
 
 
-def _expected_files(helper, repository, revision):
+def _expected_files(helper, repository, revision, runtime):
     sources = _sources(helper, repository, revision)
     with tempfile.TemporaryDirectory(prefix="proseweaving-preparation-") as temporary:
         snapshot = Path(temporary)
         for path, (_, content) in sources.items():
             _publish(helper, snapshot, path, content)
-        files, count, runtime = _batch(helper, snapshot)
+        files, count = _batch(helper, snapshot)
     source_inventory = []
     for path, (mode, content) in sorted(sources.items()):
         artifact = "source/" + path
@@ -265,13 +270,39 @@ def _verify_files(output, files):
         raise PreparationError("Artifact or directory inventory is incomplete or changed.")
 
 
+def _retained_runtime(helper, output):
+    inventory = helper.strict_json_bytes(
+        _read_regular(output / "source-inventory.json"),
+        label="source inventory", error_factory=PreparationError,
+    )
+    runtime = inventory.get("runtime") if isinstance(inventory, dict) else None
+    keys = {"python_version", "python_executable", "python_sha256",
+            "pyyaml_version", "pyyaml_entry_sha256", "hermetic_runtime"}
+    if (not isinstance(runtime, dict) or set(runtime) != keys
+            or runtime["hermetic_runtime"] is not False):
+        raise PreparationError("Producer runtime record has an unsupported shape.")
+    for key in keys - {"hermetic_runtime"}:
+        value = runtime[key]
+        if not isinstance(value, str) or not value or "\0" in value:
+            raise PreparationError("Producer runtime identity must contain nonempty strings.")
+        if key.endswith("sha256") and not re.fullmatch(r"[0-9a-f]{64}", value):
+            raise PreparationError("Producer runtime digest is invalid.")
+    if not Path(runtime["python_executable"]).is_absolute():
+        raise PreparationError("Producer Python executable identity must be absolute.")
+    return runtime
+
+
 def verify_preparation(output_dir, *, repository, source_revision, stdout, returncode):
     """Accept documented artifacts only against independent source and actual exit."""
     try:
         if type(returncode) is not int or returncode != 0 or not isinstance(stdout, bytes):
             raise PreparationError("No complete successful invocation was observed.")
         helper = _transport()
-        files, count = _expected_files(helper, Path(repository).absolute(), source_revision)
+        output = Path(output_dir).absolute()
+        runtime = _retained_runtime(helper, output)
+        files, count = _expected_files(
+            helper, Path(repository).absolute(), source_revision, runtime,
+        )
         prepared = _preparation(source_revision, files, count)
         preparation_bytes = helper.json_file_bytes(prepared)
         files["preparation.json"] = preparation_bytes
@@ -291,7 +322,9 @@ def verify_preparation(output_dir, *, repository, source_revision, stdout, retur
 def prepare(arguments):
     helper = _transport()
     repository = Path(arguments.repository).absolute()
-    files, count = _expected_files(helper, repository, arguments.source_revision)
+    files, count = _expected_files(
+        helper, repository, arguments.source_revision, _producer_runtime(),
+    )
     output = Path(arguments.output_dir).absolute()
     _reserve_output(output)
     try:
