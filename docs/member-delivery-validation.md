@@ -1,6 +1,6 @@
 # Offline member-delivery validation
 
-`scripts/validate_member_delivery.py` checks prepared preservation-response records against a caller's frozen input identities. It validates the nonpassing branch and checks complete-record references, raw statements, decision digest bindings, and timestamp syntax. It always returns a nonpassing result: full semantic validation, actual admission, delivery artifacts, and the hosted caller still require implementation and qualification under the [member-delivery design](superpowers/specs/2026-10-06-repository-configuration-alpha/member-delivery-validation.md).
+`scripts/validate_member_delivery.py` checks prepared preservation-response records against a caller's frozen input identities. It validates the nonpassing branch and checks complete-record references, raw statements, decision digest bindings, and timestamp syntax. It always returns a nonpassing result: full semantic validation, actual admission, delivery artifacts, and the hosted caller still require implementation and qualification under the [member-delivery design](https://github.com/nisavid/provingkit/blob/745764e74e281450f304c646325e9d41e1e46c3b/docs/superpowers/specs/2026-10-06-repository-configuration-alpha/member-delivery-validation.md).
 
 ## Invocation and input
 
