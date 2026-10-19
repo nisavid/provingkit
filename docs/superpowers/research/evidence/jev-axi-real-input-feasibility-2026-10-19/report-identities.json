@@ -1,0 +1,12 @@
+[
+  {
+    "path": "workload-first-pass.md",
+    "bytes": 4177,
+    "sha256": "ae91af9b9200c878d846d67a1a8d6c0a6c632c5de8159b0dccdd1c814bbea69b"
+  },
+  {
+    "path": "accounting-first-pass.md",
+    "bytes": 4740,
+    "sha256": "b57288aa6648647a3cf34cd2f674c9b302dfe1f2892c922ecb7a3bef4449c46b"
+  }
+]

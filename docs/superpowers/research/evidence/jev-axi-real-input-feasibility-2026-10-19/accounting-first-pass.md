@@ -1,0 +1,23 @@
+DONE_WITH_CONCERNS
+
+I recommend retaining deterministic checks for this real handback workflow and treating semantic assistance as an unqualified addition. The packet establishes no cheap, complete producer of alternative interpretations.
+
+All 48 supplied files matched their hashes and sizes (309,273 bytes). File verification does not independently verify the supplied Git base. No writes, network, experiments, model runs, or private-history collection occurred.
+
+**Real boundary.** The three preserved research outputs have explicit paths, byte counts, and digests. Code settles identity and output-limit questions: the opportunity report is 10,564 bytes against its recorded 9,000-byte bound. Those IDs enumerate artifacts, not every meaning of their assertions. Determining whether its recommendation remains warranted requires interpreting later corrections about the completed observation, existing compatibility equipment, and coverage results. [Identities](docs/superpowers/research/evidence/jev-axi-catalog-frontier-2026-10-19/report-identities.json), [corrections](docs/superpowers/research/evidence/jev-axi-catalog-frontier-2026-10-19/README.md#L14).
+
+The claim producer preserves committed sources, verifies identities/context, and checks literal quotations; it neither discovers citations nor enumerates readings. The coverage producer compares bytes and record membership without deciding review applicability. An explicit selector can remove referent uncertainty, but this restricted path relinquishes ambiguous prose, implicit selectors, and unsupported multi-source questions. Jev could still judge whether qualified evidence warrants an explicitly bound assertion. If ordinary preparation already establishes that relation, Jev duplicates semantic work. [Producer boundaries](docs/superpowers/research/evidence/jev-axi-comparison-producers-2026-10-07/README.md#L19).
+
+| Operation | Observed or derivable | Unknown recurring cost |
+| --- | --- | --- |
+| Acquire/select/prepare | Successful claim preparation derives 6–9 Git subprocesses: draft plus 1–2 sources, three each; no branch enumerator exists. | Citation selection, interpretation, hashing, complete elapsed time, adaptation. |
+| Judge/combine | B valid joint bindings require B semantic judgments; code combines relations. Independent phrases do not justify a Cartesian product. | Request grouping, repeated tokens, capacity, latency, failures, validated probability handling. |
+| Inspect/finish | Author inspects flags, corrects prose, refreshes changed inputs, and completes required review. | False interventions, fallback/rereading, operator effort, maintenance, total tokens, API-equivalent value, actual charges. |
+
+[Producer source](docs/superpowers/research/evidence/jev-axi-comparison-producers-2026-10-07/claim_producer.py#L21), [combination proposal](docs/superpowers/research/evidence/jev-axi-catalog-frontier-2026-10-19/design-first-pass.md#L27), [accounting contract](.agents/skills/handling-sys1-incidents/references/comparison-contract.md#L44).
+
+**Complete input and stop.** Require original claim/context, explicit selector, exhaustive permitted joint bindings, original qualifications and amendment order, complete identity-verified evidence, supported producer input, and delivery before the consumer decision. Stop the cheap-path claim if enumeration requires ordinary semantic assessment, completeness is undefended, delivery is late, or input adaptation remains uncosted. More than two sources exceed the current claim interface. The completed observation captured the draft 19.378 seconds before review acknowledgment but finished assertion/source preparation 40.762 seconds afterward; neither producer ran. [Observation](https://github.com/nisavid/provingkit/issues/585#issuecomment-6124915281).
+
+A serious alternative is ordinary adjacent source reading plus deterministic identity/quote checks and existing review. A separate addition could help the research author qualify an overstatement before downstream reuse, reducing later correction or inspection; that remains plausible without a baseline failure, but unmeasured. Required review stays.
+
+Omission, code, ordinary reasoning, Jev, Luna 6 Low/Medium/High, Sol 6.1 Low, and Decisions remain comparators; supplied-case scores select none. Any later comparison must pass every critical case without added false interventions or lower quality and demonstrate useful native/operator effect, or verified work removed for replacement. No runtime savings are established. Prior failures, expired accounting, and historical controller uncertainty remain preserved. [Earlier outcomes](docs/superpowers/research/evidence/jev-axi-decomposed-judgment-results-2026-10-15/results.md#L63).
