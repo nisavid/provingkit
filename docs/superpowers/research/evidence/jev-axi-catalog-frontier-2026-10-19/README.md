@@ -1,6 +1,6 @@
 # Investigate whether explicit alternatives leave useful work for Jev
 
-Two independent research passes identify a distinct candidate: give Jev fully specified assertions, preserve every valid referent outside the model, and combine the answers in code. Before another judgment experiment, establish whether a real supported input can supply those alternatives cheaply, early, and without already deciding the evidence relation. No new behavior assignment or experiment is selected here.
+Design research identifies a distinct candidate: give Jev fully specified assertions, preserve every valid referent outside the model, and combine the answers in code. Before another judgment experiment, establish whether a real supported input can supply those alternatives cheaply, early, and without already deciding the evidence relation. No new behavior assignment or experiment is selected here.
 
 The [catalog-hypothesis decision](https://github.com/nisavid/provingkit/issues/608) owns the next scope choice. The [full-catalog map](https://github.com/nisavid/provingkit/issues/331) retains compatibility preparation as an independent lane and Windows qualification as deferred work.
 
@@ -19,9 +19,15 @@ The first packet contained historical proposals where later results were needed.
 2. **The draft observation ran.** Its [resolution](https://github.com/nisavid/provingkit/issues/585#issuecomment-6124915281) records capture 19.378 seconds before the owner-reported review-launch acknowledgment, but assertion selection and source acquisition 40.762 seconds after it. The retained compound claim remained ungradeable from the admitted evidence. This establishes a delivery and evidence-completeness question; it does not establish a false claim, useful intervention, or workflow savings.
 3. **Publication coverage was compared.** The [later results](../jev-axi-ordinary-results-2026-10-11/coverage-results.md) show no condition passing both supplied cases. Deterministic presentation did not establish a qualified package, and the retained transport failure and unattempted cell remain in the accounting. Another observation needs an explicit new question and justification; it cannot simply restart the earlier preparation.
 
-These corrections do not refute the explicit-alternatives mechanism. They change its opportunity comparison and the work still required. The prepared cross-informed research join includes both first reports and these current sources. Its worker was refused before registration or launch because projected memory headroom was below the configured 20% threshold. Its unused controller exited zero. There is no completed independent synthesis to report.
+These corrections do not refute the explicit-alternatives mechanism. They change its opportunity comparison and the work still required. The [cross-informed synthesis](cross-informed-synthesis.md) uses the corrected 30-file packet and recommends establishing input feasibility before another semantic test. Its citations use paths relative to the repository root.
 
-## Coordinator's provisional next preparation
+A finite list of entities does not prove that every valid interpretation has been supplied. The next preparation would need an existing input boundary that supplies the permitted bindings, explicit selectors, and qualifications, together with a reason the alternatives are complete. The evidence does not yet identify such a real, timely input. Jev would judge the evidence relation of each fully specified assertion only if producing that representation leaves semantic work unresolved.
+
+The original join attempt was refused before registration or launch because projected memory headroom was below the configured 20% threshold; its unused controller exited zero. The separately authorized recheck passed with 43.267 GiB available, full memory PSI avg10 of 1.38, readable current-boot kernel and OOM-daemon journals with no recorded kills, and a fresh 4 GiB reservation. The corrected synthesis worker completed. Its controller exited zero, and its admission loop has a verified finished-history record. These observations close this worker only; they establish nothing about the old comparison controller.
+
+The full synthesis is preserved as 6,642 bytes, including status and a terminal newline. Its body exceeded the requested 6,000-byte limit. The native record therefore does not claim a fully conforming usable dispatch. The coordinator checked its factual corrections against the supplied sources and uses its supported reasoning for the recommendation below; the output defect remains recorded. No comparison was rerun.
+
+## Recommended next preparation
 
 The relevant question is whether the proposed representation can be produced without consuming the expensive reasoning it is meant to save. A source may already have stable item IDs and a complete bounded list of candidates. That differs from asking an ordinary model to discover every possible meaning of arbitrary prose. The latter may perform most of the semantic work before Jev sees the statement.
 
@@ -31,11 +37,11 @@ The design report's seven-assertion lamp example is a possible later rejection t
 
 If complete alternatives require doing the same interpretation with an ordinary model first, move this early-check candidate aside for that input class. Continue the existing compatibility startup preparation independently. Changed-evidence triage remains a research possibility until it has a concrete consumer, maintained claim-to-source links, and useful rereading work to improve or remove.
 
-The coordinator's proposal remains provisional until the corrected evidence join and the operator's scope decision. It changes no reliability bar, required review, authority policy, live hook, upstream hold, or execution-acceptance boundary.
+The corrected synthesis supports this preparation recommendation; the operator's scope decision remains open. It changes no reliability bar, required review, authority policy, live hook, upstream hold, or execution-acceptance boundary.
 
 ## Dispatch and joins
 
-Preserve the two first reports, then join them against current completed results before recommending scope. The next bounded worker receives the corrected 30-file packet and must return a decision-changing preparation recommendation, one serious alternative, and explicit reasons to stop. It must not recommend work already completed or infer benefit from accurate supplied-case judgments.
+The two independent first reports and corrected synthesis are preserved. The next decision is whether to prepare one real input boundary for explicit alternatives or move claim-support assignment aside and prioritize compatibility startup. The synthesis recommends the former; it does not select it for the operator. In either case, do not repeat completed preparation or infer benefit from accurate supplied-case judgments.
 
 Compatibility startup tracing and source/profile reconciliation can proceed independently, with their own fresh resource and route checks. Join them before changing a writable boundary or proposing a fresh native invocation. Shared host pressure can serialize workers without creating a ticket dependency between the two families.
 

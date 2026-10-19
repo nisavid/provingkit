@@ -8,5 +8,10 @@
     "path": "opportunity-first-pass.md",
     "bytes": 10564,
     "sha256": "62060dd1c7209ca7ba1d051f99651d01c09737c6cfdc1e9e13dd09c1d838f4dd"
+  },
+  {
+    "path": "cross-informed-synthesis.md",
+    "bytes": 6642,
+    "sha256": "3e99bc233eb2b5f2196eb23a3f9a291bdfb0f6bdd1f95aef1c03968879b77892"
   }
 ]
