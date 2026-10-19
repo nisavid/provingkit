@@ -1,0 +1,12 @@
+[
+  {
+    "path": "delivery-first-pass.md",
+    "bytes": 5322,
+    "sha256": "b006fb2dd5cbe78cab2fba430e1a978861c08a8fa2ef2becfd8d9a2fa980f2e7"
+  },
+  {
+    "path": "accounting-first-pass.md",
+    "bytes": 5497,
+    "sha256": "c47779077d3c2333d09f683e4ab0567bb5c99223ce87f37e932da20535225aea"
+  }
+]

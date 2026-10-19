@@ -1,0 +1,28 @@
+{
+  "kind": "published-reference-pair-not-working-draft-capture",
+  "purpose": "Fidelity of the qualified attribution to what the preserved linked report proposed",
+  "assertion_substring": "proposes publication reconciliation first.",
+  "assertion_line": 10,
+  "draft": {
+    "path": "docs/superpowers/research/evidence/jev-axi-catalog-frontier-2026-10-19/README.md",
+    "reference_commit": "7b31af6c52594839633a4da3883f61d2329a9f50",
+    "bytes": 9496,
+    "sha256": "3001cc4cc69cf2ad2a7917aea458936248b6391b255edc2e362a59ee3531306c"
+  },
+  "source": {
+    "path": "docs/superpowers/research/evidence/jev-axi-catalog-frontier-2026-10-19/opportunity-first-pass.md",
+    "reference_commit": "7b31af6c52594839633a4da3883f61d2329a9f50",
+    "bytes": 10564,
+    "sha256": "62060dd1c7209ca7ba1d051f99651d01c09737c6cfdc1e9e13dd09c1d838f4dd"
+  },
+  "source_selector": "opportunity-first-pass.md",
+  "evidence_context": {
+    "start_line": 1,
+    "end_line": 50,
+    "meaning": "Preserve complete draft evidence; candidate context selection remains explicit preparation work"
+  },
+  "observed_delivery": null,
+  "checkpoint": null,
+  "producer_run": false,
+  "expected_verdict_included": false
+}
