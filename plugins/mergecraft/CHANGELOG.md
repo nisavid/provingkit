@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add `configuring-repositories` for GitHub repository creation, assessment,
+  contextual defaults, authorized focused changes, and project-specific CI
+  hardening, with native-tool application and explicit evidence boundaries.
+
 ## 1.0.0
 
 - Maintain evidenced Issue–PR contribution ledgers and Development links through

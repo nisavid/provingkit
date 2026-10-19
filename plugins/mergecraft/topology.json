@@ -3,6 +3,49 @@
   "plugin": "mergecraft",
   "skills": [
     {
+      "name": "configuring-repositories",
+      "entrypoint": "skills/configuring-repositories/SKILL.md",
+      "interface": "skills/configuring-repositories/agents/openai.yaml",
+      "references": [
+        "skills/configuring-repositories/references/decisions.md",
+        "skills/configuring-repositories/references/github-controls.md",
+        "skills/configuring-repositories/references/ci-hardening.md",
+        "skills/configuring-repositories/references/apply-and-verify.md"
+      ],
+      "scripts": [],
+      "modules": [],
+      "calls": [
+        "operation:git-ref-push",
+        "operation:publication-evidence",
+        "operation:review-loop"
+      ],
+      "conditional_calls": {},
+      "operations": ["repository-configuration"],
+      "contract": {
+        "trigger": "github-repository-creation-assessment-defaults-focused-change-or-ci-hardening-request",
+        "modes": ["create", "assess", "defaults", "focused-change", "ci-hardening"],
+        "authority": "requested repository outcome, applicable policy, and separately authorized configuration effects",
+        "inputs": [
+          "requested-repository-outcome",
+          "supplied-project-context-and-policy",
+          "observed-repository-owner-actor-and-controls",
+          "authorized-effect-scope",
+          "maintained-configuration-writer-ownership",
+          "retained-state-and-unresolved-effects"
+        ],
+        "outputs": [
+          "source-linked-assessment",
+          "bound-configuration-plan",
+          "per-effect-results-and-readbacks",
+          "material-observation-invalidations",
+          "recovery-or-owner-continuation"
+        ],
+        "forbidden_reverse_calls": [],
+        "loop_owner": "tricritical:loop",
+        "terminal_statuses": ["assessed", "planned", "verified", "no-op", "partial", "blocked", "unknown"]
+      }
+    },
+    {
       "name": "writing-github-issue-and-pr-markdown",
       "entrypoint": "skills/writing-github-issue-and-pr-markdown/SKILL.md",
       "interface": "skills/writing-github-issue-and-pr-markdown/agents/openai.yaml",
@@ -524,6 +567,18 @@
   ],
   "operations": [
     {
+      "semantic_id": "repository-configuration",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "configuring-repositories",
+      "implementation": "skills/configuring-repositories/SKILL.md",
+      "import": null,
+      "access": "coordinate",
+      "authority": "requested repository outcome, applicable policy, and separately authorized configuration effects",
+      "callers": ["configuring-repositories"],
+      "disposition": "public-skill"
+    },
+    {
       "semantic_id": "github-markdown-content",
       "github_aliases": [],
       "surface": "workflow",
@@ -707,7 +762,7 @@
       "import": null,
       "access": "coordinate",
       "authority": "exact requested forge mutation or read-only audit",
-      "callers": ["publishing-reviewable-prs"],
+      "callers": ["configuring-repositories", "publishing-reviewable-prs"],
       "disposition": "public-skill"
     },
     {
@@ -947,6 +1002,7 @@
       "authority": "authority defined by imported owner versionkeeping:checkpointing-and-publishing-git-work",
       "callers": [
         "addressing-pr-review-feedback",
+        "configuring-repositories",
         "getting-prs-ready-for-review",
         "graphite",
         "stacking-pr-fixups"
@@ -986,7 +1042,7 @@
       "import": "tricritical:loop",
       "access": "coordinate",
       "authority": "authority defined by imported owner tricritical:loop",
-      "callers": ["writing-reviewable-pr-descriptions"],
+      "callers": ["configuring-repositories", "writing-reviewable-pr-descriptions"],
       "disposition": "imported-operation"
     },
     {
