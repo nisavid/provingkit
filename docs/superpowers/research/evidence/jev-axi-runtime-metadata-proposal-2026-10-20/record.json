@@ -119,6 +119,11 @@
       "path": "codex-rs/utils/home-dir/src/lib.rs",
       "bytes": 5096,
       "sha256": "1338259489ade54b01caa1468b6d25fc5a183657fa94cca0add8b91865635ef5"
+    },
+    {
+      "path": "codex-rs/tui/src/cli.rs",
+      "bytes": 4900,
+      "sha256": "05afbda6b0149a7a1ebc23eafefbc8d393811b293530aa2b13e4eda1f2b5a553"
     }
   ],
   "feature_registry_presence": {
