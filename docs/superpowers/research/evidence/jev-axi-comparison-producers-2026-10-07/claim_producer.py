@@ -236,7 +236,9 @@ def prepare(repository, case_spec, output):
                         and not any(c in line for c in ('`', '\\', '!['))
                         and not any(c in prefix for c in ('```', '~~~', '<'))
                         and line.count('[') == line.count(']') == 1)
-        matched = simple_prose and matches == [link['target']] and target == case['sources'][0]['path']
+        file_target = link['target'].rsplit('/', 1)[-1] not in ('', '.', '..')
+        matched = (simple_prose and file_target and matches == [link['target']]
+                   and target == case['sources'][0]['path'])
         packet['source_link'] = link | {'status': 'matched' if matched else 'unresolved', 'source_id': 'source-1'}
         if not matched:
             packet['status'] = 'non_ready'

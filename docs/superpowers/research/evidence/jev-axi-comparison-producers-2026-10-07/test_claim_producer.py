@@ -192,6 +192,33 @@ class ClaimProducerTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(json.loads((target / 'inference.json').read_text())['draft_context'], draft.decode())
 
+    def test_directory_form_links_cannot_select_a_report_file(self):
+        for index, link in enumerate(('source.md/', 'source.md/.', 'source.md/child/..')):
+            with self.subTest(link=link):
+                case, draft = self.snapshot_case()
+                draft = draft.replace(b'(source.md)', ('(' + link + ')').encode())
+                (self.root / 'draft-copy.md').write_bytes(draft)
+                case['draft']['sha256'] = hashlib.sha256(draft).hexdigest()
+                case['source_link']['target'] = link
+                result, target = self.invoke(case, 'directory_link_' + str(index))
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertEqual((target / 'draft.source').read_bytes(), draft)
+                self.assertEqual((target / 'source-1.source').read_bytes(), self.source)
+                self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'unresolved')
+                self.assertFalse((target / 'inference.json').exists())
+
+    def test_parent_relative_link_can_select_a_report_file(self):
+        case, draft = self.snapshot_case()
+        draft = draft.replace(b'(source.md)', b'(../reports/source.md)')
+        (self.root / 'draft-copy.md').write_bytes(draft)
+        case['draft']['sha256'] = hashlib.sha256(draft).hexdigest()
+        case['sources'][0]['path'] = 'reports/source.md'
+        case['source_link']['target'] = '../reports/source.md'
+        result, target = self.invoke(case)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'matched')
+        self.assertEqual(json.loads((target / 'inference.json').read_text())['sources'][0]['text'], self.source.decode())
+
     def test_report_amendment_keeps_prior_attempt_and_declared_version_relationship(self):
         case, _ = self.snapshot_case()
         result, original = self.invoke(case, 'original')
