@@ -1,0 +1,144 @@
+{
+  "kind": "runtime-metadata-proposal",
+  "candidate_version": "0.163.0",
+  "binary_sha256": "399ff69c431c066e40de318fba45c2b07f45a76b19939d247ee4828fc70c4215",
+  "binary_bytes": 296865480,
+  "source_commit": "83086188ae0614bd882818ff1aa23f3194962012",
+  "source_files": [
+    {
+      "path": "codex-rs/cli/src/main.rs",
+      "bytes": 180582,
+      "sha256": "54437cf29a22e2f4606c816bde8fe4b00a38929ff281a02f5eb497f1c05e1bb0"
+    },
+    {
+      "path": "codex-rs/arg0/src/lib.rs",
+      "bytes": 29387,
+      "sha256": "3605b346d0af07418909a2c63fdf1965c78f3cb9aa2e270346924b73ebfc78f3"
+    },
+    {
+      "path": "codex-rs/app-server/src/lib.rs",
+      "bytes": 66651,
+      "sha256": "e00b242cde1234ae62cbc420ceefe86a23b93d34115ead6cc02bad454970aa9b"
+    },
+    {
+      "path": "codex-rs/app-server/src/config_manager.rs",
+      "bytes": 23755,
+      "sha256": "cd7d306ed71f7945ee4792f7de0b6b1d0ac317ae22f200de2a93744094171593"
+    },
+    {
+      "path": "codex-rs/core/src/config/mod.rs",
+      "bytes": 209523,
+      "sha256": "cbd8dd6d50cb7d61183d309cbefa95cd368de87bf44d2ac60e83c3a2aff59658"
+    },
+    {
+      "path": "codex-rs/app-server/src/main.rs",
+      "bytes": 5558,
+      "sha256": "6c027c0307379f7426f25812e4422d5740ac6a128a28a51bcf79267516457ced"
+    },
+    {
+      "path": "codex-rs/state/src/runtime.rs",
+      "bytes": 27709,
+      "sha256": "ae2eca6aba24af65369de7cfb29ca9102a4dc92a3379a491b116d8600a7e46e8"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v1/InitializeParams.json",
+      "bytes": 2401,
+      "sha256": "b55124e7c0f36a1789396daa5578217a92be67f053903696236686e59f6f212e"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v1/InitializeResponse.json",
+      "bytes": 1286,
+      "sha256": "62ad689c2cb6379913c1d72749cfd8de5089d35760214123518eb92eef11acc9"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/ConfigReadParams.json",
+      "bytes": 495,
+      "sha256": "257c54a423b47c1d209ff1076765a1564d82322fd5161670fd489a2874de1bac"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/ConfigReadResponse.json",
+      "bytes": 28443,
+      "sha256": "69a32e3d84e16045802dff8abf01770d759ebc758965c3258a30ea4a93159fce"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/ConfigRequirementsReadResponse.json",
+      "bytes": 26388,
+      "sha256": "dd95f94ca4f89b87f63151c570c1b16a771cda9bb17445d6650a633eb55a9f05"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/ListMcpServerStatusParams.json",
+      "bytes": 1223,
+      "sha256": "30b978c6502b37c9f0002aeba241f41c91d4c6adf0f92d89242b62ffde415a2d"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/ListMcpServerStatusResponse.json",
+      "bytes": 6283,
+      "sha256": "00c56c0faacbd4950b7f446f20b11b8a95456c5108de2f1e7366a1b2e60db8c6"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/ModelListParams.json",
+      "bytes": 688,
+      "sha256": "de29a536c00a5b8f46f34dba417dabd93365305571a8ed200e33bea85db68b5a"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/ModelListResponse.json",
+      "bytes": 7169,
+      "sha256": "2fb387a2ed258fc74258828ea342d68f89ce4e8e22cd0329ca59d2b423f9108b"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/SkillsListParams.json",
+      "bytes": 453,
+      "sha256": "1d245374e64c5acc9739dfc68a4fe5114c6c9147af04c480886f1846d2ca6239"
+    },
+    {
+      "path": "codex-rs/app-server-protocol/schema/json/v2/SkillsListResponse.json",
+      "bytes": 5358,
+      "sha256": "d11084bd4bfa50f747e880ab9a08eb8e8073c67d67c79907f4cff090db7b48f4"
+    },
+    {
+      "path": "codex-rs/cli/src/doctor.rs",
+      "bytes": 153703,
+      "sha256": "3b262f5d630f0edc0019e796601fdf41419a75151f37f3a916cc07cb6db4bc22"
+    },
+    {
+      "path": "codex-rs/core/src/installation_id.rs",
+      "bytes": 4535,
+      "sha256": "c279cdce8837195f66c362aa87c8a068c75ac022305e72bb129e98581b6930b5"
+    },
+    {
+      "path": "codex-rs/exec-server/src/environment.rs",
+      "bytes": 78968,
+      "sha256": "21a050fa5a0beb36377cd5219863181e43ec9530db8b800628473f683dba095f"
+    },
+    {
+      "path": "codex-rs/features/src/lib.rs",
+      "bytes": 73871,
+      "sha256": "5317e79cb2f5a72044b15ef9c506e9906c295f5a4e43cc1f1f05b87455824542"
+    },
+    {
+      "path": "codex-rs/utils/home-dir/src/lib.rs",
+      "bytes": 5096,
+      "sha256": "1338259489ade54b01caa1468b6d25fc5a183657fa94cca0add8b91865635ef5"
+    }
+  ],
+  "feature_registry_presence": {
+    "hooks": true,
+    "plugin_hooks": true,
+    "memories": true,
+    "apps": true,
+    "shell_snapshot": true,
+    "browser_use": true,
+    "computer_use": true,
+    "image_generation": true,
+    "plugins": true,
+    "multi_agent": true
+  },
+  "research_reports": {
+    "inventory_sha256": "c3ecea8ec6afc8aa7866855ce7df08adace0e73e12e04966561552db0e1df61f",
+    "diagnostic_sha256": "012aae29d1beac9c58dea62294e72e33f8d8493e67d8a93253bf7257b66cd793"
+  },
+  "runtime_starts": 0,
+  "adapter_result_record": "rejected: coordinator supplied status dictionaries rather than pairs; no successful record claimed",
+  "closure": "native workers completed; both controller processes exited zero; accounting close/finish recorded",
+  "runnable": false
+}
