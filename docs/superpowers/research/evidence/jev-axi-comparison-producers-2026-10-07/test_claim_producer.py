@@ -127,6 +127,35 @@ class ClaimProducerTests(unittest.TestCase):
                 self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'unresolved')
                 self.assertFalse((target / 'inference.json').exists())
 
+    def test_mixed_indent_code_cannot_supply_report_association(self):
+        case, _ = self.snapshot_case()
+        draft = (' \t' + self.assertion + ' See [report](source.md).\n').encode()
+        (self.root / 'draft-copy.md').write_bytes(draft)
+        case['draft'].update(sha256=hashlib.sha256(draft).hexdigest(),
+                             start_line=1, end_line=1, assertion_line=1)
+        case['source_link']['line'] = 1
+        result, target = self.invoke(case)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual((target / 'draft.source').read_bytes(), draft)
+        self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'unresolved')
+        self.assertFalse((target / 'inference.json').exists())
+
+    def test_indented_quote_cannot_supply_report_association(self):
+        for spaces in (1, 2, 3):
+            for indent in (' ', '     '):
+                with self.subTest(spaces=spaces, indent=indent):
+                    case, _ = self.snapshot_case()
+                    draft = (' ' * spaces + '>' + indent + self.assertion + ' See [report](source.md).\n').encode()
+                    (self.root / 'draft-copy.md').write_bytes(draft)
+                    case['draft'].update(sha256=hashlib.sha256(draft).hexdigest(),
+                                         start_line=1, end_line=1, assertion_line=1)
+                    case['source_link']['line'] = 1
+                    result, target = self.invoke(case, f'quote_{spaces}_{len(indent)}')
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    self.assertEqual((target / 'draft.source').read_bytes(), draft)
+                    self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'unresolved')
+                    self.assertFalse((target / 'inference.json').exists())
+
     def test_report_amendment_keeps_prior_attempt_and_declared_version_relationship(self):
         case, _ = self.snapshot_case()
         result, original = self.invoke(case, 'original')

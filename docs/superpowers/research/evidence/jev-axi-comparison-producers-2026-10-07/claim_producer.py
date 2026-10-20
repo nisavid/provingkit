@@ -199,7 +199,8 @@ def prepare(repository, case_spec, output):
         line = draft_lines[link['line']-1] if link['line'] <= len(draft_lines) else ''
         matches = re.findall(r'\[[^\[\]\n]+\]\(([^()\s]+)\)', line)
         prefix = ''.join(draft_lines[:link['line']])
-        simple_prose = (not line.startswith(('    ', '\t', '>'))
+        simple_prose = (not line.expandtabs(4).startswith('    ')
+                        and not line.lstrip(' \t').startswith('>')
                         and not any(c in line for c in ('`', '\\', '!['))
                         and not any(c in prefix for c in ('```', '~~~', '<'))
                         and line.count('[') == line.count(']') == 1)
