@@ -47,8 +47,173 @@ class ClaimProducerTests(unittest.TestCase):
         target = self.root / name
         result = subprocess.run([sys.executable, str(SCRIPT), 'prepare-claim',
                                  '--repository', str(self.repo), '--case-spec', str(spec),
-                                 '--output', str(target)], capture_output=True, text=True)
+                                 '--output', str(target)], capture_output=True, text=True, timeout=5)
         return result, target
+
+    def snapshot_case(self):
+        draft = ('Opening.\r\n' + self.assertion + ' See [report](source.md).\r\n'
+                 'This is only a proposal.\r\n').encode()
+        (self.root / 'draft-copy.md').write_bytes(draft)
+        (self.root / 'report-copy.md').write_bytes(self.source)
+        def entry(path, snapshot, data):
+            return {'kind': 'snapshot', 'path': path, 'snapshot': snapshot,
+                    'checkpoint': 'saved-draft-01', 'sha256': hashlib.sha256(data).hexdigest()}
+        case = self.case()
+        case.update(version=2, source_link={'line': 2, 'target': 'source.md'})
+        case['draft'] = entry('docs/draft.md', 'draft-copy.md', draft) | {
+            'start_line': 1, 'end_line': 3, 'assertion_line': 2}
+        case['sources'] = [entry('docs/source.md', 'report-copy.md', self.source)]
+        return case, draft
+
+    def test_saved_draft_keeps_qualifications_and_selected_report_without_commit(self):
+        case, draft = self.snapshot_case()
+        result, target = self.invoke(case)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((target / 'draft.source').read_bytes(), draft)
+        self.assertEqual((target / 'source-1.source').read_bytes(), self.source)
+        packet = json.loads((target / 'packet.json').read_text())
+        self.assertEqual(packet['draft']['checkpoint'], 'saved-draft-01')
+        self.assertNotIn('commit', packet['draft'])
+        self.assertEqual(packet['source_link'], {'line': 2, 'target': 'source.md',
+                                               'status': 'matched', 'source_id': 'source-1'})
+        inference = json.loads((target / 'inference.json').read_text())
+        self.assertEqual(inference['draft_context'], draft.decode())
+        self.assertEqual(inference['assertion'], self.assertion)
+        self.assertEqual(inference['sources'], [{'id': 'source-1', 'text': self.source.decode()}])
+        receipt = json.loads((target / 'receipt.json').read_text())
+        self.assertEqual(receipt['git_blob_bytes_read'], 0)
+        self.assertEqual(receipt['snapshot_bytes_read'], len(draft) + len(self.source))
+        self.assertEqual(receipt['snapshot_read_attempts'], 2)
+        self.assertEqual(receipt['git_commands'], 0)
+
+    def test_snapshot_nonregular_inputs_do_not_become_ready(self):
+        for kind in ('symlink', 'parent_symlink', 'directory', 'fifo'):
+            with self.subTest(kind=kind):
+                case, _ = self.snapshot_case()
+                path = self.root / kind
+                if kind == 'symlink':
+                    path.symlink_to(self.root / 'report-copy.md')
+                elif kind == 'parent_symlink':
+                    path.symlink_to(self.root, target_is_directory=True)
+                elif kind == 'directory':
+                    path.mkdir()
+                else:
+                    import os
+                    os.mkfifo(path)
+                case['sources'][0]['snapshot'] = kind + ('/report-copy.md' if kind == 'parent_symlink' else '')
+                result, target = self.invoke(case, 'nonregular_' + kind)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                packet = json.loads((target / 'packet.json').read_text())
+                self.assertEqual(packet['sources'][0]['status'], 'unsupported')
+                self.assertFalse((target / 'inference.json').exists())
+
+    def test_code_and_escaped_links_cannot_supply_report_association(self):
+        for variant, line in [
+            ('inline_code', self.assertion + ' See `[report](source.md)`.'),
+            ('escaped', self.assertion + ' See \\[report](source.md).'),
+            ('fenced', '```\n' + self.assertion + ' See [report](source.md).\n```'),
+            ('indented', '    ' + self.assertion + ' See [report](source.md).'),
+        ]:
+            with self.subTest(variant=variant):
+                case, _ = self.snapshot_case()
+                draft = ('Opening.\n' + line + '\nClosing.\n').encode()
+                (self.root / 'draft-copy.md').write_bytes(draft)
+                case['draft'].update(sha256=hashlib.sha256(draft).hexdigest(),
+                                     end_line=len(draft.splitlines()),
+                                     assertion_line=3 if variant == 'fenced' else 2)
+                case['source_link']['line'] = case['draft']['assertion_line']
+                result, target = self.invoke(case, variant)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'unresolved')
+                self.assertFalse((target / 'inference.json').exists())
+
+    def test_report_amendment_keeps_prior_attempt_and_declared_version_relationship(self):
+        case, _ = self.snapshot_case()
+        result, original = self.invoke(case, 'original')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        before = {p.name: p.read_bytes() for p in original.iterdir()}
+        amended = b'Further observation is required.\n'
+        (self.root / 'report-copy.md').write_bytes(amended)
+        result, changed = self.invoke(case, 'stale')
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(json.loads((changed / 'packet.json').read_text())['sources'][0]['status'], 'changed')
+        self.assertEqual((changed / 'source-1.source').read_bytes(), amended)
+        self.assertFalse((changed / 'inference.json').exists())
+        source = case['sources'][0]
+        prior = {'checkpoint': source['checkpoint'], 'sha256': source['sha256']}
+        source.update(checkpoint='amended-report-02', sha256=hashlib.sha256(amended).hexdigest(),
+                      supersedes=prior)
+        result, successor = self.invoke(case, 'successor')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = json.loads((successor / 'packet.json').read_text())
+        self.assertEqual(packet['sources'][0]['supersedes'], prior)
+        self.assertEqual((successor / 'source-1.source').read_bytes(), amended)
+        self.assertEqual({p.name: p.read_bytes() for p in original.iterdir()}, before)
+        self.assertNotIn('supersedes', (successor / 'inference.json').read_text())
+
+    def test_snapshot_failure_records_preserve_bytes_and_withhold_inference(self):
+        for role in ('draft', 'source'):
+            for failure in ('missing', 'changed', 'unsupported'):
+                with self.subTest(role=role, failure=failure):
+                    case, _ = self.snapshot_case()
+                    entry = case['draft'] if role == 'draft' else case['sources'][0]
+                    path = self.root / entry['snapshot']
+                    if failure == 'missing':
+                        path.unlink()
+                    else:
+                        path.write_bytes(b'changed bytes' if failure == 'changed' else b'\xff')
+                        if failure == 'unsupported':
+                            entry['sha256'] = hashlib.sha256(b'\xff').hexdigest()
+                    result, target = self.invoke(case, role + '_' + failure)
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    packet = json.loads((target / 'packet.json').read_text())
+                    record = packet['draft'] if role == 'draft' else packet['sources'][0]
+                    self.assertEqual(record['status'], failure)
+                    self.assertFalse((target / 'inference.json').exists())
+                    if failure != 'missing':
+                        self.assertEqual((target / record['file']).read_bytes(), path.read_bytes())
+
+    def test_snapshot_link_must_select_the_exact_report_in_context(self):
+        for variant in ('target', 'origin', 'line', 'outside_context', 'duplicate', 'image'):
+            with self.subTest(variant=variant):
+                case, draft = self.snapshot_case()
+                if variant == 'target': case['source_link']['target'] = 'another.md'
+                if variant == 'origin': case['sources'][0]['path'] = 'elsewhere/source.md'
+                if variant == 'line': case['source_link']['line'] = 1
+                if variant == 'outside_context': case['source_link']['line'] = 4
+                if variant in ('duplicate', 'image'):
+                    draft = draft.replace(b'[report](source.md)',
+                        b'[report](source.md) [again](source.md)' if variant == 'duplicate' else b'![report](source.md)')
+                    (self.root / 'draft-copy.md').write_bytes(draft)
+                    case['draft']['sha256'] = hashlib.sha256(draft).hexdigest()
+                result, target = self.invoke(case, 'link_' + variant)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertFalse((target / 'inference.json').exists())
+
+    def test_snapshot_draft_can_select_an_immutable_committed_report(self):
+        case, draft = self.snapshot_case()
+        case['sources'][0] = self.case()['sources'][0]
+        case['draft']['path'] = 'draft.md'
+        result, target = self.invoke(case)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((target / 'draft.source').read_bytes(), draft)
+        self.assertEqual((target / 'source-1.source').read_bytes(), self.source)
+        packet = json.loads((target / 'packet.json').read_text())
+        self.assertEqual(packet['sources'][0]['commit'], self.commit)
+        receipt = json.loads((target / 'receipt.json').read_text())
+        self.assertEqual(receipt['git_blob_bytes_read'], len(self.source))
+        self.assertEqual(receipt['snapshot_bytes_read'], len(draft))
+        self.assertEqual(receipt['git_commands'], 3)
+
+    def test_snapshot_result_refuses_reuse_after_inputs_change(self):
+        case, _ = self.snapshot_case()
+        result, target = self.invoke(case)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        before = {p.name: p.read_bytes() for p in target.iterdir()}
+        (self.root / 'draft-copy.md').write_bytes(b'New draft')
+        result, _ = self.invoke(case)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual({p.name: p.read_bytes() for p in target.iterdir()}, before)
 
     def test_preserves_complete_sources_and_ready_packet(self):
         result, target = self.invoke(self.case())

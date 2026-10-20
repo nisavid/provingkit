@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "case_id": "snapshot_example",
+  "assertion": "The [report](report.md) recommends more observation.",
+  "draft": {
+    "kind": "snapshot",
+    "path": "notes/draft.md",
+    "snapshot": "snapshot/draft.md",
+    "checkpoint": "saved-proposal-01",
+    "sha256": "fed8c3084906f8a890942e7756924a5aea1733fa1a8e4cf8d2213f536b7ada0b",
+    "start_line": 1,
+    "end_line": 2,
+    "assertion_line": 1
+  },
+  "sources": [
+    {
+      "kind": "snapshot",
+      "path": "notes/report.md",
+      "snapshot": "snapshot/report.md",
+      "checkpoint": "saved-proposal-01",
+      "sha256": "c094d43769489ccb601b42910460126d4eea1a32d6569ba0cd886a47d47465f4"
+    }
+  ],
+  "source_link": {
+    "line": 1,
+    "target": "report.md"
+  }
+}
