@@ -133,6 +133,37 @@ def read_snapshot(base, entry, counters):
     return ('ready' if sha(data) == entry['sha256'] else 'changed'), data
 
 
+def line_in_code_span(lines, number):
+    if not 1 <= number <= len(lines):
+        return False
+    start, end = number - 1, number
+    while start > 0 and lines[start - 1].strip():
+        start -= 1
+    while end < len(lines) and lines[end].strip():
+        end += 1
+    text = ''.join(lines[start:end])
+    offset = sum(map(len, lines[start:number - 1]))
+    runs = list(re.finditer(r'`+', text))
+    next_run, next_width = {}, {}
+    for index in range(len(runs) - 1, -1, -1):
+        width = len(runs[index].group())
+        next_run[index] = next_width.get(width)
+        next_width[width] = index
+    index = 0
+    while index < len(runs):
+        opening = runs[index]
+        before = text[:opening.start()]
+        escaped = (len(before) - len(before.rstrip('\\'))) % 2
+        closing = None if escaped else next_run[index]
+        if closing is None:
+            index += 1
+        else:
+            if opening.end() <= offset < runs[closing].start():
+                return True
+            index = closing + 1
+    return False
+
+
 def prepare(repository, case_spec, output):
     started = time.monotonic_ns()
     output.mkdir(exist_ok=False)
@@ -201,6 +232,7 @@ def prepare(repository, case_spec, output):
         prefix = ''.join(draft_lines[:link['line']])
         simple_prose = (not line.expandtabs(4).startswith('    ')
                         and not line.lstrip(' \t').startswith('>')
+                        and not line_in_code_span(draft_lines, link['line'])
                         and not any(c in line for c in ('`', '\\', '!['))
                         and not any(c in prefix for c in ('```', '~~~', '<'))
                         and line.count('[') == line.count(']') == 1)

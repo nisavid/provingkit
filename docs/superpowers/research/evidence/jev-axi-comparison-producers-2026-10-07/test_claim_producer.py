@@ -156,6 +156,42 @@ class ClaimProducerTests(unittest.TestCase):
                     self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'unresolved')
                     self.assertFalse((target / 'inference.json').exists())
 
+    def test_multiline_inline_code_cannot_supply_report_association(self):
+        for delimiter in ('`', '``'):
+            with self.subTest(delimiter=delimiter):
+                case, _ = self.snapshot_case()
+                draft = ('Opening ' + delimiter + 'code\n' + self.assertion
+                         + ' See [report](source.md).\nclosing' + delimiter + '.\n').encode()
+                (self.root / 'draft-copy.md').write_bytes(draft)
+                case['draft']['sha256'] = hashlib.sha256(draft).hexdigest()
+                result, target = self.invoke(case, 'multiline_' + str(len(delimiter)))
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertEqual((target / 'draft.source').read_bytes(), draft)
+                self.assertEqual((target / 'source-1.source').read_bytes(), self.source)
+                self.assertEqual(json.loads((target / 'packet.json').read_text())['source_link']['status'], 'unresolved')
+                self.assertFalse((target / 'inference.json').exists())
+
+    def test_prose_links_outside_code_spans_remain_usable(self):
+        for name, opening, closing in [
+            ('earlier_code', 'Opening `code`.', 'Closing.'),
+            ('unmatched', 'Opening `literal.', 'Closing.'),
+            ('different_width', 'Opening `literal.', 'Closing ``literal.'),
+            ('escaped', 'Opening \\`literal.', 'Closing `literal.'),
+            ('new_paragraph', 'Opening `literal.\n', 'Closing `literal.'),
+        ]:
+            with self.subTest(name=name):
+                case, _ = self.snapshot_case()
+                draft = (opening + '\n' + self.assertion + ' See [report](source.md).\n'
+                         + closing + '\n').encode()
+                (self.root / 'draft-copy.md').write_bytes(draft)
+                line = len(opening.split('\n')) + 1
+                case['draft'].update(sha256=hashlib.sha256(draft).hexdigest(),
+                                     end_line=len(draft.splitlines()), assertion_line=line)
+                case['source_link']['line'] = line
+                result, target = self.invoke(case, name)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads((target / 'inference.json').read_text())['draft_context'], draft.decode())
+
     def test_report_amendment_keeps_prior_attempt_and_declared_version_relationship(self):
         case, _ = self.snapshot_case()
         result, original = self.invoke(case, 'original')
