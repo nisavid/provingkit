@@ -1,0 +1,110 @@
+{
+  "source_revision": "7b28a3f279be77a467b3e21993c4b024ec19d176",
+  "input_manifest_sha256": "0aed6c9d471aed15f22627ba60d378a9d1303cb8b6c9339d2d54f3b92775ad97",
+  "inputs": [
+    {
+      "path": "CONTEXT.md",
+      "sha256": "7e9dac9fe2bdf9eec0e2cea0f7d3a23c042cbc53de3818b3aa6fced9ee085901",
+      "bytes": 7718
+    },
+    {
+      "path": ".agents/skills/handling-sys1-incidents/SKILL.md",
+      "sha256": "1d28f851542a0c7a11a190772630c941f224de5da7b4a776c3e62bcc6a3769ac",
+      "bytes": 5754
+    },
+    {
+      "path": ".agents/skills/handling-sys1-incidents/references/comparison-contract.md",
+      "sha256": "9f876cd27c4bd6fe82d56feabc6e31e05d029d7cac18f9651194218e2e1aa981",
+      "bytes": 6663
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-explicit-summary-preparation-2026-10-19/README.md",
+      "sha256": "83c97c11d4f24cdf24156b3070359d34148fd9c3caf9b5dd8d8850f38e026d26",
+      "bytes": 10306
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-explicit-summary-preparation-2026-10-19/delivery-first-pass.md",
+      "sha256": "b006fb2dd5cbe78cab2fba430e1a978861c08a8fa2ef2becfd8d9a2fa980f2e7",
+      "bytes": 5322
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-explicit-summary-preparation-2026-10-19/accounting-first-pass.md",
+      "sha256": "c47779077d3c2333d09f683e4ab0567bb5c99223ce87f37e932da20535225aea",
+      "bytes": 5497
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-explicit-summary-preparation-2026-10-19/reference-pair.json",
+      "sha256": "2f27fb42ed944e4ce8e1ede6a39d777df0ccff6e8071f54ad35198440dd875a5",
+      "bytes": 1190
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-catalog-frontier-2026-10-19/README.md",
+      "sha256": "3001cc4cc69cf2ad2a7917aea458936248b6391b255edc2e362a59ee3531306c",
+      "bytes": 9496
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-catalog-frontier-2026-10-19/opportunity-first-pass.md",
+      "sha256": "62060dd1c7209ca7ba1d051f99651d01c09737c6cfdc1e9e13dd09c1d838f4dd",
+      "bytes": 10564
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-claim-readiness-observation-2026-10-12/README.md",
+      "sha256": "196b539428698a4035cbc5c835bd1c33c82d8ea223e5a9a250c13da80724afed",
+      "bytes": 3809
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-claim-readiness-observation-2026-10-12/contract.md",
+      "sha256": "a7c4e5beed06c3dd85f622b9b50eda47556fbfbdf0f994f6edecaeb5c8320965",
+      "bytes": 15455
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-claim-readiness-observation-2026-10-12/workload-preparation.md",
+      "sha256": "a9ddc74bc46ee5d7278acf03697e238a0c4d29a1fd1ade61d795836b6457bc3d",
+      "bytes": 20210
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-claim-readiness-observation-2026-10-12/accounting-preparation.md",
+      "sha256": "d8ac15efd6624448f5a8e491781ae678b0f9562da359991364e0d2fded4f70e7",
+      "bytes": 20702
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-comparison-producers-2026-10-07/README.md",
+      "sha256": "1d922924d133f92a4e73d9a17f3d85ebc9a5da238849fb6ebfd207f3da6ab1e0",
+      "bytes": 11614
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-comparison-producers-2026-10-07/claim_producer.py",
+      "sha256": "794b71c34b423b731c0ba2be2695a108f32f6888d7f15e115cdf05fc23dc2eb5",
+      "bytes": 14777
+    },
+    {
+      "path": "docs/superpowers/research/evidence/jev-axi-comparison-producers-2026-10-07/examples/claim-snapshot.json",
+      "sha256": "9955843f755720a27d17e564d7b244467a3a0c723db54e5369d1a349d7d78217",
+      "bytes": 737
+    }
+  ],
+  "reports": {
+    "workload": {
+      "path": "workload-first-pass.md",
+      "sha256": "4f08b40401c6f8e00c666b95c05fa933d0609b76024f37bcab8c6abf6c03b538",
+      "bytes": 7415,
+      "native_terminal": "completed",
+      "usability": "source-grounded contract preparation with current-workload gap explicit",
+      "controller_exit_code": 0,
+      "admission_history": "finished"
+    },
+    "accounting": {
+      "path": "accounting-first-pass.md",
+      "sha256": "1a6d2203eb24644aa9f0465596697285367708141e7d5312b90dba3c42e7da0d",
+      "bytes": 6948,
+      "native_terminal": "completed",
+      "usability": "source-grounded contract preparation with current-workload gap explicit",
+      "controller_exit_code": 0,
+      "admission_history": "finished"
+    }
+  },
+  "assurance": "Ordinary same-leader native observations; requested Sol 6.1 High does not attest effective execution or enforced read-only authority",
+  "collection": "none",
+  "status": "independent first passes complete; workload binding and final contract review remain",
+  "created_at": "2026-10-20T04:38:56.801183+00:00"
+}
