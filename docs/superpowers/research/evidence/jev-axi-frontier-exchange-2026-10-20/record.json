@@ -1,0 +1,84 @@
+{
+  "scope": "Source-only compatibility investigation and two-way method exchange; no native episode or model experiment",
+  "observed_at": "2026-10-20T06:27:24.911331+00:00",
+  "source_commit": "de90a974dae5f1a18f98cf87d1f33d3e552c3da6",
+  "input_inventory_sha256": "d55e5ab628c4f21dd2d7b33aea1667e38adab6293ec6383c393b65b29bf456de",
+  "input_count": 40,
+  "input_bytes": 428651,
+  "independent_report": {
+    "bytes": 11412,
+    "sha256": "7a282519a7b8ebe623c73fc7ead7a375e2cda38557c5974c829478174e4d044b",
+    "status": "DONE_WITH_CONCERNS",
+    "usable_as": "source research only"
+  },
+  "codex_public_source_commit": "092d3acd6bec3e3a14bdc7e7a2810ab628ab759d",
+  "codex_public_sources": [
+    {
+      "path": "codex-rs/app-server/src/config_manager.rs",
+      "bytes": 22966,
+      "sha256": "34b20e0c750cf2628f3a9a9bfd548cb227730814462ef59dc9edd7785478a66e"
+    },
+    {
+      "path": "codex-rs/app-server/src/lib.rs",
+      "bytes": 66279,
+      "sha256": "b4c6b019d3ed6e5511abc997a725f466a0377c055ea09d2db8535f9275697c47"
+    },
+    {
+      "path": "codex-rs/app-server/src/main.rs",
+      "bytes": 5558,
+      "sha256": "6c027c0307379f7426f25812e4422d5740ac6a128a28a51bcf79267516457ced"
+    },
+    {
+      "path": "codex-rs/arg0/src/lib.rs",
+      "bytes": 28375,
+      "sha256": "983e261a289cf6e0410d32b158202bd78ea6231653aa6dd492ee4b47090be9dd"
+    },
+    {
+      "path": "codex-rs/cli/src/main.rs",
+      "bytes": 178985,
+      "sha256": "9eb1067f5a4c270baf677537dc2ef4603ffda186c918ad65ce454177f95dd785"
+    },
+    {
+      "path": "codex-rs/config/src/lib.rs",
+      "bytes": 10674,
+      "sha256": "99082e0a494ef440151c0fcd269eb4f8d72cce32aed59a3ac7c3a476d7741e87"
+    },
+    {
+      "path": "codex-rs/core/src/config/mod.rs",
+      "bytes": 202569,
+      "sha256": "32babb117ff4bf0dc08050c4a755f5996f57f51fcebb82595c81648420394259"
+    },
+    {
+      "path": "codex-rs/exec-server/src/environment.rs",
+      "bytes": 78330,
+      "sha256": "6114070c92285bdd8ec918fe8ee6304a3d86e4c3366cb833fa73e45961ce2c3c"
+    },
+    {
+      "path": "codex-rs/utils/home-dir/src/lib.rs",
+      "bytes": 5096,
+      "sha256": "1338259489ade54b01caa1468b6d25fc5a183657fa94cca0add8b91865635ef5"
+    }
+  ],
+  "worker_closed": true,
+  "controller_exit_code": 0,
+  "finish_generation": "f34eae7ce63e49bb9de84e52eb34dfa2",
+  "graph": {
+    "children": 71,
+    "closed": 68,
+    "open": [
+      471,
+      530,
+      695
+    ]
+  },
+  "new_tests_run": false,
+  "new_native_or_provider_experiment": false,
+  "uncertainties": [
+    "Fatal startup operation and path",
+    "Current runtime and profile compatibility",
+    "Whole-workflow benefit and recurring cost",
+    "No image-model result at exchange"
+  ],
+  "current_runtime_inventory_sha256": "afb9f6710fbd4221dba1a669b530a88ca6b6b63bffc2a851b3fae03a9c74c4ff",
+  "reviewed_source_blobs_rechecked": 33
+}
