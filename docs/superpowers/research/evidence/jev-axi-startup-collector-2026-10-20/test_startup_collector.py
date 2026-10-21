@@ -142,6 +142,51 @@ class StartupCollectorTests(unittest.TestCase):
         self.assertEqual([row["method"] for row in sent], ["initialize"])
         self.assertFalse(any(path.name.endswith(".log") for path in attempt.iterdir()))
 
+    def test_unicode_metadata_preserves_terminal_outcome_within_control_budget(self):
+        spec = json.loads(self.spec.read_text())
+        spec["expected_initialize"]["userAgent"] = "é" * 30000
+        expected = spec["expected_initialize"]
+        reply = (json.dumps({"id": 1, "result": expected}) + "\n").encode()
+        self.assertGreater(len(reply), 64 * 1024)
+        self.assertLess(len(reply), 256 * 1024)
+        server = self.project / "unicode_server.py"
+        server.write_text(
+            "import json, os, signal, sys\n"
+            "signal.signal(signal.SIGTERM, signal.SIG_IGN)\n"
+            "os.write(int(sys.argv[1]), b'+++ exited with 0 +++\\n')\n"
+            "os.close(int(sys.argv[1]))\n"
+            "sys.stdin.readline()\n"
+            f"print(json.dumps({{'id': 1, 'result': {expected!r}}}), flush=True)\n"
+            "sys.stdin.read()\n"
+        )
+        spec.update(command=[sys.executable, str(server), "{trace_fd}"],
+                    trace={"binding": "strace-source-subset/v1"})
+        spec["sources"].append(str(server))
+        self.spec.write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+        self.assertLess(self.spec.stat().st_size, 64 * 1024)
+        prepared = self.cli("prepare", "--spec", self.spec, "--output", self.package)
+        self.assertEqual(prepared.returncode, 0, prepared.stderr)
+        attempt = self.root / "attempt"
+        result = self.cli("run", "--package", self.package, "--output", attempt)
+        self.assertTrue((attempt / "outcome.json").is_file(), result.stderr)
+        outcome = json.loads((attempt / "outcome.json").read_text())
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(outcome["initialize"], expected)
+        self.assertEqual(outcome["reason"], "initialized")
+        self.assertEqual(outcome["direct_child_returncode"], 0)
+        self.assertEqual(outcome["pipe_eof"], {"stdout": True, "stderr": True})
+        self.assertEqual(outcome["stdout_bytes"], len(reply))
+        self.assertEqual(outcome["stderr_bytes"], 0)
+        self.assertEqual(outcome["package_manifest_sha256"],
+                         hashlib.sha256((self.package / "manifest.json").read_bytes()).hexdigest())
+        self.assertEqual(outcome["trace"]["status"], "complete")
+        self.assertEqual(outcome["descendant_closure"], "unknown")
+        self.assertEqual(outcome["diagnostic_qualification"], "not_established")
+        self.assertLessEqual((attempt / "outcome.json").stat().st_size, 96 * 1024)
+        control_bytes = sum((attempt / name).stat().st_size for name in
+                            ("spec.json", "manifest.json", "sent.jsonl", "outcome.json"))
+        self.assertLessEqual(control_bytes, 256 * 1024)
+
     def test_changed_input_is_preserved_as_a_refusal_before_request_delivery(self):
         prepared = self.cli("prepare", "--spec", self.spec, "--output", self.package)
         self.assertEqual(prepared.returncode, 0, prepared.stderr)

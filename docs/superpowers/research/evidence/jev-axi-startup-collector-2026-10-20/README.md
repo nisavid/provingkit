@@ -49,6 +49,22 @@ or second request. The attempt retains the sent request, selected metadata,
 byte counts, pipe EOF observations, direct-child return code, and outcome.
 If tracing is selected, `trace.jsonl` and its digest are retained too.
 
+The outcome is compact UTF-8 JSON, limited to 96 KiB. Its four metadata
+strings must exactly match those already admitted in the 64 KiB specification;
+their compact encoding cannot exceed that source representation. The remaining
+fixed fields, including the bounded trace summary, use less than 2 KiB. Escaped
+lone surrogates remain JSON escapes. Together, the preserved specification
+(64 KiB), manifest (64 KiB), outcome (96 KiB), and fixed initialize request
+(under 1 KiB) stay below the proposal's 256 KiB control-record ceiling. The
+separately bounded trace stream is not part of that ceiling.
+
+If an outcome nevertheless exceeds its bound, the collector retains a smaller
+terminal record with the metadata omitted, the original outcome's digest, and
+`reason: outcome_projection_limit`. The observed reason, byte counts, direct
+child return code, and EOF observations remain available; the CLI reports
+failure. With the current admitted schema, the bound above prevents this
+fallback from being reached.
+
 A response that first arrives during shutdown cannot turn a timeout into
 success. Malformed, mismatched, unsolicited, or oversized replies are
 incomplete outcomes. Unsupported trace input prevents a successful attempt

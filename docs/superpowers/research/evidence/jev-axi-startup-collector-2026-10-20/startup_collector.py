@@ -25,6 +25,7 @@ INITIALIZE = {
 LIMITS = {"pipe_bytes": 2 * 1024 * 1024, "message_bytes": 256 * 1024,
           "startup_seconds": 30, "term_seconds": 5, "kill_seconds": 5}
 RECORD_BYTES = 64 * 1024
+OUTCOME_BYTES = 96 * 1024
 
 
 def bounded_record(path):
@@ -128,7 +129,17 @@ def run(package, output):
 
     def finish(outcome):
         outcome["package_manifest_sha256"] = hashlib.sha256(raw_manifest).hexdigest()
-        (output / "outcome.json").write_bytes(encoded_record(outcome))
+        # Compact UTF-8 keeps the four matched strings within their original
+        # specification budget. Escape lone surrogates as valid JSON bytes.
+        raw = (json.dumps(outcome, ensure_ascii=False, separators=(",", ":"))
+               + "\n").encode("utf-8", errors="backslashreplace")
+        if len(raw) > OUTCOME_BYTES:
+            outcome["initialize"] = None
+            outcome["observed_reason"] = outcome["reason"]
+            outcome["reason"] = "outcome_projection_limit"
+            outcome["omitted_outcome_sha256"] = hashlib.sha256(raw).hexdigest()
+            raw = encoded_record(outcome)
+        (output / "outcome.json").write_bytes(raw)
         return outcome
 
     changed = hashlib.sha256(raw_spec).hexdigest() != manifest["spec_sha256"]
