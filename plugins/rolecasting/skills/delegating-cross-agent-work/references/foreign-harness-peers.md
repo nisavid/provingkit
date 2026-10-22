@@ -41,8 +41,9 @@ cannot isolate the requested scope and authority. Record the surface, probe,
 and result; never invent a dispatch or capability.
 
 Use a native fallback only when it preserves the original task contract. If it
-does, omit unsupported model and effort fields and route any unresolved
-selection through `choosing-agent-models`. Otherwise, omit model and effort
+does, use `choosing-agent-models` to resolve and explicitly pass every supported
+model and effort field. Omit only absent controls and record their proven fixed
+bindings and reasons. Otherwise, omit model and effort
 selection and do not dispatch: return `NEEDS_CONTEXT` with the missing fact when
 more evidence could establish a safe surface, or `BLOCKED` with probe evidence
 when no permitted route can satisfy the contract.
@@ -59,6 +60,13 @@ authorization. The leader reviews and integrates every result.
 A peer, sibling, companion, or dedicated task is newly created for the current source task and bounded scope unless the operator explicitly identifies an existing same-purpose companion. Do not message, fork from, steer, or execute current-task work through an unrelated user-owned task. Route-metadata inspection does not make that task eligible or authorize executing with its model or under its account, entitlement, permissions, or context. Model routing supplies no task-creation or steering authority; creating or steering a user-owned task requires explicit consent. If an isolated task cannot be created or verified, return `NEEDS_CONTEXT` or `BLOCKED`; unrelated-task reuse is never a fallback.
 
 Treat every follow-up or resume as a new dispatch gate. Before sending continuation task data, revalidate the same authorized task or session, account binding, model, data boundary, workspace, tools, and external-action scope. The task ID, stored model, and visibility in a shared session database do not prove that the continuation will use the original account route.
+
+Apply `choosing-agent-models`' continuation field rules: explicitly pass every
+supported model and effort field, and verify and record retained bindings for
+absent controls before task data. Every replacement session also follows the
+creation rule. Preserve accepted frozen caller parameters until their owner
+accepts a separately frozen successor; this policy change does not edit an
+active caller.
 
 For a Codex CLI continuation through a privately bound alternate account home, explicitly set `CODEX_HOME` for the initial `codex exec` and every `codex exec resume`, and pass the exact model proven by the currently fresh no-task-data observation. Never rely on the ambient default account to recover account affinity. If a task API, app, or CLI continuation cannot select and observe the authorized binding before accepting continuation data, fail closed before sending the payload. Use a newly created dedicated task or session only with the required creation authority and fresh route proof; otherwise return `NEEDS_CONTEXT` or `BLOCKED`.
 

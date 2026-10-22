@@ -106,7 +106,10 @@ as a fallback.
 ## Invoke and observe
 
 After a successful freeze, invoke exactly one native subagent for the frozen
-dispatch. Pass the bounded worker request and least authority allowed by the
+dispatch. Explicitly pass the selected model and reasoning effort in every
+supported native creation field, following `choosing-agent-models`' field
+rules for a missing control. Preserve the actual outgoing selection with the
+frozen request; a plan digest alone does not apply it. Pass the bounded worker request and least authority allowed by the
 live tool schema. Preserve the frozen context; a changed worktree, scope,
 request, target, ownership, or authority requires a new freeze.
 

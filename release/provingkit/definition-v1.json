@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:a3f794343970f2d1383bbea03de7239304813273f494078f816f7b873119c93a"
+          "sha256": "sha256:ccee8313d299c8024a052e1c6033049fa5a5438e85d133689ba9cd5b2475e122"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -52,7 +52,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/versionkeeping.json",
-          "sha256": "sha256:e711a1f72efb4f9c545619bdc237c7dc76836f654209b1cacac237c874ef7795"
+          "sha256": "sha256:7cb688670ebc3a2b1ef7cc43c0fac7772903916c1fae17997692492113127143"
         },
         "display_name": "Versionkeeping",
         "distribution_kind": "agent-plugin",

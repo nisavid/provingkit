@@ -48,6 +48,13 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             observed,
             {
                 "choose-after-delegation",
+                "select-explicit-thread-selection",
+                "select-explicit-native-selection",
+                "select-partial-selection-controls",
+                "select-explicit-continuation-selection",
+                "delegate-explicit-thread-selection",
+                "delegate-partial-selection-controls",
+                "delegate-explicit-continuation-selection",
                 "unsupported-luna-surface-fallback",
                 "fable-proof-requires-invocation-authority",
                 "inherited-fixed-model-selection",
