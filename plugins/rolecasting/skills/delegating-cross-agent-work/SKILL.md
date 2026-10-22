@@ -7,7 +7,7 @@ description: Use when choosing delegation, topology, authority, or handoffs. Sel
 
 ## Scope
 
-Keep judgment, ambiguity, architecture, copy, and coordination local. Delegate bounded parallel, specialist, or waiting work.
+Keep consequential judgment, ambiguity, architecture, copy, and coordination local. Delegate bounded parallel, specialist, or waiting work.
 
 [choosing-agent-models](../choosing-agent-models/SKILL.md) owns model and effort selection. This skill owns target, topology, authority, handoffs, assurance, and integration.
 
