@@ -181,6 +181,18 @@ package support artifacts, not runtime authority.
 
 ## Evaluation evidence
 
+To prepare feedback-response actor requests, load the
+[preparation procedure](https://github.com/nisavid/provingkit/blob/39f0ec349399b967d1ff3781894746279adbcc45/docs/feedback-response-evaluation.md)
+at the commit selected for the run before invoking the
+[preparation controller](https://github.com/nisavid/provingkit/blob/39f0ec349399b967d1ff3781894746279adbcc45/scripts/run_feedback_response_eval.py).
+Use `capturing-agent-procedures` to record the loaded revision and verify the
+downstream invocation against the procedure's completion criteria. The
+[subprocess contract tests](https://github.com/nisavid/provingkit/blob/39f0ec349399b967d1ff3781894746279adbcc45/tests/test_feedback_response_eval.py)
+exercise that public command. Preparation retains 78 unstarted actor
+coordinates; accepting it requires the complete record and referenced
+artifacts together with the observed process result. Actor execution, grading,
+and qualification remain separate steps.
+
 The feedback-response [experiment](skills/interacting-with-pr-review-feedback/evals/response-evidence.json)
 binds the raw scenarios, delivered skill and reference bytes, source and test
 files, completed isolated responses, canonical grading requests, raw grading
