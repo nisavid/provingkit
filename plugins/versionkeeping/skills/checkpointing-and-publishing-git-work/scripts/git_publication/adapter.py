@@ -74,8 +74,14 @@ LINUX_CREDENTIAL_HELPER = "git-credential-cache"
 GIT_CONFIG_PROFILE_ENV = "VERSIONKEEPING_GIT_CONFIG_PROFILE"
 GIT_CONFIG_PROFILES = frozenset(("host-compatible", "hardened"))
 WINDOWS_GCM_HELPERS = (
+    Path("ucrt64/bin/git-credential-manager.exe"),
+    Path("ucrt64/bin/git-credential-manager-core.exe"),
     Path("mingw64/bin/git-credential-manager.exe"),
     Path("mingw64/bin/git-credential-manager-core.exe"),
+)
+WINDOWS_GIT_TOOLCHAIN_BIN_DIRECTORIES = (
+    Path("ucrt64/bin"),
+    Path("mingw64/bin"),
 )
 WINDOWS_GIT_RUNTIME = {
     "git": Path("cmd/git.exe"),
@@ -629,16 +635,31 @@ def _windows_trusted_command_path(
     check_acls: bool = True,
 ) -> str:
     directories = []
-    for relative in (Path("cmd"), Path("mingw64/bin"), Path("usr/bin")):
-        path = git_root / relative
-        resolved = path.resolve(strict=True)
-        if (
-            git_root not in resolved.parents
-            or resolved != path.absolute()
-            or not resolved.is_dir()
-        ):
-            raise OSError("trusted command directory is redirected")
-        directories.append(resolved)
+    directory_candidates = (
+        (Path("cmd"),),
+        WINDOWS_GIT_TOOLCHAIN_BIN_DIRECTORIES,
+        (Path("usr/bin"),),
+    )
+    for candidates in directory_candidates:
+        for relative in candidates:
+            path = git_root / relative
+            try:
+                path.lstat()
+            except FileNotFoundError:
+                continue
+            resolved = path.resolve(strict=True)
+            if (
+                git_root not in resolved.parents
+                or resolved != path.absolute()
+                or not resolved.is_dir()
+            ):
+                raise OSError(
+                    "trusted command directory is unavailable"
+                )
+            directories.append(resolved)
+            break
+        else:
+            raise OSError("trusted command directory is unavailable")
     if check_acls:
         _windows_paths_have_protected_acls(
             tuple(
@@ -660,13 +681,26 @@ def _require_windows_credential_provider(git_root: Path | None) -> str:
             provider="windows-gcm",
         )
     for relative in WINDOWS_GCM_HELPERS:
+        candidate = git_root / relative
+        try:
+            candidate.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            raise PolicyGate(
+                "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
+                provider="windows-gcm",
+            ) from error
         try:
             return _trusted_windows_bundled_executable(
-                git_root / relative,
+                candidate,
                 git_root,
             )
-        except OSError:
-            continue
+        except OSError as error:
+            raise PolicyGate(
+                "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
+                provider="windows-gcm",
+            ) from error
     raise PolicyGate(
         "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
         provider="windows-gcm",
@@ -708,17 +742,12 @@ def _trusted_git_runtime() -> _TrustedGitRuntime:
                 )
                 for name, path in executable_paths.items()
             }
-            command_directories = tuple(
-                root / relative
-                for relative in (
-                    Path("cmd"),
-                    Path("mingw64/bin"),
-                    Path("usr/bin"),
-                )
-            )
             command_path = _windows_trusted_command_path(
                 root,
                 check_acls=False,
+            )
+            command_directories = tuple(
+                Path(directory) for directory in command_path.split(";")
             )
             _windows_paths_have_protected_acls(
                 tuple(
