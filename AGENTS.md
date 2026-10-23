@@ -36,6 +36,8 @@ detailed contracts, research, and specs under `docs/`.
 
 Equipment is designed principle-first. Before writing, revising, or reviewing
 it, read the core maxim that opens `docs/plugin-system/design-principles.md`.
+For software behavior changes, use `docs/agents/consumer-specifications.md` to
+bind consumer examples to the tested interface before implementation.
 
 Each member under `plugins/` is a package. Its README is the front page for
 people using the plugin and ships in installed copies, so its relative links
