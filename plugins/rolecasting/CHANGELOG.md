@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.4
+
+- Assign this member to the coordinated local whole-Kit alpha.4 candidate.
+
 ## Unreleased
 
 - Test insufficient low effort and sufficient high effort within Grok's

@@ -127,7 +127,7 @@
           "const": "artifact-customs"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.4"
         },
         "identity_manifests": {
           "properties": {
@@ -254,7 +254,7 @@
           "const": "mergecraft"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.4"
         },
         "identity_manifests": {
           "properties": {
@@ -296,7 +296,7 @@
           "const": "rolecasting"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.4"
         },
         "identity_manifests": {
           "properties": {
@@ -338,7 +338,7 @@
           "const": "tricritical"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.4"
         },
         "identity_manifests": {
           "properties": {
@@ -380,7 +380,7 @@
           "const": "proseweaving"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.4"
         },
         "identity_manifests": {
           "properties": {
@@ -422,7 +422,7 @@
           "const": "versionkeeping"
         },
         "version": {
-          "const": "1.0.0"
+          "const": "0.1.0-alpha.4"
         },
         "identity_manifests": {
           "properties": {

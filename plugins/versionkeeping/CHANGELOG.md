@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.4
+
+- Assign this member to the coordinated local whole-Kit alpha.4 candidate.
+
 ## 1.0.0
 
 Initial dual-harness release, 2026-07-20:
