@@ -20,7 +20,7 @@ Qualify the driver on its claimed observation: deliberately wrong expected ident
 
 ## Develop and refine
 
-Load this procedure, fixtures, driver, and implementation from the same committed candidate. A producer may validate its own draft, but independent consumer acceptance must identify the reviewed revision it actually loaded.
+Start from one committed candidate for the procedure, fixtures, driver, and implementation. Keep task-owned TDD changes together in that worktree and retain the diff and input identities for each run; preparation tools and fixtures must not come from another revision. A producer may validate its own draft; independent consumer acceptance identifies the reviewed method revision it actually loaded.
 
 1. Write one semantic example at the confirmed boundary. Run it against unchanged behavior and preserve the failure, source identity, command, original output, and exit. Verify that it fails for the intended reason; an import error or unavailable environment is not the causal RED.
 2. Make the smallest behavior change that satisfies that example. Run the same assertion and retain its GREEN result. Preserve original failures; do not replace them with a later successful record.

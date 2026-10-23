@@ -1515,7 +1515,7 @@ def _identity(
     return expected
 
 
-def _common_arguments(expected: ExpectedIdentity, entry: dict[str, Any]) -> list[str]:
+def _identity_arguments(expected: ExpectedIdentity) -> list[str]:
     return [
         "--repository",
         expected.repository,
@@ -1533,8 +1533,6 @@ def _common_arguments(expected: ExpectedIdentity, entry: dict[str, Any]) -> list
         expected.head_owner,
         "--head-repository",
         expected.head_repository,
-        "--review-input",
-        entry["review_input"],
     ]
 
 
@@ -1543,7 +1541,9 @@ def _publisher_arguments(
 ) -> list[str]:
     review_mode, review_bundle, specialists = _review_profile(entry)
     arguments = [
-        *_common_arguments(expected, entry),
+        *_identity_arguments(expected),
+        "--review-input",
+        entry["review_input"],
         "--review-mode",
         review_mode,
         "--selected-specialists",
@@ -1630,7 +1630,7 @@ def _handoff_entry(
         else source
     )
     common = _publisher_arguments(expected, entry)
-    audit_common = _common_arguments(expected, entry)
+    audit_common = _identity_arguments(expected)
     commands: list[list[str]] = []
     target_is_draft = True if preimage is None else preimage["is_draft"]
     if title != entry["title"] or body != target_body:

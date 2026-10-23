@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import os
 import shlex
@@ -9,7 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import nullcontext
+from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -19,6 +20,44 @@ spec = importlib.util.spec_from_file_location("submit_draft_stack", SCRIPT)
 assert spec and spec.loader
 GRAPHITE = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(GRAPHITE)
+
+
+
+class InspectionReached(Exception):
+    def __init__(self, member):
+        self.member = member
+
+
+def inspect_publication_evidence(command):
+    """Observe the real auditor parser; replace only live operation handlers."""
+    auditor_spec = importlib.util.spec_from_file_location(
+        "graphite_inspection_auditor", GRAPHITE.AUDIT
+    )
+    assert auditor_spec and auditor_spec.loader
+    auditor = importlib.util.module_from_spec(auditor_spec)
+    auditor_spec.loader.exec_module(auditor)
+    errors = io.StringIO()
+
+    def reached(*, expected, **kwargs):
+        raise InspectionReached(expected)
+
+    with (
+        mock.patch.object(sys, "argv", command[1:]),
+        mock.patch.object(auditor, "audit", side_effect=reached),
+        mock.patch.object(
+            auditor, "reconcile",
+            side_effect=AssertionError("inspection entered reconciliation"),
+        ),
+        redirect_stdout(io.StringIO()),
+        redirect_stderr(errors),
+    ):
+        try:
+            auditor.main()
+        except InspectionReached as observed:
+            return observed.member, None, errors.getvalue()
+        except SystemExit as rejected:
+            return None, rejected.code, errors.getvalue()
+    raise AssertionError("inspection returned without reaching the audit handler")
 
 
 class GraphiteTransportTests(unittest.TestCase):
@@ -73,6 +112,63 @@ class GraphiteTransportTests(unittest.TestCase):
         )
         candidate_builder.start()
         self.addCleanup(candidate_builder.stop)
+
+
+    def test_transported_member_publication_evidence_can_be_inspected(self) -> None:
+        member = self.required_item()
+        observed, parser_exit, errors = inspect_publication_evidence(
+            member["final_audit_command"]
+        )
+        expected = GRAPHITE.ExpectedIdentity(
+            repository="acme/app",
+            pr_number=42,
+            base="main",
+            base_oid="a" * 40,
+            head="acme:feature",
+            head_oid="b" * 40,
+            head_owner="acme",
+            head_repository="acme/app",
+        )
+        self.assertEqual(
+            observed, expected,
+            f"inspection did not reach the member: parser exit {parser_exit}; {errors}",
+        )
+
+
+    def test_inspection_rejects_unsupported_options_before_reaching_member(self) -> None:
+        member = self.required_item()
+        observed, parser_exit, errors = inspect_publication_evidence(
+            [*member["final_audit_command"], "--unexpected-inspection-option"]
+        )
+        self.assertIsNone(observed)
+        self.assertEqual(parser_exit, 2)
+        self.assertIn("unrecognized arguments", errors)
+
+    def test_inspection_requires_the_complete_member_identity(self) -> None:
+        command = list(self.required_item()["final_audit_command"])
+        position = command.index("--head-owner")
+        del command[position : position + 2]
+        observed, parser_exit, errors = inspect_publication_evidence(command)
+        self.assertIsNone(observed)
+        self.assertEqual(parser_exit, 2)
+        self.assertIn("--head-owner", errors)
+
+    def test_inspection_driver_detects_a_wrong_member_expectation(self) -> None:
+        command = self.required_item()["final_audit_command"]
+        observed, parser_exit, errors = inspect_publication_evidence(command)
+        self.assertIsNone(parser_exit, errors)
+        wrong_member = GRAPHITE.ExpectedIdentity(
+            repository="acme/app",
+            pr_number=43,
+            base="main",
+            base_oid="a" * 40,
+            head="acme:feature",
+            head_oid="b" * 40,
+            head_owner="acme",
+            head_repository="acme/app",
+        )
+        with self.assertRaises(AssertionError):
+            self.assertEqual(observed, wrong_member)
 
     def test_executable_git_configuration_classes_are_closed(self) -> None:
         cases = {
@@ -1001,6 +1097,9 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             item = self.required_item()
 
         command = item["publisher_commands"][0]
+        self.assertEqual(
+            command[command.index("--review-input") + 1], str(self.review_input)
+        )
         self.assertEqual(command[command.index("--review-mode") + 1], "required")
         self.assertEqual(
             command[command.index("--review-bundle") + 1],
