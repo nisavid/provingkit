@@ -1,0 +1,460 @@
+{
+  "schema": "provingkit-host-preservation-admission-prepared-v1",
+  "contract_status": "prepared-not-adopted",
+  "record_origin": "constructed",
+  "producer_contract": {
+    "logical_name": "constructed-fixture",
+    "bytes": 1,
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "subject": {
+    "record": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "statement": {
+      "repository": "https://github.com/nisavid/provingkit",
+      "development_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "delivery_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "changed_member": "mergecraft",
+      "preserved_members": [
+        "rolecasting",
+        "tricritical",
+        "versionkeeping",
+        "artifact-customs",
+        "proseweaving"
+      ],
+      "route_contract": {
+        "logical_name": "constructed-fixture",
+        "bytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "baseline": {
+    "record": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "statement": {
+      "id": "constructed-fixture",
+      "observed_at": "2026-01-01T00:00:00Z",
+      "clients": {
+        "codex": {
+          "route_scope": "preservation-and-proposed-execution",
+          "evidence": {
+            "state": "measured",
+            "observed_at": "2026-01-01T00:00:00Z",
+            "client_version": "constructed-fixture",
+            "observation": {
+              "logical_name": "constructed-fixture",
+              "bytes": 1,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "coverage_contract": {
+              "logical_name": "constructed-fixture",
+              "bytes": 1,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          }
+        },
+        "claude-code": {
+          "route_scope": "preservation-and-proposed-execution",
+          "evidence": {
+            "state": "measured",
+            "observed_at": "2026-01-01T00:00:00Z",
+            "client_version": "constructed-fixture",
+            "observation": {
+              "logical_name": "constructed-fixture",
+              "bytes": 1,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "coverage_contract": {
+              "logical_name": "constructed-fixture",
+              "bytes": 1,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          }
+        },
+        "cursor": {
+          "route_scope": "preservation-only",
+          "evidence": {
+            "state": "measured",
+            "observed_at": "2026-01-01T00:00:00Z",
+            "client_version": "constructed-fixture",
+            "observation": {
+              "logical_name": "constructed-fixture",
+              "bytes": 1,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "coverage_contract": {
+              "logical_name": "constructed-fixture",
+              "bytes": 1,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          }
+        }
+      },
+      "member_states": {
+        "rolecasting": {
+          "version": "constructed-fixture",
+          "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "governed_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "projected_state": {
+            "codex": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "claude-code": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "cursor": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        },
+        "tricritical": {
+          "version": "constructed-fixture",
+          "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "governed_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "projected_state": {
+            "codex": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "claude-code": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "cursor": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        },
+        "versionkeeping": {
+          "version": "constructed-fixture",
+          "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "governed_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "projected_state": {
+            "codex": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "claude-code": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "cursor": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        },
+        "mergecraft": {
+          "version": "constructed-fixture",
+          "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "governed_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "projected_state": {
+            "codex": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "claude-code": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "cursor": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        },
+        "artifact-customs": {
+          "version": "constructed-fixture",
+          "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "governed_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "projected_state": {
+            "codex": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "claude-code": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "cursor": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        },
+        "proseweaving": {
+          "version": "constructed-fixture",
+          "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "governed_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "projected_state": {
+            "codex": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "claude-code": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            },
+            "cursor": {
+              "state": "measured",
+              "inventory": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "registration_and_enabled_state": {
+                "logical_name": "constructed-fixture",
+                "bytes": 1,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        }
+      },
+      "shared_state_inventory": {
+        "logical_name": "constructed-fixture",
+        "bytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "preservation_coverage": {
+        "logical_name": "constructed-fixture",
+        "bytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "exports": [
+    {
+      "record": {
+        "logical_name": "constructed-fixture",
+        "bytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "relative_path": "constructed-fixture",
+      "inner_schema_sha256": "5e336e23d8231a7b04ad0de2d4ac4e430200cf23c8a0f6df393b64062ce9af86",
+      "selection_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "canonical_inventory_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "local_inventory_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raw_parent_receipt_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raw_local_receipt_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "complete_modes_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "owner_decision": {
+    "id": "constructed-fixture",
+    "kind": "accept-for-preservation-validation",
+    "decided_at": "2026-01-01T00:00:00Z",
+    "owner": "constructed-fixture",
+    "producer_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "baseline_record_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "export_record_sha256s": [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "subject_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "scope": "source-preservation-correspondence",
+    "original_decision": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "affected_decision": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "successor_decision": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "currentness": {
+    "method": "owner-reviewed-request-bound-snapshot",
+    "observed_at": "2026-01-01T00:00:00Z",
+    "status": "current",
+    "decision_source": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "observed_head": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "admission_request": {
+      "logical_name": "constructed-fixture",
+      "bytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "reason": "constructed-fixture"
+  },
+  "public_transfer": {
+    "status": "not-selected"
+  },
+  "claim": "correspondence-to-owner-admitted-observation-at-capture"
+}

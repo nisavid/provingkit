@@ -1,0 +1,4 @@
+interface:
+  display_name: "Configuring Repositories"
+  short_description: "Configure GitHub repositories and useful CI gates"
+  default_prompt: "Use $mergecraft:configuring-repositories to create, assess, or configure a GitHub repository and its CI."

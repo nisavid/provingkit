@@ -1,7 +1,10 @@
 # Mergecraft
 
-Mergecraft is an Agent Plugins GitHub authoring and pull-request lifecycle
-package with a native Claude adapter. It owns exact human-facing Issue and
+Mergecraft is an Agent Plugin for GitHub repository configuration, authoring,
+and the pull-request lifecycle, with a native Claude adapter. It owns repository
+creation, configuration assessment, contextual defaults, focused changes, and
+project-specific CI hardening through available native tools. Its authoring and
+lifecycle workflows cover exact human-facing Issue and
 pull-request body authoring, Issue–PR contribution ledgers and Development links,
 reviewer navigation, guarded PR publication,
 Graphite draft transport, feedback coordination and interaction, review
@@ -22,6 +25,7 @@ that need its stronger cross-harness evidence contract.
 
 | Public skill | Responsibility |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| configuring-repositories | GitHub creation, configuration assessment, contextual defaults, authorized focused changes, and project-specific CI hardening. |
 | writing-github-issue-and-pr-markdown | Valid GFM and exact body bytes for seven human-facing GitHub fields, without actuation. |
 | maintaining-issue-pr-relations | Evidenced bilateral contribution ledgers, cached closure settings, and guarded Development-link reconciliation. |
 | writing-reviewable-pr-descriptions | Canonical title/body content and Stack/Diff navigation. |
@@ -37,6 +41,23 @@ that need its stronger cross-harness evidence contract.
 There are no compatibility routers and no public PR-creation orchestrator.
 Semantic sibling links remain relative within this plugin. Cross-plugin calls
 use qualified identities.
+
+## Repository configuration
+
+[Configuring repositories](skills/configuring-repositories/SKILL.md) starts from
+the requested outcome, actual repository and owner context, applicable policy,
+and existing authorization. It researches settings beyond its linked guides and
+preserves informed unconventional choices unless actual policy or concrete
+active harm requires a different route. Maintained configuration writers keep
+their ownership; partial or unknown effects require observation and
+reconciliation before dependent work continues.
+
+Setting changes disclose material invalidation of observations used by relation,
+readiness, and merge work. Git checkpoints, PR publication, and independent
+review stay with their existing owners when the outcome needs them. Package
+registration and source validation establish the declared source shape;
+behavior, hosted enforcement, installation, and fresh client use require their
+own current qualification evidence.
 
 ## Issue–PR relations
 
