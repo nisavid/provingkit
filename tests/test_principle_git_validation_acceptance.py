@@ -53,3 +53,60 @@ class PrincipleGitValidationAcceptanceTests(unittest.TestCase):
                 ],
             },
         )
+
+    def test_unattempted_required_check_remains_undetermined(self) -> None:
+        record = {
+            "schema_version": 1,
+            "contract": {
+                "checks": [
+                    {"check_id": "diff-check", "required": True, "applicability": "applicable"}
+                ],
+                "publication_allowed": False,
+            },
+            "observations": {
+                "attempts": [],
+                "results": [],
+                "git_state": None,
+            },
+            "handback": {
+                "completion_claimed": True,
+                "text": "Complete; all required checks passed.",
+            },
+        }
+
+        self.assertEqual(
+            acceptance.assess_completion(record),
+            {"completion": "undetermined", "check_outcomes": [], "reasons": []},
+        )
+
+    def test_unrelated_attempt_does_not_count_as_required_check_attempt(self) -> None:
+        record = {
+            "schema_version": 1,
+            "contract": {
+                "checks": [
+                    {"check_id": "diff-check", "required": True, "applicability": "applicable"},
+                    {"check_id": "lint-check", "required": False, "applicability": "applicable"},
+                ],
+                "publication_allowed": False,
+            },
+            "observations": {
+                "attempts": [
+                    {
+                        "attempt_id": "lint-attempt",
+                        "check_id": "lint-check",
+                        "argv": ["lint"],
+                    }
+                ],
+                "results": [],
+                "git_state": None,
+            },
+            "handback": {
+                "completion_claimed": True,
+                "text": "Complete; all required checks passed.",
+            },
+        }
+
+        self.assertEqual(
+            acceptance.assess_completion(record),
+            {"completion": "undetermined", "check_outcomes": [], "reasons": []},
+        )

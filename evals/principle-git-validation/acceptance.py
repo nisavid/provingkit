@@ -5,7 +5,7 @@ from typing import Any
 
 
 def assess_completion(record: Mapping[str, Any]) -> dict[str, Any]:
-    """Reject claimed completion when a required applicable check has no result.
+    """Reject claimed completion when an attempted required check has no result.
 
     Other valid records remain undetermined in this first offline slice.
     Supplied records are observations, not authenticated execution evidence.
@@ -23,7 +23,9 @@ def assess_completion(record: Mapping[str, Any]) -> dict[str, Any]:
                 for attempt in attempts
                 if attempt["check_id"] == check["check_id"]
             }
-            if not any(result["attempt_id"] in attempt_ids for result in results):
+            if attempt_ids and not any(
+                result["attempt_id"] in attempt_ids for result in results
+            ):
                 outcomes.append({"check_id": check["check_id"], "state": "missing"})
                 reasons.append(
                     {"check_id": check["check_id"], "code": "required_check_missing_result"}
