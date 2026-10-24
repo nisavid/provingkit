@@ -574,8 +574,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 )
             installations = [
                 step["run"]
-                for job in workflow["jobs"].values()
-                for step in job["steps"]
+                for job_name in required_jobs
+                for step in workflow["jobs"][job_name]["steps"]
                 if "pip install" in step.get("run", "")
             ]
             self.assertTrue(installations, path)
