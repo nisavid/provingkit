@@ -553,7 +553,14 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         ):
             workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
             required_jobs = (
-                ("provingkit-source", "rolecasting")
+                (
+                    "provingkit-source",
+                    "rolecasting",
+                    "tricritical",
+                    "mergecraft",
+                    "proseweaving",
+                    "derived-locks",
+                )
                 if path == SOURCE_WORKFLOW
                 else ("validate",)
             )
