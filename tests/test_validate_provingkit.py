@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import shlex
 import shutil
 import subprocess
 import sys
@@ -530,21 +531,64 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
             self.assert_unauthorized_tag(repository)
 
-    def test_provingkit_source_job_pins_identity_validation_dependency(self) -> None:
-        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
-        commands = {
-            step.get("run", "")
-            for step in workflow["jobs"]["provingkit-source"]["steps"]
-        }
-        expected = (
-            "python -m pip install --disable-pip-version-check "
-            "idna==3.18 jsonschema==4.26.0 PyYAML==6.0.3"
-        )
+    def test_ci_and_contributors_install_the_declared_validation_dependencies(
+        self,
+    ) -> None:
+        requirements = [
+            line.strip()
+            for line in (REPOSITORY / "requirements.txt")
+            .read_text(encoding="utf-8")
+            .splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        declared = set()
+        for requirement in requirements:
+            self.assertRegex(requirement, r"^[A-Za-z0-9_.-]+==[0-9][^\s;]*$")
+            declared.add(requirement.split("==", 1)[0].lower())
+        self.assertTrue({"idna", "jsonschema", "pyyaml"}.issubset(declared))
 
-        self.assertIn(expected, commands)
+        for path in (
+            SOURCE_WORKFLOW,
+            REPOSITORY / ".github/workflows/source-skill-disposition.yml",
+        ):
+            workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+            required_jobs = (
+                ("provingkit-source", "rolecasting")
+                if path == SOURCE_WORKFLOW
+                else ("validate",)
+            )
+            for job_name in required_jobs:
+                self.assertTrue(
+                    any(
+                        "pip install" in step.get("run", "")
+                        for step in workflow["jobs"][job_name]["steps"]
+                    ),
+                    f"{path.name}: {job_name} needs validation dependencies",
+                )
+            installations = [
+                step["run"]
+                for job in workflow["jobs"].values()
+                for step in job["steps"]
+                if "pip install" in step.get("run", "")
+            ]
+            self.assertTrue(installations, path)
+            for command in installations:
+                with self.subTest(workflow=path.name, command=command):
+                    arguments = shlex.split(command)
+                    self.assertIn("-r", arguments)
+                    self.assertEqual(
+                        arguments[arguments.index("-r") + 1], "requirements.txt"
+                    )
+                    self.assertFalse(
+                        any(
+                            argument.split("==", 1)[0].lower() in declared
+                            for argument in arguments
+                        ),
+                        "Install package versions from the maintained inventory",
+                    )
+
         self.assertIn(
-            "python -m pip install idna==3.18 jsonschema==4.26.0 "
-            "PyYAML==6.0.3",
+            "python -m pip install -r requirements.txt",
             (REPOSITORY / "CONTRIBUTING.md").read_text(encoding="utf-8"),
         )
 
@@ -573,18 +617,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             for step in workflow["jobs"]["derived-locks"]["steps"]
         }
         self.assertIn("git diff --exit-code", derived_commands)
-
-    def test_rolecasting_source_job_installs_its_validation_dependency(self) -> None:
-        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
-        commands = {
-            step.get("run", "")
-            for step in workflow["jobs"]["rolecasting"]["steps"]
-        }
-
-        self.assertIn(
-            "python -m pip install --disable-pip-version-check PyYAML==6.0.3",
-            commands,
-        )
 
     def test_required_jobs_run_current_tricritical_and_projection_contracts(
         self,
