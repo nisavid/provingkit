@@ -1,6 +1,6 @@
 ---
 name: writing-for-people
-description: Use when drafting or editing prose for people, including publications, documentation, PR and Issue text, reports, chat messages, and review replies.
+description: Use when asked to write, draft, rewrite, edit, or polish text for people, including PRs, Issues, documentation, reports, posts, chat replies, and review comments.
 ---
 
 # Writing For People
@@ -20,6 +20,11 @@ and the reader's purpose. Recover context from the available conversation and
 artifacts before asking for discoverable facts. Distinguish what you know about
 the audience from what you infer. Write a standalone artifact for a reader
 arriving fresh; fold revision feedback into its substance.
+
+Treat an operator's brief as compressed input. Unpack it into what this reader
+needs to understand or do; preserve its facts and decisions without carrying
+the operator's internal roles, powers, or work sequence into the message's
+frame. Include that context only when it helps the reader use the piece.
 
 ## Choose The Register
 
@@ -52,6 +57,51 @@ appears; otherwise use plain words. Use technical precision where it changes
 the reader's understanding or decision and everyday verbs elsewhere. When a
 reader shows that an explanation did not land, recover the missing common
 ground and explain more simply.
+
+Use meaningful names for workflow stages and activities. Never use opaque
+project-local alphanumeric workflow codes in committed or published
+documentation, posts, descriptions, comments, or other durable/public prose.
+A legend does not make those codes suitable for that prose.
+
+Avoid those codes in communication with the operator or agents in other
+projects unless their shorthand benefit outweighs the overhead of a legend
+and a legend alongside the message defines every referenced code. Do not
+assume humans or project-colocated agents remember a code catalog; shorthand
+usually loses its value once a feature stabilizes.
+
+Before asking for a decision, identify the system, purpose, and interface
+whenever these are not established in the shared context. Distinguish an
+existing interface from a proposed one: an unbuilt command-line tool is a
+design option, not a command the reader can already run. Recover missing
+context from verified inputs; ask for a material fact only when it cannot be
+recovered. Workflow codes are distinct from literal commands, code symbols,
+versions, revision identifiers, and ticket references that identify the subject.
+
+## Make References Usable
+
+When a reference helps the reader find work, evidence, or a resource, give it a
+usable destination for this audience and venue. Link the verified title or a
+clear description of the resource rather than leaving a known destination
+behind a bare name or opaque identifier. In a client conversation that supports
+chat links, use the chat's current verified title as the clickable label. When
+chats share a title, distinguish them with verified context. If the shared title
+is clear nearby, the labels may use just the distinguishing projects, such as
+`Atlas` and `Beacon`; otherwise include the title in each label.
+
+Resolve available identities through the client's supported lookup and link
+contract. Match each title and destination to the same resource; a matching
+title alone cannot distinguish two chats. Recover available context to resolve
+ambiguity. If an unresolved distinction blocks the answer, ask the reader for
+the specific missing detail they can supply. For example, ask which project a
+same-title chat belongs to when the available records cannot identify it. When
+a destination cannot be recovered, give the useful known information and state
+the narrow gap without inventing a link or claiming it was verified.
+
+Use a public issue, PR, document, or other accessible reference when the audience
+cannot use a private client link. A document delivered in chat still follows its
+own audience's access and medium. If no accessible reference is available, keep
+the supported information and state the access limitation where the reader
+needs the source; do not invent a public equivalent or imply access.
 
 ## Let Content Pick The Shape
 
