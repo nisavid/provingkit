@@ -1,0 +1,4 @@
+inheritance: true
+issue_enrichment:
+  labeling:
+    auto_apply_labels: false
