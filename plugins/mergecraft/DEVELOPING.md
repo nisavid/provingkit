@@ -180,6 +180,27 @@ eval corpus, `tests/plugins/mergecraft/`, the public relation command suites
 `release/plugin-content-locks/mergecraft.json`. Skill-local eval resources are
 package support artifacts, not runtime authority.
 
+## Relation state filesystem
+
+The relation command stores settings and mutation recovery records in a private,
+current-user-owned state directory. It rejects a symlink root and unsafe lock or
+settings files, including symlinks, hard links, nonregular files, foreign owners,
+and group- or world-writable files. Existing readable `0644` locks remain valid
+inside the private root. Newly created files use `0600`.
+
+Transactions hold the opened directory and lock descriptors through persistence.
+Writes create an exclusive random staging file, flush it, atomically replace the
+settings file relative to the directory descriptor, and flush the directory.
+Unrelated old staging entries are left untouched. A failed mutation settlement
+still reports an unknown outcome and retains the prior recovery record.
+
+Secure cache access requires POSIX no-follow and directory-relative file
+operations. Platforms without these primitives return
+`secure-settings-cache-unavailable` before creating state. This replaces the
+previously unqualified Windows locking path; no Windows qualification is claimed.
+Plan construction and inactive observations that do not access state retain
+their existing behavior.
+
 ## Evaluation evidence
 
 The feedback-response [experiment](skills/interacting-with-pr-review-feedback/evals/response-evidence.json)

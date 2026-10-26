@@ -7,11 +7,13 @@ import copy
 import hashlib
 import json
 import os
+import stat
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,6 +132,177 @@ class PartialBatchForge(FakeForge):
             return {'data': {operation + 'CloseIssueReferences': {'issue': {'id': issue['id']}}},
                     'errors': [{'type': 'UNPROCESSABLE'}]}
         return super().change_native(operation, issue, prs)
+
+
+class CachePersistenceTests(unittest.TestCase):
+    def test_prepared_pending_link_cannot_overwrite_its_target(self):
+        for kind in ('symlink', 'hardlink'):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / 'state'
+                root.mkdir(mode=0o700)
+                victim = Path(directory) / 'victim'
+                victim.write_text('keep this file')
+                pending = root / 'settings.json.pending'
+                if kind == 'symlink':
+                    pending.symlink_to(victim)
+                else:
+                    os.link(victim, pending)
+                api = command_module()
+                observed = api.execute('observe', request(), forge=FakeForge(), state_root=root)
+                self.assertEqual(observed['status'], 'observed')
+                self.assertEqual(victim.read_text(), 'keep this file')
+                self.assertTrue(pending.exists())
+                self.assertEqual(json.loads((root / 'settings.json').read_text())['version'], 1)
+
+    def test_shared_symlink_and_foreign_owned_roots_are_rejected(self):
+        for kind in ('shared', 'symlink', 'foreign-owner'):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / 'state'
+                root.mkdir(mode=0o700)
+                selected = root
+                if kind == 'shared':
+                    root.chmod(0o770)
+                elif kind == 'symlink':
+                    selected = Path(directory) / 'link'
+                    selected.symlink_to(root, target_is_directory=True)
+                api = command_module()
+                owner = os.geteuid() + (kind == 'foreign-owner')
+                with mock.patch.object(api.os, 'geteuid', return_value=owner):
+                    result = api.execute('observe', request(), forge=FakeForge(), state_root=selected)
+                self.assertEqual(result['status'], 'blocked')
+                self.assertEqual(list(root.iterdir()), [])
+
+    def test_unsafe_lock_and_settings_files_are_rejected_without_modification(self):
+        for name in ('settings.lock', 'settings.json'):
+            for kind in ('symlink', 'dangling-symlink', 'hardlink', 'fifo', 'writable', 'foreign-owner'):
+                with self.subTest(name=name, kind=kind), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory) / 'state'
+                    root.mkdir(mode=0o700)
+                    victim = Path(directory) / 'victim'
+                    original = '{"version": 1, "repositories": {}}'
+                    victim.write_text(original)
+                    path = root / name
+                    if kind == 'symlink':
+                        path.symlink_to(victim)
+                    elif kind == 'dangling-symlink':
+                        path.symlink_to(Path(directory) / 'missing')
+                    elif kind == 'hardlink':
+                        os.link(victim, path)
+                    elif kind == 'fifo':
+                        os.mkfifo(path, 0o600)
+                    else:
+                        path.write_text(original)
+                        path.chmod(0o666 if kind == 'writable' else 0o600)
+                    api = command_module()
+                    real_fstat = os.fstat
+                    def metadata(descriptor):
+                        value = real_fstat(descriptor)
+                        if kind == 'foreign-owner' and (value.st_dev, value.st_ino) == (path.stat().st_dev, path.stat().st_ino):
+                            fields = list(value)
+                            fields[4] = os.geteuid() + 1
+                            return os.stat_result(fields)
+                        return value
+                    with mock.patch.object(api.os, 'fstat', side_effect=metadata):
+                        result = api.execute('observe', request(), forge=FakeForge(), state_root=root)
+                    self.assertEqual(result['status'], 'blocked')
+                    self.assertEqual(victim.read_text(), original)
+                    self.assertFalse((Path(directory) / 'missing').exists())
+                    if kind in ('writable', 'foreign-owner'):
+                        self.assertEqual(path.read_text(), original)
+
+    def test_existing_cache_and_legacy_readable_lock_remain_usable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock = root / 'settings.lock'
+            lock.write_bytes(b'')
+            lock.chmod(0o644)
+            api = command_module()
+            first = api.execute('observe', request(), forge=FakeForge(), state_root=root)
+            second = api.execute('observe', request(), forge=FakeForge(), state_root=root)
+            self.assertEqual(first['status'], 'observed')
+            self.assertEqual(second['status'], 'observed')
+            self.assertEqual(second['settings']['github.com:R1']['provenance'], 'task-cache')
+            self.assertEqual(stat.S_IMODE((root / 'settings.json').stat().st_mode), 0o600)
+            self.assertEqual(lock.read_bytes(), b'')
+
+    def test_new_default_state_is_private_and_survives_concurrent_writers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            api = command_module()
+            root = Path(directory) / 'mergecraft/issue-pr-relations'
+            with mock.patch.dict(os.environ, {'XDG_STATE_HOME': directory}):
+                with api._cache(None) as cache:
+                    cache['repositories']['counter'] = 0
+                def update(_):
+                    with api._cache(None) as cache:
+                        cache['repositories']['counter'] += 1
+                with ThreadPoolExecutor(max_workers=4) as pool:
+                    list(pool.map(update, range(24)))
+                with api._cache(None) as cache:
+                    self.assertEqual(cache['repositories']['counter'], 24)
+            self.assertEqual(stat.S_IMODE(root.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE((root / 'settings.lock').stat().st_mode), 0o600)
+            self.assertEqual(sorted(path.name for path in root.iterdir()), ['settings.json', 'settings.lock'])
+
+    def test_root_path_replacement_does_not_redirect_an_open_transaction(self):
+        with tempfile.TemporaryDirectory() as directory:
+            api = command_module()
+            root = Path(directory) / 'state'
+            moved = Path(directory) / 'moved-state'
+            other = Path(directory) / 'other'
+            other.mkdir(mode=0o700)
+            victim = other / 'settings.json'
+            victim.write_text('keep this file')
+            with api._cache(root) as cache:
+                root.rename(moved)
+                root.symlink_to(other, target_is_directory=True)
+                cache['repositories']['original-root'] = {}
+            self.assertEqual(victim.read_text(), 'keep this file')
+            self.assertIn('original-root', json.loads((moved / 'settings.json').read_text())['repositories'])
+            self.assertEqual(list(other.iterdir()), [victim])
+
+    def test_staging_collision_preserves_preexisting_link_and_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            api = command_module()
+            root = Path(directory) / 'state'
+            root.mkdir(mode=0o700)
+            victim = Path(directory) / 'victim'
+            victim.write_text('keep this file')
+            staged = root / 'settings.collision.pending'
+            staged.symlink_to(victim)
+            with mock.patch.object(api.uuid, 'uuid4', return_value=mock.Mock(hex='collision')):
+                with self.assertRaises(FileExistsError):
+                    with api._cache(root) as cache:
+                        cache['repositories']['new'] = {}
+            self.assertEqual(victim.read_text(), 'keep this file')
+            self.assertTrue(staged.is_symlink())
+            self.assertFalse((root / 'settings.json').exists())
+
+    def test_failed_replace_preserves_prior_cache_and_removes_only_own_staging(self):
+        with tempfile.TemporaryDirectory() as directory:
+            api = command_module()
+            root = Path(directory)
+            with api._cache(root) as cache:
+                cache['repositories']['old'] = {}
+            prior = (root / 'settings.json').read_bytes()
+            unrelated = root / 'settings.other.pending'
+            unrelated.write_text('retain unrelated state')
+            with mock.patch.object(api.os, 'replace', side_effect=OSError('replace unavailable')):
+                with self.assertRaises(OSError):
+                    with api._cache(root) as cache:
+                        cache['repositories']['new'] = {}
+            self.assertEqual((root / 'settings.json').read_bytes(), prior)
+            self.assertEqual(unrelated.read_text(), 'retain unrelated state')
+            self.assertEqual(sorted(path.name for path in root.iterdir()), ['settings.json', 'settings.lock', unrelated.name])
+
+    def test_missing_secure_primitives_block_before_state_creation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            api = command_module()
+            root = Path(directory) / 'absent'
+            with mock.patch.object(api.os, 'supports_dir_fd', set()):
+                result = api.execute('observe', request(), forge=FakeForge(), state_root=root)
+            self.assertEqual(result['status'], 'blocked')
+            self.assertEqual(result['reason'], 'secure-settings-cache-unavailable')
+            self.assertFalse(root.exists())
 
 
 class RelationCommandTests(unittest.TestCase):
@@ -592,7 +765,7 @@ class RelationCommandTests(unittest.TestCase):
         class StorageFailureForge(FakeForge):
             def change_native(self, operation, issue, prs):
                 result = super().change_native(operation, issue, prs)
-                (self.state_root / 'settings.json.pending').mkdir()
+                self.settlement_unavailable = True
                 return result
         api, forge = command_module(), StorageFailureForge()
         with tempfile.TemporaryDirectory() as directory:
@@ -600,7 +773,13 @@ class RelationCommandTests(unittest.TestCase):
             desired = with_existing_ledgers(forge, request('complete'))
             plan = api.execute('plan', api.execute('observe', desired, forge=forge, state_root=directory))
             instruction = {'version': 1, 'plan': plan, 'authorization': {'plan_sha256': plan['plan_sha256'], 'effect_ids': [item['effect_id'] for item in plan['effects']]}}
-            result = api.execute('reconcile', instruction, forge=forge, state_root=directory)
+            real_replace = os.replace
+            def replace(*args, **kwargs):
+                if getattr(forge, 'settlement_unavailable', False):
+                    raise OSError('settlement storage unavailable')
+                return real_replace(*args, **kwargs)
+            with mock.patch.object(api.os, 'replace', side_effect=replace):
+                result = api.execute('reconcile', instruction, forge=forge, state_root=directory)
             self.assertEqual(result['status'], 'unknown')
             self.assertTrue(result['effects'][0]['mutation_attempted'])
             self.assertEqual(result['effects'][0]['reason'], 'attempt-settlement-unavailable')
