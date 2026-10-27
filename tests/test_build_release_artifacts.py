@@ -1,10 +1,16 @@
 import json
+import os
 import re
+import shutil
+import stat
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from scripts import build_release_artifacts as builder
 from scripts.build_release_artifacts import build
 
 
@@ -219,6 +225,256 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as output_dir:
                 output = Path(build(source, Path(output_dir) / "artifact", "agent-plugins", ["proseweaving"], "preview", False))
                 self.assertEqual(json.loads((output.parent / "plugins/proseweaving/plugin.json").read_text())["version"], "1")
+
+
+class ReleaseArtifactOutputSafetyTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        temporary = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(temporary.cleanup)
+        cls.source = Path(temporary.name).resolve()
+        (cls.source / "release").mkdir()
+        (cls.source / builder.POLICY_PATH).write_text(json.dumps({
+            "slate": ["proseweaving", "task-witness"],
+            "source_root": "plugins",
+            "targets": {"agent-plugins": {
+                "include": ["plugin.json"], "exclude": [],
+                "plugin_root": "plugins", "catalog": ".agents/plugins/marketplace.json",
+            }},
+        }))
+        plugin = cls.source / "plugins/proseweaving"
+        plugin.mkdir(parents=True)
+        (plugin / "plugin.json").write_text(json.dumps({"name": "proseweaving"}))
+        subprocess.run(["git", "init", "-q"], cwd=cls.source, check=True)
+        subprocess.run(["git", "add", "."], cwd=cls.source, check=True)
+        subprocess.run([
+            "git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+            "commit", "-qm", "test: minimal artifact source",
+        ], cwd=cls.source, check=True)
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.parent = Path(temporary.name).resolve()
+        self.sentinel = self.parent / "sentinel"
+        self.sentinel.mkdir()
+        self.marker = self.sentinel / "preserve.txt"
+        self.marker.write_text("preserve this")
+        self.output = self.parent / "artifact"
+
+    def assert_sentinel_preserved(self):
+        self.assertEqual(self.marker.read_text(), "preserve this")
+        self.assertEqual(list(self.sentinel.iterdir()), [self.marker])
+
+    def test_build_refuses_output_symlink_without_touching_target(self):
+        for force in (False, True):
+            for suffix in ("", "/", "/."):
+                with self.subTest(force=force, suffix=suffix):
+                    self.output.symlink_to(self.sentinel, target_is_directory=True)
+                    try:
+                        with self.assertRaisesRegex(ValueError, "not a symlink"):
+                            build(self.source, Path(str(self.output) + suffix), "agent-plugins", ["proseweaving"], "preview", force)
+                        self.assertTrue(self.output.is_symlink())
+                        self.assert_sentinel_preserved()
+                    finally:
+                        self.output.unlink()
+
+    def test_cli_preserves_output_symlink_identity(self):
+        self.output.symlink_to(self.sentinel, target_is_directory=True)
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
+             "--source", str(self.source), "--output", str(self.output),
+             "--target", "agent-plugins", "--slate", "proseweaving", "--force"],
+            text=True, capture_output=True, check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("not a symlink", result.stderr)
+        self.assertTrue(self.output.is_symlink())
+        self.assert_sentinel_preserved()
+
+    def test_dangling_output_symlink_is_refused(self):
+        destination = self.parent / "missing"
+        self.output.symlink_to(destination, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "not a symlink"):
+            builder.prepare_output(self.output, True)
+        self.assertTrue(self.output.is_symlink())
+        self.assertFalse(destination.exists())
+
+    def test_parent_symlinks_are_not_followed_even_before_dotdot(self):
+        alias = self.parent / "alias"
+        alias.symlink_to(self.sentinel, target_is_directory=True)
+        for output in (alias / "artifact", alias / "nested/artifact", alias / "../artifact"):
+            with self.subTest(output=output):
+                with self.assertRaises(OSError):
+                    builder.prepare_output(output, True)
+                self.assert_sentinel_preserved()
+
+    def test_group_or_world_writable_parent_is_refused(self):
+        shared = self.parent / "shared"
+        shared.mkdir()
+        for mode in (0o770, 0o777, 0o1777):
+            with self.subTest(mode=oct(mode)):
+                shared.chmod(mode)
+                with self.assertRaisesRegex(ValueError, "writable by other users"):
+                    builder.prepare_output(shared / "artifact", True)
+                self.assertEqual(list(shared.iterdir()), [])
+        shared.chmod(0o700)
+
+    def test_nonsticky_writable_ancestor_is_refused(self):
+        shared = self.parent / "shared"
+        private = shared / "private"
+        private.mkdir(parents=True, mode=0o700)
+        shared.chmod(0o777)
+        with self.assertRaisesRegex(ValueError, "ancestor is writable"):
+            builder.prepare_output(private / "artifact", True)
+        self.assertFalse((private / "artifact").exists())
+        shared.chmod(0o700)
+
+    def test_foreign_owned_ancestor_is_refused(self):
+        real_fstat = os.fstat
+        identity = self.parent.stat().st_ino
+
+        def foreign_owner(descriptor):
+            metadata = real_fstat(descriptor)
+            if metadata.st_ino == identity:
+                fields = list(metadata)
+                fields[4] = os.geteuid() + 10001
+                return os.stat_result(fields)
+            return metadata
+
+        with mock.patch.object(builder.os, "fstat", side_effect=foreign_owner):
+            with self.assertRaisesRegex(ValueError, "ancestor is writable"):
+                builder.prepare_output(self.output, True)
+        self.assertFalse(self.output.exists())
+
+    def test_trusted_root_alias_preserves_the_output_leaf(self):
+        # Model a root-owned /tmp-style alias without changing the host root.
+        alias = Path(self.parent.anchor) / "provingkit-system-alias"
+        real_lstat = Path.lstat
+        real_resolve = Path.resolve
+
+        def alias_lstat(path):
+            if path == alias:
+                fields = list(self.parent.lstat())
+                fields[0] = stat.S_IFLNK | 0o777
+                fields[4] = 0
+                return os.stat_result(fields)
+            return real_lstat(path)
+
+        def alias_resolve(path, *args, **kwargs):
+            if path == alias:
+                return self.parent
+            return real_resolve(path, *args, **kwargs)
+
+        self.output.symlink_to(self.sentinel, target_is_directory=True)
+        with mock.patch.object(Path, "lstat", alias_lstat), mock.patch.object(Path, "resolve", alias_resolve):
+            with self.assertRaisesRegex(ValueError, "not a symlink"):
+                builder.prepare_output(alias / self.output.name, True)
+            self.output.unlink()
+            self.assertEqual(builder.prepare_output(alias / self.output.name, False), self.output)
+        self.assert_sentinel_preserved()
+
+    def test_private_child_of_sticky_directory_is_supported(self):
+        shared = self.parent / "shared"
+        private = shared / "private"
+        private.mkdir(parents=True, mode=0o700)
+        shared.chmod(0o1777)
+        output = builder.prepare_output(private / "artifact", False)
+        self.assertTrue(output.is_dir())
+
+    def test_leaf_swap_before_recursive_removal_preserves_target(self):
+        self.output.mkdir()
+        (self.output / "old.txt").write_text("old artifact")
+        real_rmtree = shutil.rmtree
+
+        def swap_then_remove(path, *, dir_fd):
+            self.output.rename(self.parent / "old-artifact")
+            self.output.symlink_to(self.sentinel, target_is_directory=True)
+            return real_rmtree(path, dir_fd=dir_fd)
+
+        with mock.patch.object(builder.shutil, "rmtree", side_effect=swap_then_remove) as removal:
+            removal.avoids_symlink_attacks = True
+            with self.assertRaises(OSError):
+                builder.prepare_output(self.output, True)
+        self.assertTrue(self.output.is_symlink())
+        self.assert_sentinel_preserved()
+
+    def test_nested_symlink_is_removed_without_following_it(self):
+        self.output.mkdir()
+        (self.output / "link").symlink_to(self.sentinel, target_is_directory=True)
+        builder.prepare_output(self.output, True)
+        self.assertEqual(list(self.output.iterdir()), [])
+        self.assert_sentinel_preserved()
+
+    def test_missing_parents_and_existing_output_contract(self):
+        output = self.parent / "new/nested/artifact"
+        self.assertEqual(builder.prepare_output(output, False), output)
+        marker = output / "old.txt"
+        marker.write_text("old artifact")
+        with self.assertRaises(FileExistsError):
+            builder.prepare_output(output, False)
+        self.assertEqual(marker.read_text(), "old artifact")
+        builder.prepare_output(output, True)
+        self.assertEqual(list(output.iterdir()), [])
+
+    def test_unsupported_safe_removal_fails_before_mutation(self):
+        with mock.patch.object(builder.shutil.rmtree, "avoids_symlink_attacks", False):
+            with self.assertRaisesRegex(ValueError, "no-follow directory operations"):
+                builder.prepare_output(self.output, True)
+        self.assertFalse(self.output.exists())
+        self.assert_sentinel_preserved()
+
+    def test_root_and_dotdot_output_leaf_are_refused(self):
+        for output in (Path(self.parent.anchor), self.parent / ".."):
+            with self.subTest(output=output):
+                with self.assertRaisesRegex(ValueError, "invalid artifact output"):
+                    builder.prepare_output(output, True)
+        self.assert_sentinel_preserved()
+
+    def test_regular_file_output_is_preserved(self):
+        self.output.write_text("not an artifact directory")
+        with self.assertRaises(ValueError):
+            builder.prepare_output(self.output, True)
+        self.assertEqual(self.output.read_text(), "not an artifact directory")
+
+    def test_forced_rebuild_preserves_receipt_and_projection(self):
+        first = build(self.source, self.output, "agent-plugins", ["proseweaving"], "preview", False)
+        receipt = first.read_bytes()
+        (self.output / "old.txt").write_text("old artifact")
+        second = build(self.source, self.output, "agent-plugins", ["proseweaving"], "preview", True)
+        self.assertEqual(first, second)
+        self.assertEqual(second.read_bytes(), receipt)
+        self.assertFalse((self.output / "old.txt").exists())
+
+    def test_projection_remains_private_with_permissive_umask(self):
+        self.parent.chmod(0o755)
+        real_copy = builder.copy_file
+
+        def check_copy(src, dst):
+            real_copy(src, dst)
+            # Default-mode descendant directories may be writable under this
+            # umask; other users must not be able to traverse the output root.
+            self.assertEqual(stat.S_IMODE(self.output.stat().st_mode) & 0o077, 0)
+
+        previous_umask = os.umask(0)
+        try:
+            with mock.patch.object(builder, "copy_file", side_effect=check_copy) as copied:
+                build(self.source, self.output, "agent-plugins", ["proseweaving"], "preview", False)
+                self.assertTrue(copied.called)
+        finally:
+            os.umask(previous_umask)
+
+    def test_invalid_build_request_does_not_remove_existing_output(self):
+        self.output.mkdir()
+        marker = self.output / "old.txt"
+        marker.write_text("old artifact")
+        for target, slate in (("unsupported", []), ("agent-plugins", ["unknown"]),
+                              ("agent-plugins", ["proseweaving", "proseweaving"]),
+                              ("agent-plugins", ["task-witness"])):
+            with self.subTest(target=target, slate=slate):
+                with self.assertRaises(ValueError):
+                    build(self.source, self.output, target, slate, "preview", True)
+                self.assertEqual(marker.read_text(), "old artifact")
 
 
 if __name__ == "__main__":
