@@ -8,10 +8,8 @@ import fnmatch
 import hashlib
 import io
 import json
-import os
 import re
 import stat
-import sys
 import tarfile
 import tempfile
 import uuid
