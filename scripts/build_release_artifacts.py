@@ -153,6 +153,7 @@ def prepare_output(output: Path, force: bool) -> Path:
                 try:
                     os.mkdir(component, 0o700, dir_fd=descriptor)
                 except FileExistsError:
+                    # Existing components are validated by the no-follow open below.
                     pass
                 child = os.open(component, flags, dir_fd=descriptor)
                 os.close(descriptor)
