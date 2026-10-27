@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import copy
+import errno
 import hashlib
 import json
 import os
@@ -135,7 +136,88 @@ class PartialBatchForge(FakeForge):
 
 
 class CachePersistenceTests(unittest.TestCase):
+    """Protect private cache files and preserve transaction failure semantics."""
+
+    def test_sync_uses_full_flush_when_available(self):
+        """Request the stronger flush without redundantly calling fsync."""
+        import fcntl
+        api = command_module()
+        with mock.patch.object(fcntl, 'F_FULLFSYNC', 123, create=True), \
+                mock.patch.object(fcntl, 'fcntl') as full_sync, \
+                mock.patch.object(api.os, 'fsync') as sync:
+            api._sync_cache(42)
+        full_sync.assert_called_once_with(42, 123)
+        sync.assert_not_called()
+
+    def test_sync_falls_back_only_when_full_flush_is_unavailable_or_unsupported(self):
+        """Keep ordinary fsync on platforms and filesystems lacking full flush."""
+        import fcntl
+        api = command_module()
+        with mock.patch.object(fcntl, 'F_FULLFSYNC', None, create=True), \
+                mock.patch.object(fcntl, 'fcntl') as full_sync, \
+                mock.patch.object(api.os, 'fsync') as sync:
+            api._sync_cache(42)
+        full_sync.assert_not_called()
+        sync.assert_called_once_with(42)
+        for code in (errno.EINVAL, errno.ENOTSUP, errno.ENOSYS):
+            with self.subTest(errno=code), \
+                    mock.patch.object(fcntl, 'F_FULLFSYNC', 123, create=True), \
+                    mock.patch.object(fcntl, 'fcntl', side_effect=OSError(code, 'unsupported')), \
+                    mock.patch.object(api.os, 'fsync') as sync:
+                api._sync_cache(42)
+                sync.assert_called_once_with(42)
+
+    def test_sync_propagates_storage_failures(self):
+        """Never hide a real full-flush or fallback-fsync failure."""
+        import fcntl
+        api = command_module()
+        failure = OSError(errno.EIO, 'storage unavailable')
+        with mock.patch.object(fcntl, 'F_FULLFSYNC', 123, create=True), \
+                mock.patch.object(fcntl, 'fcntl', side_effect=failure), \
+                mock.patch.object(api.os, 'fsync') as sync:
+            with self.assertRaises(OSError) as raised:
+                api._sync_cache(42)
+        self.assertIs(raised.exception, failure)
+        sync.assert_not_called()
+        with mock.patch.object(fcntl, 'F_FULLFSYNC', None, create=True), \
+                mock.patch.object(api.os, 'fsync', side_effect=failure):
+            with self.assertRaises(OSError) as raised:
+                api._sync_cache(42)
+        self.assertIs(raised.exception, failure)
+
+    def test_persistence_flushes_staged_data_before_replace_and_directory_after(self):
+        """Check published contents and staging cleanup at each durability boundary."""
+        api = command_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            events = []
+            real_replace = os.replace
+
+            def sync(descriptor):
+                """Observe the staged bytes before publication and final bytes after."""
+                if stat.S_ISDIR(os.fstat(descriptor).st_mode):
+                    self.assertEqual(json.loads((root / 'settings.json').read_text())['repositories'], {'new': {}})
+                    self.assertEqual(list(root.glob('*.pending')), [])
+                    events.append('directory')
+                else:
+                    self.assertFalse((root / 'settings.json').exists())
+                    self.assertEqual(json.loads(next(root.glob('*.pending')).read_text())['repositories'], {'new': {}})
+                    events.append('file')
+
+            def replace(*args, **kwargs):
+                """Require the staged data flush before publishing the new name."""
+                self.assertEqual(events, ['file'])
+                real_replace(*args, **kwargs)
+                events.append('replace')
+
+            with mock.patch.object(api, '_sync_cache', side_effect=sync), \
+                    mock.patch.object(api.os, 'replace', side_effect=replace):
+                with api._cache(root) as cache:
+                    cache['repositories']['new'] = {}
+            self.assertEqual(events, ['file', 'replace', 'directory'])
+
     def test_prepared_pending_link_cannot_overwrite_its_target(self):
+        """Leave prepared legacy staging links and their targets untouched."""
         for kind in ('symlink', 'hardlink'):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory) / 'state'
@@ -155,6 +237,7 @@ class CachePersistenceTests(unittest.TestCase):
                 self.assertEqual(json.loads((root / 'settings.json').read_text())['version'], 1)
 
     def test_shared_symlink_and_foreign_owned_roots_are_rejected(self):
+        """Reject roots whose path or ownership cannot protect state."""
         for kind in ('shared', 'symlink', 'foreign-owner'):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory) / 'state'
@@ -173,6 +256,7 @@ class CachePersistenceTests(unittest.TestCase):
                 self.assertEqual(list(root.iterdir()), [])
 
     def test_unsafe_lock_and_settings_files_are_rejected_without_modification(self):
+        """Block unsafe file types, links, permissions, and owners without writes."""
         for name in ('settings.lock', 'settings.json'):
             for kind in ('symlink', 'dangling-symlink', 'hardlink', 'fifo', 'writable', 'foreign-owner'):
                 with self.subTest(name=name, kind=kind), tempfile.TemporaryDirectory() as directory:
@@ -196,6 +280,7 @@ class CachePersistenceTests(unittest.TestCase):
                     api = command_module()
                     real_fstat = os.fstat
                     def metadata(descriptor):
+                        """Simulate foreign ownership of only the selected cache file."""
                         value = real_fstat(descriptor)
                         if kind == 'foreign-owner' and (value.st_dev, value.st_ino) == (path.stat().st_dev, path.stat().st_ino):
                             fields = list(value)
@@ -211,6 +296,7 @@ class CachePersistenceTests(unittest.TestCase):
                         self.assertEqual(path.read_text(), original)
 
     def test_existing_cache_and_legacy_readable_lock_remain_usable(self):
+        """Retain cache hits and legacy 0644 locks within a private root."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             lock = root / 'settings.lock'
@@ -226,6 +312,7 @@ class CachePersistenceTests(unittest.TestCase):
             self.assertEqual(lock.read_bytes(), b'')
 
     def test_new_default_state_is_private_and_survives_concurrent_writers(self):
+        """Create private default state and serialize cooperating updates."""
         with tempfile.TemporaryDirectory() as directory:
             api = command_module()
             root = Path(directory) / 'mergecraft/issue-pr-relations'
@@ -233,6 +320,7 @@ class CachePersistenceTests(unittest.TestCase):
                 with api._cache(None) as cache:
                     cache['repositories']['counter'] = 0
                 def update(_):
+                    """Increment persisted state while holding the cache lock."""
                     with api._cache(None) as cache:
                         cache['repositories']['counter'] += 1
                 with ThreadPoolExecutor(max_workers=4) as pool:
@@ -244,6 +332,7 @@ class CachePersistenceTests(unittest.TestCase):
             self.assertEqual(sorted(path.name for path in root.iterdir()), ['settings.json', 'settings.lock'])
 
     def test_root_path_replacement_does_not_redirect_an_open_transaction(self):
+        """Keep a transaction on its opened directory after path replacement."""
         with tempfile.TemporaryDirectory() as directory:
             api = command_module()
             root = Path(directory) / 'state'
@@ -261,6 +350,7 @@ class CachePersistenceTests(unittest.TestCase):
             self.assertEqual(list(other.iterdir()), [victim])
 
     def test_staging_collision_preserves_preexisting_link_and_target(self):
+        """Reject an exclusive-name collision without deleting existing state."""
         with tempfile.TemporaryDirectory() as directory:
             api = command_module()
             root = Path(directory) / 'state'
@@ -278,6 +368,7 @@ class CachePersistenceTests(unittest.TestCase):
             self.assertFalse((root / 'settings.json').exists())
 
     def test_failed_replace_preserves_prior_cache_and_removes_only_own_staging(self):
+        """Clean failed transaction staging while retaining prior recovery data."""
         with tempfile.TemporaryDirectory() as directory:
             api = command_module()
             root = Path(directory)
@@ -295,6 +386,7 @@ class CachePersistenceTests(unittest.TestCase):
             self.assertEqual(sorted(path.name for path in root.iterdir()), ['settings.json', 'settings.lock', unrelated.name])
 
     def test_missing_secure_primitives_block_before_state_creation(self):
+        """Fail closed before creating state on unsupported platforms."""
         with tempfile.TemporaryDirectory() as directory:
             api = command_module()
             root = Path(directory) / 'absent'
@@ -762,8 +854,11 @@ class RelationCommandTests(unittest.TestCase):
 
 
     def test_receipt_storage_failure_after_a_verified_write_reports_unknown_attempted(self):
+        """Preserve attempted-effect uncertainty when settlement persistence fails."""
         class StorageFailureForge(FakeForge):
+            """Make storage fail only after a successful native mutation."""
             def change_native(self, operation, issue, prs):
+                """Apply the mutation before enabling the persistence failure."""
                 result = super().change_native(operation, issue, prs)
                 self.settlement_unavailable = True
                 return result
@@ -775,6 +870,7 @@ class RelationCommandTests(unittest.TestCase):
             instruction = {'version': 1, 'plan': plan, 'authorization': {'plan_sha256': plan['plan_sha256'], 'effect_ids': [item['effect_id'] for item in plan['effects']]}}
             real_replace = os.replace
             def replace(*args, **kwargs):
+                """Allow preflight storage, then reject settlement replacement."""
                 if getattr(forge, 'settlement_unavailable', False):
                     raise OSError('settlement storage unavailable')
                 return real_replace(*args, **kwargs)

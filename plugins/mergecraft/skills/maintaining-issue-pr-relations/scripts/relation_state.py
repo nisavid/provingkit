@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import errno
 import hashlib
 import re
 import json
@@ -108,6 +109,7 @@ def _complete_relations(entity):
 
 
 def _cache_file(directory_fd, name, flags):
+    """Open a private owned regular cache file without following links."""
     descriptor = os.open(name, flags | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600,
                          dir_fd=directory_fd)
     try:
@@ -122,25 +124,42 @@ def _cache_file(directory_fd, name, flags):
         raise
 
 
+def _sync_cache(descriptor):
+    """Flush a cache descriptor, requesting a drive-cache flush when supported."""
+    import fcntl
+    full_sync = getattr(fcntl, 'F_FULLFSYNC', None)
+    if full_sync is not None:
+        try:
+            fcntl.fcntl(descriptor, full_sync)
+            return
+        except OSError as error:
+            if error.errno not in (errno.EINVAL, errno.ENOTSUP, errno.ENOSYS):
+                raise
+    os.fsync(descriptor)
+
+
 def _write_cache(directory_fd, value):
+    """Replace settings through an exclusive staging file and ordered flushes."""
     temporary = 'settings.' + uuid.uuid4().hex + '.pending'
     descriptor = _cache_file(directory_fd, temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
     try:
         with os.fdopen(descriptor, 'w') as stream:
             json.dump(value, stream, sort_keys=True)
             stream.flush()
-            os.fsync(stream.fileno())
+            _sync_cache(stream.fileno())
         os.replace(temporary, 'settings.json', src_dir_fd=directory_fd, dst_dir_fd=directory_fd)
-        os.fsync(directory_fd)
+        _sync_cache(directory_fd)
     finally:
         try:
             os.unlink(temporary, dir_fd=directory_fd)
         except FileNotFoundError:
+            # Successful replacement already consumed this staging name.
             pass
 
 
 @contextmanager
 def _cache(state_root):
+    """Serialize a transaction anchored to an opened private state directory."""
     # Do not fall back to path-based writes when secure primitives are absent.
     if (os.name != 'posix' or not all(hasattr(os, flag) for flag in ('O_NOFOLLOW', 'O_DIRECTORY', 'O_NONBLOCK'))
             or os.open not in os.supports_dir_fd):

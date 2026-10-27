@@ -191,6 +191,8 @@ inside the private root. Newly created files use `0600`.
 Transactions hold the opened directory and lock descriptors through persistence.
 Writes create an exclusive random staging file, flush it, atomically replace the
 settings file relative to the directory descriptor, and flush the directory.
+Both flushes request `F_FULLFSYNC` when available, falling back to `fsync` when
+the operation is unavailable or unsupported. Other I/O errors propagate.
 Unrelated old staging entries are left untouched. A failed mutation settlement
 still reports an unknown outcome and retains the prior recovery record.
 

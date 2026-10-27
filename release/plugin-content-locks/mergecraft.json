@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "e8a0c95daa2fa6a1dab3f1cd3816a865ac2ee99e5702c83e6854d34ebb8eb4d6",
-    "DEVELOPING.md": "7157cfa470ee378aebb66bca95bfd91060b14b52c1e36212349022ee62c4f7b7",
+    "DEVELOPING.md": "02f663554677ba5db7a1b8e3686f4068526fbdeb0cd38a159600f3eb754c1ce9",
     "README.md": "2a5b1bcb89cb851b17981c306b2a9b026f0362c29f3969d13d59f3dbce26d609",
     "plugin.json": "e482c09e7afeb52c4f0f0e1e5f21bf3ae32b23591cdcdd07e01f643a7fa7e70a",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
@@ -45,7 +45,7 @@
     "skills/maintaining-issue-pr-relations/references/command.md": "2171cd60107229573da1f96b127bec3e227557b626a01e603d6208d4648cd6ce",
     "skills/maintaining-issue-pr-relations/references/relation-contract.md": "240dc1692d9eef1dc1acc123f5363eb4e2656f3c38cf3b43de16ccdcec03af9e",
     "skills/maintaining-issue-pr-relations/scripts/relation_forge.py": "b1f9c23dbe5df73b8fe07c261b6fdb933b9251df6dd2570a3b17feb46eb51d44",
-    "skills/maintaining-issue-pr-relations/scripts/relation_state.py": "8665b20c3357a1d887856935f3e4026bc0ee75b3355bc5f145a9612e7a3f820a",
+    "skills/maintaining-issue-pr-relations/scripts/relation_state.py": "3732d3f83f766fb6cacf0539b5a5862bfb8fe7b7d1bbd187fb4b50c2b826ea96",
     "skills/publishing-reviewable-prs/SKILL.md": "5fcff737b21e8f2f1f0ddc5cab824fbc7bf76f168b794ea9002f52a77f962fc3",
     "skills/publishing-reviewable-prs/agents/openai.yaml": "1ec6820a15567666cedd724a6e05abd7b9d0b8bb210b159dc0cecb4a36594168",
     "skills/publishing-reviewable-prs/scripts/audit_reviewable_pr.py": "98b383ba03bb2fb3bbb301ce21f970c09f6044b9bbd63afc8024965fbbf8ac67",
