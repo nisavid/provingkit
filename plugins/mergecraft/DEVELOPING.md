@@ -183,11 +183,15 @@ package support artifacts, not runtime authority.
 ## Relation state filesystem
 
 The relation command stores settings and mutation recovery records in a private,
-current-user-owned state directory. It rejects a symlink root and unsafe lock or
+current-user-owned state directory. It rejects symlinks in every state-path
+component and unsafe lock or
 settings files, including symlinks, hard links, nonregular files, foreign owners,
 and group- or world-writable files. Existing readable `0644` locks remain valid
 inside the private root. Newly created files use `0600`.
 
+Directory traversal and creation use no-follow opens relative to each opened
+parent descriptor. Configured state paths, including `XDG_STATE_HOME`, must not
+contain symlink components; use a canonical directory path instead.
 Transactions hold the opened directory and lock descriptors through persistence.
 Writes create an exclusive random staging file, flush it, atomically replace the
 settings file relative to the directory descriptor, and flush the directory.

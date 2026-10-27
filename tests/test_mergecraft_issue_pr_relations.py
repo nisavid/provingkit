@@ -138,6 +138,101 @@ class PartialBatchForge(FakeForge):
 class CachePersistenceTests(unittest.TestCase):
     """Protect private cache files and preserve transaction failure semantics."""
 
+    def test_parent_links_are_rejected_before_creation_or_overwrite(self):
+        """Block explicit and XDG path redirection through any ancestor link."""
+        for source in ('explicit', 'xdg'):
+            for existing in (False, True):
+                with self.subTest(source=source, existing=existing), tempfile.TemporaryDirectory() as directory:
+                    base = Path(directory)
+                    target = base / 'target'
+                    target.mkdir(mode=0o700)
+                    linked = base / 'link'
+                    linked.symlink_to(target, target_is_directory=True)
+                    suffix = Path('mergecraft/issue-pr-relations') if source == 'xdg' else Path('state')
+                    state = target / suffix
+                    original = '{"version": 1, "repositories": {"retain": {}}}'
+                    if existing:
+                        state.mkdir(parents=True, mode=0o700)
+                        (state / 'settings.json').write_text(original)
+                    api = command_module()
+                    with mock.patch.dict(os.environ, {'XDG_STATE_HOME': str(linked)}):
+                        selected = None if source == 'xdg' else linked / suffix
+                        result = api.execute('observe', request(), forge=FakeForge(), state_root=selected)
+                    self.assertEqual(result['status'], 'blocked')
+                    if existing:
+                        self.assertEqual((state / 'settings.json').read_text(), original)
+                        self.assertEqual(list(state.iterdir()), [state / 'settings.json'])
+                    else:
+                        self.assertEqual(list(target.iterdir()), [])
+
+    def test_parent_replacement_during_traversal_keeps_creation_on_opened_directory(self):
+        """Create missing state relative to the parent opened before a path swap."""
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            parent, moved, other = [base / name for name in ('parent', 'moved', 'other')]
+            parent.mkdir(mode=0o700)
+            other.mkdir(mode=0o700)
+            marker = other / 'retain'
+            marker.write_text('unchanged')
+            api = command_module()
+            real_open = os.open
+
+            def open_and_swap(path, *args, **kwargs):
+                """Replace the parent pathname after its descriptor is acquired."""
+                descriptor = real_open(path, *args, **kwargs)
+                if path == 'parent':
+                    parent.rename(moved)
+                    parent.symlink_to(other, target_is_directory=True)
+                return descriptor
+
+            with mock.patch.object(api.os, 'open', side_effect=open_and_swap) as opened, \
+                    mock.patch.object(api.os, 'supports_dir_fd', os.supports_dir_fd | {opened}):
+                with api._cache(parent / 'state') as cache:
+                    cache['repositories']['new'] = {}
+            self.assertEqual(marker.read_text(), 'unchanged')
+            self.assertEqual(list(other.iterdir()), [marker])
+            self.assertIn('new', json.loads((moved / 'state/settings.json').read_text())['repositories'])
+
+    def test_concurrent_directory_creator_cannot_introduce_a_link(self):
+        """Reopen a competing mkdir entry without following a raced symlink."""
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            other = base / 'other'
+            other.mkdir(mode=0o700)
+            api = command_module()
+            real_mkdir = os.mkdir
+
+            def mkdir_with_competitor(path, *args, **kwargs):
+                """Simulate a competing creator installing a symlink at the new name."""
+                if path == 'state':
+                    (base / 'state').symlink_to(other, target_is_directory=True)
+                    raise FileExistsError('competing directory creation')
+                return real_mkdir(path, *args, **kwargs)
+
+            with mock.patch.object(api.os, 'mkdir', side_effect=mkdir_with_competitor) as created, \
+                    mock.patch.object(api.os, 'supports_dir_fd', os.supports_dir_fd | {created}):
+                with self.assertRaises(OSError):
+                    with api._cache(base / 'state') as cache:
+                        cache['repositories']['new'] = {}
+            self.assertEqual(list(other.iterdir()), [])
+
+    def test_concurrent_initialization_creates_private_missing_components(self):
+        """Serialize updates when cooperating writers share a newly created path."""
+        with tempfile.TemporaryDirectory() as directory:
+            api = command_module()
+            root = Path(directory) / 'new-parent/state'
+
+            def update(_):
+                """Count one update through independent directory traversal and locking."""
+                with api._cache(root) as cache:
+                    cache['repositories']['count'] = cache['repositories'].get('count', 0) + 1
+
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                list(pool.map(update, range(24)))
+            self.assertEqual(json.loads((root / 'settings.json').read_text())['repositories']['count'], 24)
+            self.assertEqual(stat.S_IMODE(root.parent.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE(root.stat().st_mode), 0o700)
+
     def test_sync_uses_full_flush_when_available(self):
         """Request the stronger flush without redundantly calling fsync."""
         import fcntl
@@ -391,6 +486,17 @@ class CachePersistenceTests(unittest.TestCase):
             api = command_module()
             root = Path(directory) / 'absent'
             with mock.patch.object(api.os, 'supports_dir_fd', set()):
+                result = api.execute('observe', request(), forge=FakeForge(), state_root=root)
+            self.assertEqual(result['status'], 'blocked')
+            self.assertEqual(result['reason'], 'secure-settings-cache-unavailable')
+            self.assertFalse(root.exists())
+
+    def test_missing_relative_directory_creation_blocks_before_state_creation(self):
+        """Require secure mkdir support as well as secure open support."""
+        with tempfile.TemporaryDirectory() as directory:
+            api = command_module()
+            root = Path(directory) / 'absent'
+            with mock.patch.object(api.os, 'supports_dir_fd', {os.open}):
                 result = api.execute('observe', request(), forge=FakeForge(), state_root=root)
             self.assertEqual(result['status'], 'blocked')
             self.assertEqual(result['reason'], 'secure-settings-cache-unavailable')

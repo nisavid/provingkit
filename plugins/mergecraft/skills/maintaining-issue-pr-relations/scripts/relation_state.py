@@ -108,6 +108,30 @@ def _complete_relations(entity):
 
 
 
+def _cache_directory(root):
+    """Open or create a directory path without following any symlink component."""
+    root = root.absolute()
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    directory_fd = os.open(root.anchor, flags)
+    try:
+        for component in root.parts[1:]:
+            try:
+                child_fd = os.open(component, flags, dir_fd=directory_fd)
+            except FileNotFoundError:
+                try:
+                    os.mkdir(component, 0o700, dir_fd=directory_fd)
+                except FileExistsError:
+                    # A concurrent creator won; the no-follow open checks its entry.
+                    pass
+                child_fd = os.open(component, flags, dir_fd=directory_fd)
+            os.close(directory_fd)
+            directory_fd = child_fd
+        return directory_fd
+    except BaseException:
+        os.close(directory_fd)
+        raise
+
+
 def _cache_file(directory_fd, name, flags):
     """Open a private owned regular cache file without following links."""
     descriptor = os.open(name, flags | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600,
@@ -162,11 +186,10 @@ def _cache(state_root):
     """Serialize a transaction anchored to an opened private state directory."""
     # Do not fall back to path-based writes when secure primitives are absent.
     if (os.name != 'posix' or not all(hasattr(os, flag) for flag in ('O_NOFOLLOW', 'O_DIRECTORY', 'O_NONBLOCK'))
-            or os.open not in os.supports_dir_fd):
+            or not {os.open, os.mkdir}.issubset(os.supports_dir_fd)):
         raise ValueError('secure-settings-cache-unavailable')
     root = Path(state_root) if state_root is not None else Path(os.environ.get('XDG_STATE_HOME', Path.home() / '.local/state')) / 'mergecraft/issue-pr-relations'
-    root.mkdir(parents=True, exist_ok=True, mode=0o700)
-    directory_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    directory_fd = _cache_directory(root)
     try:
         metadata = os.fstat(directory_fd)
         if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.geteuid()
