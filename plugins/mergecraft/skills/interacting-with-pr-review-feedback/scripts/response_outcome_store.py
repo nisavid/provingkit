@@ -229,7 +229,15 @@ def _replacement_artifact(
     )
     _exact(
         decoded,
-        REPLACEMENT_ARTIFACT_COMMON_FIELDS | REPLACEMENT_ARTIFACT_VARIANT_FIELDS[kind],
+        REPLACEMENT_ARTIFACT_COMMON_FIELDS
+        | REPLACEMENT_ARTIFACT_VARIANT_FIELDS[kind]
+        | (
+            {"actor_node_id"}
+            if kind == "authority"
+            and isinstance(decoded, dict)
+            and "actor_node_id" in decoded
+            else set()
+        ),
         f"decoded {kind} artifact",
         record_id,
     )
@@ -273,6 +281,8 @@ def _replacement_artifact(
             raise _invalid("authority artifact does not authorize response", record_id)
         for name in ("evidence_id", "actor_login"):
             _text(decoded[name], f"authority.{name}", record_id)
+        if "actor_node_id" in decoded:
+            _text(decoded["actor_node_id"], "authority.actor_node_id", record_id)
         for name in (
             "classification_artifact_sha256",
             "adjudication_artifact_sha256",
@@ -1067,7 +1077,13 @@ def validate_binding(value: Any, record_id: str) -> dict[str, Any]:
     _text(adjudication["evidence_id"], "adjudication.evidence_id", record_id)
     authority = _exact(
         binding["authority"],
-        {"decision", "evidence_id", "actor_login"},
+        {"decision", "evidence_id", "actor_login"}
+        | (
+            {"actor_node_id"}
+            if isinstance(binding["authority"], dict)
+            and "actor_node_id" in binding["authority"]
+            else set()
+        ),
         "binding.authority",
         record_id,
     )
@@ -1075,6 +1091,8 @@ def validate_binding(value: Any, record_id: str) -> dict[str, Any]:
         raise _invalid("response authority is absent", record_id)
     _text(authority["evidence_id"], "authority.evidence_id", record_id)
     _text(authority["actor_login"], "authority.actor_login", record_id)
+    if "actor_node_id" in authority:
+        _text(authority["actor_node_id"], "authority.actor_node_id", record_id)
     writer = _exact(
         binding["writer"],
         {"identity", "body_sha256", "contract", "contract_version", "field"},
@@ -1098,13 +1116,27 @@ def validate_binding(value: Any, record_id: str) -> dict[str, Any]:
         raise _invalid("target and admission epoch disagree", record_id)
     actor = _exact(
         binding["expected_actor_identity"],
-        {"availability", "login"},
+        {"availability", "login"}
+        | (
+            {"node_id"}
+            if isinstance(binding["expected_actor_identity"], dict)
+            and "node_id" in binding["expected_actor_identity"]
+            else set()
+        ),
         "expected_actor_identity",
         record_id,
     )
     if actor["availability"] != "available":
         raise _invalid("expected actor identity is unavailable", record_id)
     _text(actor["login"], "expected_actor_identity.login", record_id)
+    if actor["login"] != authority["actor_login"]:
+        raise _invalid("expected actor and authority disagree", record_id)
+    if ("node_id" in actor) != ("actor_node_id" in authority):
+        raise _invalid("expected actor and authority identity shapes disagree", record_id)
+    if "node_id" in actor:
+        _text(actor["node_id"], "expected_actor_identity.node_id", record_id)
+        if actor["node_id"] != authority["actor_node_id"]:
+            raise _invalid("expected actor and authority node IDs disagree", record_id)
     kind = source["kind"]
     operation = binding["operation"]
     placement = binding["placement"]
@@ -1296,7 +1328,13 @@ def _leaf_receipt(value: Any, record_id: str) -> dict[str, Any]:
             raise _invalid("successful receipt identity equality is false", record_id)
         response = _exact(
             item["response"],
-            {"node_id", "database_id", "object_kind", "permalink", "actor_login"},
+            {"node_id", "database_id", "object_kind", "permalink", "actor_login"}
+            | (
+                {"actor_node_id"}
+                if isinstance(item["response"], dict)
+                and "actor_node_id" in item["response"]
+                else set()
+            ),
             "receipt.response",
             record_id,
         )
@@ -1313,6 +1351,8 @@ def _leaf_receipt(value: Any, record_id: str) -> dict[str, Any]:
             )
         _text(response["permalink"], "receipt.response.permalink", record_id)
         _text(response["actor_login"], "receipt.response.actor_login", record_id)
+        if "actor_node_id" in response:
+            _text(response["actor_node_id"], "receipt.response.actor_node_id", record_id)
         try:
             request = base64.b64decode(item["request_body_utf8_base64"], validate=True)
             reread = base64.b64decode(item["reread_body_utf8_base64"], validate=True)
@@ -2106,6 +2146,11 @@ class SemanticHistoryFold:
             if (
                 receipt.get("response", {}).get("actor_login")
                 != binding["expected_actor_identity"]["login"]
+                or (
+                    "node_id" in binding["expected_actor_identity"]
+                    and receipt.get("response", {}).get("actor_node_id")
+                    != binding["expected_actor_identity"]["node_id"]
+                )
             ):
                 raise _invalid("response actor differs from the bound actor", record_id)
 
@@ -2943,6 +2988,11 @@ class SemanticHistoryFold:
                 "decision": decoded["authority"]["decision"],
                 "evidence_id": decoded["authority"]["evidence_id"],
                 "actor_login": decoded["authority"]["actor_login"],
+                **(
+                    {"actor_node_id": decoded["authority"]["actor_node_id"]}
+                    if "actor_node_id" in decoded["authority"]
+                    else {}
+                ),
             }
             or binding["writer"] != expected_writer
             or binding["body"]["sha256"] != hashlib.sha256(body).hexdigest()

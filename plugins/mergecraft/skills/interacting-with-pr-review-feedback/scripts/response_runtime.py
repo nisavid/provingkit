@@ -72,7 +72,9 @@ def _source_scope_digest(epoch: dict[str, Any], source: dict[str, Any]) -> str:
     return source_owner_from_epoch(epoch, source)["source_scope_digest"]
 
 
-def _proposal(intent: dict[str, Any], exact_body: bytes) -> dict[str, Any]:
+def _proposal(
+    intent: dict[str, Any], exact_body: bytes, *, allow_legacy_actor: bool = False
+) -> dict[str, Any]:
     required_fields = {
         "schema_version",
         "intent_key",
@@ -189,12 +191,24 @@ def _proposal(intent: dict[str, Any], exact_body: bytes) -> dict[str, Any]:
     _required_text(adjudication.get("evidence_id"), "adjudication.evidence_id")
     if (
         not isinstance(authority, dict)
-        or set(authority) != {"decision", "evidence_id", "actor_login"}
+        or (
+            set(authority)
+            != {"decision", "evidence_id", "actor_login", "actor_node_id"}
+            and not (
+                allow_legacy_actor
+                and set(authority) == {"decision", "evidence_id", "actor_login"}
+            )
+        )
         or authority.get("decision") != "authorized"
     ):
         raise AdmissionError("explicit response authority is required")
     _required_text(authority.get("evidence_id"), "authority.evidence_id")
     actor_login = _required_text(authority.get("actor_login"), "authority.actor_login")
+    actor_node_id = (
+        _required_text(authority["actor_node_id"], "authority.actor_node_id")
+        if "actor_node_id" in authority
+        else None
+    )
     predecessor = intent.get("predecessor_outcome_id")
     if intent_kind == "ordinary" and predecessor is not None:
         raise AdmissionError("ordinary intent cannot name a predecessor outcome")
@@ -261,7 +275,11 @@ def _proposal(intent: dict[str, Any], exact_body: bytes) -> dict[str, Any]:
             "repository": epoch["repository"],
             "pull_request": epoch["pull_request"],
         },
-        "expected_actor_identity": {"availability": "available", "login": actor_login},
+        "expected_actor_identity": {
+            "availability": "available",
+            "login": actor_login,
+            **({"node_id": actor_node_id} if actor_node_id is not None else {}),
+        },
         "writer": writer,
         "body": _body_evidence(exact_body),
         "top_level_source_permalink": top_level_link,
@@ -339,6 +357,7 @@ def _replacement_proposal(
             "decision": decoded["authority"]["decision"],
             "evidence_id": decoded["authority"]["evidence_id"],
             "actor_login": decoded["authority"]["actor_login"],
+            "actor_node_id": decoded["authority"].get("actor_node_id"),
         },
         "classification": {
             "result": decoded["classification"]["result"],
@@ -869,6 +888,7 @@ class ResponseRuntime:
         repo = target["repository"]["name_with_owner"]
         number = target["pull_request"]["number"]
         actor = binding["expected_actor_identity"]["login"]
+        actor_node_id = binding["expected_actor_identity"]["node_id"]
         if binding["operation"] == "create_inline_reply":
             return self.inline_adapter.create_and_reread(
                 repo=repo,
@@ -878,6 +898,7 @@ class ResponseRuntime:
                 ],
                 exact_body=exact_body,
                 expected_actor_login=actor,
+                expected_actor_node_id=actor_node_id,
             )
         return self.conversation_adapter.create_and_reread(
             repo=repo,
@@ -887,6 +908,7 @@ class ResponseRuntime:
             source_permalink=binding["source"]["permalink"],
             exact_body=exact_body,
             expected_actor_login=actor,
+            expected_actor_node_id=actor_node_id,
         )
 
     @staticmethod
@@ -1018,6 +1040,46 @@ class ResponseRuntime:
             predecessor = history["intents"][predecessor_id]
             terminal_state = history["intent_state_by_intent"][predecessor_id]
             if (
+                predecessor["intent_kind"] == "ordinary"
+                and terminal_state == "pending"
+                and "node_id" not in predecessor["binding"]["expected_actor_identity"]
+                and predecessor_id not in history["current_attempt_by_intent"]
+            ):
+                # Retire obsolete authority through the existing no-write lifecycle;
+                # never upgrade or overwrite an admission's immutable binding.
+                validation_id = f"validation-{digest({'intent_id': predecessor_id, 'count': len(history['validations']) + 1})}"
+                self.store.append(
+                    "prewrite_validation_started",
+                    {
+                        "schema_version": 2,
+                        "validation_id": validation_id,
+                        "owner_id": predecessor["owner_id"],
+                        "intent_id": predecessor_id,
+                        "epoch": predecessor.get(
+                            "effective_epoch", predecessor["binding"]["admission_epoch"]
+                        ),
+                        "binding_digest": predecessor["binding_digest"],
+                        "invocation_mode": "initial",
+                    },
+                    record_id=validation_id,
+                )
+                reason = "legacy response authority lacks immutable actor identity"
+                self.store.append(
+                    "prewrite_invalidated",
+                    {
+                        "schema_version": 2,
+                        "validation_id": validation_id,
+                        "owner_id": predecessor["owner_id"],
+                        "intent_id": predecessor_id,
+                        "drift": {"state": "observed", "evidence": reason},
+                        "reason": reason,
+                    },
+                    record_id=f"invalidated-{validation_id}",
+                )
+                history = self.store.semantic_history()
+                predecessor = history["intents"][predecessor_id]
+                terminal_state = history["intent_state_by_intent"][predecessor_id]
+            if (
                 predecessor["intent_kind"] != "ordinary"
                 or terminal_state
                 not in {"invalidated_unexecuted", "validation_indeterminate"}
@@ -1112,9 +1174,31 @@ class ResponseRuntime:
 
     def invoke(self, intent: dict[str, Any], exact_body: bytes) -> dict[str, Any]:
         replacement = isinstance(intent, dict) and intent.get("schema_version") == 2
-        proposal = None if replacement else _proposal(intent, exact_body)
+        proposal = (
+            None
+            if replacement
+            else _proposal(intent, exact_body, allow_legacy_actor=True)
+        )
+        legacy_actor = (
+            proposal is not None
+            and "node_id" not in proposal["expected_actor_identity"]
+        )
+        if legacy_actor and not self.store.directory.exists():
+            raise AdmissionError("new writes require authority.actor_node_id")
         with self.store.locked(exclusive=True):
             history = self.store.semantic_history()
+            if legacy_actor:
+                prior_id = history["keys"].get(proposal["intent_key"])
+                if (
+                    prior_id is None
+                    or history["intent_state_by_intent"][prior_id]
+                    != "confirmed_success"
+                    or "node_id"
+                    in history["intents"][prior_id]["binding"]["expected_actor_identity"]
+                ):
+                    raise AdmissionError(
+                        "new writes require authority.actor_node_id; legacy authority permits only a confirmed replay"
+                    )
             replacement_basis = None
             if replacement:
                 proposal, replacement_basis = _replacement_proposal(
@@ -1148,6 +1232,16 @@ class ResponseRuntime:
             try:
                 current = self._revalidate(
                     effective_epoch, admitted["binding"], history
+                )
+                adapter = (
+                    self.inline_adapter
+                    if admitted["binding"]["operation"] == "create_inline_reply"
+                    else self.conversation_adapter
+                )
+                actor = admitted["binding"]["expected_actor_identity"]
+                adapter.verify_actor(
+                    expected_actor_login=actor["login"],
+                    expected_actor_node_id=actor["node_id"],
                 )
             except AdmissionError as error:
                 reason = f"pre_write_revalidation: {error}"
@@ -1277,6 +1371,11 @@ class ResponseRuntime:
                 or item["body"]["sha256"] != binding["body"]["sha256"]
                 or item.get("author", {}).get("login")
                 != binding["expected_actor_identity"]["login"]
+                or (
+                    "node_id" in binding["expected_actor_identity"]
+                    and item.get("author", {}).get("node_id")
+                    != binding["expected_actor_identity"]["node_id"]
+                )
             ):
                 continue
             if identity in history["known_identities"]:
@@ -1442,6 +1541,9 @@ class ResponseRuntime:
                         expected_actor_login=binding["expected_actor_identity"][
                             "login"
                         ],
+                        expected_actor_node_id=binding["expected_actor_identity"].get(
+                            "node_id"
+                        ),
                     )
                 except (GhTransportError, ValueError) as error:
                     receipt = {

@@ -43,6 +43,159 @@ class GitHubResponseProviderTests(unittest.TestCase):
     def state(self):
         return json.loads(self.state_path.read_text(encoding="utf-8"))
 
+    def api_calls(self):
+        return [
+            call
+            for call in self.state()["calls"]
+            if call["operation"] != "credential_read"
+        ]
+
+    def create_response(self, route, exact_body=None):
+        permalink = "https://github.com/base-owner/base-repo/pull/7#issuecomment-401"
+        body = exact_body or f"{permalink}\r\nExact body\r\n".encode()
+        common = {
+            "repo": "base-owner/base-repo",
+            "pr_number": 7,
+            "exact_body": body,
+            "expected_actor_login": "ivan",
+            "expected_actor_node_id": "USER_ivan",
+        }
+        if route == "inline":
+            return self.inline.create_and_reread(
+                **common, root_comment_database_id=301
+            )
+        return self.top_level.create_and_reread(
+            **common,
+            pr_node_id="PR_node_7",
+            verification_epoch_id="epoch",
+            source_permalink=permalink,
+        )
+
+    def test_each_create_route_verifies_active_login_and_node_id_before_post(self):
+        identities = (
+            {"login": "other", "node_id": "USER_other"},
+            {"login": "other", "node_id": "USER_ivan"},
+            {"login": "ivan", "node_id": "USER_other"},
+            {"login": "ivan"},
+            {"node_id": "USER_ivan"},
+            {"login": "", "node_id": "USER_ivan"},
+            {"login": "ivan", "node_id": ""},
+            {"login": ["ivan"], "node_id": "USER_ivan"},
+            {"login": "ivan", "node_id": ["USER_ivan"]},
+            {},
+            None,
+            ["malformed"],
+        )
+        for route in ("inline", "conversation"):
+            for identity in identities:
+                with self.subTest(route=route, identity=identity):
+                    self.state_path.write_text(
+                        json.dumps({"actor_identity": identity}), encoding="utf-8"
+                    )
+
+                    with self.assertRaises(
+                        github_response_provider.GhTransportError
+                    ) as raised:
+                        self.create_response(route)
+
+                    self.assertEqual(raised.exception.status, "confirmed_failure")
+                    self.assertEqual(raised.exception.side_effect, "none")
+                    self.assertFalse(raised.exception.retryable)
+                    self.assertEqual(
+                        [call["operation"] for call in self.api_calls()],
+                        ["actor_preflight"],
+                    )
+                    self.assertNotIn("objects", self.state())
+
+    def test_unavailable_or_invalid_actor_read_never_reaches_either_post_route(self):
+        failures = (
+            {"returncode": 1, "stderr": "HTTP 404"},
+            {"returncode": 1, "stderr": "connection reset"},
+            {"returncode": 0, "stdout": "malformed JSON"},
+        )
+        for route in ("inline", "conversation"):
+            for failure in failures:
+                with self.subTest(route=route, failure=failure):
+                    self.state_path.write_text(
+                        json.dumps({"queued": {"GET /user": [failure]}}),
+                        encoding="utf-8",
+                    )
+
+                    with self.assertRaises(
+                        github_response_provider.GhTransportError
+                    ) as raised:
+                        self.create_response(route)
+
+                    self.assertEqual(raised.exception.status, "confirmed_failure")
+                    self.assertEqual(raised.exception.side_effect, "none")
+                    self.assertEqual(
+                        [call["operation"] for call in self.api_calls()],
+                        ["actor_preflight"],
+                    )
+                    self.assertNotIn("objects", self.state())
+
+    def test_actor_node_id_mismatch_after_post_is_unknown_for_each_route(self):
+        for route in ("inline", "conversation"):
+            with self.subTest(route=route):
+                self.state_path.write_text(
+                    json.dumps(
+                        {
+                            "reread_overrides": {
+                                "900": {
+                                    "user": {"login": "ivan", "node_id": "USER_other"}
+                                }
+                            }
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+                with self.assertRaises(
+                    github_response_provider.GhTransportError
+                ) as raised:
+                    self.create_response(route)
+
+                self.assertEqual(raised.exception.status, "unknown")
+                self.assertEqual(raised.exception.side_effect, "unknown")
+                self.assertEqual(
+                    raised.exception.evidence["create_response"]["id"], 900
+                )
+                self.assertEqual(
+                    [call["operation"] for call in self.api_calls()],
+                    ["actor_preflight", "response_write", "response_reread"],
+                )
+
+    def test_legacy_known_reread_needs_no_active_actor_or_credential_preflight(self):
+        state = self.state()
+        state["actor_identity"] = {"login": "other", "node_id": "USER_other"}
+        state["objects"] = {
+            "900": {
+                "id": 900,
+                "node_id": "RESPONSE_node_900",
+                "body": "Exact body",
+                "user": {"login": "ivan"},
+            }
+        }
+        self.state_path.write_text(json.dumps(state), encoding="utf-8")
+
+        result = self.inline.reread_known(
+            repo="base-owner/base-repo",
+            response_identity={
+                "object_kind": "PullRequestReviewComment",
+                "database_id": 900,
+                "node_id": "RESPONSE_node_900",
+            },
+            exact_body=b"Exact body",
+            expected_actor_login="ivan",
+        )
+
+        self.assertEqual(result["status"], "confirmed_success")
+        self.assertNotIn("actor_node_id", result["response"])
+        self.assertEqual(
+            [call["operation"] for call in self.state()["calls"]],
+            ["response_reread"],
+        )
+
     def test_typed_epoch_uses_explicit_post_for_graphql_read_query(self):
         state = self.state()
         state["graphql"] = json.loads(TYPED_FIXTURE.read_text(encoding="utf-8"))
@@ -227,18 +380,21 @@ class GitHubResponseProviderTests(unittest.TestCase):
             root_comment_database_id=301,
             exact_body=body,
             expected_actor_login="ivan",
+            expected_actor_node_id="USER_ivan",
         )
 
         self.assertEqual(result["status"], "confirmed_success")
+        self.assertEqual(result["response"]["actor_node_id"], "USER_ivan")
         self.assertEqual(base64.b64decode(result["request_body_utf8_base64"]), body)
         self.assertEqual(base64.b64decode(result["reread_body_utf8_base64"]), body)
-        calls = self.state()["calls"]
+        calls = self.api_calls()
         self.assertEqual(
             [call["operation"] for call in calls],
-            ["response_write", "response_reread"],
+            ["actor_preflight", "response_write", "response_reread"],
         )
+        self.assertEqual(calls[0]["argv"][-1], "/user")
         self.assertEqual(
-            calls[0]["argv"],
+            calls[1]["argv"],
             [
                 "api",
                 "--hostname",
@@ -250,9 +406,9 @@ class GitHubResponseProviderTests(unittest.TestCase):
                 "-",
             ],
         )
-        self.assertEqual(calls[0]["request"], {"body": body.decode("utf-8")})
+        self.assertEqual(calls[1]["request"], {"body": body.decode("utf-8")})
         self.assertEqual(
-            calls[1]["argv"][-1],
+            calls[2]["argv"][-1],
             "/repos/base-owner/base-repo/pulls/comments/900",
         )
 
@@ -268,14 +424,15 @@ class GitHubResponseProviderTests(unittest.TestCase):
                 root_comment_database_id=301,
                 exact_body=b"Exact body",
                 expected_actor_login="ivan",
+                expected_actor_node_id="USER_ivan",
             )
 
         self.assertEqual(raised.exception.status, "unknown")
         self.assertEqual(raised.exception.side_effect, "unknown")
         self.assertEqual(raised.exception.evidence["create_response"]["id"], 900)
         self.assertEqual(
-            [call["operation"] for call in self.state()["calls"]],
-            ["response_write", "response_reread"],
+            [call["operation"] for call in self.api_calls()],
+            ["actor_preflight", "response_write", "response_reread"],
         )
 
     def test_create_and_reread_require_full_typed_identity_equality(self):
@@ -293,6 +450,7 @@ class GitHubResponseProviderTests(unittest.TestCase):
                         root_comment_database_id=301,
                         exact_body=b"Exact body",
                         expected_actor_login="ivan",
+                        expected_actor_node_id="USER_ivan",
                     )
                 self.assertEqual(raised.exception.status, "unknown")
                 self.assertEqual(raised.exception.side_effect, "unknown")
@@ -315,7 +473,7 @@ class GitHubResponseProviderTests(unittest.TestCase):
                 "node_id": "RESPONSE_node_900",
                 "body": "Exact body",
                 "html_url": "https://github.com/example/repo/pull/7#response-900",
-                "user": {"login": "ivan"},
+                "user": {"login": "ivan", "node_id": "USER_ivan"},
             }
         }
         self.state_path.write_text(json.dumps(state), encoding="utf-8")
@@ -330,6 +488,7 @@ class GitHubResponseProviderTests(unittest.TestCase):
                 },
                 exact_body=b"Exact body",
                 expected_actor_login="ivan",
+                expected_actor_node_id="USER_ivan",
             )
 
         receipt = self.inline.reread_known(
@@ -341,6 +500,7 @@ class GitHubResponseProviderTests(unittest.TestCase):
             },
             exact_body=b"Exact body",
             expected_actor_login="ivan",
+            expected_actor_node_id="USER_ivan",
         )
         self.assertEqual(
             receipt["created_response_identity"],
@@ -365,6 +525,7 @@ class GitHubResponseProviderTests(unittest.TestCase):
                 source_permalink="https://github.com/base-owner/base-repo/pull/7#issuecomment-401",
                 exact_body=body,
                 expected_actor_login="ivan",
+                expected_actor_node_id="USER_ivan",
             )
 
         result = self.top_level.create_and_reread(
@@ -375,16 +536,20 @@ class GitHubResponseProviderTests(unittest.TestCase):
             source_permalink="https://github.com/base-owner/base-repo/pull/7#issuecomment-401",
             exact_body=body,
             expected_actor_login="ivan",
+            expected_actor_node_id="USER_ivan",
         )
 
         self.assertEqual(result["status"], "confirmed_success")
-        calls = self.state()["calls"]
+        self.assertEqual(result["response"]["actor_node_id"], "USER_ivan")
+        self.assertEqual(base64.b64decode(result["reread_body_utf8_base64"]), body)
+        calls = self.api_calls()
         self.assertEqual(
             [call["operation"] for call in calls],
-            ["response_write", "response_reread"],
+            ["actor_preflight", "response_write", "response_reread"],
         )
+        self.assertEqual(calls[1]["request"], {"body": body.decode("utf-8")})
         self.assertEqual(
-            calls[0]["argv"][-3:],
+            calls[1]["argv"][-3:],
             [
                 "/repos/base-owner/base-repo/issues/7/comments",
                 "--input",
@@ -392,7 +557,7 @@ class GitHubResponseProviderTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            calls[1]["argv"][-1],
+            calls[2]["argv"][-1],
             "/repos/base-owner/base-repo/issues/comments/900",
         )
         self.assertFalse(hasattr(self.top_level, "create_issue_comment"))
