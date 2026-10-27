@@ -197,8 +197,10 @@ Writes create an exclusive random staging file, flush it, atomically replace the
 settings file relative to the directory descriptor, and flush the directory.
 Both flushes request `F_FULLFSYNC` when available, falling back to `fsync` when
 the operation is unavailable or unsupported. Other I/O errors propagate.
-Unrelated old staging entries are left untouched. A failed mutation settlement
-still reports an unknown outcome and retains the prior recovery record.
+Unrelated old staging entries are left untouched. Staging failures preserve the
+prior settings. After successful replacement, a later directory-sync failure
+can leave the new settings visible even when mutation settlement reports an
+unknown outcome.
 
 Secure cache access requires POSIX no-follow and directory-relative file
 operations. Platforms without these primitives return
