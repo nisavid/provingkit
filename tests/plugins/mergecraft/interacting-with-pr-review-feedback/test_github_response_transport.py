@@ -2,9 +2,8 @@ import json
 import os
 import subprocess
 import sys
-import unittest
 from pathlib import Path
-from unittest import mock
+from unittest import TestCase, main, mock
 
 REPOSITORY = Path(__file__).resolve().parents[4]
 SCRIPTS = (
@@ -17,7 +16,7 @@ import github_response_provider
 AUTH_COMMAND = ["gh", "auth", "token", "--hostname", "github.com"]
 
 
-class GitHubResponseTransportTests(unittest.TestCase):
+class GitHubResponseTransportTests(TestCase):
     def verify_actor(self, transport):
         transport.verify_actor(
             expected_actor_login="ivan", expected_actor_node_id="USER_ivan"
@@ -192,4 +191,4 @@ class GitHubResponseTransportTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()
