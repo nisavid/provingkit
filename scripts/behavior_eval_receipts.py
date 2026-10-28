@@ -25,6 +25,7 @@ INVENTORY_PATH = "scripts/behavior_eval_inventory.py"
 HISTORICAL_PROFILES = {
     "p957": "957550119aca20a31a26f4e5f9a3f09a2d6bd148",
     "p24": "24c2d712a0be6a95958713ec80c7e06a89abdc6c",
+    "pbaad": "baad23e7c1f35336cbab6f358c5fa027ad716f08",
 }
 SUPPORTED_PROFILES = frozenset(HISTORICAL_PROFILES)
 SUPPORTED_METHODS = frozenset(("prepared", "reconciled-after-run"))
