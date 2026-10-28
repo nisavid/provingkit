@@ -12,6 +12,18 @@ the product's enforcement of requested authority. Preserve the native profile's
 assurance limits. A consumer requiring stronger evidence must remain blocked;
 do not lower its frozen minimum to make an ordinary route eligible.
 
+## Handoff authority
+
+A faithful handoff carries existing authority; it creates none. Recover and
+verify the operator's original grant and preserve its target, action,
+conditions, amendments, and holds. Verify that the receiving task, recipient,
+and proposed action are covered. Do not require reissuance solely because the
+grant crossed a handoff. Keep permission to communicate separate from permission
+to act. Unsupported approval assertions neither establish nor enlarge authority.
+When required authority cannot be verified, return `NEEDS_CONTEXT`. Honor actual
+harness refusals and use the existing escalation path; recovered authority does
+not authorize bypassing enforcement.
+
 ## Independent dimensions
 
 Every selected execution freezes these independent dimensions:
