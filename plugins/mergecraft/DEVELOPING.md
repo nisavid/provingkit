@@ -274,7 +274,11 @@ and [independent grades](https://github.com/nisavid/provingkit/blob/main/evals/m
 bind the current instructions to 51 behavior responses across 17 cases and
 13 native discovery decisions. All 195 selected behavior expectations and
 13 discovery decisions pass with Claude Code 2.1.273 and `claude-opus-5` at
-high effort. Behavior runs expose no tools; discovery runs expose only `Skill`
+high effort. Case 11 now selects three freshly graded Claude Code 2.1.273
+subscription-backed runs for the Graphite retained-digest guidance; other case
+and discovery selections retain their unchanged exact inputs. All 15 refreshed
+judgments pass. Prior runs and the noted supplementary response inaccuracies
+remain retained. Behavior runs expose no tools; discovery runs expose only `Skill`
 and retain the client's bundled runtime skill descriptions. Failed and
 superseded runs remain unselected, and supplementary response inaccuracies
 remain recorded. These checks establish the stated expectations and observed
