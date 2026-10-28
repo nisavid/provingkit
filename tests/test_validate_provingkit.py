@@ -3066,6 +3066,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         }
         preview_tag = f"refs/tags/{PREVIEW_TAG} commit {PREVIEW_SOURCE}"
         alpha_tag = f"refs/tags/{ALPHA_TAG} commit {ALPHA_SOURCE}"
+        alpha4_tag = (
+            "refs/tags/v0.1.0-alpha.4 commit "
+            "e14e818e423abd2f65b336e279284d412e0fcbce"
+        )
         self.assertIn(
             tags,
             [
@@ -3073,6 +3077,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 {preview_tag},
                 {alpha_tag},
                 {preview_tag, alpha_tag},
+                {alpha4_tag},
+                {preview_tag, alpha4_tag},
+                {alpha_tag, alpha4_tag},
+                {preview_tag, alpha_tag, alpha4_tag},
             ],
         )
 
