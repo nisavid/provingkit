@@ -1,0 +1,4 @@
+# Dependencies for repository validation and contributor checks.
+idna==3.18
+jsonschema==4.26.0
+PyYAML==6.0.3
