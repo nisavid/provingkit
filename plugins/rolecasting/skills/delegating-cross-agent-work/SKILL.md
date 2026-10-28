@@ -38,7 +38,7 @@ global, desktop, and parent defaults never replace supported fields.
 
 ## Bounded Handoff
 
-Every prompt binds goal, success criteria, worktree, immutable base, facts, target behavior, scope, read/write and subdelegation authority, external-action authority, verification, output, and stop conditions. Unstated authority is absent; relayed approval conveys none. Obtain the operator's own words or return `NEEDS_CONTEXT` before publishing, filing, or reconfiguring. Preserve edits.
+Every prompt binds goal, success criteria, worktree, immutable base, facts, target behavior, scope, read/write and subdelegation authority, external-action authority, verification, output, and stop conditions. Recover and apply verified operator grants through [handoff authority](references/invocation-topology-receipt.md#handoff-authority). Preserve edits.
 
 Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before assigning one.
 
@@ -61,6 +61,8 @@ On `NEEDS_CONTEXT` or `BLOCKED`, change the input, authority, boundary, or capab
 Batch small independent same-shape work into one dispatch and review its diff as one unit. Separate work needing its own judgment, own tests, or review surface.
 
 Do local work before waiting; avoid short polling, use a bounded wait when idle, then reconcile live children and recover missed terminal results.
+
+For durable native Codex peer recovery, use [mailbox bookkeeping](references/native-codex-mailbox.md).
 
 ## Leader Integration
 

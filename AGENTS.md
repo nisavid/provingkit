@@ -36,6 +36,8 @@ detailed contracts, research, and specs under `docs/`.
 
 Equipment is designed principle-first. Before writing, revising, or reviewing
 it, read the core maxim that opens `docs/plugin-system/design-principles.md`.
+For software behavior changes, use `docs/agents/consumer-specifications.md` to
+bind consumer examples to the tested interface before implementation.
 
 Each member under `plugins/` is a package. Its README is the front page for
 people using the plugin and ships in installed copies, so its relative links
@@ -52,16 +54,17 @@ lock.
 
 ## Git and validation
 
-Use Conventional Commits for commits and pull request titles. The Cocogitto
-`commit-msg` and `pre-push` hooks installed by `cog install-hook --all` check
-commit messages and history. Every change requires `git diff --check`.
+Keep history machine-checkable: use Conventional Commits for commits and PR
+titles (Cocogitto adapter: `commit-msg`/`pre-push`, installed by
+`cog install-hook --all`).
 
-Before publication, run the validation that owns the touched surface:
-`python scripts/validate_<plugin>.py .` and the plugin's tests through
-`python -m unittest` for a plugin change, and
-`python scripts/validate_source_skill_disposition.py .` whenever `plugins/`,
-`release/`, or the disposition ledger changes. The workflows under
-`.github/workflows/` run the same validators on every pull request.
+Verify changed behavior before publication; failing or unavailable required
+checks hold it. Derive invocation from maintained developer guidance.
+Git adapter: every change requires `git diff --check`.
+Python adapters: plugin changes require their validator
+(`python scripts/validate_<plugin>.py .`) and `python -m unittest` suites;
+changes under `plugins/` or `release/`, or to the disposition ledger, require
+`python scripts/validate_source_skill_disposition.py .`.
 
 ## Operating Policy
 
