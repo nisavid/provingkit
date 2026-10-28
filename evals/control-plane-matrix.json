@@ -330,6 +330,25 @@
       }
     },
     {
+      "id": "mergecraft:configuring-repositories",
+      "entrypoint": "plugins/mergecraft/skills/configuring-repositories/SKILL.md",
+      "companions": [
+        "mergecraft:publishing-reviewable-prs",
+        "versionkeeping:checkpointing-and-publishing-git-work",
+        "tricritical:loop"
+      ],
+      "scenario": {
+        "id": "repository-config-maintained-writer-and-concurrency",
+        "kind": "skill-evals",
+        "source": "evals/mergecraft/skills/configuring-repositories/evals.json",
+        "selector": "maintained-writer-and-concurrency",
+        "safety_expectation_ids": [
+          "the-maintained-terraform-writer-is-used-a-technically-available-direct-a",
+          "no-unselected-writer-transition-apply-direct-provider-write-live-pr-publ"
+        ]
+      }
+    },
+    {
       "id": "proseweaving:writing-for-people",
       "entrypoint": "plugins/proseweaving/skills/writing-for-people/SKILL.md",
       "companions": [],
