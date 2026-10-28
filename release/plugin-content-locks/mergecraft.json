@@ -27,7 +27,7 @@
     "skills/getting-prs-ready-for-review/agents/openai.yaml": "7c68f326623e8f7a36878250784679d34250f8fac1360c2f624df1596e7d0740",
     "skills/graphite/SKILL.md": "093ffb2c9aca11e4ba2dec2245288c366269c0dbef47ac66140246c35d333951",
     "skills/graphite/agents/openai.yaml": "b2e58ad3e22cc7bf4b336b66212d1bc0dc8df558570ecd1c6206eff865d2c80c",
-    "skills/graphite/scripts/submit_draft_stack.py": "3091f1c9ae344fdc1599c8af10c19b4767cbd8b7ca4fe8e15c85660ca346e953",
+    "skills/graphite/scripts/submit_draft_stack.py": "2aa3767b26b41b898aaa3d7b173b9db0234d705ee17d30ac29bdd0b85e42a79c",
     "skills/interacting-with-pr-review-feedback/SKILL.md": "82292a085eab09fdf2f3313518e4e860ff911dfef55ea0ac91619fb375e956fa",
     "skills/interacting-with-pr-review-feedback/agents/openai.yaml": "e6ac26b75f325b4de2e92c94b62e88f56ad48c33eb19656e438deb7bbd5e8832",
     "skills/interacting-with-pr-review-feedback/evals/discovery-evidence.json": "0725fc195efbc7f800884698975d0b74d2d0e56fef2f76df477f80b9d2498dcb",
