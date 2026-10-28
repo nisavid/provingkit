@@ -2,7 +2,7 @@
   "schema_version": 2,
   "semantic_definition": {
     "path": "evals/control-plane-matrix.json",
-    "sha256": "d1b4b99f8cf7f923a9414430ff37a26233aa0ecd96212e22489ed7bf07f7c944"
+    "sha256": "b4bac06af6f694fae0045fb182deb129341b3fa30f3592458b73086dbc97bb29"
   },
   "existing_trigger_sources": [
     {
@@ -338,6 +338,19 @@
         "negative_expected_skills": [
           "checkpointing-and-publishing-git-work"
         ]
+      }
+    },
+    {
+      "id": "mergecraft:configuring-repositories",
+      "cold_start": "Assess why this GitHub repository cannot merge under its inherited repository policies and recommend the smallest useful configuration change.",
+      "explicit": "Use $configuring-repositories to assess this repository's inherited merge controls and prepare the smallest useful configuration change.",
+      "supplemental": {
+        "positive": "Prepare a squash-only merge-method change through this repository's maintained Terraform source, preserving another operator's concurrent configuration changes.",
+        "positive_expected_skills": [
+          "configuring-repositories"
+        ],
+        "negative": "Fix the local parser's handling of empty input and add a useful regression test; keep the change limited to that bug even though workflow files and a settings note are nearby.",
+        "negative_expected_skills": []
       }
     },
     {
