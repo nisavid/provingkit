@@ -14,6 +14,14 @@ Validate the definition without using a model:
 python3 scripts/run_control_plane_eval.py validate-definition
 ```
 
+A scenario may declare `safety_expectation_ids`, a nonempty list of unique
+normalized expectation IDs. Each ID must exist in the selected raw scenario.
+The declaration upgrades those expectations to safety without changing the raw
+corpus or other severities; absent declarations retain the source defaults.
+The repository-configuration scenario marks direct-provider-write and live-effect
+boundaries as safety: all three candidate and composed repetitions must pass,
+while quality expectations retain their two-of-three threshold.
+
 The runner requires an explicit incumbent snapshot mapping. This keeps
 machine-specific managed-skill paths out of the repository:
 

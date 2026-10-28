@@ -2755,6 +2755,135 @@ def test_definition_accepts_a_noncanonical_comparative_inventory():
     runner.validate_definition(ROOT, definition)
 
 
+def configuring_repository_declaration():
+    definition = json.loads(DEFINITION.read_text())
+    return next(
+        skill
+        for skill in definition["skills"]
+        if skill["id"] == "mergecraft:configuring-repositories"
+    )
+
+
+def test_repository_configuration_effect_expectations_are_safety_checks():
+    runner = load_runner()
+    skill = configuring_repository_declaration()
+    scenario = runner.load_scenario(ROOT, skill)
+    raw = json.loads((ROOT / skill["scenario"]["source"]).read_text())
+    raw_expectations = runner.find_eval_item(
+        raw, skill["scenario"]["selector"]
+    )["expectations"]
+    assert all(isinstance(item, str) and item for item in raw_expectations)
+    assert [item.severity for item in scenario.expectations] == [
+        "safety",
+        "quality",
+        "quality",
+        "quality",
+        "quality",
+        "quality",
+        "safety",
+    ]
+
+
+@pytest.mark.parametrize(
+    "bad_ids", [None, "expectation", [], [True], [["nested"]], ["missing"]]
+)
+def test_scenario_rejects_invalid_safety_expectation_ids(bad_ids):
+    runner = load_runner()
+    skill = configuring_repository_declaration()
+    skill["scenario"]["safety_expectation_ids"] = bad_ids
+    with pytest.raises(runner.EvaluationError, match="safety expectation IDs"):
+        runner.load_scenario(ROOT, skill)
+
+
+def test_scenario_rejects_duplicate_safety_expectation_ids():
+    runner = load_runner()
+    skill = configuring_repository_declaration()
+    expectation_id = runner.load_scenario(ROOT, skill).expectations[0].id
+    skill["scenario"]["safety_expectation_ids"] = [expectation_id, expectation_id]
+    definition = json.loads(DEFINITION.read_text())
+    definition["skills"] = [skill]
+    with pytest.raises(runner.EvaluationError, match="safety expectation IDs"):
+        runner.validate_definition(ROOT, definition)
+
+
+def test_scenario_without_safety_declaration_preserves_string_defaults():
+    runner = load_runner()
+    skill = configuring_repository_declaration()
+    skill["scenario"].pop("safety_expectation_ids", None)
+    scenario = runner.load_scenario(ROOT, skill)
+    assert all(item.severity == "quality" for item in scenario.expectations)
+
+
+@pytest.mark.parametrize("condition_with_miss", ["candidate", "composed"])
+@pytest.mark.parametrize("missed_index", [0, -1, 1, None])
+def test_repository_configuration_safety_aggregation(condition_with_miss, missed_index):
+    runner = load_runner()
+    scenario = runner.load_scenario(ROOT, configuring_repository_declaration())
+    quality_id = scenario.expectations[1].id
+    missed_id = (
+        scenario.expectations[missed_index].id if missed_index is not None else None
+    )
+    matrix = {
+        "skill_inventory": [scenario.skill_id],
+        "skills": [{"id": scenario.skill_id, "utility_expectation_ids": [quality_id]}],
+        "scenarios": [
+            {
+                "id": scenario.id,
+                "skill_id": scenario.skill_id,
+                "expectations": [
+                    {"id": item.id, "severity": item.severity}
+                    for item in scenario.expectations
+                ],
+            }
+        ],
+    }
+    runs, grades = [], []
+    for condition in runner.CONDITIONS:
+        for repetition in runner.REPETITIONS:
+            output_id = f"{condition}-{repetition}"
+            runs.append(
+                {
+                    "condition": condition,
+                    "id": f"run-{output_id}",
+                    "output_id": output_id,
+                }
+            )
+            # Keep composed >= candidate so nonregression cannot mask the
+            # safety-versus-quality threshold being exercised.
+            misses_repetition = condition == condition_with_miss or (
+                condition_with_miss == "composed" and condition == "candidate"
+            )
+            grades.append(
+                {
+                    "output_id": output_id,
+                    "expectations": [
+                        {
+                            "id": item.id,
+                            "passed": condition in {"candidate", "composed"}
+                            and not (
+                                misses_repetition
+                                and item.id == missed_id
+                                and repetition == 3
+                            ),
+                        }
+                        for item in scenario.expectations
+                    ],
+                }
+            )
+    grader = {
+        "scenario_id": scenario.id,
+        "presentation_order": [run["output_id"] for run in runs],
+        "grades": grades,
+    }
+    aggregate = runner.aggregate(matrix, runs, [grader])[1]["skills"][0]
+    expected_safety = missed_index not in (0, -1)
+    assert aggregate["safety_passed"] is expected_safety
+    assert aggregate["quality_passed"] is True
+    assert aggregate["nonregression_passed"] is True
+    assert aggregate["utility"] is True
+    assert aggregate["passed"] is expected_safety
+
+
 def aggregate_comparison(runner, strategy: str, pass_counts: dict[str, int]):
     skill = {
         "id": "mergecraft:comparison-fixture",

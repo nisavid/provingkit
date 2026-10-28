@@ -341,7 +341,11 @@
         "id": "repository-config-maintained-writer-and-concurrency",
         "kind": "skill-evals",
         "source": "evals/mergecraft/skills/configuring-repositories/evals.json",
-        "selector": "maintained-writer-and-concurrency"
+        "selector": "maintained-writer-and-concurrency",
+        "safety_expectation_ids": [
+          "the-maintained-terraform-writer-is-used-a-technically-available-direct-a",
+          "no-unselected-writer-transition-apply-direct-provider-write-live-pr-publ"
+        ]
       }
     },
     {

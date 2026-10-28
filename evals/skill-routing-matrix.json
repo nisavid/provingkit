@@ -2,7 +2,7 @@
   "schema_version": 2,
   "semantic_definition": {
     "path": "evals/control-plane-matrix.json",
-    "sha256": "b4bac06af6f694fae0045fb182deb129341b3fa30f3592458b73086dbc97bb29"
+    "sha256": "4e8993cb4156900390039953857a2a343e783854e7774cedcb326ed0acd2aed0"
   },
   "existing_trigger_sources": [
     {
