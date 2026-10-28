@@ -227,6 +227,157 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
                 self.assertEqual(json.loads((output.parent / "plugins/proseweaving/plugin.json").read_text())["version"], "1")
 
 
+class ReleaseArtifactPolicySafetyTests(unittest.TestCase):
+    """Exercise the public builder with committed, isolated candidate sources."""
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.parent = Path(temporary.name).resolve()
+        self.source = self.parent / "source"
+        (self.source / "release").mkdir(parents=True)
+        plugin = self.source / "plugins/proseweaving"
+        plugin.mkdir(parents=True)
+        (plugin / "plugin.json").write_text(json.dumps({"name": "proseweaving"}))
+        self.policy = {
+            "source_root": "plugins", "slate": ["proseweaving"],
+            "targets": {target: {
+                "include": ["plugin.json"], "exclude": [],
+                "plugin_root": "plugins", "catalog": f".{target}/marketplace.json",
+            } for target in TARGETS},
+        }
+        self.output = self.parent / "artifact"
+        self.output.mkdir()
+        self.marker = self.output / "preserve.txt"
+        self.marker.write_text("previous artifact")
+        subprocess.run(["git", "init", "-q"], cwd=self.source, check=True)
+
+    def commit_candidate(self, *, write_policy=True):
+        if write_policy:
+            (self.source / builder.POLICY_PATH).write_text(json.dumps(self.policy))
+        subprocess.run(["git", "add", "."], cwd=self.source, check=True)
+        subprocess.run([
+            "git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+            "commit", "--allow-empty", "-qm", "test: projection policy fixture",
+        ], cwd=self.source, check=True)
+
+    def assert_rejected_before_output(self, target="agent-plugins", slate=None):
+        # Prevent output mutation even if a regression reaches the writer. The
+        # real policy parsing, Git snapshot, and source validation still run.
+        with mock.patch.object(builder, "prepare_output", side_effect=AssertionError(
+            "invalid candidate reached output preparation"
+        )):
+            with self.assertRaises(ValueError):
+                build(self.source, self.output, target, slate or [], "preview", True)
+        self.assertEqual(self.marker.read_text(), "previous artifact")
+        self.assertEqual(list(self.output.iterdir()), [self.marker])
+
+    def test_absolute_catalog_is_rejected_before_output_mutation(self):
+        self.policy["targets"]["agent-plugins"]["catalog"] = str(self.parent / "outside.json")
+        self.commit_candidate()
+        self.assert_rejected_before_output()
+        self.assertFalse((self.parent / "outside.json").exists())
+
+    def test_policy_paths_reject_unsafe_syntax_and_types(self):
+        invalid = (
+            "", ".", "..", "../outside", "nested/../outside", "/outside",
+            "//server/share", "C:/outside", "C:\\outside", "plugins\\outside",
+            "nested//dir", "nested/./dir", "nested/", "bad\0path", None, 42, [],
+        )
+        for field in ("source_root", "plugin_root", "catalog"):
+            owner = self.policy if field == "source_root" else self.policy["targets"]["agent-plugins"]
+            original = owner[field]
+            for value in invalid:
+                with self.subTest(field=field, value=value):
+                    owner[field] = value
+                    self.commit_candidate()
+                    self.assert_rejected_before_output()
+            owner[field] = original
+
+    def test_policy_and_requested_plugin_ids_are_single_components(self):
+        for value in ("", ".", "..", "../outside", "/outside", "nested/plugin",
+                      "C:/outside", "plugins\\outside", None, 42, []):
+            with self.subTest(value=value):
+                self.policy["slate"] = ["proseweaving", value]
+                self.commit_candidate()
+                # Validate the policy slate even when selecting a safe subset.
+                self.assert_rejected_before_output(slate=["proseweaving"])
+        self.policy["slate"] = ["proseweaving"]
+        self.commit_candidate()
+        self.assert_rejected_before_output(slate=["../outside"])
+
+    def test_source_root_symlink_is_rejected(self):
+        (self.source / "plugins").rename(self.source / "canonical")
+        (self.source / "plugins").symlink_to("canonical", target_is_directory=True)
+        self.commit_candidate()
+        self.assert_rejected_before_output()
+
+    def test_plugin_root_symlink_is_rejected(self):
+        (self.source / "plugins/proseweaving").rename(self.source / "plugins/actual")
+        (self.source / "plugins/proseweaving").symlink_to("actual", target_is_directory=True)
+        self.commit_candidate()
+        self.assert_rejected_before_output()
+
+    def test_policy_file_and_ancestor_symlinks_are_rejected(self):
+        self.commit_candidate()
+        path = self.source / builder.POLICY_PATH
+        path.rename(self.source / "release/policy.json")
+        path.symlink_to("policy.json")
+        self.commit_candidate(write_policy=False)
+        self.assert_rejected_before_output()
+        path.unlink()
+        (self.source / "release/policy.json").rename(path)
+        (self.source / "release").rename(self.source / "policy-source")
+        (self.source / "release").symlink_to("policy-source", target_is_directory=True)
+        self.commit_candidate(write_policy=False)
+        self.assert_rejected_before_output()
+
+    def test_excluded_manifest_symlink_is_rejected_for_every_target(self):
+        plugin = self.source / "plugins/proseweaving"
+        (plugin / "plugin.json").rename(plugin / "identity.json")
+        (plugin / "plugin.json").symlink_to("identity.json")
+        for target in TARGETS:
+            self.policy["targets"][target]["exclude"] = ["plugin.json"]
+        self.commit_candidate()
+        for target in TARGETS:
+            with self.subTest(target=target):
+                self.assert_rejected_before_output(target)
+
+    def test_selected_file_and_directory_symlinks_are_rejected(self):
+        plugin = self.source / "plugins/proseweaving"
+        (plugin / "text.txt").write_text("fixture content")
+        link = plugin / "README.md"
+        link.symlink_to("text.txt")
+        self.policy["targets"]["agent-plugins"]["include"].append("README.md")
+        self.commit_candidate()
+        self.assert_rejected_before_output()
+        link.unlink()
+        (plugin / "references").symlink_to(".", target_is_directory=True)
+        self.commit_candidate()
+        self.assert_rejected_before_output()
+
+    def test_nested_relative_paths_and_partial_slates_remain_supported(self):
+        (self.source / "nested").mkdir()
+        (self.source / "plugins").rename(self.source / "nested/plugins")
+        self.policy["source_root"] = "nested/plugins"
+        self.policy["slate"].append("unselected")
+        for target in TARGETS:
+            spec = self.policy["targets"][target]
+            spec["plugin_root"] = "nested/plugins"
+            spec["catalog"] = "nested/catalog/marketplace.json"
+        self.commit_candidate()
+        for target in TARGETS:
+            with self.subTest(target=target):
+                receipt_path = build(self.source, self.output, target,
+                                     ["proseweaving"], "preview", True)
+                receipt = json.loads(receipt_path.read_text())
+                self.assertEqual(receipt["plugin_slate"], ["proseweaving"])
+                self.assertTrue((self.output / "nested/plugins/proseweaving/plugin.json").is_file())
+                self.assertTrue((self.output / "nested/catalog/marketplace.json").is_file())
+                self.assertTrue(all((self.output / item["path"]).resolve().is_relative_to(self.output)
+                                    for item in receipt["files"]))
+
+
 class ReleaseArtifactOutputSafetyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
