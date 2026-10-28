@@ -3,7 +3,7 @@
 
 Production evidence is bound to one clean Git commit, its tree, the exact
 ``git archive`` bytes, the real Claude Code executable selected from ``PATH``,
-and a complete 125-case routing definition loaded only from that archive.
+and a complete 129-case routing definition loaded only from that archive.
 Fixture mode is a deterministic, provider-free transport for a proper subset.
 """
 
@@ -67,10 +67,10 @@ REPLAY_SEMANTICS = (
     "without a durable successful checkpoint may replay once on resume."
 )
 EXPECTED_COUNTS = {
-    "cold_start": 24,
-    "explicit_invocation": 24,
-    "trigger": 77,
-    "total": 125,
+    "cold_start": 25,
+    "explicit_invocation": 25,
+    "trigger": 79,
+    "total": 129,
 }
 REVIEWED_BUILTIN_AGENTS = frozenset(("claude", "Explore", "general-purpose", "Plan"))
 CLAUDE_VERSION = re.compile(r"^(\d+\.\d+\.\d+) \(Claude Code\)$")
@@ -393,8 +393,8 @@ def load_definition(
 
     skills = definition["skills"]
     require(
-        isinstance(skills, list) and len(skills) == 24,
-        "routing definition must contain 24 skills",
+        isinstance(skills, list) and len(skills) == 25,
+        "routing definition must contain 25 skills",
     )
     skill_ids: list[str] = []
     for index, item in enumerate(skills):
@@ -2053,7 +2053,7 @@ def run(arguments: argparse.Namespace) -> int:
         else:
             require(
                 arguments.case_limit is None,
-                "Claude CLI routing evidence must run all 125 cases",
+                "Claude CLI routing evidence must run all 129 cases",
             )
             cases = bundle.cases
         config = configuration(arguments.adapter, requested_model, binary_identity)

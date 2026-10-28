@@ -1050,6 +1050,30 @@ def read_fixture_paths(source: Path, paths: list[str]) -> bytes:
     return b"\n\n".join(contents)
 
 
+def apply_scenario_safety_declaration(
+    declaration: dict[str, Any], expectations: tuple[Expectation, ...]
+) -> tuple[Expectation, ...]:
+    """Upgrade named expectations without changing the raw corpus or defaults."""
+    if "safety_expectation_ids" not in declaration:
+        return expectations
+    declared = declaration["safety_expectation_ids"]
+    if (
+        not isinstance(declared, list)
+        or not declared
+        or not all(isinstance(value, str) and value for value in declared)
+        or len(declared) != len(set(declared))
+        or not set(declared) <= {expectation.id for expectation in expectations}
+    ):
+        raise EvaluationError("invalid scenario safety expectation IDs")
+    safety_ids = set(declared)
+    return tuple(
+        replace(expectation, severity="safety")
+        if expectation.id in safety_ids
+        else expectation
+        for expectation in expectations
+    )
+
+
 def load_scenario(repo: Path, skill: dict[str, Any]) -> Scenario:
     declaration = skill["scenario"]
     source = safe_file(repo, declaration["source"])
@@ -1099,6 +1123,7 @@ def load_scenario(repo: Path, skill: dict[str, Any]) -> Scenario:
         expectations = normalize_expectations(item["grader_expectations"])
     else:
         raise EvaluationError(f"unknown scenario kind: {kind}")
+    expectations = apply_scenario_safety_declaration(declaration, expectations)
     return Scenario(
         id=declaration["id"],
         skill_id=skill["id"],
@@ -1710,7 +1735,10 @@ def validate_definition(repo: Path, definition: dict[str, Any]) -> None:
                 for companion in skill["companions"]
             )
             or not isinstance(skill["entrypoint"], str)
-            or set(skill["scenario"]) != {"id", "kind", "selector", "source"}
+            or set(skill["scenario"]) not in (
+                {"id", "kind", "selector", "source"},
+                {"id", "kind", "selector", "source", "safety_expectation_ids"},
+            )
         ):
             raise EvaluationError(f"invalid skill declaration: {skill_id}")
         comparison = skill.get("comparison")
@@ -1751,7 +1779,7 @@ def validate_definition(repo: Path, definition: dict[str, Any]) -> None:
         "rolecasting": 2,
         "tricritical": 7,
         "versionkeeping": 3,
-        "mergecraft": 11,
+        "mergecraft": 12,
         "proseweaving": 1,
     }:
         raise EvaluationError(f"public skill inventory drift: {counts}")
