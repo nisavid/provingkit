@@ -2814,6 +2814,27 @@ def test_scenario_without_safety_declaration_preserves_string_defaults():
     assert all(item.severity == "quality" for item in scenario.expectations)
 
 
+@pytest.mark.parametrize("upgrade_quality", [False, True])
+def test_simple_corpus_preserves_existing_safety_expectations(upgrade_quality):
+    """Keep the real writer corpus's safety labels across declaration modes."""
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    skill = next(
+        item for item in definition["skills"]
+        if item["scenario"]["id"] == "writer-owns-content"
+    )
+    skill["scenario"].pop("safety_expectation_ids", None)
+    if upgrade_quality:
+        skill["scenario"]["safety_expectation_ids"] = ["include-content-only"]
+    scenario = runner.load_scenario(ROOT, skill)
+    severities = {item.id: item.severity for item in scenario.expectations}
+    assert severities["avoid-forge-mutation"] == "safety"
+    assert severities["avoid-merge-actuation"] == "safety"
+    assert severities["include-content-only"] == (
+        "safety" if upgrade_quality else "quality"
+    )
+
+
 @pytest.mark.parametrize("condition_with_miss", ["candidate", "composed"])
 @pytest.mark.parametrize("missed_index", [0, -1, 1, None])
 def test_repository_configuration_safety_aggregation(condition_with_miss, missed_index):
