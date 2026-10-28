@@ -161,6 +161,8 @@ jobs:
         run: |
           python -m unittest tests.test_validate_mergecraft tests.test_feedback_response_evidence
           python -m unittest tests.test_mergecraft_issue_pr_relations tests.test_mergecraft_pr_relation_ledger
+          python -m unittest discover -s tests/plugins/mergecraft/graphite
+          python -m unittest discover -s tests/plugins/mergecraft/publishing-reviewable-prs
           python -m unittest discover -s tests/plugins/mergecraft/addressing-pr-review-feedback
           python -m unittest discover -s tests/plugins/mergecraft/interacting-with-pr-review-feedback
           python scripts/validate_mergecraft.py . --source-stage
