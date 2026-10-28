@@ -105,6 +105,36 @@ def validate_non_overlapping_paths(source: Path, output: Path) -> None:
         )
 
 
+def relative_policy_path(value: str, label: str, *, identifier: bool = False) -> Path:
+    """Reject unsafe syntax before Path can discard or normalize components."""
+    if (
+        not isinstance(value, str)
+        or not value
+        or any(character in value for character in ("\\", ":", "\0"))
+        or any(component in {"", ".", ".."} for component in value.split("/"))
+        or (identifier and "/" in value)
+    ):
+        raise ValueError(f"{label} must be a normalized relative POSIX path: {value!r}")
+    return Path(value)
+
+
+def contained_path(root: Path, relative: Path) -> Path:
+    """Keep reads and writes inside a pinned private tree, without link hops.
+
+    The source snapshot and prepared output are private directories. As with
+    prepare_output, concurrent changes by the same user are outside this guard.
+    """
+    relative = relative_policy_path(relative.as_posix(), "artifact path")
+    path = root
+    for component in relative.parts:
+        path /= component
+        if path.is_symlink():
+            raise ValueError(f"symlink in artifact path: {path}")
+    if not path.resolve().is_relative_to(root):
+        raise ValueError(f"artifact path escapes root: {path}")
+    return path
+
+
 def prepare_output(output: Path, force: bool) -> Path:
     """Create an output without following links or trusting a shared namespace.
 
@@ -233,10 +263,16 @@ def _build_snapshot(
     source_commit: str,
     short_commit: str,
 ) -> Path:
-    policy = json.loads((source / POLICY_PATH).read_text())
+    source = source.resolve(strict=True)
+    policy = json.loads(contained_path(source, POLICY_PATH).read_text())
     if target not in policy["targets"]:
         raise ValueError(f"unsupported target: {target}")
     target_spec = policy["targets"][target]
+    source_root = relative_policy_path(policy["source_root"], "source_root")
+    plugin_root = relative_policy_path(target_spec["plugin_root"], "plugin_root")
+    catalog_rel = relative_policy_path(target_spec["catalog"], "catalog")
+    for plugin_id in [*policy["slate"], *slate]:
+        relative_policy_path(plugin_id, "plugin id", identifier=True)
     known = set(policy["slate"])
     if not slate:
         slate = list(policy["slate"])
@@ -247,43 +283,50 @@ def _build_snapshot(
     if len(set(slate)) != len(slate):
         raise ValueError("plugin slate contains duplicates")
 
+    # Validate every source read before preparing (and possibly replacing) the
+    # output. Manifests are read even if the inclusion policy excludes them.
+    plugins = []
+    for plugin_id in slate:
+        src = contained_path(source, source_root / plugin_id)
+        if not src.is_dir():
+            raise FileNotFoundError(src)
+        selected = selected_files(src, target_spec)
+        for path in selected:
+            contained_path(source, path.relative_to(source))
+        manifest_path = contained_path(source, source_root / plugin_id / "plugin.json")
+        manifest = json.loads(manifest_path.read_text())
+        plugins.append((plugin_id, src, selected, manifest))
+
     policy_digest = sha256_bytes(canonical_json(policy))
     output = prepare_output(output, force)
 
-    for plugin_id in slate:
-        src = source / policy["source_root"] / plugin_id
-        if not src.is_dir():
-            raise FileNotFoundError(src)
-        dst = output / target_spec["plugin_root"] / plugin_id
-        selected = selected_files(src, target_spec)
+    for plugin_id, src, selected, manifest in plugins:
+        destination = plugin_root / plugin_id
         for path in selected:
             rel = path.relative_to(src)
-            copy_file(path, dst / rel)
+            copy_file(path, contained_path(output, destination / rel))
         if target == "cursor":
-            canonical = json.loads((src / "plugin.json").read_text())
             has_agents = any(path.relative_to(src).parts[:1] == ("agents",) for path in selected)
             write_json(
-                dst / ".cursor-plugin/plugin.json",
-                manifest_for_cursor(canonical, has_agents=has_agents),
+                contained_path(output, destination / ".cursor-plugin/plugin.json"),
+                manifest_for_cursor(manifest, has_agents=has_agents),
             )
 
     entries = []
-    for plugin_id in slate:
-        manifest = json.loads((source / policy["source_root"] / plugin_id / "plugin.json").read_text())
+    for plugin_id, _, _, manifest in plugins:
         if target == "agent-plugins":
             entries.append({"name": plugin_id, "source": {"source": "local", "path": f"./plugins/{plugin_id}"}, "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"}, "category": "Productivity"})
         elif target == "claude":
             entries.append({"name": plugin_id, "description": manifest.get("description", ""), "version": manifest.get("version", "1.0.0"), "author": manifest.get("author", {}), "source": f"./plugins/{plugin_id}"})
         else:
             entries.append({"name": plugin_id, "source": f"./plugins/{plugin_id}"})
-    catalog_rel = target_spec["catalog"]
     if target == "agent-plugins":
         catalog = {"name": "provingkit", "interface": {"displayName": "Provingkit"}, "plugins": entries}
     elif target == "claude":
         catalog = {"$schema": "https://anthropic.com/claude-code/marketplace.schema.json", "name": "provingkit", "description": "Provingkit installable plugins.", "owner": {"name": "Ivan D Vasin", "email": "ivan@nisavid.io"}, "plugins": entries}
     else:
         catalog = {"name": "provingkit", "owner": {"name": "Ivan D Vasin"}, "metadata": {"description": "Provingkit installable plugins."}, "plugins": entries}
-    write_json(output / catalog_rel, catalog)
+    write_json(contained_path(output, catalog_rel), catalog)
 
     artifact_digest, inventory = tree_digest(output)
     receipt = {
@@ -296,8 +339,9 @@ def _build_snapshot(
         "artifact_sha256": artifact_digest,
         "files": inventory,
     }
-    write_json(output / "RECEIPT.json", receipt)
-    return output / "RECEIPT.json"
+    receipt_path = contained_path(output, Path("RECEIPT.json"))
+    write_json(receipt_path, receipt)
+    return receipt_path
 
 
 def main() -> int:
