@@ -383,8 +383,23 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     def test_source_stage_validator_accepts_the_alpha_tag_alone_or_with_preview(
         self,
     ) -> None:
-        for include_preview in (False, True):
-            with self.subTest(include_preview=include_preview):
+        alpha4_tag = (
+            "v0.1.0-alpha.4",
+            "e14e818e423abd2f65b336e279284d412e0fcbce",
+        )
+        for tag_inventory in (
+            ((ALPHA_TAG, ALPHA_SOURCE),),
+            ((ALPHA_TAG, ALPHA_SOURCE), (PREVIEW_TAG, PREVIEW_SOURCE)),
+            (alpha4_tag,),
+            (alpha4_tag, (PREVIEW_TAG, PREVIEW_SOURCE)),
+            (alpha4_tag, (ALPHA_TAG, ALPHA_SOURCE)),
+            (
+                alpha4_tag,
+                (ALPHA_TAG, ALPHA_SOURCE),
+                (PREVIEW_TAG, PREVIEW_SOURCE),
+            ),
+        ):
+            with self.subTest(tags=tag_inventory):
                 with tempfile.TemporaryDirectory() as directory:
                     repository = Path(directory) / "repository"
                     self.clone_with_history(repository)
@@ -403,9 +418,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                             capture_output=True,
                             check=True,
                         )
-                    self.set_tag(repository, ALPHA_TAG, ALPHA_SOURCE)
-                    if include_preview:
-                        self.set_tag(repository, PREVIEW_TAG, PREVIEW_SOURCE)
+                    for name, target in tag_inventory:
+                        self.set_tag(repository, name, target)
 
                     result = self.validate(repository)
 
