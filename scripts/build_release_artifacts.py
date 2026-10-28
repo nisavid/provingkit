@@ -13,7 +13,9 @@ import fnmatch
 import hashlib
 import io
 import json
+import os
 import shutil
+import stat
 import subprocess
 import tarfile
 import tempfile
@@ -103,6 +105,94 @@ def validate_non_overlapping_paths(source: Path, output: Path) -> None:
         )
 
 
+def prepare_output(output: Path, force: bool) -> Path:
+    """Create an output without following links or trusting a shared namespace.
+
+    Ownership protects subsequent path-based writes from other local users;
+    descriptor-relative, symlink-safe removal also rejects leaf substitution.
+    Processes with the current user's authority are outside that guarantee.
+    """
+    if (
+        not hasattr(os, "O_DIRECTORY")
+        or not hasattr(os, "O_NOFOLLOW")
+        or not shutil.rmtree.avoids_symlink_attacks
+        or os.open not in os.supports_dir_fd
+        or os.mkdir not in os.supports_dir_fd
+        or os.stat not in os.supports_dir_fd
+    ):
+        raise ValueError("safe artifact output requires no-follow directory operations")
+    output = output.absolute()
+    if output == output.parent or output.name == "..":
+        raise ValueError(f"invalid artifact output: {output}")
+
+    # macOS exposes /tmp and /var through root-owned aliases. Only such aliases
+    # directly below a non-writable filesystem root are trusted; never resolve
+    # the caller's output leaf or a link inside its selected parent hierarchy.
+    root = Path(output.anchor)
+    root_metadata = root.stat()
+    first = root / output.parts[1]
+    try:
+        first_metadata = first.lstat()
+    except FileNotFoundError:
+        first_metadata = None
+    if (
+        len(output.parts) > 2
+        and first_metadata is not None
+        and stat.S_ISLNK(first_metadata.st_mode)
+        and first_metadata.st_uid == 0
+        and root_metadata.st_uid == 0
+        and not root_metadata.st_mode & 0o022
+    ):
+        output = first.resolve(strict=True).joinpath(*output.parts[2:])
+
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+    descriptor = os.open(output.anchor, flags)
+    try:
+        for component in (None, *output.parent.parts[1:]):
+            if component is not None:
+                try:
+                    os.mkdir(component, 0o700, dir_fd=descriptor)
+                except FileExistsError:
+                    # Existing components are validated by the no-follow open below.
+                    pass
+                child = os.open(component, flags, dir_fd=descriptor)
+                os.close(descriptor)
+                descriptor = child
+            metadata = os.fstat(descriptor)
+            if metadata.st_uid not in {0, os.geteuid()} or (
+                metadata.st_mode & 0o022 and not metadata.st_mode & stat.S_ISVTX
+            ):
+                raise ValueError(
+                    f"artifact output ancestor is writable by other users: {output}"
+                )
+        if metadata.st_uid != os.geteuid() or metadata.st_mode & 0o022:
+            raise ValueError(
+                "artifact output parent must be owned and not writable by other "
+                f"users: {output}"
+            )
+
+        # Resolve only the verified parent, retaining the lexical output leaf.
+        output = output.parent.resolve(strict=True) / output.name
+        try:
+            existing = os.stat(output.name, dir_fd=descriptor, follow_symlinks=False)
+        except FileNotFoundError:
+            existing = None
+        if existing is not None:
+            if not stat.S_ISDIR(existing.st_mode) or existing.st_uid != os.geteuid():
+                raise ValueError(
+                    f"artifact output must be an owned directory, not a symlink: {output}"
+                )
+            if not force:
+                raise FileExistsError(f"output exists (use --force): {output}")
+            shutil.rmtree(output.name, dir_fd=descriptor)
+        # Keep even permissive-umask descendants inaccessible to other users
+        # while the path-based projection writers populate the artifact.
+        os.mkdir(output.name, 0o700, dir_fd=descriptor)
+    finally:
+        os.close(descriptor)
+    return output
+
+
 @contextmanager
 def source_snapshot(source: Path, commit: str):
     with tempfile.TemporaryDirectory() as temporary:
@@ -123,8 +213,8 @@ def build(
     force: bool,
 ) -> Path:
     source = Path(git("rev-parse", "--show-toplevel", cwd=source)).resolve()
-    output = output.resolve()
-    validate_non_overlapping_paths(source, output)
+    # Canonicalization is only for the overlap comparison, never deletion.
+    validate_non_overlapping_paths(source, output.resolve())
     source_commit = git("rev-parse", "HEAD", cwd=source)
     short_commit = git("rev-parse", "--short=12", "HEAD", cwd=source)
     with source_snapshot(source, source_commit) as snapshot:
@@ -158,11 +248,7 @@ def _build_snapshot(
         raise ValueError("plugin slate contains duplicates")
 
     policy_digest = sha256_bytes(canonical_json(policy))
-    if output.exists():
-        if not force:
-            raise FileExistsError(f"output exists (use --force): {output}")
-        shutil.rmtree(output)
-    output.mkdir(parents=True)
+    output = prepare_output(output, force)
 
     for plugin_id in slate:
         src = source / policy["source_root"] / plugin_id
@@ -224,7 +310,7 @@ def main() -> int:
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
     slate = [x for x in (args.slate.split(",") if args.slate else []) if x]
-    receipt = build(args.source.resolve(), args.output.resolve(), args.target, slate, args.channel, args.force)
+    receipt = build(args.source.resolve(), args.output, args.target, slate, args.channel, args.force)
     print(receipt)
     return 0
 
