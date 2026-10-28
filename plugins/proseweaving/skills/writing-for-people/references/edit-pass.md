@@ -60,6 +60,15 @@ clear prose suited to that medium. Keep the shortest phrasing that preserves
 meaning and reads naturally; conversational speech is one register among
 several.
 
+Check workflow names against the main skill's naming rule. Replace opaque
+workflow codes in durable/public prose even when the draft defines them. In
+operator or cross-project messages, retain them only when both exception
+conditions hold. Reread the opening and each ask for enough system, purpose,
+and interface context. State whether an interface exists or is proposed;
+removing a code alone does not repair an under-grounded question. Preserve
+useful technical identifiers and protected spans under the owning surface
+contract; flag a naming defect in protected text rather than silently editing it.
+
 ## 6. Recheck Every Fact
 
 Fluent rewriting is where facts drift: "should fail" becomes "fails", a
