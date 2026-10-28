@@ -36,8 +36,8 @@ or files outside the policy.
 The candidate's policy is configuration, not filesystem authority. Its source,
 plugin-output, and catalog paths must be normalized relative POSIX paths;
 plugin IDs must be single path components. Absolute paths, empty or dot
-components, parent traversal, backslashes, and drive-qualified paths are
-rejected. The projector checks policy and plugin source paths, including
+components, parent traversal, backslashes, and colon-containing paths (including
+drive-qualified paths) are rejected. The projector checks policy and plugin source paths, including
 manifests excluded from copying, for symlinks before replacing any existing
 output. Copied and generated files stay beneath the prepared output root.
 
