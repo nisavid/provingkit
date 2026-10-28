@@ -4,10 +4,9 @@ import hashlib
 import importlib.util
 import io
 import sys
-import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from unittest import mock
+from unittest import TestCase, main, mock
 
 
 def _load_module(name: str, path: Path):
@@ -67,7 +66,7 @@ def consume_publication(command):
     return None, exit_code, errors.getvalue()
 
 
-class RepairCommandConsumptionTests(unittest.TestCase):
+class RepairCommandConsumptionTests(TestCase):
     def setUp(self) -> None:
         # Reuse producer inputs without inheriting or rediscovering its tests.
         # Its candidate builder and review loader are inert; this observation
@@ -311,4 +310,4 @@ class RepairCommandConsumptionTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

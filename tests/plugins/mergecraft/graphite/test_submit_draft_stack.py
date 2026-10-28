@@ -81,6 +81,7 @@ def observe_publication(command):
         try:
             publisher.main()
         except InspectionReached:
+            # The inert handler captured its arguments; inspect them below.
             pass
     if len(observed) != 1:
         raise AssertionError("publisher did not enter exactly one inert operation")
