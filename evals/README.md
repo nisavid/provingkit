@@ -8,6 +8,14 @@ behavior evidence, not proof that every publication, deployment, hook, or runtim
 control-plane action is integrated correctly. Those claims need their own
 end-to-end evidence.
 
+Skill IDs use exactly `plugin:skill`, with each component a 1–80 character
+lowercase ASCII alphanumeric slug separated by single hyphens. Scenario IDs
+use the same slug grammar without a colon. Windows device names (`con`, `prn`,
+`aux`, `nul`, `com1`–`com9`, and `lpt1`–`lpt9`) are rejected. IDs containing path
+syntax, glob metacharacters, or consecutive hyphens are rejected rather than
+normalized. Valid IDs retain their existing artifact names and resume paths;
+every ID-derived destination must remain within its output or temporary root.
+
 Validate the definition without using a model:
 
 ```sh

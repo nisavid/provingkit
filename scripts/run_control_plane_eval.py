@@ -298,6 +298,46 @@ def safe_file(root: Path, relative: str) -> Path:
     )
 
 
+def validate_identifier(value: Any, label: str) -> str:
+    """Accept bounded portable slugs, excluding path, glob, and device syntax."""
+    if (
+        not isinstance(value, str)
+        or len(value) > 80
+        or re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", value) is None
+        or value in {"con", "prn", "aux", "nul"}
+        or re.fullmatch(r"(?:com|lpt)[1-9]", value) is not None
+    ):
+        raise EvaluationError(f"invalid {label} ID: {value!r}")
+    return value
+
+
+def skill_path_name(value: Any) -> str:
+    if not isinstance(value, str) or value.count(":") != 1:
+        raise EvaluationError(f"invalid skill ID: {value!r}")
+    plugin, skill = value.split(":")
+    # Single-hyphen slugs make the existing ':' -> '--' mapping injective.
+    return "--".join(validate_identifier(part, "skill") for part in (plugin, skill))
+
+
+def validate_definition_identifiers(definition: dict[str, Any]) -> None:
+    if not isinstance(definition, dict) or not isinstance(definition.get("skills"), list):
+        raise EvaluationError("control-plane definition schema drift")
+    for skill in definition["skills"]:
+        if not isinstance(skill, dict) or not {"id", "scenario"} <= set(skill):
+            raise EvaluationError("skill declaration schema drift")
+        scenario = skill["scenario"]
+        if not isinstance(scenario, dict) or "id" not in scenario:
+            raise EvaluationError(f"invalid skill declaration: {skill['id']}")
+        skill_path_name(skill["id"])
+        validate_identifier(scenario["id"], "scenario")
+
+
+def artifact_path(root: Path, relative: str) -> Path:
+    return lexical_artifact_path(
+        root, relative, label="evaluation artifact", error_factory=EvaluationError
+    )
+
+
 def slug(value: str) -> str:
     normalized = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return normalized[:72] or "expectation"
@@ -1075,7 +1115,9 @@ def apply_scenario_safety_declaration(
 
 
 def load_scenario(repo: Path, skill: dict[str, Any]) -> Scenario:
+    skill_path_name(skill["id"])
     declaration = skill["scenario"]
+    validate_identifier(declaration["id"], "scenario")
     source = safe_file(repo, declaration["source"])
     document = read_json(source)
     kind = declaration["kind"]
@@ -1423,9 +1465,11 @@ def make_bundle(
         raise EvaluationError(
             f"bundle roots or calls are duplicated: {skill_id} {condition}"
         )
-    safe_skill = skill_id.replace(":", "--")
+    safe_skill = skill_path_name(skill_id)
+    if condition not in CONDITIONS:
+        raise EvaluationError(f"invalid evaluation condition: {condition!r}")
     archive_relpath = f"bundles/{safe_skill}/{condition}.tar"
-    archive = output / archive_relpath
+    archive = artifact_path(output, archive_relpath)
     write_tar(archive, files, modes)
     file_inventory = [
         {
@@ -1657,6 +1701,7 @@ def snapshot_incumbents(
     snapshots: dict[str, BundleSource] = {}
     try:
         for skill_id, source in sources.items():
+            safe_skill = skill_path_name(skill_id)
             expected_lock = source.tree_sha256
             if expected_lock is None or full_tree_lock(source.root) != expected_lock:
                 raise EvaluationError(f"incumbent full-tree lock drift: {skill_id}")
@@ -1676,11 +1721,11 @@ def snapshot_incumbents(
                     f"incumbent changed while snapshotting: {skill_id}"
                 )
             archive_relpath = (
-                f"artifacts/incumbents/{skill_id.replace(':', '--')}/tree.tar"
+                f"artifacts/incumbents/{safe_skill}/tree.tar"
             )
-            archive_path = output / archive_relpath
+            archive_path = artifact_path(output, archive_relpath)
             write_tar(archive_path, files, modes)
-            snapshot_root = Path(temporary.name) / skill_id.replace(":", "--")
+            snapshot_root = artifact_path(Path(temporary.name), safe_skill)
             snapshot_root.mkdir(parents=True)
             with tarfile.open(archive_path, "r:") as archive:
                 extract_safe_tar(archive, snapshot_root)
@@ -1711,6 +1756,7 @@ def validate_definition(repo: Path, definition: dict[str, Any]) -> None:
     allowed_fields = required_fields | {"target_skill_ids"}
     if not required_fields <= set(definition) or not set(definition) <= allowed_fields:
         raise EvaluationError("control-plane definition schema drift")
+    validate_definition_identifiers(definition)
     if definition["schema_version"] != 1 or definition["conditions"] != list(
         CONDITIONS
     ):
@@ -2234,6 +2280,9 @@ def bundle_request(scenario: Scenario, bundle: dict[str, Any], archive: Path) ->
 
 
 def run_key(scenario_id: str, condition: str, repetition: int) -> str:
+    validate_identifier(scenario_id, "scenario")
+    if condition not in CONDITIONS or repetition not in REPETITIONS:
+        raise EvaluationError("invalid executor coordinate")
     return f"{scenario_id}--{condition}--{repetition}"
 
 
@@ -2486,7 +2535,7 @@ def execute_coordinate(
     bundle: dict[str, Any],
 ) -> dict[str, Any]:
     key = run_key(scenario.id, condition, repetition)
-    checkpoint = output / "checkpoints" / "executors" / f"{key}.json"
+    checkpoint = artifact_path(output, f"checkpoints/executors/{key}.json")
     input_sha = canonical_digest(
         {
             "bundle_id": bundle["bundle_id"],
@@ -2505,7 +2554,7 @@ def execute_coordinate(
             or run.get("input_sha256") != input_sha
         ):
             raise EvaluationError(f"executor checkpoint contract drift: {key}")
-        response_path = output / run["response_artifact_relpath"]
+        response_path = artifact_path(output, run["response_artifact_relpath"])
         if (
             not response_path.is_file()
             or response_path.is_symlink()
@@ -2518,12 +2567,12 @@ def execute_coordinate(
     print(f"executor {key}: running", file=sys.stderr, flush=True)
     run_id = f"run-{uuid.uuid4()}"
     output_id = "output-" + secrets.token_hex(6)
-    archive = output / bundle["archive_relpath"]
+    archive = artifact_path(output, bundle["archive_relpath"])
     request = bundle_request(scenario, bundle, archive)
     response_relpath = f"artifacts/executors/{key}--{output_id}.txt"
     request_relpath = f"artifacts/requests/executors/{key}--{output_id}.json"
     transport_relpath = f"artifacts/transports/executors/{key}--{output_id}.jsonl"
-    write_frozen(output / request_relpath, request)
+    write_frozen(artifact_path(output, request_relpath), request)
     with tempfile.TemporaryDirectory(prefix="control-plane-executor-") as temporary:
         result, attempt_id, attempt_relpath, attempt_sha256 = run_transport_attempt(
             output,
@@ -2544,8 +2593,8 @@ def execute_coordinate(
     config_relpath, config_sha256 = frozen_json_artifact(
         output, "artifacts/config/executor.json", executor_config
     )
-    write_frozen(output / response_relpath, result.response)
-    write_frozen(output / transport_relpath, result.raw_transport)
+    write_frozen(artifact_path(output, response_relpath), result.response)
+    write_frozen(artifact_path(output, transport_relpath), result.raw_transport)
     identity_relpath = f"artifacts/identities/executors/{key}--{output_id}.json"
     identity_relpath, identity_sha256 = frozen_json_artifact(
         output,
@@ -2618,6 +2667,9 @@ def invalidate(
     source_scenario_id: str,
     affected: list[str],
 ) -> None:
+    validate_identifier(source_scenario_id, "scenario")
+    for scenario_id in affected:
+        validate_identifier(scenario_id, "scenario")
     if state.get("invalidation"):
         return
     journal = state.get("invalidation_journal")
@@ -2635,7 +2687,9 @@ def invalidate(
                 candidates = (
                     sorted(source.glob(f"{scenario_id}--*.json"))
                     if kind == "executors"
-                    else [source / f"{scenario_id}.json"]
+                    else [
+                        artifact_path(output, f"checkpoints/{kind}/{scenario_id}.json")
+                    ]
                 )
                 for checkpoint in candidates:
                     if not checkpoint.exists():
@@ -2673,8 +2727,8 @@ def invalidate(
     journal["status"] = "moving"
     write_json(output / "state.json", state)
     for move in journal["moves"]:
-        source = output / move["source_relpath"]
-        destination = output / move["destination_relpath"]
+        source = artifact_path(output, move["source_relpath"])
+        destination = artifact_path(output, move["destination_relpath"])
         source_exists = source.exists()
         destination_exists = destination.exists()
         if destination_exists:
@@ -2730,7 +2784,9 @@ def grade_scenario(
     run_records: list[dict[str, Any]],
     artifact_suffix: str = "current",
 ) -> dict[str, Any]:
-    checkpoint = output / "checkpoints" / "graders" / f"{scenario.id}.json"
+    validate_identifier(scenario.id, "scenario")
+    validate_identifier(artifact_suffix, "grader artifact")
+    checkpoint = artifact_path(output, f"checkpoints/graders/{scenario.id}.json")
     natural_order = [record["run"]["output_id"] for record in run_records]
     if checkpoint.exists():
         existing = read_json(checkpoint)
@@ -2742,7 +2798,7 @@ def grade_scenario(
             raise EvaluationError(
                 f"grader checkpoint executor coverage drift: {scenario.id}"
             )
-        response_path = output / existing["response_artifact_relpath"]
+        response_path = artifact_path(output, existing["response_artifact_relpath"])
         if (
             not response_path.is_file()
             or response_path.is_symlink()
@@ -2752,7 +2808,7 @@ def grade_scenario(
         validate_checkpoint_model_lock(output, state, adapter, "grader", existing)
         print(f"grader {scenario.id}: resumed", file=sys.stderr, flush=True)
         return existing
-    plan_path = output / "checkpoints" / "grader-plans" / f"{scenario.id}.json"
+    plan_path = artifact_path(output, f"checkpoints/grader-plans/{scenario.id}.json")
     if plan_path.exists():
         plan = read_json(plan_path)
         if set(plan) != {"presentation_order", "seed_hex"}:
@@ -2781,7 +2837,9 @@ def grade_scenario(
     response_records = []
     for output_id in presentation_order:
         run = by_output[output_id]["run"]
-        response_bytes = (output / run["response_artifact_relpath"]).read_bytes()
+        response_bytes = artifact_path(
+            output, run["response_artifact_relpath"]
+        ).read_bytes()
         if digest_bytes(response_bytes) != run["response_sha256"]:
             raise EvaluationError(f"executor response artifact drift: {output_id}")
         outputs.append({"output_id": output_id, "response": response_bytes.decode()})
@@ -2808,9 +2866,9 @@ def grade_scenario(
     request_relpath = (
         f"artifacts/requests/graders/{scenario.id}--{artifact_suffix}.json"
     )
-    write_frozen(output / request_relpath, request)
-    seed_path = (
-        output / "artifacts" / "randomization" / f"{scenario.id}--{artifact_suffix}.bin"
+    write_frozen(artifact_path(output, request_relpath), request)
+    seed_path = artifact_path(
+        output, f"artifacts/randomization/{scenario.id}--{artifact_suffix}.bin"
     )
     write_frozen(seed_path, seed)
     disclosure = max(record["run"]["finished_at"] for record in run_records)
@@ -2845,22 +2903,14 @@ def grade_scenario(
         "randomization_seed_sha256": digest_bytes(seed),
     }
     response_relpath = f"artifacts/graders/{scenario.id}--{artifact_suffix}.json"
-    response_path = output / response_relpath
+    response_path = artifact_path(output, response_relpath)
     write_frozen(response_path, canonical_bytes(payload))
-    transport_path = (
-        output
-        / "artifacts"
-        / "transports"
-        / "graders"
-        / f"{scenario.id}--{artifact_suffix}.jsonl"
+    transport_path = artifact_path(
+        output, f"artifacts/transports/graders/{scenario.id}--{artifact_suffix}.jsonl"
     )
     write_frozen(transport_path, result.raw_transport)
-    identity_path = (
-        output
-        / "artifacts"
-        / "identities"
-        / "graders"
-        / f"{scenario.id}--{artifact_suffix}.json"
+    identity_path = artifact_path(
+        output, f"artifacts/identities/graders/{scenario.id}--{artifact_suffix}.json"
     )
     identity_relpath, identity_sha256 = frozen_json_artifact(
         output,
@@ -3193,6 +3243,9 @@ def run(args: argparse.Namespace) -> int:
             "evaluation definition must be inside the candidate repository"
         ) from error
     definition = read_json(definition_path)
+    # Reject candidate-controlled path syntax before preparing any output.
+    # The authoritative frozen definition is also validated below.
+    validate_definition_identifiers(definition)
     output = lexical_absolute_path(args.output)
     if args.adapter == "claude":
         validate_production_candidate(repo, output, args.candidate_revision)
@@ -3257,7 +3310,7 @@ def run(args: argparse.Namespace) -> int:
         raise EvaluationError("resume matrix differs from the frozen matrix")
     write_json(matrix_path, matrix)
     for scenario in scenarios.values():
-        scenario_root = output / "artifacts" / "scenarios" / scenario.id
+        scenario_root = artifact_path(output, f"artifacts/scenarios/{scenario.id}")
         write_frozen(scenario_root / "prompt.txt", scenario.prompt)
         write_frozen(scenario_root / "fixture.txt", scenario.fixture)
         write_frozen(scenario_root / "rubric.json", canonical_bytes(scenario.rubric))
@@ -3421,7 +3474,7 @@ def run(args: argparse.Namespace) -> int:
                     all_records[run_key(scenario.id, condition, repetition)] = record
                     write_json(state_path, state)
     for key in list(all_records):
-        checkpoint = output / "checkpoints" / "executors" / f"{key}.json"
+        checkpoint = artifact_path(output, f"checkpoints/executors/{key}.json")
         all_records[key] = read_json(checkpoint)
     executor_runs = [
         all_records[run_key(scenario_id, condition, repetition)]["run"]
