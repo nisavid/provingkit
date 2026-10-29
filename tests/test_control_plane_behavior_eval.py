@@ -2965,6 +2965,26 @@ def test_invalid_definition_is_rejected_before_output_creation(tmp_path):
     assert not output.exists()
 
 
+@pytest.mark.parametrize("source_id", ("../outside", None, "a*"))
+def test_invalidation_source_is_rejected_before_output_creation(tmp_path, source_id):
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    definition["invalidation_source_scenario_id"] = source_id
+    definition_path = tmp_path / "definition.json"
+    definition_path.write_text(json.dumps(definition))
+    output = tmp_path / "output"
+    args = runner.build_parser().parse_args([
+        "--repo", str(tmp_path), "--definition", str(definition_path),
+        "run", "--adapter", "fixture", "--output", str(output),
+        "--incumbents", str(tmp_path / "unused.json"), "--scenario-limit", "1",
+        "--candidate-repository", "fixture://candidate",
+        "--candidate-revision", "candidate-revision",
+    ])
+    with pytest.raises(runner.EvaluationError):
+        runner.run(args)
+    assert not output.exists()
+
+
 @pytest.mark.parametrize("malformation", (
     "missing-skills", "non-list-skills", "non-mapping-skill", "missing-skill-id",
     "missing-scenario", "non-mapping-scenario", "missing-scenario-id",
