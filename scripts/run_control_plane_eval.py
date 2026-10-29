@@ -330,6 +330,9 @@ def validate_definition_identifiers(definition: dict[str, Any]) -> None:
             raise EvaluationError(f"invalid skill declaration: {skill['id']}")
         skill_path_name(skill["id"])
         validate_identifier(scenario["id"], "scenario")
+    validate_identifier(
+        definition.get("invalidation_source_scenario_id"), "invalidation source scenario"
+    )
 
 
 def artifact_path(root: Path, relative: str) -> Path:
