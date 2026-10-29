@@ -180,6 +180,31 @@ eval corpus, `tests/plugins/mergecraft/`, the public relation command suites
 `release/plugin-content-locks/mergecraft.json`. Skill-local eval resources are
 package support artifacts, not runtime authority.
 
+## Graphite repair authorization
+
+`submit_draft_stack.py execute` returns the generated handoff's `content_sha256`.
+Retain that value independently of the handoff file and supply it to `repair`
+as `--expected-handoff-sha256`. The Python `repair` entry point requires the same
+value as its `expected_handoff_sha256` keyword. A digest read or recomputed from
+an untrusted handoff is not authorization. The retained value authorizes only
+the exact handoff produced by the reviewed transport; neither digest is a
+signature or protection against a compromised operator session.
+
+Repair regenerates the entire publisher and audit command inventory from typed
+targets and rejects drift before launching helpers. For targets still requiring
+mutation, it verifies body, review-input, and final publication-candidate digests
+and passes private read-only snapshots of those validated input bytes to helpers.
+Exact canonical receipts remain sufficient for checkpoint and convergence
+recovery even after candidate source files disappear. Handoffs lacking the typed
+fields fail closed; do not replay transport or synthesize a retained digest to
+bypass a refusal.
+
+The Graphite unit suite exercises these refusals, unchanged legitimate repair,
+readiness restoration, and recovery. Its parser consumer tests execute the real
+auditor and publisher parsers with live operation handlers replaced by inert
+observers. They establish offline command compatibility, not live forge,
+receipt-store, installation, or deployment acceptance.
+
 ## Evaluation evidence
 
 The feedback-response [experiment](skills/interacting-with-pr-review-feedback/evals/response-evidence.json)
@@ -249,7 +274,11 @@ and [independent grades](https://github.com/nisavid/provingkit/blob/main/evals/m
 bind the current instructions to 51 behavior responses across 17 cases and
 13 native discovery decisions. All 195 selected behavior expectations and
 13 discovery decisions pass with Claude Code 2.1.273 and `claude-opus-5` at
-high effort. Behavior runs expose no tools; discovery runs expose only `Skill`
+high effort. Case 11 now selects three freshly graded Claude Code 2.1.273
+subscription-backed runs for the Graphite retained-digest guidance; other case
+and discovery selections retain their unchanged exact inputs. All 15 refreshed
+judgments pass. Prior runs and the noted supplementary response inaccuracies
+remain retained. Behavior runs expose no tools; discovery runs expose only `Skill`
 and retain the client's bundled runtime skill descriptions. Failed and
 superseded runs remain unselected, and supplementary response inaccuracies
 remain recorded. These checks establish the stated expectations and observed
