@@ -33,6 +33,27 @@ release. Use `--slate proseweaving` for a one-plugin candidate. The command
 fails if the output exists unless `--force` is supplied, and refuses symlinks
 or files outside the policy.
 
+The candidate's policy is configuration, not filesystem authority. Its source,
+plugin-output, and catalog paths must be normalized relative POSIX paths;
+plugin IDs must be single path components. Absolute paths, empty or dot
+components, parent traversal, backslashes, and colon-containing paths (including
+drive-qualified paths) are rejected. The projector checks policy and plugin source paths, including
+manifests excluded from copying, for symlinks before replacing any existing
+output. Copied and generated files stay beneath the prepared output root.
+
+The output root is created privately (mode `0700`), including when replacing an
+existing output with `--force`. Its parent must belong to the current user and
+must not be writable by the group or other users. Missing parents are created
+privately. Ancestors must belong to the current user or root and must not be
+writable by other users, except for sticky directories such as `/tmp`. For a shared staging location,
+create a private subdirectory first and put the output inside it. The projector
+rejects output and parent symlinks, including dangling output links; root-owned
+system aliases directly below the filesystem root (such as macOS's `/tmp` and
+`/var`) are accepted. Forced removal uses a pinned parent directory descriptor
+and symlink-safe recursive deletion. Platforms without those operations are
+rejected. These checks protect against other local users; a process running
+with the current user's authority can still modify that user's files.
+
 The generated roots are directly consumable by their corresponding marketplace
 clients:
 

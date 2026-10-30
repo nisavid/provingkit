@@ -92,9 +92,16 @@ restack or unchanged resubmission does not reacquire relations or settings.
    downstack chain without unreviewed descendants; add no branch selector or
    broader stack flag. The script never retries an ambiguous transport, maps
    every branch to one exact PR, and writes a private repair handoff. Stop on any
-   partial or mismatched result.
+   partial or mismatched result. Retain `content_sha256` from the original
+   successful execution result independently of the mutable handoff file. A
+   digest read or recomputed from that file cannot establish authorization.
 4. Immediately run `scripts/submit_draft_stack.py repair` on the complete
-   handoff. It executes only the owned publisher commands, bottom-to-top,
+   handoff, supplying the retained digest with `--expected-handoff-sha256`.
+   Missing typed targets in older handoffs fail closed. If independent
+   authorization is unavailable, stop for recovery; do not replay transport or
+   derive a digest from the handoff to bypass the refusal. Repair regenerates
+   publisher and audit commands from typed targets and verifies pending payload
+   bindings. It executes only the owned publisher commands, bottom-to-top,
    preserves existing ready state, repairs the temporary Graphite text, and
    audits the authoritative latest receipt for every PR. On a new run or resume,
    an uncheckpointed PR whose latest audit already matches the exact handoff

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import os
 import shlex
@@ -9,7 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import nullcontext
+from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -19,6 +20,72 @@ spec = importlib.util.spec_from_file_location("submit_draft_stack", SCRIPT)
 assert spec and spec.loader
 GRAPHITE = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(GRAPHITE)
+
+
+
+class InspectionReached(Exception):
+    def __init__(self, member):
+        self.member = member
+
+
+def inspect_publication_evidence(command):
+    """Observe the real auditor parser; replace only live operation handlers."""
+    auditor_spec = importlib.util.spec_from_file_location(
+        "graphite_inspection_auditor", GRAPHITE.AUDIT
+    )
+    assert auditor_spec and auditor_spec.loader
+    auditor = importlib.util.module_from_spec(auditor_spec)
+    auditor_spec.loader.exec_module(auditor)
+    errors = io.StringIO()
+
+    def reached(*, expected, **kwargs):
+        raise InspectionReached(expected)
+
+    with (
+        mock.patch.object(sys, "argv", command[1:]),
+        mock.patch.object(auditor, "audit", side_effect=reached),
+        mock.patch.object(
+            auditor, "reconcile",
+            side_effect=AssertionError("inspection entered reconciliation"),
+        ),
+        redirect_stdout(io.StringIO()),
+        redirect_stderr(errors),
+    ):
+        try:
+            auditor.main()
+        except InspectionReached as observed:
+            return observed.member, None, errors.getvalue()
+        except SystemExit as rejected:
+            return None, rejected.code, errors.getvalue()
+    raise AssertionError("inspection returned without reaching the audit handler")
+
+
+def observe_publication(command):
+    """Execute the real publisher parser, replacing only its live actuators."""
+    spec = importlib.util.spec_from_file_location("graphite_publisher_consumer", GRAPHITE.UPDATE)
+    assert spec and spec.loader
+    publisher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(publisher)
+    observed = []
+
+    def reached(operation, **arguments):
+        observed.append((operation, arguments))
+        raise InspectionReached(arguments["expected"])
+
+    with (
+        mock.patch.object(sys, "argv", command[1:]),
+        mock.patch.object(publisher, "update_text", side_effect=lambda **args: reached("text", **args)),
+        mock.patch.object(publisher, "mark_ready", side_effect=lambda **args: reached("ready", **args)),
+        redirect_stdout(io.StringIO()),
+    ):
+        try:
+            publisher.main()
+        except InspectionReached:
+            # The inert handler captured its arguments; inspect them below.
+            pass
+    if len(observed) != 1:
+        raise AssertionError("publisher did not enter exactly one inert operation")
+    return observed[0]
 
 
 class GraphiteTransportTests(unittest.TestCase):
@@ -73,6 +140,77 @@ class GraphiteTransportTests(unittest.TestCase):
         )
         candidate_builder.start()
         self.addCleanup(candidate_builder.stop)
+        review_loader = mock.patch.object(
+            GRAPHITE, "load_review_input",
+            return_value=mock.Mock(content_sha256="c" * 64),
+        )
+        review_loader.start()
+        self.addCleanup(review_loader.stop)
+
+
+
+    def repair(self, handoff, output):
+        """Supply the independently retained authorization for a test fixture."""
+        unsigned = {key: value for key, value in handoff.items() if key != "content_sha256"}
+        digest = GRAPHITE._sha_bytes(GRAPHITE._canonical(unsigned))
+        handoff = {**unsigned, "content_sha256": digest}
+        return GRAPHITE.repair(handoff, output, expected_handoff_sha256=digest)
+
+    def test_transported_member_publication_evidence_can_be_inspected(self) -> None:
+        member = self.required_item()
+        observed, parser_exit, errors = inspect_publication_evidence(
+            member["final_audit_command"]
+        )
+        expected = GRAPHITE.ExpectedIdentity(
+            repository="acme/app",
+            pr_number=42,
+            base="main",
+            base_oid="a" * 40,
+            head="acme:feature",
+            head_oid="b" * 40,
+            head_owner="acme",
+            head_repository="acme/app",
+        )
+        self.assertEqual(
+            observed, expected,
+            f"inspection did not reach the member: parser exit {parser_exit}; {errors}",
+        )
+
+
+    def test_inspection_rejects_unsupported_options_before_reaching_member(self) -> None:
+        member = self.required_item()
+        observed, parser_exit, errors = inspect_publication_evidence(
+            [*member["final_audit_command"], "--unexpected-inspection-option"]
+        )
+        self.assertIsNone(observed)
+        self.assertEqual(parser_exit, 2)
+        self.assertIn("unrecognized arguments", errors)
+
+    def test_inspection_requires_the_complete_member_identity(self) -> None:
+        command = list(self.required_item()["final_audit_command"])
+        position = command.index("--head-owner")
+        del command[position : position + 2]
+        observed, parser_exit, errors = inspect_publication_evidence(command)
+        self.assertIsNone(observed)
+        self.assertEqual(parser_exit, 2)
+        self.assertIn("--head-owner", errors)
+
+    def test_inspection_driver_detects_a_wrong_member_expectation(self) -> None:
+        command = self.required_item()["final_audit_command"]
+        observed, parser_exit, errors = inspect_publication_evidence(command)
+        self.assertIsNone(parser_exit, errors)
+        wrong_member = GRAPHITE.ExpectedIdentity(
+            repository="acme/app",
+            pr_number=43,
+            base="main",
+            base_oid="a" * 40,
+            head="acme:feature",
+            head_oid="b" * 40,
+            head_owner="acme",
+            head_repository="acme/app",
+        )
+        with self.assertRaises(AssertionError):
+            self.assertEqual(observed, wrong_member)
 
     def test_executable_git_configuration_classes_are_closed(self) -> None:
         cases = {
@@ -1001,6 +1139,9 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             item = self.required_item()
 
         command = item["publisher_commands"][0]
+        self.assertEqual(
+            command[command.index("--review-input") + 1], str(self.review_input)
+        )
         self.assertEqual(command[command.index("--review-mode") + 1], "required")
         self.assertEqual(
             command[command.index("--review-bundle") + 1],
@@ -1021,9 +1162,9 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
         bundle_index = bypass.index("--review-bundle")
         del bypass[bundle_index : bundle_index + 2]
         with self.assertRaisesRegex(
-            GRAPHITE.GraphiteTransportError, "review bundle drifted"
+            GRAPHITE.GraphiteTransportError, "canonical target"
         ):
-            GRAPHITE._checked_publisher_command(bypass, item)
+            GRAPHITE._repair_commands({**item, "publisher_commands": [bypass]})
 
     def test_required_audit_accepts_only_exact_canonical_v3_review(self) -> None:
         item = self.required_item()
@@ -1085,7 +1226,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             with self.assertRaisesRegex(
                 GRAPHITE.GraphiteTransportError, "exact handoff target"
             ):
-                GRAPHITE.repair(
+                self.repair(
                     handoff, Path(self.temporary.name) / "repair-no-upgrade.json"
                 )
         run.assert_called_once_with(
@@ -1105,7 +1246,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
         with mock.patch.object(
             GRAPHITE, "_run_json_command", return_value=exact
         ) as run:
-            result = GRAPHITE.repair(
+            result = self.repair(
                 handoff, Path(self.temporary.name) / "repair-exact.json"
             )
         self.assertEqual(result["status"], "canonical-repair-complete")
@@ -1122,7 +1263,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
         exact = self.audit_for(item)
         output = Path(self.temporary.name) / "repair-checkpoint.json"
         with mock.patch.object(GRAPHITE, "_run_json_command", return_value=exact):
-            GRAPHITE.repair(handoff, output)
+            self.repair(handoff, output)
 
         checkpoint_path = output.with_name(f".{output.name}.checkpoint.json")
         checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
@@ -1132,7 +1273,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             mock.patch.object(GRAPHITE, "_run_json_command", return_value=exact),
             self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "checkpointed PR"),
         ):
-            GRAPHITE.repair(handoff, output)
+            self.repair(handoff, output)
 
     def test_existing_ready_pr_is_never_drafted_by_handoff(self) -> None:
         body = Path(self.temporary.name) / "existing.md"
@@ -1245,7 +1386,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             "_run_json_command",
             side_effect=lambda *_args, **_kwargs: next(calls),
         ):
-            result = GRAPHITE.repair(handoff, output)
+            result = self.repair(handoff, output)
 
         self.assertEqual(result["status"], "canonical-repair-complete")
         self.assertFalse(result["pull_requests"][0]["target_is_draft"])
@@ -1361,7 +1502,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
                 subprocess.CompletedProcess([], 0, audit, ""),
             ],
         ) as run:
-            result = GRAPHITE.repair(handoff, repair_output)
+            result = self.repair(handoff, repair_output)
         self.assertEqual(result["status"], "canonical-repair-complete")
         self.assertEqual(run.call_count, 3)
         self.assertEqual(result["pull_requests"][0]["audit"]["provenance"], "canonical")
@@ -1416,7 +1557,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
                 GRAPHITE.GraphiteTransportError,
                 "audit did not verify the exact handoff target",
             ):
-                GRAPHITE.repair(
+                self.repair(
                     handoff,
                     Path(self.temporary.name) / "repair.json",
                 )
@@ -1442,9 +1583,11 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             mock.patch.object(GRAPHITE, "_matching_prs", return_value=[self.stored()]),
         ):
             handoff = GRAPHITE.execute(first, transport_output)
-        second = json.loads(json.dumps(handoff["pull_requests"][0]))
-        second["pr"] = 43
-        second["url"] = "https://github.com/acme/app/pull/43"
+        second = GRAPHITE._handoff_entry(
+            self.candidate, None,
+            {**self.stored(), "number": 43, "url": "https://github.com/acme/app/pull/43"},
+            self.repository,
+        )
         handoff["pull_requests"].append(second)
         unsigned = {
             key: value for key, value in handoff.items() if key != "content_sha256"
@@ -1468,7 +1611,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             GRAPHITE, "_run_json_command", side_effect=first_run
         ) as run:
             with self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "fail after"):
-                GRAPHITE.repair(handoff, output)
+                self.repair(handoff, output)
         self.assertEqual(run.call_count, 5)
         checkpoint = output.with_name(f".{output.name}.checkpoint.json")
         self.assertTrue(checkpoint.is_file())
@@ -1477,7 +1620,7 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
         with mock.patch.object(
             GRAPHITE, "_run_json_command", side_effect=second_run
         ) as run:
-            result = GRAPHITE.repair(handoff, output)
+            result = self.repair(handoff, output)
         self.assertEqual(result["status"], "canonical-repair-complete")
         self.assertEqual(run.call_count, 4)
         self.assertEqual([item["pr"] for item in result["pull_requests"]], [42, 43])
@@ -1523,12 +1666,12 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
                 GRAPHITE.GraphiteTransportError,
                 "interrupted before checkpoint persistence",
             ):
-                GRAPHITE.repair(handoff, output)
+                self.repair(handoff, output)
 
         with mock.patch.object(
             GRAPHITE, "_run_json_command", return_value=verified
         ) as restarted_run:
-            result = GRAPHITE.repair(handoff, output)
+            result = self.repair(handoff, output)
 
         self.assertEqual(result["status"], "canonical-repair-complete")
         restarted_run.assert_called_once_with(
@@ -1579,35 +1722,256 @@ sys.stdout.buffer.write(sys.stdin.buffer.read())
             with self.assertRaisesRegex(
                 GRAPHITE.GraphiteTransportError, "exact handoff target"
             ):
-                GRAPHITE.repair(handoff, Path(self.temporary.name) / "repair-race.json")
+                self.repair(handoff, Path(self.temporary.name) / "repair-race.json")
+
+    def test_regenerated_commands_reach_the_intended_publication_consumer(self) -> None:
+        source = Path(self.temporary.name) / "existing-body.md"
+        source.write_text("Canonical body\n", encoding="utf-8")
+        entry = {**self.candidate, "body_source": {"mode": "file", "path": str(source)}}
+        for transport_body, operations in (("transport body\n", ["text", "ready"]), ("Canonical body\n", ["ready"])):
+            with self.subTest(operations=operations):
+                stored = self.stored(body=transport_body)
+                preimage = {"is_draft": False}
+                item = GRAPHITE._handoff_entry(entry, preimage, stored, self.repository)
+                _, _, commands, _ = GRAPHITE._repair_commands(item)
+                observations = [observe_publication(command) for command in commands]
+                self.assertEqual([operation for operation, _ in observations], operations)
+                for operation, arguments in observations:
+                    self.assertEqual(arguments["expected"].repository, "acme/app")
+                    self.assertEqual(arguments["expected"].pr_number, 42)
+                    self.assertEqual(arguments["review_mode"], "not-required")
+                    self.assertEqual(arguments["selected_specialists"], [])
+                    self.assertEqual(arguments["review_input_path"], self.review_input)
+                    if operation == "text":
+                        self.assertEqual(arguments["title"], "feat: feature")
+                        self.assertEqual(arguments["body_path"], source)
+                        self.assertTrue(arguments["expected_draft"])
+
+    def test_authorization_uses_one_frozen_snapshot_of_caller_data(self) -> None:
+        unsigned = {"pull_requests": [{"pr": 42}]}
+        digest = GRAPHITE._sha_bytes(GRAPHITE._canonical(unsigned))
+        handoff = {**unsigned, "content_sha256": digest}
+        canonical = GRAPHITE._canonical
+        mutated = False
+
+        def serialize_then_change_caller(value):
+            nonlocal mutated
+            raw = canonical(value)
+            if not mutated:
+                mutated = True
+                handoff["pull_requests"][0]["pr"] = 43
+            return raw
+
+        with mock.patch.object(GRAPHITE, "_canonical", side_effect=serialize_then_change_caller):
+            frozen = GRAPHITE._authorized_handoff(handoff, digest)
+        self.assertEqual(frozen["pull_requests"][0]["pr"], 42)
+        self.assertEqual(handoff["pull_requests"][0]["pr"], 43)
+
+    def test_recomputed_handoff_cannot_replace_retained_authorization(self) -> None:
+        item = self.required_item()
+        unsigned = {"repository_root": str(self.root), "pull_requests": [item]}
+        retained = GRAPHITE._sha_bytes(GRAPHITE._canonical(unsigned))
+        handoff = json.loads(json.dumps(unsigned))
+        handoff["pull_requests"][0]["publisher_commands"][0].extend(["--pr=43"])
+        handoff["content_sha256"] = GRAPHITE._sha_bytes(GRAPHITE._canonical(handoff))
+        with (
+            mock.patch.object(GRAPHITE, "_run_json_command") as run,
+            mock.patch.object(GRAPHITE, "_repair_checkpoint") as checkpoint,
+        ):
+            with self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "retained authorization"):
+                GRAPHITE.repair(
+                    handoff, Path(self.temporary.name) / "tampered.json",
+                    expected_handoff_sha256=retained,
+                )
+        run.assert_not_called()
+        checkpoint.assert_not_called()
+
+    def test_repair_refuses_command_drift_before_any_helper(self) -> None:
+        for flag, replacement in (
+            ("--repository", "other/app"), ("--pr", "43"),
+            ("--base", "other"), ("--head-oid", "d" * 40),
+            ("--expected-title-sha256", "e" * 64),
+            ("--title", "unexpected title"), ("--body-template", "/other/body.md"),
+            ("--review-input", "/other/review.json"),
+        ):
+            with self.subTest(flag=flag):
+                item = self.required_item()
+                command = item["publisher_commands"][0]
+                command[command.index(flag) + 1] = replacement
+                with mock.patch.object(GRAPHITE, "_run_json_command") as run:
+                    with self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "canonical target"):
+                        self.repair(
+                            {"repository_root": str(self.root), "pull_requests": [item]},
+                            Path(self.temporary.name) / "drift.json",
+                        )
+                run.assert_not_called()
+
+    def test_repair_refuses_parser_overrides_and_audit_retargeting(self) -> None:
+        for suffix in (["--pr=43"], ["--pr", "43"], ["--review-mode=not-required"], ["--review-m", "not-required"]):
+            for destination in ("publisher_commands", "final_audit_command"):
+                with self.subTest(suffix=suffix, destination=destination):
+                    item = self.required_item()
+                    command = item[destination][0] if destination == "publisher_commands" else item[destination]
+                    command.extend(suffix)
+                    with mock.patch.object(GRAPHITE, "_run_json_command") as run:
+                        with self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "canonical target"):
+                            self.repair(
+                                {"repository_root": str(self.root), "pull_requests": [item]},
+                                Path(self.temporary.name) / "override.json",
+                            )
+                    run.assert_not_called()
+
+    def test_later_invalid_member_blocks_the_whole_command_inventory(self) -> None:
+        first = self.required_item()
+        second = json.loads(json.dumps(first))
+        second["final_audit_command"].extend(["--pr=43"])
+        with mock.patch.object(GRAPHITE, "_run_json_command") as run:
+            with self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "canonical target"):
+                self.repair(
+                    {"repository_root": str(self.root), "pull_requests": [first, second]},
+                    Path(self.temporary.name) / "later.json",
+                )
+        run.assert_not_called()
+
+    def test_pending_payload_drift_is_refused_before_publishing(self) -> None:
+        for drift in ("body", "review-input", "candidate"):
+            with self.subTest(drift=drift):
+                item = self.required_item()
+                with (
+                    mock.patch.object(GRAPHITE, "_run_json_command", return_value={"status": "drift"}) as run,
+                    mock.patch.object(GRAPHITE, "load_review_input", return_value=mock.Mock(content_sha256=("0" if drift == "review-input" else "c") * 64)),
+                    mock.patch.object(GRAPHITE, "build_publication_candidate", return_value=mock.Mock(content_sha256=("0" if drift == "candidate" else "f") * 64)),
+                ):
+                    if drift == "body":
+                        self.template.write_text("Different body", encoding="utf-8")
+                    with self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "drifted"):
+                        self.repair(
+                            {"repository_root": str(self.root), "pull_requests": [item]},
+                            Path(self.temporary.name) / "payload.json",
+                        )
+                self.template.write_text("PR __PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__\n", encoding="utf-8")
+                self.assertEqual(run.call_count, 1)
+                self.assertEqual(run.call_args.kwargs["operation"], "audit")
+
+    def test_snapshot_preserves_real_manifest_and_candidate_identity(self) -> None:
+        fixtures = importlib.import_module(
+            "tests.plugins.mergecraft.writing-reviewable-pr-descriptions.test_review_input"
+        )
+        real_builder = importlib.import_module("required_review").build_candidate
+        real_loader = importlib.import_module("change_navigation.review_input").load_review_input
+        body = fixtures.DIFF
+        raw = fixtures.manifest(body, title="feat: feature", pr_number=42)
+        raw["head"]["ref"] = "acme:feature"
+        raw["head"]["repository"] = "acme/app"
+        raw = fixtures.reseal(raw)
+        self.template.write_text(body, encoding="utf-8")
+        self.review_input.write_text(json.dumps(raw), encoding="utf-8")
+        entry = {
+            **self.candidate,
+            "body_source": {"mode": "file", "path": str(self.template)},
+            "review_input_sha256": raw["content_sha256"],
+        }
+        with (
+            mock.patch.object(GRAPHITE, "build_publication_candidate", real_builder),
+            mock.patch.object(GRAPHITE, "load_review_input", real_loader),
+        ):
+            for mode in ("required", "not-required"):
+                with self.subTest(mode=mode):
+                    candidate = {
+                        **entry, "review_mode": mode,
+                        "review_bundle": str(Path(self.temporary.name) / "bundle") if mode == "required" else None,
+                    }
+                    item = GRAPHITE._handoff_entry(candidate, None, self.stored(), self.repository)
+                    expected, typed, commands, _ = GRAPHITE._repair_commands(item)
+                    with GRAPHITE._repair_payload_snapshot(item, expected, typed, commands) as frozen:
+                        body_path = Path(frozen[0][frozen[0].index("--body-file") + 1])
+                        self.assertEqual(body_path.read_text(), body)
+                        review_path = Path(frozen[0][frozen[0].index("--review-input") + 1])
+                        self.assertEqual(real_loader(review_path).content_sha256, raw["content_sha256"])
+
+    def test_publisher_consumes_validated_snapshot_when_originals_change(self) -> None:
+        item = self.required_item()
+        original_body = self.template.read_bytes()
+        original_review = self.review_input.read_bytes()
+        snapshots = []
+        calls = 0
+
+        def run(command, *, cwd, operation):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                return {"status": "drift"}
+            if operation == "publish":
+                self.template.write_text("replaced body", encoding="utf-8")
+                self.review_input.write_text("replaced review", encoding="utf-8")
+                body_path = Path(command[command.index("--body-template") + 1])
+                review_path = Path(command[command.index("--review-input") + 1])
+                snapshots.extend([body_path, review_path])
+                self.assertNotEqual(body_path, self.template)
+                self.assertNotEqual(review_path, self.review_input)
+                self.assertEqual(body_path.read_bytes(), original_body)
+                self.assertEqual(review_path.read_bytes(), original_review)
+                self.assertEqual(body_path.stat().st_mode & 0o777, 0o400)
+                return {"status": "verified"}
+            return self.audit_for(item)
+
+        with mock.patch.object(GRAPHITE, "_run_json_command", side_effect=run):
+            result = self.repair(
+                {"repository_root": str(self.root), "pull_requests": [item]},
+                Path(self.temporary.name) / "snapshot.json",
+            )
+        self.assertEqual(result["status"], "canonical-repair-complete")
+        self.assertEqual(len(snapshots), 2)
+        self.assertTrue(all(not path.exists() for path in snapshots))
+
+    def test_converged_member_remains_resumable_without_source_files(self) -> None:
+        item = self.required_item()
+        self.template.unlink()
+        self.review_input.unlink()
+        with mock.patch.object(GRAPHITE, "_run_json_command", return_value=self.audit_for(item)) as run:
+            result = self.repair(
+                {"repository_root": str(self.root), "pull_requests": [item]},
+                Path(self.temporary.name) / "already-converged.json",
+            )
+        self.assertEqual(result["status"], "canonical-repair-complete")
+        run.assert_called_once_with(item["final_audit_command"], cwd=self.root, operation="audit")
+
+    def test_repair_cli_requires_independently_retained_digest(self) -> None:
+        with (
+            mock.patch.object(sys, "argv", [str(SCRIPT), "repair", "--handoff", "/some/handoff.json", "--output", "/some/result.json"]),
+            mock.patch.object(GRAPHITE, "_load_handoff") as load,
+            redirect_stderr(io.StringIO()),
+        ):
+            with self.assertRaises(SystemExit) as rejected:
+                GRAPHITE.main()
+        self.assertEqual(rejected.exception.code, 2)
+        load.assert_not_called()
+
+    def test_repair_refuses_an_extra_publisher_for_another_member(self) -> None:
+        """A declared member cannot authorize a publisher for a different PR."""
+        item = self.required_item()
+        foreign = list(item["publisher_commands"][0])
+        foreign[foreign.index("--pr") + 1] = "43"
+        item["publisher_commands"].insert(0, foreign)
+        unsigned = {"repository_root": str(self.root), "pull_requests": [item]}
+        handoff = {**unsigned, "content_sha256": GRAPHITE._sha_bytes(GRAPHITE._canonical(unsigned))}
+        with mock.patch.object(
+            GRAPHITE, "_run_json_command",
+            side_effect=[{"status": "drift"}, {}, {}, self.audit_for(item)],
+        ) as run:
+            with self.assertRaises(GRAPHITE.GraphiteTransportError):
+                self.repair(handoff, Path(self.temporary.name) / "repair-extra.json")
+        run.assert_not_called()
 
     def test_repair_rejects_unowned_command_without_execution(self) -> None:
-        handoff = {
-            "repository_root": str(self.root),
-            "content_sha256": "f" * 64,
-            "pull_requests": [
-                {
-                    "repository": self.repository,
-                    "pr": 42,
-                    "url": "https://github.com/acme/app/pull/42",
-                    "target_review_mode": "not-required",
-                    "target_publication_candidate_sha256": "f" * 64,
-                    "target_review_bundle": None,
-                    "target_selected_specialists": [],
-                    "publisher_commands": [["sh", "-c", "unexpected"]],
-                    "final_audit_command": [
-                        sys.executable,
-                        str(GRAPHITE.AUDIT),
-                        "audit",
-                    ],
-                }
-            ],
-        }
+        item = self.required_item()
+        item["publisher_commands"] = [["sh", "-c", "unexpected"]]
+        handoff = {"repository_root": str(self.root), "pull_requests": [item]}
         with mock.patch.object(GRAPHITE, "_run") as run:
             with self.assertRaisesRegex(
-                GRAPHITE.GraphiteTransportError, "executable drifted"
+                GRAPHITE.GraphiteTransportError, "canonical target"
             ):
-                GRAPHITE.repair(handoff, Path(self.temporary.name) / "repair.json")
+                self.repair(handoff, Path(self.temporary.name) / "repair.json")
         run.assert_not_called()
 
     def test_publisher_output_rejects_duplicate_json_keys(self) -> None:
