@@ -180,6 +180,35 @@ eval corpus, `tests/plugins/mergecraft/`, the public relation command suites
 `release/plugin-content-locks/mergecraft.json`. Skill-local eval resources are
 package support artifacts, not runtime authority.
 
+## Relation state filesystem
+
+The relation command stores settings and mutation recovery records in a private,
+current-user-owned state directory. It rejects symlinks in every state-path
+component and unsafe lock or
+settings files, including symlinks, hard links, nonregular files, foreign owners,
+and group- or world-writable files. Existing readable `0644` locks remain valid
+inside the private root. Newly created files use `0600`.
+
+Directory traversal and creation use no-follow opens relative to each opened
+parent descriptor. Configured state paths, including `XDG_STATE_HOME`, must not
+contain symlink components; use a canonical directory path instead.
+Transactions hold the opened directory and lock descriptors through persistence.
+Writes create an exclusive random staging file, flush it, atomically replace the
+settings file relative to the directory descriptor, and flush the directory.
+Both flushes request `F_FULLFSYNC` when available, falling back to `fsync` when
+the operation is unavailable or unsupported. Other I/O errors propagate.
+Unrelated old staging entries are left untouched. Staging failures preserve the
+prior settings. After successful replacement, a later directory-sync failure
+can leave the new settings visible even when mutation settlement reports an
+unknown outcome.
+
+Secure cache access requires POSIX no-follow and directory-relative file
+operations. Platforms without these primitives return
+`secure-settings-cache-unavailable` before creating state. This replaces the
+previously unqualified Windows locking path; no Windows qualification is claimed.
+Plan construction and inactive observations that do not access state retain
+their existing behavior.
+
 ## Graphite repair authorization
 
 `submit_draft_stack.py execute` returns the generated handoff's `content_sha256`.
