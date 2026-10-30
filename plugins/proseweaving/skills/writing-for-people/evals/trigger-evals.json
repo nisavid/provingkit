@@ -1,0 +1,18 @@
+[
+  {
+    "query": "Write an internal handoff that points Mara to the verified Codex chat about import retry ownership.",
+    "should_trigger": true
+  },
+  {
+    "query": "Draft a public issue update using the verified issue and PR links instead of the private chat reference.",
+    "should_trigger": true
+  },
+  {
+    "query": "Post this approved message with its chat URL as exact bytes. Do not revise it.",
+    "should_trigger": false
+  },
+  {
+    "query": "Inspect this Python diff for a retry bug; a comment contains a Codex chat link.",
+    "should_trigger": false
+  }
+]
