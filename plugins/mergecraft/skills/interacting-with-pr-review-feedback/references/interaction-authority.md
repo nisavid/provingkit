@@ -282,10 +282,35 @@ or unsupported record blocks the whole bundle with zero provider calls.
 | `operation` | `create_inline_reply` or `create_pull_request_conversation_comment`, selected from source kind |
 | `placement` | Inline: `kind: review_thread`, `thread_node_id`, and `root_comment_database_id`; top-level: `kind: pull_request_conversation` and `pr_number` |
 | `writer` | `identity`, `contract: portable-github-markdown-authoring`, `contract_version: "1"` (string), selected `field`, and `body_sha256` of its exact UTF-8 bytes |
-| `authority` | `decision: authorized`, `evidence_id`, and verified `actor_login` |
+| `authority` | `decision: authorized`, `evidence_id`, and verified `actor_login` and immutable GitHub `actor_node_id` |
 | `classification` | `result: human_feedback` or `automated_feedback`, and its `evidence_id` |
 | `adjudication` | `disposition: respond` and the supporting `evidence_id` |
 | `independence_evidence` | Explicit `available` evidence ID or `not_applicable` reason |
+
+New response authority binds both account identifiers. The runtime checks the
+authenticated user before recording write readiness, and each concrete actuator
+checks again immediately before posting. The transport captures its credential
+environment and pins one token for those checks and the POST, preserving
+`GH_TOKEN` then `GITHUB_TOKEN` precedence; otherwise it reads the active stored
+token with `gh auth token --hostname github.com`. The token remains in memory
+and is never evidence. Credentials that cannot identify a user through
+`GET /user`, including installation tokens, fail closed before posting.
+
+Receipts retain the immutable author ID and verify it on the stable reread.
+Login-only historical records remain readable and reconcilable without changing
+their bytes or digests, and an exact confirmed-success replay remains a no-op.
+They cannot authorize new writes. For an ordinary pending login-only intent with
+no provider attempt, `prepare-replacement` retires the old authority through the
+existing prewrite validation and terminal invalidation records, then acquires a
+fresh replacement basis. The successor requires newly authored authority with
+the immutable ID. Historical provider-attempted records do not gain a migration
+path: even a login-only retryable confirmed failure cannot authorize another
+write, and unknown effects remain reconciliation-only. Historical possible-result
+correlation stays conservatively login-based so missing old IDs cannot erase
+ambiguity with a new intent. A prewrite identity failure follows the existing
+terminal validation and replacement rules; a leaf identity failure proves no
+write and is not automatically retried. Read-only reconciliation checks the
+recorded comment author and does not require the viewer to be that author.
 
 An exact unchanged pending intent crossing a new observational epoch adds
 `carry_forward` with `from_epoch_id`, the complete `to_epoch`, and typed
